@@ -116,7 +116,7 @@ admin_header('CRM 线索管理');
       ?>
       <div class="kanban-col" data-stage="<?=$stageKey?>">
         <div class="kanban-col-header">
-          <span style="color:<?=['new'=>'#9ca3af','contacted'=>'var(--accent)','qualified'=>'var(--warn)','opportunity'=>'#7c3aed','won'=>'var(--ok)','lost'=>'var(--danger)'][$stageKey]?>">●</span>
+          <span style="color:<?=['new'=>'var(--faint)','contacted'=>'var(--accent)','qualified'=>'var(--warn)','opportunity'=>'var(--accent)','won'=>'var(--ok)','lost'=>'var(--danger)'][$stageKey]?>">●</span>
           <?=htmlspecialchars($stageLabel)?><span class="count"><?=count($stageLeads)?></span>
         </div>
         <div class="kanban-cards" data-stage="<?=$stageKey?>">
@@ -268,7 +268,7 @@ admin_header('CRM 线索管理');
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
       <div class="pipe-card"><div class="lab">公海线索</div><div class="num" style="color:var(--warn)"><?=$poolCount?></div></div>
       <div class="pipe-card"><div class="lab">高评分（≥60）</div><div class="num" style="color:var(--ok)"><?=count(array_filter($poolLeads, fn($l) => ($l['score'] ?? 0) >= 60))?></div></div>
-      <div class="pipe-card"><div class="lab">有商机金额</div><div class="num" style="color:#7c3aed"><?=count(array_filter($poolLeads, fn($l) => ($l['value'] ?? 0) > 0))?></div></div>
+      <div class="pipe-card"><div class="lab">有商机金额</div><div class="num" style="color:var(--accent)"><?=count(array_filter($poolLeads, fn($l) => ($l['value'] ?? 0) > 0))?></div></div>
       <div class="pipe-card"><div class="lab">原始提交未认领</div><div class="num"><?=count(array_filter($rawLeads, function($rl) use ($data) {
           $emails = array_column($data['leads'] ?? [], 'email');
           return !in_array($rl['email'] ?? '', array_map('mb_strtolower', $emails));
@@ -304,7 +304,7 @@ admin_header('CRM 线索管理');
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px">
       <div class="pipe-card"><div class="lab">管线总额</div><div class="num" style="color:var(--ok)">¥<?=number_format($pipelineValue,0)?></div></div>
       <?php foreach ($stages as $k => $label): ?>
-      <div class="pipe-card"><div class="lab"><?=htmlspecialchars($label)?></div><div class="num" style="color:<?=['new'=>'#9ca3af','contacted'=>'var(--accent)','qualified'=>'var(--warn)','opportunity'=>'#7c3aed','won'=>'var(--ok)','lost'=>'var(--danger)'][$k]?>"><?=$stageCounts[$k] ?? 0?></div></div>
+      <div class="pipe-card"><div class="lab"><?=htmlspecialchars($label)?></div><div class="num" style="color:<?=['new'=>'var(--faint)','contacted'=>'var(--accent)','qualified'=>'var(--warn)','opportunity'=>'var(--accent)','won'=>'var(--ok)','lost'=>'var(--danger)'][$k]?>"><?=$stageCounts[$k] ?? 0?></div></div>
       <?php endforeach; ?>
     </div>
 

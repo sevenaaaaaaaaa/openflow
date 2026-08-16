@@ -102,8 +102,8 @@ admin_header('画布编辑器');
 .canvas-node.trigger{border-color:var(--ok)}
 .canvas-node.send_email{border-color:var(--accent)}
 .canvas-node.condition{border-color:var(--warn)}
-.canvas-node.delay{border-color:#7c3aed}
-.canvas-node.notify{border-color:#9ca3af}
+.canvas-node.delay{border-color:var(--accent)}
+.canvas-node.notify{border-color:var(--faint)}
 .canvas-node .node-head{font-size:12px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .canvas-node .node-body input,.canvas-node .node-body select{width:100%;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;margin-bottom:6px;box-sizing:border-box}
 .canvas-node .node-body textarea{width:100%;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box}

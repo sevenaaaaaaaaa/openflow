@@ -108,7 +108,7 @@ admin_header('底部外链管理');
             <div style="font-weight:600;margin-bottom:8px;color:#fff"><?=htmlspecialchars($group['name'])?></div>
             <?php foreach (($group['links'] ?? []) as $link): ?>
             <div style="margin-bottom:4px">
-              <a href="<?=htmlspecialchars($link['url'])?>" style="color:#9ca3af;text-decoration:none;font-size:13px" target="<?=$link['target'] ?? '_blank'?>" rel="<?=htmlspecialchars($link['rel'] ?? '')?>"><?=htmlspecialchars($link['label'])?></a>
+              <a href="<?=htmlspecialchars($link['url'])?>" style="color:var(--faint);text-decoration:none;font-size:13px" target="<?=$link['target'] ?? '_blank'?>" rel="<?=htmlspecialchars($link['rel'] ?? '')?>"><?=htmlspecialchars($link['label'])?></a>
             </div>
             <?php endforeach; ?>
           </div>

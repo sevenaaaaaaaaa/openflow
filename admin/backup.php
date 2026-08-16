@@ -151,21 +151,21 @@ admin_header('备份管理');
         </div>
         <div style="padding:14px;background:var(--surface-2);border-radius:8px">
           <div class="flex items-center gap-2">
-            <span style="color:#9ca3af">●</span>
+            <span style="color:var(--faint)">●</span>
             <strong>Dropbox</strong>
           </div>
           <div class="text-sm text-muted" style="margin-top:4px">未配置</div>
         </div>
         <div style="padding:14px;background:var(--surface-2);border-radius:8px">
           <div class="flex items-center gap-2">
-            <span style="color:#9ca3af">●</span>
+            <span style="color:var(--faint)">●</span>
             <strong>Google Drive</strong>
           </div>
           <div class="text-sm text-muted" style="margin-top:4px">未配置</div>
         </div>
         <div style="padding:14px;background:var(--surface-2);border-radius:8px">
           <div class="flex items-center gap-2">
-            <span style="color:#9ca3af">●</span>
+            <span style="color:var(--faint)">●</span>
             <strong>百度网盘</strong>
           </div>
           <div class="text-sm text-muted" style="margin-top:4px">未配置</div>
