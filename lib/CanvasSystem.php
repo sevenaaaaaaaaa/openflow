@@ -3,6 +3,13 @@
  * 画布流程引擎 — 可视化流程编排的执行端
  * 画布结构：nodes[]（触发器/动作/分支/延迟）+ edges[]（连线）
  * 支持：顺序、分支（条件）、并行
+ *
+ * ── 流程编排三件套：本文件是「可视化画布执行器」 ──
+ * 关系：FlowSystem = 总事件总线（入口，接收事件并分发）；
+ *       本文件 = 画布编排执行（用户拖拽配置的 nodes/edges 流程）；
+ *       AutomationSystem = 营销自动化执行器（触发器+动作）。
+ * 加代码指引：画布的节点类型、连线逻辑、执行顺序加这里，
+ *             不要在这里加全局事件分发（归 FlowSystem）。
  */
 
 function canvas_file(): string { return DATA_DIR . '/canvas-flows.json'; }
