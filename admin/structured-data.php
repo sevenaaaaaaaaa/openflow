@@ -13,7 +13,7 @@ if (!in_array($type, $allowedTypes)) $type = 'page';
 // Get available items
 $items = [];
 if ($type === 'page') {
-    $pages = ['index' => '首页', 'about' => '关于我们', 'capability' => '产品', 'courses' => '解决方案', 'flow-community' => 'Flow社区'];
+    $pages = ['index' => '首页', 'about' => '关于我们', 'capability' => '产品', 'courses' => '解决方案'];
     foreach ($pages as $k => $v) $items[] = ['id' => $k, 'title' => $v];
 } elseif ($type === 'article') {
     foreach (get_articles() as $a) $items[] = ['id' => $a['id'], 'title' => $a['title']];

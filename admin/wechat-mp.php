@@ -114,7 +114,7 @@ code.mp{background:var(--surface-2);padding:2px 8px;border-radius:4px;font-size:
       {"type":"view","name":"OpenFlow","url":"https://nownexts.com/"},
       {"type":"click","name":"联系方式","key":"CONTACT"}
     ]},
-    { "name": "最新文章", "type": "view", "url": "https://nownexts.com/flow-community.html" }
+    { "name": "最新文章", "type": "view", "url": "https://nownexts.com/community" }
   ]
 }'><?=htmlspecialchars($mpCfg['menu_json'])?></textarea></div>
         <button type="button" class="btn btn-ghost btn-sm" onclick="pushMenu()" <?=$mpReady ? '' : 'disabled'?>>📡 推送菜单到微信服务器</button>

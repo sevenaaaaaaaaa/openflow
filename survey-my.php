@@ -98,7 +98,7 @@ if ($profile) {
     <?php endif; ?>
 
     <div class="text-center mt-8">
-      <a href="/academy" class="inline-block rounded-full bg-[var(--accent)] px-7 py-3 font-semibold text-white">返回 Flow社区</a>
+      <a href="/community" class="inline-block rounded-full bg-[var(--accent)] px-7 py-3 font-semibold text-white">返回社区</a>
     </div>
   </div>
 </body>
