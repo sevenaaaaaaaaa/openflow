@@ -1,0 +1,208 @@
+/* OpenFlow — Arc × Betterup design-language override
+   Loaded AFTER site-betterup.js. Combines Arc's glassmorphic, gradient,
+   spring-animated design language with Betterup's rubine + yellow + cream palette. */
+
+:root {
+  --bu-rubine:   #ce0058;
+  --bu-rubine-2: #e81259;
+  --bu-rubine-3: #ff2970;
+  --bu-yellow:   #ddff0e;
+  --bu-cream:    #f4f3e9;
+  --bu-beige:    #ebe9e1;
+  --bu-text:     #000000;
+  --bu-muted:    #6e6e6e;
+  --bu-border:   #cccccc;
+  --bu-grad:     linear-gradient(135deg, #ddff0e 0%, #86efac 50%, #7dd3fc 100%);
+  --bu-grad-purple: linear-gradient(135deg, #4d7c0f, #0369a1);
+  --bu-grad-blue:   linear-gradient(135deg, #86efac, #7dd3fc);
+  --bu-grad-pink:   linear-gradient(135deg, #ddff0e, #86efac);
+  --bu-grad-orange: linear-gradient(135deg, #ddff0e, #7dd3fc);
+  --bu-grad-soft:   linear-gradient(135deg, rgba(221,255,14,.07), rgba(134,239,172,.05), rgba(125,211,252,.04));
+  --bu-glass:       rgba(255,255,255,0.72);
+  --bu-glass-border: rgba(255,255,255,0.6);
+  --bu-ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --bu-ease-smooth: cubic-bezier(.16,1,.3,1);
+}
+
+/* — Typography: Newsreader serif display + Inter body — */
+body { font-family: 'Inter','PingFang SC','Noto Sans SC','Source Han Sans SC',system-ui,sans-serif; -webkit-font-smoothing:antialiased; background:#f4f3e9; color:#000000; }
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap');
+h1, h2, h3, h4 { font-family: 'Newsreader','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif; font-weight: 500; letter-spacing: -.015em; }
+.eyebrow, .eyebrow-sun { background: linear-gradient(90deg,#4d7c0f,#0369a1); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-family:'Inter',sans-serif; font-weight:600; font-size:12px; letter-spacing:.14em; text-transform:uppercase; }
+
+/* — Nav: Arc glass pill — */
+#nav { background: transparent !important; backdrop-filter: none !important; box-shadow: none !important; }
+#nav.scrolled {
+  background: color-mix(in srgb, #f4f3e9 80%, transparent) !important;
+  backdrop-filter: blur(24px) saturate(1.8) !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,.06), 0 4px 24px rgba(0,0,0,.04) !important;
+}
+#nav.capsule-mode {
+  background: color-mix(in srgb, #ffffff 85%, transparent) !important;
+  backdrop-filter: blur(24px) saturate(1.8) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.5) !important;
+  border: 1px solid var(--bu-glass-border) !important;
+}
+.brand-text { color: #000000 !important; }
+.nav-link { color: rgba(0,0,0,.5) !important; }
+.nav-link:hover, .nav-link[aria-current="page"] { color: #000000 !important; background: rgba(206,0,88,.08) !important; }
+
+/* — Buttons — Arc glass + Betterup palette */
+.btn-ink {
+  background: var(--bu-yellow) !important; color: var(--bu-text) !important;
+  border-radius: 6px !important; box-shadow: none !important; font-weight: 600;
+}
+.btn-ink:hover { background: #c4e600 !important; transform:translateY(-1px); box-shadow:none !important; }
+.btn-ink:active { transform:translateY(0) scale(.98); box-shadow:none !important; }
+.btn-ghost {
+  border-radius: 999px !important; border: 1.5px solid var(--bu-border) !important;
+  background: var(--bu-glass) !important; backdrop-filter:blur(12px); color: var(--bu-text) !important; font-weight:600;
+}
+.btn-ghost:hover { border-color: #1e1e1e !important; background: var(--bu-grad-soft) !important; color: #1e1e1e !important; }
+.btn-line { border-radius: 999px !important; border:1.5px solid #1e1e1e !important; background:transparent !important; color:#1e1e1e !important; font-weight:600; }
+.btn-line:hover { background: #ddff0e !important; color:#1e1e1e !important; }
+
+/* — Nav CTA — rubine filled pill */
+.bg-jade, .rounded-full.bg-jade {
+  background: #ddff0e !important; color:#1e1e1e !important;
+  border-radius: 999px !important; box-shadow:none !important; font-weight:600;
+}
+.bg-jade:hover, .rounded-full.bg-jade:hover { background: #c9ef00 !important; transform:translateY(-1px); }
+.bg-flow:hover { background: #c9ef00 !important; }
+
+/* — Inputs — flat, grey border, 12px radius */
+.inp { border-radius:12px !important; border:1.5px solid var(--bu-border) !important; background:#fff !important; box-shadow:none !important; }
+.inp:focus { border-color: #2b5f7e !important; box-shadow:0 0 0 4px rgba(43,95,126,.12) !important; outline:none; }
+
+/* — Cards — 20px radius, flat with border, gradient hover border — */
+.case-card, .expert, .card, .cat {
+  border-radius: 20px !important; border:1px solid var(--bu-border) !important;
+  background:#fff !important; box-shadow:none !important;
+  transition: transform .35s var(--bu-ease-spring), box-shadow .35s !important;
+}
+.case-card:hover, .expert:hover, .card:hover {
+  transform: translateY(-4px) !important; box-shadow: 0 8px 32px rgba(206,0,88,.08) !important;
+  border-color: rgba(206,0,88,.2) !important;
+}
+.card-cream { border-radius:20px !important; border:1px solid var(--bu-border) !important; background: var(--bu-beige) !important; }
+
+/* — Tab buttons — glass, rubine active — */
+.tab-btn { border-radius:16px !important; border:1px solid var(--bu-border) !important; background:#fff !important; box-shadow:none !important; transition: all .3s var(--bu-ease-smooth) !important; }
+.tab-btn[aria-selected="true"] { border-color:transparent !important; background: #ddff0e !important; box-shadow: 0 4px 20px rgba(163,230,53,.25) !important; color:#1e1e1e !important; }
+.tab-btn[aria-selected="true"] * { color:#fff !important; }
+.tab-progress { background: linear-gradient(90deg,#65a30d,#0284c7) !important; height:3px; border-radius:2px; }
+
+/* — Flow line + mesh — rubine + yellow */
+.flow-line { background: linear-gradient(90deg, transparent, #86efac 25%, #ddff0e 50%, #7dd3fc 75%, transparent) !important; background-size:50% 100% !important; opacity:.4 !important; height:2px !important; }
+.flow-mesh {
+  opacity:.12 !important;
+  background: radial-gradient(ellipse 80% 60% at 20% 30%, #ddff0e 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 70%, #86efac 0%, transparent 55%) !important;
+  background-size: 200% 200% !important;
+}
+
+/* — WellQ / case media / expert photo — soft cream — */
+.case-media { background: var(--bu-grad-soft) !important; }
+.expert-photo { background: linear-gradient(160deg, var(--bu-beige), #fff) !important; }
+.expert-photo::after { background: linear-gradient(to bottom, rgba(235,233,225,.12) 0%, rgba(206,0,88,.08) 100%) !important; }
+.expert-photo img { filter: brightness(1.08) saturate(1.05) !important; }
+
+/* — Hex ring / pyramid / progress — rubine + yellow — */
+.hex-center { background: var(--bu-grad-purple) !important; color:#fff !important; box-shadow:0 8px 24px rgba(43,95,126,.20) !important; }
+.hex-petal:hover { border-color: #7dd3fc !important; }
+.hex-petal .petal-icon { background: var(--bu-grad-soft) !important; border:1px solid rgba(134,239,172,.35); }
+.prog-dot { background: #ddff0e !important; }
+.flow-num, .step-num { background: #ddff0e !important; color:#1e1e1e !important; }
+.mod-cell .mod-icon { background: var(--bu-grad-soft) !important; border:1px solid rgba(134,239,172,.35); }
+.pyramid-row:hover { border-color: #1e1e1e !important; box-shadow:0 6px 18px rgba(0,0,0,.06) !important; }
+
+/* — Catalog — */
+.cat-h { background: var(--bu-beige) !important; border-bottom:1px solid var(--bu-border) !important; }
+.cat-row:hover { background: rgba(206,0,88,.03) !important; }
+.cat-dur { color: var(--bu-rubine) !important; }
+.cap-li::before { background: rgba(206,0,88,.14) !important; box-shadow: inset 0 0 0 1.5px var(--bu-rubine) !important; }
+
+/* — Pills / chips — rubine tinted — */
+.pill { background: var(--bu-grad-soft) !important; border:1px solid rgba(206,0,88,.12) !important; color: var(--bu-rubine) !important; }
+.chip { background: rgba(206,0,88,.06) !important; border:1px solid var(--bu-border) !important; color: var(--bu-rubine) !important; }
+.cr { background: rgba(221,255,14,.30) !important; color: #6a6a00 !important; }
+.ind { background: rgba(206,0,88,.05) !important; border:1px solid rgba(206,0,88,.12) !important; color: var(--bu-rubine) !important; }
+.tag { border-color: var(--bu-border) !important; }
+.lvl, .mod { background:#fff !important; border-color: var(--bu-border) !important; border-radius:12px !important; }
+.model-row:hover { background: rgba(206,0,88,.03) !important; }
+.course-k { color: var(--bu-rubine) !important; }
+.course-t em { color: #6a6a00 !important; }
+.expert-en { color: var(--bu-rubine) !important; }
+.expert-list li::before { background: var(--bu-yellow) !important; }
+.benefit::before { background: var(--bu-yellow) !important; }
+.flow-step:not(.flow-step-last)::after { background: rgba(206,0,88,.15) !important; }
+.model-dot { box-shadow: 0 0 0 2px rgba(255,255,255,.4) !important; }
+
+/* — Logo wall cells — flat glass — */
+.lw-cell { background:#fff !important; border:1px solid var(--bu-border) !important; border-radius:14px !important; box-shadow:none !important; }
+.lw-cell:hover { box-shadow:0 4px 16px rgba(206,0,88,.06) !important; border-color: rgba(206,0,88,.2) !important; }
+.lw-cell img { filter: grayscale(.4) !important; }
+.lw-cell:hover img { filter: grayscale(0) !important; }
+
+/* — Vision / dark sections → light beige — */
+section[style*="linear-gradient(160deg"] {
+  background: linear-gradient(160deg, var(--bu-beige) 0%, #fff 100%) !important;
+}
+section[style*="linear-gradient(160deg"] .text-white\/90,
+section[style*="linear-gradient(160deg"] .text-ink\/90 { color: #000 !important; }
+section[style*="linear-gradient(160deg"] .text-white\/85,
+section[style*="linear-gradient(160deg"] .text-ink\/85 { color: #000 !important; }
+section[style*="linear-gradient(160deg"] .text-white\/80,
+section[style*="linear-gradient(160deg"] .text-ink\/80 { color: rgba(0,0,0,.72) !important; }
+section[style*="linear-gradient(160deg"] .text-white\/50,
+section[style*="linear-gradient(160deg"] .text-ink\/50 { color: rgba(0,0,0,.55) !important; }
+section[style*="linear-gradient(160deg"] .text-white\/35,
+section[style*="linear-gradient(160deg"] .text-ink\/35 { color: rgba(0,0,0,.4) !important; }
+section[style*="linear-gradient(160deg"] .text-sun { color: var(--bu-rubine) !important; }
+section[style*="linear-gradient(160deg"] .border-white\/10,
+section[style*="linear-gradient(160deg"] .border-ink\/10 { border-color: rgba(0,0,0,.08) !important; }
+
+/* — Footer — Betterup deep grey — */
+footer { background: #1e1e1e !important; color: rgba(255,255,255,.6) !important; }
+footer .text-ink\/80, footer .text-white\/80 { color: rgba(255,255,255,.72) !important; }
+footer .text-ink\/45, footer .text-white\/45 { color: rgba(255,255,255,.4) !important; }
+footer .text-ink\/40, footer .text-white\/40 { color: rgba(255,255,255,.35) !important; }
+footer .text-ink, footer .text-white { color: #fff !important; }
+footer .border-ink\/10, footer .border-white\/10 { border-color: rgba(255,255,255,.08) !important; }
+footer .hover\:text-ink\/70:hover, footer .hover\:text-white\/70:hover { color: var(--bu-rubine) !important; }
+footer svg [stroke="#fff"], footer svg [stroke="#1d1d1f"] { stroke: #fff !important; }
+footer .foot-h { color: rgba(255,255,255,.35) !important; }
+footer .foot-l a { color: rgba(255,255,255,.65) !important; }
+footer .foot-l a:hover { color: #fff !important; }
+footer .social {
+  background: rgba(255,255,255,.06) !important; border:1px solid rgba(255,255,255,.12) !important;
+  color: rgba(255,255,255,.65) !important; backdrop-filter: blur(8px);
+}
+footer .social:hover { background: rgba(206,0,88,.15) !important; border-color: rgba(206,0,88,.4) !important; color:#fff !important; }
+
+/* — CTA form submit — rubine pill — */
+#contact form button[type="submit"] {
+  background: #ddff0e !important; color:#1e1e1e !important;
+  border-radius: 999px !important; box-shadow:none !important; font-weight:600;
+}
+#contact form button[type="submit"]:hover { background: var(--bu-rubine-2) !important; transform:translateY(-1px); }
+
+/* — Form message — rubine tint — */
+#form-msg { background: var(--bu-grad-soft) !important; color: var(--bu-rubine) !important; }
+
+/* — Grid bg — rubine tint — */
+.grid-bg {
+  background-image: linear-gradient(rgba(206,0,88,.03) 1px,transparent 1px), linear-gradient(90deg, rgba(206,0,88,.03) 1px, transparent 1px) !important;
+  background-size: 48px 48px !important;
+}
+
+/* — Blob — subtle — */
+.blob { filter: blur(80px); opacity: .25; }
+
+/* — Reveal — spring overshoot — */
+.reveal { transition: opacity .8s var(--bu-ease-smooth), transform .8s var(--bu-ease-smooth) !important; }
+
+/* — Hide flow-line/mesh under reduced motion — */
+@media (prefers-reduced-motion: reduce) {
+  .flow-line, .flow-mesh { display: none !important; }
+  .blob { animation: none !important; }
+}
