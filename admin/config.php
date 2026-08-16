@@ -603,6 +603,33 @@ code{font-family:var(--font-mono); font-size:12.5px; background:var(--hover); pa
   .stats{grid-template-columns:1fr 1fr}
 }
 
+/* ═══ 顶栏（浏览器外壳契约 · 对齐设计稿） ═══ */
+#chrome{position:sticky;top:0;z-index:70;height:var(--chrome-h);display:flex;align-items:center;padding:0 14px;border-bottom:1px solid var(--border);background:color-mix(in oklab,var(--bg) 78%,transparent);backdrop-filter:blur(20px) saturate(170%)}
+#chrome .bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;width:100%}
+#chrome .bar-start{display:flex;align-items:center;gap:12px;justify-self:start;min-width:0}
+#chrome .bar-center{justify-self:center;min-width:0;width:min(500px,100%)}
+#chrome .bar-end{display:flex;align-items:center;gap:8px;justify-self:end}
+#chrome .lights{display:flex;gap:8px;flex:0 0 auto}
+#chrome .light{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 2px oklch(0% 0 0/.18)}
+#chrome .light-r{background:oklch(64% .19 28)} #chrome .light-y{background:oklch(82% .15 82)} #chrome .light-g{background:oklch(68% .15 150)}
+#chrome .brand{font-family:var(--font-display);font-size:14px;font-weight:600;display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+#chrome .brand .bn-sub{font-size:12px;color:var(--faint);font-weight:500}
+#chrome .searchbox{display:flex;align-items:center;gap:10px;width:100%;height:40px;padding:0 10px 0 14px;border-radius:12px;border:1px solid var(--border);background:var(--glass);font-size:13px;color:var(--faint);cursor:pointer;transition:border-color .2s,background .2s,color .2s;text-align:left}
+#chrome .searchbox:hover{border-color:var(--border-strong);color:var(--muted)}
+#chrome .searchbox svg{width:15px;height:15px;flex:0 0 auto}
+#chrome .searchbox kbd{font-family:var(--font-mono);font-size:11px;color:var(--faint);border:1px solid var(--border);border-radius:6px;padding:2px 6px;background:var(--surface);margin-left:auto}
+#chrome .who{display:flex;align-items:center;gap:9px;padding:4px 8px 4px 4px;border-radius:999px;border:1px solid transparent;transition:border-color .2s,background .2s;white-space:nowrap}
+#chrome .who:hover{border-color:var(--border);background:var(--glass)}
+#chrome .who .ava{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-strong));color:var(--on-accent);display:grid;place-items:center;font-size:12px;font-weight:600;flex:0 0 auto}
+#chrome .who em{font-style:normal;font-size:11px;color:var(--faint)}
+#chrome .cbtn{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--muted);transition:background .2s,color .2s;position:relative}
+#chrome .cbtn:hover{background:var(--hover);color:var(--fg)}
+#chrome .cbtn svg{width:17px;height:17px}
+#chrome .cbtn .dot{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--danger);border:2px solid var(--bg)}
+#chrome .notif-dropdown{position:absolute;left:16px;bottom:-6px;z-index:999;width:380px;max-width:calc(100vw - 32px);background:var(--surface-strong);-webkit-backdrop-filter:blur(30px) saturate(170%);backdrop-filter:blur(30px) saturate(170%);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);display:none;max-height:480px;overflow-y:auto;padding:6px}
+#chrome .notif-dropdown.show{display:block}
+@media(max-width:840px){#chrome .bar-center{display:none}#chrome .light{width:10px;height:10px}#chrome .who em{display:none}}
+
 /* ═══ 旧版 class 兼容层（映射到新设计系统，保证 admin 页面不崩） ═══ */
 .admin-layout{display:flex; min-height:100vh}
 .main{flex:1; padding:28px 32px; min-width:0; max-width:1240px; margin-left:calc(var(--sb-w) + 26px); margin-right:14px; padding-top:96px}
@@ -721,9 +748,44 @@ code{font-family:var(--font-mono); font-size:12.5px; background:var(--hover); pa
   .sidebar{transform:translateX(-110%); transition:transform .35s ease}
   .sidebar.open{transform:translateX(0)}
 }
-</style>
-</head>
-<body>
+ </style>
+<?php
+$unreadCount = function_exists('get_unread_count') ? get_unread_count() : 0;
+$role = $_SESSION['admin_role'] ?? '';
+$name = $_SESSION['admin_name'] ?? '';
+$roleLabels = ['admin' => '超管', 'marketing' => '市场', 'sales' => '销售'];
+$roleLabel = $roleLabels[$role] ?? $role;
+?>
+ </head>
+ <body>
+<header id="chrome" data-od-id="chrome">
+  <div class="bar">
+    <div class="bar-start">
+      <span class="lights" aria-hidden="true"><i class="light light-r"></i><i class="light light-y"></i><i class="light light-g"></i></span>
+      <button class="cbtn" onclick="fcToggleSidebar()" aria-label="切换侧栏" title="切换侧栏（full / rail / closed）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg></button>
+      <span class="brand">OpenFlow<span class="bn-sub">运营台</span></span>
+    </div>
+    <div class="bar-center">
+      <button class="searchbox" onclick="fcFocusSearch()" aria-label="全局搜索（⌘K）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>搜索模块、内容、订单、线索…</span><kbd>⌘K</kbd></button>
+    </div>
+    <div class="bar-end">
+      <button class="cbtn" onclick="fcToggleTheme()" aria-label="切换明暗主题" title="切换明暗主题">🌙</button>
+      <button class="cbtn notification-bell" onclick="toggleNotif(event)" aria-label="通知" title="通知"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><i class="dot" style="display:<?=$unreadCount > 0?'block':'none'?>"></i></button>
+      <div class="notif-dropdown" id="notifDropdown">
+        <div style="padding:12px 16px;font-weight:600;font-size:14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between"><span>通知</span><a href="javascript:markNotifRead()" style="font-size:12px;color:var(--faint);text-decoration:none">全部已读</a></div>
+        <?php foreach (get_notifications(10) as $nn): ?>
+        <div class="notif-item" onclick="<?=htmlspecialchars($nn['link'] ? "location.href='{$nn['link']}'" : '')?>">
+          <div><span class="tag <?=$nn['type']?>"><?=htmlspecialchars($nn['type'])?></span><span class="title"><?=htmlspecialchars($nn['title'])?></span></div>
+          <div class="msg"><?=htmlspecialchars($nn['message'])?></div>
+          <div class="time"><?=htmlspecialchars($nn['created_at'] ?? '')?></div>
+        </div>
+        <?php endforeach; ?>
+        <?php if ($unreadCount === 0): ?><div class="notif-item"><div class="msg" style="text-align:center;padding:12px">暂无新通知</div></div><?php endif; ?>
+      </div>
+      <span class="who" title="<?=htmlspecialchars($name)?> · <?=htmlspecialchars($roleLabel)?>"><span class="ava"><?=htmlspecialchars(mb_substr($name,0,1))?></span><span><?=htmlspecialchars($name)?><em><?=htmlspecialchars($roleLabel)?></em></span></span>
+    </div>
+  </div>
+</header>
 <?php }
 
 function admin_sidebar(string $current): void {
@@ -1260,35 +1322,21 @@ function admin_sidebar(string $current): void {
     <?php $loginUser = $_SESSION['admin_user'] ?? ''; ?>
   </div>
 
-  <div class="user-info">
-    <button class="theme-toggle" id="themeToggle" onclick="fcToggleTheme()" title="切换深色/浅色模式" style="background:none;border:1px solid var(--border);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:15px;display:grid;place-items:center">🌙</button>
-    <div class="notification-bell" onclick="toggleNotif(event)">
-      <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:18px;height:18px"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-      <?php $unreadCount = get_unread_count(); ?>
-      <?php if ($unreadCount > 0): ?><span class="badge-dot" id="notifDot"></span><?php endif; ?>
-    </div>
-    <div class="notif-dropdown" id="notifDropdown">
-      <div style="padding:12px 16px;font-weight:600;font-size:14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between">
-        <span>通知</span>
-        <a href="javascript:markNotifRead()" style="font-size:12px;color:var(--text-3);text-decoration:none">全部已读</a>
-      </div>
-      <?php foreach (get_notifications(10) as $nn): ?>
-      <div class="notif-item" onclick="<?=htmlspecialchars($nn['link'] ? "location.href='{$nn['link']}'" : '')?>">
-        <div><span class="tag <?=$nn['type']?>"><?=htmlspecialchars($nn['type'])?></span><span class="title"><?=htmlspecialchars($nn['title'])?></span></div>
-        <div class="msg"><?=htmlspecialchars($nn['message'])?></div>
-        <div class="time"><?=htmlspecialchars($nn['created_at'] ?? '')?></div>
-      </div>
-      <?php endforeach; ?>
-      <?php if ($unreadCount === 0): ?><div class="notif-item"><div class="msg" style="text-align:center;padding:12px">暂无新通知</div></div><?php endif; ?>
-    </div>
-    <span class="role-badge"><?=htmlspecialchars($roleLabel)?></span>
-    <span><?=htmlspecialchars($name)?></span>
-    <a href="logout.php" style="margin-left:auto;color:var(--danger);padding:4px;font-size:13px;text-decoration:none">退出</a>
-  </div>
+  <div class="sb-foot mono">OpenFlow XMP · 5 模块 / 80 入口</div>
 </div>
 <script>
-function toggleNotif(e) { e.stopPropagation(); document.getElementById('notifDropdown').classList.toggle('show'); }
-document.addEventListener('click', function() { document.getElementById('notifDropdown')?.classList.remove('show'); });
+function toggleNotif(e) { e.stopPropagation(); var d = document.getElementById('notifDropdown'); if (d) d.classList.toggle('show'); }
+document.addEventListener('click', function() { var d = document.getElementById('notifDropdown'); if (d) d.classList.remove('show'); });
+// ─── 侧栏切换（full / rail / closed） ───
+function fcToggleSidebar() {
+  var seq = ['full', 'rail', 'closed'];
+  var cur = document.body.getAttribute('data-sb') || 'full';
+  var next = seq[(seq.indexOf(cur) + 1) % seq.length];
+  document.body.setAttribute('data-sb', next);
+  try { localStorage.setItem('of_sb', next); } catch (e) {}
+}
+// ─── 聚焦顶栏搜索框 ───
+function fcFocusSearch() { var i = document.getElementById('globalSearchInput'); if (i) { i.focus(); i.select(); } }
 // ─── 主题切换 ───
 function fcToggleTheme() {
   var html = document.documentElement;
@@ -1302,6 +1350,8 @@ function fcToggleTheme() {
   var dark = document.documentElement.getAttribute('data-theme') === 'dark';
   var btn = document.getElementById('themeToggle');
   if (btn) btn.textContent = dark ? '☀️' : '🌙';
+  var sb = null; try { sb = localStorage.getItem('of_sb'); } catch (e) {}
+  if (sb) document.body.setAttribute('data-sb', sb);
 })();
 function markNotifRead() {
   var xhr = new XMLHttpRequest();
