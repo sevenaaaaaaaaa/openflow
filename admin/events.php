@@ -174,7 +174,7 @@ admin_header('活动管理');
       <table>
         <thead><tr><th>活动标题</th><th>时间</th><th>地点</th><th>嘉宾</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($filtered)): ?><tr><td colspan="6" class="empty">暂无活动 · <a href="?edit=new" style="color:#0284c7">创建第一个</a></td></tr><?php endif; ?>
+          <?php if (empty($filtered)): ?><tr><td colspan="6" class="empty">暂无活动 · <a href="?edit=new" style="color:var(--accent)">创建第一个</a></td></tr><?php endif; ?>
           <?php foreach ($filtered as $e):
             $sd = strtotime($e['start_date'] ?? '');
             $ed = strtotime($e['end_date'] ?? '');

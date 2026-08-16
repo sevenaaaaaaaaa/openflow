@@ -69,9 +69,9 @@ function nps_compute(array $responses): array {
 
 // NPS 等级标签
 function nps_grade(int $nps): array {
-    if ($nps >= 70) return ['极佳', '#16a34a'];
+    if ($nps >= 70) return ['极佳', 'var(--ok)'];
     if ($nps >= 50) return ['优秀', '#65a30d'];
-    if ($nps >= 30) return ['良好', '#d97706'];
+    if ($nps >= 30) return ['良好', 'var(--warn)'];
     if ($nps >= 0) return ['一般', '#ea580c'];
-    return ['需改善', '#dc2626'];
+    return ['需改善', 'var(--danger)'];
 }

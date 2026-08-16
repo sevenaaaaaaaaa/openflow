@@ -39,7 +39,7 @@ admin_header('路径分析');
     <div class="stats">
       <div class="stat-card"><div class="num"><?=$data['sessions']?></div><div class="label">访问会话</div></div>
       <div class="stat-card"><div class="num"><?=$data['avg_pages']?></div><div class="label">平均浏览页数</div></div>
-      <div class="stat-card"><div class="num" style="color:<?=$data['bounce_rate']>=60?'var(--danger)':($data['bounce_rate']>=40?'var(--warn)':'#16a34a')?>"><?=$data['bounce_rate']?>%</div><div class="label">跳出率</div></div>
+      <div class="stat-card"><div class="num" style="color:<?=$data['bounce_rate']>=60?'var(--danger)':($data['bounce_rate']>=40?'var(--warn)':'var(--ok)')?>"><?=$data['bounce_rate']?>%</div><div class="label">跳出率</div></div>
       <div class="stat-card"><div class="num"><?=$data['single_page']?></div><div class="label">单页会话</div></div>
     </div>
 
@@ -58,7 +58,7 @@ admin_header('路径分析');
             <?php $max = !empty($data['pairs']) ? max(array_values($data['pairs'])) : 1; foreach ($data['pairs'] as $k => $c): list($a, $b) = explode('|', $k); ?>
             <tr>
               <td><code><?=pfmt($a)?></code> <span style="color:var(--text-3)">→</span> <code><?=pfmt($b)?></code></td>
-              <td><div style="display:flex;align-items:center;gap:8px"><div style="height:14px;border-radius:4px;background:linear-gradient(90deg,#86efac,#ddff0e);width:<?=round($c/$max*100)?>%"></div><strong><?=$c?></strong></div></td>
+              <td><div style="display:flex;align-items:center;gap:8px"><div style="height:14px;border-radius:4px;background:linear-gradient(90deg,#7dd3fc,#38bdf8);width:<?=round($c/$max*100)?>%"></div><strong><?=$c?></strong></div></td>
             </tr>
             <?php endforeach; ?>
           </tbody>

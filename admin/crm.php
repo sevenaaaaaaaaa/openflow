@@ -116,7 +116,7 @@ admin_header('CRM 线索管理');
       ?>
       <div class="kanban-col" data-stage="<?=$stageKey?>">
         <div class="kanban-col-header">
-          <span style="color:<?=['new'=>'#9ca3af','contacted'=>'#0284c7','qualified'=>'#d97706','opportunity'=>'#7c3aed','won'=>'#16a34a','lost'=>'#dc2626'][$stageKey]?>">●</span>
+          <span style="color:<?=['new'=>'#9ca3af','contacted'=>'var(--accent)','qualified'=>'var(--warn)','opportunity'=>'#7c3aed','won'=>'var(--ok)','lost'=>'var(--danger)'][$stageKey]?>">●</span>
           <?=htmlspecialchars($stageLabel)?><span class="count"><?=count($stageLeads)?></span>
         </div>
         <div class="kanban-cards" data-stage="<?=$stageKey?>">
@@ -218,7 +218,7 @@ admin_header('CRM 线索管理');
         body: JSON.stringify({action: 'score_lead', lead: lead})
       }).then(function(r){return r.json();}).then(function(d){
         if (!d.ok) { box.innerHTML = '<div class="text-sm text-muted">评分失败</div>'; return; }
-        var color = d.score >= 70 ? '#16a34a' : (d.score >= 40 ? '#d97706' : '#dc2626');
+        var color = d.score >= 70 ? 'var(--ok)' : (d.score >= 40 ? 'var(--warn)' : 'var(--danger)');
         var h = '<div style="padding:12px;background:var(--surface-2);border-radius:10px">' +
           '<div style="display:flex;align-items:center;gap:8px;font-size:14px">' +
           '<span>AI 建议评分</span><strong style="color:' + color + ';font-size:22px">' + d.score + '</strong>' +
@@ -266,8 +266,8 @@ admin_header('CRM 线索管理');
     <?php elseif ($tab === 'pool'): ?>
     <!-- ═══ 公海：暂无人跟进的线索 ═══ -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
-      <div class="pipe-card"><div class="lab">公海线索</div><div class="num" style="color:#d97706"><?=$poolCount?></div></div>
-      <div class="pipe-card"><div class="lab">高评分（≥60）</div><div class="num" style="color:#16a34a"><?=count(array_filter($poolLeads, fn($l) => ($l['score'] ?? 0) >= 60))?></div></div>
+      <div class="pipe-card"><div class="lab">公海线索</div><div class="num" style="color:var(--warn)"><?=$poolCount?></div></div>
+      <div class="pipe-card"><div class="lab">高评分（≥60）</div><div class="num" style="color:var(--ok)"><?=count(array_filter($poolLeads, fn($l) => ($l['score'] ?? 0) >= 60))?></div></div>
       <div class="pipe-card"><div class="lab">有商机金额</div><div class="num" style="color:#7c3aed"><?=count(array_filter($poolLeads, fn($l) => ($l['value'] ?? 0) > 0))?></div></div>
       <div class="pipe-card"><div class="lab">原始提交未认领</div><div class="num"><?=count(array_filter($rawLeads, function($rl) use ($data) {
           $emails = array_column($data['leads'] ?? [], 'email');
@@ -286,7 +286,7 @@ admin_header('CRM 线索管理');
               <div class="text-sm text-muted" style="font-size:11px"><?=htmlspecialchars($l['email'])?></div>
             </td>
             <td><span class="stage-pill" style="background:#f4f3e9;color:#6b6580"><?=htmlspecialchars($stages[$l['stage']] ?? $l['stage'])?></span></td>
-            <td><b style="color:<?=($l['score']??0)>=60?'#16a34a':(($l['score']??0)>=30?'#d97706':'#dc2626')?>"><?=$l['score'] ?? 0?></b></td>
+            <td><b style="color:<?=($l['score']??0)>=60?'var(--ok)':(($l['score']??0)>=30?'var(--warn)':'var(--danger)')?>"><?=$l['score'] ?? 0?></b></td>
             <td><?=($l['value'] ?? 0) ? '¥'.number_format($l['value'],0) : '—'?></td>
             <td class="text-sm text-muted"><?=!empty($l['follow_ups']) ? htmlspecialchars($l['follow_ups'][count($l['follow_ups'])-1]['time'] ?? '') : '—'?></td>
             <td>
@@ -302,9 +302,9 @@ admin_header('CRM 线索管理');
 
     <!-- 管线概览 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px">
-      <div class="pipe-card"><div class="lab">管线总额</div><div class="num" style="color:#16a34a">¥<?=number_format($pipelineValue,0)?></div></div>
+      <div class="pipe-card"><div class="lab">管线总额</div><div class="num" style="color:var(--ok)">¥<?=number_format($pipelineValue,0)?></div></div>
       <?php foreach ($stages as $k => $label): ?>
-      <div class="pipe-card"><div class="lab"><?=htmlspecialchars($label)?></div><div class="num" style="color:<?=['new'=>'#9ca3af','contacted'=>'#0284c7','qualified'=>'#d97706','opportunity'=>'#7c3aed','won'=>'#16a34a','lost'=>'#dc2626'][$k]?>"><?=$stageCounts[$k] ?? 0?></div></div>
+      <div class="pipe-card"><div class="lab"><?=htmlspecialchars($label)?></div><div class="num" style="color:<?=['new'=>'#9ca3af','contacted'=>'var(--accent)','qualified'=>'var(--warn)','opportunity'=>'#7c3aed','won'=>'var(--ok)','lost'=>'var(--danger)'][$k]?>"><?=$stageCounts[$k] ?? 0?></div></div>
       <?php endforeach; ?>
     </div>
 
@@ -330,7 +330,7 @@ admin_header('CRM 线索管理');
                 <div class="text-sm text-muted" style="font-size:11px"><?=htmlspecialchars($l['email'])?></div>
               </td>
               <td><span class="stage-pill" style="background:<?=['new'=>'#f4f3e9','contacted'=>'#dbeafe','qualified'=>'#fef3c7','opportunity'=>'#ede9fe','won'=>'#dcfce7','lost'=>'#fee2e2'][$l['stage']]?>;color:<?=['new'=>'#6b6580','contacted'=>'#1d4ed8','qualified'=>'#92400e','opportunity'=>'#5b21b6','won'=>'#166534','lost'=>'#991b1b'][$l['stage']]?>"><?=htmlspecialchars($stages[$l['stage']] ?? $l['stage'])?></span></td>
-              <td><b style="color:<?=$l['score']>=60?'#16a34a':($l['score']>=30?'#d97706':'#dc2626')?>"><?=$l['score']?></b></td>
+              <td><b style="color:<?=$l['score']>=60?'var(--ok)':($l['score']>=30?'var(--warn)':'var(--danger)')?>"><?=$l['score']?></b></td>
               <td class="text-sm text-muted"><?=htmlspecialchars($adminNames[$l['owner']] ?? $l['owner'] ?: '—')?></td>
               <td><?=$l['value'] ? '¥'.number_format($l['value'],0) : '—'?></td>
               <td><a href="?focus=<?=urlencode($l['email'])?><?=$stageFilter?'&stage='.$stageFilter:''?>" class="btn btn-ghost btn-sm">👁 详情</a></td>
@@ -350,7 +350,7 @@ admin_header('CRM 线索管理');
             <div class="font-bold text-lg"><?=htmlspecialchars($focusLead['name'] ?: '—')?></div>
             <div class="text-sm text-muted"><?=htmlspecialchars($focusLead['email'])?> · <?=htmlspecialchars($focusLead['phone'])?></div>
             <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-              <span class="stage-pill" style="background:#1e1e1e;color:#ddff0e"><?=htmlspecialchars($stages[$focusLead['stage']] ?? '')?></span>
+              <span class="stage-pill" style="background:#1e1e1e;color:#38bdf8"><?=htmlspecialchars($stages[$focusLead['stage']] ?? '')?></span>
               <span class="stage-pill" style="background:#f4f3e9">评分 <?=$focusLead['score']?></span>
               <span class="stage-pill" style="background:#f4f3e9">跟进人 <?=htmlspecialchars($adminNames[$focusLead['owner']] ?? $focusLead['owner'] ?: '未分配')?></span>
             </div>

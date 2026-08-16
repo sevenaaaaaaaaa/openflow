@@ -99,9 +99,9 @@ admin_header('画布编辑器');
 <style>
 .canvas-flow{display:flex;gap:12px;overflow-x:auto;padding:24px 8px;align-items:flex-start}
 .canvas-node{min-width:220px;max-width:260px;background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:14px;position:relative;flex-shrink:0}
-.canvas-node.trigger{border-color:#16a34a}
-.canvas-node.send_email{border-color:#0284c7}
-.canvas-node.condition{border-color:#d97706}
+.canvas-node.trigger{border-color:var(--ok)}
+.canvas-node.send_email{border-color:var(--accent)}
+.canvas-node.condition{border-color:var(--warn)}
 .canvas-node.delay{border-color:#7c3aed}
 .canvas-node.notify{border-color:#9ca3af}
 .canvas-node .node-head{font-size:12px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}

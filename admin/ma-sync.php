@@ -135,7 +135,7 @@ admin_header('MA 融合同步');
         <?php if ($newsletterForms): ?>
         <p class="text-sm text-muted">订阅表单的 list_id 在「表单管理」中设置：<?php foreach ($newsletterForms as $nf): ?><code style="margin-left:6px"><?=htmlspecialchars($nf['id'])?></code><?php endforeach; ?></p>
         <?php else: ?>
-        <p class="text-sm text-muted" style="color:#d97706">⚠️ 尚未配置 newsletter 类型表单</p>
+        <p class="text-sm text-muted" style="color:var(--warn)">⚠️ 尚未配置 newsletter 类型表单</p>
         <?php endif; ?>
       </div>
 

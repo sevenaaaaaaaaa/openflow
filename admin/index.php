@@ -106,8 +106,8 @@ admin_header('工作台');
   .wb-art .t{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .wb-art .d{font-size:11px;color:var(--text-3);margin-top:2px}
   .badge{font-size:10.5px;padding:2px 8px;border-radius:999px;font-weight:600}
-  .badge.pub{background:rgba(22,163,74,.12);color:#16a34a}
-  .badge.draft{background:rgba(217,119,6,.12);color:#d97706}
+  .badge.pub{background:rgba(22,163,74,.12);color:var(--ok)}
+  .badge.draft{background:rgba(217,119,6,.12);color:var(--warn)}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('dashboard'); ?>

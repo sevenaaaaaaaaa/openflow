@@ -28,11 +28,11 @@ foreach ($bookmarks as $b) {
         <div style="color:var(--muted);font-size:13px;margin-top:4px">文章收藏</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
-        <div style="font-size:28px;font-weight:700;color:#16a34a"><?=$courseCount?></div>
+        <div style="font-size:28px;font-weight:700;color:var(--ok)"><?=$courseCount?></div>
         <div style="color:var(--muted);font-size:13px;margin-top:4px">课程收藏</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
-        <div style="font-size:28px;font-weight:700;color:#d97706"><?=$postCount?></div>
+        <div style="font-size:28px;font-weight:700;color:var(--warn)"><?=$postCount?></div>
         <div style="color:var(--muted);font-size:13px;margin-top:4px">帖子收藏</div>
       </div>
     </div>
@@ -55,7 +55,7 @@ foreach ($bookmarks as $b) {
             <td style="padding:12px 16px"><span style="padding:3px 10px;border-radius:12px;font-size:12px;background:var(--accent);color:var(--on-accent)"><?=h($b['target_type'] ?? '')?></span></td>
             <td style="padding:12px 16px;font-size:14px"><?=h($b['title'] ?? $b['target_id'] ?? '')?></td>
             <td style="padding:12px 16px;font-size:13px;color:var(--muted)"><?=h($b['created_at'] ?? '')?></td>
-            <td style="padding:12px 16px;text-align:right"><button onclick="removeBookmark('<?=h($b['user_id'])?>','<?=h($b['target_type'])?>','<?=h($b['target_id'])?>')" style="padding:4px 10px;border-radius:6px;border:1px solid #dc2626;color:#dc2626;background:none;cursor:pointer;font-size:12px">删除</button></td>
+            <td style="padding:12px 16px;text-align:right"><button onclick="removeBookmark('<?=h($b['user_id'])?>','<?=h($b['target_type'])?>','<?=h($b['target_id'])?>')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--danger);color:var(--danger);background:none;cursor:pointer;font-size:12px">删除</button></td>
           </tr>
         <?php endforeach; endif; ?>
         </tbody>

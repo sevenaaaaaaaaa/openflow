@@ -20,14 +20,14 @@ if (isset($_POST['winback'])) {
 }
 
 $segmentLabels = ['high_value'=>'高价值','potential'=>'潜力','new'=>'新客','at_risk'=>'流失风险','churned'=>'沉睡'];
-$segmentColors = ['high_value'=>'#16a34a','potential'=>'#0284c7','new'=>'#7c3aed','at_risk'=>'#d97706','churned'=>'#9ca3af'];
+$segmentColors = ['high_value'=>'var(--ok)','potential'=>'var(--accent)','new'=>'#7c3aed','at_risk'=>'var(--warn)','churned'=>'#9ca3af'];
 
 admin_header('运营分析');
 ?>
 <style>
 .funnel-bar{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .funnel-step{min-width:90px;font-size:13px;font-weight:600}
-.funnel-bar .bar{height:34px;border-radius:8px;background:linear-gradient(90deg,#86efac,#ddff0e);display:flex;align-items:center;padding:0 12px;font-size:13px;font-weight:700;color:#1e1e1e;white-space:nowrap;transition:width .4s}
+.funnel-bar .bar{height:34px;border-radius:8px;background:linear-gradient(90deg,#7dd3fc,#38bdf8);display:flex;align-items:center;padding:0 12px;font-size:13px;font-weight:700;color:#1e1e1e;white-space:nowrap;transition:width .4s}
 .seg-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center}
 .seg-card .num{font-size:26px;font-weight:800;margin-top:4px}
 .rfm-table td,.rfm-table th{font-size:13px}
