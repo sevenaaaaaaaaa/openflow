@@ -168,7 +168,7 @@ function default_page_content(string $page): array {
         ],
         'capability' => [
             'banner_title' => '一套闭环能力，把「内容」变成「增长」',
-            'wellq_title' => '内容引擎 + SEO/GEO',
+            'content_title' => '内容引擎 + SEO/GEO',
         ],
         'courses' => [
             'banner_title' => '分层设计，覆盖增长的每一环',
