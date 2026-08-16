@@ -140,5 +140,17 @@ if (time() - $lastDriver > 6 * 3600) {
     } catch (Throwable $e) {}
 }
 
+// 预热 AI 运营洞察缓存（工作台秒开，避免首次访问阻塞 9 秒）
+try {
+    require_once __DIR__ . '/../lib/CdpInsight.php';
+    $insightCache = DATA_DIR . '/cache/cdp-insight-30.json';
+    $stale = true;
+    if (is_file($insightCache)) {
+        $c = json_decode(file_get_contents($insightCache), true);
+        if (is_array($c) && ($c['_t'] ?? 0) > time() - 3600) $stale = false;
+    }
+    if ($stale) { CdpInsight::generate(30); }
+} catch (Throwable $e) {}
+
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['ok' => true, 'published' => $published, 'time' => date('Y-m-d H:i:s')]);
