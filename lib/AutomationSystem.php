@@ -1,0 +1,186 @@
+<?php
+/**
+ * 营销自动化引擎 — 触发条件 + 流程 + 动作执行
+ * 触发器：表单提交 / 用户注册 / NPS 评分 / 定时
+ * 动作：发送邮件（BillionMail/Mautic）/ 打标签 / 加 Campaign / 延迟
+ */
+
+function automation_file(): string { return DATA_DIR . '/automation.json'; }
+function automation_log_file(): string { return DATA_DIR . '/automation-log.json'; }
+
+function automation_get(): array {
+    return json_read(automation_file());
+}
+function automation_save(array $flows): bool {
+    return json_write(automation_file(), $flows);
+}
+
+// 日志
+function automation_log(string $flowId, string $msg, string $level = 'info'): void {
+    $log = json_read(automation_log_file());
+    $log[] = ['time'=>date('Y-m-d H:i:s'),'flow'=>$flowId,'level'=>$level,'message'=>$msg];
+    $log = array_slice($log, -200);
+    json_write(automation_log_file(), $log);
+}
+
+/**
+ * 触发自动化流程
+ * @param string $trigger 触发器类型：
+ *   form_submit / member_register / nps_submit / cron / 定时
+ *   行为类：page_view / article_view / element_click / download / purchase / course_complete / course_start / course_enroll / lesson_complete / role_selected / tool_use
+ * @param array $context 上下文数据（含 event/props/email/member_id 等）
+ */
+function automation_trigger(string $trigger, array $context): void {
+    // 归一化触发器名（flow_handle 会加 flow_ 前缀）
+    if (str_starts_with($trigger, 'flow_')) $trigger = substr($trigger, 5);
+
+    $flows = automation_get();
+    foreach ($flows as $flow) {
+        if (($flow['enabled'] ?? false) !== true) continue;
+        if (($flow['trigger'] ?? '') !== $trigger) continue;
+        // 触发器匹配（按类型 + 条件）
+        if (!automation_match_trigger($flow, $trigger, $context)) continue;
+        automation_execute_flow($flow, $context);
+    }
+}
+
+/**
+ * 判断流程触发器是否与上下文匹配（支持行为条件）
+ */
+function automation_match_trigger(array $flow, string $trigger, array $context): bool {
+    $tt = $flow['trigger_type'] ?? 'all';
+
+    // 表单
+    if ($trigger === 'form_submit' && $tt === 'form') {
+        $formSlug = $flow['form_slug'] ?? '';
+        if ($formSlug && ($context['form_slug'] ?? '') !== $formSlug) return false;
+    }
+    // NPS
+    if ($trigger === 'nps_submit' && $tt === 'nps_above') {
+        $threshold = (int)($flow['nps_threshold'] ?? 7);
+        if ((int)($context['score'] ?? 0) < $threshold) return false;
+    }
+    // 行为类触发：页面访问 / 文章浏览 / 元素点击
+    if (in_array($trigger, ['page_view', 'article_view', 'element_click', 'download', 'purchase', 'course_complete', 'course_start', 'course_enroll', 'lesson_complete', 'role_selected', 'tool_use'], true)) {
+        // 条件：指定页面/文章/元素/标签
+        $matchField = $flow['match_field'] ?? '';   // page / url / label / element / course_id / tag
+        $matchValue = trim($flow['match_value'] ?? '');
+        if ($matchField && $matchValue) {
+            $actual = $context[$matchField] ?? '';
+            if (is_array($actual)) $actual = implode(',', $actual);
+            if (mb_strpos((string)$actual, $matchValue) === false) return false;
+        }
+        // 行为条件：仅当事件带指定 label / props 命中
+        $propsMatch = $flow['match_props'] ?? '';
+        if ($propsMatch) {
+            $props = $context['props'] ?? [];
+            $allHit = true;
+            foreach (explode(',', $propsMatch) as $kv) {
+                $kv = trim($kv); if (!$kv) continue;
+                $pair = explode('=', $kv, 2);
+                $k = trim($pair[0] ?? ''); $v = trim($pair[1] ?? '');
+                if ($k && (string)($props[$k] ?? '') !== $v) { $allHit = false; break; }
+            }
+            if (!$allHit) return false;
+        }
+    }
+    return true;
+}
+
+// 执行一个流程（按步骤）
+function automation_execute_flow(array $flow, array $context): void {
+    $steps = $flow['steps'] ?? [];
+    foreach ($steps as $step) {
+        switch ($step['action'] ?? '') {
+            case 'send_email':
+                automation_send_email($step, $context, $flow['id']);
+                break;
+            case 'delay':
+                // 简化：记录待延迟动作，由 cron 处理
+                automation_schedule_delay($step, $context, $flow['id']);
+                break;
+            case 'notify':
+                notify('自动化', $step['title'] ?? '流程通知', $context['email'] ?? '', $step['link'] ?? '');
+                automation_log($flow['id'], '发送通知: ' . ($step['title'] ?? ''));
+                break;
+        }
+    }
+}
+
+// 发送邮件
+function automation_send_email(array $step, array $context, string $flowId): void {
+    $email = $context['email'] ?? '';
+    if (empty($email)) { automation_log($flowId, '无邮箱，跳过邮件', 'error'); return; }
+    $subject = $step['subject'] ?? '来自 OpenFlow';
+    $content = $step['content'] ?? '';
+    // 变量替换
+    foreach ($context as $k => $v) {
+        if (is_string($v)) $content = str_replace('{' . $k . '}', $v, $content);
+    }
+    // 动态推荐块：{recommend} 插入个性化推荐文章
+    if (strpos($content, '{recommend}') !== false) {
+        try {
+            require_once __DIR__ . '/Personalizer.php';
+            $memberId = $context['member_id'] ?? '';
+            $pref = Personalizer::buildProfile('', $memberId, $email);
+            $recs = Personalizer::recommendArticles($pref, 3);
+            $html = "\n\n— 为你推荐 —\n";
+            foreach ($recs as $rid => $score) {
+                $ra = get_article($rid);
+                if (!$ra) continue;
+                $html .= "• " . ($ra['title'] ?? '') . "\n  " . SITE_URL . "/article/" . ($ra['slug'] ?? $rid) . "\n";
+            }
+            $content = str_replace('{recommend}', $html, $content);
+        } catch (Exception $e) {
+            $content = str_replace('{recommend}', '', $content);
+        }
+    }
+    // 优先 Mautic 联系人发送，其次 BillionMail
+    $mautic = Mautic::fromConfig();
+    if ($mautic && !empty($step['mautic_email_id'])) {
+        $res = $mautic->createContact($email, ['email'=>$email, 'firstname'=>$context['name'] ?? '']);
+        if ($res && isset($res['contact']['id'])) {
+            $mautic->sendEmail((int)$step['mautic_email_id'], $res['contact']['id']);
+            automation_log($flowId, "Mautic 邮件已发送给 {$email}");
+            return;
+        }
+    }
+    $bm = BillionMail::fromConfig();
+    if ($bm) {
+        $bm->send($email, $subject, $content);
+        automation_log($flowId, "BillionMail 邮件已发送给 {$email}");
+        return;
+    }
+    automation_log($flowId, '无可用邮件服务，发送失败', 'error');
+}
+
+// 延迟动作（存入队列，cron 执行）
+function automation_schedule_delay(array $step, array $context, string $flowId): void {
+    $delayMin = (int)($step['delay_minutes'] ?? 60);
+    $queue = json_read(DATA_DIR . '/automation-queue.json');
+    $queue[] = [
+        'id' => 'aq_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6),
+        'flow_id' => $flowId,
+        'step' => $step,
+        'context' => $context,
+        'run_at' => date('Y-m-d H:i:s', time() + $delayMin * 60),
+        'created_at' => date('Y-m-d H:i:s'),
+    ];
+    json_write(DATA_DIR . '/automation-queue.json', $queue);
+    automation_log($flowId, "延迟动作已排入队列（{$delayMin} 分钟后执行）");
+}
+
+// cron 处理延迟队列
+function automation_process_queue(): void {
+    $queue = json_read(DATA_DIR . '/automation-queue.json');
+    $now = time();
+    $remaining = [];
+    foreach ($queue as $q) {
+        if (strtotime($q['run_at']) <= $now) {
+            automation_send_email($q['step'], $q['context'], $q['flow_id']);
+        } else {
+            $remaining[] = $q;
+        }
+    }
+    json_write(DATA_DIR . '/automation-queue.json', $remaining);
+}
