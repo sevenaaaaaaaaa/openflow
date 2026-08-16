@@ -12,9 +12,9 @@ $dam = json_read($damFile);
 $message = '';
 
 $assetTypes = [
-    'logo' => ['name'=>'Logo 标识', 'icon'=>'🅛', 'color'=>'#ddff0e'],
+    'logo' => ['name'=>'Logo 标识', 'icon'=>'🅛', 'color'=>'#38bdf8'],
     'font' => ['name'=>'字体', 'icon'=>'🔠', 'color'=>'#7dd3fc'],
-    'color' => ['name'=>'品牌色彩', 'icon'=>'🎨', 'color'=>'#86efac'],
+    'color' => ['name'=>'品牌色彩', 'icon'=>'🎨', 'color'=>'#7dd3fc'],
     'icon' => ['name'=>'图标', 'icon'=>'✦', 'color'=>'#f9a8d4'],
     'illustration' => ['name'=>'插画', 'icon'=>'🖼️', 'color'=>'#c4b5fd'],
     'template' => ['name'=>'模板', 'icon'=>'📐', 'color'=>'#fcd34d'],

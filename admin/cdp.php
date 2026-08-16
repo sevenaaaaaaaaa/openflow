@@ -103,9 +103,9 @@ admin_header('CDP 客户数据中台');
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
       <div class="cdp-stat"><div class="num" style="color:var(--accent)"><?=$totalVisitors?></div><div class="lab">总用户数</div></div>
-      <div class="cdp-stat"><div class="num" style="color:#16a34a"><?=$totalEvents?></div><div class="lab">总事件数</div></div>
+      <div class="cdp-stat"><div class="num" style="color:var(--ok)"><?=$totalEvents?></div><div class="lab">总事件数</div></div>
       <div class="cdp-stat"><div class="num" style="color:#7c3aed"><?=$todayEvents?></div><div class="lab">今日事件</div></div>
-      <div class="cdp-stat"><div class="num" style="color:#d97706"><?=$avgEventsPerUser?></div><div class="lab">人均事件</div></div>
+      <div class="cdp-stat"><div class="num" style="color:var(--warn)"><?=$avgEventsPerUser?></div><div class="lab">人均事件</div></div>
     </div>
 
     <?php if ($tab === 'overview'): ?>
@@ -176,7 +176,7 @@ admin_header('CDP 客户数据中台');
       <div class="card">
         <h2>用户生命周期</h2>
         <?php
-        $lcColors = ['new'=>'#3b82f6','active'=>'#16a34a','dormant'=>'#d97706','churned'=>'#dc2626'];
+        $lcColors = ['new'=>'#3b82f6','active'=>'var(--ok)','dormant'=>'var(--warn)','churned'=>'var(--danger)'];
         $lcLabels = ['new'=>'新用户','active'=>'活跃用户','dormant'=>'沉睡用户','churned'=>'流失用户'];
         $totalLC = max(array_sum($lifecycle), 1);
         foreach ($lifecycle as $stage => $count): ?>
@@ -515,7 +515,7 @@ admin_header('CDP 客户数据中台');
         <div style="display:flex;align-items:center;gap:8px;padding:6px 0">
           <span style="min-width:70px;font-size:12px;font-weight:600"><?=htmlspecialchars($dv)?></span>
           <div style="flex:1;height:14px;background:var(--hover);border-radius:4px;overflow:hidden">
-            <div style="height:100%;width:<?=round($d['revenue'] / max(1, array_sum(array_column($revDevice, 'revenue'))) * 100)?>%;background:#16a34a;border-radius:4px"></div>
+            <div style="height:100%;width:<?=round($d['revenue'] / max(1, array_sum(array_column($revDevice, 'revenue'))) * 100)?>%;background:var(--ok);border-radius:4px"></div>
           </div>
           <span style="font-size:12px;color:var(--muted);min-width:90px;text-align:right">¥<?=number_format($d['revenue'],0)?> / <?=$d['orders']?>单</span>
         </div>
@@ -636,7 +636,7 @@ admin_header('CDP 客户数据中台');
         <div style="display:flex;align-items:center;gap:8px;padding:6px 0">
           <span style="min-width:70px;font-size:12px;font-weight:600"><?=htmlspecialchars($k)?></span>
           <div style="flex:1;height:12px;background:var(--hover);border-radius:4px;overflow:hidden">
-            <div style="height:100%;width:<?=round($v / max(1, array_sum($deviceDist)) * 100)?>%;background:#16a34a;border-radius:4px"></div>
+            <div style="height:100%;width:<?=round($v / max(1, array_sum($deviceDist)) * 100)?>%;background:var(--ok);border-radius:4px"></div>
           </div>
           <span style="font-size:12px;color:var(--muted);min-width:40px;text-align:right"><?=$v?></span>
         </div>
@@ -662,7 +662,7 @@ admin_header('CDP 客户数据中台');
         <div style="display:flex;align-items:center;gap:8px;padding:6px 0">
           <span style="min-width:70px;font-size:12px;font-weight:600"><?=htmlspecialchars($k)?></span>
           <div style="flex:1;height:12px;background:var(--hover);border-radius:4px;overflow:hidden">
-            <div style="height:100%;width:<?=round($v / max(1, array_sum($osDist)) * 100)?>%;background:#d97706;border-radius:4px"></div>
+            <div style="height:100%;width:<?=round($v / max(1, array_sum($osDist)) * 100)?>%;background:var(--warn);border-radius:4px"></div>
           </div>
           <span style="font-size:12px;color:var(--muted);min-width:40px;text-align:right"><?=$v?></span>
         </div>
@@ -735,7 +735,7 @@ function loadAiInsights(force) {
         });
       }
       if (d.anomalies && d.anomalies.length) {
-        h += '<div style="font-size:12px;font-weight:700;color:#dc2626;margin:10px 0 6px">⚠️ 异常</div>';
+        h += '<div style="font-size:12px;font-weight:700;color:var(--danger);margin:10px 0 6px">⚠️ 异常</div>';
         d.anomalies.forEach(function(a){
           h += '<div style="display:flex;gap:8px;padding:8px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:13px"><span>🚨</span><div><strong>' + (a.title||'') + '</strong><div class="text-sm text-muted" style="font-size:12px">' + (a.detail||'') + '</div></div></div>';
         });

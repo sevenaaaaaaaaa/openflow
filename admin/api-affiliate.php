@@ -70,11 +70,11 @@ admin_header('API 分佣管理');
         <div style="font-size:12px;color:var(--muted)">总推荐</div>
       </div>
       <div class="card" style="text-align:center;padding:16px">
-        <div style="font-size:28px;font-weight:800;color:#16a34a"><?=$stats['approved']?></div>
+        <div style="font-size:28px;font-weight:800;color:var(--ok)"><?=$stats['approved']?></div>
         <div style="font-size:12px;color:var(--muted)">已确认</div>
       </div>
       <div class="card" style="text-align:center;padding:16px">
-        <div style="font-size:28px;font-weight:800;color:#d97706"><?=$stats['pending']?></div>
+        <div style="font-size:28px;font-weight:800;color:var(--warn)"><?=$stats['pending']?></div>
         <div style="font-size:12px;color:var(--muted)">待确认</div>
       </div>
     </div>

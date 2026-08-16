@@ -81,7 +81,7 @@ admin_header('内容分发');
       <div class="stat-card"><div class="num"><?=count($log)?></div><div class="label">累计发布</div></div>
       <div class="stat-card"><div class="num" style="color:var(--accent)"><?=count($queue)?></div><div class="label">待发布</div></div>
       <?php foreach ($platforms as $pk => $pv): if (($publishStats[$pk] ?? 0) > 0): ?>
-      <div class="stat-card"><div class="num" style="color:#16a34a"><?=$publishStats[$pk]?></div><div class="label"><?=$pv['name']?></div></div>
+      <div class="stat-card"><div class="num" style="color:var(--ok)"><?=$publishStats[$pk]?></div><div class="label"><?=$pv['name']?></div></div>
       <?php endif; endforeach; ?>
     </div>
 
@@ -153,7 +153,7 @@ admin_header('内容分发');
                 <?= csrf_field() ?>
                 <input type="hidden" name="cancel" value="1">
                 <input type="hidden" name="id" value="<?=htmlspecialchars($t['id'])?>">
-                <button class="btn btn-ghost btn-sm" style="color:#dc2626">取消</button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--danger)">取消</button>
               </form>
             </td>
           </tr>

@@ -56,9 +56,9 @@ admin_header('免费图库');
         <h2 style="font-size:15px;margin-bottom:12px">API 配置</h2>
         <p class="text-sm text-muted mb-4" style="font-size:12px;line-height:1.7">
           在下方平台注册开发者账号，免费获取 API Key，填入后即可搜索。<br><br>
-          <a href="https://www.pexels.com/api/" target="_blank" rel="noopener" style="color:#0284c7">Pexels API →</a><br>
-          <a href="https://unsplash.com/developers" target="_blank" rel="noopener" style="color:#0284c7">Unsplash API →</a><br>
-          <a href="https://pixabay.com/api/docs/" target="_blank" rel="noopener" style="color:#0284c7">Pixabay API →</a>
+          <a href="https://www.pexels.com/api/" target="_blank" rel="noopener" style="color:var(--accent)">Pexels API →</a><br>
+          <a href="https://unsplash.com/developers" target="_blank" rel="noopener" style="color:var(--accent)">Unsplash API →</a><br>
+          <a href="https://pixabay.com/api/docs/" target="_blank" rel="noopener" style="color:var(--accent)">Pixabay API →</a>
         </p>
         <form method="post" id="stockForm">
           <?= csrf_field() ?>

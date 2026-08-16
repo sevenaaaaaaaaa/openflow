@@ -235,7 +235,7 @@ function toggleTag(tag, el) {
   var tags = input.value.split(',').map(function(s){return s.trim()}).filter(Boolean);
   var idx = tags.indexOf(tag);
   if (idx >= 0) { tags.splice(idx, 1); el.style.background = ''; }
-  else { tags.push(tag); el.style.background = '#ddff0e'; }
+  else { tags.push(tag); el.style.background = '#38bdf8'; }
   input.value = tags.join(', ');
 }
 document.querySelectorAll('input[name=aggregate_mode]').forEach(function(r) {

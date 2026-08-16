@@ -30,8 +30,8 @@ admin_header('存储与性能');
     <!-- 概览 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
       <div class="card" style="border-left:4px solid #7dd3fc"><div class="text-sm text-muted">📄 JSON 数据</div><div style="font-size:24px;font-weight:800"><?=storage_fmt($totalJson)?></div></div>
-      <div class="card" style="border-left:4px solid #86efac"><div class="text-sm text-muted">🖼️ 素材上传</div><div style="font-size:24px;font-weight:800"><?=storage_fmt($totalUp)?></div><div class="text-sm text-muted"><?=$scan['uploads']['files']?> 个文件</div></div>
-      <div class="card" style="border-left:4px solid #f59e0b"><div class="text-sm text-muted">⚠️ 风险项</div><div style="font-size:24px;font-weight:800;color:<?=$risks?'#dc2626':'#16a34a'?>"><?=count($risks)?></div></div>
+      <div class="card" style="border-left:4px solid #7dd3fc"><div class="text-sm text-muted">🖼️ 素材上传</div><div style="font-size:24px;font-weight:800"><?=storage_fmt($totalUp)?></div><div class="text-sm text-muted"><?=$scan['uploads']['files']?> 个文件</div></div>
+      <div class="card" style="border-left:4px solid #f59e0b"><div class="text-sm text-muted">⚠️ 风险项</div><div style="font-size:24px;font-weight:800;color:<?=$risks?'var(--danger)':'var(--ok)'?>"><?=count($risks)?></div></div>
       <div class="card"><div class="text-sm text-muted">🗄️ SQLite 表</div><div style="font-size:24px;font-weight:800"><?=count($scan['sqlite'])?></div></div>
     </div>
 
@@ -45,11 +45,11 @@ admin_header('存储与性能');
       <?php if ($risks): ?>
       <div style="margin-top:12px">
         <?php foreach ($risks as $r): ?>
-        <div style="padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px;background:<?=$r['level']==='warn'?'rgba(220,38,38,.08)':'var(--surface-2)'?>;color:<?=$r['level']==='warn'?'#dc2626':'var(--text-2)'?>"><?=$r['level']==='warn'?'⚠️':'ℹ️'?> <?=htmlspecialchars($r['msg'])?></div>
+        <div style="padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px;background:<?=$r['level']==='warn'?'rgba(220,38,38,.08)':'var(--surface-2)'?>;color:<?=$r['level']==='warn'?'var(--danger)':'var(--text-2)'?>"><?=$r['level']==='warn'?'⚠️':'ℹ️'?> <?=htmlspecialchars($r['msg'])?></div>
         <?php endforeach; ?>
       </div>
       <?php else: ?>
-      <p class="text-sm" style="color:#16a34a;margin-top:10px">✅ 未发现明显风险</p>
+      <p class="text-sm" style="color:var(--ok);margin-top:10px">✅ 未发现明显风险</p>
       <?php endif; ?>
     </div>
 

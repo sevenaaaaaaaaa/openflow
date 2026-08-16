@@ -75,7 +75,7 @@ admin_header('人机协同修复');
     <?php foreach ($patches as $p): $st = $p['status'] ?? 'pending'; ?>
     <div class="fix-card" style="<?=$st==='applied'?'border-color:var(--ok)':($st==='rolled_back'?'opacity:.6':'')?>">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-        <span class="evo-badge" style="background:<?=$p['severity']==='high'?'#dc2626':'#ea580c'?>;color:#fff"><?=$p['severity']==='high'?'严重':'高'?></span>
+        <span class="evo-badge" style="background:<?=$p['severity']==='high'?'var(--danger)':'#ea580c'?>;color:#fff"><?=$p['severity']==='high'?'严重':'高'?></span>
         <span class="evo-tag"><?=htmlspecialchars($p['category'] ?? 'bug')?></span>
         <b style="font-size:15px"><?=htmlspecialchars($p['title'])?></b>
         <span class="text-xs text-muted" style="margin-left:auto">
