@@ -21,6 +21,7 @@ if (PHP_SAPI !== 'cli') {
 }
 
 require_once __DIR__ . '/../admin/config.php';
+require_once __DIR__ . '/../lib/Markdown.php';
 
 $sourceDir = $argv[1] ?? '';
 if (!$sourceDir || !is_dir($sourceDir)) {
@@ -100,8 +101,8 @@ foreach ($files as $file) {
 
     echo "   标题: $title\n";
 
-    // ─── Convert markdown to HTML ───
-    $html = md_to_html($content);
+    // ─── Convert markdown to HTML（统一走 lib/Markdown.php，标题降级） ───
+    $html = Markdown::toHtml($content, 1);
 
     // ─── Generate slug ───
     $slug = slugify($title);
@@ -170,126 +171,6 @@ function slugify(string $s): string {
     $s = preg_replace('/[\s-]+/', '-', $s);
     $s = trim($s, '-');
     return mb_substr($s, 0, 80);
-}
-
-function md_to_html(string $md): string {
-    // Basic markdown → HTML
-    $lines = explode("\n", $md);
-    $out = [];
-    $inCode = false;
-    $inList = false;
-    $inTable = false;
-    $tableRows = [];
-
-    foreach ($lines as $line) {
-        $trimmed = trim($line);
-
-        // Code blocks
-        if (str_starts_with($trimmed, '```')) {
-            if ($inCode) { $out[] = '</code></pre>'; $inCode = false; }
-            else { $out[] = '<pre><code>'; $inCode = true; }
-            continue;
-        }
-        if ($inCode) { $out[] = htmlspecialchars($line); continue; }
-
-        // Empty line — close open blocks
-        if ($trimmed === '') {
-            if ($inList) { $out[] = '</ul>'; $inList = false; }
-            if ($inTable) {
-                if (!empty($tableRows)) {
-                    $out[] = '<table>';
-                    foreach ($tableRows as $ri => $row) {
-                        $tag = ($ri === 1) ? 'th' : 'td';
-                        $cells = array_map(fn($c) => "<$tag>" . trim($c, '|') . "</$tag>", $row);
-                        $out[] = '<tr>' . implode('', $cells) . '</tr>';
-                    }
-                    $out[] = '</table>';
-                }
-                $inTable = false; $tableRows = [];
-            }
-            $out[] = '';
-            continue;
-        }
-
-        // Table
-        if (preg_match('/^\|.+\|$/', $trimmed)) {
-            if (!$inTable) { $inTable = true; $tableRows = []; }
-            if (!str_contains($trimmed, '---')) {
-                $tableRows[] = array_map('trim', explode('|', trim($trimmed, '|')));
-            } else {
-                $tableRows[] = []; // separator row, mark index
-            }
-            continue;
-        }
-
-        // Headings
-        if (preg_match('/^(#{1,6})\s+(.+)$/', $trimmed, $m)) {
-            if ($inList) { $out[] = '</ul>'; $inList = false; }
-            $level = strlen($m[1]);
-            $out[] = "<h$level>" . inline_md($m[2]) . "</h$level>";
-            continue;
-        }
-
-        // Horizontal rule
-        if (preg_match('/^[-*_]{3,}$/', $trimmed)) {
-            if ($inList) { $out[] = '</ul>'; $inList = false; }
-            $out[] = '<hr>';
-            continue;
-        }
-
-        // Blockquote
-        if (str_starts_with($trimmed, '> ')) {
-            if ($inList) { $out[] = '</ul>'; $inList = false; }
-            $text = inline_md(substr($trimmed, 2));
-            $out[] = "<blockquote><p>$text</p></blockquote>";
-            continue;
-        }
-
-        // Unordered list
-        if (preg_match('/^[-*]\s+(.+)$/', $trimmed, $m)) {
-            if (!$inList) { $inList = true; $out[] = '<ul>'; }
-            $out[] = '<li>' . inline_md($m[1]) . '</li>';
-            continue;
-        }
-
-        // Ordered list
-        if (preg_match('/^\d+\.\s+(.+)$/', $trimmed, $m)) {
-            if (!$inList) { $inList = true; $out[] = '<ol>'; }
-            $out[] = '<li>' . inline_md($m[1]) . '</li>';
-            continue;
-        }
-
-        // Bold text (standalone line)
-        if (preg_match('/^\*\*(.+)\*\*$/', $trimmed, $m)) {
-            $out[] = '<p><strong>' . htmlspecialchars($m[1]) . '</strong></p>';
-            continue;
-        }
-
-        // Default: paragraph
-        if ($inList) { $out[] = '</ul>'; $inList = false; }
-        $out[] = '<p>' . inline_md($trimmed) . '</p>';
-    }
-
-    if ($inCode) $out[] = '</code></pre>';
-    if ($inList) { $out[] = '</ul>'; $inList = false; }
-
-    return implode("\n", $out);
-}
-
-function inline_md(string $s): string {
-    // Bold
-    $s = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $s);
-    // Italic
-    $s = preg_replace('/\*(.+?)\*/', '<em>$1</em>', $s);
-    // Inline code
-    $s = preg_replace('/`([^`]+)`/', '<code>$1</code>', $s);
-    // Links [text](url)
-    $s = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2">$1</a>', $s);
-    // Images
-    $s = preg_replace('/!\[([^\]]*)\]\(([^)]+)\)/', '<img src="$2" alt="$1">', $s);
-    // Strikethrough
-    $s = preg_replace('/~~(.+?)~~/', '<del>$1</del>', $s);
-    return $s;
 }
 
 echo "\n完成。\n";

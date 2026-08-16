@@ -11,7 +11,7 @@ $pageNames = ['index'=>'首页','about'=>'关于我们','capability'=>'产品','
 // Fields that contain HTML (not escaped in preview)
 $htmlFields = ['hero_subtitle', 'capability_card_1_desc', 'capability_card_2_desc', 'capability_card_3_desc',
     'solutions_subtitle', 'cases_subtitle', 'founder_intro', 'founder_middle', 'founder_approach',
-    'founder_belief', 'founder_vision', 'company_intro', 'company_detail', 'wellq_desc', 'courses_desc',
+    'founder_belief', 'founder_vision', 'company_intro', 'company_detail', 'content_desc', 'courses_desc',
     'platform_desc', 'banner_subtitle', 'cta_description', 'problem_description'];
 
 function preview_val(array $content, string $key, int $maxLen = 0, bool $isHtml = false): string {
@@ -150,8 +150,8 @@ p,li{font-size:14px;color:#555;line-height:1.7;margin-bottom:6px}
   </div>
   <div class="section">
     <div class="section-label">📝 内容引擎 + SEO/GEO</div>
-    <h2><?=preview_val($content, 'wellq_title')?></h2>
-    <p><?=preview_val($content, 'wellq_desc', 200)?></p>
+    <h2><?=preview_val($content, 'content_title')?></h2>
+    <p><?=preview_val($content, 'content_desc', 200)?></p>
   </div>
   <div class="section">
     <div class="section-label">🤖 AI Agent</div>
