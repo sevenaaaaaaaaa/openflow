@@ -79,59 +79,10 @@ function parse_md(string $content): array {
 }
 
 /**
- * 简单 Markdown → HTML
+ * 简单 Markdown → HTML（统一走 lib/Markdown.php，标题降级避免与页面 h1 冲突）
  */
-function md_to_html(string $md): string {
-    $md = str_replace("\r\n", "\n", $md);
-    $lines = explode("\n", $md);
-    $html = '';
-    $inList = false;
-    $inCode = false;
-    foreach ($lines as $line) {
-        if (preg_match('/^```/', $line)) {
-            if ($inCode) { $html .= '</code></pre>'; $inCode = false; }
-            else { $html .= '<pre class="code"><code>'; $inCode = true; }
-            continue;
-        }
-        if ($inCode) { $html .= htmlspecialchars($line) . "\n"; continue; }
-        // 标题
-        if (preg_match('/^(#{1,4})\s+(.*)$/', $line, $m)) {
-            if ($inList) { $html .= '</ul>'; $inList = false; }
-            $lvl = strlen($m[1]);
-            $html .= '<h' . min(4, $lvl + 1) . '>' . md_inline($m[2]) . '</h' . min(4, $lvl + 1) . '>';
-            continue;
-        }
-        // 列表
-        if (preg_match('/^\s*[-*]\s+(.*)$/', $line, $m)) {
-            if (!$inList) { $html .= '<ul>'; $inList = true; }
-            $html .= '<li>' . md_inline($m[1]) . '</li>';
-            continue;
-        }
-        if ($inList && trim($line) === '') { $html .= '</ul>'; $inList = false; }
-        // 引用
-        if (preg_match('/^>\s?(.*)$/', $line, $m)) {
-            if ($inList) { $html .= '</ul>'; $inList = false; }
-            $html .= '<blockquote>' . md_inline($m[1]) . '</blockquote>';
-            continue;
-        }
-        // 分隔线
-        if (preg_match('/^---+\s*$/', $line)) continue;
-        // 段落
-        $t = trim($line);
-        if ($t !== '') $html .= '<p>' . md_inline($t) . '</p>';
-    }
-    if ($inList) $html .= '</ul>';
-    if ($inCode) $html .= '</code></pre>';
-    return $html;
-}
+require_once __DIR__ . '/../lib/Markdown.php';
 
-function md_inline(string $s): string {
-    $s = htmlspecialchars($s);
-    $s = preg_replace('/`([^`]+)`/', '<code>$1</code>', $s);
-    $s = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $s);
-    $s = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2">$1</a>', $s);
-    return $s;
-}
 
 // 读取现有文章库
 $articles = json_read(ARTICLES_DIR . '/index.json');
@@ -170,7 +121,7 @@ foreach ($files as $f) {
     $body = preg_replace('/^#\s+.+\n?/', '', $body, 1);
 
     // 转 HTML
-    $html = md_to_html($body);
+    $html = Markdown::toHtml($body, 1);
 
     $status = $meta['status'] ?? 'draft';
     $tags = $meta['tags'] ?? [];
