@@ -20,7 +20,7 @@ if (isset($_POST['winback'])) {
 }
 
 $segmentLabels = ['high_value'=>'高价值','potential'=>'潜力','new'=>'新客','at_risk'=>'流失风险','churned'=>'沉睡'];
-$segmentColors = ['high_value'=>'var(--ok)','potential'=>'var(--accent)','new'=>'#7c3aed','at_risk'=>'var(--warn)','churned'=>'#9ca3af'];
+$segmentColors = ['high_value'=>'var(--ok)','potential'=>'var(--accent)','new'=>'var(--accent)','at_risk'=>'var(--warn)','churned'=>'var(--faint)'];
 
 admin_header('运营分析');
 ?>
