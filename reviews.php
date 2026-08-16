@@ -52,7 +52,7 @@ $typeIcons = ['site' => '🌐', 'product' => '🎓', 'book' => '📚', 'event' =
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>点评榜单 | 网站增长领域的大众点评</title>
+<title>点评榜单 | 芭乐派 · OpenFlow</title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
 <script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
 <style>

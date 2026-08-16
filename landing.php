@@ -137,7 +137,7 @@ $jsonLd = [
         <a href="/about" class="nav-link">关于我们</a>
       </nav>
       <div class="hidden lg:flex items-center gap-4">
-        <a href="/index.html#contact" class="rounded-full bg-jade px-5 py-2.5 text-[14.5px] font-semibold text-white hover:bg-flow transition">预约诊断</a>
+        <a href="/#contact" class="rounded-full bg-jade px-5 py-2.5 text-[14.5px] font-semibold text-white hover:bg-flow transition">预约诊断</a>
       </div>
       <button id="burger" class="burger lg:hidden p-2 -mr-2" aria-label="菜单" aria-expanded="false">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -218,7 +218,7 @@ $jsonLd = [
       <h2 class="text-[24px] font-bold tracking-tight sm:text-[28px]">想获取完整的网站增长方法论？</h2>
       <p class="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted">预约一次免费诊断，或订阅我们的内容更新。</p>
       <div class="mt-7 flex flex-wrap justify-center gap-3">
-        <a href="/index.html#contact" class="rounded-full bg-jade px-7 py-3 font-semibold text-white hover:bg-flow transition">预约诊断</a>
+        <a href="/#contact" class="rounded-full bg-jade px-7 py-3 font-semibold text-white hover:bg-flow transition">预约诊断</a>
         <a href="/community" class="rounded-full border border-line bg-white px-7 py-3 font-semibold text-ink hover:border-accent transition">返回社区</a>
       </div>
     </div>
