@@ -28,7 +28,7 @@ admin_header('审核规则');
 <div class="admin-layout">
   <?php admin_sidebar('review-settings'); ?>
   <div class="main">
-    <h1>🛡️ 审核规则</h1>
+    <h1>审核规则</h1>
     <p class="sub">配置内容审核词库 · 命中任一规则即进入待审核状态</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

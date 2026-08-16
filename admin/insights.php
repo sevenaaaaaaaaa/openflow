@@ -71,7 +71,7 @@ admin_header('营销洞察');
 <div class="admin-layout">
   <?php admin_sidebar('insights'); ?>
   <div class="main">
-    <h1>📊 营销洞察</h1>
+    <h1>营销洞察</h1>
     <p class="sub">汇总表单、调研、NPS 数据 · 洞察线索获取与用户反馈</p>
 
     <!-- 核心指标 -->
