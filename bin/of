@@ -1,0 +1,153 @@
+#!/usr/bin/env php
+<?php
+/**
+ * OpenFlow CLI — 命令行入口
+ * 用法: php bin/of <command> [args...]
+ *
+ * 命令:
+ *   articles list             列出文章
+ *   articles create <title>   创建文章
+ *   article get <id>          查看文章
+ *   article publish <id>      发布文章
+ *   pages list                列出页面
+ *   members list              列出会员
+ *   leads count               线索统计
+ *   orders list               订单列表
+ *   orders revenue            收入统计
+ *   sentiment scan <topicId>  舆情采集
+ *   cron run                  执行定时任务（发布/队列/订阅过期）
+ *   search <q>                全局搜索
+ *   topic add <name>          添加舆情监控主题
+ *   list                      列出全部命令
+ */
+
+// CLI 模式：跳过 session 和登录
+if (PHP_SAPI === 'cli') {
+    $_SERVER['HTTP_HOST'] = 'cli.local';
+}
+
+require_once __DIR__ . '/../admin/config.php';
+require_once __DIR__ . '/../lib/MemberSystem.php';
+require_once __DIR__ . '/../lib/SentimentSystem.php';
+require_once __DIR__ . '/../lib/Database.php';
+
+function of_out(string $msg): void { echo $msg . "\n"; }
+function of_json($data): void { echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n"; }
+
+$args = array_slice($argv, 1);
+$cmd = $args[0] ?? 'list';
+$params = array_slice($args, 1);
+
+switch ($cmd) {
+    // ─── articles ───
+    case 'articles':
+        $sub = $params[0] ?? 'list';
+        $articles = get_articles();
+        if ($sub === 'list') {
+            of_out("共 " . count($articles) . " 篇文章:");
+            foreach (array_slice($articles, 0, 20) as $a) of_out("  [{$a['id']}] {$a['title']} ({$a['status']})");
+        } elseif ($sub === 'count') {
+            of_json(['total' => count($articles)]);
+        }
+        break;
+
+    case 'article':
+        $sub = $params[0] ?? '';
+        $id = $params[1] ?? '';
+        if ($sub === 'get' && $id) {
+            $a = get_article($id);
+            of_json($a ?: ['error' => 'not found']);
+        } elseif ($sub === 'publish' && $id) {
+            $a = get_article($id);
+            if ($a) { $a['status'] = 'published'; save_article($id, $a); of_out("已发布: {$a['title']}"); }
+            else of_out("文章不存在");
+        }
+        break;
+
+    // ─── pages ───
+    case 'pages':
+        $files = glob(PAGES_DIR . '/*.json');
+        of_out("共 " . count($files) . " 个页面:");
+        foreach ($files as $f) of_out("  " . basename($f, '.json'));
+        break;
+
+    // ─── members ───
+    case 'members':
+        $members = json_read(DATA_DIR . '/members/index.json');
+        of_out("共 " . count($members) . " 位会员:");
+        foreach ($members as $m) { $pts = $m['points'] ?? 0; of_out("  [{$m['id']}] {$m['name']} ({$m['email']}) 积分:{$pts}"); }
+        break;
+
+    // ─── leads ───
+    case 'leads':
+        $subs = json_read(DATA_DIR . '/submissions/index.json');
+        of_json(['total' => count($subs)]);
+        break;
+
+    // ─── orders ───
+    case 'orders':
+        $sub = $params[0] ?? 'list';
+        $orders = json_read(DATA_DIR . '/shop/orders.json');
+        if ($sub === 'revenue') {
+            $paid = array_filter($orders, fn($o) => ($o['status'] ?? '') === 'paid');
+            $revenue = array_sum(array_map(fn($o) => (float)($o['amount'] ?? 0), $paid));
+            of_json(['paid_orders' => count($paid), 'revenue' => round($revenue, 2)]);
+        } else {
+            of_out("共 " . count($orders) . " 笔订单:");
+            foreach (array_slice($orders, 0, 10) as $o) of_out("  [{$o['id']}] {$o['course_title']} ¥{$o['amount']} ({$o['status']})");
+        }
+        break;
+
+    // ─── sentiment ───
+    case 'sentiment':
+        $topicId = $params[0] ?? '';
+        if ($topicId) {
+            $r = sent_run_scan($topicId);
+            of_json($r);
+        } else {
+            of_out("用法: php bin/of sentiment <topicId>");
+        }
+        break;
+
+    // ─── topic ───
+    case 'topic':
+        $sub = $params[0] ?? 'list';
+        if ($sub === 'add') {
+            $name = $params[1] ?? '';
+            if ($name) { sent_add_topic($name); of_out("已添加监控主题: {$name}"); }
+            else of_out("用法: php bin/of topic add <名称>");
+        } else {
+            foreach (sent_topics() as $t) of_out("  [{$t['id']}] {$t['name']}");
+        }
+        break;
+
+    // ─── cron ───
+    case 'cron':
+        require_once __DIR__ . '/../lib/AutomationSystem.php';
+        require_once __DIR__ . '/../lib/SubscriptionSystem.php';
+        // 定时发布
+        $published = 0;
+        foreach (get_articles() as $a) {
+            if (($a['status'] ?? 'draft') === 'draft' && !empty($a['publish_at']) && $a['publish_at'] <= date('Y-m-d H:i:s')) {
+                $a['status'] = 'published'; save_article($a['id'], $a); $published++;
+            }
+        }
+        automation_process_queue();
+        sub_expire_check();
+        of_out("定时发布 {$published} 篇 · 队列/订阅已处理");
+        break;
+
+    // ─── search ───
+    case 'search':
+        $q = $params[0] ?? '';
+        if (!$q) { of_out("用法: php bin/of search <关键词>"); break; }
+        foreach (get_articles() as $a) {
+            if (mb_strpos($a['title'] ?? '', $q) !== false) of_out("  文章: {$a['title']} [{$a['id']}]");
+        }
+        break;
+
+    default:
+        of_out("OpenFlow CLI");
+        of_out("用法: php bin/of <命令>");
+        of_out("命令: articles / article / pages / members / leads / orders / sentiment / topic / cron / search");
+}

@@ -1,0 +1,48 @@
+# OpenFlow XMP — Nginx 配置参考
+# 部署后将此文件中的配置合并到你的 server block 中
+
+# ────────────────────────────
+# 安全防护
+# ────────────────────────────
+location /data/ { deny all; }
+
+# ────────────────────────────
+# 后台管理 · 美化 URL
+# /login          → admin/login.php
+# /xmp            → admin/index.php
+# /xmp/*          → admin/*
+# ────────────────────────────
+location = /login {
+    rewrite ^ /admin/login.php last;
+}
+location /xmp/ {
+    rewrite ^/xmp/(.*)$ /admin/$1 last;
+}
+
+# 保留旧 /admin/ 入口（自动 301 到新地址）
+# location /admin/ {
+#     return 301 /xmp/$request_uri;
+# }
+
+# ────────────────────────────
+# API 与静态资源
+# ────────────────────────────
+location /api/ {
+    try_files $uri $uri/ =404;
+}
+
+# ────────────────────────────
+# PHP 处理
+# ────────────────────────────
+location ~ \.php$ {
+    fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    include fastcgi_params;
+}
+
+# ────────────────────────────
+# 前端路由
+# ────────────────────────────
+location / {
+    try_files $uri $uri/ /index.php?$args;
+}

@@ -1,0 +1,308 @@
+<?php
+/**
+ * 数字商品系统 CommerceSystem
+ * 统一管理四类数字资产商品：Skill / 插件 / 主题 / API 套餐
+ * 提供：商品 CRUD、定价（一次性/订阅/Go订阅/Zen按量）、
+ *       购买下单（复用 ShopSystem 订单+支付）、自动交付、作者分成
+ */
+require_once __DIR__ . '/../admin/config.php';
+require_once __DIR__ . '/ShopSystem.php';
+require_once __DIR__ . '/ApiKeyAuth.php';
+require_once __DIR__ . '/SkillSystem.php';
+
+class CommerceSystem {
+    private static string $productsFile = DATA_DIR . '/products.json';
+    private static string $entitlementsFile = DATA_DIR . '/entitlements.json';
+
+    // ─── 商品 CRUD ───
+
+    public static function products(): array {
+        return json_read(self::$productsFile);
+    }
+
+    public static function saveProducts(array $products): bool {
+        return json_write(self::$productsFile, $products);
+    }
+
+    public static function getProduct(string $id): ?array {
+        foreach (self::products() as $p) if ($p['id'] === $id) return $p;
+        return null;
+    }
+
+    public static function createProduct(array $data): array {
+        $products = self::products();
+        $p = [
+            'id' => 'prod_' . substr(bin2hex(random_bytes(6)), 0, 12),
+            'type' => $data['type'] ?? 'skill',
+            'asset_id' => $data['asset_id'] ?? '',
+            'title' => $data['title'] ?? '',
+            'description' => $data['description'] ?? '',
+            'cover' => $data['cover'] ?? '',
+            'pricing' => $data['pricing'] ?? ['mode' => 'one_time', 'price' => 0],
+            'author' => $data['author'] ?? '',
+            'author_name' => $data['author_name'] ?? '',
+            'commission_rate' => (float)($data['commission_rate'] ?? 0.7),
+            'status' => $data['status'] ?? 'draft',
+            'sales_count' => 0,
+            'rating' => 0,
+            'created_at' => date('Y-m-d H:i:s'),
+        ];
+        $products[] = $p;
+        self::saveProducts($products);
+        return $p;
+    }
+
+    public static function updateProduct(string $id, array $data): ?array {
+        $products = self::products();
+        foreach ($products as &$p) {
+            if ($p['id'] === $id) {
+                foreach ($data as $k => $v) {
+                    if (in_array($k, ['type','asset_id','title','description','cover','pricing','author','author_name','commission_rate','status'], true)) $p[$k] = $v;
+                }
+                self::saveProducts($products);
+                return $p;
+            }
+        }
+        return null;
+    }
+
+    public static function deleteProduct(string $id): bool {
+        $products = array_values(array_filter(self::products(), fn($p) => $p['id'] !== $id));
+        self::saveProducts($products);
+        return true;
+    }
+
+    // ─── 发布资产到商品 ───
+
+    /**
+     * 把 Skill 发布为可售商品
+     */
+    public static function publishSkill(string $skillId, array $pricing, string $author = '', float $rate = 0.7): array {
+        $skill = skill_get($skillId);
+        if (!$skill) return ['ok' => false, 'error' => 'Skill 不存在'];
+        // 检查是否已发布
+        foreach (self::products() as $p) {
+            if ($p['type'] === 'skill' && $p['asset_id'] === $skillId) {
+                return self::updateProduct($p['id'], ['pricing' => $pricing, 'status' => 'published']);
+            }
+        }
+        return self::createProduct([
+            'type' => 'skill', 'asset_id' => $skillId,
+            'title' => $skill['title'] ?? $skillId,
+            'description' => $skill['description'] ?? '',
+            'pricing' => $pricing,
+            'author' => $author ?: ($skill['author'] ?? ''),
+            'author_name' => $author ?: ($skill['author'] ?? 'OpenFlow'),
+            'commission_rate' => $rate,
+            'status' => 'published',
+        ]);
+    }
+
+    /**
+     * 已发布的资产（供前端生态商店）
+     */
+    public static function publishedByType(string $type): array {
+        return array_values(array_filter(self::products(), fn($p) => $p['type'] === $type && $p['status'] === 'published'));
+    }
+
+    public static function allPublished(): array {
+        return array_values(array_filter(self::products(), fn($p) => $p['status'] === 'published'));
+    }
+
+    // ─── 购买与交付 ───
+
+    /**
+     * 创建数字商品订单（复用 ShopSystem 订单表）
+     * @return array ['ok'=>, 'order'=>, 'pay_url'=>]
+     */
+    public static function purchase(string $memberId, string $productId): array {
+        $product = self::getProduct($productId);
+        if (!$product) return ['ok' => false, 'error' => '商品不存在'];
+        if ($product['status'] !== 'published') return ['ok' => false, 'error' => '商品未上架'];
+        $price = (float)($product['pricing']['price'] ?? 0);
+        if ($price <= 0) return ['ok' => false, 'error' => '商品未定价'];
+
+        // 已拥有则直接交付
+        if (self::owns($memberId, $productId)) {
+            self::deliver($memberId, $product, 'already_owned');
+            return ['ok' => true, 'order' => null, 'already_owned' => true];
+        }
+
+        // 创建订单（goods_type=product）
+        $orderId = 'order_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6);
+        $period = $product['pricing']['period'] ?? 'month';
+        $order = [
+            'id' => $orderId,
+            'member_id' => $memberId,
+            'course_id' => $productId,
+            'course_title' => $product['title'],
+            'amount' => $price,
+            'status' => 'pending',
+            'payment_method' => '',
+            'referrer_id' => '',
+            'commission' => 0,
+            'created_at' => date('Y-m-d H:i:s'),
+            'paid_at' => '',
+            'goods_type' => 'product',
+            'product_id' => $productId,
+            'period' => $period,
+            'author' => $product['author'] ?? '',
+            'commission_rate' => $product['commission_rate'] ?? 0.7,
+        ];
+        Database::insert('orders', $order);
+        $order['utm'] = shop_current_utm();
+        return ['ok' => true, 'order' => $order];
+    }
+
+    /**
+     * 支付回调后交付（在 shop_mark_paid 之后调用）
+     */
+    public static function deliverOnPaid(string $orderId): void {
+        $order = shop_get_order($orderId);
+        if (!$order || $order['status'] !== 'paid') return;
+        if (($order['goods_type'] ?? '') !== 'product') return;
+        $product = self::getProduct($order['product_id'] ?? '');
+        if (!$product) return;
+        self::deliver($order['member_id'] ?? '', $product, 'paid', $order);
+    }
+
+    /**
+     * 交付资产
+     */
+    private static function deliver(string $memberId, array $product, string $method, array $order = []): void {
+        // 记录权益
+        $ents = json_read(self::$entitlementsFile);
+        $key = $memberId . ':' . $product['id'];
+        $ents[$key] = [
+            'member_id' => $memberId,
+            'product_id' => $product['id'],
+            'type' => $product['type'],
+            'asset_id' => $product['asset_id'],
+            'method' => $method,
+            'granted_at' => date('Y-m-d H:i:s'),
+            'expires_at' => self::expiryFor($product),
+        ];
+        json_write(self::$entitlementsFile, $ents);
+
+        // 按类型交付
+        switch ($product['type']) {
+            case 'skill':
+                // 写入 members.unlocked_skills
+                try {
+                    Database::execute(
+                        "UPDATE members SET unlocked_skills = json_insert(COALESCE(unlocked_skills, '[]'), '$[#]', ?) WHERE id = ?",
+                        [$product['asset_id'], $memberId]
+                    );
+                } catch (Exception $e) {}
+                break;
+            case 'api_plan':
+                // 激活 API Key 套餐（Go 订阅 / Zen 余额）
+                self::activateApiPlan($memberId, $product);
+                break;
+            case 'plugin':
+            case 'theme':
+                // 记录授权即可（下载/安装由后台或前端处理）
+                break;
+        }
+
+        // 作者分成入账
+        if (!empty($product['author'])) {
+            $rate = (float)($product['commission_rate'] ?? 0.7);
+            $amount = round((float)($order['amount'] ?? 0) * $rate, 2);
+            if ($amount > 0) {
+                try {
+                    Database::execute("UPDATE members SET balance = balance + ? WHERE id = ?", [$amount, $product['author']]);
+                    Database::insert('point_logs', [
+                        'member_id' => $product['author'], 'points' => 0, 'type' => 'commission',
+                        'description' => "商品「{$product['title']}」销售分成 ¥{$amount}", 'created_at' => date('Y-m-d H:i:s'),
+                    ]);
+                } catch (Exception $e) {}
+            }
+        }
+
+        // 递增销量
+        $products = self::products();
+        foreach ($products as &$p) {
+            if ($p['id'] === $product['id']) { $p['sales_count'] = ($p['sales_count'] ?? 0) + 1; break; }
+        }
+        self::saveProducts($products);
+    }
+
+    private static function expiryFor(array $product): string {
+        $pricing = $product['pricing'] ?? [];
+        if (($pricing['mode'] ?? 'one_time') === 'one_time') return '';
+        $period = $pricing['period'] ?? 'month';
+        return date('Y-m-d H:i:s', strtotime('+' . ($period === 'year' ? '1 year' : '1 month')));
+    }
+
+    /**
+     * 激活 API 套餐（Go 订阅 / Zen 按量）
+     */
+    private static function activateApiPlan(string $memberId, array $product): void {
+        $member = null;
+        try {
+            $rows = Database::query("SELECT * FROM members WHERE id = ?", [$memberId]);
+            $member = $rows[0] ?? null;
+        } catch (Exception $e) {}
+        if (!$member) return;
+
+        $pricing = $product['pricing'] ?? [];
+        $planId = $product['asset_id'] ?: $product['id'];
+        $mode = $pricing['mode'] ?? 'go'; // go=订阅 / zen=按量
+
+        // 记录到 member 的 api_plans 字段
+        $plans = json_decode($member['api_plans'] ?? '[]', true) ?: [];
+        $found = false;
+        foreach ($plans as &$pl) {
+            if ($pl['plan_id'] === $planId) {
+                $pl['mode'] = $mode;
+                $pl['expires_at'] = ($mode === 'go') ? self::expiryFor($product) : ($pl['expires_at'] ?? '');
+                $pl['quota_reset'] = $mode === 'go' ? ['h5' => 0, 'day' => 0, 'week' => 0, 'last_reset' => date('Y-m-d H:i:s')] : null;
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            $plans[] = [
+                'plan_id' => $planId, 'mode' => $mode,
+                'expires_at' => ($mode === 'go') ? self::expiryFor($product) : '',
+                'quota_reset' => $mode === 'go' ? ['h5' => 0, 'day' => 0, 'week' => 0, 'last_reset' => date('Y-m-d H:i:s')] : null,
+                'balance' => ($mode === 'zen') ? (float)($pricing['price'] ?? 0) : null,
+            ];
+        }
+        try {
+            Database::execute("UPDATE members SET api_plans = ? WHERE id = ?", [json_encode($plans, JSON_UNESCAPED_UNICODE), $memberId]);
+        } catch (Exception $e) {}
+    }
+
+    // ─── 权益查询 ───
+
+    public static function owns(string $memberId, string $productId): bool {
+        $ents = json_read(self::$entitlementsFile);
+        $key = $memberId . ':' . $productId;
+        if (!isset($ents[$key])) return false;
+        $e = $ents[$key];
+        if (!empty($e['expires_at']) && strtotime($e['expires_at']) < time()) return false;
+        return true;
+    }
+
+    public static function memberEntitlements(string $memberId): array {
+        $ents = json_read(self::$entitlementsFile);
+        return array_values(array_filter($ents, fn($e) => $e['member_id'] === $memberId));
+    }
+
+    public static function stats(): array {
+        $products = self::products();
+        return [
+            'total' => count($products),
+            'published' => count(array_filter($products, fn($p) => $p['status'] === 'published')),
+            'sales' => array_sum(array_column($products, 'sales_count')),
+            'by_type' => [
+                'skill' => count(array_filter($products, fn($p) => $p['type'] === 'skill')),
+                'plugin' => count(array_filter($products, fn($p) => $p['type'] === 'plugin')),
+                'theme' => count(array_filter($products, fn($p) => $p['type'] === 'theme')),
+                'api_plan' => count(array_filter($products, fn($p) => $p['type'] === 'api_plan')),
+            ],
+        ];
+    }
+}

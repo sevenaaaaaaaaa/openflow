@@ -1,0 +1,63 @@
+# ═══ OpenFlow XMP · Git 忽略规则 ═══
+# 目标：仓库只保留「源码 + 文档」，运行时数据/密钥/环境依赖全部排除
+
+# ─── 运行时数据（绝对不应提交） ───
+/data/
+/uploads/
+/shop/
+
+# ─── 密钥与敏感配置 ───
+data/*
+!data/.gitkeep
+*.secret.json
+cron_secret.json
+import_secret.json
+
+# ─── 依赖与构建产物 ───
+/vendor/
+composer.phar
+composer
+composer-setup.php
+
+# ─── 日志与缓存 ───
+*.log
+*.cache
+.phpunit.result.cache
+/storage-maintain.json
+/mod-scan.json
+
+# ─── 打包产物 ───
+*.zip
+*.tar.gz
+openflow-deploy.zip
+
+# ─── 系统文件 ───
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# ─── 编辑器 ───
+.idea/
+.vscode/
+*.sublime-*
+
+# ─── 部署脚本（含服务器路径信息） ───
+nginx.site.conf
+.htaccess
+baota-pseudostatic.txt
+
+# ─── 数据库 ───
+*.db
+*.sqlite
+*.sqlite3
+/data/db/
+
+# ─── 环境变量 ───
+.env
+.env.local
+.env.production
+
+# ─── 本地部署脚本（含服务器 IP/密钥，不入库） ───
+deploy.sh
+qa-check.sh
