@@ -93,15 +93,18 @@
     if (trust && c.hero.trust) trust.innerHTML = '<span class="dot"></span>' + c.hero.trust;
     // Hero CTA
     var ctaRow = document.querySelector('#page-home .hero .cta-row');
-    if (ctaRow && c.hero.cta1) {
+    if (ctaRow) {
       var btns = ctaRow.querySelectorAll('.btn');
       var labels = [c.hero.cta1, c.hero.cta2, c.hero.cta3];
+      // CTA1/CTA2 绑定到该角色的推荐落地页 qs[0]/qs[1]（仅站内路径）
+      var hrefs = (c.qs || []).slice(0, 2).map(function(q){ return q && q.href; });
       btns.forEach(function(b, i){
         if (labels[i] === undefined) return;
         // 保留按钮内结构，只替换文本内容
         var tn = document.createTextNode(labels[i]);
         b.childNodes.forEach(function(n){ if (n.nodeType === 3) n.remove(); });
         b.insertBefore(tn, b.firstChild);
+        if (hrefs[i] && b.tagName === 'A' && !/^https?:\/\//.test(hrefs[i])) b.setAttribute('href', hrefs[i]);
       });
     }
 
