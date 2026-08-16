@@ -608,7 +608,7 @@ code{font-family:var(--font-mono); font-size:12.5px; background:var(--hover); pa
 #chrome .bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;width:100%}
 #chrome .bar-start{display:flex;align-items:center;gap:12px;justify-self:start;min-width:0}
 #chrome .bar-center{justify-self:center;min-width:0;width:min(500px,100%)}
-#chrome .bar-end{display:flex;align-items:center;gap:8px;justify-self:end}
+#chrome .bar-end{display:flex;align-items:center;gap:8px;justify-self:end;position:relative}
 #chrome .lights{display:flex;gap:8px;flex:0 0 auto}
 #chrome .light{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 2px oklch(0% 0 0/.18)}
 #chrome .light-r{background:oklch(64% .19 28)} #chrome .light-y{background:oklch(82% .15 82)} #chrome .light-g{background:oklch(68% .15 150)}
@@ -626,7 +626,7 @@ code{font-family:var(--font-mono); font-size:12.5px; background:var(--hover); pa
 #chrome .cbtn:hover{background:var(--hover);color:var(--fg)}
 #chrome .cbtn svg{width:17px;height:17px}
 #chrome .cbtn .dot{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--danger);border:2px solid var(--bg)}
-#chrome .notif-dropdown{position:absolute;left:16px;bottom:-6px;z-index:999;width:380px;max-width:calc(100vw - 32px);background:var(--surface-strong);-webkit-backdrop-filter:blur(30px) saturate(170%);backdrop-filter:blur(30px) saturate(170%);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);display:none;max-height:480px;overflow-y:auto;padding:6px}
+#chrome .notif-dropdown{position:absolute;right:0;top:44px;z-index:999;width:380px;max-width:calc(100vw - 32px);background:var(--surface-strong);-webkit-backdrop-filter:blur(30px) saturate(170%);backdrop-filter:blur(30px) saturate(170%);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);display:none;max-height:480px;overflow-y:auto;padding:6px}
 #chrome .notif-dropdown.show{display:block}
 @media(max-width:840px){#chrome .bar-center{display:none}#chrome .light{width:10px;height:10px}#chrome .who em{display:none}}
 
