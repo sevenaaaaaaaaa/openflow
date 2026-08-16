@@ -3,6 +3,12 @@
  * CDP AI 洞察
  * 汇总 CDP 关键指标 → 交给 AI 生成自然语言运营洞察 / 异常发现 / 行动建议
  * 无 AI 配置时回退为规则化洞察（基于统计阈值）
+ *
+ * ── CDP 三层架构：第 2 层「洞察」 ──
+ * 本文件只做「把指标翻译成人话」：读 CdpSystem 的指标，交给 AiCenter 生成洞察。
+ * 依赖：CdpSystem（读指标）+ AiCenter（调 AI）。
+ * 加代码指引：洞察规则、异常检测阈值、行动建议文案加这里，
+ *            不要在这里写画像计算（归 CdpSystem）或落库（归 CdpSync）。
  */
 require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/CdpSystem.php';
