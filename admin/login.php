@@ -2,7 +2,7 @@
 require_once __DIR__ . '/config.php';
 
 if (is_logged_in()) {
-    header("Location: workspace.php");
+    header("Location: /admin/workspace.php");
     exit;
 }
 
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['admin_role'] = $users[$username]['role'];
             $_SESSION['admin_name'] = $users[$username]['name'];
             session_write_close();
-            header("Location: workspace.php");
+            header("Location: /admin/workspace.php");
             exit;
         }
         // Increment rate limit on failure
