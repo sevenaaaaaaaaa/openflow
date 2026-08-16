@@ -101,7 +101,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260813ad" data-cfasync="false" data-page="articles"></script>
+<script src="/assets/site-shell.js?v=20260816" data-cfasync="false" data-page="articles"></script>
 
 <section style="padding:clamp(20px,4vw,44px) 0 clamp(28px,4vw,48px)">
   <div class="mx-auto px-5" style="max-width:1120px">
