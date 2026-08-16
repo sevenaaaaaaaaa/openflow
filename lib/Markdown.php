@@ -6,8 +6,11 @@
 require_once __DIR__ . '/../admin/config.php';
 
 class Markdown {
-    /** 转换 Markdown 为 HTML */
-    public static function toHtml(string $md): string {
+    /**
+     * 转换 Markdown 为 HTML
+     * @param int $headingOffset 标题级别偏移（如 1 表示 # → h2，用于文章正文避免与页面 h1 冲突）
+     */
+    public static function toHtml(string $md, int $headingOffset = 0): string {
         $md = preg_replace("/\r\n|\r/", "\n", $md);
         $md = str_replace("\xC2\xA0", ' ', $md);
 
@@ -84,7 +87,7 @@ class Markdown {
 
             // 标题
             if (preg_match('/^(#{1,6})\s+(.*)$/', $trimmed, $hm)) {
-                $level = strlen($hm[1]);
+                $level = min(6, max(1, strlen($hm[1]) + $headingOffset));
                 $html .= "<h{$level}>" . self::inline($hm[2]) . "</h{$level}>\n";
                 continue;
             }
@@ -135,6 +138,8 @@ class Markdown {
         // 斜体
         $text = preg_replace('/(?<!\*)\*([^*\s][^*]*)\*(?!\*)/', '<em>$1</em>', $text);
         $text = preg_replace('/(?<!_)_([^_\s][^_]*)_(?!_)/', '<em>$1</em>', $text);
+        // 删除线
+        $text = preg_replace('/~~([^~]+)~~/', '<del>$1</del>', $text);
         return $text;
     }
 

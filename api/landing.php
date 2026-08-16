@@ -1,7 +1,7 @@
 <?php
 /**
  * Public Landing Page API
- * GET /api/landing.php?slug=wellq-overview
+ * GET /api/landing.php?slug=content-overview
  * Returns: { "page": {...}, "articles": [...] }
  */
 require_once __DIR__ . '/../admin/config.php';
