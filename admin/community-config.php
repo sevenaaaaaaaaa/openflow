@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'floors' => [
             'insight' => ['enabled' => isset($_POST['floor_insight']), 'title' => $_POST['floor_insight_title'] ?? '增长洞察', 'desc' => $_POST['floor_insight_desc'] ?? '', 'categories' => $_POST['floor_insight_categories'] ?? ['insight']],
             'leadership' => ['enabled' => isset($_POST['floor_leadership']), 'title' => $_POST['floor_leadership_title'] ?? '内容与 SEO 实践', 'desc' => $_POST['floor_leadership_desc'] ?? '', 'categories' => $_POST['floor_leadership_categories'] ?? ['leadership']],
-            'wellbeing' => ['enabled' => isset($_POST['floor_wellbeing']), 'title' => $_POST['floor_wellbeing_title'] ?? 'AI 运营实践', 'desc' => $_POST['floor_wellbeing_desc'] ?? '', 'categories' => $_POST['floor_wellbeing_categories'] ?? ['wellbeing']],
+            'ai_ops' => ['enabled' => isset($_POST['floor_ai_ops']), 'title' => $_POST['floor_ai_ops_title'] ?? 'AI 运营实践', 'desc' => $_POST['floor_ai_ops_desc'] ?? '', 'categories' => $_POST['floor_ai_ops_categories'] ?? ['ai_ops']],
             'industry' => ['enabled' => isset($_POST['floor_industry']), 'title' => $_POST['floor_industry_title'] ?? '行业实践', 'desc' => $_POST['floor_industry_desc'] ?? '', 'categories' => $_POST['floor_industry_categories'] ?? ['industry']],
         ],
         'hot_read_count' => (int)($_POST['hot_read_count'] ?? 5),
@@ -83,7 +83,7 @@ admin_header('Academy 内容首页配置');
         $floorDefs = [
             'insight' => ['label' => '增长洞察', 'color' => '#ddf0d6'],
             'leadership' => ['label' => '内容与 SEO 实践', 'color' => '#d9eaf6'],
-            'wellbeing' => ['label' => 'AI 运营实践', 'color' => '#fef08a33'],
+            'ai_ops' => ['label' => 'AI 运营实践', 'color' => '#fef08a33'],
             'industry' => ['label' => '行业实践', 'color' => '#fecdd333'],
         ];
         foreach ($floorDefs as $fk => $fv):
