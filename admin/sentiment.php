@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_topic'])) {
     csrf_verify();
     $name = trim($_POST['topic_name'] ?? '');
     if (empty($name)) { $error = '请输入监控主题'; }
-    else { sent_add_topic($name); $message = '监控主题已添加'; header('Location: sentiment.php'); exit; }
+    else { sent_add_topic($name); $message = '监控主题已添加'; header('Location: /xmp/sentiment'); exit; }
 }
 
 // 保存设置
@@ -35,7 +35,7 @@ if (isset($_GET['delete'])) {
     $d['topics'] = array_values(array_filter($d['topics'], fn($t) => $t['id'] !== $_GET['delete']));
     sent_save($d);
     try { Database::execute("DELETE FROM sentiment_results WHERE topic_id = ?", [$_GET['delete']]); } catch (Exception $e) {}
-    header('Location: sentiment.php');
+    header('Location: /xmp/sentiment');
     exit;
 }
 

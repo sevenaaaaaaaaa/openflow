@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     if ($action === 'create_segment') {
         CdpSystem::createSegment($_POST);
-        header('Location: cdp.php?tab=segments');
+        header('Location: /xmp/cdp?tab=segments');
         exit;
     }
 }

@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_msg'])) {
         json_write($agentFile, $agent);
     }
     // 重定向避免重复提交
-    header('Location: survey-agent.php');
+    header('Location: /xmp/survey-agent');
     exit;
 }
 

@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     flash('success', $isNew ? '课程已创建' : '课程已保存');
-    header('Location: course-edit.php?id=' . urlencode($course['id']));
+    header('Location: /xmp/course-edit?id=' . urlencode($course['id']));
     exit;
 }
 

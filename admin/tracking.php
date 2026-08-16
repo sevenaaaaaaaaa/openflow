@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
 if (isset($_GET['clear'])) {
     try { Database::execute("DELETE FROM events"); } catch (Exception $e) {}
     flash('success', '事件已清空');
-    header('Location: tracking.php');
+    header('Location: /xmp/tracking');
     exit;
 }
 

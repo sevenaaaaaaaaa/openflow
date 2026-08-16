@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete'])) {
         $pages = array_values(array_filter($pages, fn($p) => $p['id'] !== ($_POST['delete'] ?? '')));
         save_landing_pages($pages);
-        header('Location: cluster.php');
+        header('Location: /xmp/cluster');
         exit;
     }
     $pages = get_landing_pages();

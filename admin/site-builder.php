@@ -71,7 +71,7 @@ if (isset($_GET['generate'])) {
             flash('success', "页面「{$slug}」已创建，可在页面编辑器中编辑");
         }
     }
-    header('Location: site-builder.php');
+    header('Location: /xmp/site-builder');
     exit;
 }
 

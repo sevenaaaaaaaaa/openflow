@@ -43,7 +43,7 @@ if (isset($_POST['save_skill'])) {
 if (isset($_GET['del_skill'])) {
     skill_delete($_GET['del_skill']);
     flash('success', '技能已删除');
-    header('Location: marketplace.php');
+    header('Location: /xmp/marketplace');
     exit;
 }
 // 复制 skill（基于示例）
