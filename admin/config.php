@@ -426,19 +426,21 @@ security_headers();
 :root{
   --bg:oklch(96.5% .016 85); --bg-soft:oklch(94% .02 85);
   --surface:oklch(100% 0 0 / .62); --surface-strong:oklch(100% 0 0 / .88);
-  --fg:oklch(22% .02 70); --muted:oklch(44% .016 70); --faint:oklch(52% .012 75);
+  --fg:oklch(22% .02 70); --muted:oklch(46% .016 70); --faint:oklch(51% .014 75);
   --border:oklch(86% .014 80); --border-strong:oklch(76% .02 80);
   --hover:oklch(22% .02 70 / .055); --hover-strong:oklch(22% .02 70 / .11);
-  --accent:oklch(68% .18 140); --accent-strong:oklch(60% .18 140); --accent-soft:oklch(68% .18 140 / .12); --on-accent:oklch(22% .02 70);
-  --ok:oklch(47% .15 152); --ok-soft:oklch(47% .15 152 / .12);
-  --warn:oklch(52% .14 75); --warn-soft:oklch(52% .14 75 / .14);
-  --danger:oklch(52% .2 25); --danger-soft:oklch(52% .2 25 / .12);
+  --accent:oklch(52% .17 258); --accent-strong:oklch(46% .17 258); --accent-soft:oklch(52% .17 258/.12); --on-accent:oklch(100% 0 0);
+  --ok:oklch(58% .17 152); --ok-soft:oklch(58% .17 152/.12);
+  --warn:oklch(66% .15 75); --warn-soft:oklch(66% .15 75/.14);
+  --danger:oklch(55% .2 25); --danger-soft:oklch(55% .2 25/.12);
   --glass:oklch(100% 0 0 / .5); --glass-bright:oklch(100% 0 0 / .68);
   --shadow:0 24px 60px -24px oklch(30% .04 80 / .3); --shadow-sm:0 10px 28px -14px oklch(30% .04 80 / .24);
   --r-lg:26px; --r-md:18px; --r-sm:12px;
   --chrome-h:56px; --sb-w:240px;
-  --grad:linear-gradient(135deg,oklch(70% .18 145),oklch(66% .16 180));
-  --font-body:-apple-system,BlinkMacSystemFont,'PingFang SC','Segoe UI',system-ui,sans-serif;
+  --grad:linear-gradient(135deg,oklch(52% .17 258),oklch(58% .16 285));
+  --font-body: "Space Grotesk",-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","MiSans","Segoe UI",system-ui,sans-serif;
+  --font-display: "Space Grotesk","PingFang SC","HarmonyOS Sans SC","MiSans","Segoe UI",system-ui,sans-serif;
+  --ease-spring: cubic-bezier(.32,.72,0,1);
   --font-mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
   color-scheme:light;
 }
@@ -448,13 +450,13 @@ security_headers();
   --fg:oklch(93% .008 85); --muted:oklch(72% .014 80); --faint:oklch(62% .012 80);
   --border:oklch(100% 0 0 / .1); --border-strong:oklch(100% 0 0 / .22);
   --hover:oklch(93% .008 85 / .07); --hover-strong:oklch(93% .008 85 / .13);
-  --accent:oklch(74% .15 155); --accent-strong:oklch(82% .14 155); --accent-soft:oklch(74% .15 155 / .15);
-  --ok:oklch(76% .15 152); --ok-soft:oklch(76% .15 152 / .15);
-  --warn:oklch(78% .13 80); --warn-soft:oklch(78% .13 80 / .15);
-  --danger:oklch(74% .17 25); --danger-soft:oklch(74% .17 25 / .14);
+  --accent:oklch(74% .13 258); --accent-strong:oklch(80% .12 258); --accent-soft:oklch(74% .13 258/.15); --on-accent:oklch(16% .03 260);
+  --ok:oklch(74% .15 152); --ok-soft:oklch(74% .15 152/.15);
+  --warn:oklch(76% .13 75); --warn-soft:oklch(76% .13 75/.16);
+  --danger:oklch(72% .16 25); --danger-soft:oklch(72% .16 25/.14);
   --glass:oklch(30% .014 75 / .5); --glass-bright:oklch(34% .014 75 / .64);
   --shadow:0 24px 60px -24px oklch(0% 0 0 / .55); --shadow-sm:0 10px 28px -14px oklch(0% 0 0 / .5);
-  --grad:linear-gradient(135deg,oklch(72% .16 150),oklch(68% .15 180));
+  --grad:linear-gradient(135deg,oklch(74% .13 258),oklch(70% .14 285));
   color-scheme:dark;
 }
 body{font-family:var(--font-body); color:var(--fg); background:var(--bg); -webkit-font-smoothing:antialiased; overflow-x:clip; line-height:1.5}

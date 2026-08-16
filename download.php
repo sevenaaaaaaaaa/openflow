@@ -38,7 +38,7 @@ $catName = $catNames[$dl['category'] ?? ''] ?? $dl['category'] ?? '资料';
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260813ad" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260816" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:900px">
     <a href="/downloads" style="color:var(--muted);text-decoration:none;font-size:13px">← 返回资料中心</a>
