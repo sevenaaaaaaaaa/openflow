@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     }
     canvas_save($flows);
     flash('success', '画布流程已保存');
-    header('Location: canvas.php');
+    header('Location: /xmp/canvas');
     exit;
 }
 
@@ -74,14 +74,14 @@ if (isset($_GET['delete'])) {
     $flows = array_values(array_filter($flows, fn($f) => $f['id'] !== $_GET['delete']));
     canvas_save($flows);
     flash('success', '流程已删除');
-    header('Location: canvas.php');
+    header('Location: /xmp/canvas');
     exit;
 }
 if (isset($_GET['toggle'])) {
     foreach ($flows as &$f) if ($f['id'] === $_GET['toggle']) $f['enabled'] = !($f['enabled'] ?? false);
     unset($f);
     canvas_save($flows);
-    header('Location: canvas.php');
+    header('Location: /xmp/canvas');
     exit;
 }
 

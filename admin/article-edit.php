@@ -12,7 +12,7 @@ $isCopy = isset($_GET['copy']) && $_GET['copy'] === '1';
 
 if (!$isNew) {
     $article = get_article($id);
-    if (!$article) { flash('error', '文章不存在'); header('Location: articles.php'); exit; }
+    if (!$article) { flash('error', '文章不存在'); header('Location: /xmp/articles'); exit; }
     // 合并默认字段，避免老文章缺字段导致 Undefined/Deprecated 警告
     $article = array_merge([
         'title' => '', 'slug' => '', 'content' => '', 'category' => '',
@@ -186,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo $needReview ? '内容需审核' : '保存成功';
             exit;
         }
-        header('Location: article-edit.php?id=' . urlencode($article['id']));
+        header('Location: /xmp/article-edit?id=' . urlencode($article['id']));
         exit;
     }
 }

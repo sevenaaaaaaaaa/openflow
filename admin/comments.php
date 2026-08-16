@@ -12,7 +12,7 @@ require_perm('community-mod');
 if (isset($_GET['act']) && isset($_GET['id'])) {
     comment_admin($_GET['id'], $_GET['act']);
     flash('success', '操作成功');
-    header('Location: comments.php' . ($_GET['type'] ? '?type=' . urlencode($_GET['type']) : ''));
+    header('Location: /xmp/comments' . ($_GET['type'] ? '?type=' . urlencode($_GET['type']) : ''));
     exit;
 }
 

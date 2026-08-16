@@ -17,7 +17,7 @@ require_perm('settings');
 if (isset($_GET['tag']) && isset($_GET['focus'])) {
     prof_manual_tag($_GET['focus'], $_GET['t'], $_GET['act'] === 'add');
     flash('success', '标签已更新');
-    header('Location: profiling.php?tab=persona&focus=' . urlencode($_GET['focus']));
+    header('Location: /xmp/profiling?tab=persona&focus=' . urlencode($_GET['focus']));
     exit;
 }
 

@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $results = WebhookSystem::trigger('webhook.test', ['message' => '测试触发', 'time' => date('Y-m-d H:i:s')]);
         $message = '测试已发送: ' . (count($results) > 0 ? ($results[0]['success'] ? '成功' : '失败') : '无匹配 Webhook');
     }
-    header('Location: webhooks.php' . ($message ? '?msg=' . urlencode($message) : ''));
+    header('Location: /xmp/webhooks' . ($message ? '?msg=' . urlencode($message) : ''));
     exit;
 }
 

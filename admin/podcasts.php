@@ -56,7 +56,7 @@ if (isset($_GET['delete'])) {
     $pods['items'] = array_values(array_filter($pods['items'] ?? [], fn($p) => $p['id'] !== $_GET['delete']));
     json_write($podFile, $pods);
     flash('success', '已删除');
-    header('Location: podcasts.php');
+    header('Location: /xmp/podcasts');
     exit;
 }
 
@@ -73,7 +73,7 @@ if (isset($_GET['copy'])) {
             break;
         }
     }
-    header('Location: podcasts.php');
+    header('Location: /xmp/podcasts');
     exit;
 }
 

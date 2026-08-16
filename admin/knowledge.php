@@ -27,7 +27,7 @@ if (isset($_GET['delete'])) {
     $docs = array_values(array_filter($docs, fn($d) => $d['id'] !== $_GET['delete']));
     knowledge_save($docs);
     flash('success', '知识已删除');
-    header('Location: knowledge.php');
+    header('Location: /xmp/knowledge');
     exit;
 }
 

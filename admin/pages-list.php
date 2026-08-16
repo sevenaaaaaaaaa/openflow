@@ -22,7 +22,7 @@ if (isset($_GET['copy']) && isset($pages[$_GET['copy']])) {
         save_page_content($dst, $srcContent);
         flash('success', "已从「{$pages[$src]['name']}」复制内容到「{$pages[$dst]['name']}」");
     }
-    header('Location: pages-list.php');
+    header('Location: /xmp/pages-list');
     exit;
 }
 

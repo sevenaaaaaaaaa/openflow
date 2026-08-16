@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     }
     automation_save($flows);
     flash('success', '自动化流程已保存');
-    header('Location: automation.php');
+    header('Location: /xmp/automation');
     exit;
 }
 
@@ -60,14 +60,14 @@ if (isset($_GET['delete'])) {
     $flows = array_values(array_filter($flows, fn($f) => $f['id'] !== $_GET['delete']));
     automation_save($flows);
     flash('success', '流程已删除');
-    header('Location: automation.php');
+    header('Location: /xmp/automation');
     exit;
 }
 if (isset($_GET['toggle'])) {
     foreach ($flows as &$f) if ($f['id'] === $_GET['toggle']) $f['enabled'] = !($f['enabled'] ?? false);
     unset($f);
     automation_save($flows);
-    header('Location: automation.php');
+    header('Location: /xmp/automation');
     exit;
 }
 

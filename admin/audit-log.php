@@ -8,7 +8,7 @@ require_perm('settings');
 if (isset($_GET['clear']) && $_GET['clear'] === '1') {
     csrf_verify();
     AuditLog::clear();
-    header('Location: audit-log.php?msg=日志已清空');
+    header('Location: /xmp/audit-log?msg=日志已清空');
     exit;
 }
 

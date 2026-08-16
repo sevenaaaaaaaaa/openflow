@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_room'])) {
 if (isset($_GET['del_room'])) {
     live_rooms_save(array_values(array_filter($rooms, fn($r) => $r['id'] !== $_GET['del_room'])));
     flash('success', '房间已删除');
-    header('Location: live.php');
+    header('Location: /xmp/live');
     exit;
 }
 // 切换直播状态
@@ -57,7 +57,7 @@ if (isset($_GET['toggle_live'])) {
             inbox_notify_event('live_started', ['title' => $r['title'] ?? '', 'room_id' => $r['id'] ?? '']);
         }
     }
-    header('Location: live.php');
+    header('Location: /xmp/live');
     exit;
 }
 // 保存设置

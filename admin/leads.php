@@ -6,5 +6,5 @@
 require_once __DIR__ . '/config.php';
 require_login();
 require_perm('leads');
-header('Location: crm.php?tab=raw');
+header('Location: /xmp/crm?tab=raw');
 exit;

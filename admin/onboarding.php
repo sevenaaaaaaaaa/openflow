@@ -13,7 +13,7 @@ if (isset($_GET['done'])) {
     $onboard['completed'] = true;
     $onboard['completed_at'] = date('Y-m-d H:i:s');
     json_write($onboardFile, $onboard);
-    header('Location: index.php');
+    header('Location: /xmp/index');
     exit;
 }
 

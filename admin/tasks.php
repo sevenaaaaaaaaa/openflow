@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_task'])) {
         json_write($tasksFile, $tasks);
         notify('任务', '您有新任务：' . $title, ($desc ?: '请尽快处理'), 'tasks.php');
         flash('success', '任务已创建并通知 ' . ($users[$assignee]['name'] ?? $assignee));
-        header('Location: tasks.php');
+        header('Location: /xmp/tasks');
         exit;
     }
 }
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     unset($t);
     json_write($tasksFile, $tasks);
     flash('success', '任务状态已更新');
-    header('Location: tasks.php');
+    header('Location: /xmp/tasks');
     exit;
 }
 
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_progress'])) {
     unset($t);
     json_write($tasksFile, $tasks);
     flash('success', '进度已更新');
-    header('Location: tasks.php');
+    header('Location: /xmp/tasks');
     exit;
 }
 
@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
         json_write($tasksFile, $tasks);
         flash('success', '评论已添加');
     }
-    header('Location: tasks.php');
+    header('Location: /xmp/tasks');
     exit;
 }
 
@@ -122,7 +122,7 @@ if (isset($_GET['delete'])) {
     $tasks = array_values(array_filter($tasks, fn($t) => $t['id'] !== $_GET['delete']));
     json_write($tasksFile, $tasks);
     flash('success', '任务已删除');
-    header('Location: tasks.php');
+    header('Location: /xmp/tasks');
     exit;
 }
 

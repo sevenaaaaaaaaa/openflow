@@ -36,7 +36,7 @@ if (isset($_POST['send'])) {
 if (isset($_GET['del'])) {
     inbox_delete($_GET['del']);
     flash('success', '消息已删除');
-    header('Location: messages.php');
+    header('Location: /xmp/messages');
     exit;
 }
 

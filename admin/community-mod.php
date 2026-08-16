@@ -19,7 +19,7 @@ if (isset($_GET['toggle_post'])) {
     unset($p);
     json_write($postsFile, $posts);
     flash('success', '帖子状态已更新');
-    header('Location: community-mod.php');
+    header('Location: /xmp/community-mod');
     exit;
 }
 // 删除帖子
@@ -29,7 +29,7 @@ if (isset($_GET['delete_post'])) {
     json_write($postsFile, $posts);
     json_write($commentsFile, $comments);
     flash('success', '帖子已删除（含评论）');
-    header('Location: community-mod.php');
+    header('Location: /xmp/community-mod');
     exit;
 }
 // 删除评论
@@ -37,7 +37,7 @@ if (isset($_GET['delete_comment'])) {
     $comments = array_values(array_filter($comments, fn($c) => $c['id'] !== $_GET['delete_comment']));
     json_write($commentsFile, $comments);
     flash('success', '评论已删除');
-    header('Location: community-mod.php?tab=comments');
+    header('Location: /xmp/community-mod?tab=comments');
     exit;
 }
 // 保存话题
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_topics'])) {
     }
     json_write($topicsFile, $topics);
     flash('success', '话题已保存');
-    header('Location: community-mod.php?tab=topics');
+    header('Location: /xmp/community-mod?tab=topics');
     exit;
 }
 

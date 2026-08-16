@@ -29,7 +29,7 @@ if ($fcFavAction !== '') {
 // 首次登录 → 引导向导
 $onboard = json_read(DATA_DIR . '/onboarding.json');
 if (empty($onboard['completed']) && ($_SESSION['admin_role'] ?? '') === 'admin') {
-    header('Location: onboarding.php');
+    header('Location: /xmp/onboarding');
     exit;
 }
 
