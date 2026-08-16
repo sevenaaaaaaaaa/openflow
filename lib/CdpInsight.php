@@ -48,11 +48,24 @@ class CdpInsight {
      * @return array ['insights'=>[], 'anomalies'=>[], 'actions'=>[], 'summary'=>'', 'ai'=>bool]
      */
     public static function generate(int $days = 30): array {
+        // 结果缓存：AI 洞察同步调用会阻塞页面，缓存 1 小时
+        $cacheFile = DATA_DIR . '/cache/cdp-insight-' . $days . '.json';
+        try {
+            if (is_file($cacheFile)) {
+                $c = json_decode(file_get_contents($cacheFile), true);
+                if (is_array($c) && ($c['_t'] ?? 0) > time() - 3600) {
+                    unset($c['_t']);
+                    return $c;
+                }
+            }
+        } catch (\Throwable $e) {}
+
         $snap = self::snapshot($days);
         $rule = self::ruleInsights($snap);
 
         if (!AiCenter::isConfigured()) {
             $rule['ai'] = false;
+            self::saveCache($cacheFile, $rule);
             return $rule;
         }
 
@@ -70,7 +83,7 @@ class CdpInsight {
             $r = AiCenter::json($system, $user, ['temperature' => 0.3]);
             if ($r['ok']) {
                 $data = $r['data'];
-                return [
+                $result = [
                     'summary' => $data['summary'] ?? $rule['summary'],
                     'insights' => $data['insights'] ?? $rule['insights'],
                     'anomalies' => $data['anomalies'] ?? $rule['anomalies'],
@@ -78,11 +91,23 @@ class CdpInsight {
                     'ai' => true,
                     'raw' => $r['raw'],
                 ];
+                self::saveCache($cacheFile, $result);
+                return $result;
             }
         } catch (Exception $e) {}
 
         $rule['ai'] = false;
+        self::saveCache($cacheFile, $rule);
         return $rule;
+    }
+
+    /** 写洞察缓存（带时间戳） */
+    private static function saveCache(string $file, array $result): void {
+        try {
+            if (!is_dir(dirname($file))) @mkdir(dirname($file), 0755, true);
+            $result['_t'] = time();
+            @file_put_contents($file, json_encode($result, JSON_UNESCAPED_UNICODE));
+        } catch (\Throwable $e) {}
     }
 
     /**
