@@ -17,10 +17,10 @@ if (!$survey || ($survey['status'] ?? 'draft') !== 'active') {
 <script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
-    <body class="bg-white text-gray-900"><div class="mx-auto max-w-lg px-5 py-[140px] text-center">
-    <p class="text-6xl font-bold text-[var(--accent)]" style="text-shadow:0 2px 0 rgba(0,0,0,.15)">404</p>
-    <h1 class="mt-4 text-2xl font-bold">问卷不存在或已结束</h1>
-    <p class="mt-3 text-muted text-gray-600">请联系发送问卷的管理员。</p>
+    <body style="background:var(--bg);color:var(--fg)"><div class="mx-auto px-5 py-[140px] text-center" style="max-width:512px">
+    <p style="font-size:60px;font-weight:700;color:var(--accent)">404</p>
+    <h1 style="margin-top:16px;font-size:24px;font-weight:700">问卷不存在或已结束</h1>
+    <p style="margin-top:12px;color:var(--muted)">请联系发送问卷的管理员。</p>
     </div></body></html><?php
     exit;
 }
@@ -47,24 +47,24 @@ $jsonLd = [
   body{background:var(--bg)}
   .q-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 4px 16px rgba(30,30,30,.05)}
   .q-title{font-size:16px;font-weight:700;color:var(--fg);margin-bottom:12px}
-  .q-title .req{color:#dc2626}
+  .q-title .req{color:var(--danger)}
   .opt-label{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:.15s;font-size:14px}
-  .opt-label:hover{border-color:var(--accent);background:#faf9f4}
+  .opt-label:hover{border-color:var(--accent);background:var(--bg-soft)}
   .opt-label input{margin:0}
   .rating-row{display:flex;gap:8px;flex-wrap:wrap}
   .rating-btn{width:44px;height:44px;border-radius:10px;border:1.5px solid var(--border);display:grid;place-items:center;font-weight:700;cursor:pointer;transition:.15s;background:var(--surface)}
   .rating-btn:hover{border-color:var(--accent)}
   .rating-btn.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
   input[type=text],input[type=email]{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;outline:none}
-  input:focus{border-color:#2b5f7e}
+  input:focus{border-color:var(--accent)}
 
   /* ── 卡片式 / 游戏化 / 沉浸式 模板 ── */
   .survey-step{display:none;animation:stepIn .35s}
   .survey-step.on{display:block}
   @keyframes stepIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
-  .survey-progress{position:sticky;top:0;z-index:10;background:rgba(244,243,233,.95);backdrop-filter:blur(6px);padding:12px 0;margin-bottom:16px}
+  .survey-progress{position:sticky;top:0;z-index:10;background:var(--bg-soft);backdrop-filter:blur(6px);padding:12px 0;margin-bottom:16px}
   .survey-progress .bar{height:8px;background:var(--border);border-radius:99px;overflow:hidden}
-  .survey-progress .bar i{display:block;height:100%;background:linear-gradient(90deg,#86efac,var(--accent));transition:width .3s}
+  .survey-progress .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ok),var(--accent));transition:width .3s}
   .survey-progress .pct{font-size:12px;color:var(--muted);margin-top:6px}
   .survey-nav{display:flex;gap:10px;margin-top:18px}
   .survey-nav button{flex:1;padding:14px;border-radius:999px;font-weight:700;font-size:15px;border:none;cursor:pointer}
@@ -79,10 +79,10 @@ $jsonLd = [
   body[data-template="immersive"] .survey-head{display:none}
   body[data-template="immersive"] .q-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:var(--surface);box-shadow:none;padding:32px}
   body[data-template="immersive"] .q-title{color:var(--surface);font-size:22px}
-  body[data-template="immersive"] .opt-label{border-color:rgba(255,255,255,.2);color:#e5e7eb}
+  body[data-template="immersive"] .opt-label{border-color:rgba(255,255,255,.2);color:var(--border)}
   body[data-template="immersive"] .opt-label:hover{border-color:var(--accent);background:rgba(221,255,14,.1)}
   body[data-template="immersive"] .survey-progress{background:rgba(30,30,30,.5)}
-  body[data-template="immersive"] .pct{color:#cbd5e1}
+  body[data-template="immersive"] .pct{color:var(--muted)}
 </style>
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
@@ -91,8 +91,8 @@ $jsonLd = [
     <!-- 头部 -->
     <div class="survey-head rounded-2xl bg-white border border-[var(--border)] p-7 mb-6 text-center" style="background:linear-gradient(160deg,var(--accent-strong),var(--accent));border:none">
       <h1 class="text-2xl font-bold text-white"><?=htmlspecialchars($survey['title'])?></h1>
-      <?php if (!empty($survey['description'])): ?><p class="mt-3 text-[#cbd5e1] leading-relaxed"><?=htmlspecialchars($survey['description'])?></p><?php endif; ?>
-      <p class="mt-4 text-[13px] text-[#94a3b8]"><?=($survey['type']==='named'?'实名问卷':'匿名问卷')?> · <?=count($survey['questions'])?> 题 · 约需 3 分钟</p>
+      <?php if (!empty($survey['description'])): ?><p class="mt-3 text-[var(--muted)] leading-relaxed"><?=htmlspecialchars($survey['description'])?></p><?php endif; ?>
+      <p class="mt-4 text-[13px] text-[var(--faint)]"><?=($survey['type']==='named'?'实名问卷':'匿名问卷')?> · <?=count($survey['questions'])?> 题 · 约需 3 分钟</p>
     </div>
 
     <?php if ($submitted): ?>
@@ -278,7 +278,7 @@ function surveySubmit(form) {
     var hasRating = card.querySelector('input[data-rid]');
     if (hasRating && !hasRating.value) {
       var title = card.querySelector('.q-title');
-      if (title && title.querySelector('.req')) { missing = true; title.style.color = '#dc2626'; }
+      if (title && title.querySelector('.req')) { missing = true; title.style.color = 'var(--danger)'; }
     }
   });
   if (missing) { alert('请完成所有必答题'); return false; }
