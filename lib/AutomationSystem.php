@@ -3,6 +3,13 @@
  * 营销自动化引擎 — 触发条件 + 流程 + 动作执行
  * 触发器：表单提交 / 用户注册 / NPS 评分 / 定时
  * 动作：发送邮件（BillionMail/Mautic）/ 打标签 / 加 Campaign / 延迟
+ *
+ * ── 流程编排三件套：本文件是「营销自动化执行器」 ──
+ * 关系：FlowSystem = 总事件总线（入口，接收事件并分发）；
+ *       CanvasSystem = 可视化画布执行器（nodes/edges 编排）；
+ *       本文件 = 触发器+动作的自动化（automation.json 配置）。
+ * 加代码指引：触发器类型、动作类型、延迟逻辑加这里，
+ *             不要在这里加画布编排（归 CanvasSystem）。
  */
 
 function automation_file(): string { return DATA_DIR . '/automation.json'; }

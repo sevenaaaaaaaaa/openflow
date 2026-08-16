@@ -86,12 +86,11 @@
 
 ---
 
-## 八、历史遗留债务（待阶段 2/3 处理）
+## 八、历史遗留债务（处理进度）
 
-| 债务 | 位置 | 影响 |
+| 债务 | 位置 | 状态 |
 |------|------|------|
-| `flow-community` 旧页面名 | config.php、admin/*（15 文件）、data/pages/flow-community.json | 后台 CMS 历史页面 |
-| `wellq_*` 字段名 | config.php、admin/config.php、page-preview.php、page-editor-config.php 等 6 处 | 字段名仍是幸福度模型名 |
-| GrowthDriver vs GrowthEngine | lib/ | 两个增长引擎概念重叠 |
-| CdpSystem / CdpInsight / CdpSync | lib/ | CDP 功能分三处 |
-| FlowSystem / CanvasSystem / AutomationSystem | lib/ | 流程编排可能重叠 |
+| `flow-community` 旧页面名 | config.php、admin/*（15 文件）、data/pages/flow-community.json | ⏳ 待处理（后台 CMS 历史页面，需谨慎） |
+| GrowthDriver vs GrowthEngine 命名歧义 | lib/ | ✅ 已处理：GrowthDriver → GrowthFlywheel |
+| CdpSystem / CdpInsight / CdpSync 边界 | lib/ | ✅ 已处理：三文件加了三层架构边界注释 |
+| FlowSystem / CanvasSystem / AutomationSystem 关系 | lib/ | ✅ 已处理：三文件加了「流程编排三件套」边界注释 |

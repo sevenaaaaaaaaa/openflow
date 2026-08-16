@@ -71,7 +71,7 @@ require_once __DIR__ . '/../lib/SelfEvolve.php';
 require_once __DIR__ . '/../lib/GrowthEngine.php';
 require_once __DIR__ . '/../lib/SafeFix.php';
 require_once __DIR__ . '/../lib/ThemeSystem.php';
-require_once __DIR__ . '/../lib/GrowthDriver.php';
+require_once __DIR__ . '/../lib/GrowthFlywheel.php';
 require_once __DIR__ . '/../lib/SkillSystem.php';
 require_once __DIR__ . '/../lib/SkillGenerator.php';
 PluginSystem::load_plugins();

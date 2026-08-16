@@ -3,6 +3,12 @@
  * CDP 客户同步层
  * 提供 cdp_customers 表 + cdp_* 辅助函数（cdp_find / cdp_get_or_create / cdp_add_tag / cdp_set_score / cdp_add_ltv / cdp_merge_on_login 等）
  * 数据源：CDP JSON 画像（data/cdp/profiles.json）+ 增量写入 SQLite
+ *
+ * ── CDP 三层架构：第 3 层「存储同步」 ──
+ * 本文件只做「客户主数据的落库」：把 CdpSystem 的画像同步到 SQLite 的 cdp_customers 表。
+ * 依赖：CdpSystem（画像）+ Database（SQLite）。
+ * 加代码指引：客户表结构、标签/评分/ltv 的落库、登录合并逻辑加这里，
+ *            不要在这里算画像（归 CdpSystem）或生成洞察（归 CdpInsight）。
  */
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/CdpSystem.php';

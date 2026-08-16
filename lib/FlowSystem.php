@@ -14,6 +14,13 @@
  *   4. 营销自动化 / 画布触发器（价值流）
  *   5. 站内信 + 通知渠道（价值流）
  *   6. 线索联动（表单 → CRM）
+ *
+ * ── 流程编排三件套：本文件是「总事件总线」 ──
+ * 关系：FlowSystem（本文件）= 总入口，接收所有行为事件并分发到各执行器；
+ *       CanvasSystem = 可视化画布的编排执行器（nodes/edges）；
+ *       AutomationSystem = 营销自动化执行器（触发器+动作）。
+ * 加代码指引：全局事件联动（跨模块串联、事件分发规则）加这里；
+ *             可视化流程加 CanvasSystem；触发器/动作自动化加 AutomationSystem。
  */
 require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/../lib/Database.php';
