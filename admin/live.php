@@ -81,7 +81,7 @@ admin_header('直播管理');
 <div class="admin-layout">
   <?php admin_sidebar('live'); ?>
   <div class="main">
-    <h1>📡 直播管理</h1>
+    <h1>直播管理</h1>
     <p class="sub">创建直播间 · OBS 推流 · 售卖课程 · 回放</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

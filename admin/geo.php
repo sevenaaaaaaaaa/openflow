@@ -119,7 +119,7 @@ admin_header('GEO 话题监控');
 <div class="admin-layout">
   <?php admin_sidebar('geo'); ?>
   <div class="main">
-    <h1>🧠 GEO 话题监控</h1>
+    <h1>GEO 话题监控</h1>
     <p class="sub">RSS 聚合行业动态 → AI 提炼热点话题 → 生成文章 → 自动提交搜索引擎</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>

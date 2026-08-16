@@ -85,7 +85,7 @@ admin_header('NPS 调研系统');
 <div class="admin-layout">
   <?php admin_sidebar('nps'); ?>
   <div class="main">
-    <h1>📈 NPS 调研系统</h1>
+    <h1>NPS 调研系统</h1>
     <p class="sub">净推荐值（Net Promoter Score）· 衡量客户与员工忠诚度 · 0-10 分 · 9-10 推荐者 / 7-8 被动者 / 0-6 贬损者</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>
