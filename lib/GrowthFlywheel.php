@@ -1,6 +1,6 @@
 <?php
 /**
- * 增长驱动引擎 GrowthDriver
+ * 增长飞轮 GrowthFlywheel
  * 把舆情、AI、内容、CDP、MA 等模块串成一条"主动推动网站前进"的飞轮：
  *
  *   爬取热点 → AI 总结 → AI 撰写 → 内容更新 → SEO 优化
@@ -18,7 +18,7 @@ require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/../lib/AiCenter.php';
 require_once __DIR__ . '/../lib/SentimentSystem.php';
 
-class GrowthDriver {
+class GrowthFlywheel {
     private static string $file = DATA_DIR . '/growth-driver.json';
 
     /* ─── 状态 ─── */
