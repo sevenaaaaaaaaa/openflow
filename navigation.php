@@ -67,7 +67,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260813ad" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260816" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-6" style="max-width:1200px">
     <!-- 首屏：搜索 + 热搜 -->

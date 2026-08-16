@@ -36,7 +36,7 @@ $related = array_values(array_filter($sites, fn($s) => $s['id'] !== $siteId && (
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260813ad" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260816" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-8" style="max-width:900px">
     <!-- 站点主卡 -->
