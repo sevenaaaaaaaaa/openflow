@@ -101,8 +101,16 @@ button:disabled{opacity:.45; cursor:default}
   background:var(--glass); -webkit-backdrop-filter:blur(22px) saturate(170%); backdrop-filter:blur(22px) saturate(170%);
   border:1px solid var(--border); transition:border-radius .5s var(--ease-spring), box-shadow .5s var(--ease-spring), background .4s, border-color .4s}
 .bar::after{content:''; position:absolute; inset:0 0 auto 0; height:42%; border-radius:inherit; background:linear-gradient(180deg,oklch(100% 0 0/.42),transparent); opacity:.65; pointer-events:none}
-#chrome.scrolled{padding:10px 14px}
-#chrome.scrolled .bar{border-radius:999px; border-color:var(--glass-border); background:var(--glass-bright); box-shadow:var(--shadow-sm), inset 0 1px 0 oklch(100% 0 0/.35)}
+#chrome.scrolled{top:10px;left:calc(var(--sb-w) + 26px);right:14px;height:56px;border-radius:999px;border:1px solid var(--glass-border);background:var(--glass-bright);box-shadow:var(--shadow-sm), inset 0 1px 0 oklch(100% 0 0/.35);padding:0 14px}
+#chrome.scrolled .bar{background:transparent;border:none;box-shadow:none;height:56px}
+#chrome.capsule-mode{height:48px}
+#chrome.capsule-mode .bar{height:48px}
+#chrome.capsule-mode .tabs a{height:30px;padding:0 10px;font-size:12.5px}
+#chrome.capsule-mode .tabs a .ic{width:13px;height:13px}
+#chrome.capsule-mode .cbtn{width:30px;height:30px}
+#chrome.capsule-mode .cbtn svg{width:15px;height:15px}
+#chrome.capsule-mode .kbd-chip{height:30px;font-size:12px}
+#chrome.capsule-mode .brand{font-size:12.5px}
 .lights{display:flex; gap:8px; padding:0 4px; flex:0 0 auto; justify-self:start}
 .light{width:12px;height:12px;border-radius:50%; box-shadow:inset 0 0 2px oklch(0% 0 0/.25)}
 .light-r{background:oklch(64% .23 25)} .light-y{background:oklch(82% .17 85)} .light-g{background:oklch(70% .2 150)}
@@ -894,6 +902,7 @@ var chrome=$('#chrome'),backtop=$('#backtop');
 window.addEventListener('scroll',function(){
   var y=window.scrollY;
   chrome.classList.toggle('scrolled',y>24);
+  chrome.classList.toggle('capsule-mode',y>260);
   backtop.classList.toggle('show',y>480);
 },{passive:true});
 backtop.addEventListener('click',function(){window.scrollTo({top:0,behavior:RM?'auto':'smooth'})});
@@ -903,6 +912,7 @@ renderAvatar();
 renderSidebar();
 renderTabs();
 chrome.classList.toggle('scrolled',window.scrollY>24);
+chrome.classList.toggle('capsule-mode',window.scrollY>260);
 })();
 </script>
 </body>
