@@ -423,7 +423,7 @@ security_headers();
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>try{var t=localStorage.getItem('of_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
-<title><?=htmlspecialchars($title)?> | OpenFlow XMP</title>
+<title><?=htmlspecialchars($title)?> | OpenFlow 运营台</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -900,6 +900,7 @@ $roleLabel = $roleLabels[$role] ?? $role;
         <?php if ($unreadCount === 0): ?><div class="notif-item"><div class="msg" style="text-align:center;padding:12px">暂无新通知</div></div><?php endif; ?>
       </div>
       <span class="who" title="<?=htmlspecialchars($name)?> · <?=htmlspecialchars($roleLabel)?>"><span class="ava"><?=htmlspecialchars(mb_substr($name,0,1))?></span><span><?=htmlspecialchars($name)?><em><?=htmlspecialchars($roleLabel)?></em></span></span>
+      <a href="/xmp/logout.php" class="cbtn" aria-label="退出登录" title="退出登录"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="m10 8-4 4 4 4M6 12h11"/></svg></a>
     </div>
   </div>
 </header>
@@ -910,37 +911,27 @@ function admin_sidebar(string $current): void {
     $name = $_SESSION['admin_name'] ?? '';
     $roleLabels = ['admin' => '超管', 'marketing' => '市场', 'sales' => '销售'];
     $roleLabel = $roleLabels[$role] ?? $role;
-?>
+ ?>
 <div class="sidebar">
-  <div class="brand">
-    <span class="dot">F</span>
-    <span>OpenFlow XMP</span>
-  </div>
-
   <?php if (has_perm('dashboard')): ?>
-  <a href="workspace.php" class="sb-item <?=$current==='workspace'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="sb-txt">工作台</span><span class="sb-badge">默认</span></a>
-  <a href="dashboard.php" class="sb-item <?=$current==='dashboard'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg><span class="sb-txt">经营驾驶舱</span><span class="sb-badge">大屏</span></a>
+  <a href="/xmp/workspace" class="sb-item <?=$current==='workspace'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="sb-txt">工作台</span><span class="sb-badge">默认</span></a>
+  <a href="/xmp/dashboard" class="sb-item <?=$current==='dashboard'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg><span class="sb-txt">经营驾驶舱</span><span class="sb-badge">大屏</span></a>
   <?php endif; ?>
 
   <?php if (has_perm('flow')): ?>
-  <a href="flow.php" class="sb-item <?=$current==='flow'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span class="sb-txt">运营主线</span><span class="sb-badge">三流联动</span></a>
-  <a href="driver.php" class="sb-item <?=$current==='driver'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="sb-txt">增长驱动</span><span class="sb-badge">主动引擎</span></a>
+  <a href="/xmp/flow" class="sb-item <?=$current==='flow'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span class="sb-txt">运营主线</span><span class="sb-badge">三流联动</span></a>
+  <a href="/xmp/driver" class="sb-item <?=$current==='driver'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="sb-txt">增长驱动</span><span class="sb-badge">主动引擎</span></a>
   <?php endif; ?>
 
   <?php if (has_perm('tasks')): ?>
-  <a href="content-calendar.php" class="sb-item <?=$current==='content-calendar'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg><span class="sb-txt">内容日历</span><span class="sb-badge">排期</span></a>
+  <a href="/xmp/content-calendar" class="sb-item <?=$current==='content-calendar'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg><span class="sb-txt">内容日历</span><span class="sb-badge">排期</span></a>
   <?php endif; ?>
-
-  <div class="global-search" id="globalSearchBox">
-    <input type="text" id="globalSearchInput" placeholder="搜索文章、页面、课程…  (⌘K)">
-    <div class="global-search-results" id="globalSearchResults"></div>
-  </div>
 
   <!-- 模块切换器：设置入口 + 4 业务模块卡片 -->
   <button class="sb-set" id="sbSet" data-sec="Settings" aria-label="切换到系统设置模块" style="display:none">
     <svg class="sb-set-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
-    <span>系统设置</span>
-    <span class="sb-set-tag">站点 · 系统 · 开发者</span>
+    <span>设置</span>
+    <span class="sb-set-tag">站点 · 系统</span>
   </button>
   <div class="module-switch" id="moduleSwitch">
     <div class="ms-tabs">
@@ -968,77 +959,77 @@ function admin_sidebar(string $current): void {
 
   <div class="sub-sec" data-sec="Touch">Pages</div>
   <?php if (has_perm('pages')): ?>
-  <a href="pages-list.php" class="<?=$current==='pages-list'?'active':''?>">
+  <a href="/xmp/pages-list" class="<?=$current==='pages-list'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
     Page List
   </a>
-  <a href="pages.php?page=index" class="<?=$current==='pages'?'active':''?>" style="padding-left:44px;font-size:13px">Detail Page</a>
-  <a href="page-categories.php" class="<?=$current==='page-categories'?'active':''?>" style="padding-left:44px;font-size:13px">Page 分类</a>
-  <a href="tags.php" class="<?=$current==='tags'?'active':''?>" style="padding-left:44px;font-size:13px">Page 标签</a>
-  <a href="cluster.php" class="<?=$current==='cluster'?'active':''?>" style="padding-left:44px;font-size:13px">Cluster 管理</a>
+  <a href="/xmp/pages?page=index" class="<?=$current==='pages'?'active':''?>" style="padding-left:44px;font-size:13px">Detail Page</a>
+  <a href="/xmp/page-categories" class="<?=$current==='page-categories'?'active':''?>" style="padding-left:44px;font-size:13px">Page 分类</a>
+  <a href="/xmp/tags" class="<?=$current==='tags'?'active':''?>" style="padding-left:44px;font-size:13px">Page 标签</a>
+  <a href="/xmp/cluster" class="<?=$current==='cluster'?'active':''?>" style="padding-left:44px;font-size:13px">Cluster 管理</a>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Touch">Academy</div>
   <?php if (has_perm('community-config') || has_perm('articles')): ?>
-  <a href="community-config.php" class="<?=$current==='community-config'?'active':''?>">
+  <a href="/xmp/community-config" class="<?=$current==='community-config'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
     内容首页
   </a>
-  <a href="articles.php" class="<?=$current==='articles'?'active':''?>" style="padding-left:44px;font-size:13px">Article List</a>
-  <a href="categories.php?type=article" class="<?=$current==='categories'?'active':''?>" style="padding-left:44px;font-size:13px">Article 分类</a>
-  <a href="tags.php" class="<?=$current==='tags'?'active':''?>" style="padding-left:44px;font-size:13px">标签</a>
+  <a href="/xmp/articles" class="<?=$current==='articles'?'active':''?>" style="padding-left:44px;font-size:13px">Article List</a>
+  <a href="/xmp/categories?type=article" class="<?=$current==='categories'?'active':''?>" style="padding-left:44px;font-size:13px">Article 分类</a>
+  <a href="/xmp/tags" class="<?=$current==='tags'?'active':''?>" style="padding-left:44px;font-size:13px">标签</a>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Touch">Landing Pages</div>
   <?php if (has_perm('landing') || has_perm('conversion')): ?>
-  <a href="landing-pages.php" class="<?=$current==='landing'?'active':''?>">
+  <a href="/xmp/landing-pages" class="<?=$current==='landing'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a2 2 0 012-2h12a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 3h10m-10 4h6m-6 4h4"/></svg>
     落地页列表
   </a>
-  <a href="page-modules.php" class="<?=$current==='page-modules'?'active':''?>" style="padding-left:44px;font-size:13px">落地页模块列表</a>
-  <a href="conversion.php" class="<?=$current==='conversion'?'active':''?>" style="padding-left:44px;font-size:13px">转化组件</a>
+  <a href="/xmp/page-modules" class="<?=$current==='page-modules'?'active':''?>" style="padding-left:44px;font-size:13px">落地页模块列表</a>
+  <a href="/xmp/conversion" class="<?=$current==='conversion'?'active':''?>" style="padding-left:44px;font-size:13px">转化组件</a>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Touch">数字资产</div>
   <?php if (has_perm('dam') || has_perm('media')): ?>
-  <a href="dam.php" class="<?=$current==='dam'?'active':''?>">
+  <a href="/xmp/dam" class="<?=$current==='dam'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
     品牌资产
   </a>
-  <a href="media.php" class="<?=$current==='media'?'active':''?>" style="padding-left:44px;font-size:13px">多媒体管理</a>
-  <a href="stock-photos.php" class="<?=$current==='stock-photos'?'active':''?>" style="padding-left:44px;font-size:13px">免费图库</a>
+  <a href="/xmp/media" class="<?=$current==='media'?'active':''?>" style="padding-left:44px;font-size:13px">多媒体管理</a>
+  <a href="/xmp/stock-photos" class="<?=$current==='stock-photos'?'active':''?>" style="padding-left:44px;font-size:13px">免费图库</a>
   <?php endif; ?>
   <?php if (has_perm('media')): ?>
-  <a href="image-seo.php" class="<?=$current==='image-seo'?'active':''?>" style="padding-left:44px;font-size:13px">图片 SEO</a>
+  <a href="/xmp/image-seo" class="<?=$current==='image-seo'?'active':''?>" style="padding-left:44px;font-size:13px">图片 SEO</a>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Touch">内容生产</div>
   <?php if (has_perm('tasks') || has_perm('featured') || has_perm('version-diff') || has_perm('topics') || has_perm('channels') || has_perm('site-builder')): ?>
   <?php if (has_perm('tasks')): ?>
-  <a href="tasks.php" class="<?=$current==='tasks'?'active':''?>">
+  <a href="/xmp/tasks" class="<?=$current==='tasks'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
     任务分配
   </a>
-  <a href="content-calendar.php" class="<?=$current==='content-calendar'?'active':''?>" style="padding-left:44px;font-size:13px">内容日历</a>
-  <a href="publish.php" class="<?=$current==='publish'?'active':''?>" style="padding-left:44px;font-size:13px">内容分发</a>
+  <a href="/xmp/content-calendar" class="<?=$current==='content-calendar'?'active':''?>" style="padding-left:44px;font-size:13px">内容日历</a>
+  <a href="/xmp/publish" class="<?=$current==='publish'?'active':''?>" style="padding-left:44px;font-size:13px">内容分发</a>
   <?php endif; ?>
   <?php if (has_perm('channels')): ?>
-  <a href="channels.php" class="<?=$current==='channels'?'active':''?>" style="padding-left:44px;font-size:13px">分发渠道</a>
+  <a href="/xmp/channels" class="<?=$current==='channels'?'active':''?>" style="padding-left:44px;font-size:13px">分发渠道</a>
   <?php endif; ?>
   <?php if (has_perm('featured')): ?>
-  <a href="featured.php" class="<?=$current==='featured'?'active':''?>" style="padding-left:44px;font-size:13px">推荐位管理</a>
+  <a href="/xmp/featured" class="<?=$current==='featured'?'active':''?>" style="padding-left:44px;font-size:13px">推荐位管理</a>
   <?php endif; ?>
   <?php if (has_perm('version-diff')): ?>
-  <a href="version-diff.php" class="<?=$current==='version-diff'?'active':''?>" style="padding-left:44px;font-size:13px">版本对比</a>
+  <a href="/xmp/version-diff" class="<?=$current==='version-diff'?'active':''?>" style="padding-left:44px;font-size:13px">版本对比</a>
   <?php endif; ?>
   <?php if (has_perm('topics')): ?>
-  <a href="topics" class="<?=$current==='topics'?'active':''?>" style="padding-left:44px;font-size:13px">专题管理</a>
+  <a href="/xmp/topics" class="<?=$current==='topics'?'active':''?>" style="padding-left:44px;font-size:13px">专题管理</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Touch">活动</div>
   <?php if (has_perm('events')): ?>
-  <a href="events.php" class="<?=$current==='events'?'active':''?>">
+  <a href="/xmp/events" class="<?=$current==='events'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
     活动管理
   </a>
@@ -1047,22 +1038,22 @@ function admin_sidebar(string $current): void {
   <div class="sub-sec" data-sec="Touch">知识付费</div>
   <?php if (has_perm('courses') || has_perm('downloads') || has_perm('podcasts')): ?>
   <?php if (has_perm('courses')): ?>
-  <a href="courses.php" class="<?=$current==='courses'?'active':''?>">
+  <a href="/xmp/courses" class="<?=$current==='courses'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
     课程管理
   </a>
   <?php endif; ?>
   <?php if (has_perm('podcasts')): ?>
-  <a href="podcasts" class="<?=$current==='podcasts'?'active':''?>" style="padding-left:44px;font-size:13px">播客视频</a>
+  <a href="/xmp/podcasts" class="<?=$current==='podcasts'?'active':''?>" style="padding-left:44px;font-size:13px">播客视频</a>
   <?php endif; ?>
   <?php if (has_perm('downloads')): ?>
-  <a href="downloads" class="<?=$current==='downloads'?'active':''?>" style="padding-left:44px;font-size:13px">资料下载</a>
+  <a href="/xmp/downloads" class="<?=$current==='downloads'?'active':''?>" style="padding-left:44px;font-size:13px">资料下载</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Touch">导航</div>
   <?php if (has_perm('navigation')): ?>
-  <a href="navigation.php" class="<?=$current==='navigation'?'active':''?>">
+  <a href="/xmp/navigation" class="<?=$current==='navigation'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
     增长导航
   </a>
@@ -1071,23 +1062,23 @@ function admin_sidebar(string $current): void {
   <div class="sub-sec" data-sec="Touch">Community</div>
   <?php if (has_perm('community-mod') || has_perm('moderation') || has_perm('bookmarks') || has_perm('follows')): ?>
   <?php if (has_perm('community-mod')): ?>
-  <a href="community-mod.php" class="<?=$current==='community-mod'?'active':''?>">
+  <a href="/xmp/community-mod" class="<?=$current==='community-mod'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
     论坛管理
   </a>
   <?php endif; ?>
   <?php if (has_perm('community-mod') || has_perm('moderation')): ?>
-  <a href="comments.php" class="<?=$current==='comments'?'active':''?>" style="padding-left:44px;font-size:13px">评论 / 点评</a>
+  <a href="/xmp/comments" class="<?=$current==='comments'?'active':''?>" style="padding-left:44px;font-size:13px">评论 / 点评</a>
   <?php endif; ?>
   <?php if (has_perm('moderation')): ?>
-  <a href="moderation.php" class="<?=$current==='moderation'?'active':''?>" style="padding-left:44px;font-size:13px">风控中心</a>
-  <a href="reports.php" class="<?=$current==='reports'?'active':''?>" style="padding-left:44px;font-size:13px">举报管理</a>
+  <a href="/xmp/moderation" class="<?=$current==='moderation'?'active':''?>" style="padding-left:44px;font-size:13px">风控中心</a>
+  <a href="/xmp/reports" class="<?=$current==='reports'?'active':''?>" style="padding-left:44px;font-size:13px">举报管理</a>
   <?php endif; ?>
   <?php if (has_perm('bookmarks')): ?>
-  <a href="bookmarks.php" class="<?=$current==='bookmarks'?'active':''?>" style="padding-left:44px;font-size:13px">收藏管理</a>
+  <a href="/xmp/bookmarks" class="<?=$current==='bookmarks'?'active':''?>" style="padding-left:44px;font-size:13px">收藏管理</a>
   <?php endif; ?>
   <?php if (has_perm('follows')): ?>
-  <a href="follows.php" class="<?=$current==='follows'?'active':''?>" style="padding-left:44px;font-size:13px">关注管理</a>
+  <a href="/xmp/follows" class="<?=$current==='follows'?'active':''?>" style="padding-left:44px;font-size:13px">关注管理</a>
   <?php endif; ?>
   <?php endif; ?>
 
@@ -1097,45 +1088,45 @@ function admin_sidebar(string $current): void {
   <div class="sub-sec" data-sec="Insight">Analytics</div>
   <?php if (has_perm('cdp') || has_perm('analytics') || has_perm('insights')): ?>
   <?php if (has_perm('cdp')): ?>
-  <a href="cdp.php" class="<?=$current==='cdp'?'active':''?>">
+  <a href="/xmp/cdp" class="<?=$current==='cdp'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-6.13a4 4 0 11-8 0 4 4 0 018 0zm12 6a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
     客户数据平台
   </a>
   <?php endif; ?>
   <?php if (has_perm('analytics')): ?>
-  <a href="analytics.php" class="<?=$current==='analytics'?'active':''?>" style="padding-left:44px;font-size:13px">运营分析</a>
-  <a href="path-analysis.php" class="<?=$current==='path-analysis'?'active':''?>" style="padding-left:44px;font-size:13px">路径分析</a>
-  <a href="attribution.php" class="<?=$current==='attribution'?'active':''?>" style="padding-left:44px;font-size:13px">增长归因</a>
-  <a href="attribution-model.php" class="<?=$current==='attribution-model'?'active':''?>" style="padding-left:44px;font-size:13px">多触点归因</a>
+  <a href="/xmp/analytics" class="<?=$current==='analytics'?'active':''?>" style="padding-left:44px;font-size:13px">运营分析</a>
+  <a href="/xmp/path-analysis" class="<?=$current==='path-analysis'?'active':''?>" style="padding-left:44px;font-size:13px">路径分析</a>
+  <a href="/xmp/attribution" class="<?=$current==='attribution'?'active':''?>" style="padding-left:44px;font-size:13px">增长归因</a>
+  <a href="/xmp/attribution-model" class="<?=$current==='attribution-model'?'active':''?>" style="padding-left:44px;font-size:13px">多触点归因</a>
   <?php endif; ?>
   <?php if (has_perm('insights')): ?>
-  <a href="insights.php" class="<?=$current==='insights'?'active':''?>" style="padding-left:44px;font-size:13px">营销洞察</a>
+  <a href="/xmp/insights" class="<?=$current==='insights'?'active':''?>" style="padding-left:44px;font-size:13px">营销洞察</a>
   <?php endif; ?>
   <?php if (has_perm('analytics')): ?>
-  <a href="share-kols.php" class="<?=$current==='share-kols'?'active':''?>" style="padding-left:44px;font-size:13px">分享传播</a>
+  <a href="/xmp/share-kols" class="<?=$current==='share-kols'?'active':''?>" style="padding-left:44px;font-size:13px">分享传播</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Insight">Segment</div>
   <?php if (has_perm('segments') || has_perm('profiling')): ?>
   <?php if (has_perm('segments')): ?>
-  <a href="segments.php" class="<?=$current==='segments'?'active':''?>">
+  <a href="/xmp/segments" class="<?=$current==='segments'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-6.13a4 4 0 11-8 0 4 4 0 018 0zm12 6a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
     用户分群
   </a>
   <?php endif; ?>
   <?php if (has_perm('profiling')): ?>
-  <a href="profiling.php" class="<?=$current==='profiling'?'active':''?>" style="padding-left:44px;font-size:13px">用户画像</a>
+  <a href="/xmp/profiling" class="<?=$current==='profiling'?'active':''?>" style="padding-left:44px;font-size:13px">用户画像</a>
   <?php endif; ?>
   <?php if (has_perm('cdp')): ?>
-  <a href="data-connector.php" class="<?=$current==='data-connector'?'active':''?>" style="padding-left:44px;font-size:13px">数据连接器</a>
-  <a href="event-dictionary.php" class="<?=$current==='event-dictionary'?'active':''?>" style="padding-left:44px;font-size:13px">📋 事件字典</a>
+  <a href="/xmp/data-connector" class="<?=$current==='data-connector'?'active':''?>" style="padding-left:44px;font-size:13px">数据连接器</a>
+  <a href="/xmp/event-dictionary" class="<?=$current==='event-dictionary'?'active':''?>" style="padding-left:44px;font-size:13px">📋 事件字典</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Insight">A/B Test</div>
   <?php if (has_perm('abtests')): ?>
-  <a href="abtests.php" class="<?=$current==='abtests'?'active':''?>">
+  <a href="/xmp/abtests" class="<?=$current==='abtests'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M7 15h2m-2 4h2m6-8h2m-2 4h2"/></svg>
     A/B 测试
   </a>
@@ -1144,59 +1135,59 @@ function admin_sidebar(string $current): void {
   <div class="sub-sec" data-sec="Insight">SEO</div>
   <?php if (has_perm('seo') || has_perm('seo-tools') || has_perm('redirects') || has_perm('structured') || has_perm('geo') || has_perm('sentiment') || has_perm('seo-console')): ?>
   <?php if (has_perm('seo')): ?>
-  <a href="seo.php" class="<?=$current==='seo'?'active':''?>">
+  <a href="/xmp/seo" class="<?=$current==='seo'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 4a7 7 0 100 14 7 7 0 000-14z"/></svg>
     页面 SEO
   </a>
   <?php endif; ?>
   <?php if (has_perm('seo-tools')): ?>
-  <a href="seo-tools.php" class="<?=$current==='seo-tools'?'active':''?>" style="padding-left:44px;font-size:13px">SEO 工具</a>
-  <a href="seo-batch.php" class="<?=$current==='seo-batch'?'active':''?>" style="padding-left:44px;font-size:13px">批量 SEO 策略</a>
+  <a href="/xmp/seo-tools" class="<?=$current==='seo-tools'?'active':''?>" style="padding-left:44px;font-size:13px">SEO 工具</a>
+  <a href="/xmp/seo-batch" class="<?=$current==='seo-batch'?'active':''?>" style="padding-left:44px;font-size:13px">批量 SEO 策略</a>
   <?php endif; ?>
   <?php if (has_perm('redirects')): ?>
-  <a href="redirects.php" class="<?=$current==='redirects'?'active':''?>" style="padding-left:44px;font-size:13px">301 重定向</a>
+  <a href="/xmp/redirects" class="<?=$current==='redirects'?'active':''?>" style="padding-left:44px;font-size:13px">301 重定向</a>
   <?php endif; ?>
   <?php if (has_perm('structured')): ?>
-  <a href="structured-data.php" class="<?=$current==='structured'?'active':''?>" style="padding-left:44px;font-size:13px">结构化数据</a>
+  <a href="/xmp/structured-data" class="<?=$current==='structured'?'active':''?>" style="padding-left:44px;font-size:13px">结构化数据</a>
   <?php endif; ?>
   <?php if (has_perm('geo')): ?>
-  <a href="geo.php" class="<?=$current==='geo'?'active':''?>" style="padding-left:44px;font-size:13px">GEO 话题监控</a>
+  <a href="/xmp/geo" class="<?=$current==='geo'?'active':''?>" style="padding-left:44px;font-size:13px">GEO 话题监控</a>
   <?php endif; ?>
   <?php if (has_perm('sentiment')): ?>
-  <a href="sentiment.php" class="<?=$current==='sentiment'?'active':''?>" style="padding-left:44px;font-size:13px">舆情监测</a>
+  <a href="/xmp/sentiment" class="<?=$current==='sentiment'?'active':''?>" style="padding-left:44px;font-size:13px">舆情监测</a>
   <?php endif; ?>
   <?php if (has_perm('seo-console')): ?>
-  <a href="seo-console.php" class="<?=$current==='seo-console'?'active':''?>" style="padding-left:44px;font-size:13px">SEO 站长工具</a>
+  <a href="/xmp/seo-console" class="<?=$current==='seo-console'?'active':''?>" style="padding-left:44px;font-size:13px">SEO 站长工具</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Insight">脚本和埋点</div>
   <?php if (has_perm('tracking') || has_perm('scripts')): ?>
   <?php if (has_perm('tracking')): ?>
-  <a href="tracking.php" class="<?=$current==='tracking'?'active':''?>">
+  <a href="/xmp/tracking" class="<?=$current==='tracking'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
     行为追踪
   </a>
   <?php endif; ?>
   <?php if (has_perm('scripts')): ?>
-  <a href="scripts.php" class="<?=$current==='scripts'?'active':''?>" style="padding-left:44px;font-size:13px">脚本 & 埋点</a>
+  <a href="/xmp/scripts" class="<?=$current==='scripts'?'active':''?>" style="padding-left:44px;font-size:13px">脚本 & 埋点</a>
   <?php endif; ?>
   <?php if (has_perm('analytics')): ?>
-  <a href="realtime.php" class="<?=$current==='realtime'?'active':''?>" style="padding-left:44px;font-size:13px">⚡ 实时数据</a>
+  <a href="/xmp/realtime" class="<?=$current==='realtime'?'active':''?>" style="padding-left:44px;font-size:13px">⚡ 实时数据</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Insight">User Analytics</div>
   <?php if (has_perm('survey') || has_perm('nps')): ?>
   <?php if (has_perm('survey')): ?>
-  <a href="survey" class="<?=$current==='survey'?'active':''?>">
+  <a href="/xmp/survey" class="<?=$current==='survey'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
     问卷管理
   </a>
-  <a href="survey-stats.php" class="<?=$current==='survey-stats'?'active':''?>" style="padding-left:44px;font-size:13px">统计查看</a>
+  <a href="/xmp/survey-stats" class="<?=$current==='survey-stats'?'active':''?>" style="padding-left:44px;font-size:13px">统计查看</a>
   <?php endif; ?>
   <?php if (has_perm('nps')): ?>
-  <a href="nps.php" class="<?=$current==='nps'?'active':''?>" style="padding-left:44px;font-size:13px">NPS 调研</a>
+  <a href="/xmp/nps" class="<?=$current==='nps'?'active':''?>" style="padding-left:44px;font-size:13px">NPS 调研</a>
   <?php endif; ?>
   <?php endif; ?>
 
@@ -1206,57 +1197,57 @@ function admin_sidebar(string $current): void {
   <div class="sub-sec" data-sec="Personalize">CRO</div>
   <?php if (has_perm('campaigns') || has_perm('conversion') || has_perm('settings')): ?>
   <?php if (has_perm('campaigns')): ?>
-  <a href="campaigns.php" class="<?=$current==='campaigns'?'active':''?>">
+  <a href="/xmp/campaigns" class="<?=$current==='campaigns'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
     Campaign
   </a>
   <?php endif; ?>
   <?php if (has_perm('conversion')): ?>
-  <a href="conversion.php" class="<?=$current==='conversion'?'active':''?>" style="padding-left:44px;font-size:13px">转化组件</a>
+  <a href="/xmp/conversion" class="<?=$current==='conversion'?'active':''?>" style="padding-left:44px;font-size:13px">转化组件</a>
   <?php endif; ?>
   <?php if (has_perm('settings')): ?>
-  <a href="dynamic-content.php" class="<?=$current==='dynamic-content'?'active':''?>" style="padding-left:44px;font-size:13px">Dynamic Engine</a>
+  <a href="/xmp/dynamic-content" class="<?=$current==='dynamic-content'?'active':''?>" style="padding-left:44px;font-size:13px">Dynamic Engine</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Personalize">营销自动化</div>
   <?php if (has_perm('automation') || has_perm('canvas') || has_perm('ma-sync') || has_perm('sms')): ?>
   <?php if (has_perm('automation')): ?>
-  <a href="automation.php" class="<?=$current==='automation'?'active':''?>">
+  <a href="/xmp/automation" class="<?=$current==='automation'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
     营销自动化
   </a>
   <?php endif; ?>
   <?php if (has_perm('canvas')): ?>
-  <a href="canvas.php" class="<?=$current==='canvas'?'active':''?>" style="padding-left:44px;font-size:13px">画布流程</a>
+  <a href="/xmp/canvas" class="<?=$current==='canvas'?'active':''?>" style="padding-left:44px;font-size:13px">画布流程</a>
   <?php endif; ?>
   <?php if (has_perm('ma-sync')): ?>
-  <a href="ma-sync.php" class="<?=$current==='ma-sync'?'active':''?>" style="padding-left:44px;font-size:13px">MA 融合同步</a>
+  <a href="/xmp/ma-sync" class="<?=$current==='ma-sync'?'active':''?>" style="padding-left:44px;font-size:13px">MA 融合同步</a>
   <?php endif; ?>
   <?php if (has_perm('sms')): ?>
-  <a href="sms.php" class="<?=$current==='sms'?'active':''?>" style="padding-left:44px;font-size:13px">短信管理</a>
+  <a href="/xmp/sms" class="<?=$current==='sms'?'active':''?>" style="padding-left:44px;font-size:13px">短信管理</a>
   <?php endif; ?>
   <?php endif; ?>
 
    <div class="sub-sec" data-sec="Personalize">触达渠道</div>
    <?php if (has_perm('email') || has_perm('forms') || has_perm('submissions') || has_perm('qr') || has_perm('utm-builder')): ?>
    <?php if (has_perm('email')): ?>
-   <a href="email.php" class="<?=$current==='email'?'active':''?>">
+   <a href="/xmp/email" class="<?=$current==='email'?'active':''?>">
      <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
      邮件营销
    </a>
    <?php endif; ?>
    <?php if (has_perm('forms')): ?>
-   <a href="forms.php" class="<?=$current==='forms'?'active':''?>" style="padding-left:44px;font-size:13px">表单管理</a>
+   <a href="/xmp/forms" class="<?=$current==='forms'?'active':''?>" style="padding-left:44px;font-size:13px">表单管理</a>
    <?php endif; ?>
    <?php if (has_perm('submissions')): ?>
-   <a href="submissions.php" class="<?=$current==='submissions'?'active':''?>" style="padding-left:44px;font-size:13px">提交记录</a>
+   <a href="/xmp/submissions" class="<?=$current==='submissions'?'active':''?>" style="padding-left:44px;font-size:13px">提交记录</a>
    <?php endif; ?>
    <?php if (has_perm('qr')): ?>
-   <a href="qr.php" class="<?=$current==='qr'?'active':''?>" style="padding-left:44px;font-size:13px">二维码</a>
+   <a href="/xmp/qr" class="<?=$current==='qr'?'active':''?>" style="padding-left:44px;font-size:13px">二维码</a>
    <?php endif; ?>
    <?php if (has_perm('utm-builder')): ?>
-   <a href="utm-builder.php" class="<?=$current==='utm-builder'?'active':''?>" style="padding-left:44px;font-size:13px">UTM 生成器</a>
+   <a href="/xmp/utm-builder" class="<?=$current==='utm-builder'?'active':''?>" style="padding-left:44px;font-size:13px">UTM 生成器</a>
    <?php endif; ?>
    <?php endif; ?>
 
@@ -1266,62 +1257,62 @@ function admin_sidebar(string $current): void {
   <div class="sub-sec" data-sec="Sales">ToB</div>
   <?php if (has_perm('crm') || has_perm('leads')): ?>
   <?php if (has_perm('crm')): ?>
-  <a href="crm.php" class="<?=$current==='crm'?'active':''?>">
+  <a href="/xmp/crm" class="<?=$current==='crm'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9 10a1.5 1.5 0 113 0v4a1.5 1.5 0 01-3 0v-4zm6 0a1.5 1.5 0 113 0v4a1.5 1.5 0 01-3 0v-4z"/></svg>
     CRM Dashboard
   </a>
-  <a href="crm.php?tab=raw" class="<?=$current==='leads'?'active':''?>" style="padding-left:44px;font-size:13px">Row Leads</a>
-  <a href="crm.php?tab=pool" class="<?=$current==='crm-pool'?'active':''?>" style="padding-left:44px;font-size:13px">公海</a>
+  <a href="/xmp/crm?tab=raw" class="<?=$current==='leads'?'active':''?>" style="padding-left:44px;font-size:13px">Row Leads</a>
+  <a href="/xmp/crm?tab=pool" class="<?=$current==='crm-pool'?'active':''?>" style="padding-left:44px;font-size:13px">公海</a>
   <?php endif; ?>
   <?php if (has_perm('leads')): ?>
-  <a href="leads.php" class="<?=$current==='leads'?'active':''?>" style="padding-left:44px;font-size:13px">Leads</a>
+  <a href="/xmp/leads" class="<?=$current==='leads'?'active':''?>" style="padding-left:44px;font-size:13px">Leads</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Sales">ToC</div>
   <?php if (has_perm('marketplace') || has_perm('wechat-mp') || has_perm('social') || has_perm('conversion') || has_perm('shop-settings')): ?>
   <?php if (has_perm('marketplace')): ?>
-  <a href="marketplace" class="<?=$current==='marketplace'?'active':''?>">
+  <a href="/xmp/marketplace" class="<?=$current==='marketplace'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l2-2h14l2 2m-18 0l2 12a2 2 0 002 2h10a2 2 0 002-2l2-12m-18 0h18m-12 3a4 4 0 006 0"/></svg>
     Open Eco 生态插件
   </a>
   <?php endif; ?>
   <?php if (has_perm('settings')): ?>
-  <a href="commerce.php" class="<?=$current==='commerce'?'active':''?>" style="padding-left:44px;font-size:13px">💎 商业中心</a>
+  <a href="/xmp/commerce" class="<?=$current==='commerce'?'active':''?>" style="padding-left:44px;font-size:13px">💎 商业中心</a>
   <?php endif; ?>
   <?php if (has_perm('wechat-mp')): ?>
-  <a href="wechat-mp.php" class="<?=$current==='wechat-mp'?'active':''?>">
+  <a href="/xmp/wechat-mp" class="<?=$current==='wechat-mp'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
     企业微信
   </a>
-  <a href="wechat-send.php" class="<?=$current==='wechat-send'?'active':''?>" style="padding-left:44px;font-size:13px">📣 群发 & 私信</a>
-  <a href="wechat-tags.php" class="<?=$current==='wechat-tags'?'active':''?>" style="padding-left:44px;font-size:13px">🏷 服务号标签</a>
-  <a href="wecom.php" class="<?=$current==='wecom'?'active':''?>" style="padding-left:44px;font-size:13px">🏢 企业微信</a>
-  <a href="wechat-messages.php" class="<?=$current==='wechat-messages'?'active':''?>" style="padding-left:44px;font-size:13px">💬 客服/模板消息</a>
+  <a href="/xmp/wechat-send" class="<?=$current==='wechat-send'?'active':''?>" style="padding-left:44px;font-size:13px">📣 群发 & 私信</a>
+  <a href="/xmp/wechat-tags" class="<?=$current==='wechat-tags'?'active':''?>" style="padding-left:44px;font-size:13px">🏷 服务号标签</a>
+  <a href="/xmp/wecom" class="<?=$current==='wecom'?'active':''?>" style="padding-left:44px;font-size:13px">🏢 企业微信</a>
+  <a href="/xmp/wechat-messages" class="<?=$current==='wechat-messages'?'active':''?>" style="padding-left:44px;font-size:13px">💬 客服/模板消息</a>
   <?php endif; ?>
   <?php if (has_perm('social')): ?>
-  <a href="social.php" class="<?=$current==='social'?'active':''?>" style="padding-left:44px;font-size:13px">社交媒体</a>
+  <a href="/xmp/social" class="<?=$current==='social'?'active':''?>" style="padding-left:44px;font-size:13px">社交媒体</a>
   <?php endif; ?>
   <?php if (has_perm('conversion')): ?>
-  <a href="share-kols.php" class="<?=$current==='share-kols'?'active':''?>" style="padding-left:44px;font-size:13px">传播链</a>
+  <a href="/xmp/share-kols" class="<?=$current==='share-kols'?'active':''?>" style="padding-left:44px;font-size:13px">传播链</a>
   <?php endif; ?>
   <?php if (has_perm('shop-settings')): ?>
-  <a href="distribution.php" class="<?=$current==='distribution'?'active':''?>" style="padding-left:44px;font-size:13px">分销</a>
-  <a href="mall.php" class="<?=$current==='mall'?'active':''?>" style="padding-left:44px;font-size:13px">商城管理</a>
-  <a href="shop-settings.php" class="<?=$current==='shop-settings'?'active':''?>" style="padding-left:44px;font-size:13px">商城设置</a>
-  <a href="activation.php" class="<?=$current==='activation'?'active':''?>" style="padding-left:44px;font-size:13px">激活码管理</a>
+  <a href="/xmp/distribution" class="<?=$current==='distribution'?'active':''?>" style="padding-left:44px;font-size:13px">分销</a>
+  <a href="/xmp/mall" class="<?=$current==='mall'?'active':''?>" style="padding-left:44px;font-size:13px">商城管理</a>
+  <a href="/xmp/shop-settings" class="<?=$current==='shop-settings'?'active':''?>" style="padding-left:44px;font-size:13px">商城设置</a>
+  <a href="/xmp/activation" class="<?=$current==='activation'?'active':''?>" style="padding-left:44px;font-size:13px">激活码管理</a>
   <?php endif; ?>
   <?php if (has_perm('membership')): ?>
-  <a href="membership.php" class="<?=$current==='membership'?'active':''?>" style="padding-left:44px;font-size:13px">会员体系</a>
+  <a href="/xmp/membership" class="<?=$current==='membership'?'active':''?>" style="padding-left:44px;font-size:13px">会员体系</a>
   <?php endif; ?>
   <?php if (has_perm('subscription')): ?>
-  <a href="subscription.php" class="<?=$current==='subscription'?'active':''?>" style="padding-left:44px;font-size:13px">付费订阅</a>
+  <a href="/xmp/subscription" class="<?=$current==='subscription'?'active':''?>" style="padding-left:44px;font-size:13px">付费订阅</a>
   <?php endif; ?>
   <?php if (has_perm('consultation')): ?>
-  <a href="consultation" class="<?=$current==='consultation'?'active':''?>" style="padding-left:44px;font-size:13px">1v1 咨询</a>
+  <a href="/xmp/consultation" class="<?=$current==='consultation'?'active':''?>" style="padding-left:44px;font-size:13px">1v1 咨询</a>
   <?php endif; ?>
   <?php if (has_perm('live')): ?>
-  <a href="live.php" class="<?=$current==='live'?'active':''?>" style="padding-left:44px;font-size:13px">直播管理</a>
+  <a href="/xmp/live" class="<?=$current==='live'?'active':''?>" style="padding-left:44px;font-size:13px">直播管理</a>
   <?php endif; ?>
   <?php endif; ?>
 
@@ -1331,115 +1322,115 @@ function admin_sidebar(string $current): void {
   <div class="sub-sec" data-sec="Settings">站点结构</div>
   <?php if (has_perm('site-builder') || has_perm('settings')): ?>
   <?php if (has_perm('site-builder')): ?>
-  <a href="site-builder.php" class="<?=$current==='site-builder'?'active':''?>">
+  <a href="/xmp/site-builder" class="<?=$current==='site-builder'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h18M3 12h18M3 19h18M7 5v14m10-14v14"/></svg>
     站点结构
   </a>
   <?php endif; ?>
   <?php if (has_perm('navigation')): ?>
-  <a href="navigation.php" class="<?=$current==='navigation'?'active':''?>" style="padding-left:44px;font-size:13px">导航设置</a>
+  <a href="/xmp/navigation" class="<?=$current==='navigation'?'active':''?>" style="padding-left:44px;font-size:13px">导航设置</a>
   <?php endif; ?>
   <?php if (has_perm('settings')): ?>
-  <a href="settings.php" class="<?=$current==='settings'?'active':''?>">
+  <a href="/xmp/settings" class="<?=$current==='settings'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
     全站设置
   </a>
-  <a href="devops.php" class="<?=$current==='devops'?'active':''?>" style="padding-left:44px;font-size:13px">运维工具</a>
-  <a href="health-check.php" class="<?=$current==='health-check'?'active':''?>" style="padding-left:44px;font-size:13px">健康检测</a>
+  <a href="/xmp/devops" class="<?=$current==='devops'?'active':''?>" style="padding-left:44px;font-size:13px">运维工具</a>
+  <a href="/xmp/health-check" class="<?=$current==='health-check'?'active':''?>" style="padding-left:44px;font-size:13px">健康检测</a>
   <?php if (has_perm('evolution')): ?>
-  <a href="evolution.php" class="<?=$current==='evolution'?'active':''?>" style="padding-left:44px;font-size:13px">🧬 自我进化</a>
-  <a href="safefix.php" class="<?=$current==='safefix'?'active':''?>" style="padding-left:44px;font-size:13px">🛡️ 协同修复</a>
+  <a href="/xmp/evolution" class="<?=$current==='evolution'?'active':''?>" style="padding-left:44px;font-size:13px">🧬 自我进化</a>
+  <a href="/xmp/safefix" class="<?=$current==='safefix'?'active':''?>" style="padding-left:44px;font-size:13px">🛡️ 协同修复</a>
   <?php endif; ?>
-  <a href="cloudflare.php" class="<?=$current==='cloudflare'?'active':''?>" style="padding-left:44px;font-size:13px">☁️ Cloudflare</a>
-  <a href="sdk-versions.php" class="<?=$current==='sdk-versions'?'active':''?>" style="padding-left:44px;font-size:13px">📦 SDK 版本</a>
+  <a href="/xmp/cloudflare" class="<?=$current==='cloudflare'?'active':''?>" style="padding-left:44px;font-size:13px">☁️ Cloudflare</a>
+  <a href="/xmp/sdk-versions" class="<?=$current==='sdk-versions'?'active':''?>" style="padding-left:44px;font-size:13px">📦 SDK 版本</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Settings">导入导出</div>
   <?php if (has_perm('articles') || has_perm('ingest') || has_perm('export')): ?>
   <?php if (has_perm('articles')): ?>
-  <a href="api-batch.php" class="<?=$current==='api-batch'?'active':''?>">
+  <a href="/xmp/api-batch" class="<?=$current==='api-batch'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
     批量导入
   </a>
   <?php endif; ?>
   <?php if (has_perm('ingest')): ?>
-  <a href="ingest.php" class="<?=$current==='ingest'?'active':''?>" style="padding-left:44px;font-size:13px">外部导入</a>
+  <a href="/xmp/ingest" class="<?=$current==='ingest'?'active':''?>" style="padding-left:44px;font-size:13px">外部导入</a>
   <?php endif; ?>
   <?php if (has_perm('export')): ?>
-  <a href="data-export.php" class="<?=$current==='data-export'?'active':''?>" style="padding-left:44px;font-size:13px">数据导出</a>
+  <a href="/xmp/data-export" class="<?=$current==='data-export'?'active':''?>" style="padding-left:44px;font-size:13px">数据导出</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Settings">系统与集成</div>
   <?php if (has_perm('settings') || has_perm('notify-channels') || has_perm('messages') || has_perm('storage')): ?>
   <?php if (has_perm('settings')): ?>
-  <a href="api-keys.php" class="<?=$current==='api-keys'?'active':''?>">
+  <a href="/xmp/api-keys" class="<?=$current==='api-keys'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
     API Key 管理
   </a>
-  <a href="webhooks.php" class="<?=$current==='webhooks'?'active':''?>" style="padding-left:44px;font-size:13px">Webhook 管理</a>
-  <a href="api-docs.php" class="<?=$current==='api-docs'?'active':''?>" style="padding-left:44px;font-size:13px">API 文档</a>
-  <a href="api-affiliate.php" class="<?=$current==='api-affiliate'?'active':''?>" style="padding-left:44px;font-size:13px">API 分佣</a>
-  <a href="backup.php" class="<?=$current==='backup'?'active':''?>" style="padding-left:44px;font-size:13px">备份管理</a>
-  <a href="audit-log.php" class="<?=$current==='audit-log'?'active':''?>" style="padding-left:44px;font-size:13px">审计日志</a>
-  <a href="footer-links.php" class="<?=$current==='footer-links'?'active':''?>" style="padding-left:44px;font-size:13px">底部外链</a>
-  <a href="ads.php" class="<?=$current==='ads'?'active':''?>" style="padding-left:44px;font-size:13px">广告位管理</a>
+  <a href="/xmp/webhooks" class="<?=$current==='webhooks'?'active':''?>" style="padding-left:44px;font-size:13px">Webhook 管理</a>
+  <a href="/xmp/api-docs" class="<?=$current==='api-docs'?'active':''?>" style="padding-left:44px;font-size:13px">API 文档</a>
+  <a href="/xmp/api-affiliate" class="<?=$current==='api-affiliate'?'active':''?>" style="padding-left:44px;font-size:13px">API 分佣</a>
+  <a href="/xmp/backup" class="<?=$current==='backup'?'active':''?>" style="padding-left:44px;font-size:13px">备份管理</a>
+  <a href="/xmp/audit-log" class="<?=$current==='audit-log'?'active':''?>" style="padding-left:44px;font-size:13px">审计日志</a>
+  <a href="/xmp/footer-links" class="<?=$current==='footer-links'?'active':''?>" style="padding-left:44px;font-size:13px">底部外链</a>
+  <a href="/xmp/ads" class="<?=$current==='ads'?'active':''?>" style="padding-left:44px;font-size:13px">广告位管理</a>
   <?php endif; ?>
   <?php if (has_perm('notify-channels')): ?>
-  <a href="notify-channels.php" class="<?=$current==='notify-channels'?'active':''?>" style="padding-left:44px;font-size:13px">通知渠道</a>
+  <a href="/xmp/notify-channels" class="<?=$current==='notify-channels'?'active':''?>" style="padding-left:44px;font-size:13px">通知渠道</a>
   <?php endif; ?>
   <?php if (has_perm('messages')): ?>
-  <a href="messages.php" class="<?=$current==='messages'?'active':''?>" style="padding-left:44px;font-size:13px">站内信</a>
+  <a href="/xmp/messages" class="<?=$current==='messages'?'active':''?>" style="padding-left:44px;font-size:13px">站内信</a>
   <?php endif; ?>
   <?php if (has_perm('storage')): ?>
-  <a href="storage.php" class="<?=$current==='storage'?'active':''?>" style="padding-left:44px;font-size:13px">存储与性能</a>
+  <a href="/xmp/storage" class="<?=$current==='storage'?'active':''?>" style="padding-left:44px;font-size:13px">存储与性能</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Settings">扩展与维护</div>
   <?php if (has_perm('themes') || has_perm('plugins') || has_perm('users') || has_perm('activity') || has_perm('export') || has_perm('ai-config') || has_perm('knowledge') || has_perm('reviews') || has_perm('approvals')): ?>
   <?php if (has_perm('themes')): ?>
-  <a href="themes.php" class="<?=$current==='themes'?'active':''?>">
+  <a href="/xmp/themes" class="<?=$current==='themes'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
     主题管理
   </a>
   <?php endif; ?>
   <?php if (has_perm('plugins')): ?>
-  <a href="plugins.php" class="<?=$current==='plugins'?'active':''?>" style="padding-left:44px;font-size:13px">插件管理</a>
+  <a href="/xmp/plugins" class="<?=$current==='plugins'?'active':''?>" style="padding-left:44px;font-size:13px">插件管理</a>
   <?php endif; ?>
   <?php if (has_perm('users')): ?>
-  <a href="users.php" class="<?=$current==='users'?'active':''?>" style="padding-left:44px;font-size:13px">权限管理</a>
+  <a href="/xmp/users" class="<?=$current==='users'?'active':''?>" style="padding-left:44px;font-size:13px">权限管理</a>
   <?php endif; ?>
   <?php if (has_perm('activity')): ?>
-  <a href="activity.php" class="<?=$current==='activity'?'active':''?>" style="padding-left:44px;font-size:13px">操作日志</a>
+  <a href="/xmp/activity" class="<?=$current==='activity'?'active':''?>" style="padding-left:44px;font-size:13px">操作日志</a>
   <?php endif; ?>
   <?php if (has_perm('export')): ?>
-  <a href="export.php" class="<?=$current==='export'?'active':''?>" style="padding-left:44px;font-size:13px">数据导出</a>
+  <a href="/xmp/export" class="<?=$current==='export'?'active':''?>" style="padding-left:44px;font-size:13px">数据导出</a>
   <?php endif; ?>
   <?php if (has_perm('ai-config')): ?>
-  <a href="ai-config.php" class="<?=$current==='ai-config'?'active':''?>" style="padding-left:44px;font-size:13px">AI Agent</a>
+  <a href="/xmp/ai-config" class="<?=$current==='ai-config'?'active':''?>" style="padding-left:44px;font-size:13px">AI Agent</a>
   <?php endif; ?>
   <?php if (has_perm('knowledge')): ?>
-  <a href="knowledge.php" class="<?=$current==='knowledge'?'active':''?>" style="padding-left:44px;font-size:13px">知识库</a>
+  <a href="/xmp/knowledge" class="<?=$current==='knowledge'?'active':''?>" style="padding-left:44px;font-size:13px">知识库</a>
   <?php endif; ?>
   <?php if (has_perm('reviews')): ?>
-  <a href="reviews" class="<?=$current==='reviews'?'active':''?>" style="padding-left:44px;font-size:13px">内容审核</a>
-  <a href="review-settings.php" class="<?=$current==='review-settings'?'active':''?>" style="padding-left:64px;font-size:12px">审核规则</a>
+  <a href="/xmp/reviews" class="<?=$current==='reviews'?'active':''?>" style="padding-left:44px;font-size:13px">内容审核</a>
+  <a href="/xmp/review-settings" class="<?=$current==='review-settings'?'active':''?>" style="padding-left:64px;font-size:12px">审核规则</a>
   <?php endif; ?>
   <?php if (has_perm('approvals')): ?>
-  <a href="approvals.php" class="<?=$current==='approvals'?'active':''?>" style="padding-left:44px;font-size:13px">审核中心</a>
+  <a href="/xmp/approvals" class="<?=$current==='approvals'?'active':''?>" style="padding-left:44px;font-size:13px">审核中心</a>
   <?php endif; ?>
   <?php endif; ?>
 
   <?php PluginSystem::do_action('admin_sidebar_menu', $current); ?>
 
   <div style="border-top:1px solid var(--border);margin:8px 12px 0;padding:8px 0">
-    <a href="/docs/FEATURES.md" target="_blank" style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;font-size:12.5px;color:var(--faint);text-decoration:none" onmouseover="this.style.color='var(--muted)'" onmouseout="this.style.color='var(--faint)'">📖 项目文档</a>
+    <a href="/docs" target="_blank" style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;font-size:12.5px;color:var(--faint);text-decoration:none" onmouseover="this.style.color='var(--muted)'" onmouseout="this.style.color='var(--faint)'">📖 项目文档</a>
     <?php $loginUser = $_SESSION['admin_user'] ?? ''; ?>
   </div>
 
-  <div class="sb-foot mono">OpenFlow XMP · 5 模块 / 80 入口</div>
+  <div class="sb-foot mono">OpenFlow</div>
 </div>
 <script>
 function toggleNotif(e) { e.stopPropagation(); var d = document.getElementById('notifDropdown'); if (d) d.classList.toggle('show'); }
@@ -1452,8 +1443,8 @@ function fcToggleSidebar() {
   document.body.setAttribute('data-sb', next);
   try { localStorage.setItem('of_sb', next); } catch (e) {}
 }
-// ─── 聚焦顶栏搜索框 ───
-function fcFocusSearch() { var i = document.getElementById('globalSearchInput'); if (i) { i.focus(); i.select(); } }
+// ─── 聚焦顶栏搜索框（打开命令面板） ───
+function fcFocusSearch() { var b = document.getElementById('fcPalette'); if (b) { b.classList.add('open'); var i = document.getElementById('fcPaletteInput'); if (i) { i.focus(); i.select(); } } }
 // ─── 主题切换 ───
 function fcToggleTheme() {
   var html = document.documentElement;
@@ -1480,52 +1471,6 @@ function markNotifRead() {
   };
   xhr.send(JSON.stringify({action: 'mark_read'}));
 }
-// ─── 全局搜索 ───
-(function() {
-  var input = document.getElementById('globalSearchInput');
-  var results = document.getElementById('globalSearchResults');
-  if (!input || !results) return;
-  var timer = null;
-  function escHtml(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s || '')); return d.innerHTML; }
-  function doSearch() {
-    var q = input.value.trim();
-    if (q.length < 2) { results.style.display = 'none'; return; }
-    fetch('../api/search.php?q=' + encodeURIComponent(q))
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        if (!d.ok || !d.results.length) {
-          results.innerHTML = '<div class="gs-empty">未找到相关内容</div>';
-          results.style.display = 'block';
-          return;
-        }
-        results.innerHTML = d.results.map(function(r) {
-          var href = (r.link || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-          return '<a class="gs-item" href="' + href + '">' +
-            '<span class="gs-type">' + escHtml(r.type) + '</span>' +
-            '<span class="gs-title">' + escHtml(r.title) + '</span>' +
-            '<span style="font-size:11px;color:var(--text-3)">' + escHtml(r.hint) + '</span></a>';
-        }).join('');
-        results.style.display = 'block';
-      });
-  }
-  input.addEventListener('input', function() {
-    clearTimeout(timer);
-    timer = setTimeout(doSearch, 250);
-  });
-  input.addEventListener('focus', function() { if (input.value.trim().length >= 2) doSearch(); });
-  document.addEventListener('click', function(e) {
-    var box = document.getElementById('globalSearchBox');
-    if (box && !box.contains(e.target)) results.style.display = 'none';
-  });
-  // Cmd/Ctrl+K 唤起
-  document.addEventListener('keydown', function(e) {
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-      e.preventDefault();
-      input.focus();
-      input.select();
-    }
-  });
-})();
 // ─── 模块切换器 ───
 // 文件 → 分区映射（决定当前页面默认激活哪个模块）
 var MS_CURRENT = <?=json_encode(basename($_SERVER['SCRIPT_NAME'] ?? ''))?>;
@@ -2077,18 +2022,18 @@ function fcHelperSend() {
 <style>
   .fc-palette{position:fixed;inset:0;z-index:9995;background:rgba(20,18,25,.45);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding-top:14vh}
   .fc-palette.open{display:flex}
-  .fc-palette-box{width:620px;max-width:calc(100vw - 40px);background:var(--surface);border:1px solid var(--border-2);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden;animation:fcPalIn .16s}
+  .fc-palette-box{width:620px;max-width:calc(100vw - 40px);background:var(--surface-strong);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;animation:fcPalIn .16s}
   @keyframes fcPalIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
-  .fc-palette input{width:100%;padding:18px 20px;font-size:16px;border:none;outline:none;background:transparent;color:var(--text);font-family:var(--font)}
-  .fc-palette .pal-hint{padding:0 20px 10px;font-size:11px;color:var(--text-3);display:flex;gap:14px}
-  .fc-palette .pal-hint kbd{background:var(--surface-2);border-radius:4px;padding:1px 5px;font-size:10px;font-family:var(--mono)}
+  .fc-palette input{width:100%;padding:18px 20px;font-size:16px;border:none;outline:none;background:transparent;color:var(--fg);font-family:var(--font-body)}
+  .fc-palette .pal-hint{padding:0 20px 10px;font-size:11px;color:var(--faint);display:flex;gap:14px}
+  .fc-palette .pal-hint kbd{background:var(--hover);border-radius:4px;padding:1px 5px;font-size:10px;font-family:var(--font-mono)}
   .fc-palette-list{max-height:52vh;overflow-y:auto;border-top:1px solid var(--border);padding:8px}
   .fc-palette-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:10px;cursor:pointer;font-size:14px}
   .fc-palette-item .p-ic{font-size:18px;width:26px;text-align:center}
-  .fc-palette-item .p-sec{font-size:11px;color:var(--text-3);margin-left:auto;white-space:nowrap;padding-left:12px}
-  .fc-palette-item.sel{background:linear-gradient(135deg,rgba(221,255,14,.28),rgba(134,239,172,.18))}
-  .fc-palette-empty{padding:28px;text-align:center;color:var(--text-3);font-size:13px}
-  .fc-palette-grp{font-size:11px;color:var(--text-3);padding:10px 14px 4px;font-weight:600}
+  .fc-palette-item .p-sec{font-size:11px;color:var(--faint);margin-left:auto;white-space:nowrap;padding-left:12px}
+  .fc-palette-item.sel{background:var(--accent-soft)}
+  .fc-palette-empty{padding:28px;text-align:center;color:var(--faint);font-size:13px}
+  .fc-palette-grp{font-size:11px;color:var(--faint);padding:10px 14px 4px;font-weight:600}
 </style>
 <div class="fc-palette" id="fcPalette">
   <div class="fc-palette-box">
