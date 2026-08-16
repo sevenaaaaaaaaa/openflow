@@ -12,7 +12,7 @@ if (isset($_GET['delete'])) {
     $events = array_values(array_filter($events, fn($e) => $e['id'] !== $_GET['delete']));
     json_write($eventsFile, $events);
     flash('success', '活动已删除');
-    header('Location: events.php');
+    header('Location: /xmp/events');
     exit;
 }
 
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_csv'])) {
     } else {
         flash('error', '请上传 CSV 文件');
     }
-    header('Location: events.php');
+    header('Location: /xmp/events');
     exit;
 }
 

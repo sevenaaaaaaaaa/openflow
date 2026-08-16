@@ -31,7 +31,7 @@ if (isset($_GET['copy'])) {
         save_article($orig['id'], $orig);
         flash('success', '文章已复制');
     }
-    header('Location: articles.php');
+    header('Location: /xmp/articles');
     exit;
 }
 
@@ -70,7 +70,7 @@ if (isset($_GET['delete'])) {
         delete_article($_GET['delete']);
         flash('success', '文章已移至回收站');
     }
-    header('Location: articles.php');
+    header('Location: /xmp/articles');
     exit;
 }
 
@@ -87,7 +87,7 @@ if (isset($_GET['restore'])) {
         save_article($found['id'], $found);
         flash('success', '文章已从回收站恢复');
     }
-    header('Location: articles.php?trash=1');
+    header('Location: /xmp/articles?trash=1');
     exit;
 }
 
@@ -97,7 +97,7 @@ if (isset($_GET['permanent_delete'])) {
     $trash = array_values(array_filter($trash, fn($t) => $t['id'] !== $_GET['permanent_delete']));
     json_write(DATA_DIR . '/trash.json', $trash);
     flash('success', '文章已永久删除');
-    header('Location: articles.php?trash=1');
+    header('Location: /xmp/articles?trash=1');
     exit;
 }
 
@@ -121,7 +121,7 @@ if (isset($_POST['batch_action']) && isset($_POST['selected'])) {
         elseif ($action === 'category' && !empty($_POST['batch_category'])) { $a['category'] = $_POST['batch_category']; save_article($id, $a); $count++; }
     }
     flash('success', "批量操作完成：{$count} 篇文章已处理");
-    header('Location: articles.php');
+    header('Location: /xmp/articles');
     exit;
 }
 

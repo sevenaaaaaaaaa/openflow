@@ -99,12 +99,22 @@ function crm_transfer(string $email, string $newOwner): void {
 // 合并：从表单提交生成 CRM 线索
 function crm_from_submission(array $submission): void {
     $data = $submission['data'] ?? [];
-    // email 或 contact（表单字段名不同）
-    $email = $data['email'] ?? ($data['contact'] ?? '');
-    if (!$email || strpos($email, '@') === false) return; // 非邮箱则跳过
-    $lead = crm_ensure_lead($email, $data['name'] ?? '', $data['phone'] ?? ($data['contact'] ?? ''));
-    if (empty($lead['source'])) crm_update_lead($email, ['source' => $submission['type'] ?? 'form']);
+    // 统一提取：email / contact / phone（contact 可能是邮箱或手机号）
+    $email = trim($data['email'] ?? '');
+    $contact = trim($data['contact'] ?? '');
+    $phone = trim($data['phone'] ?? '');
+
+    // contact 字段兼容：含 @ 视为邮箱，否则视为手机号
+    if (!$email && $contact) {
+        if (strpos($contact, '@') !== false) { $email = $contact; }
+        elseif (!$phone) { $phone = $contact; }
+    }
+    if (!$email && !$phone) return; // 既无邮箱也无手机号则跳过
+
+    $key = $email !== '' ? $email : $phone;
+    $lead = crm_ensure_lead($email, $data['name'] ?? '', $phone);
+    if (empty($lead['source'])) crm_update_lead($key, ['source' => $submission['type'] ?? 'form']);
     if (empty($lead['follow_ups']) && ($submission['type'] ?? '') === 'lead') {
-        crm_add_followup($email, '通过表单首次提交：' . ($data['company'] ?? ''));
+        crm_add_followup($key, '通过表单首次提交：' . ($data['company'] ?? ''));
     }
 }

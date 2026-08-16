@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_mentor'])) {
 if (isset($_GET['del_mentor'])) {
     con_mentor_delete($_GET['del_mentor']);
     flash('success', '咨询师已删除');
-    header('Location: consultation.php');
+    header('Location: /xmp/consultation');
     exit;
 }
 

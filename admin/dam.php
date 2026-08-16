@@ -67,7 +67,7 @@ if (isset($_GET['delete'])) {
     }
     json_write($damFile, $dam);
     flash('success', '资产已删除');
-    header('Location: dam.php?type=' . $type);
+    header('Location: /xmp/dam?type=' . $type);
     exit;
 }
 

@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['scan'])) {
     if (isset($_POST['resolve']) && isset($_POST['id'])) {
         SelfEvolve::resolve(trim($_POST['id']), trim($_POST['note'] ?? ''));
         $message = '已标记为已解决，进入迭代历史。';
-        header('Location: evolution.php');
+        header('Location: /xmp/evolution');
         exit;
     }
     if (isset($_POST['ignore']) && isset($_POST['id'])) {
@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['scan'])) {
             if ($sg['id'] === $_POST['id']) { GrowthEngine::suggestionIgnored($sg['id'], $sg['category'] ?? 'other'); break; }
         }
         $message = '已忽略该建议，同类建议会降低优先级。';
-        header('Location: evolution.php');
+        header('Location: /xmp/evolution');
         exit;
     }
     if (isset($_POST['to_task']) && isset($_POST['id'])) {
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['scan'])) {
         } else {
             $error = '转任务失败：' . ($res['error'] ?? '未知');
         }
-        header('Location: evolution.php');
+        header('Location: /xmp/evolution');
         exit;
     }
     if (isset($_POST['publish_template'])) {
@@ -55,19 +55,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['scan'])) {
         ThemeSystem::saveCustom($tpl['theme_id'], $theme);
         try { GrowthEngine::timeline('publish', '脱敏打包上架：' . $tpl['name']); } catch (\Throwable $e) {}
         $message = '✅ 已脱敏打包并上架生态商城主题区（未含任何用户/内容数据）。';
-        header('Location: evolution.php');
+        header('Location: /xmp/evolution');
         exit;
     }
     if (isset($_GET['scan'])) {
         $result = SelfEvolve::runScan();
         $message = "扫描完成：新增 {$result['new']} 条建议，共 {$result['total']} 条待处理。";
-        header('Location: evolution.php?done=1');
+        header('Location: /xmp/evolution?done=1');
         exit;
     }
     if (isset($_POST['archive'])) {
         $removed = SelfEvolve::archiveResolved();
         $message = "已归档 {$removed} 条已解决建议。";
-        header('Location: evolution.php');
+        header('Location: /xmp/evolution');
         exit;
     }
 }

@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         }
         json_write($abFile, $tests);
         flash('success', 'A/B 实验已保存');
-        header('Location: abtests.php');
+        header('Location: /xmp/abtests');
         exit;
     }
 }
@@ -55,7 +55,7 @@ if (isset($_GET['delete'])) {
     $tests = array_values(array_filter($tests, fn($t) => $t['id'] !== $_GET['delete']));
     json_write($abFile, $tests);
     flash('success', '实验已删除');
-    header('Location: abtests.php');
+    header('Location: /xmp/abtests');
     exit;
 }
 

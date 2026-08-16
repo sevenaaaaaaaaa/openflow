@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ImageMeta::setAlt($path, $alt);
             flash('success', 'Alt 文本已更新');
         }
-        header('Location: image-seo.php');
+        header('Location: /xmp/image-seo');
         exit;
     } elseif ($action === 'batch_update') {
         $alts = $_POST['alt'] ?? [];
@@ -33,13 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         flash('success', "已更新 {$count} 张图片的 Alt 文本");
-        header('Location: image-seo.php');
+        header('Location: /xmp/image-seo');
         exit;
     } elseif ($action === 'auto_generate') {
         $dir = $_POST['dir'] ?? '';
         $count = ImageMeta::autoGenerateAlts($dir);
         flash('success', "已为 {$count} 张图片自动生成 Alt 文本");
-        header('Location: image-seo.php');
+        header('Location: /xmp/image-seo');
         exit;
     }
 }

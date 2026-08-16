@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         crm_transfer($email, $_POST['owner'] ?? '');
         flash('success', '线索已交接');
     }
-    header('Location: crm.php' . (isset($_POST['focus']) ? '?focus=' . urlencode($email) : ''));
+    header('Location: /xmp/crm' . (isset($_POST['focus']) ? '?focus=' . urlencode($email) : ''));
     exit;
 }
 
