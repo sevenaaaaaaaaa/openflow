@@ -94,3 +94,31 @@
 | GrowthDriver vs GrowthEngine 命名歧义 | lib/ | ✅ 已处理：GrowthDriver → GrowthFlywheel |
 | CdpSystem / CdpInsight / CdpSync 边界 | lib/ | ✅ 已处理：三文件加了三层架构边界注释 |
 | FlowSystem / CanvasSystem / AutomationSystem 关系 | lib/ | ✅ 已处理：三文件加了「流程编排三件套」边界注释 |
+
+---
+
+## 九、后台页面组件规范（对齐设计稿 openflow-admin.html）
+
+后台视觉契约源：`/Users/seveno/Downloads/openflow-admin.html`（Open Design 运营台原型）。
+后台公共样式全部集中在 `admin/config.php` 的 `<style>`，页面内不写零散样式。
+
+| 组件 | class | 说明 |
+|------|-------|------|
+| 页面头 | `.v-head` + `.v-sub` + `.v-actions` | 页面标题区 |
+| KPI 网格 | `.kpi-grid` + `.kpi`（`.k-label`/`.k-val`/`.k-sub`） | 指标卡 |
+| 面板 | `.panels` + `.panel`（`.p-head`/`.p-body`） | 双栏/两栏面板 |
+| 引擎卡 | `.eng` + `.param-grid` + `.param` | 增长引擎状态 |
+| 待办 | `.todo-row`（`.t-ic`/`.t-b`/`.t-t`/`.t-d`） | 待办队列 |
+| 时间线 | `.tl` + `.tl-item`（`.ok`/`.accent`/`.warn`） | 事件流 |
+| 状态徽标 | `.st` + `.st-ok`/`.st-warn`/`.st-danger`/`.st-faint`/`.st-accent` | 状态 |
+| 筛选 tabs | `.ftabs` + `.ftab.on` | 表格筛选 |
+| 工具栏 | `.toolbar` + `.tbar-search` + `.tbar-meta` | 搜索/计数 |
+| 表格 | `.tbl-wrap` + `.tbl`（`.t-main`/`.t-sub`/`.mono`/`.num`/`.r`） | 数据表 |
+| 批量条 | `.batch` | 批量操作 |
+| 面包屑 | `.f-crumb` | 功能页头部 |
+| 功能 hero | `.f-hero`（`.f-ic`/`.f-desc`/`.f-meta`/`.f-chip`） | 功能说明 |
+| 同组入口 | `.f-kpis` + `.f-grid` + `.f-feats` + `.f-feat` | 功能关联 |
+| 标签 | `.tag` / `.chips` + `.chip` | 标签 |
+| 按钮 | `.btn-p`（实心）/ `.btn-s`（描边）/ `.btn-ghost` / `.btn-danger` / `.btn-sm` | 按钮 |
+
+**规范**：新增/改后台页面时，用上表 class，不在页面内写硬编码 hex 或零散内联样式；表格页面优先用 `.tbl-wrap` + `.tbl`。
