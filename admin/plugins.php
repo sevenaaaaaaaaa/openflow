@@ -124,7 +124,7 @@ admin_header('插件管理');
         <?php foreach ($discovered as $repo): ?>
         <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-2);border-radius:8px">
           <div style="flex:1">
-            <strong><a href="<?=htmlspecialchars($repo['url'])?>" target="_blank" style="color:#0284c7"><?=htmlspecialchars($repo['full_name'])?></a></strong>
+            <strong><a href="<?=htmlspecialchars($repo['url'])?>" target="_blank" style="color:var(--accent)"><?=htmlspecialchars($repo['full_name'])?></a></strong>
             <p class="text-sm text-muted"><?=htmlspecialchars($repo['description'])?></p>
           </div>
           <span class="text-sm text-muted">⭐ <?=$repo['stars']?></span>

@@ -130,7 +130,7 @@ admin_header('微信标签');
                 <?= csrf_field() ?>
                 <input type="hidden" name="do" value="delete_tag">
                 <input type="hidden" name="tag_id" value="<?=$t['id']?>">
-                <button class="btn btn-ghost btn-sm" style="color:#dc2626">删除</button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--danger)">删除</button>
               </form>
             </td>
           </tr>

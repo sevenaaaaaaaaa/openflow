@@ -101,7 +101,7 @@ admin_header('运营主线');
     <?php endif; ?>
 
     <!-- ═══ A. 内容流 ═══ -->
-    <div class="flow-title"><h2>📝 内容流</h2><span class="tag" style="background:#86efac">创作 → 发布 → 分发 → 互动</span></div>
+    <div class="flow-title"><h2>📝 内容流</h2><span class="tag" style="background:#7dd3fc">创作 → 发布 → 分发 → 互动</span></div>
     <p class="flow-hint">知识库 → 文章/课程 → 多渠道分发 → 评论点评回收洞察</p>
     <div class="flow-line" style="flex-wrap:wrap;gap:10px">
       <div class="flow-step" style="flex:1 1 150px"><div class="num"><?=$pubCount?></div><div class="lbl">已发布文章</div><div class="act"><?=$draftCount?> 篇草稿</div><a class="link" href="articles.php">去管理 →</a></div>
@@ -112,12 +112,12 @@ admin_header('运营主线');
     </div>
 
     <!-- ═══ C. 价值流 ═══ -->
-    <div class="flow-title"><h2>💰 价值流</h2><span class="tag" style="background:#ddff0e">免费 → 培育 → 付费 → 会员 → 复购</span></div>
+    <div class="flow-title"><h2>💰 价值流</h2><span class="tag" style="background:#38bdf8">免费 → 培育 → 付费 → 会员 → 复购</span></div>
     <p class="flow-hint">自动化/画布培育 → 课程/咨询/订阅转化 → 会员权益 → 推荐</p>
     <div class="flow-line" style="flex-wrap:wrap;gap:10px">
       <div class="flow-step" style="flex:1 1 150px"><div class="num"><?=$automationCount + $canvasCount?></div><div class="lbl">自动化流程</div><div class="act"><?=$automationCount?> 自动化 · <?=$canvasCount?> 画布</div><a class="link" href="automation.php">去配置 →</a></div>
       <div class="flow-step" style="flex:1 1 150px"><div class="num"><?=count($paidOrders)?></div><div class="lbl">付费订单</div><div class="act">转化率 <?=$conversionRate?>%</div></div>
-      <div class="flow-step" style="flex:1 1 150px"><div class="num" style="color:#16a34a">¥<?=number_format($revenue, 0)?></div><div class="lbl">累计收入</div><div class="act">课程+订阅</div></div>
+      <div class="flow-step" style="flex:1 1 150px"><div class="num" style="color:var(--ok)">¥<?=number_format($revenue, 0)?></div><div class="lbl">累计收入</div><div class="act">课程+订阅</div></div>
       <div class="flow-step" style="flex:1 1 150px"><div class="num"><?=$subActive?></div><div class="lbl">活跃订阅</div><div class="act">会员体系</div><a class="link" href="membership.php">去管理 →</a></div>
       <div class="flow-step" style="flex:1 1 150px"><div class="num"><?=$conPaid?></div><div class="lbl">1v1 咨询</div><div class="act">付费预约</div><a class="link" href="consultation">去管理 →</a></div>
     </div>

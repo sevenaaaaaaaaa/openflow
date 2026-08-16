@@ -84,7 +84,7 @@ admin_header('实时数据');
             <?= csrf_field() ?>
             <input type="hidden" name="remove_keyword" value="1">
             <input type="hidden" name="keyword" value="<?=htmlspecialchars($kw)?>">
-            <button class="btn btn-ghost btn-sm" style="padding:0 4px;color:#dc2626">✕</button>
+            <button class="btn btn-ghost btn-sm" style="padding:0 4px;color:var(--danger)">✕</button>
           </form>
         </span>
         <?php endforeach; ?>

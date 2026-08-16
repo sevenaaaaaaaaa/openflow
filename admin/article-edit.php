@@ -228,7 +228,7 @@ admin_header($isNew ? '写新文章' : '编辑文章');
 .md-preview blockquote{border-left:4px solid var(--accent);padding:8px 16px;margin:1em 0;background:var(--surface-2);border-radius:0 8px 8px 0;color:var(--text-2)}
 .md-preview ul,.md-preview ol{padding-left:24px;margin-bottom:1em}
 .md-preview img{max-width:100%;border-radius:8px;margin:1em 0}
-.md-preview a{color:#0284c7;text-decoration:underline}
+.md-preview a{color:var(--accent);text-decoration:underline}
 .md-preview strong{font-weight:700}
 .md-preview em{font-style:italic}
 .rt-editor{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
@@ -1010,7 +1010,7 @@ function spSearch(page) {
   fetch('../api/stock.php?action=search&platform=' + SP.platform + '&q=' + encodeURIComponent(SP.query) + '&page=' + SP.page + '&per_page=12')
     .then(function(r) { return r.json(); })
     .then(function(d) {
-      if (!d.ok) { box.innerHTML = '<div style="text-align:center;padding:40px;color:#dc2626">' + (d.error || '搜索失败') + '</div>'; return; }
+      if (!d.ok) { box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--danger)">' + (d.error || '搜索失败') + '</div>'; return; }
       if (!d.photos.length) { box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">未找到相关图片</div>'; return; }
       window.SP_PHOTOS = d.photos;
       box.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">' + d.photos.map(function(p, i) {
@@ -1025,7 +1025,7 @@ function spSearch(page) {
       document.getElementById('spPrev').disabled = SP.page <= 1;
       document.getElementById('spNext').disabled = SP.page * 12 >= d.total;
     })
-    .catch(function() { box.innerHTML = '<div style="text-align:center;padding:40px;color:#dc2626">请求失败，请检查图库 API 配置</div>'; });
+    .catch(function() { box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--danger)">请求失败，请检查图库 API 配置</div>'; });
 }
 function spChange(delta) { spSearch(SP.page + delta); }
 function spDownload(idx) {
@@ -1065,9 +1065,9 @@ document.getElementById('slug').addEventListener('input', function() { this.data
 // ─── Insert Components ───
 function insertComponent(type) {
   var templates = {
-    cta: '<div style="background:#f4f3e9;border-radius:16px;padding:32px;text-align:center;margin:32px 0"><h3 style="font-size:20px;margin-bottom:8px">{{title}}</h3><p style="color:#6e6e6e;margin-bottom:16px">{{description}}</p><a href="{{url}}" style="display:inline-block;padding:12px 28px;background:#ddff0e;color:#000;border-radius:8px;font-weight:600;text-decoration:none">{{button}}</a></div>',
-    event: '<div style="border:2px solid #ddff0e;border-radius:16px;padding:24px;margin:32px 0;background:#fff"><div style="font-size:14px;font-weight:700;margin-bottom:8px">🎪 活动预告</div><h3 style="font-size:18px;margin-bottom:4px">{{title}}</h3><p style="color:#6e6e6e;font-size:14px">{{date}} · {{location}}</p><a href="{{url}}" style="display:inline-block;margin-top:12px;padding:10px 24px;background:#1e1e1e;color:#fff;border-radius:8px;font-weight:600;text-decoration:none">立即报名 →</a></div>',
-    download: '<div style="border:1px solid #e2dfd2;border-radius:16px;padding:20px;margin:32px 0;display:flex;align-items:center;gap:16px;background:#fff"><div style="font-size:40px">📥</div><div style="flex:1"><h3 style="font-size:16px;margin-bottom:4px">{{title}}</h3><p style="color:#6e6e6e;font-size:13px">{{description}}</p></div><a href="{{url}}" style="padding:10px 20px;background:#ddff0e;color:#000;border-radius:8px;font-weight:600;text-decoration:none;white-space:nowrap">免费下载</a></div>',
+    cta: '<div style="background:#f4f3e9;border-radius:16px;padding:32px;text-align:center;margin:32px 0"><h3 style="font-size:20px;margin-bottom:8px">{{title}}</h3><p style="color:#6e6e6e;margin-bottom:16px">{{description}}</p><a href="{{url}}" style="display:inline-block;padding:12px 28px;background:#38bdf8;color:#000;border-radius:8px;font-weight:600;text-decoration:none">{{button}}</a></div>',
+    event: '<div style="border:2px solid #38bdf8;border-radius:16px;padding:24px;margin:32px 0;background:#fff"><div style="font-size:14px;font-weight:700;margin-bottom:8px">🎪 活动预告</div><h3 style="font-size:18px;margin-bottom:4px">{{title}}</h3><p style="color:#6e6e6e;font-size:14px">{{date}} · {{location}}</p><a href="{{url}}" style="display:inline-block;margin-top:12px;padding:10px 24px;background:#1e1e1e;color:#fff;border-radius:8px;font-weight:600;text-decoration:none">立即报名 →</a></div>',
+    download: '<div style="border:1px solid #e2dfd2;border-radius:16px;padding:20px;margin:32px 0;display:flex;align-items:center;gap:16px;background:#fff"><div style="font-size:40px">📥</div><div style="flex:1"><h3 style="font-size:16px;margin-bottom:4px">{{title}}</h3><p style="color:#6e6e6e;font-size:13px">{{description}}</p></div><a href="{{url}}" style="padding:10px 20px;background:#38bdf8;color:#000;border-radius:8px;font-weight:600;text-decoration:none;white-space:nowrap">免费下载</a></div>',
     newsletter: '<div style="background:linear-gradient(135deg,#f7fee7,#d9f99d);border-radius:16px;padding:28px;margin:32px 0;text-align:center"><h3 style="font-size:18px;margin-bottom:4px">📬 {{title}}</h3><p style="color:#6e6e6e;font-size:14px;margin-bottom:16px">{{description}}</p><div style="display:flex;max-width:400px;margin:0 auto;gap:8px"><input type="email" placeholder="your@email.com" style="flex:1;padding:10px 16px;border:1px solid #e2dfd2;border-radius:8px;font-size:14px"><button style="padding:10px 20px;background:#1e1e1e;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">订阅</button></div></div>',
   };
   var html = templates[type] || '';

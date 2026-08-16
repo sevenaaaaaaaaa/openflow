@@ -72,7 +72,7 @@ if ($statusFilter) $display = array_values(array_filter($display, fn($r) => ($r[
 $display = array_reverse($display);
 
 $ruleLabels = ['banned' => '违禁词', 'competitor' => '竞品词', 'low_quality' => '低质量', 'off_topic' => '偏离定位'];
-$ruleColors = ['banned' => '#dc2626', 'competitor' => '#d97706', 'low_quality' => '#9ca3af', 'off_topic' => '#7c3aed'];
+$ruleColors = ['banned' => 'var(--danger)', 'competitor' => 'var(--warn)', 'low_quality' => '#9ca3af', 'off_topic' => '#7c3aed'];
 
 admin_header('内容审核');
 ?>

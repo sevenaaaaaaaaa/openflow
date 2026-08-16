@@ -138,9 +138,9 @@ if ($filterStatus) $displayTasks = array_values(array_filter($displayTasks, fn($
 usort($displayTasks, fn($a, $b) => strcmp($a['due_date'] ?? '', $b['due_date'] ?? '') ?: strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
 
 $statusLabels = ['pending' => '待处理', 'in_progress' => '进行中', 'done' => '已完成', 'cancelled' => '已取消'];
-$statusColors = ['pending' => '#d97706', 'in_progress' => '#0284c7', 'done' => '#16a34a', 'cancelled' => '#9ca3af'];
+$statusColors = ['pending' => 'var(--warn)', 'in_progress' => 'var(--accent)', 'done' => 'var(--ok)', 'cancelled' => '#9ca3af'];
 $prioLabels = ['high' => '高', 'medium' => '中', 'low' => '低'];
-$prioColors = ['high' => '#dc2626', 'medium' => '#d97706', 'low' => '#16a34a'];
+$prioColors = ['high' => 'var(--danger)', 'medium' => 'var(--warn)', 'low' => 'var(--ok)'];
 
 admin_header('任务分配');
 ?>
@@ -203,14 +203,14 @@ admin_header('任务分配');
             <td>
               <strong><?=htmlspecialchars($t['title'])?></strong>
               <?php if (!empty($t['description'])): ?><div class="text-sm text-muted" style="font-size:12px;margin-top:2px"><?=htmlspecialchars(mb_substr($t['description'], 0, 60))?></div><?php endif; ?>
-              <?php if ($commentCount > 0): ?><div class="text-sm" style="font-size:11px;color:#0284c7;margin-top:2px">💬 <?=$commentCount?> 条评论</div><?php endif; ?>
+              <?php if ($commentCount > 0): ?><div class="text-sm" style="font-size:11px;color:var(--accent);margin-top:2px">💬 <?=$commentCount?> 条评论</div><?php endif; ?>
             </td>
             <td><?=htmlspecialchars($users[$t['assignee']]['name'] ?? $t['assignee'])?></td>
             <td><span style="color:<?=$prioColors[$t['priority']]?>;font-weight:600"><?=$prioLabels[$t['priority']]?></span></td>
-            <td class="text-sm <?=($t['due_date'] && $t['due_date'] < date('Y-m-d') && $t['status'] !== 'done') ? '' : 'text-muted'?>" style="<?=($t['due_date'] && $t['due_date'] < date('Y-m-d') && $t['status'] !== 'done') ? 'color:#dc2626;font-weight:600' : ''?>"><?=htmlspecialchars($t['due_date'] ?: '—')?><?=($t['due_date'] && $t['due_date'] < date('Y-m-d') && $t['status'] !== 'done') ? ' ⚠️' : ''?></td>
+            <td class="text-sm <?=($t['due_date'] && $t['due_date'] < date('Y-m-d') && $t['status'] !== 'done') ? '' : 'text-muted'?>" style="<?=($t['due_date'] && $t['due_date'] < date('Y-m-d') && $t['status'] !== 'done') ? 'color:var(--danger);font-weight:600' : ''?>"><?=htmlspecialchars($t['due_date'] ?: '—')?><?=($t['due_date'] && $t['due_date'] < date('Y-m-d') && $t['status'] !== 'done') ? ' ⚠️' : ''?></td>
             <td style="min-width:130px">
               <div style="display:flex;align-items:center;gap:6px">
-                <div style="flex:1;height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden"><div style="height:100%;width:<?=$progress?>%;background:<?=$progress>=100?'#16a34a':($progress>=50?'#d97706':'#dc2626')?>"></div></div>
+                <div style="flex:1;height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden"><div style="height:100%;width:<?=$progress?>%;background:<?=$progress>=100?'var(--ok)':($progress>=50?'var(--warn)':'var(--danger)')?>"></div></div>
                 <span class="text-sm" style="font-size:12px;font-weight:600;width:36px"><?=$progress?>%</span>
               </div>
             </td>

@@ -121,7 +121,7 @@ admin_header('生态市场');
             <td class="text-sm text-muted"><?=htmlspecialchars($s['author'] ?? '')?><?=($s['author_type'] ?? '') === 'user' ? ' <span style="color:#2e6b4f">(UGC)</span>' : ''?></td>
             <td><?=$s['installs'] ?? 0?></td>
             <td><?=($s['rating_count'] ?? 0) > 0 ? number_format((float)$s['rating'], 1) . ' ⭐' : '—'?></td>
-            <td><?=($s['status'] ?? '') === 'published' ? '<span class="text-sm" style="color:#16a34a">已发布</span>' : '<span class="text-sm" style="color:#d97706">草稿</span>'?></td>
+            <td><?=($s['status'] ?? '') === 'published' ? '<span class="text-sm" style="color:var(--ok)">已发布</span>' : '<span class="text-sm" style="color:var(--warn)">草稿</span>'?></td>
             <td>
               <a href="?tab=new&edit=<?=urlencode($s['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
               <a href="?dup_skill=<?=urlencode($s['id'])?>" class="btn btn-ghost btn-sm">复制</a>
@@ -190,7 +190,7 @@ admin_header('生态市场');
     function aiGenerateSkill() {
       var desc = document.getElementById('aiDesc').value.trim();
       var msg = document.getElementById('aiMsg');
-      if (!desc) { msg.innerHTML = '<span style="color:#dc2626">请先描述你想创建的能力</span>'; return; }
+      if (!desc) { msg.innerHTML = '<span style="color:var(--danger)">请先描述你想创建的能力</span>'; return; }
       var btn = document.getElementById('aiGenBtn');
       btn.disabled = true; btn.textContent = '⏳ 生成中…';
       msg.innerHTML = '<span style="color:#6b6580">AI 正在设计技能，请稍候…</span>';
@@ -198,7 +198,7 @@ admin_header('生态市场');
       fetch('/api/marketplace.php?action=ai_generate', { method: 'POST', body: body })
         .then(function(r){ return r.json(); })
         .then(function(d){
-          if (!d.ok) { msg.innerHTML = '<span style="color:#dc2626">😅 ' + (d.error || '生成失败') + '</span>'; btn.disabled = false; btn.textContent = '✨ 生成'; return; }
+          if (!d.ok) { msg.innerHTML = '<span style="color:var(--danger)">😅 ' + (d.error || '生成失败') + '</span>'; btn.disabled = false; btn.textContent = '✨ 生成'; return; }
           var s = d.skill;
           var form = document.querySelector('form[method="post"]');
           var nameInput = form.querySelector('input[name="title"]');
@@ -212,14 +212,14 @@ admin_header('生态市场');
           if (s.type === 'workflow') {
             form.querySelector('textarea[name="workflow_steps"]').value = (s.steps || []).map(function(x){ return x.title || ''; }).join('\n');
           }
-          msg.innerHTML = '<span style="color:#16a34a">✅ 已生成！请检查并保存</span>';
+          msg.innerHTML = '<span style="color:var(--ok)">✅ 已生成！请检查并保存</span>';
           btn.disabled = false; btn.textContent = '✨ 生成';
-        }).catch(function(){ msg.innerHTML = '<span style="color:#dc2626">网络异常</span>'; btn.disabled = false; btn.textContent = '✨ 生成'; });
+        }).catch(function(){ msg.innerHTML = '<span style="color:var(--danger)">网络异常</span>'; btn.disabled = false; btn.textContent = '✨ 生成'; });
     }
     function aiGeneratePlugin() {
       var desc = document.getElementById('plgDesc').value.trim();
       var msg = document.getElementById('plgMsg');
-      if (!desc) { msg.innerHTML = '<span style="color:#dc2626">请先描述插件功能</span>'; return; }
+      if (!desc) { msg.innerHTML = '<span style="color:var(--danger)">请先描述插件功能</span>'; return; }
       var btn = document.getElementById('plgBtn');
       btn.disabled = true; btn.textContent = '⏳ 生成中…';
       msg.innerHTML = '<span style="color:#6b6580">AI 正在编写插件代码，请稍候…</span>';
@@ -227,10 +227,10 @@ admin_header('生态市场');
       fetch('/api/marketplace.php?action=ai_plugin', { method: 'POST', body: body })
         .then(function(r){ return r.json(); })
         .then(function(d){
-          if (!d.ok) { msg.innerHTML = '<span style="color:#dc2626">😅 ' + (d.error || '生成失败') + '</span>'; btn.disabled = false; btn.textContent = '✨ 生成插件'; return; }
-          msg.innerHTML = '<span style="color:#16a34a">✅ 插件已生成：' + (d.plugin_id || '') + '，请到「插件管理」启用</span>';
+          if (!d.ok) { msg.innerHTML = '<span style="color:var(--danger)">😅 ' + (d.error || '生成失败') + '</span>'; btn.disabled = false; btn.textContent = '✨ 生成插件'; return; }
+          msg.innerHTML = '<span style="color:var(--ok)">✅ 插件已生成：' + (d.plugin_id || '') + '，请到「插件管理」启用</span>';
           btn.disabled = false; btn.textContent = '✨ 生成插件';
-        }).catch(function(){ msg.innerHTML = '<span style="color:#dc2626">网络异常</span>'; btn.disabled = false; btn.textContent = '✨ 生成插件'; });
+        }).catch(function(){ msg.innerHTML = '<span style="color:var(--danger)">网络异常</span>'; btn.disabled = false; btn.textContent = '✨ 生成插件'; });
     }
     </script>
 

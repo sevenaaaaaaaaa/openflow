@@ -140,14 +140,14 @@ admin_header('NPS 调研系统');
           <div style="font-size:20px;font-weight:700"><?=$grade[0]?></div>
           <div class="text-sm text-muted" style="margin-top:6px">共 <?=$stats['total']?> 份回收 · 平均 <?=$stats['avg']?> 分</div>
           <div class="nps-bar" style="margin-top:16px;display:flex;overflow:hidden">
-            <i style="width:<?=$stats['detractor_pct']?>%;background:#dc2626"></i>
-            <i style="width:<?=$stats['passive_pct']?>%;background:#d97706"></i>
-            <i style="width:<?=$stats['promoter_pct']?>%;background:#16a34a"></i>
+            <i style="width:<?=$stats['detractor_pct']?>%;background:var(--danger)"></i>
+            <i style="width:<?=$stats['passive_pct']?>%;background:var(--warn)"></i>
+            <i style="width:<?=$stats['promoter_pct']?>%;background:var(--ok)"></i>
           </div>
           <div style="display:flex;gap:18px;margin-top:10px;font-size:13px;flex-wrap:wrap">
-            <span><b style="color:#16a34a">😍 推荐者</b> <?=$stats['promoters']?> (<?=$stats['promoter_pct']?>%)</span>
-            <span><b style="color:#d97706">😐 被动者</b> <?=$stats['passives']?> (<?=$stats['passive_pct']?>%)</span>
-            <span><b style="color:#dc2626">😞 贬损者</b> <?=$stats['detractors']?> (<?=$stats['detractor_pct']?>%)</span>
+            <span><b style="color:var(--ok)">😍 推荐者</b> <?=$stats['promoters']?> (<?=$stats['promoter_pct']?>%)</span>
+            <span><b style="color:var(--warn)">😐 被动者</b> <?=$stats['passives']?> (<?=$stats['passive_pct']?>%)</span>
+            <span><b style="color:var(--danger)">😞 贬损者</b> <?=$stats['detractors']?> (<?=$stats['detractor_pct']?>%)</span>
           </div>
         </div>
       </div>
@@ -159,7 +159,7 @@ admin_header('NPS 调研系统');
           <?php $maxD = max($stats['distribution']) ?: 1; ?>
           <?php foreach ($stats['distribution'] as $score => $cnt):
             $h = $cnt > 0 ? max(6, round($cnt / $maxD * 110)) : 2;
-            $c = $score >= 9 ? '#16a34a' : ($score >= 7 ? '#d97706' : '#dc2626');
+            $c = $score >= 9 ? 'var(--ok)' : ($score >= 7 ? 'var(--warn)' : 'var(--danger)');
           ?>
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
             <span style="font-size:11px;color:var(--text-3)"><?=$cnt?:''?></span>
@@ -181,7 +181,7 @@ admin_header('NPS 调研系统');
           <?php foreach ($trendData as $t): ?>
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
             <span style="font-size:10px;color:var(--text-3)"><?=$t['nps']?></span>
-            <div style="width:100%;height:<?=$t['nps']>=0?max(4,($t['nps']-$minN)/$range*80):4?>px;background:<?=$t['nps']>=0?'#2e6b4f':'#dc2626'?>;border-radius:3px"></div>
+            <div style="width:100%;height:<?=$t['nps']>=0?max(4,($t['nps']-$minN)/$range*80):4?>px;background:<?=$t['nps']>=0?'#2e6b4f':'var(--danger)'?>;border-radius:3px"></div>
             <span style="font-size:9px;color:var(--text-3);white-space:nowrap"><?=substr($t['day'],5)?></span>
           </div>
           <?php endforeach; ?>
@@ -202,7 +202,7 @@ admin_header('NPS 调研系统');
           <?php foreach (array_reverse($responses) as $r): ?>
           <tr>
             <td class="text-sm text-muted" style="white-space:nowrap"><?=htmlspecialchars(substr($r['created_at']??'',0,16))?></td>
-            <td><span style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;background:<?=($r['score']??0)>=9?'#16a34a':(($r['score']??0)>=7?'#d97706':'#dc2626')?>"><?=htmlspecialchars($r['score'])?></span></td>
+            <td><span style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;background:<?=($r['score']??0)>=9?'var(--ok)':(($r['score']??0)>=7?'var(--warn)':'var(--danger)')?>"><?=htmlspecialchars($r['score'])?></span></td>
             <td class="text-sm text-muted"><?=htmlspecialchars($r['name'] ?: ($r['source'] ?: '匿名'))?></td>
             <td class="text-sm" style="max-width:400px"><?=htmlspecialchars($r['comment'] ?? '')?></td>
           </tr>

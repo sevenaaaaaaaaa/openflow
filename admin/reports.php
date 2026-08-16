@@ -15,20 +15,20 @@ $reasons = ReportSystem::reasons();
     <div class="flex items-center gap-4 mb-4">
       <h1 style="margin-bottom:0">🚨 举报管理</h1>
       <div class="flex gap-2 ml-auto">
-        <span class="badge" style="background:#dc2626;color:#fff;padding:4px 12px;border-radius:999px;font-size:13px"><?=count($pending)?> 待处理</span>
+        <span class="badge" style="background:var(--danger);color:#fff;padding:4px 12px;border-radius:999px;font-size:13px"><?=count($pending)?> 待处理</span>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
-        <div style="font-size:28px;font-weight:700;color:#dc2626"><?=count($all)?></div>
+        <div style="font-size:28px;font-weight:700;color:var(--danger)"><?=count($all)?></div>
         <div style="color:var(--muted);font-size:13px;margin-top:4px">全部举报</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
-        <div style="font-size:28px;font-weight:700;color:#d97706"><?=count($pending)?></div>
+        <div style="font-size:28px;font-weight:700;color:var(--warn)"><?=count($pending)?></div>
         <div style="color:var(--muted);font-size:13px;margin-top:4px">待处理</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
-        <div style="font-size:28px;font-weight:700;color:#16a34a"><?=count($resolved)?></div>
+        <div style="font-size:28px;font-weight:700;color:var(--ok)"><?=count($resolved)?></div>
         <div style="color:var(--muted);font-size:13px;margin-top:4px">已处理</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
@@ -68,7 +68,7 @@ $reasons = ReportSystem::reasons();
             <td style="padding:12px 16px;font-size:13px;color:var(--muted)"><?=h($r['created_at'] ?? '')?></td>
             <td style="padding:12px 16px;text-align:right;white-space:nowrap">
               <?php if ($r['status']==='pending'): ?>
-                <button onclick="resolveReport('<?=h($r['id'])?>','resolved')" style="padding:4px 10px;border-radius:6px;border:1px solid #16a34a;color:#16a34a;background:none;cursor:pointer;font-size:12px;margin-right:4px">处理</button>
+                <button onclick="resolveReport('<?=h($r['id'])?>','resolved')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--ok);color:var(--ok);background:none;cursor:pointer;font-size:12px;margin-right:4px">处理</button>
                 <button onclick="resolveReport('<?=h($r['id'])?>','dismissed')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);color:var(--muted);background:none;cursor:pointer;font-size:12px">驳回</button>
               <?php endif; ?>
             </td>

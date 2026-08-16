@@ -87,7 +87,7 @@ admin_header('直播管理');
 
     <!-- 统计 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
-      <div class="card" style="border-left:4px solid #dc2626"><h3 style="font-size:13px" class="text-muted">🔴 直播中</h3><div style="font-size:26px;font-weight:800"><?=count($liveRooms)?></div></div>
+      <div class="card" style="border-left:4px solid var(--danger)"><h3 style="font-size:13px" class="text-muted">🔴 直播中</h3><div style="font-size:26px;font-weight:800"><?=count($liveRooms)?></div></div>
       <div class="card" style="border-left:4px solid #2563eb"><h3 style="font-size:13px" class="text-muted">🕐 预告/未开播</h3><div style="font-size:26px;font-weight:800"><?=count($scheduledRooms)?></div></div>
       <div class="card"><h3 style="font-size:13px" class="text-muted">📡 推流地址</h3><div style="font-size:13px;font-family:var(--mono);word-break:break-all"><?=htmlspecialchars($settings['rtmp_url'])?></div></div>
     </div>
@@ -119,7 +119,7 @@ admin_header('直播管理');
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <strong style="font-size:15px"><?=htmlspecialchars($r['title'])?></strong>
           <span class="badge" style="background:<?=live_status_color($st)?>;color:#fff;padding:3px 10px;border-radius:999px;font-size:11px"><?=live_status_label($st)?></span>
-          <?php if (!empty($r['sell_course'])): ?><span class="badge" style="background:#16a34a;color:#fff;padding:3px 10px;border-radius:999px;font-size:11px">🎓 售卖：<?=htmlspecialchars(mb_substr($courseMap[$r['sell_course']] ?? $r['sell_course'], 0, 16))?></span><?php endif; ?>
+          <?php if (!empty($r['sell_course'])): ?><span class="badge" style="background:var(--ok);color:#fff;padding:3px 10px;border-radius:999px;font-size:11px">🎓 售卖：<?=htmlspecialchars(mb_substr($courseMap[$r['sell_course']] ?? $r['sell_course'], 0, 16))?></span><?php endif; ?>
         </div>
         <div class="text-sm text-muted" style="margin-top:6px"><?=htmlspecialchars(substr($r['start_at'] ?? '', 0, 16))?> → <?=htmlspecialchars(substr($r['end_at'] ?? '', 0, 16))?></div>
         <div class="text-sm" style="margin-top:6px;word-break:break-all">
@@ -129,10 +129,10 @@ admin_header('直播管理');
           <b>Stream Key：</b><code style="background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:12px"><?=htmlspecialchars($r['stream_key'] ?? '')?></code>
           <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('<?=htmlspecialchars($r['stream_key'] ?? '')?>').then(()=>fcToast('密钥已复制'))">复制</button>
         </div>
-        <?php if (!empty($r['replay_url'])): ?><div class="text-sm" style="margin-top:4px;color:#16a34a">🎬 回放：<a href="<?=htmlspecialchars($r['replay_url'])?>" target="_blank">观看</a></div><?php endif; ?>
+        <?php if (!empty($r['replay_url'])): ?><div class="text-sm" style="margin-top:4px;color:var(--ok)">🎬 回放：<a href="<?=htmlspecialchars($r['replay_url'])?>" target="_blank">观看</a></div><?php endif; ?>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;min-width:130px">
-        <a href="?toggle_live=<?=urlencode($r['id'])?>" class="btn btn-sm <?=!empty($r['is_live']) ? 'btn-danger' : 'btn-success'?>" style="<?=!empty($r['is_live']) ? '' : 'background:#16a34a;color:#fff'?>"><?=!empty($r['is_live']) ? '🔴 结束直播' : '▶️ 标记开播'?></a>
+        <a href="?toggle_live=<?=urlencode($r['id'])?>" class="btn btn-sm <?=!empty($r['is_live']) ? 'btn-danger' : 'btn-success'?>" style="<?=!empty($r['is_live']) ? '' : 'background:var(--ok);color:#fff'?>"><?=!empty($r['is_live']) ? '🔴 结束直播' : '▶️ 标记开播'?></a>
         <a href="?tab=new&edit=<?=urlencode($r['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
         <a href="?del_room=<?=urlencode($r['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除？')">删除</a>
       </div>

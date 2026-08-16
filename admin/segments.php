@@ -28,11 +28,11 @@ $totalMembers = array_sum(array_column($segments, 'member_count'));
         <div style="color:var(--muted);font-size:13px;margin-top:4px">分群总数</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
-        <div style="font-size:28px;font-weight:700;color:#16a34a"><?=count(array_filter($segments, fn($s) => $s['auto_update']))?></div>
+        <div style="font-size:28px;font-weight:700;color:var(--ok)"><?=count(array_filter($segments, fn($s) => $s['auto_update']))?></div>
         <div style="color:var(--muted);font-size:13px;margin-top:4px">自动更新</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
-        <div style="font-size:28px;font-weight:700;color:#d97706"><?=$totalMembers?></div>
+        <div style="font-size:28px;font-weight:700;color:var(--warn)"><?=$totalMembers?></div>
         <div style="color:var(--muted);font-size:13px;margin-top:4px">总覆盖人数</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
@@ -70,7 +70,7 @@ $totalMembers = array_sum(array_column($segments, 'member_count'));
                 <span><?=$seg['last_evaluated'] ? '上次评估: '.h($seg['last_evaluated']) : '未评估'?></span>
               </div>
               <div style="display:flex;gap:8px;margin-top:12px">
-                <button onclick="deleteSegment('<?=h($seg['id'])?>')" style="padding:4px 12px;border-radius:6px;border:1px solid #dc2626;color:#dc2626;background:none;cursor:pointer;font-size:12px">删除</button>
+                <button onclick="deleteSegment('<?=h($seg['id'])?>')" style="padding:4px 12px;border-radius:6px;border:1px solid var(--danger);color:var(--danger);background:none;cursor:pointer;font-size:12px">删除</button>
               </div>
             </div>
           </div>

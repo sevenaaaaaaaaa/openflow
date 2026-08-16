@@ -105,7 +105,7 @@ admin_header('课程管理');
     <!-- 统计卡 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:700"><?=count($courses)?></div><div class="text-sm text-muted" style="font-size:11px">总课程</div></div>
-      <div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:700;color:#16a34a"><?=$publishedCount?></div><div class="text-sm text-muted" style="font-size:11px">已发布</div></div>
+      <div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:700;color:var(--ok)"><?=$publishedCount?></div><div class="text-sm text-muted" style="font-size:11px">已发布</div></div>
       <div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:700"><?=$totalStudents?></div><div class="text-sm text-muted" style="font-size:11px">累计学员</div></div>
     </div>
 

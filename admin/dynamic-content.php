@@ -55,7 +55,7 @@ admin_header('Dynamic Content 动态内容');
 .rule-card:hover{border-color:var(--accent)}
 .rule-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .rule-toggle{width:40px;height:22px;border-radius:11px;background:var(--border);position:relative;cursor:pointer;transition:.2s}
-.rule-toggle.on{background:#16a34a}
+.rule-toggle.on{background:var(--ok)}
 .rule-toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
 .rule-toggle.on::after{left:20px}
 .rule-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
@@ -63,11 +63,11 @@ admin_header('Dynamic Content 动态内容');
 .condition-row{display:flex;gap:8px;margin-bottom:6px;align-items:center}
 .condition-row select,.condition-row input{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px}
 .condition-row .del-btn{cursor:pointer;color:var(--text-3);font-size:16px;padding:2px 6px}
-.condition-row .del-btn:hover{color:#dc2626}
+.condition-row .del-btn:hover{color:var(--danger)}
 .action-row{display:flex;gap:8px;margin-bottom:6px;align-items:center;flex-wrap:wrap}
 .action-row select,.action-row input{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px}
 .action-row .del-btn{cursor:pointer;color:var(--text-3);font-size:16px;padding:2px 6px}
-.action-row .del-btn:hover{color:#dc2626}
+.action-row .del-btn:hover{color:var(--danger)}
 .chart-bar{display:inline-block;width:20px;background:var(--accent);border-radius:3px 3px 0 0;vertical-align:bottom;margin:0 1px}
 .chart-label{font-size:9px;color:var(--muted);text-align:center;margin-top:2px}
 .preview-box{background:var(--surface-2);border:1px dashed var(--border);border-radius:8px;padding:16px;margin-top:12px}
@@ -178,7 +178,7 @@ admin_header('Dynamic Content 动态内容');
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="delete">
             <input type="hidden" name="rule_id" value="<?=htmlspecialchars($r['id'])?>">
-            <button type="submit" class="btn btn-ghost btn-sm" style="color:#dc2626">✕</button>
+            <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)">✕</button>
           </form>
         </div>
         <div class="rule-meta">

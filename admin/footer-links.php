@@ -80,7 +80,7 @@ admin_header('底部外链管理');
             <label style="font-size:12px;display:flex;align-items:center;gap:4px">
               <input type="checkbox" name="link_nofollow[<?=$gi?>][]" value="1" <?=!empty($link['rel']) ? 'checked' : ''?>> nofollow
             </label>
-            <button type="button" class="btn btn-ghost btn-sm" style="color:#dc2626" onclick="this.closest('.link-row').remove()">✕</button>
+            <button type="button" class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="this.closest('.link-row').remove()">✕</button>
           </div>
           <?php endforeach; ?>
           <div style="padding:8px 16px">
@@ -152,7 +152,7 @@ function addLink(gi) {
     '<input type="url" name="link_url[' + gi + '][]" placeholder="https://...">' +
     '<select name="link_target[' + gi + '][]"><option value="_blank">新窗口</option><option value="_self">当前窗口</option></select>' +
     '<label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" name="link_nofollow[' + gi + '][]" value="1"> nofollow</label>' +
-    '<button type="button" class="btn btn-ghost btn-sm" style="color:#dc2626" onclick="this.closest(\'.link-row\').remove()">✕</button>';
+    '<button type="button" class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="this.closest(\'.link-row\').remove()">✕</button>';
   var container = group.querySelector('.link-rows') || group;
   container.appendChild(row);
 }

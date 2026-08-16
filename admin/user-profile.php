@@ -32,11 +32,11 @@ admin_header("用户主页 - " . $userId);
               <div style="font-size:12px;color:var(--muted)">关注</div>
             </div>
             <div style="text-align:center">
-              <div style="font-size:20px;font-weight:700;color:#16a34a"><?=$followersCount?></div>
+              <div style="font-size:20px;font-weight:700;color:var(--ok)"><?=$followersCount?></div>
               <div style="font-size:12px;color:var(--muted)">粉丝</div>
             </div>
             <div style="text-align:center">
-              <div style="font-size:20px;font-weight:700;color:#d97706"><?=count($bookmarks)?></div>
+              <div style="font-size:20px;font-weight:700;color:var(--warn)"><?=count($bookmarks)?></div>
               <div style="font-size:12px;color:var(--muted)">收藏</div>
             </div>
           </div>
