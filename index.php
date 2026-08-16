@@ -809,7 +809,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
         <a class="btn primary" href="/courses" data-od-id="home-cta-start">免费开始</a>
         <a class="btn ghost" href="/product" data-od-id="home-cta-demo">查看平台演示</a>
       </div>
-      <div class="trust"><span class="dot"></span>OPC 一人公司首选 · 核心能力永久开源 · 自生长 AI Engine</div>
+      <div class="trust"><span class="dot"></span>刘泽军 · 十年增长操盘 · 核心能力永久开源 · 自生长 AI Engine</div>
       <div class="arena">
         <div class="arena-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">openflow.pspi.run/growth-loop</div></div>
         <div class="arena-canvas" id="arena-stage">
@@ -1144,16 +1144,16 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
     </div>
   </section>
 
-  <!-- ══ 客户评价 ══ -->
+  <!-- ══ 为谁而做 ══ -->
   <section id="reviews" class="sec reveal" data-od-anchor data-od-id="reviews">
     <div class="sec-head center">
-      <span class="kicker">他们已经在跑</span>
-      <h2>一人公司和超级个体的真实反馈</h2>
+      <span class="kicker">你属于哪一类</span>
+      <h2>为这些一人公司而设计</h2>
     </div>
     <div class="qr">
-      <div class="q-i"><div class="stars">★★★★★</div><blockquote>「以前我每天花 3 小时找选题、改文章。现在 OpenFlow 爬完行业信号，直接给我草稿，我只负责把关和发布。效率翻了三倍。」</blockquote><div class="who"><div class="av">陈</div><div><b>陈默</b><span>内容工作室 · 一人公司</span></div></div></div>
-      <div class="q-i"><div class="stars">★★★★★</div><blockquote>「R.B.E 训练营最值的是 Task Graph 那一课。我终于知道哪些环节该 Agent 做、哪些必须人来——销转率从 2.1% 提到 3.8%。」</blockquote><div class="who"><div class="av">林</div><div><b>林晓</b><span>知识付费 · 超级个体</span></div></div></div>
-      <div class="q-i"><div class="stars">★★★★★</div><blockquote>「我们 4 个人的小团队，以前周报、监控、跨群通知全靠人肉。现在工作流自动跑，省出来的时间够多做一个客户。」</blockquote><div class="who"><div class="av">王</div><div><b>王珩</b><span>SaaS 服务商 · 小团队</span></div></div></div>
+      <div class="q-i"><div class="av">内</div><blockquote>「每天花 3 小时找选题、改文章，真正该做的判断反而没时间做。」</blockquote><div class="who"><div><b>内容型一人公司</b><span>靠内容获客，卡在产出</span></div></div></div>
+      <div class="q-i"><div class="av">知</div><blockquote>「知道增长该做什么，但哪些交给 Agent、哪些必须自己来，一直没想清楚。」</blockquote><div class="who"><div><b>知识付费操盘手</b><span>想跑通销转，缺一套系统</span></div></div></div>
+      <div class="q-i"><div class="av">团</div><blockquote>「4 人小团队，周报、监控、跨群通知全靠人肉，运维就吃掉一半精力。」</blockquote><div class="who"><div><b>SaaS 服务团队</b><span>被重复运营拖住</span></div></div></div>
     </div>
   </section>
 
@@ -1342,7 +1342,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
     {t:'三步增长闭环',d:'flow → loop',a:'#loop',ic:'steps'},
     {t:'应用场景',d:'谁在用它 · tab 聚合',a:'#scenes',ic:'scenes'},
     {t:'对比单点工具',d:'为什么不是一个五合一按钮',a:'#compare',ic:'tag'},
-    {t:'真实反馈',d:'客户评价',a:'#reviews',ic:'star'},
+    {t:'为谁而做',d:'典型画像',a:'#reviews',ic:'star'},
     {t:'增长洞察',d:'文章',a:'#insights',ic:'doc'},
     {t:'预约增长诊断',d:'O.L.B 评分卡',a:'#contact',ic:'chat'},
     {t:'产品',d:'芭乐派增长操作系统',a:'/product',ic:'box'},
