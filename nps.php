@@ -16,9 +16,9 @@ if (!$project) {
 <script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
-    <body class="bg-white text-gray-900"><div class="mx-auto max-w-lg px-5 py-[140px] text-center">
-    <h1 class="text-2xl font-bold">问卷不存在</h1>
-    <p class="mt-3 text-gray-600">请联系发送链接的管理员。</p>
+    <body style="background:var(--bg);color:var(--fg)"><div class="mx-auto px-5 py-[140px] text-center" style="max-width:512px">
+    <h1 style="font-size:24px;font-weight:700">问卷不存在</h1>
+    <p style="margin-top:12px;color:var(--muted)">请联系发送链接的管理员。</p>
     </div></body></html><?php
     exit;
 }
@@ -48,7 +48,7 @@ $active = ($project['status'] ?? 'active') === 'active';
     <div class="rounded-2xl p-8 text-center text-white mb-8" style="background:linear-gradient(160deg,var(--accent-strong),var(--accent))">
       <div style="font-size:40px">📈</div>
       <h1 class="mt-3 text-2xl font-bold"><?=htmlspecialchars($project['title'])?></h1>
-      <p class="mt-2 text-[#cbd5e1] text-sm"><?=htmlspecialchars($project['collect_name'] ? '感谢你的反馈，请放心填写' : '匿名问卷 · 感谢你的反馈')?></p>
+      <p class="mt-2 text-[var(--muted)] text-sm"><?=htmlspecialchars($project['collect_name'] ? '感谢你的反馈，请放心填写' : '匿名问卷 · 感谢你的反馈')?></p>
     </div>
 
     <?php if ($done): ?>

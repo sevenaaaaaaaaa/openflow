@@ -630,10 +630,21 @@ code{font-family:var(--font-mono); font-size:12.5px; background:var(--hover); pa
 .global-search-results{position:absolute; left:10px; right:10px; top:100%; background:var(--surface-strong); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); z-index:9999; max-height:360px; overflow-y:auto; display:none}
 .global-search-results .gs-item{display:flex; gap:8px; align-items:center; padding:9px 12px; text-decoration:none; color:var(--fg); font-size:13px; border-bottom:1px solid var(--border)}
 .global-search-results .gs-item:hover{background:var(--hover)}
-.module-switch{display:flex; flex-wrap:wrap; gap:4px; padding:0 10px 10px}
-.module-switch .ms-btn{padding:6px 10px; border-radius:10px; border:1.5px solid var(--border); background:var(--surface-strong); font-size:12px; font-weight:600; cursor:pointer; color:var(--muted); transition:.12s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; flex:1 0 auto}
-.module-switch .ms-btn:hover{border-color:var(--accent); color:var(--fg)}
-.module-switch .ms-btn.active{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
+.module-switch{display:block; padding:0 10px 10px}
+.module-switch .ms-tabs{display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:4px 0}
+.module-switch .ms-btn{display:flex; flex-direction:column; align-items:flex-start; gap:0; min-width:0; min-height:52px; padding:8px 10px; border-radius:12px; font-size:12.5px; font-weight:600; cursor:pointer; color:var(--muted); background:var(--surface); border:1px solid var(--border-soft); transition:background .2s, color .2s, border-color .2s, box-shadow .2s; white-space:nowrap; text-align:left}
+.module-switch .ms-btn:hover{background:var(--hover); color:var(--fg); border-color:var(--border)}
+.module-switch .ms-btn.active{background:var(--accent-soft); color:var(--accent); border-color:color-mix(in oklch,var(--accent) 40%,transparent); box-shadow:var(--shadow-sm)}
+.module-switch .ms-btn .ms-ico{width:15px; height:15px; flex:0 0 auto; color:var(--faint); margin-bottom:3px; transition:color .2s}
+.module-switch .ms-btn.active .ms-ico{color:var(--accent)}
+.module-switch .ms-btn .ms-cap{font-size:10px; font-weight:500; color:var(--faint); line-height:1.25}
+.module-switch .ms-btn.active .ms-cap{color:color-mix(in oklch,var(--accent) 72%,var(--faint))}
+.sb-set{display:flex; align-items:center; gap:10px; width:calc(100% - 20px); min-height:42px; margin:9px 10px 0; padding:0 11px; border-top:1px solid var(--border-soft); border-radius:0 0 12px 12px; font-size:12.5px; font-weight:600; color:var(--muted); cursor:pointer; text-align:left; background:none; border-left:0; border-right:0; border-bottom:0; transition:background .2s, color .2s}
+.sb-set:hover{background:var(--hover); color:var(--fg)}
+.sb-set.active{color:var(--accent)}
+.sb-set .sb-set-ico{width:16px; height:16px; flex:0 0 auto; color:var(--faint); transition:color .2s}
+.sb-set.active .sb-set-ico{color:var(--accent)}
+.sb-set .sb-set-tag{margin-left:auto; font-family:var(--font-mono); font-size:9.5px; letter-spacing:.05em; color:var(--faint); border:1px solid var(--border-soft); border-radius:20px; padding:2px 8px; white-space:nowrap}
 .field{margin-bottom:16px}
 .field label{display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--fg)}
 .field label .hint{font-weight:400; color:var(--faint); font-size:12px}
@@ -752,13 +763,31 @@ function admin_sidebar(string $current): void {
     <div class="global-search-results" id="globalSearchResults"></div>
   </div>
 
-  <!-- 模块切换器 -->
+  <!-- 模块切换器：设置入口 + 4 业务模块卡片 -->
+  <button class="sb-set" id="sbSet" data-sec="Settings" aria-label="切换到系统设置模块" style="display:none">
+    <svg class="sb-set-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+    <span>系统设置</span>
+    <span class="sb-set-tag">站点 · 系统 · 开发者</span>
+  </button>
   <div class="module-switch" id="moduleSwitch">
-    <button class="ms-btn" data-sec="Touch">Touch</button>
-    <button class="ms-btn" data-sec="Insight">Insight</button>
-    <button class="ms-btn" data-sec="Personalize">个性化</button>
-    <button class="ms-btn" data-sec="Sales">Sales</button>
-    <button class="ms-btn" data-sec="Settings">Settings</button>
+    <div class="ms-tabs">
+      <button class="ms-btn" data-sec="Touch" data-ms="touch">
+        <svg class="ms-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="ms-name">Touch</span><span class="ms-cap">内容 · 社区 · 会员</span>
+      </button>
+      <button class="ms-btn" data-sec="Insight" data-ms="insight">
+        <svg class="ms-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg>
+        <span class="ms-name">Insight</span><span class="ms-cap">分析 · SEO · 用户</span>
+      </button>
+      <button class="ms-btn" data-sec="Personalize" data-ms="personalize">
+        <svg class="ms-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        <span class="ms-name">个性化</span><span class="ms-cap">活动 · 自动化</span>
+      </button>
+      <button class="ms-btn" data-sec="Sales" data-ms="sales">
+        <svg class="ms-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="ms-name">Sales</span><span class="ms-cap">订单 · 线索 · 商城</span>
+      </button>
+    </div>
   </div>
 
   <!-- ============ Touch：内容触点 ============ -->
@@ -1351,9 +1380,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // 找到当前页面分区
   var cur = MS_MAP[MS_CURRENT] || 'Touch';
   var btns = document.querySelectorAll('.module-switch .ms-btn');
+  var setBtn = document.getElementById('sbSet');
+  if (setBtn) setBtn.style.display = '';
   function showModule(name) {
-    // 高亮按钮
+    // 高亮按钮（业务卡片 + 设置入口）
     btns.forEach(function(b) { b.classList.toggle('active', b.dataset.sec === name); });
+    if (setBtn) setBtn.classList.toggle('active', name === 'Settings');
     // 显示对应分区及其菜单项
     secs.forEach(function(sec) {
       var secName = sec.getAttribute('data-sec');
@@ -1368,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     // 始终显示非分区元素
-    ['.sidebar .brand','.sidebar .global-search','.sidebar .module-switch','.sidebar .user-info','.sidebar .dash-entry'].forEach(function(sel) {
+    ['.sidebar .brand','.sidebar .global-search','.sidebar .module-switch','.sidebar .user-info','.sidebar .dash-entry','#sbSet'].forEach(function(sel) {
       var el = document.querySelector(sel);
       if (el) el.style.display = '';
     });
@@ -1380,6 +1412,7 @@ document.addEventListener('DOMContentLoaded', function() {
   btns.forEach(function(b) {
     b.addEventListener('click', function() { showModule(b.dataset.sec); });
   });
+  if (setBtn) setBtn.addEventListener('click', function() { showModule('Settings'); });
 });
 // ─── 侧边栏分区折叠 ───
 document.addEventListener('DOMContentLoaded', function() {
