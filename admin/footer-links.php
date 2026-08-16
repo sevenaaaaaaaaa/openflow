@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     json_write($footerFile, $links);
     flash('success', '底部外链已保存');
-    header('Location: footer-links.php');
+    header('Location: /xmp/footer-links');
     exit;
 }
 

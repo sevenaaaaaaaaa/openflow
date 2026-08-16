@@ -29,7 +29,7 @@ if (isset($_GET['delete'])) {
     if ($currentDir === 'all') { foreach ($subdirs as $sk => $sv) { if ($sk === 'all') continue; $pp = UPLOAD_DIR . '/' . $sk . '/' . $f; if (file_exists($pp)) { unlink($pp); break; } } }
     elseif (file_exists($p)) { unlink($p); }
     $message = '已删除';
-    header('Location: media.php?dir=' . $currentDir);
+    header('Location: /xmp/media?dir=' . $currentDir);
     exit;
 }
 

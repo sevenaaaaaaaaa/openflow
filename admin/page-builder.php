@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
 if (isset($_POST['delete'])) {
     $pages = array_values(array_filter($pages, fn($p) => $p['id'] !== $_POST['delete']));
     json_write($builderFile, $pages);
-    header('Location: page-builder.php');
+    header('Location: /xmp/page-builder');
     exit;
 }
 

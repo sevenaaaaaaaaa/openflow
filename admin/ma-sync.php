@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_log'])) {
     } else {
         flash('error', $retryResult['msg']);
     }
-    header('Location: ma-sync.php');
+    header('Location: /xmp/ma-sync');
     exit;
 }
 

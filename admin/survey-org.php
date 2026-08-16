@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 json_write($tokensFile, $tokens);
             }
             flash('success', '员工查询链接已生成/更新');
-            header('Location: survey-org.php?token_user=' . urlencode($memberUsername));
+            header('Location: /xmp/survey-org?token_user=' . urlencode($memberUsername));
             exit;
         }
     }

@@ -24,7 +24,7 @@ if (isset($_GET['uninstall'])) {
     if (PluginSystem::uninstall_plugin($_GET['uninstall'])) {
         $message = '插件已卸载';
     }
-    header('Location: plugins.php');
+    header('Location: /xmp/plugins');
     exit;
 }
 
@@ -33,7 +33,7 @@ if (isset($_GET['toggle'])) {
     $enabled = !($registry['enabled'][$_GET['toggle']] ?? false);
     PluginSystem::toggle_plugin($_GET['toggle'], $enabled);
     $message = $enabled ? '插件已启用' : '插件已禁用';
-    header('Location: plugins.php');
+    header('Location: /xmp/plugins');
     exit;
 }
 

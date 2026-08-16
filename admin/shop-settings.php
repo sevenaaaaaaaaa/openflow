@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_withdraw'])) {
     unset($w);
     json_write(DATA_DIR . '/shop/withdrawals.json', $withdrawals);
     flash('success', '提现已处理');
-    header('Location: shop-settings.php');
+    header('Location: /xmp/shop-settings');
     exit;
 }
 

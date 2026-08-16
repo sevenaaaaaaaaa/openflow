@@ -15,7 +15,7 @@ if (isset($_GET['generate'])) {
     $patches = SafeFix::generatePatches();
     SafeFix::savePatches($patches);
     $message = '已生成 ' . count($patches) . ' 个修复方案，请审核后确认应用。';
-    header('Location: safefix.php?done=1');
+    header('Location: /xmp/safefix?done=1');
     exit;
 }
 
@@ -27,14 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $r = SafeFix::apply($id);
         if ($r['ok']) $message = '✅ 修复已应用，原文件已备份，可随时回滚。';
         else $error = '应用失败：' . ($r['error'] ?? '未知');
-        header('Location: safefix.php');
+        header('Location: /xmp/safefix');
         exit;
     }
     if (isset($_POST['rollback'])) {
         $r = SafeFix::rollback($id);
         if ($r['ok']) $message = '↩️ 已回滚到修复前状态。';
         else $error = '回滚失败：' . ($r['error'] ?? '未知');
-        header('Location: safefix.php');
+        header('Location: /xmp/safefix');
         exit;
     }
 }

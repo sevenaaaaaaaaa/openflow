@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ApiKeyAuth::toggle($_POST['id'], isset($_POST['enabled']));
         $message = '已更新';
     }
-    header('Location: api-keys.php' . ($message ? '?msg=' . urlencode($message) : ''));
+    header('Location: /xmp/api-keys' . ($message ? '?msg=' . urlencode($message) : ''));
     exit;
 }
 

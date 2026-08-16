@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_topics'])) {
         geo_add_topic(['topic'=>trim($tn), 'angle'=>$_POST['topic_angle'][$i] ?? '', 'why'=>$_POST['topic_why'][$i] ?? '']);
     }
     $message = '话题已加入选题库';
-    header('Location: geo.php');
+    header('Location: /xmp/geo');
     exit;
 }
 
@@ -96,7 +96,7 @@ if (isset($_GET['generate'])) {
             flash('error', 'AI 生成失败，请检查 AI 供应商');
         }
     }
-    header('Location: geo.php');
+    header('Location: /xmp/geo');
     exit;
 }
 
@@ -104,7 +104,7 @@ if (isset($_GET['generate'])) {
 if (isset($_GET['delete_topic'])) {
     $topics = array_values(array_filter($topics, fn($t) => $t['id'] !== $_GET['delete_topic']));
     geo_save_topics($topics);
-    header('Location: geo.php');
+    header('Location: /xmp/geo');
     exit;
 }
 

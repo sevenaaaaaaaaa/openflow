@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
         ];
         nps_save_projects($projects);
         flash('success', 'NPS 项目已创建');
-        header('Location: nps.php?project=' . end($projects)['id']);
+        header('Location: /xmp/nps?project=' . end($projects)['id']);
         exit;
     }
 }
@@ -40,7 +40,7 @@ if (isset($_GET['delete'])) {
     nps_save_projects($projects);
     @unlink(nps_responses_dir() . '/' . $_GET['delete'] . '.json');
     flash('success', 'NPS 项目已删除');
-    header('Location: nps.php');
+    header('Location: /xmp/nps');
     exit;
 }
 
@@ -49,7 +49,7 @@ if (isset($_GET['toggle'])) {
     foreach ($projects as &$p) if ($p['id'] === $_GET['toggle']) $p['status'] = ($p['status'] ?? '') === 'active' ? 'closed' : 'active';
     unset($p);
     nps_save_projects($projects);
-    header('Location: nps.php');
+    header('Location: /xmp/nps');
     exit;
 }
 

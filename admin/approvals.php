@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_teacher'])) {
     unset($m);
     json_write(member_file(), $members);
     flash('success', $approve ? '讲师申请已通过' : '讲师申请已驳回');
-    header('Location: approvals.php?type=teacher');
+    header('Location: /xmp/approvals?type=teacher');
     exit;
 }
 
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_article'])) {
     json_write(DATA_DIR . '/member-submissions.json', $submissions);
     inbox_notify_event('submission_reviewed', ['member_id' => $subMemberId, 'title' => $subTitle, 'result' => $approve ? '通过并发布' : '驳回']);
     flash('success', $approve ? '投稿已通过并发布' : '投稿已驳回');
-    header('Location: approvals.php?type=article');
+    header('Location: /xmp/approvals?type=article');
     exit;
 }
 

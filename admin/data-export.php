@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = isset($result['imported']) ? "导入完成：{$result['imported']} 条成功" : ($result['error'] ?? '导入失败');
     }
 
-    header('Location: data-export.php?msg=' . urlencode($message));
+    header('Location: /xmp/data-export?msg=' . urlencode($message));
     exit;
 }
 

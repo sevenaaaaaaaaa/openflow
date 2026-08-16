@@ -17,7 +17,7 @@ if (isset($_GET['delete'])) {
     $surveys = array_values(array_filter($surveys, fn($s) => $s['id'] !== $_GET['delete']));
     survey_save_surveys($surveys);
     flash('success', '问卷已删除');
-    header('Location: survey.php');
+    header('Location: /xmp/survey');
     exit;
 }
 
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_survey'])) {
             }
             survey_save_surveys($surveys);
             flash('success', '问卷已保存');
-            header('Location: survey.php');
+            header('Location: /xmp/survey');
             exit;
         }
     }

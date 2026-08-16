@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pages = array_values(array_filter($pages, fn($p) => $p['id'] !== $_POST['delete']));
         save_landing_pages($pages);
         $message = '聚合页已删除';
-        header('Location: landing-pages.php');
+        header('Location: /xmp/landing-pages');
         exit;
     }
     $pages = get_landing_pages();

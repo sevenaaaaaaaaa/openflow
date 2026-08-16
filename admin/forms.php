@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $forms = array_values(array_filter($forms, fn($f) => $f['id'] !== $_POST['id']));
         json_write($formsFile, $forms);
         $message = '表单已删除';
-        header('Location: forms.php');
+        header('Location: /xmp/forms');
         exit;
     }
     $forms = json_read($formsFile);

@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     json_write($downloadsFile, $downloads);
     flash('success', $isNew ? '资料已创建' : '资料已保存');
-    header('Location: download-edit.php?id=' . urlencode($download['id']));
+    header('Location: /xmp/download-edit?id=' . urlencode($download['id']));
     exit;
 }
 

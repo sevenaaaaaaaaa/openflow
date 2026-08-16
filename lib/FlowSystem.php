@@ -139,20 +139,28 @@ function flow_content_published(array $article): void {
 
 // ── 内容流：表单/线索联动 → CRM ──
 function flow_lead_from_form(array $formData, string $formId = ''): ?array {
-    if (empty($formData['email'])) return null;
+    $email = trim($formData['email'] ?? '');
+    $contact = trim($formData['contact'] ?? '');
+    $phone = trim($formData['phone'] ?? '');
+    if (!$email && $contact) {
+        if (strpos($contact, '@') !== false) { $email = $contact; }
+        elseif (!$phone) { $phone = $contact; }
+    }
+    if (!$email && !$phone) return null;
+    $key = $email !== '' ? $email : $phone;
     $lead = null;
     if (function_exists('crm_ensure_lead')) {
         try {
-            $lead = crm_ensure_lead($formData['email'], $formData['name'] ?? '', $formData['phone'] ?? '');
+            $lead = crm_ensure_lead($email, $formData['name'] ?? '', $phone);
             // 附加来源
             if ($lead && function_exists('crm_update_lead')) {
-                crm_update_lead($formData['email'], ['source' => 'form:' . $formId, 'company' => $formData['company'] ?? '']);
+                crm_update_lead($key, ['source' => 'form:' . $formId, 'company' => $formData['company'] ?? '']);
             }
         } catch (Exception $e) {}
     }
     // CDP 关联
     if ($lead) {
-        flow_handle('form_submit', ['email' => $formData['email'], 'props' => $formData, 'label' => '表单:' . $formId]);
+        flow_handle('form_submit', ['email' => $email, 'phone' => $phone, 'props' => $formData, 'label' => '表单:' . $formId]);
     }
     return $lead;
 }
