@@ -99,7 +99,7 @@ $jsonLd = [
     <div class="q-card text-center py-12">
       <div style="font-size:56px">✅</div>
       <h2 class="mt-4 text-xl font-bold">提交成功</h2>
-      <p class="mt-3 text-gray-600">感谢你的参与！你的反馈对我们非常重要。</p>
+      <p class="mt-3 text-[var(--muted)]">感谢你的参与！你的反馈对我们非常重要。</p>
       <a href="/community" class="mt-6 inline-block rounded-full bg-[var(--accent)] px-7 py-3 font-semibold text-white">返回社区</a>
     </div>
     <?php else: ?>
@@ -175,7 +175,7 @@ $jsonLd = [
       <?php else: ?>
       <button type="submit" class="w-full rounded-full py-4 font-bold text-lg" style="background:var(--accent);color:var(--on-accent);border:none;cursor:pointer">提交问卷</button>
       <?php endif; ?>
-      <p class="text-center text-[12px] text-gray-600 mt-4">你的回答仅用于组织健康分析，信息严格保密</p>
+      <p class="text-center text-[12px] text-[var(--muted)] mt-4">你的回答仅用于组织健康分析，信息严格保密</p>
     </form>
     <?php endif; ?>
   </div>
