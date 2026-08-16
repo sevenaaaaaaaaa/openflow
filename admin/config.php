@@ -624,6 +624,15 @@ code{font-family:var(--font-mono); font-size:12.5px; background:var(--hover); pa
 .sidebar .section.collapsed .caret{transform:rotate(-90deg)}
 .sidebar .sub-sec{font-size:10.5px; font-weight:700; letter-spacing:.05em; color:var(--faint); padding:12px 12px 3px; text-transform:uppercase; opacity:.75}
 .sidebar .dash-entry{display:flex; align-items:center; gap:8px; margin:0 6px 10px; padding:10px 12px; border-radius:14px; background:var(--grad); color:var(--on-accent); font-weight:700; font-size:13.5px; text-decoration:none; justify-content:center}
+/* ── 快捷区 · token 化 .sb-item（对齐设计稿） ── */
+.sb-item{display:flex; align-items:center; gap:11px; width:100%; min-height:44px; padding:0 11px; border-radius:12px; font-size:13.5px; color:var(--muted); border:1px solid transparent; transition:background .2s,color .2s,border-color .2s,box-shadow .2s; white-space:nowrap; text-decoration:none}
+.sb-item:hover{background:var(--hover); color:var(--fg)}
+.sb-item.on{background:var(--surface-strong); color:var(--fg); border-color:var(--border); box-shadow:var(--shadow-sm)}
+.sb-item.on svg{color:var(--accent)}
+.sb-item svg{width:17px;height:17px; flex:0 0 auto; color:var(--faint); transition:color .2s}
+.sb-item .sb-txt{white-space:nowrap}
+.sb-badge{margin-left:auto; font-family:var(--font-mono); font-size:11px; color:var(--faint); background:var(--hover); border-radius:999px; padding:1px 8px; white-space:nowrap}
+.sb-item.on .sb-badge{color:var(--accent); background:var(--accent-soft)}
 .sidebar .user-info{display:flex; align-items:center; gap:8px; padding:12px 10px; border-top:1px solid var(--border); margin-top:auto; font-size:12.5px; color:var(--muted); position:relative}
 .sidebar .user-info .role-badge{font-family:var(--font-mono); font-size:10px; font-weight:700; background:var(--hover); border-radius:99px; padding:2px 8px; color:var(--faint)}
 .global-search{padding:0 10px 10px; position:relative}
@@ -730,34 +739,17 @@ function admin_sidebar(string $current): void {
   </div>
 
   <?php if (has_perm('dashboard')): ?>
-  <a href="workspace.php" class="dash-entry <?=$current==='workspace'?'active':''?>" style="display:flex;align-items:center;gap:10px;margin:0 12px 12px;padding:11px 12px;border-radius:10px;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;font-weight:600;font-size:14px;text-decoration:none;transition:.15s">
-    <span>🚀</span> 工作台
-    <span style="margin-left:auto;font-size:10px;background:rgba(255,255,255,.2);color:#fff;padding:2px 8px;border-radius:999px">默认</span>
-  </a>
-  <a href="dashboard.php" class="dash-entry <?=$current==='dashboard'?'active':''?>" style="display:flex;align-items:center;gap:10px;margin:0 12px 12px;padding:11px 12px;border-radius:10px;background:linear-gradient(135deg,#1e1e1e,#2b5f7e);color:#fff;font-weight:600;font-size:14px;text-decoration:none;transition:.15s">
-    <span>🚀</span> 经营驾驶舱
-    <span style="margin-left:auto;font-size:10px;background:rgba(221,255,14,.2);color:#ddff0e;padding:2px 8px;border-radius:999px">大屏</span>
-  </a>
+  <a href="workspace.php" class="sb-item <?=$current==='workspace'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="sb-txt">工作台</span><span class="sb-badge">默认</span></a>
+  <a href="dashboard.php" class="sb-item <?=$current==='dashboard'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg><span class="sb-txt">经营驾驶舱</span><span class="sb-badge">大屏</span></a>
   <?php endif; ?>
 
   <?php if (has_perm('flow')): ?>
-  <a href="flow.php" class="dash-entry <?=$current==='flow'?'active':''?>" style="display:flex;align-items:center;gap:10px;margin:0 12px 12px;padding:11px 12px;border-radius:10px;background:linear-gradient(135deg,#0e5a3a,#16a34a);color:#fff;font-weight:600;font-size:14px;text-decoration:none;transition:.15s">
-    <span>🔄</span> 运营主线
-    <span style="margin-left:auto;font-size:10px;background:rgba(255,255,255,.2);color:#fff;padding:2px 8px;border-radius:999px">三流联动</span>
-  </a>
-  <?php if (has_perm('flow')): ?>
-  <a href="driver.php" class="dash-entry <?=$current==='driver'?'active':''?>" style="display:flex;align-items:center;gap:10px;margin:0 12px 12px;padding:11px 12px;border-radius:10px;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;font-weight:600;font-size:14px;text-decoration:none;transition:.15s">
-    <span>🚀</span> 增长驱动
-    <span style="margin-left:auto;font-size:10px;background:rgba(255,255,255,.2);color:#fff;padding:2px 8px;border-radius:999px">主动引擎</span>
-  </a>
-  <?php endif; ?>
+  <a href="flow.php" class="sb-item <?=$current==='flow'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span class="sb-txt">运营主线</span><span class="sb-badge">三流联动</span></a>
+  <a href="driver.php" class="sb-item <?=$current==='driver'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="sb-txt">增长驱动</span><span class="sb-badge">主动引擎</span></a>
   <?php endif; ?>
 
   <?php if (has_perm('tasks')): ?>
-  <a href="content-calendar.php" class="dash-entry <?=$current==='content-calendar'?'active':''?>" style="display:flex;align-items:center;gap:10px;margin:0 12px 12px;padding:11px 12px;border-radius:10px;background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;font-weight:600;font-size:14px;text-decoration:none;transition:.15s">
-    <span>🗓️</span> 内容日历
-    <span style="margin-left:auto;font-size:10px;background:rgba(255,255,255,.2);color:#fff;padding:2px 8px;border-radius:999px">排期</span>
-  </a>
+  <a href="content-calendar.php" class="sb-item <?=$current==='content-calendar'?'on':''?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg><span class="sb-txt">内容日历</span><span class="sb-badge">排期</span></a>
   <?php endif; ?>
 
   <div class="global-search" id="globalSearchBox">
@@ -1291,7 +1283,7 @@ function admin_sidebar(string $current): void {
     </div>
     <span class="role-badge"><?=htmlspecialchars($roleLabel)?></span>
     <span><?=htmlspecialchars($name)?></span>
-    <a href="logout.php" style="margin-left:auto;color:#dc2626;padding:4px;font-size:13px;text-decoration:none">退出</a>
+    <a href="logout.php" style="margin-left:auto;color:var(--danger);padding:4px;font-size:13px;text-decoration:none">退出</a>
   </div>
 </div>
 <script>
@@ -1562,11 +1554,11 @@ function admin_footer(): void {
     echo '<style>@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
     @keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
     .fc-toast{position:fixed;right:22px;bottom:22px;z-index:99999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
-    .fc-toast .t-item{pointer-events:auto;min-width:280px;max-width:420px;padding:12px 18px;border-radius:12px;background:#1e1e1e;color:#fff;font-size:13.5px;line-height:1.6;box-shadow:0 12px 32px rgba(0,0,0,.25);animation:toastIn .25s;display:flex;align-items:flex-start;gap:10px}
-    .fc-toast .t-item.success{background:#16a34a}
-    .fc-toast .t-item.error{background:#dc2626}
-    .fc-toast .t-item.warning{background:#d97706}
-    .fc-toast .t-item .t-close{background:none;border:none;color:#fff;font-size:14px;cursor:pointer;margin-left:auto;opacity:.7;padding:0 2px}
+    .fc-toast .t-item{pointer-events:auto;min-width:280px;max-width:420px;padding:12px 18px;border-radius:12px;background:var(--surface-strong);color:var(--fg);font-size:13.5px;line-height:1.6;box-shadow:0 12px 32px rgba(0,0,0,.25);animation:toastIn .25s;display:flex;align-items:flex-start;gap:10px}
+    .fc-toast .t-item.success{background:var(--ok)}
+    .fc-toast .t-item.error{background:var(--danger)}
+    .fc-toast .t-item.warning{background:var(--warn)}
+    .fc-toast .t-item .t-close{background:none;border:none;color:var(--fg);font-size:14px;cursor:pointer;margin-left:auto;opacity:.7;padding:0 2px}
     </style>';
 ?>
 <div class="fc-toast" id="fcToastWrap"></div>
@@ -1599,7 +1591,7 @@ document.addEventListener('submit', function(e) {
     if (field.disabled) return;
     if (!field.value.trim()) {
       if (!invalid) invalid = field;
-      field.style.borderColor = '#dc2626';
+      field.style.borderColor = 'var(--danger)';
       field.style.boxShadow = '0 0 0 3px rgba(220,38,38,.12)';
       // 提示
       var label = field.closest('.field');
@@ -1608,7 +1600,7 @@ document.addEventListener('submit', function(e) {
         if (old) old.remove();
         var tip = document.createElement('div');
         tip.className = 'fc-field-error';
-        tip.style.cssText = 'color:#dc2626;font-size:12px;margin-top:4px';
+        tip.style.cssText = 'color:var(--danger);font-size:12px;margin-top:4px';
         tip.textContent = '此项为必填';
         label.appendChild(tip);
       }
@@ -1636,14 +1628,14 @@ window.fcMarkErrors = function(errors) {
   Object.keys(errors || {}).forEach(function(name) {
     var input = document.querySelector('input[name="' + name + '"], textarea[name="' + name + '"], select[name="' + name + '"]');
     if (!input) return;
-    input.style.borderColor = '#dc2626';
+    input.style.borderColor = 'var(--danger)';
     input.style.boxShadow = '0 0 0 3px rgba(220,38,38,.12)';
     // 清除之前的错误提示
     var old = input.parentElement.querySelector('.fc-field-error');
     if (old) old.remove();
     var tip = document.createElement('div');
     tip.className = 'fc-field-error';
-    tip.style.cssText = 'color:#dc2626;font-size:12px;margin-top:4px';
+    tip.style.cssText = 'color:var(--danger);font-size:12px;margin-top:4px';
     tip.textContent = errors[name];
     input.parentElement.appendChild(tip);
     input.addEventListener('input', function() {
@@ -1669,12 +1661,12 @@ window.fcMarkErrors = function(errors) {
     --h-user-text:#fff;
     --h-bot-bg:#fff;
     --h-bot-border:#e2dfd2;
-    --h-accent:linear-gradient(135deg,#ddff0e,#86efac);
-    --h-accent-text:#1e1e1e;
+    --h-accent:linear-gradient(135deg,#0284c7,#7dd3fc);
+    --h-accent-text:#0c4a6e;
     --h-btn-bg:#e2dfd2;
     --h-btn-text:#5b5b52;
-    --h-suggest-hover:#ddff0e;
-    --h-focus:#2b5f7e;
+    --h-suggest-hover:#7dd3fc;
+    --h-focus:#0284c7;
   }
   /* 主题：黑夜 */
   [data-helper-theme="dark"]{
@@ -1724,10 +1716,10 @@ window.fcMarkErrors = function(errors) {
     --h-suggest-hover:#86efac;
     --h-focus:#2e6b4f;
   }
-  .fc-helper-fab{position:fixed;right:22px;bottom:22px;width:60px;height:60px;border-radius:50%;border:none;cursor:pointer;z-index:9990;background:linear-gradient(135deg,#ddff0e,#86efac 60%,#7dd3fc);box-shadow:0 8px 24px rgba(30,30,30,.28);display:grid;place-items:center;transition:transform .2s,box-shadow .2s;padding:0}
+  .fc-helper-fab{position:fixed;right:22px;bottom:22px;width:60px;height:60px;border-radius:50%;border:none;cursor:pointer;z-index:9990;background:linear-gradient(135deg,var(--accent),#0284c7 60%,#7dd3fc);box-shadow:0 8px 24px rgba(30,30,30,.28);display:grid;place-items:center;transition:transform .2s,box-shadow .2s;padding:0}
   .fc-helper-fab:hover{transform:scale(1.08);box-shadow:0 12px 32px rgba(30,30,30,.34)}
   .fc-helper-fab img{width:42px;height:42px;border-radius:50%;object-fit:cover}
-  .fc-helper-fab .pulse{position:absolute;inset:0;border-radius:50%;border:3px solid #ddff0e;animation:fcPulse 2s infinite}
+  .fc-helper-fab .pulse{position:absolute;inset:0;border-radius:50%;border:3px solid #7dd3fc;animation:fcPulse 2s infinite}
   @keyframes fcPulse{0%{transform:scale(1);opacity:.7}70%{transform:scale(1.35);opacity:0}100%{opacity:0}}
   .fc-helper-window{position:fixed;right:22px;bottom:94px;width:380px;max-width:calc(100vw - 32px);height:560px;max-height:calc(100vh - 120px);background:var(--h-bot-bg);border-radius:18px;box-shadow:0 24px 64px rgba(30,30,30,.3);z-index:9991;display:none;flex-direction:column;overflow:hidden;border:1px solid var(--h-bot-border)}
   .fc-helper-window.open{display:flex}
@@ -1758,7 +1750,7 @@ window.fcMarkErrors = function(errors) {
 <div class="fc-helper-window" id="fcHelperWin">
   <div class="fc-helper-head">
     <img id="fcHelperAvatarWin" src="" alt="小福" style="display:none">
-    <svg id="fcHelperAvatarSvgWin" viewBox="0 0 64 64" width="40" height="40" style="border-radius:50%;background:linear-gradient(160deg,#7dd3fc,#86efac 55%,#ddff0e);border:2px solid #ddff0e"><circle cx="32" cy="26" r="15" fill="#1e1e1e"/><path d="M12 50c3-12 9-17 20-17s17 5 20 17" fill="#1e1e1e"/><circle cx="26" cy="26" r="2.4" fill="#fff"/><circle cx="38" cy="26" r="2.4" fill="#fff"/><circle cx="26" cy="26" r="1" fill="#1e1e1e"/><circle cx="38" cy="26" r="1" fill="#1e1e1e"/><path d="M28 33c2.6 1.6 5.4 1.6 8 0" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="32" cy="14" r="2.6" fill="#fff" opacity=".9"/></svg>
+    <svg id="fcHelperAvatarSvgWin" viewBox="0 0 64 64" width="40" height="40" style="border-radius:50%;background:linear-gradient(160deg,#0284c7,#38bdf8 55%,#7dd3fc);border:2px solid #7dd3fc"><circle cx="32" cy="26" r="15" fill="#1e1e1e"/><path d="M12 50c3-12 9-17 20-17s17 5 20 17" fill="#1e1e1e"/><circle cx="26" cy="26" r="2.4" fill="#fff"/><circle cx="38" cy="26" r="2.4" fill="#fff"/><circle cx="26" cy="26" r="1" fill="#1e1e1e"/><circle cx="38" cy="26" r="1" fill="#1e1e1e"/><path d="M28 33c2.6 1.6 5.4 1.6 8 0" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="32" cy="14" r="2.6" fill="#fff" opacity=".9"/></svg>
     <div>
       <div class="name">小福 · 后台助手</div>
       <div class="status">🟢 在线 · 随时提问</div>

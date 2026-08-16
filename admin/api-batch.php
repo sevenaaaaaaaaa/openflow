@@ -137,7 +137,7 @@ function renderImportResult(d, articles) {
       '<table style="font-size:12px"><thead><tr><th style="width:60px">序号</th><th>标题</th><th style="width:70px">状态</th><th style="width:140px">详情</th></tr></thead><tbody>' +
       items.map(function(r) {
         var icon = r.status === 'success' ? '✅' : (r.status === 'skipped' ? '⏭️' : '❌');
-        var color = r.status === 'success' ? '#16a34a' : (r.status === 'skipped' ? '#d97706' : '#dc2626');
+        var color = r.status === 'success' ? 'var(--ok)' : (r.status === 'skipped' ? 'var(--warn)' : 'var(--danger)');
         var detail = r.status === 'success' ? (r.slug || '') : (r.reason || '');
         return '<tr>' +
           '<td class="text-muted">' + (r.index + 1) + '</td>' +

@@ -139,7 +139,7 @@ admin_header('Cluster 聚合管理');
 
     <div class="stat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
       <div class="stat-card"><div class="num"><?=count($pages)?></div><div class="label">聚合总数</div></div>
-      <div class="stat-card"><div class="num" style="color:#16a34a"><?=count(array_filter($pages, fn($p)=>($p['aggregate_mode']??'')==='auto'))?></div><div class="label">自动聚合</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--ok)"><?=count(array_filter($pages, fn($p)=>($p['aggregate_mode']??'')==='auto'))?></div><div class="label">自动聚合</div></div>
       <div class="stat-card"><div class="num" style="color:var(--accent)"><?=count($publishedArticles)?></div><div class="label">可聚合文章</div></div>
     </div>
 
@@ -172,7 +172,7 @@ admin_header('Cluster 聚合管理');
               <form method="post" style="display:inline" onsubmit="return confirm('确认删除?')">
                 <?= csrf_field() ?>
                 <input type="hidden" name="delete" value="<?=htmlspecialchars($p['id'])?>">
-                <button type="submit" class="btn btn-ghost btn-sm" style="color:#dc2626">🗑</button>
+                <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)">🗑</button>
               </form>
             </td>
           </tr>

@@ -86,7 +86,7 @@ admin_header('商业中心');
     <!-- 统计 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:24px">
       <div class="stat-card"><div class="num"><?=$stats['total']?></div><div class="label">商品总数</div></div>
-      <div class="stat-card"><div class="num" style="color:#16a34a"><?=$stats['published']?></div><div class="label">已上架</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--ok)"><?=$stats['published']?></div><div class="label">已上架</div></div>
       <div class="stat-card"><div class="num" style="color:var(--accent)"><?=$stats['sales']?></div><div class="label">累计销量</div></div>
       <div class="stat-card"><div class="num"><?=count($orders)?></div><div class="label">数字商品订单</div></div>
     </div>
@@ -121,7 +121,7 @@ admin_header('商业中心');
                 <?= csrf_field() ?>
                 <input type="hidden" name="delete_product" value="1">
                 <input type="hidden" name="product_id" value="<?=htmlspecialchars($p['id'])?>">
-                <button class="btn btn-ghost btn-sm" style="color:#dc2626">删除</button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--danger)">删除</button>
               </form>
             </td>
           </tr>

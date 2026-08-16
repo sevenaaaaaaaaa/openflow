@@ -130,7 +130,7 @@ admin_header('备份管理');
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="delete">
             <input type="hidden" name="backup_name" value="<?=htmlspecialchars($backup['name'])?>">
-            <button type="submit" class="btn btn-ghost btn-sm" style="color:#dc2626">🗑️</button>
+            <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)">🗑️</button>
           </form>
         </div>
       </div>
@@ -144,7 +144,7 @@ admin_header('备份管理');
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:12px">
         <div style="padding:14px;background:var(--surface-2);border-radius:8px">
           <div class="flex items-center gap-2">
-            <span style="color:#16a34a">●</span>
+            <span style="color:var(--ok)">●</span>
             <strong>WebDAV</strong>
           </div>
           <div class="text-sm text-muted" style="margin-top:4px">未配置</div>

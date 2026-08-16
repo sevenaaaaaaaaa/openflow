@@ -121,17 +121,17 @@ admin_header('风控中心');
     <?php if (empty($queue)): ?>
     <div class="card empty" style="padding:40px">✅ 队列为空，无待审核内容</div>
     <?php else: foreach ($queue as $i => $item): ?>
-    <div class="card" style="margin-bottom:12px;<?=($item['risk']??'')==='high'?'border-left:4px solid #dc2626':''?>">
+    <div class="card" style="margin-bottom:12px;<?=($item['risk']??'')==='high'?'border-left:4px solid var(--danger)':''?>">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <strong style="font-size:14px"><?=htmlspecialchars($item['author'] ?? '匿名')?></strong>
-        <span class="badge" style="background:<?=($item['risk']??'')==='high'?'#dc2626':(($item['risk']??'')==='mid'?'#d97706':'#16a34a')?>;color:#fff;padding:2px 8px;border-radius:999px;font-size:11px"><?=htmlspecialchars($item['risk'] ?? '')?></span>
+        <span class="badge" style="background:<?=($item['risk']??'')==='high'?'var(--danger)':(($item['risk']??'')==='mid'?'var(--warn)':'var(--ok)')?>;color:#fff;padding:2px 8px;border-radius:999px;font-size:11px"><?=htmlspecialchars($item['risk'] ?? '')?></span>
         <span class="text-sm text-muted"><?=htmlspecialchars($item['source'] ?? '')?> · <?=htmlspecialchars($item['created_at'] ?? '')?></span>
         <?php if (($item['target_type'] ?? '') !== ''): ?><span class="text-sm text-muted"><?=htmlspecialchars($item['target_type'] . ' / ' . $item['target_id'])?></span><?php endif; ?>
       </div>
       <div class="text-sm" style="margin-top:8px;line-height:1.7"><?=nl2br(htmlspecialchars($item['text'] ?? ''))?></div>
       <div class="text-xs text-muted" style="margin-top:6px">⚠️ <?=htmlspecialchars($item['reason'] ?? '')?></div>
       <?php if (!empty($item['ai_result'])): ?>
-      <div class="text-xs" style="margin-top:4px;color:<?=$item['ai_result']==='block'?'#dc2626':($item['ai_result']==='allow'?'#16a34a':'#d97706')?>">🤖 AI 判定：<?=htmlspecialchars($item['ai_result'])?><?php if (!empty($item['ai_reason'])): ?> · <?=htmlspecialchars($item['ai_reason'])?><?php endif; ?></div>
+      <div class="text-xs" style="margin-top:4px;color:<?=$item['ai_result']==='block'?'var(--danger)':($item['ai_result']==='allow'?'var(--ok)':'var(--warn)')?>">🤖 AI 判定：<?=htmlspecialchars($item['ai_result'])?><?php if (!empty($item['ai_reason'])): ?> · <?=htmlspecialchars($item['ai_reason'])?><?php endif; ?></div>
       <?php endif; ?>
       <div style="display:flex;gap:8px;margin-top:10px">
         <form method="post">
@@ -140,7 +140,7 @@ admin_header('风控中心');
           <input type="hidden" name="target_type" value="<?=htmlspecialchars($item['target_type'] ?? '')?>">
           <input type="hidden" name="target_id" value="<?=htmlspecialchars($item['target_id'] ?? '')?>">
           <input type="hidden" name="text" value="<?=htmlspecialchars($item['text'] ?? '')?>">
-          <button type="submit" name="queue_action" value="allow" class="btn btn-success btn-sm" style="background:#16a34a;color:#fff">✅ 放行</button>
+          <button type="submit" name="queue_action" value="allow" class="btn btn-success btn-sm" style="background:var(--ok);color:#fff">✅ 放行</button>
         </form>
         <form method="post">
           <?= csrf_field() ?>

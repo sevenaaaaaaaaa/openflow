@@ -46,7 +46,7 @@ admin_header('数据连接器');
         <div class="stat-card">
           <div class="num" style="color:var(--accent)"><?=$result[$k]['count'] ?? 0?></div>
           <div class="label"><?=$label?></div>
-          <?php if (!empty($result[$k]['error'])): ?><div class="text-xs" style="color:#dc2626"><?=htmlspecialchars($result[$k]['error'])?></div><?php endif; ?>
+          <?php if (!empty($result[$k]['error'])): ?><div class="text-xs" style="color:var(--danger)"><?=htmlspecialchars($result[$k]['error'])?></div><?php endif; ?>
         </div>
         <?php endforeach; ?>
       </div>
