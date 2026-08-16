@@ -69,7 +69,7 @@ foreach ($members as $m) {
 arsort($tagCounts);
 
 $segLabels = ['high_value'=>'💎 高价值','potential'=>'⭐ 潜力','new'=>'🌱 新客','at_risk'=>'⚠️ 流失风险','churned'=>'😴 沉睡'];
-$segColors = ['high_value'=>'#eab308','potential'=>'#0284c7','new'=>'#7c3aed','at_risk'=>'#d97706','churned'=>'#9ca3af'];
+$segColors = ['high_value'=>'#eab308','potential'=>'var(--accent)','new'=>'#7c3aed','at_risk'=>'var(--warn)','churned'=>'#9ca3af'];
 
 admin_header('用户画像');
 ?>
@@ -97,9 +97,9 @@ admin_header('用户画像');
       <div class="stat-card"><div class="num"><?=$audience['total']?></div><div class="label">全量客户</div></div>
       <div class="stat-card"><div class="num"><?=$audience['members']?></div><div class="label">注册会员</div></div>
       <div class="stat-card"><div class="num"><?=$audience['anon']?></div><div class="label">匿名访客</div></div>
-      <div class="stat-card"><div class="num" style="color:#16a34a"><?=$audience['active7']?></div><div class="label">近7天活跃</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--ok)"><?=$audience['active7']?></div><div class="label">近7天活跃</div></div>
       <div class="stat-card"><div class="num"><?=$audience['active30']?></div><div class="label">近30天活跃</div></div>
-      <div class="stat-card"><div class="num" style="color:#d97706"><?=$audience['paid']?></div><div class="label">有消费</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--warn)"><?=$audience['paid']?></div><div class="label">有消费</div></div>
       <div class="stat-card"><div class="num" style="color:#eab308"><?=$audience['high']?></div><div class="label">高价值≥¥500</div></div>
     </div>
 
@@ -164,7 +164,7 @@ admin_header('用户画像');
         <?php foreach ($audience['channels'] as $ch => $cnt): ?>
         <div style="display:flex;align-items:center;gap:10px">
           <span style="width:90px;font-size:13px;font-weight:600"><?=htmlspecialchars($ch)?></span>
-          <div style="height:20px;border-radius:6px;background:linear-gradient(90deg,#86efac,#ddff0e);width:<?=max(4,round($cnt/$maxC*100))?>%"></div>
+          <div style="height:20px;border-radius:6px;background:linear-gradient(90deg,#7dd3fc,#38bdf8);width:<?=max(4,round($cnt/$maxC*100))?>%"></div>
           <strong style="font-size:13px"><?=$cnt?></strong>
         </div>
         <?php endforeach; ?>
@@ -187,7 +187,7 @@ admin_header('用户画像');
             <td class="text-sm text-muted"><?=$c['is_member']?'<span class="badge badge-green" style="font-size:10px">会员</span>':'<span class="badge badge-gray" style="font-size:10px">匿名</span>'?></td>
             <td><span class="badge badge-gray" style="font-size:10px"><?=htmlspecialchars($c['channel'])?></span></td>
             <td><span class="badge" style="background:<?=$segColors[$c['segment']]??'#6b6580'?>;color:#fff;font-size:10px"><?=preg_replace('/^[^ ]+ /','',$segLabels[$c['segment']]??$c['segment'])?></span></td>
-            <td><?=$c['ltv']>0?'<strong style="color:#16a34a">¥'.number_format($c['ltv'],0).'</strong>':'<span class="text-muted">—</span>'?></td>
+            <td><?=$c['ltv']>0?'<strong style="color:var(--ok)">¥'.number_format($c['ltv'],0).'</strong>':'<span class="text-muted">—</span>'?></td>
             <td>
               <?php foreach (array_slice($c['tags'],0,3) as $t): $def=$defs[$t]??['name'=>$t,'color'=>'#6b6580']; ?><span style="display:inline-flex;padding:1px 7px;border-radius:999px;font-size:10px;color:#fff;background:<?=$def['color']?>;margin:1px"><?=htmlspecialchars($def['name'])?></span><?php endforeach; ?>
             </td>
@@ -247,7 +247,7 @@ admin_header('用户画像');
       if ($fm): $fp = $profiles[$fm['id']]; ?>
     <div class="card" style="margin-top:20px">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#ddff0e,#7dd3fc);display:grid;place-items:center;font-size:26px;font-weight:700"><?=htmlspecialchars(mb_substr($fm['name'] ?: '?', 0, 1))?></div>
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#7dd3fc);display:grid;place-items:center;font-size:26px;font-weight:700"><?=htmlspecialchars(mb_substr($fm['name'] ?: '?', 0, 1))?></div>
         <div style="flex:1">
           <h2 style="margin-bottom:4px"><?=htmlspecialchars($fm['name'] ?: '匿名')?></h2>
           <div class="text-sm text-muted"><?=htmlspecialchars($fm['email'] ?? '')?> · <?=htmlspecialchars($fm['phone'] ?? '')?> · 积分 <?=$fm['points'] ?? 0?></div>
@@ -294,7 +294,7 @@ admin_header('用户画像');
     ?>
     <div class="card">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px">
-        <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#ddff0e,#7dd3fc);display:grid;place-items:center;font-size:24px;font-weight:700"><?=htmlspecialchars(mb_substr($name,0,1))?></div>
+        <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#7dd3fc);display:grid;place-items:center;font-size:24px;font-weight:700"><?=htmlspecialchars(mb_substr($name,0,1))?></div>
         <div style="flex:1">
           <h2 style="margin-bottom:4px"><?=htmlspecialchars($name)?></h2>
           <div class="text-sm text-muted"><?=htmlspecialchars($cdpDetail['primary_email'] ?? '')?> · <?=$fm?'会员':'匿名访客'?> · 来源 <?=htmlspecialchars($ch)?></div>
@@ -306,7 +306,7 @@ admin_header('用户画像');
         <div class="card" style="text-align:center;padding:12px"><div style="font-size:16px;font-weight:700"><?=htmlspecialchars(substr($profile['first_seen'],0,10))?></div><div class="text-sm text-muted" style="font-size:11px">首次访问</div></div>
         <div class="card" style="text-align:center;padding:12px"><div style="font-size:16px;font-weight:700"><?=htmlspecialchars(substr($profile['last_seen'],0,10))?></div><div class="text-sm text-muted" style="font-size:11px">末次访问</div></div>
         <div class="card" style="text-align:center;padding:12px"><div style="font-size:16px;font-weight:700"><?=$profile['event_count']?></div><div class="text-sm text-muted" style="font-size:11px">行为事件</div></div>
-        <div class="card" style="text-align:center;padding:12px"><div style="font-size:16px;font-weight:700;color:#16a34a">¥<?=number_format($profile['total_spent'],0)?></div><div class="text-sm text-muted" style="font-size:11px">累计消费</div></div>
+        <div class="card" style="text-align:center;padding:12px"><div style="font-size:16px;font-weight:700;color:var(--ok)">¥<?=number_format($profile['total_spent'],0)?></div><div class="text-sm text-muted" style="font-size:11px">累计消费</div></div>
         <div class="card" style="text-align:center;padding:12px"><div style="font-size:16px;font-weight:700"><?=$profile['orders']?></div><div class="text-sm text-muted" style="font-size:11px">付费订单</div></div>
         <div class="card" style="text-align:center;padding:12px"><div style="font-size:16px;font-weight:700"><?=$profile['submissions']?></div><div class="text-sm text-muted" style="font-size:11px">表单提交</div></div>
       </div>

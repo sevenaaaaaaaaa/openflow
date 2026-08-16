@@ -37,11 +37,11 @@ admin_header('工作台');
     <!-- 实时指标 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px">
       <div class="stat-card"><div class="num"><?=$local['events_24h'] ?? 0?></div><div class="label">24h 行为事件</div></div>
-      <div class="stat-card"><div class="num" style="color:#16a34a"><?=$local['active_visitors_5min'] ?? 0?></div><div class="label">5min 活跃访客</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--ok)"><?=$local['active_visitors_5min'] ?? 0?></div><div class="label">5min 活跃访客</div></div>
       <div class="stat-card"><div class="num" style="color:var(--accent)"><?=$local['new_members_24h'] ?? 0?></div><div class="label">24h 新会员</div></div>
-      <div class="stat-card"><div class="num" style="color:#d97706"><?=$todoCount?></div><div class="label">待办任务</div></div>
-      <div class="stat-card"><div class="num" style="color:#dc2626"><?=$reviewPending?></div><div class="label">待审核</div></div>
-      <div class="stat-card"><div class="num" style="color:#7c3aed"><?=$comStats['sales'] ?? 0?></div><div class="label">商品销量</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--warn)"><?=$todoCount?></div><div class="label">待办任务</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--danger)"><?=$reviewPending?></div><div class="label">待审核</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--accent)"><?=$comStats['sales'] ?? 0?></div><div class="label">商品销量</div></div>
     </div>
 
     <!-- 快捷任务 -->
@@ -69,7 +69,7 @@ admin_header('工作台');
         <div style="display:flex;gap:8px;padding:7px 10px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:13px"><span>💡</span><strong><?=htmlspecialchars($i['title'] ?? '')?></strong></div>
         <?php endforeach; ?>
         <?php foreach (array_slice($aiInsights['anomalies'] ?? [], 0, 2) as $a): ?>
-        <div style="display:flex;gap:8px;padding:7px 10px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:13px;color:#dc2626"><span>🚨</span><?=htmlspecialchars($a['title'] ?? '')?></div>
+        <div style="display:flex;gap:8px;padding:7px 10px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:13px;color:var(--danger)"><span>🚨</span><?=htmlspecialchars($a['title'] ?? '')?></div>
         <?php endforeach; ?>
       </div>
 

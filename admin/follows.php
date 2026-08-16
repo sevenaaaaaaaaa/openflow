@@ -29,11 +29,11 @@ foreach ($follows as $f) {
         <div style="color:var(--muted);font-size:13px;margin-top:4px">活跃用户</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
-        <div style="font-size:28px;font-weight:700;color:#16a34a"><?=count($follows)?></div>
+        <div style="font-size:28px;font-weight:700;color:var(--ok)"><?=count($follows)?></div>
         <div style="color:var(--muted);font-size:13px;margin-top:4px">关注关系</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
-        <div style="font-size:28px;font-weight:700;color:#d97706"><?=intval($mutualCount/2)?></div>
+        <div style="font-size:28px;font-weight:700;color:var(--warn)"><?=intval($mutualCount/2)?></div>
         <div style="color:var(--muted);font-size:13px;margin-top:4px">互相关注</div>
       </div>
     </div>

@@ -121,7 +121,7 @@ admin_header('官方 Agent 咨询');
     <!-- 对话界面 -->
     <div class="card" style="display:flex;flex-direction:column;height:calc(100vh - 240px);min-height:480px;padding:0;overflow:hidden">
       <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#1a1625,#2b5f7e);color:#fff">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(160deg,#7dd3fc,#86efac 55%,#ddff0e);display:grid;place-items:center;font-size:18px">🤖</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(160deg,#7dd3fc,#7dd3fc 55%,#38bdf8);display:grid;place-items:center;font-size:18px">🤖</div>
         <div>
           <div style="font-weight:700;font-size:14px">OpenFlow 官方顾问</div>
           <div style="font-size:11px;opacity:.8">付费用户 · 已开通 <?=htmlspecialchars($agent['paid_at'] ?? '')?></div>

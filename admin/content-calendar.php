@@ -23,7 +23,7 @@ foreach ($articles as $a) {
         'title' => $a['title'] ?? '',
         'date' => substr($date, 0, 10),
         'scheduled' => !empty($a['publish_at']),
-        'color' => !empty($a['publish_at']) ? '#d97706' : '#2e6b4f',
+        'color' => !empty($a['publish_at']) ? 'var(--warn)' : '#2e6b4f',
     ];
 }
 // 活动：开始/结束日期
@@ -51,7 +51,7 @@ foreach ($downloads as $d) {
         'title' => $d['title'] ?? '',
         'date' => substr($d['created_at'] ?? '', 0, 10),
         'scheduled' => false,
-        'color' => '#0284c7',
+        'color' => 'var(--accent)',
     ];
 }
 
@@ -106,8 +106,8 @@ admin_header('内容日历');
     <div class="cal-legend">
       <span class="lg"><span class="dot" style="background:#2e6b4f"></span>文章</span>
       <span class="lg"><span class="dot" style="background:#7c3aed"></span>活动</span>
-      <span class="lg"><span class="dot" style="background:#0284c7"></span>资料</span>
-      <span class="lg"><span class="dot dashed" style="background:#d97706"></span>定时发布</span>
+      <span class="lg"><span class="dot" style="background:var(--accent)"></span>资料</span>
+      <span class="lg"><span class="dot dashed" style="background:var(--warn)"></span>定时发布</span>
     </div>
 
     <div class="cal-tip">💡 拖拽带虚线的「定时」卡片到未来日期 = 定时发布，拖到今天/过去 = 立即发布。活动卡片整卡拖拽 = 整体移动；拖动卡片两侧的 <b>↔</b> 把手可分别调整「开始日 / 结束日」。</div>
@@ -275,7 +275,7 @@ function calToday() {
 function calToast(msg, isErr) {
   var t = document.getElementById('calToast');
   t.textContent = msg;
-  t.style.background = isErr ? '#dc2626' : '#1e1e1e';
+  t.style.background = isErr ? 'var(--danger)' : '#1e1e1e';
   t.style.display = 'block';
   setTimeout(function() { t.style.display = 'none'; }, 2500);
 }

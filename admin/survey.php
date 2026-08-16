@@ -251,7 +251,7 @@ admin_header('调研系统');
           <?php endif; ?>
           <?php foreach ($surveys as $s):
             $responses = survey_get_responses($s['id']);
-            $statusColor = ['draft' => '#9ca3af', 'active' => '#16a34a', 'closed' => '#d97706'][$s['status'] ?? 'draft'];
+            $statusColor = ['draft' => '#9ca3af', 'active' => 'var(--ok)', 'closed' => 'var(--warn)'][$s['status'] ?? 'draft'];
             $statusLabel = ['draft' => '草稿', 'active' => '发布中', 'closed' => '已结束'][$s['status'] ?? 'draft'];
           ?>
           <tr>

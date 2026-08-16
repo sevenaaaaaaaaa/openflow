@@ -329,7 +329,7 @@ $checks = run_health_checks();
 $scoreInfo = compute_score($checks);
 $fixItems = collect_fix_items($checks);
 
-$statusCss = ['pass' => '#16a34a', 'warn' => '#d97706', 'fail' => '#dc2626'];
+$statusCss = ['pass' => 'var(--ok)', 'warn' => 'var(--warn)', 'fail' => 'var(--danger)'];
 $statusIco = ['pass' => '✓', 'warn' => '!', 'fail' => '✕'];
 
 admin_header('健康检测');
@@ -358,7 +358,7 @@ admin_header('健康检测');
 .item-title{font-weight:600;font-size:14px}
 .item-detail{font-size:13px;color:var(--text-2);margin-top:2px;line-height:1.5}
 .item-fix{font-size:12px;color:var(--text-3);margin-top:6px}
-.item-fix a{color:#0284c7}
+.item-fix a{color:var(--accent)}
 .empty-fix{text-align:center;padding:32px;color:var(--text-3)}
 </style>
 <div class="admin-layout">
@@ -371,7 +371,7 @@ admin_header('健康检测');
     <p class="sub">一键扫描常见 Bug、安全风险与内容健康度，并给出修复建议</p>
 
     <?php
-    $ringColor = $scoreInfo['score'] >= 90 ? '#16a34a' : ($scoreInfo['score'] >= 75 ? '#65a30d' : ($scoreInfo['score'] >= 60 ? '#d97706' : '#dc2626'));
+    $ringColor = $scoreInfo['score'] >= 90 ? 'var(--ok)' : ($scoreInfo['score'] >= 75 ? '#65a30d' : ($scoreInfo['score'] >= 60 ? 'var(--warn)' : 'var(--danger)'));
     ?>
     <!-- 评分 -->
     <div class="health-hero">
@@ -389,10 +389,10 @@ admin_header('健康检测');
           <?=$scoreInfo['stat']['pass']?> 项通过，<?=$scoreInfo['stat']['warn']?> 项需注意，<?=$scoreInfo['stat']['fail']?> 项存在问题。
         </div>
         <div class="stat-chips">
-          <span class="chip" style="color:#16a34a">✓ <?=$scoreInfo['stat']['pass']?> 正常</span>
-          <span class="chip" style="color:#d97706">! <?=$scoreInfo['stat']['warn']?> 提醒</span>
-          <span class="chip" style="color:#dc2626">✕ <?=$scoreInfo['stat']['fail']?> 问题</span>
-          <?php if (!empty($fixItems)): ?><span class="chip" style="color:#0284c7">🔧 <?=count($fixItems)?> 条修复建议</span><?php endif; ?>
+          <span class="chip" style="color:var(--ok)">✓ <?=$scoreInfo['stat']['pass']?> 正常</span>
+          <span class="chip" style="color:var(--warn)">! <?=$scoreInfo['stat']['warn']?> 提醒</span>
+          <span class="chip" style="color:var(--danger)">✕ <?=$scoreInfo['stat']['fail']?> 问题</span>
+          <?php if (!empty($fixItems)): ?><span class="chip" style="color:var(--accent)">🔧 <?=count($fixItems)?> 条修复建议</span><?php endif; ?>
         </div>
       </div>
     </div>
@@ -402,7 +402,7 @@ admin_header('健康检测');
       <?php foreach ($checks as $cat => $items):
         $catScore = compute_score([$cat => $items]);
         $c = $catScore['score'];
-        $cc = $c >= 90 ? '#16a34a' : ($c >= 75 ? '#65a30d' : ($c >= 60 ? '#d97706' : '#dc2626'));
+        $cc = $c >= 90 ? 'var(--ok)' : ($c >= 75 ? '#65a30d' : ($c >= 60 ? 'var(--warn)' : 'var(--danger)'));
       ?>
       <div class="cat-card">
         <div class="cat-head">

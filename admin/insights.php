@@ -66,7 +66,7 @@ admin_header('营销洞察');
 .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .bar-row .lab{width:90px;font-size:13px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar-row .bar{flex:1;height:20px;background:var(--surface-2);border-radius:6px;overflow:hidden}
-.bar-row .bar i{display:block;height:100%;background:linear-gradient(90deg,#86efac,#ddff0e);border-radius:6px}
+.bar-row .bar i{display:block;height:100%;background:linear-gradient(90deg,#7dd3fc,#38bdf8);border-radius:6px}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('insights'); ?>
@@ -77,7 +77,7 @@ admin_header('营销洞察');
     <!-- 核心指标 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px">
       <div class="metric-card"><div class="lab">总提交</div><div class="val"><?=$totalSubs?></div></div>
-      <div class="metric-card"><div class="lab">今日提交</div><div class="val" style="color:#16a34a"><?=$todaySubs?></div></div>
+      <div class="metric-card"><div class="lab">今日提交</div><div class="val" style="color:var(--ok)"><?=$todaySubs?></div></div>
       <div class="metric-card"><div class="lab">表单数</div><div class="val"><?=count($forms)?></div></div>
       <div class="metric-card"><div class="lab">调研项目</div><div class="val"><?=count($surveys)?></div></div>
       <div class="metric-card"><div class="lab">NPS 项目</div><div class="val"><?=count($npsProjects)?></div></div>
@@ -146,7 +146,7 @@ admin_header('营销洞察');
             <td><strong><?=htmlspecialchars($n['title'])?></strong></td>
             <td><span class="badge <?=($n['status']??'')==='active'?'badge-green':'badge-gray'?>"><?=$n['status']??'active'?></span></td>
             <td><?=$n['stats']['total']?></td>
-            <td><strong style="color:<?=$n['stats']['nps']!==null && $n['stats']['nps']>=0?'#16a34a':'#dc2626'?>"><?=$n['stats']['nps'] ?? '—'?></strong></td>
+            <td><strong style="color:<?=$n['stats']['nps']!==null && $n['stats']['nps']>=0?'var(--ok)':'var(--danger)'?>"><?=$n['stats']['nps'] ?? '—'?></strong></td>
             <td><?=$n['stats']['promoters']?></td>
             <td><?=$n['stats']['passives']?></td>
             <td><?=$n['stats']['detractors']?></td>

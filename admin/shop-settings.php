@@ -68,7 +68,7 @@ admin_header('商城与分销');
           <div class="field"><label>虎皮椒 APPID</label><input type="text" name="xfpay_appid" value="<?=htmlspecialchars($settings['xfpay_appid'])?>" placeholder="在虎皮椒后台获取"></div>
           <div class="field"><label>虎皮椒通讯密钥</label><input type="password" name="xfpay_secret" value="<?=htmlspecialchars($settings['xfpay_secret'])?>" placeholder="通讯密钥"></div>
         </div>
-        <p class="text-sm text-muted">虎皮椒（XorPay）聚合支付，一个商户号支持微信/支付宝/云闪付等。访问 <a href="https://www.xunhupay.com" target="_blank" rel="noopener" style="color:#0284c7">xunhupay.com</a> 注册获取。</p>
+        <p class="text-sm text-muted">虎皮椒（XorPay）聚合支付，一个商户号支持微信/支付宝/云闪付等。访问 <a href="https://www.xunhupay.com" target="_blank" rel="noopener" style="color:var(--accent)">xunhupay.com</a> 注册获取。</p>
       </div>
 
       <div class="card">

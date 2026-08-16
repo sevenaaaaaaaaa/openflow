@@ -64,9 +64,9 @@ admin_header('欢迎使用');
 .wizard-progress{display:flex;align-items:center;justify-content:center;gap:8px;margin:24px 0 32px;flex-wrap:wrap}
 .wstep{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-3)}
 .wstep .dot{width:10px;height:10px;border-radius:50%;background:var(--surface-2);border:2px solid var(--border)}
-.wstep.done .dot{background:#16a34a;border-color:#16a34a}
+.wstep.done .dot{background:var(--ok);border-color:var(--ok)}
 .wstep .line{width:28px;height:2px;background:var(--border)}
-.wstep.done .line{background:#16a34a}
+.wstep.done .line{background:var(--ok)}
 .wizard-card{display:flex;gap:16px;padding:20px;border:1px solid var(--border);border-radius:14px;background:var(--surface);margin-bottom:14px;transition:.15s;align-items:center}
 .wizard-card:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(0,0,0,.06)}
 .wizard-card .ic{font-size:30px;flex-shrink:0}
@@ -74,8 +74,8 @@ admin_header('欢迎使用');
 .wizard-card .info h3{font-size:16px;font-weight:700;margin-bottom:4px}
 .wizard-card .info p{font-size:13px;color:var(--text-3);margin:0}
 .wizard-card .status{font-size:12px;font-weight:600;white-space:nowrap}
-.wizard-card .status.ok{color:#16a34a}
-.wizard-card .status.todo{color:#d97706}
+.wizard-card .status.ok{color:var(--ok)}
+.wizard-card .status.todo{color:var(--warn)}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar(''); ?>
@@ -87,12 +87,12 @@ admin_header('欢迎使用');
     </div>
 
     <div class="wizard-progress">
-      <?php $i = 0; foreach ($steps as $key => $s): if ($i > 0) echo '<span class="line" style="width:28px;height:2px;background:' . ($s['done'] ? '#16a34a' : 'var(--border)') . '"></span>'; ?>
+      <?php $i = 0; foreach ($steps as $key => $s): if ($i > 0) echo '<span class="line" style="width:28px;height:2px;background:' . ($s['done'] ? 'var(--ok)' : 'var(--border)') . '"></span>'; ?>
       <span class="wstep <?=$s['done']?'done':''?>"><span class="dot"></span><?=htmlspecialchars($s['title'])?></span>
       <?php $i++; endforeach; ?>
     </div>
 
-    <p style="text-align:center;font-size:14px;color:var(--text-3);margin-bottom:24px">已完成 <strong style="color:<?=$doneCount===4?'#16a34a':'var(--text)'?>"><?=$doneCount?>/4</strong> 步</p>
+    <p style="text-align:center;font-size:14px;color:var(--text-3);margin-bottom:24px">已完成 <strong style="color:<?=$doneCount===4?'var(--ok)':'var(--text)'?>"><?=$doneCount?>/4</strong> 步</p>
 
     <?php foreach ($steps as $key => $s): ?>
     <a href="<?=htmlspecialchars($s['link'])?>" class="wizard-card" style="text-decoration:none;color:inherit">

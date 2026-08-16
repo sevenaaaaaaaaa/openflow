@@ -94,7 +94,7 @@ admin_header('媒体管理');
     <div class="drop-zone" id="dropzone">
       <div style="font-size:36px;margin-bottom:8px">📁</div>
       <p style="font-weight:600;font-size:15px;color:var(--text-2)">拖拽文件到此处上传</p>
-      <p style="font-size:13px;color:var(--text-3)">或 <a href="#" onclick="document.getElementById('fileInput').click();return false" style="color:#0284c7">点击选择文件</a> · 支持 JPG/PNG/GIF/WebP/SVG/PDF</p>
+      <p style="font-size:13px;color:var(--text-3)">或 <a href="#" onclick="document.getElementById('fileInput').click();return false" style="color:var(--accent)">点击选择文件</a> · 支持 JPG/PNG/GIF/WebP/SVG/PDF</p>
       <form method="post" enctype="multipart/form-data" style="display:none">
         <?= csrf_field() ?>
         <input type="file" name="file" id="fileInput" accept="image/*,.pdf" onchange="previewAndUpload(this)">

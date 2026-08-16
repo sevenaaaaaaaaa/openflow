@@ -246,9 +246,9 @@ function showPageAI() {
       if (resp.ok) {
         div.innerHTML = '<p style="font-weight:600;margin-bottom:8px">✅ AI 建议</p><div style="font-size:13px;line-height:1.6;max-height:300px;overflow-y:auto;background:#f4f3e9;padding:12px;border-radius:8px;margin-bottom:12px">' + resp.result.replace(/\n/g,'<br>') + '</div><button class="btn btn-primary btn-sm" onclick="this.parentElement.remove()">关闭</button>';
       } else {
-        div.innerHTML = '<p style="color:#dc2626">❌ ' + (resp.error || '失败') + '</p><button class="btn btn-ghost btn-sm mt-4" onclick="this.parentElement.remove()">关闭</button>';
+        div.innerHTML = '<p style="color:var(--danger)">❌ ' + (resp.error || '失败') + '</p><button class="btn btn-ghost btn-sm mt-4" onclick="this.parentElement.remove()">关闭</button>';
       }
-    } catch(e) { div.innerHTML = '<p style="color:#dc2626">解析失败</p><button class="btn btn-ghost btn-sm mt-4" onclick="this.parentElement.remove()">关闭</button>'; }
+    } catch(e) { div.innerHTML = '<p style="color:var(--danger)">解析失败</p><button class="btn btn-ghost btn-sm mt-4" onclick="this.parentElement.remove()">关闭</button>'; }
   };
   xhr.send(JSON.stringify({prompt: prompt, content: content}));
 }

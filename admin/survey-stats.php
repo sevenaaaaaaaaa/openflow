@@ -38,7 +38,7 @@ admin_header('调研统计');
 <style>
 .stat-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;background:#f4f3e9;color:#5b5b52;border:1px solid #e2dfd2}
 .bar-wrap{background:#f4f3e9;border-radius:99px;height:14px;overflow:hidden}
-.bar-fill{height:100%;background:linear-gradient(90deg,#86efac,#ddff0e);border-radius:99px}
+.bar-fill{height:100%;background:linear-gradient(90deg,#7dd3fc,#38bdf8);border-radius:99px}
 .avg-big{font-size:32px;font-weight:800;color:#1a1625}
 </style>
 <div class="admin-layout">
