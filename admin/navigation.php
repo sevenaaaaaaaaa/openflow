@@ -56,14 +56,14 @@ if (isset($_GET['delete_site'])) {
     $nav['sites'] = array_values(array_filter($nav['sites'] ?? [], fn($s) => $s['id'] !== $_GET['delete_site']));
     json_write($navFile, $nav);
     flash('success', '站点已删除');
-    header('Location: navigation.php');
+    header('Location: /xmp/navigation');
     exit;
 }
 if (isset($_GET['delete_cat'])) {
     $nav['categories'] = array_values(array_filter($nav['categories'] ?? [], fn($c) => $c['id'] !== $_GET['delete_cat']));
     json_write($navFile, $nav);
     flash('success', '分类已删除');
-    header('Location: navigation.php');
+    header('Location: /xmp/navigation');
     exit;
 }
 

@@ -61,7 +61,7 @@ if (isset($_POST['delete'])) {
     $campaigns = array_values(array_filter($campaigns, fn($c) => $c['id'] !== $_POST['delete']));
     json_write($campFile, $campaigns);
     flash('success', '活动已删除');
-    header('Location: campaigns.php');
+    header('Location: /xmp/campaigns');
     exit;
 }
 

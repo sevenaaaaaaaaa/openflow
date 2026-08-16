@@ -52,7 +52,7 @@ if (isset($_POST['delete_backup'])) {
     $fp = DATA_DIR . '/backups/' . $f;
     if (file_exists($fp)) unlink($fp);
     $message = '已删除备份：' . $f;
-    header('Location: devops.php');
+    header('Location: /xmp/devops');
     exit;
 }
 

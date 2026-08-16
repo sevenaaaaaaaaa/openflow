@@ -3,7 +3,7 @@ require_once __DIR__ . '/config.php';
 require_login();
 
 $userId = $_GET['id'] ?? $_COOKIE['member_id'] ?? $_SESSION['member_id'] ?? '';
-if (!$userId) { header('Location: login.php'); exit; }
+if (!$userId) { header('Location: /xmp/login'); exit; }
 
 $followingCount = FollowSystem::followingCount($userId);
 $followersCount = FollowSystem::followersCount($userId);

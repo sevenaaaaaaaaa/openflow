@@ -90,14 +90,13 @@ PluginSystem::do_action('form_submitted', $form['id'], $form['type'], $formData,
 // CRM：表单提交自动生成线索 + 数据流联动（CDP 建档/打标/自动化）
 try { crm_from_submission($submission); } catch (Exception $e) {}
 try {
-    if (!empty($formData['email'])) {
-        flow_lead_from_form([
-            'email' => $formData['email'],
-            'name' => $formData['name'] ?? '',
-            'phone' => $formData['phone'] ?? '',
-            'company' => $formData['company'] ?? '',
-        ], $form['id'] ?? '');
-    }
+    flow_lead_from_form([
+        'email' => $formData['email'] ?? '',
+        'contact' => $formData['contact'] ?? '',
+        'name' => $formData['name'] ?? '',
+        'phone' => $formData['phone'] ?? '',
+        'company' => $formData['company'] ?? '',
+    ], $form['id'] ?? '');
 } catch (Exception $e) {}
 
 // 行为追踪事件
@@ -195,6 +194,6 @@ if (!empty($form['webhook_url'])) {
 }
 
 // Create notification
-notify($form['type'], "新{$form['title']}提交", ($formData['name'] ?? '匿名') . ' · ' . ($formData['company'] ?? '') . ' · ' . ($formData['email'] ?? $formData['phone'] ?? ''), 'admin/submissions.php?form_id=' . $form['id']);
+notify($form['type'], "新{$form['title']}提交", ($formData['name'] ?? '匿名') . ' · ' . ($formData['company'] ?? '') . ' · ' . ($formData['email'] ?? $formData['contact'] ?? $formData['phone'] ?? ''), '/xmp/submissions?form_id=' . $form['id']);
 
 echo json_encode($response, JSON_UNESCAPED_UNICODE);

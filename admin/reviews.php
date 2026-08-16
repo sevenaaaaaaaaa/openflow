@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         notify('review', '⛔ 你的内容被驳回：' . $titleShort, $typeLabel . '未通过审核' . $reviewNote, 'admin/reviews.php?status=rejected', ['user:' . $reviewedBy]);
     }
     flash('success', $action === 'approve' ? '已通过，内容已发布' : '已驳回，已通知提交人');
-    header('Location: reviews.php');
+    header('Location: /xmp/reviews');
     exit;
 }
 
