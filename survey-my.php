@@ -41,7 +41,12 @@ if ($profile) {
 <title>我的调研结果 | 芭乐派 · OpenFlow</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
+<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 <style>
+  /* ── 设计语言统一：token 语义工具类 ── */
+  .text-fg{color:var(--fg)}.text-muted{color:var(--muted)}.text-faint{color:var(--faint)}
+  .text-accent{color:var(--accent)}.text-ok{color:var(--ok)}.text-danger{color:var(--danger)}
   body{background:var(--bg);font-family:var(--font-body)}
   .q-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:14px;box-shadow:0 4px 16px rgba(30,30,30,.05)}
   .ans-tag{display:inline-block;padding:4px 12px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font-size:13px;font-weight:600;margin:3px}
@@ -53,7 +58,7 @@ if ($profile) {
       <div style="font-size:38px"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2H9V4ZM9 10h6M9 14h4"/></svg></span></div>
       <h1 class="mt-3 text-2xl font-bold">我的调研结果</h1>
       <?php if ($profile): ?>
-      <p class="mt-2 text-[#cbd5e1] text-sm"><?=htmlspecialchars($profile['name'] ?? '员工')?></p>
+      <p class="mt-2 text-[var(--muted)] text-sm"><?=htmlspecialchars($profile['name'] ?? '员工')?></p>
       <?php endif; ?>
     </div>
 
@@ -61,24 +66,24 @@ if ($profile) {
     <div class="q-card text-center py-12">
       <div style="font-size:52px"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
       <h2 class="mt-4 text-xl font-bold">链接无效或已过期</h2>
-      <p class="mt-3 text-gray-600">请联系管理员获取正确的查询链接。</p>
+      <p class="mt-3 text-muted">请联系管理员获取正确的查询链接。</p>
     </div>
     <?php elseif (empty($mySurveys)): ?>
     <div class="q-card text-center py-12">
       <div style="font-size:52px">🗂️</div>
       <h2 class="mt-4 text-xl font-bold">暂未参与调研</h2>
-      <p class="mt-3 text-gray-600">你还没有填写过任何调研问卷。</p>
+      <p class="mt-3 text-muted">你还没有填写过任何调研问卷。</p>
     </div>
     <?php else: ?>
     <?php foreach ($mySurveys as $ms): $s = $ms['survey']; ?>
     <div class="q-card">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
         <h2 class="text-lg font-bold"><?=htmlspecialchars($s['title'])?></h2>
-        <span class="text-[12px] text-gray-600"><?=count($ms['responses'])?> 次提交</span>
+        <span class="text-[12px] text-muted"><?=count($ms['responses'])?> 次提交</span>
       </div>
       <?php foreach (array_reverse($ms['responses']) as $idx => $r): ?>
       <div style="border-top:1px dashed var(--border);<?=$idx===0?'border-top:0;':''?>padding-top:<?=$idx===0?'0':'14px'?>;margin-top:<?=$idx===0?'0':'14px'?>">
-        <div class="text-[12px] text-gray-400 mb-3">提交于 <?=htmlspecialchars(substr($r['created_at']??'',0,16))?></div>
+        <div class="text-[12px] text-faint mb-3">提交于 <?=htmlspecialchars(substr($r['created_at']??'',0,16))?></div>
         <?php foreach ($s['questions'] as $q): $v = $r['answers'][$q['id']] ?? ''; ?>
         <div style="margin-bottom:12px">
           <div style="font-size:13.5px;font-weight:600;margin-bottom:4px"><?=htmlspecialchars($q['title'])?></div>
@@ -87,7 +92,7 @@ if ($profile) {
           <?php elseif ($q['type'] === 'multi' && is_array($v)): ?>
             <?php foreach ($v as $opt): if ($opt !== '') echo '<span class="ans-tag">' . htmlspecialchars($opt) . '</span>'; endforeach; ?>
           <?php else: ?>
-            <div class="text-[14px] text-gray-600"><?=htmlspecialchars((string)$v ?: '未作答')?></div>
+            <div class="text-[14px] text-muted"><?=htmlspecialchars((string)$v ?: '未作答')?></div>
           <?php endif; ?>
         </div>
         <?php endforeach; ?>
