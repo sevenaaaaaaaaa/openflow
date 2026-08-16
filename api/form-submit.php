@@ -196,4 +196,21 @@ if (!empty($form['webhook_url'])) {
 // Create notification
 notify($form['type'], "新{$form['title']}提交", ($formData['name'] ?? '匿名') . ' · ' . ($formData['company'] ?? '') . ' · ' . ($formData['email'] ?? $formData['contact'] ?? $formData['phone'] ?? ''), '/xmp/submissions?form_id=' . $form['id']);
 
+// 邮件通知运营（多渠道：SMTP / BillionMail / Ghost / 自定义 webhook）
+try {
+    require_once __DIR__ . '/../lib/MailChannel.php';
+    $settings = json_read(DATA_DIR . '/settings.json');
+    $adminEmail = $settings['email'] ?? '';
+    if (!empty($adminEmail)) {
+        $subject = "【OpenFlow】新{$form['title']}提交：" . ($formData['name'] ?? '匿名');
+        $body = "<h3>新表单提交</h3>"
+            . "<p><b>表单：</b>{$form['title']}</p>"
+            . "<p><b>姓名：</b>" . htmlspecialchars($formData['name'] ?? '') . "</p>"
+            . "<p><b>公司：</b>" . htmlspecialchars($formData['company'] ?? '') . "</p>"
+            . "<p><b>联系：</b>" . htmlspecialchars($formData['email'] ?? $formData['contact'] ?? $formData['phone'] ?? '') . "</p>"
+            . "<p><b>时间：</b>" . date('Y-m-d H:i:s') . "</p>";
+        mail_send($adminEmail, $subject, $body);
+    }
+} catch (Throwable $e) {}
+
 echo json_encode($response, JSON_UNESCAPED_UNICODE);
