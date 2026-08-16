@@ -19,7 +19,6 @@ $pages = [
     'about' => '关于我们',
     'capability' => '产品',
     'courses' => '解决方案',
-    'flow-community' => 'Flow社区',
 ];
 
 admin_header('SEO 管理');

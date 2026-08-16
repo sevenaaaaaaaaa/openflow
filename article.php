@@ -195,7 +195,7 @@ $breadcrumbLd = [
     '@type' => 'BreadcrumbList',
     'itemListElement' => [
         ['@type' => 'ListItem', 'position' => 1, 'name' => '首页', 'item' => $baseUrl . '/'],
-        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Flow社区', 'item' => $baseUrl . '/academy.php'],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => '社区', 'item' => $baseUrl . '/community'],
         ['@type' => 'ListItem', 'position' => 3, 'name' => $article['title'] ?? ''],
     ],
 ];

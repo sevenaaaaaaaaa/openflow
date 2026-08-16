@@ -8,7 +8,6 @@ $pages = [
     'about' => ['name' => '关于我们', 'icon' => '👤', 'desc' => '创始人寄语、使命愿景、专家团队'],
     'capability' => ['name' => '产品', 'icon' => '⚡', 'desc' => '内容引擎、AI Agent、营销自动化'],
     'courses' => ['name' => '解决方案', 'icon' => '📚', 'desc' => '四层课程体系、交付形态'],
-    'flow-community' => ['name' => 'Flow社区', 'icon' => '🌐', 'desc' => '社区内容中心'],
 ];
 
 $seoFile = DATA_DIR . '/seo.json';

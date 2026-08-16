@@ -15,7 +15,6 @@ $staticPages = [
     'about' => ['name' => '关于我们', 'icon' => '👤'],
     'capability' => ['name' => '产品', 'icon' => '⚡'],
     'courses' => ['name' => '解决方案', 'icon' => '📚'],
-    'flow-community' => ['name' => 'Flow社区', 'icon' => '🌐'],
 ];
 $builderPages = json_read(DATA_DIR . '/builder-pages.json');
 foreach ($builderPages as $bp) {

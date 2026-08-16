@@ -18,7 +18,7 @@ $data = [
     'redirects' => get_redirects(),
 ];
 
-$pages = ['index', 'about', 'capability', 'courses', 'flow-community'];
+$pages = ['index', 'about', 'capability', 'courses'];
 foreach ($pages as $p) $data['pages'][$p] = page_content($p);
 
 header('Content-Type: application/json; charset=utf-8');
