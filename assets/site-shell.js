@@ -179,7 +179,7 @@
           { head: '开发者', items: [
             { t: 'API 文档', d: 'REST API 参考', href: '/api-docs.php' },
             { t: '开发者文档', d: '架构与扩展点', href: '/md-docs/DEVELOPER.md' },
-            { t: 'GitHub', d: '开源仓库', href: 'https://github.com' }
+            { t: 'GitHub', d: '开源仓库', href: 'https://github.com/balepai/openflow' }
           ]}
         ],
         foot: [{ t: '进入生态市场', href: '/marketplace' }]
