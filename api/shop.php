@@ -7,16 +7,21 @@ require_once __DIR__ . '/../lib/MemberSystem.php';
 require_once __DIR__ . '/../lib/ShopSystem.php';
 require_once __DIR__ . '/../lib/SubscriptionSystem.php';
 require_once __DIR__ . '/../lib/MessageSystem.php';
+require_once __DIR__ . '/../lib/PaymentChannel.php';
 
 $action = $_GET['action'] ?? ($_POST['action'] ?? '');
 
-// 虎皮椒异步回调（无需登录，验签即可）
+// 支付异步回调（无需登录，统一验签；channel 指定渠道，默认 xfpay）
 if ($action === 'notify') {
+    $channel = trim($_GET['channel'] ?? ($_POST['channel'] ?? 'xfpay'));
     $data = $_POST;
-    if (shop_xfpay_verify($data)) {
-        $orderId = $data['trade_order_id'] ?? '';
+    if (payment_channel_verify($channel, $data)) {
+        $orderId = $data['trade_order_id'] ?? ($data['out_trade_no'] ?? '');
         $status = $data['status'] ?? '';
-        if ($status === 'OD' && shop_mark_paid($orderId, 'xfpay')) {
+        $paid = false;
+        if ($channel === 'xfpay') { $paid = ($status === 'OD') && shop_mark_paid($orderId, $channel); }
+        else { $paid = shop_mark_paid($orderId, $channel); }
+        if ($paid) {
             // 站内信通知（兼容 JSON 订单 + SQLite 订单）
             $notifyMember = '';
             $notifyTitle = '';
@@ -71,7 +76,8 @@ switch ($action) {
         ];
         $orders[] = $order;
         json_write(shop_orders_file(), $orders);
-        $pay = shop_xfpay_create($order, $member);
+        $channel = trim($_POST['channel'] ?? 'xfpay');
+        $pay = payment_channel_create($channel, $order);
         echo json_encode(['ok'=>true, 'order'=>$order, 'payment'=>$pay]);
         break;
 
@@ -80,7 +86,8 @@ switch ($action) {
         $courseId = trim($_POST['course_id'] ?? '');
         $result = shop_create_order($member['id'], $courseId);
         if (!$result['ok']) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>$result['error']]); exit; }
-        $pay = shop_xfpay_create($result['order'], $member);
+        $channel = trim($_POST['channel'] ?? 'xfpay');
+        $pay = payment_channel_create($channel, $result['order']);
         if (!$pay['ok']) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>$pay['error']]); exit; }
         echo json_encode(['ok'=>true, 'order'=>$result['order'], 'payment'=>$pay]);
         break;
