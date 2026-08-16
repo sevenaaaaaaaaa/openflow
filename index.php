@@ -809,7 +809,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
         <a class="btn primary" href="/courses" data-od-id="home-cta-start">免费开始</a>
         <a class="btn ghost" href="/product" data-od-id="home-cta-demo">查看平台演示</a>
       </div>
-      <div class="trust"><span class="dot"></span>刘泽军 · 十年增长操盘 · 核心能力永久开源 · 自生长 AI Engine</div>
+      <div class="trust"><span class="dot"></span>Seven · 十年增长操盘 · 核心能力永久开源 · 自生长 AI Engine</div>
       <div class="arena">
         <div class="arena-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">openflow.pspi.run/growth-loop</div></div>
         <div class="arena-canvas" id="arena-stage">
