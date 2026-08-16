@@ -72,63 +72,65 @@ if ($statusFilter) $display = array_values(array_filter($display, fn($r) => ($r[
 $display = array_reverse($display);
 
 $ruleLabels = ['banned' => '违禁词', 'competitor' => '竞品词', 'low_quality' => '低质量', 'off_topic' => '偏离定位'];
-$ruleColors = ['banned' => 'var(--danger)', 'competitor' => 'var(--warn)', 'low_quality' => '#9ca3af', 'off_topic' => '#7c3aed'];
+$ruleColors = ['banned' => 'var(--danger)', 'competitor' => 'var(--warn)', 'low_quality' => 'var(--faint)', 'off_topic' => 'var(--accent)'];
 
 admin_header('内容审核');
 ?>
 <div class="admin-layout">
   <?php admin_sidebar('reviews'); ?>
   <div class="main">
-    <h1>🛡️ 内容审核</h1>
-    <p class="sub">检测违禁、竞品词、低质量、偏离产品定位的内容 · 由管理员与市场总监审核</p>
+    <div class="v-head">
+      <div><h1>内容审核</h1><p class="v-sub">检测违禁、竞品词、低质量、偏离产品定位的内容 · 由管理员与市场总监审核</p></div>
+      <div class="v-actions"></div>
+    </div>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
-    <!-- 筛选 -->
-    <div class="flex gap-3 mb-4" style="flex-wrap:wrap;align-items:center">
-      <a href="reviews.php?status=pending" class="btn btn-sm <?=$statusFilter==='pending'?'btn-primary':'btn-ghost'?>">⏳ 待审核 <span class="badge badge-red" style="margin-left:4px"><?=review_pending_count()?></span></a>
-      <a href="reviews.php?status=approved" class="btn btn-sm <?=$statusFilter==='approved'?'btn-primary':'btn-ghost'?>">✅ 已通过</a>
-      <a href="reviews.php?status=rejected" class="btn btn-sm <?=$statusFilter==='rejected'?'btn-primary':'btn-ghost'?>">⛔ 已驳回</a>
-      <span style="width:12px"></span>
-      <a href="reviews.php?type=article&status=<?=$statusFilter?>" class="btn btn-sm btn-ghost <?=$typeFilter==='article'?'btn-primary':''?>">文章</a>
-      <a href="reviews.php?type=page&status=<?=$statusFilter?>" class="btn btn-sm btn-ghost <?=$typeFilter==='page'?'btn-primary':''?>">页面</a>
-      <a href="reviews.php?type=email&status=<?=$statusFilter?>" class="btn btn-sm btn-ghost <?=$typeFilter==='email'?'btn-primary':''?>">邮件</a>
-      <?php if ($typeFilter || $statusFilter !== 'pending'): ?><a href="reviews" class="btn btn-ghost btn-sm">清除筛选</a><?php endif; ?>
+    <div class="toolbar">
+      <div class="ftabs">
+        <a class="ftab <?=$statusFilter==='pending'?'on':''?>" href="reviews.php?status=pending">待审核 <span class="n"><?=review_pending_count()?></span></a>
+        <a class="ftab <?=$statusFilter==='approved'?'on':''?>" href="reviews.php?status=approved">已通过</a>
+        <a class="ftab <?=$statusFilter==='rejected'?'on':''?>" href="reviews.php?status=rejected">已驳回</a>
+        <a class="ftab <?=$typeFilter==='article'?'on':''?>" href="reviews.php?type=article&status=<?=$statusFilter?>">文章</a>
+        <a class="ftab <?=$typeFilter==='page'?'on':''?>" href="reviews.php?type=page&status=<?=$statusFilter?>">页面</a>
+        <a class="ftab <?=$typeFilter==='email'?'on':''?>" href="reviews.php?type=email&status=<?=$statusFilter?>">邮件</a>
+        <?php if ($typeFilter || $statusFilter !== 'pending'): ?><a class="ftab" href="reviews">清除筛选</a><?php endif; ?>
+      </div>
+      <span class="tbar-meta"><?=count($display)?> 条记录</span>
     </div>
 
-    <!-- 列表 -->
-    <div class="card" style="padding:0;overflow-x:auto">
-      <table>
+    <div class="tbl-wrap">
+      <table class="tbl">
         <thead><tr><th>类型</th><th>标题</th><th>命中问题</th><th>提交人</th><th>时间</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
           <?php if (empty($display)): ?>
-          <tr><td colspan="7" class="empty">暂无记录</td></tr>
+          <tr><td colspan="7"><div class="empty">暂无记录</div></td></tr>
           <?php endif; ?>
           <?php foreach ($display as $r):
             $typeLabel = ['article' => '📝 文章', 'page' => '📄 页面', 'email' => '📧 邮件'][$r['type']] ?? $r['type'];
           ?>
           <tr>
-            <td><span class="badge badge-gray" style="font-size:11px"><?=$typeLabel?></span></td>
-            <td style="max-width:220px"><strong><?=htmlspecialchars($r['title'] ?? $r['target_id'])?></strong>
-              <?php if ($r['type'] === 'article'): ?><div class="text-sm text-muted" style="font-size:11px"><a href="article-edit.php?id=<?=urlencode($r['target_id'])?>">编辑 →</a></div><?php endif; ?>
+            <td><span class="tag"><?=$typeLabel?></span></td>
+            <td style="max-width:220px"><div class="t-main"><?=htmlspecialchars($r['title'] ?? $r['target_id'])?></div>
+              <?php if ($r['type'] === 'article'): ?><div class="t-sub"><a href="article-edit.php?id=<?=urlencode($r['target_id'])?>">编辑 →</a></div><?php endif; ?>
             </td>
             <td>
               <?php foreach ($r['issues'] ?? [] as $issue): ?>
-              <span class="badge" style="font-size:11px;color:#fff;background:<?=$ruleColors[$issue['rule']]?>;margin:2px"><?=htmlspecialchars($issue['desc'])?></span>
+              <span class="tag" style="color:#fff;background:<?=$ruleColors[$issue['rule']]?>;margin:2px;border:none"><?=htmlspecialchars($issue['desc'])?></span>
               <?php endforeach; ?>
             </td>
-            <td class="text-sm text-muted"><?=htmlspecialchars($r['submitted_by'] ?? '')?></td>
-            <td class="text-sm text-muted" style="white-space:nowrap"><?=htmlspecialchars(substr($r['submitted_at'] ?? '', 0, 16))?></td>
+            <td><span class="t-sub" style="color:var(--muted)"><?=htmlspecialchars($r['submitted_by'] ?? '')?></span></td>
+            <td><span class="mono" style="font-size:12.5px"><?=htmlspecialchars(substr($r['submitted_at'] ?? '', 0, 16))?></span></td>
             <td>
-              <?php if (($r['status'] ?? '') === 'pending'): ?><span class="badge badge-yellow" style="padding:4px 10px">⏳ 待审核</span>
-              <?php elseif (($r['status'] ?? '') === 'approved'): ?><span class="badge badge-green" style="padding:4px 10px">✅ 已通过</span>
-              <?php else: ?><span class="badge badge-red" style="padding:4px 10px">⛔ 已驳回</span><?php endif; ?>
+              <?php if (($r['status'] ?? '') === 'pending'): ?><span class="st st-warn">待审核</span>
+              <?php elseif (($r['status'] ?? '') === 'approved'): ?><span class="st st-ok">已通过</span>
+              <?php else: ?><span class="st st-danger">已驳回</span><?php endif; ?>
             </td>
             <td style="white-space:nowrap">
               <?php if (($r['status'] ?? '') === 'pending'): ?>
-              <button class="btn btn-primary btn-sm" onclick="doReview('<?=htmlspecialchars($r['id'])?>','approve')">通过</button>
+              <button class="btn btn-p btn-sm" onclick="doReview('<?=htmlspecialchars($r['id'])?>','approve')">通过</button>
               <button class="btn btn-danger btn-sm" onclick="doReview('<?=htmlspecialchars($r['id'])?>','reject')">驳回</button>
               <?php else: ?>
-              <span class="text-sm text-muted"><?=htmlspecialchars($r['reviewed_by'] ?? '')?></span>
+              <span class="t-sub" style="color:var(--muted)"><?=htmlspecialchars($r['reviewed_by'] ?? '')?></span>
               <?php endif; ?>
             </td>
           </tr>
