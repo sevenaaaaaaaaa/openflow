@@ -138,7 +138,7 @@ if ($filterStatus) $displayTasks = array_values(array_filter($displayTasks, fn($
 usort($displayTasks, fn($a, $b) => strcmp($a['due_date'] ?? '', $b['due_date'] ?? '') ?: strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
 
 $statusLabels = ['pending' => '待处理', 'in_progress' => '进行中', 'done' => '已完成', 'cancelled' => '已取消'];
-$statusColors = ['pending' => 'var(--warn)', 'in_progress' => 'var(--accent)', 'done' => 'var(--ok)', 'cancelled' => '#9ca3af'];
+$statusColors = ['pending' => 'var(--warn)', 'in_progress' => 'var(--accent)', 'done' => 'var(--ok)', 'cancelled' => 'var(--faint)'];
 $prioLabels = ['high' => '高', 'medium' => '中', 'low' => '低'];
 $prioColors = ['high' => 'var(--danger)', 'medium' => 'var(--warn)', 'low' => 'var(--ok)'];
 

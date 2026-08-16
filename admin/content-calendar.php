@@ -39,7 +39,7 @@ foreach ($events as $e) {
         'date' => $sDate,
         'end_date' => $eDate,
         'scheduled' => false,
-        'color' => '#7c3aed',
+        'color' => 'var(--accent)',
     ];
 }
 // 资料下载
@@ -79,7 +79,7 @@ admin_header('内容日历');
 .cal-handle:hover{opacity:1;background:rgba(255,255,255,.4)}
 .cal-handle-l{margin-right:3px}
 .cal-handle-r{margin-left:3px}
-.cal-day.resize-target{outline:2px dashed #7c3aed;outline-offset:-2px;cursor:ew-resize}
+.cal-day.resize-target{outline:2px dashed var(--accent);outline-offset:-2px;cursor:ew-resize}
 .cal-legend{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;font-size:12px;color:var(--text-2)}
 .cal-legend .lg{display:flex;align-items:center;gap:5px}
 .cal-legend .dot{width:10px;height:10px;border-radius:3px}
@@ -105,7 +105,7 @@ admin_header('内容日历');
 
     <div class="cal-legend">
       <span class="lg"><span class="dot" style="background:#2e6b4f"></span>文章</span>
-      <span class="lg"><span class="dot" style="background:#7c3aed"></span>活动</span>
+      <span class="lg"><span class="dot" style="background:var(--accent)"></span>活动</span>
       <span class="lg"><span class="dot" style="background:var(--accent)"></span>资料</span>
       <span class="lg"><span class="dot dashed" style="background:var(--warn)"></span>定时发布</span>
     </div>

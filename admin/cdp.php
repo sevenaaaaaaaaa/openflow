@@ -104,7 +104,7 @@ admin_header('CDP 客户数据中台');
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
       <div class="cdp-stat"><div class="num" style="color:var(--accent)"><?=$totalVisitors?></div><div class="lab">总用户数</div></div>
       <div class="cdp-stat"><div class="num" style="color:var(--ok)"><?=$totalEvents?></div><div class="lab">总事件数</div></div>
-      <div class="cdp-stat"><div class="num" style="color:#7c3aed"><?=$todayEvents?></div><div class="lab">今日事件</div></div>
+      <div class="cdp-stat"><div class="num" style="color:var(--accent)"><?=$todayEvents?></div><div class="lab">今日事件</div></div>
       <div class="cdp-stat"><div class="num" style="color:var(--warn)"><?=$avgEventsPerUser?></div><div class="lab">人均事件</div></div>
     </div>
 
@@ -649,7 +649,7 @@ admin_header('CDP 客户数据中台');
         <div style="display:flex;align-items:center;gap:8px;padding:6px 0">
           <span style="min-width:70px;font-size:12px;font-weight:600"><?=htmlspecialchars($k)?></span>
           <div style="flex:1;height:12px;background:var(--hover);border-radius:4px;overflow:hidden">
-            <div style="height:100%;width:<?=round($v / max(1, array_sum($browserDist)) * 100)?>%;background:#7c3aed;border-radius:4px"></div>
+            <div style="height:100%;width:<?=round($v / max(1, array_sum($browserDist)) * 100)?>%;background:var(--accent);border-radius:4px"></div>
           </div>
           <span style="font-size:12px;color:var(--muted);min-width:40px;text-align:right"><?=$v?></span>
         </div>

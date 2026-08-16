@@ -69,7 +69,7 @@ foreach ($members as $m) {
 arsort($tagCounts);
 
 $segLabels = ['high_value'=>'💎 高价值','potential'=>'⭐ 潜力','new'=>'🌱 新客','at_risk'=>'⚠️ 流失风险','churned'=>'😴 沉睡'];
-$segColors = ['high_value'=>'#eab308','potential'=>'var(--accent)','new'=>'#7c3aed','at_risk'=>'var(--warn)','churned'=>'#9ca3af'];
+$segColors = ['high_value'=>'#eab308','potential'=>'var(--accent)','new'=>'var(--accent)','at_risk'=>'var(--warn)','churned'=>'var(--faint)'];
 
 admin_header('用户画像');
 ?>

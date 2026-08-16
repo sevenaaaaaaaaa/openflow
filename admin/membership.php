@@ -63,7 +63,7 @@ admin_header('会员体系');
 
     <!-- 会员分布 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
-      <div class="card" style="border-left:4px solid #9ca3af"><div class="text-sm text-muted">👤 免费用户</div><div style="font-size:26px;font-weight:800"><?=$tierCount['free']?></div></div>
+      <div class="card" style="border-left:4px solid var(--faint)"><div class="text-sm text-muted">👤 免费用户</div><div style="font-size:26px;font-weight:800"><?=$tierCount['free']?></div></div>
       <div class="card" style="border-left:4px solid #f59e0b"><div class="text-sm text-muted">⭐ 普通会员</div><div style="font-size:26px;font-weight:800"><?=$tierCount['member']?></div></div>
       <div class="card" style="border-left:4px solid #b45309"><div class="text-sm text-muted">👑 VIP 会员</div><div style="font-size:26px;font-weight:800"><?=$tierCount['vip']?></div></div>
       <div class="card"><div class="text-sm text-muted">👥 全部会员</div><div style="font-size:26px;font-weight:800"><?=count($members)?></div></div>
@@ -84,7 +84,7 @@ admin_header('会员体系');
           <?php foreach ($members as $m): $e = $entitlements[$m['id']] ?? member_entitlements($m); ?>
           <tr>
             <td><strong><?=htmlspecialchars($m['name'] ?? '')?></strong><div class="text-sm text-muted"><?=htmlspecialchars($m['email'] ?? '')?></div></td>
-            <td><span class="badge" style="background:<?=$e['tier']==='vip'?'#b45309':($e['tier']==='member'?'#f59e0b':'#9ca3af')?>;color:#fff;padding:3px 10px;border-radius:999px;font-size:11px"><?=$e['icon']?> <?=htmlspecialchars($e['tier_name'])?></span></td>
+            <td><span class="badge" style="background:<?=$e['tier']==='vip'?'#b45309':($e['tier']==='member'?'#f59e0b':'var(--faint)')?>;color:#fff;padding:3px 10px;border-radius:999px;font-size:11px"><?=$e['icon']?> <?=htmlspecialchars($e['tier_name'])?></span></td>
             <td><?=$e['points']?></td>
             <td><?=$e['subscription'] ? '⭐ 是' : '—'?></td>
             <td><?=count($e['owned_courses'])?></td>
