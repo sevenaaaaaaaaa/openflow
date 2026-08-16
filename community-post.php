@@ -31,18 +31,21 @@ $topic = $topicNames[$post['topic'] ?? ''] ?? ['name'=>'综合','icon'=>'💬'];
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
 <script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
 <style>
-  body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
+  /* ── 设计语言统一：token 语义工具类 ── */
+  .text-fg{color:var(--fg)}.text-muted{color:var(--muted)}.text-faint{color:var(--faint)}
+  .text-accent{color:var(--accent)}.text-ok{color:var(--ok)}.text-danger{color:var(--danger)}
+  body{background:var(--bg);font-family:var(--font-body)}
   .cmt{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
 </style>
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
 <body class="min-h-screen">
-  <header class="bg-white border-b border-[var(--border)]">
+  <header class="border-b" style="background:var(--glass-bright);border-color:var(--border);backdrop-filter:blur(10px);position:sticky;top:0;z-index:40">
     <div class="mx-auto px-5 py-3 flex items-center justify-between" style="max-width:900px">
-      <a href="/" class="font-bold text-lg text-gray-900">OpenFlow</a>
+      <a href="/" class="font-bold text-lg text-fg">OpenFlow</a>
       <nav class="flex items-center gap-4 text-sm">
-        <a href="/community" class="text-gray-600">← 返回社区</a>
-        <?php if ($member): ?><a href="/member.php" class="font-semibold text-green-600"><?=htmlspecialchars($member['name'])?></a><?php endif; ?>
+        <a href="/community" class="text-muted">← 返回社区</a>
+        <?php if ($member): ?><a href="/member.php" class="font-semibold text-ok"><?=htmlspecialchars($member['name'])?></a><?php endif; ?>
       </nav>
     </div>
   </header>
@@ -52,7 +55,7 @@ $topic = $topicNames[$post['topic'] ?? ''] ?? ['name'=>'综合','icon'=>'💬'];
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px">
       <div style="font-size:12px;color:var(--faint);margin-bottom:8px"><?=$topic['icon']?> <?=htmlspecialchars($topic['name'])?> · by <?=htmlspecialchars($post['author_name'])?> · <?=htmlspecialchars(substr($post['created_at']??'',0,10))?></div>
       <h1 class="text-2xl font-bold mb-4"><?=htmlspecialchars($post['title'])?></h1>
-      <div class="text-[15px] leading-relaxed text-gray-600 whitespace-pre-wrap"><?=htmlspecialchars($post['content'] ?? '')?></div>
+      <div class="text-[15px] leading-relaxed text-muted whitespace-pre-wrap"><?=htmlspecialchars($post['content'] ?? '')?></div>
       <div style="display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--bg);font-size:13px;color:var(--faint)">
         <button class="vote-btn" onclick="vote('<?=htmlspecialchars($post['id'])?>',1)">▲</button>
         <span class="font-bold text-sm" style="color:var(--fg)" id="votes_<?=htmlspecialchars($post['id'])?>"><?=$post['votes']??0?></span>
@@ -71,16 +74,16 @@ $topic = $topicNames[$post['topic'] ?? ''] ?? ['name'=>'综合','icon'=>'💬'];
         <button onclick="addComment()" class="mt-2 rounded-full px-6 py-2 font-bold" style="background:var(--accent);color:var(--on-accent)">发布评论</button>
       </div>
       <?php else: ?>
-      <a href="/member.php?view=login&next=/community-post/<?=urlencode($post['id'])?>" class="block text-center py-3 rounded-xl font-semibold" style="background:var(--surface);border:1px solid var(--border);color:#2b5f7e;margin-bottom:16px">登录后参与讨论</a>
+      <a href="/member.php?view=login&next=/community-post/<?=urlencode($post['id'])?>" class="block text-center py-3 rounded-xl font-semibold" style="background:var(--surface);border:1px solid var(--border);color:var(--accent);margin-bottom:16px">登录后参与讨论</a>
       <?php endif; ?>
 
       <?php if (empty($postComments)): ?>
-      <div class="text-center py-10 text-gray-400">暂无评论，来抢沙发！</div>
+      <div class="text-center py-10 text-faint">暂无评论，来抢沙发！</div>
       <?php endif; ?>
       <?php foreach ($postComments as $c): ?>
       <div class="cmt">
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--faint);margin-bottom:6px"><strong style="color:var(--fg)"><?=htmlspecialchars($c['author_name'])?></strong><span><?=htmlspecialchars(substr($c['created_at']??'',0,16))?></span></div>
-        <div class="text-sm leading-relaxed text-gray-600"><?=htmlspecialchars($c['content'])?></div>
+        <div class="text-sm leading-relaxed text-muted"><?=htmlspecialchars($c['content'])?></div>
       </div>
       <?php endforeach; ?>
     </div>

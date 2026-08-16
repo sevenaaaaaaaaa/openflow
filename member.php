@@ -34,36 +34,40 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
 <script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
 <style>
+/* ── 设计语言统一：token 语义工具类（终版契约） ── */
+  .text-fg{color:var(--fg)}.text-muted{color:var(--muted)}.text-faint{color:var(--faint)}
+  .text-accent{color:var(--accent)}.text-ok{color:var(--ok)}.text-danger{color:var(--danger)}
+  .text-on-accent{color:var(--on-accent)}
   body{background:var(--bg);font-family:var(--font-body)}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 4px 16px rgba(30,30,30,.05)}
   .field{margin-bottom:16px}
   .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--fg)}
   .field input,.field select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;outline:none;box-sizing:border-box}
-  .field input:focus{border-color:#2b5f7e}
+  .field input:focus{border-color:var(--accent)}
   .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;font-size:14px;color:var(--muted);cursor:pointer;transition:.12s;text-decoration:none}
   .nav-item:hover{background:var(--bg)}
   .nav-item.active{background:var(--accent);color:var(--on-accent);font-weight:600}
   .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
   .tag.green{background:var(--ok-soft);color:var(--ok)}
-  .tag.orange{background:#fef3c7;color:var(--warn)}
+  .tag.orange{background:var(--warn-soft);color:var(--warn)}
   .tag.gray{background:var(--bg);color:var(--muted)}
 </style>
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
 <body class="min-h-screen">
   <!-- 顶部导航 -->
-  <header class="bg-white border-b border-[var(--border)]">
+  <header class="border-b" style="background:var(--glass-bright);border-color:var(--border);backdrop-filter:blur(10px);position:sticky;top:0;z-index:40">
     <div class="mx-auto max-w-site px-5 py-3 flex items-center justify-between" style="max-width:1100px">
-      <a href="/" class="font-bold text-lg text-gray-900"><?=site_config_get("site_name")?></a>
+      <a href="/" class="font-bold text-lg text-fg"><?=site_config_get("site_name")?></a>
       <nav class="flex items-center gap-4 text-sm">
-        <a href="/academy" class="text-gray-600">OpenFlow 社区</a>
-        <a href="/courses" class="text-gray-600 hover:text-gray-900">课程</a>
+        <a href="/academy" class="text-muted">OpenFlow 社区</a>
+        <a href="/courses" class="text-muted hover:text-fg">课程</a>
         <?php if ($member): ?>
-        <a href="member.php" class="font-semibold text-green-600"><?=htmlspecialchars($member['name'])?></a>
-        <a href="javascript:memberLogout()" class="text-[#dc2626]">退出</a>
+        <a href="member.php" class="font-semibold text-ok"><?=htmlspecialchars($member['name'])?></a>
+        <a href="javascript:memberLogout()" class="text-danger">退出</a>
         <?php else: ?>
-        <a href="member.php?view=login" class="font-semibold text-green-600">登录</a>
-        <a href="member.php?view=register" class="rounded-full bg-[var(--accent)] text-white px-5 py-2 font-semibold">注册</a>
+        <a href="member.php?view=login" class="font-semibold text-ok">登录</a>
+        <a href="member.php?view=register" class="rounded-full bg-[var(--accent)] text-on-accent px-5 py-2 font-semibold">注册</a>
         <?php endif; ?>
       </nav>
     </div>
@@ -77,7 +81,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
     <?php else: ?>
     <div class="card p-8">
       <h1 class="text-2xl font-bold text-center"><?=$view==='login'?'欢迎回来':'创建账号'?></h1>
-      <p class="text-center text-sm text-gray-600 mt-2 mb-8"><?=$view==='login'?'登录你的 OpenFlow 账号':'注册后可购买课程、成为讲师'?></p>
+      <p class="text-center text-sm text-muted mt-2 mb-8"><?=$view==='login'?'登录你的 OpenFlow 账号':'注册后可购买课程、成为讲师'?></p>
 
       <?php if ($view === 'login'): ?>
       <form onsubmit="memberLogin(event)">
@@ -85,13 +89,13 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <div class="field"><label>密码</label><input type="password" name="password" id="l_password" required placeholder="••••••"></div>
         <button type="submit" class="w-full rounded-full py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">登录</button>
       </form>
-      <p class="text-center text-sm text-gray-600 mt-6">还没有账号？<a href="member.php?view=register" class="text-[#2b5f7e] font-semibold">立即注册</a></p>
+      <p class="text-center text-sm text-muted mt-6">还没有账号？<a href="member.php?view=register" class="text-accent font-semibold">立即注册</a></p>
       <?php else: ?>
       <form onsubmit="memberRegister(event)">
         <div class="field"><label>姓名</label><input type="text" name="name" id="r_name" required placeholder="你的真实姓名"></div>
         <div class="field"><label>手机号</label><div style="display:flex;gap:8px">
           <input type="tel" name="phone" id="r_phone" required placeholder="11 位手机号" style="flex:1">
-          <button type="button" class="rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap" style="background:var(--bg);color:#2b5f7e" onclick="memberSendCaptcha(document.getElementById('r_phone').value)">发验证码</button>
+          <button type="button" class="rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap" style="background:var(--bg);color:var(--accent)" onclick="memberSendCaptcha(document.getElementById('r_phone').value)">发验证码</button>
         </div></div>
         <div class="field"><label>邮箱</label><input type="email" name="email" id="r_email" required placeholder="you@example.com"></div>
         <div class="field"><label>密码</label><input type="password" name="password" id="r_password" required minlength="6" placeholder="至少 6 位"></div>
@@ -99,7 +103,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <?php if (!empty($_GET['ref'])): ?><input type="hidden" name="referral" value="<?=htmlspecialchars($_GET['ref'])?>"><?php endif; ?>
         <button type="submit" class="w-full rounded-full py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">注册</button>
       </form>
-      <p class="text-center text-sm text-gray-600 mt-6">已有账号？<a href="member.php?view=login" class="text-[#2b5f7e] font-semibold">直接登录</a></p>
+      <p class="text-center text-sm text-muted mt-6">已有账号？<a href="member.php?view=login" class="text-accent font-semibold">直接登录</a></p>
       <?php endif; ?>
       <div id="memberMsg" style="margin-top:14px"></div>
     </div>
@@ -113,11 +117,11 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
       <!-- 侧边栏 -->
       <div class="card p-3 h-fit" style="position:sticky;top:20px">
         <div class="px-3 py-4 border-b border-[var(--border)] mb-2">
-          <div class="font-bold text-gray-900"><?=htmlspecialchars($member['name'])?></div>
-          <div class="text-sm text-gray-600 mt-1"><?=htmlspecialchars($member['email'])?></div>
+          <div class="font-bold text-fg"><?=htmlspecialchars($member['name'])?></div>
+          <div class="text-sm text-muted mt-1"><?=htmlspecialchars($member['email'])?></div>
           <?php $mLevel = gamification_level_of($member['points'] ?? 0); ?>
           <?php $mEnt = member_entitlements($member); ?>
-          <div class="mt-2 text-sm font-semibold"><?=$mLevel['icon']?> <?=htmlspecialchars($mLevel['name'])?> <span class="text-xs text-gray-400 font-normal">· <?=$member['points']??0?> 积分</span></div>
+          <div class="mt-2 text-sm font-semibold"><?=$mLevel['icon']?> <?=htmlspecialchars($mLevel['name'])?> <span class="text-xs text-faint font-normal">· <?=$member['points']??0?> 积分</span></div>
           <span class="tag green mt-1" style="display:inline-block"><?=$mEnt['icon']?> <?=htmlspecialchars($mEnt['tier_name'])?></span>
           <?php if (sub_is_active($member['id'])): ?><span class="tag orange mt-1">⭐ 订阅</span><?php endif; ?>
           <?php if (!empty($member['ambassador'])): ?><span class="tag green mt-1"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="m8.5 13-2 8 5.5-3 5.5 3-2-8"/></svg></span> 推荐大使</span><?php endif; ?>
@@ -132,7 +136,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <a class="nav-item" href="member.php?view=teacher">👨‍<span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/></svg></span> 成为讲师</a>
         <a class="nav-item" href="member.php?view=submit"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span> 投稿文章</a>
         <a class="nav-item" href="/consultation?view=my">🤝 我的1v1咨询</a>
-        <a class="nav-item" href="/messages.php">🔔 站内信<?php $msgUnread = inbox_unread($member); if ($msgUnread): ?> <span style="background:#dc2626;color:var(--surface);border-radius:999px;padding:1px 7px;font-size:11px"><?=$msgUnread?></span><?php endif; ?></a>
+        <a class="nav-item" href="/messages.php">🔔 站内信<?php $msgUnread = inbox_unread($member); if ($msgUnread): ?> <span style="background:var(--danger);color:var(--surface);border-radius:999px;padding:1px 7px;font-size:11px"><?=$msgUnread?></span><?php endif; ?></a>
         <div style="border-top:1px solid var(--border);margin:8px 0"></div>
         <a class="nav-item <?=$view==='profile'?'active':''?>" href="member.php?view=profile">👤 个人资料</a>
         <a class="nav-item <?=$view==='password'?'active':''?>" href="member.php?view=password"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span> 修改密码</a>
@@ -145,13 +149,13 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <div class="card p-8">
           <h2 class="text-xl font-bold mb-6">个人中心</h2>
           <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-            <div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold"><?=count(array_filter($myOrders, fn($o)=>$o['status']==='paid'))?></div><div class="text-sm text-gray-600">已购课程</div></div>
-            <div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold"><?=count($myOrders)?></div><div class="text-sm text-gray-600">全部订单</div></div>
+            <div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold"><?=count(array_filter($myOrders, fn($o)=>$o['status']==='paid'))?></div><div class="text-sm text-muted">已购课程</div></div>
+            <div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold"><?=count($myOrders)?></div><div class="text-sm text-muted">全部订单</div></div>
             <?php if (!empty($member['ambassador'])): ?>
-            <div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">¥<?=$member['balance']??0?></div><div class="text-sm text-gray-600">佣金余额</div></div>
+            <div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">¥<?=$member['balance']??0?></div><div class="text-sm text-muted">佣金余额</div></div>
             <?php endif; ?>
           </div>
-          <p class="text-sm text-gray-600 mt-6">从「我的课程」开始你的学习之旅。</p>
+          <p class="text-sm text-muted mt-6">从「我的课程」开始你的学习之旅。</p>
         </div>
         <?php elseif ($tab === 'membership'): include_member_membership($member); ?>
         <?php elseif ($tab === 'orders'): include_member_orders($myOrders); ?>
@@ -171,7 +175,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
 
 <script>
 function memberMsg(html, isErr) {
-  document.getElementById('memberMsg').innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;' + (isErr?'background:#fee2e2;color:#dc2626':'background:#dcfce7;color:var(--ok)') + '">' + html + '</div>';
+  document.getElementById('memberMsg').innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;' + (isErr?'background:var(--danger-soft);color:var(--danger)':'background:var(--ok-soft);color:var(--ok)') + '">' + html + '</div>';
 }
 function memberLogin(e) {
   e.preventDefault();
@@ -236,7 +240,7 @@ function include_member_membership($member): void {
         <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--ok));display:grid;place-items:center;font-size:32px"><?=$e['icon']?></div>
         <div style="flex:1">
           <h2 class="text-xl font-bold"><?=htmlspecialchars($e['tier_name'])?></h2>
-          <div class="text-sm text-gray-600 mt-1"><?=$e['points']?> 积分 · <?=htmlspecialchars($e['level']['name'] ?? '')?> 等级<?php if ($e['subscription']): ?> · ⭐ 订阅中<?php endif; ?></div>
+          <div class="text-sm text-muted mt-1"><?=$e['points']?> 积分 · <?=htmlspecialchars($e['level']['name'] ?? '')?> 等级<?php if ($e['subscription']): ?> · ⭐ 订阅中<?php endif; ?></div>
         </div>
         <?php if ($current === 'free'): ?>
         <a href="member.php?view=subscribe" class="px-6 py-3 rounded-full font-bold" style="background:var(--accent);color:var(--on-accent)">开通会员 →</a>
@@ -246,10 +250,10 @@ function include_member_membership($member): void {
       <!-- 权益总览 -->
       <?php foreach ($lists as $cat => $items): ?>
       <div class="mt-6">
-        <h3 class="text-sm font-bold text-gray-600 mb-3"><?=htmlspecialchars($cat)?></h3>
+        <h3 class="text-sm font-bold text-muted mb-3"><?=htmlspecialchars($cat)?></h3>
         <div class="grid gap-2" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
           <?php foreach ($items as $it): ?>
-          <div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:#fafaf6">
+          <div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg-soft)">
             <div style="font-size:13px;font-weight:600"><?=htmlspecialchars($it['权益'])?></div>
             <div style="font-size:12px;margin-top:3px;<?=strpos($it['状态'],'🔒')!==false?'color:var(--faint)':'color:var(--ok)'?>"><?=htmlspecialchars($it['状态'])?></div>
           </div>
@@ -260,14 +264,14 @@ function include_member_membership($member): void {
 
       <!-- 会员计划 -->
       <div class="mt-8">
-        <h3 class="text-sm font-bold text-gray-600 mb-3"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span> 会员计划</h3>
+        <h3 class="text-sm font-bold text-muted mb-3"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span> 会员计划</h3>
         <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
           <?php foreach ($plans as $p): $isCurrent = ($p['id'] === $current); ?>
-          <div style="padding:18px;border-radius:14px;border:2px solid <?=$isCurrent?'var(--accent)':'var(--border)'?>;<?=$isCurrent?'background:#fdfce9':''?>">
+          <div style="padding:18px;border-radius:14px;border:2px solid <?=$isCurrent?'var(--accent)':'var(--border)'?>;<?=$isCurrent?'background:var(--warn-soft)':''?>">
             <div class="text-2xl"><?=htmlspecialchars($p['icon'] ?? '')?></div>
             <div class="font-bold mt-1"><?=htmlspecialchars($p['name'] ?? '')?></div>
             <div class="text-sm mt-1" style="color:var(--ok)"><?=$p['price']>0 ? '¥' . $p['price'] . '/' . htmlspecialchars($p['period'] ?? '') : '免费'?></div>
-            <ul class="text-xs text-gray-600 mt-2" style="line-height:1.8;list-style:none;padding:0">
+            <ul class="text-xs text-muted mt-2" style="line-height:1.8;list-style:none;padding:0">
               <?php foreach ($p['benefits'] ?? [] as $b): ?><li>✓ <?=htmlspecialchars($b)?></li><?php endforeach; ?>
             </ul>
             <?php if ($isCurrent): ?><div class="text-xs mt-3 font-bold" style="color:var(--warn)">当前等级</div>
@@ -291,32 +295,32 @@ function include_member_level($member): void {
     echo '<div class="card p-8"><h2 class="text-xl font-bold mb-2">我的等级</h2>';
     echo '<div class="mb-6" style="background:var(--bg);padding:20px;border-radius:14px">';
     echo '<div class="text-3xl font-bold">' . $current['icon'] . ' ' . htmlspecialchars($current['name']) . '</div>';
-    echo '<div class="text-sm text-gray-600 mt-1">当前积分：<strong>' . $points . '</strong></div>';
+    echo '<div class="text-sm text-muted mt-1">当前积分：<strong>' . $points . '</strong></div>';
     if ($next) {
         $need = $next['min_points'] - $points;
-        echo '<div style="height:8px;background:var(--border);border-radius:99px;margin-top:12px;overflow:hidden"><div style="height:100%;width:' . min(100, round($points/$next['min_points']*100)) . '%;background:linear-gradient(90deg,#86efac,var(--accent))"></div></div>';
-        echo '<div class="text-xs text-gray-600 mt-2">距 ' . $next['icon'] . ' ' . htmlspecialchars($next['name']) . ' 还需 <strong>' . $need . '</strong> 积分</div>';
-    } else { echo '<div class="text-xs text-green-600 mt-2">已达最高等级 🎉</div>'; }
+        echo '<div style="height:8px;background:var(--border);border-radius:99px;margin-top:12px;overflow:hidden"><div style="height:100%;width:' . min(100, round($points/$next['min_points']*100)) . '%;background:linear-gradient(90deg,var(--ok),var(--accent))"></div></div>';
+        echo '<div class="text-xs text-muted mt-2">距 ' . $next['icon'] . ' ' . htmlspecialchars($next['name']) . ' 还需 <strong>' . $need . '</strong> 积分</div>';
+    } else { echo '<div class="text-xs text-ok mt-2">已达最高等级 🎉</div>'; }
     echo '</div>';
     // 等级权益
     echo '<h3 class="font-bold text-sm mb-3">等级权益</h3><div style="display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">';
     foreach ($levels as $l) {
         $isCur = $l['key'] === $current['key'];
-        echo '<div style="padding:14px;border-radius:12px;border:2px solid ' . ($isCur ? 'var(--accent)' : 'var(--bg)') . ';background:' . ($isCur ? '#fdfce9' : 'var(--surface)') . '">' .
+        echo '<div style="padding:14px;border-radius:12px;border:2px solid ' . ($isCur ? 'var(--accent)' : 'var(--bg)') . ';background:' . ($isCur ? 'var(--warn-soft)' : 'var(--surface)') . '">' .
             '<div class="font-bold text-sm">' . $l['icon'] . ' ' . htmlspecialchars($l['name']) . '</div>' .
-            '<div class="text-xs text-gray-600 mt-1">' . $l['min_points'] . ' 积分起</div>' .
-            '<div class="text-xs text-gray-400 mt-1">' . implode('、', array_map(fn($p)=>['post'=>'发帖','comment'=>'评论','vote'=>'投票','no_review'=>'免审核','featured'=>'推荐位'][$p]??$p, $l['perms'])) . '</div>' .
+            '<div class="text-xs text-muted mt-1">' . $l['min_points'] . ' 积分起</div>' .
+            '<div class="text-xs text-faint mt-1">' . implode('、', array_map(fn($p)=>['post'=>'发帖','comment'=>'评论','vote'=>'投票','no_review'=>'免审核','featured'=>'推荐位'][$p]??$p, $l['perms'])) . '</div>' .
             '</div>';
     }
     echo '</div>';
     // 积分记录
     echo '<h3 class="font-bold text-sm mb-3 mt-6">积分记录</h3>';
     $log = $member['points_log'] ?? [];
-    if (empty($log)) echo '<p class="text-sm text-gray-600">暂无积分记录</p>';
+    if (empty($log)) echo '<p class="text-sm text-muted">暂无积分记录</p>';
     else {
-        echo '<table class="w-full text-sm"><thead><tr class="text-left text-gray-600 border-b border-[var(--border)]"><th class="py-2">积分</th><th>原因</th><th>时间</th></tr></thead><tbody>';
+        echo '<table class="w-full text-sm"><thead><tr class="text-left text-muted border-b border-[var(--border)]"><th class="py-2">积分</th><th>原因</th><th>时间</th></tr></thead><tbody>';
         foreach (array_slice(array_reverse($log),0,20) as $pl) {
-            echo '<tr class="border-b border-[var(--bg)]"><td class="py-2" style="color:' . ($pl['points']>=0?'var(--ok)':'#dc2626') . '">' . ($pl['points']>=0?'+':'') . $pl['points'] . '</td><td>' . htmlspecialchars($pl['reason']) . '</td><td class="text-gray-600">' . htmlspecialchars(substr($pl['time']??'',0,16)) . '</td></tr>';
+            echo '<tr class="border-b border-[var(--bg)]"><td class="py-2" style="color:' . ($pl['points']>=0?'var(--ok)':'var(--danger)') . '">' . ($pl['points']>=0?'+':'') . $pl['points'] . '</td><td>' . htmlspecialchars($pl['reason']) . '</td><td class="text-muted">' . htmlspecialchars(substr($pl['time']??'',0,16)) . '</td></tr>';
         }
         echo '</tbody></table>';
     }
@@ -329,37 +333,37 @@ function include_member_subscribe($member): void {
     $active = sub_is_active($member['id']);
     echo '<div class="card p-8"><h2 class="text-xl font-bold mb-4">⭐ 付费订阅</h2>';
     if ($active) {
-        echo '<div style="background:#dcfce7;padding:16px;border-radius:14px;color:var(--ok);margin-bottom:16px">🎉 你已是订阅会员，有效期至 <strong>' . htmlspecialchars($mySub['expires_at'] ?? '') . '</strong></div>';
+        echo '<div style="background:var(--ok-soft);padding:16px;border-radius:14px;color:var(--ok);margin-bottom:16px">🎉 你已是订阅会员，有效期至 <strong>' . htmlspecialchars($mySub['expires_at'] ?? '') . '</strong></div>';
     }
     if (empty($settings['enabled'])) {
-        echo '<p class="text-sm text-gray-600">订阅暂未开放，敬请期待。</p>';
+        echo '<p class="text-sm text-muted">订阅暂未开放，敬请期待。</p>';
     } elseif (empty($plans)) {
-        echo '<p class="text-sm text-gray-600">暂无可订阅计划。</p>';
+        echo '<p class="text-sm text-muted">暂无可订阅计划。</p>';
     } else {
         echo '<div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">';
         foreach ($plans as $p) {
             $period = ($p['period'] ?? 'month') === 'month' ? '/月' : '/年';
             echo '<div style="border:2px solid var(--border);border-radius:14px;padding:20px;position:relative">' .
                 '<div class="font-bold text-lg">' . htmlspecialchars($p['name']) . '</div>' .
-                '<div class="text-2xl font-bold mt-2">¥' . number_format($p['price']??0,2) . '<span class="text-sm text-gray-400 font-normal">' . $period . '</span></div>' .
-                '<div class="text-sm text-gray-600 mt-2 min-h-10">' . htmlspecialchars($p['description'] ?? '') . '</div>' .
+                '<div class="text-2xl font-bold mt-2">¥' . number_format($p['price']??0,2) . '<span class="text-sm text-faint font-normal">' . $period . '</span></div>' .
+                '<div class="text-sm text-muted mt-2 min-h-10">' . htmlspecialchars($p['description'] ?? '') . '</div>' .
                 '<button onclick="subscribePlan(\'' . htmlspecialchars($p['id']) . '\')" class="mt-4 w-full rounded-full py-2.5 font-bold" style="background:var(--accent);color:var(--on-accent)">订阅</button>' .
                 '</div>';
         }
         echo '</div>';
-        echo '<p class="text-xs text-gray-400 mt-4">海外用户：' . ($settings['ghost_enabled'] ? '<a href="' . htmlspecialchars($settings['ghost_api_url']) . '/#/portal" target="_blank" class="text-[#2b5f7e]">通过 Ghost 订阅 →</a>' : '未开启 Ghost 海外订阅') . '</p>';
+        echo '<p class="text-xs text-faint mt-4">海外用户：' . ($settings['ghost_enabled'] ? '<a href="' . htmlspecialchars($settings['ghost_api_url']) . '/#/portal" target="_blank" class="text-accent">通过 Ghost 订阅 →</a>' : '未开启 Ghost 海外订阅') . '</p>';
     }
     echo '</div>';
 }
 function include_member_orders(array $orders): void {
     echo '<div class="card p-8"><h2 class="text-xl font-bold mb-6">我的订单</h2>';
-    if (empty($orders)) { echo '<p class="text-sm text-gray-600">暂无订单，去逛逛课程吧 → <a href="/courses" class="text-[#2b5f7e]">浏览课程</a></p>'; }
+    if (empty($orders)) { echo '<p class="text-sm text-muted">暂无订单，去逛逛课程吧 → <a href="/courses" class="text-accent">浏览课程</a></p>'; }
     else {
-        echo '<table class="w-full text-sm"><thead><tr class="text-left text-gray-600 border-b border-[var(--border)]"><th class="py-2">订单号</th><th>课程</th><th>金额</th><th>状态</th><th>时间</th></tr></thead><tbody>';
+        echo '<table class="w-full text-sm"><thead><tr class="text-left text-muted border-b border-[var(--border)]"><th class="py-2">订单号</th><th>课程</th><th>金额</th><th>状态</th><th>时间</th></tr></thead><tbody>';
         foreach ($orders as $o) {
             $statusTag = ['paid'=>'已支付','pending'=>'待支付','cancelled'=>'已取消','refunded'=>'已退款'][$o['status']] ?? $o['status'];
             $tagCls = $o['status']==='paid'?'green':($o['status']==='pending'?'orange':'gray');
-            echo '<tr class="border-b border-[var(--bg)]"><td class="py-3 text-gray-600">' . htmlspecialchars(substr($o['id'],-10)) . '</td><td>' . htmlspecialchars($o['course_title']) . '</td><td>¥' . number_format($o['amount']??0,2) . '</td><td><span class="tag ' . $tagCls . '">' . $statusTag . '</span></td><td class="text-gray-600">' . htmlspecialchars(substr($o['created_at']??'',0,10)) . '</td></tr>';
+            echo '<tr class="border-b border-[var(--bg)]"><td class="py-3 text-muted">' . htmlspecialchars(substr($o['id'],-10)) . '</td><td>' . htmlspecialchars($o['course_title']) . '</td><td>¥' . number_format($o['amount']??0,2) . '</td><td><span class="tag ' . $tagCls . '">' . $statusTag . '</span></td><td class="text-muted">' . htmlspecialchars(substr($o['created_at']??'',0,10)) . '</td></tr>';
         }
         echo '</tbody></table>';
     }
@@ -371,7 +375,7 @@ function include_member_courses($member): void {
     $courseIds = array_unique(array_map(fn($o)=>$o['course_id'], $orders));
     $courses = json_read(DATA_DIR . '/courses/index.json');
     echo '<div class="card p-8"><h2 class="text-xl font-bold mb-6">我的课程</h2>';
-    if (empty($courseIds)) { echo '<p class="text-sm text-gray-600">你还没有购买课程，去逛逛 → <a href="/courses" class="text-[#2b5f7e]">浏览课程</a></p>'; }
+    if (empty($courseIds)) { echo '<p class="text-sm text-muted">你还没有购买课程，去逛逛 → <a href="/courses" class="text-accent">浏览课程</a></p>'; }
     else {
         echo '<div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">';
         foreach ($courses as $c) {
@@ -380,9 +384,9 @@ function include_member_courses($member): void {
             echo '<a href="course-player.php?id=' . urlencode($c['id']) . '" class="card p-5 text-decoration-none" style="text-decoration:none;color:inherit">' .
                 '<div class="font-bold mb-1">' . htmlspecialchars($c['title']) . '</div>' .
                 ($s['percent'] > 0 ?
-                    '<div class="mt-2" style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:' . $s['percent'] . '%;background:linear-gradient(90deg,var(--ok),#86efac,var(--accent))"></div></div>' .
-                    '<div class="text-xs text-gray-600 mt-1">已学 ' . $s['done'] . '/' . $s['total'] . ' 节 · ' . $s['percent'] . '%</div>'
-                    : '<div class="text-sm text-gray-600">' . count($c['chapters']??[]) . ' 章 · 点击开始学习 →</div>') .
+                    '<div class="mt-2" style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:' . $s['percent'] . '%;background:linear-gradient(90deg,var(--ok),var(--ok),var(--accent))"></div></div>' .
+                    '<div class="text-xs text-muted mt-1">已学 ' . $s['done'] . '/' . $s['total'] . ' 节 · ' . $s['percent'] . '%</div>'
+                    : '<div class="text-sm text-muted">' . count($c['chapters']??[]) . ' 章 · 点击开始学习 →</div>') .
                 '</a>';
         }
         echo '</div>';
@@ -391,17 +395,17 @@ function include_member_courses($member): void {
 }
 function include_member_ambassador($member): void {
     if (empty($member['ambassador'])) {
-        echo '<div class="card p-8 text-center"><div style="font-size:44px">🏅</div><h2 class="text-xl font-bold mt-4 mb-2">成为推荐大使</h2><p class="text-sm text-gray-600 max-w-md mx-auto mb-6">分享你的专属链接，好友通过链接购买课程，你将获得佣金。</p><a href="api/ambassador.php?action=apply" class="inline-block rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">立即申请成为大使</a></div>';
+        echo '<div class="card p-8 text-center"><div style="font-size:44px">🏅</div><h2 class="text-xl font-bold mt-4 mb-2">成为推荐大使</h2><p class="text-sm text-muted max-w-md mx-auto mb-6">分享你的专属链接，好友通过链接购买课程，你将获得佣金。</p><a href="api/ambassador.php?action=apply" class="inline-block rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">立即申请成为大使</a></div>';
     } else {
         $base = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST']??'');
         echo '<div class="card p-8"><h2 class="text-xl font-bold mb-4">我的推广</h2>' .
             '<div class="mb-6"><div class="text-sm font-semibold mb-2">我的专属推广链接</div>' .
             '<div class="flex gap-2"><input readonly value="' . $base . '/member.php?view=register&ref=' . htmlspecialchars($member['referral_code']) . '" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px"><button class="rounded-full px-4 py-2 text-sm font-semibold" style="background:var(--bg)" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(()=>alert(\'已复制\'))">复制</button></div></div>' .
             '<div class="grid gap-4 mb-6" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">' .
-            '<div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">' . ($member['ambassador_stats']['clicks']??0) . '</div><div class="text-sm text-gray-600">点击</div></div>' .
-            '<div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">' . ($member['ambassador_stats']['orders']??0) . '</div><div class="text-sm text-gray-600">成交</div></div>' .
-            '<div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">¥' . number_format($member['balance']??0,2) . '</div><div class="text-sm text-gray-600">佣金余额</div></div></div>' .
-            '<p class="text-sm text-gray-600">佣金规则由管理员在后台「分销设置」中配置。可在后台查看提现记录。</p></div>';
+            '<div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">' . ($member['ambassador_stats']['clicks']??0) . '</div><div class="text-sm text-muted">点击</div></div>' .
+            '<div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">' . ($member['ambassador_stats']['orders']??0) . '</div><div class="text-sm text-muted">成交</div></div>' .
+            '<div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">¥' . number_format($member['balance']??0,2) . '</div><div class="text-sm text-muted">佣金余额</div></div></div>' .
+            '<p class="text-sm text-muted">佣金规则由管理员在后台「分销设置」中配置。可在后台查看提现记录。</p></div>';
     }
 }
 function include_member_teacher($member): void {
@@ -409,11 +413,11 @@ function include_member_teacher($member): void {
     $labels = ['none'=>'未申请','pending'=>'审核中','approved'=>'已通过','rejected'=>'未通过'];
     $tagCls = ['none'=>'gray','pending'=>'orange','approved'=>'green','rejected'=>'gray'][$status];
     echo '<div class="card p-8"><h2 class="text-xl font-bold mb-6">成为讲师</h2>';
-    if ($status === 'approved') echo '<p class="text-sm" style="background:#dcfce7;padding:12px 16px;border-radius:10px;color:var(--ok)">🎉 你已成为讲师，可以在「投稿文章」中发布内容了。</p>';
-    elseif ($status === 'pending') echo '<p class="text-sm" style="background:#fef3c7;padding:12px 16px;border-radius:10px;color:var(--warn)">申请审核中，请耐心等待。</p>';
+    if ($status === 'approved') echo '<p class="text-sm" style="background:var(--ok-soft);padding:12px 16px;border-radius:10px;color:var(--ok)">🎉 你已成为讲师，可以在「投稿文章」中发布内容了。</p>';
+    elseif ($status === 'pending') echo '<p class="text-sm" style="background:var(--warn-soft);padding:12px 16px;border-radius:10px;color:var(--warn)">申请审核中，请耐心等待。</p>';
     else {
-        echo '<p class="text-sm text-gray-600 mb-6">分享你的专业经验，成为 OpenFlow 认证讲师。提交申请后由管理员审核。</p>';
-        if ($status === 'rejected') echo '<p class="text-sm mb-4" style="background:#fee2e2;padding:10px 14px;border-radius:10px;color:#dc2626">上次申请未通过，可重新提交。</p>';
+        echo '<p class="text-sm text-muted mb-6">分享你的专业经验，成为 OpenFlow 认证讲师。提交申请后由管理员审核。</p>';
+        if ($status === 'rejected') echo '<p class="text-sm mb-4" style="background:var(--danger-soft);padding:10px 14px;border-radius:10px;color:var(--danger)">上次申请未通过，可重新提交。</p>';
         echo '<form onsubmit="return false" id="teacherForm" class="grid gap-4" style="grid-template-columns:1fr 1fr">' .
             '<div class="field"><label>讲师简介</label><textarea name="intro" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px" placeholder="介绍你的专业领域和经验"></textarea></div>' .
             '<div class="field"><label>擅长方向</label><input name="expertise" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px" placeholder="如：SEO/GEO、内容策略、AI 运营"></div>' .
@@ -422,7 +426,7 @@ function include_member_teacher($member): void {
     echo '</div>';
 }
 function include_member_submit($member): void {
-    echo '<div class="card p-8"><h2 class="text-xl font-bold mb-2">投稿文章</h2><p class="text-sm text-gray-600 mb-6">提交后由管理员审核，审核通过后发布。</p>' .
+    echo '<div class="card p-8"><h2 class="text-xl font-bold mb-2">投稿文章</h2><p class="text-sm text-muted mb-6">提交后由管理员审核，审核通过后发布。</p>' .
         '<form onsubmit="return false" id="submitForm" class="grid gap-4" style="grid-template-columns:1fr 1fr">' .
         '<div style="grid-column:1/-1" class="field"><label>文章标题</label><input name="title" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px" placeholder="标题"></div>' .
         '<div class="field"><label>分类</label><select name="category" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px"><option value="insight">增长洞察</option><option value="leadership">内容与 SEO</option><option value="ai_ops">AI 运营</option><option value="industry">行业实践</option></select></div>' .
@@ -510,7 +514,7 @@ function include_member_reset_password(): void {
     <div class="card p-8">
       <?php if ($step === 'request'): ?>
       <h2 class="text-xl font-bold mb-2">重置密码</h2>
-      <p class="text-sm text-gray-600 mb-6">输入你的邮箱或手机号，我们将发送验证码</p>
+      <p class="text-sm text-muted mb-6">输入你的邮箱或手机号，我们将发送验证码</p>
       <form onsubmit="return requestReset(event)">
         <div class="field">
           <label>邮箱或手机号</label>
@@ -521,7 +525,7 @@ function include_member_reset_password(): void {
       </form>
       <?php elseif ($step === 'verify'): ?>
       <h2 class="text-xl font-bold mb-2">验证身份</h2>
-      <p class="text-sm text-gray-600 mb-6">请输入收到的验证码</p>
+      <p class="text-sm text-muted mb-6">请输入收到的验证码</p>
       <form onsubmit="return verifyReset(event)">
         <input type="hidden" name="token" value="<?=htmlspecialchars($_GET['token'] ?? '')?>">
         <div class="field">
@@ -533,7 +537,7 @@ function include_member_reset_password(): void {
       </form>
       <?php elseif ($step === 'newpassword'): ?>
       <h2 class="text-xl font-bold mb-2">设置新密码</h2>
-      <p class="text-sm text-gray-600 mb-6">请输入你的新密码</p>
+      <p class="text-sm text-muted mb-6">请输入你的新密码</p>
       <form onsubmit="return resetPassword(event)">
         <input type="hidden" name="token" value="<?=htmlspecialchars($_GET['token'] ?? '')?>">
         <div class="field">
@@ -573,7 +577,7 @@ function submitArticle() {
     .then(function(r){return r.json();})
     .then(function(d){
       var box = document.getElementById('submitMsg');
-      box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:' + (d.ok?'#dcfce7;color:var(--ok)':'#fee2e2;color:#dc2626') + '">' + (d.message||d.error) + '</div>';
+      box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:' + (d.ok?'var(--ok-soft);color:var(--ok)':'var(--danger-soft);color:var(--danger)') + '">' + (d.message||d.error) + '</div>';
     });
 }
 // 个人资料更新
@@ -585,7 +589,7 @@ function updateProfile(e) {
     .then(function(r){return r.json();})
     .then(function(d){
       var box = document.getElementById('profileMsg');
-      box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:' + (d.ok?'#dcfce7;color:var(--ok)':'#fee2e2;color:#dc2626') + '">' + (d.message||'资料已更新') + '</div>';
+      box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:' + (d.ok?'var(--ok-soft);color:var(--ok)':'var(--danger-soft);color:var(--danger)') + '">' + (d.message||'资料已更新') + '</div>';
     });
   return false;
 }
@@ -596,7 +600,7 @@ function changePassword(e) {
   var np = f.querySelector('input[name=new_password]').value;
   var cp = f.querySelector('input[name=confirm_password]').value;
   if (np !== cp) {
-    document.getElementById('passwordMsg').innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:#fee2e2;color:#dc2626">两次输入的密码不一致</div>';
+    document.getElementById('passwordMsg').innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--danger-soft);color:var(--danger)">两次输入的密码不一致</div>';
     return false;
   }
   var fd = new FormData(f); fd.append('action','change_password');
@@ -604,7 +608,7 @@ function changePassword(e) {
     .then(function(r){return r.json();})
     .then(function(d){
       var box = document.getElementById('passwordMsg');
-      box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:' + (d.ok?'#dcfce7;color:var(--ok)':'#fee2e2;color:#dc2626') + '">' + (d.message||'密码已修改') + '</div>';
+      box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:' + (d.ok?'var(--ok-soft);color:var(--ok)':'var(--danger-soft);color:var(--danger)') + '">' + (d.message||'密码已修改') + '</div>';
       if (d.ok) f.reset();
     });
   return false;
@@ -618,10 +622,10 @@ function requestReset(e) {
     .then(function(d){
       var box = document.getElementById('resetMsg');
       if (d.ok) {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:#dcfce7;color:var(--ok)">验证码已发送，请查收</div>';
+        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--ok-soft);color:var(--ok)">验证码已发送，请查收</div>';
         setTimeout(function(){ location.href = '/member.php?view=reset-password&step=verify&token=' + d.token; }, 1500);
       } else {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:#fee2e2;color:#dc2626">' + d.error + '</div>';
+        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--danger-soft);color:var(--danger)">' + d.error + '</div>';
       }
     });
   return false;
@@ -635,10 +639,10 @@ function verifyReset(e) {
     .then(function(d){
       var box = document.getElementById('verifyMsg');
       if (d.ok) {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:#dcfce7;color:var(--ok)">验证成功</div>';
+        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--ok-soft);color:var(--ok)">验证成功</div>';
         setTimeout(function(){ location.href = '/member.php?view=reset-password&step=newpassword&token=' + d.token; }, 1000);
       } else {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:#fee2e2;color:#dc2626">' + d.error + '</div>';
+        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--danger-soft);color:var(--danger)">' + d.error + '</div>';
       }
     });
   return false;
@@ -650,7 +654,7 @@ function resetPassword(e) {
   var np = f.querySelector('input[name=new_password]').value;
   var cp = f.querySelector('input[name=confirm_password]').value;
   if (np !== cp) {
-    document.getElementById('newPasswordMsg').innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:#fee2e2;color:#dc2626">两次输入的密码不一致</div>';
+    document.getElementById('newPasswordMsg').innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--danger-soft);color:var(--danger)">两次输入的密码不一致</div>';
     return false;
   }
   var fd = new FormData(f); fd.append('action','reset_password');
@@ -659,10 +663,10 @@ function resetPassword(e) {
     .then(function(d){
       var box = document.getElementById('newPasswordMsg');
       if (d.ok) {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:#dcfce7;color:var(--ok)">密码重置成功，正在跳转登录...</div>';
+        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--ok-soft);color:var(--ok)">密码重置成功，正在跳转登录...</div>';
         setTimeout(function(){ location.href = '/member.php?view=login'; }, 1500);
       } else {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:#fee2e2;color:#dc2626">' + d.error + '</div>';
+        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--danger-soft);color:var(--danger)">' + d.error + '</div>';
       }
     });
   return false;

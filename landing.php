@@ -15,12 +15,12 @@ if (!$landing) {
     http_response_code(404);
     ?><!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 | OpenFlow</title>
     <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<link rel="stylesheet" href="/assets/site-arc-betterup.css"><script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
-    <body class="bg-bg text-ink"><div class="mx-auto max-w-site px-5 py-[180px] text-center">
-    <p class="text-[64px] font-bold text-accent">404</p><h1 class="mt-4 text-[28px] font-bold">页面不存在</h1>
-    <a href="/" class="mt-8 inline-flex rounded-full bg-jade px-7 py-3 font-semibold text-white">返回首页</a>
+    <body style="background:var(--bg);color:var(--fg)"><div class="mx-auto px-5 py-[180px] text-center" style="max-width:var(--container)">
+    <p style="font-size:64px;font-weight:700;color:var(--accent)">404</p><h1 style="margin-top:16px;font-size:28px;font-weight:700">页面不存在</h1>
+    <a href="/" style="display:inline-flex;margin-top:32px;border-radius:999px;background:var(--accent);padding:12px 28px;font-weight:600;color:var(--on-accent);text-decoration:none">返回首页</a>
     </div></body></html><?php
     exit;
 }
@@ -105,9 +105,31 @@ $jsonLd = [
 <meta property="og:locale" content="zh_CN">
 <script type="application/ld+json"><?=json_encode($jsonLd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)?></script>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/site-betterup.js"></script>
-<link rel="stylesheet" href="/assets/site-arc-betterup.css">
+<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<link rel="stylesheet" href="/assets/tokens.css?v=20260816">
+<link rel="stylesheet" href="/assets/modules.css?v=20260816">
 <style>
+  /* ── 旧 Betterup 专属类 → token 重写（删 site-arc-betterup.css 后内联补齐） ── */
+  .bg-jade{background:var(--accent);color:var(--on-accent);border-radius:999px;font-weight:600}
+  .bg-jade:hover{background:var(--accent-strong)}
+  .bg-flow:hover{background:var(--accent-strong)}
+  .nav-link{color:var(--muted)}
+  .nav-link:hover,.nav-link[aria-current="page"]{color:var(--fg)}
+  .brand-text{color:var(--fg)}
+  .eyebrow{background:linear-gradient(90deg,var(--accent),var(--accent-strong));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-family:var(--font-mono);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+  .grid-bg{background-image:linear-gradient(var(--accent-soft) 1px,transparent 1px),linear-gradient(90deg,var(--accent-soft) 1px,transparent 1px);background-size:48px 48px}
+  .text-ink{color:var(--fg)}
+  .bg-bg{background:var(--bg)}
+  .border-line{border-color:var(--border)}
+  .max-w-site{max-width:var(--container)}
+  .text-muted{color:var(--muted)}
+  .bg-surface{background:var(--surface)}
+  .bg-surface\/85{background:var(--surface)}
+  .bg-surface\/95{background:var(--surface-strong)}
+  .foot-h{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+  .foot-l{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:14px}
+  .foot-l a{color:var(--muted);text-decoration:none}
+  .foot-l a:hover{color:var(--fg)}
   .lp-card{display:flex;flex-direction:column;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:0 4px 16px oklch(0.35 0.05 295 / .07);transition:transform .2s,box-shadow .2s;text-decoration:none}
   .lp-card:hover{transform:translateY(-3px);box-shadow:0 16px 40px oklch(0.35 0.07 295 / .12)}
   .lp-media{aspect-ratio:16/9;overflow:hidden;background:linear-gradient(135deg,var(--ok-soft) 0%,var(--bg) 50%,var(--accent-soft) 100%)}
@@ -126,7 +148,7 @@ $jsonLd = [
   <div class="border-b border-line bg-surface/85 backdrop-blur-xl">
     <div class="mx-auto flex h-[68px] max-w-site items-center justify-between px-5 sm:px-8">
       <a href="/" class="flex items-center gap-2.5" aria-label="OpenFlow 首页">
-        <svg viewBox="0 0 32 32" class="h-8 w-8" aria-hidden="true"><defs><linearGradient id="lp-lg-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset=".52" stop-color="#86efac"/><stop offset="1" stop-color="#7dd3fc"/></linearGradient></defs><rect x="1.6" y="1.6" width="28.8" height="28.8" rx="8.5" fill="url(#lp-lg-1)"/><path d="M7.5 19c2.8-5.2 4.6 2.6 7.4-2.2s4.8 2.6 7.6-2.2" fill="none" stroke="#1e1e1e" stroke-width="2.3" stroke-linecap="round"/><circle cx="23.2" cy="9.6" r="1.9" fill="#1e1e1e"/></svg>
+        <svg viewBox="0 0 32 32" class="h-8 w-8" aria-hidden="true"><defs><linearGradient id="lp-lg-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset=".52" stop-color="var(--ok)"/><stop offset="1" stop-color="var(--accent-soft)"/></linearGradient></defs><rect x="1.6" y="1.6" width="28.8" height="28.8" rx="8.5" fill="url(#lp-lg-1)"/><path d="M7.5 19c2.8-5.2 4.6 2.6 7.4-2.2s4.8 2.6 7.6-2.2" fill="none" stroke="var(--fg)" stroke-width="2.3" stroke-linecap="round"/><circle cx="23.2" cy="9.6" r="1.9" fill="var(--fg)"/></svg>
         <span class="brand-text text-[19px] font-bold tracking-tight leading-none">OpenFlow</span>
       </a>
       <nav class="hidden lg:flex items-center gap-5 text-[14.5px]">
@@ -137,7 +159,7 @@ $jsonLd = [
         <a href="/about" class="nav-link">关于我们</a>
       </nav>
       <div class="hidden lg:flex items-center gap-4">
-        <a href="/#contact" class="rounded-full bg-jade px-5 py-2.5 text-[14.5px] font-semibold text-white hover:bg-flow transition">预约诊断</a>
+        <a href="/#contact" class="rounded-full bg-jade px-5 py-2.5 text-[14.5px] font-semibold hover:bg-flow transition" style="color:var(--on-accent)">预约诊断</a>
       </div>
       <button id="burger" class="burger lg:hidden p-2 -mr-2" aria-label="菜单" aria-expanded="false">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -177,10 +199,10 @@ $jsonLd = [
       </div>
       <?php endif; ?>
       <?php if (!empty($landing['aggregate_category'])): ?>
-      <div class="mt-6"><span class="inline-flex items-center rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold" style="background:var(--accent-soft);color:#1a5c8a">📂 <?=htmlspecialchars($landing['aggregate_category'])?></span></div>
+      <div class="mt-6"><span class="inline-flex items-center rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold" style="background:var(--accent-soft);color:var(--accent-strong)">📂 <?=htmlspecialchars($landing['aggregate_category'])?></span></div>
       <?php endif; ?>
       <?php if (!empty($landing['aggregate_author'])): ?>
-      <div class="mt-6"><span class="inline-flex items-center rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold" style="background:var(--bg);color:#6b5d1e"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span> <?=htmlspecialchars($landing['aggregate_author'])?></span></div>
+      <div class="mt-6"><span class="inline-flex items-center rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold" style="background:var(--bg);color:var(--warn)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span> <?=htmlspecialchars($landing['aggregate_author'])?></span></div>
       <?php endif; ?>
       <p class="mt-5 text-[13px] text-muted">共 <?=count($items)?> 篇文章</p>
     </div>
@@ -218,7 +240,7 @@ $jsonLd = [
       <h2 class="text-[24px] font-bold tracking-tight sm:text-[28px]">想获取完整的网站增长方法论？</h2>
       <p class="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted">预约一次免费诊断，或订阅我们的内容更新。</p>
       <div class="mt-7 flex flex-wrap justify-center gap-3">
-        <a href="/#contact" class="rounded-full bg-jade px-7 py-3 font-semibold text-white hover:bg-flow transition">预约诊断</a>
+        <a href="/#contact" class="rounded-full bg-jade px-7 py-3 font-semibold hover:bg-flow transition" style="color:var(--on-accent)">预约诊断</a>
         <a href="/community" class="rounded-full border border-line bg-white px-7 py-3 font-semibold text-ink hover:border-accent transition">返回社区</a>
       </div>
     </div>
@@ -230,11 +252,11 @@ $jsonLd = [
     <div class="grid gap-12 pb-14 lg:grid-cols-[1.25fr_2.75fr]">
       <div>
         <div class="flex items-center gap-2.5">
-          <svg viewBox="0 0 32 32" class="h-8 w-8" aria-hidden="true"><defs><linearGradient id="lp-lg-2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset=".52" stop-color="#86efac"/><stop offset="1" stop-color="#7dd3fc"/></linearGradient></defs><rect x="1.6" y="1.6" width="28.8" height="28.8" rx="8.5" fill="url(#lp-lg-2)"/><path d="M7.5 19c2.8-5.2 4.6 2.6 7.4-2.2s4.8 2.6 7.6-2.2" fill="none" stroke="#1e1e1e" stroke-width="2.3" stroke-linecap="round"/><circle cx="23.2" cy="9.6" r="1.9" fill="#1e1e1e"/></svg>
+          <svg viewBox="0 0 32 32" class="h-8 w-8" aria-hidden="true"><defs><linearGradient id="lp-lg-2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset=".52" stop-color="var(--ok)"/><stop offset="1" stop-color="var(--accent-soft)"/></linearGradient></defs><rect x="1.6" y="1.6" width="28.8" height="28.8" rx="8.5" fill="url(#lp-lg-2)"/><path d="M7.5 19c2.8-5.2 4.6 2.6 7.4-2.2s4.8 2.6 7.6-2.2" fill="none" stroke="var(--fg)" stroke-width="2.3" stroke-linecap="round"/><circle cx="23.2" cy="9.6" r="1.9" fill="var(--fg)"/></svg>
           <span class="text-[19px] font-bold tracking-tight">芭乐派 · OpenFlow</span>
         </div>
-        <p class="mt-5 text-[15px] font-medium text-white/80">帮一人公司设计 Agent 能跑的增长系统</p>
-        <p class="mt-2.5 text-[13.5px] leading-relaxed text-white/45">芭乐派（OpenFlow 科技有限公司）<br>成立于 2026 年 · 上海</p>
+        <p class="mt-5 text-[15px] font-medium" style="color:var(--fg)">帮一人公司设计 Agent 能跑的增长系统</p>
+        <p class="mt-2.5 text-[13.5px] leading-relaxed" style="color:var(--muted)">芭乐派（OpenFlow 科技有限公司）<br>成立于 2026 年 · 上海</p>
       </div>
       <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
         <div>
@@ -265,11 +287,11 @@ $jsonLd = [
         </div>
       </div>
     </div>
-    <div class="flex flex-col gap-3 border-t border-white/10 py-7 text-[13px] text-white/40 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 py-7 text-[13px] sm:flex-row sm:items-center sm:justify-between" style="border-top:1px solid var(--border);color:var(--muted)">
       <p>© 2026 OpenFlow 科技有限公司　<a href="https://beian.miit.gov.cn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none"></a></p>
       <div class="flex gap-6">
-        <a href="#" class="hover:text-white/70 transition">隐私政策</a>
-        <a href="#" class="hover:text-white/70 transition">服务条款</a>
+        <a href="#" class="transition" style="color:inherit">隐私政策</a>
+        <a href="#" class="transition" style="color:inherit">服务条款</a>
       </div>
     </div>
   </div>
