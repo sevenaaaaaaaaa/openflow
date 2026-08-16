@@ -49,7 +49,7 @@ admin_header('审计日志');
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
       <div class="cdp-stat"><div class="num" style="color:var(--accent)"><?=$stats['total']?></div><div class="lab">总日志数</div></div>
       <div class="cdp-stat"><div class="num" style="color:var(--ok)"><?=$stats['today']?></div><div class="lab">今日操作</div></div>
-      <div class="cdp-stat"><div class="num" style="color:#7c3aed"><?=$stats['this_week']?></div><div class="lab">本周操作</div></div>
+      <div class="cdp-stat"><div class="num" style="color:var(--accent)"><?=$stats['this_week']?></div><div class="lab">本周操作</div></div>
     </div>
 
     <!-- 筛选 -->
