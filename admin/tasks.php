@@ -147,7 +147,7 @@ admin_header('任务分配');
 <div class="admin-layout">
   <?php admin_sidebar('tasks'); ?>
   <div class="main">
-    <h1>📋 任务分配</h1>
+    <h1>任务分配</h1>
     <p class="sub">管理员分配任务给其他角色 · 负责人可在「我的任务」中更新进度</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>
