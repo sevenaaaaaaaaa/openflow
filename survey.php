@@ -100,7 +100,7 @@ $jsonLd = [
       <div style="font-size:56px">✅</div>
       <h2 class="mt-4 text-xl font-bold">提交成功</h2>
       <p class="mt-3 text-gray-600">感谢你的参与！你的反馈对我们非常重要。</p>
-      <a href="/academy" class="mt-6 inline-block rounded-full bg-[var(--accent)] px-7 py-3 font-semibold text-white">返回 Flow社区</a>
+      <a href="/community" class="mt-6 inline-block rounded-full bg-[var(--accent)] px-7 py-3 font-semibold text-white">返回社区</a>
     </div>
     <?php else: ?>
     <form method="post" action="/api/survey-submit.php?id=<?=urlencode($survey['id'])?>" onsubmit="return surveySubmit(this)">

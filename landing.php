@@ -219,7 +219,7 @@ $jsonLd = [
       <p class="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted">预约一次免费诊断，或订阅我们的内容更新。</p>
       <div class="mt-7 flex flex-wrap justify-center gap-3">
         <a href="/index.html#contact" class="rounded-full bg-jade px-7 py-3 font-semibold text-white hover:bg-flow transition">预约诊断</a>
-        <a href="/academy" class="rounded-full border border-line bg-white px-7 py-3 font-semibold text-ink hover:border-accent transition">返回 Flow社区</a>
+        <a href="/community" class="rounded-full border border-line bg-white px-7 py-3 font-semibold text-ink hover:border-accent transition">返回社区</a>
       </div>
     </div>
   </div>

@@ -7,7 +7,7 @@
  *
  *  职责：
  *    1. 接收 5 个正式页面（index / capability / courses /
- *       flow-community / about）表单的 POST 提交；
+ *       about）表单的 POST 提交；
  *    2. 必填校验（姓名、电话）+ 字段清洗；
  *    3. honeypot 隐藏字段反垃圾提交；
  *    4. 邮件 -> admin@nownexts.com（尽力而为）；

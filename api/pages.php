@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../admin/config.php';
 
 $page = $_GET['page'] ?? 'index';
-$allowed = ['index', 'about', 'capability', 'courses', 'flow-community'];
+$allowed = ['index', 'about', 'capability', 'courses'];
 if (!in_array($page, $allowed)) {
     http_response_code(404);
     header('Content-Type: application/json');
