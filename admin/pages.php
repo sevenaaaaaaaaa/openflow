@@ -6,10 +6,10 @@ require_login();
 require_perm('pages');
 
 $page = $_GET['page'] ?? 'index';
-$allowed = ['index', 'about', 'capability', 'courses', 'flow-community'];
+$allowed = ['index', 'about', 'capability', 'courses'];
 $pageNames = [
     'index' => '首页', 'about' => '关于我们', 'capability' => '产品',
-    'courses' => '解决方案', 'flow-community' => 'Flow社区',
+    'courses' => '解决方案',
 ];
 // 加载注册的自定义页面
 $siteStructure = json_read(DATA_DIR . '/site-structure.json');
@@ -21,7 +21,7 @@ foreach (($siteStructure['custom_pages'] ?? []) as $cp) {
 }
 if (!in_array($page, $allowed)) $page = 'index';
 
-$pageFiles = ['index' => 'index.html', 'about' => 'about.html', 'capability' => 'capability.html', 'courses' => 'courses.html', 'flow-community' => 'flow-community.html'];
+$pageFiles = ['index' => 'index.html', 'about' => 'about.html', 'capability' => 'capability.html', 'courses' => 'courses.html'];
 
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

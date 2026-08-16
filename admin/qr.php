@@ -27,7 +27,6 @@ $pageUrls = [
     'about' => ['name' => '关于我们', 'url' => $baseUrl . '/about.html'],
     'capability' => ['name' => '产品', 'url' => $baseUrl . '/capability.html'],
     'courses' => ['name' => '解决方案', 'url' => $baseUrl . '/courses.html'],
-    'flow-community' => ['name' => 'Flow社区', 'url' => $baseUrl . '/flow-community.html'],
 ];
 
 $search = $_GET['search'] ?? '';

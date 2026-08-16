@@ -316,9 +316,6 @@ function default_page_content(string $page): array {
         'courses' => [
             'banner_title' => '分层设计，覆盖增长的每一环',
         ],
-        'flow-community' => [
-            'hero_title' => 'Flow社区：把网站增长讲清楚、用起来',
-        ],
     ];
     return $d[$page] ?? [];
 }
