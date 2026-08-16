@@ -1,0 +1,65 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * OpenFlow · tokens.css — 全站统一设计契约（v6 · 终版）
+ * 源：index.php 合并终版（2026-08-16 首页试点验收后定稿）
+ *
+ * 关键品牌决策：
+ *   - 全 oklch 色彩体系，零 hex（favicon 场景除外，用 oklch 字面量）
+ *   - Space Grotesk 现代几何怪诞显示声部 + PingFang/HarmonyOS 中文黑体回退
+ *   - Arc 原版弹簧缓动 cubic-bezier(.32,.72,0,1) —— 侧栏/胶囊/主题切换全部走它
+ *   - --faint 亮 51% L / 暗 64% L —— 正文级小字 ≥4.5:1 对比度（WCAG AA）
+ *   - 浏览器外壳契约见设计系统文档 #shell 章节，任何迭代不得移除或简化
+ * ─────────────────────────────────────────────────────────────────────── */
+:root{
+  --bg: oklch(96.5% .016 85);
+  --bg-soft: oklch(94% .02 85);
+  --surface: oklch(100% 0 0/.62);
+  --surface-strong: oklch(100% 0 0/.88);
+  --fg: oklch(22% .02 70);
+  --muted: oklch(46% .016 70);
+  --faint: oklch(51% .014 75);
+  --border: oklch(86% .014 80);
+  --border-strong: oklch(76% .02 80);
+  --border-soft: oklch(86% .014 80/.55);
+  --hover: oklch(22% .02 70/.055);
+  --hover-strong: oklch(22% .02 70/.11);
+  --accent: oklch(52% .17 258);
+  --accent-strong: oklch(46% .17 258);
+  --accent-soft: oklch(52% .17 258/.12);
+  --on-accent: oklch(100% 0 0);
+  --ok: oklch(58% .17 152);        --ok-soft: oklch(58% .17 152/.12);
+  --warn: oklch(66% .15 75);       --warn-soft: oklch(66% .15 75/.14);
+  --danger: oklch(55% .2 25);      --danger-soft: oklch(55% .2 25/.12);
+  --glass: oklch(100% 0 0/.5);
+  --glass-bright: oklch(100% 0 0/.66);
+  --glass-border: oklch(100% 0 0/.68);
+  --blob-a: oklch(72% .12 262/.30);
+  --blob-b: oklch(70% .13 305/.24);
+  --blob-c: oklch(74% .11 200/.22);
+  --shadow: 0 24px 60px -24px oklch(30% .04 80/.28);
+  --shadow-sm: 0 10px 28px -14px oklch(30% .04 80/.22);
+  --r-lg: 26px; --r-md: 18px; --r-sm: 12px;
+  --chrome-h: 56px; --sb-w: 248px; --container: 1120px;
+  --font-display: "Space Grotesk","PingFang SC","HarmonyOS Sans SC","MiSans","Segoe UI",system-ui,sans-serif;
+  --font-body: "Space Grotesk",-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","MiSans","Segoe UI",system-ui,sans-serif;
+  --font-mono: ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  --ease-spring: cubic-bezier(.32,.72,0,1);
+  --ease-out: cubic-bezier(.22,1,.36,1);
+  color-scheme: light;
+}
+[data-theme="dark"]{
+  --bg: oklch(19% .014 70); --bg-soft: oklch(22.5% .014 72);
+  --surface: oklch(27% .016 75/.55); --surface-strong: oklch(30% .016 75/.82);
+  --fg: oklch(93% .008 85); --muted: oklch(70% .014 80); --faint: oklch(64% .014 80);
+  --border: oklch(100% 0 0/.1); --border-strong: oklch(100% 0 0/.2);
+  --border-soft: oklch(100% 0 0/.06);
+  --hover: oklch(93% .008 85/.07); --hover-strong: oklch(93% .008 85/.13);
+  --accent: oklch(74% .13 258); --accent-strong: oklch(80% .12 258);
+  --accent-soft: oklch(74% .13 258/.15); --on-accent: oklch(16% .03 260);
+  --ok: oklch(74% .15 152); --ok-soft: oklch(74% .15 152/.15);
+  --warn: oklch(76% .13 75); --warn-soft: oklch(76% .13 75/.16);
+  --danger: oklch(72% .16 25); --danger-soft: oklch(72% .16 25/.14);
+  --glass: oklch(30% .014 75/.5); --glass-bright: oklch(34% .014 75/.62); --glass-border: oklch(100% 0 0/.15);
+  --blob-a: oklch(62% .13 262/.18); --blob-b: oklch(58% .14 305/.15); --blob-c: oklch(60% .12 200/.13);
+  --shadow: 0 24px 60px -24px oklch(0% 0 0/.55); --shadow-sm: 0 10px 28px -14px oklch(0% 0 0/.5);
+  color-scheme: dark;
+}
