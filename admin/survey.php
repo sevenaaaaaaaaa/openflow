@@ -93,7 +93,7 @@ admin_header('调研系统');
 <div class="admin-layout">
   <?php admin_sidebar('survey'); ?>
   <div class="main">
-    <h1>📋 调研系统</h1>
+    <h1>调研系统</h1>
     <p class="sub">创建问卷 · 回收结果 · 按角色查看统计 · 付费咨询官方 Agent</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>

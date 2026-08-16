@@ -53,7 +53,7 @@ admin_header('商城与分销');
 <div class="admin-layout">
   <?php admin_sidebar('shop-settings'); ?>
   <div class="main">
-    <h1>🛒 商城与分销</h1>
+    <h1>商城与分销</h1>
     <p class="sub">课程定价 · 虎皮椒支付 · 分销佣金 · 提现审核</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

@@ -100,7 +100,7 @@ admin_header('风控中心');
 <div class="admin-layout">
   <?php admin_sidebar('moderation'); ?>
   <div class="main">
-    <h1>🛡️ 风控与审核</h1>
+    <h1>风控与审核</h1>
     <p class="sub">精细审核 · 定期扫描 · AI Agent 辅助 · 人工复核</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

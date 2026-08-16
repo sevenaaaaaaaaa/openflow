@@ -106,7 +106,7 @@ admin_header('1v1 咨询');
 <div class="admin-layout">
   <?php admin_sidebar('consultation'); ?>
   <div class="main">
-    <h1>🤝 1v1 咨询</h1>
+    <h1>1v1 咨询</h1>
     <p class="sub">咨询师库 + 报名审核 + 付款 + 确认时间 + 线上交付 + 回放</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

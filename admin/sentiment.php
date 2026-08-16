@@ -97,7 +97,7 @@ admin_header('舆情监测');
 <div class="admin-layout">
   <?php admin_sidebar('sentiment'); ?>
   <div class="main">
-    <h1>📡 舆情监测</h1>
+    <h1>舆情监测</h1>
     <p class="sub">多源搜索 + AI 洞察 · 自动生成舆情报告 · 参考 BettaFish 微舆思路</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>

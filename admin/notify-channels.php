@@ -34,7 +34,7 @@ admin_header('通知渠道');
 <div class="admin-layout">
   <?php admin_sidebar('notify-channels'); ?>
   <div class="main">
-    <h1>🔔 通知渠道</h1>
+    <h1>通知渠道</h1>
     <p class="sub">站内通知自动转发到企业微信 / 飞书 / WhatsApp</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($testMsg): ?><?=msg('success', $testMsg)?><?php endif; ?>
