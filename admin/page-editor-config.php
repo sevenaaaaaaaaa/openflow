@@ -22,7 +22,7 @@ function page_field_groups(string $page): array {
         ],
         'capability' => [
             'banner' => ['label' => '页面横幅', 'icon' => '📌', 'fields' => ['banner_title', 'banner_subtitle']],
-            'wellq' => ['label' => '内容引擎 + SEO/GEO', 'icon' => '📝', 'fields' => ['wellq_title', 'wellq_subtitle', 'wellq_desc']],
+            'content' => ['label' => '内容引擎 + SEO/GEO', 'icon' => '📝', 'fields' => ['content_title', 'content_subtitle', 'content_desc']],
             'courses' => ['label' => '课程体系', 'icon' => '📚', 'fields' => ['courses_title', 'courses_subtitle', 'courses_desc']],
             'platform' => ['label' => '智能平台', 'icon' => '💻', 'fields' => ['platform_title', 'platform_subtitle', 'platform_desc']],
         ],
