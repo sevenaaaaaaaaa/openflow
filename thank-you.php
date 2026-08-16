@@ -21,7 +21,7 @@ $configs = [
         'blocks' => [
             ['type' => 'tip', 'icon' => '📌', 'title' => '接下来会发生什么', 'desc' => '我们的增长顾问会通过你留下的联系方式联系你，安排 30 分钟一对一沟通。'],
             ['type' => 'link', 'icon' => '📄', 'title' => '先看一份增长报告样本', 'desc' => '在等待期间，可以先查看同行业脱敏增长报告。', 'url' => '/downloads.php', 'btn' => '查看资料'],
-            ['type' => 'link', 'icon' => '📚', 'title' => '浏览 Flow社区', 'desc' => '网站增长洞察、AI 运营实践与专题报告。', 'url' => '/academy.php', 'btn' => '去社区'],
+            ['type' => 'link', 'icon' => '📚', 'title' => '浏览社区', 'desc' => '网站增长洞察、AI 运营实践与专题报告。', 'url' => '/community', 'btn' => '去社区'],
         ],
     ],
     'course' => [
@@ -55,7 +55,7 @@ $configs = [
         'sub'   => '感谢订阅！每周内容更新会准时送达你的邮箱。',
         'blocks' => [
             ['type' => 'tip', 'icon' => '💌', 'title' => '请查收邮箱', 'desc' => '一封确认邮件已发送，请留意收件箱或垃圾箱。'],
-            ['type' => 'link', 'icon' => '📚', 'title' => '先读几篇好文', 'desc' => '在等待期间，可以先看看社区精选文章。', 'url' => '/academy.php', 'btn' => '去社区'],
+            ['type' => 'link', 'icon' => '📚', 'title' => '先读几篇好文', 'desc' => '在等待期间，可以先看看社区精选文章。', 'url' => '/community', 'btn' => '去社区'],
         ],
     ],
 ];

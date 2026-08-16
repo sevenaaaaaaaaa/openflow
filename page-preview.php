@@ -2,11 +2,11 @@
 require_once __DIR__ . '/admin/config.php';
 
 $page = req_str('page', 'index');
-$allowed = ['index', 'about', 'capability', 'courses', 'flow-community'];
+$allowed = ['index', 'about', 'capability', 'courses'];
 if (!in_array($page, $allowed)) $page = 'index';
 
 $content = page_content($page);
-$pageNames = ['index'=>'首页','about'=>'关于我们','capability'=>'产品','courses'=>'解决方案','flow-community'=>'Flow社区'];
+$pageNames = ['index'=>'首页','about'=>'关于我们','capability'=>'产品','courses'=>'解决方案'];
 
 // Fields that contain HTML (not escaped in preview)
 $htmlFields = ['hero_subtitle', 'capability_card_1_desc', 'capability_card_2_desc', 'capability_card_3_desc',
@@ -178,14 +178,6 @@ p,li{font-size:14px;color:#555;line-height:1.7;margin-bottom:6px}
     <p><?=preview_val($content, $sec[0].'_desc', 200)?></p>
   </div>
   <?php endforeach; ?>
-
-<?php elseif ($page === 'flow-community'): ?>
-
-  <div class="section">
-    <div class="section-label">🌐 Hero</div>
-    <h2><?=preview_val($content, 'hero_title')?></h2>
-    <p><?=preview_val($content, 'hero_subtitle', 200)?></p>
-  </div>
 
 <?php endif; ?>
 

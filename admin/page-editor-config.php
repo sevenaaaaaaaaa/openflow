@@ -33,9 +33,6 @@ function page_field_groups(string $page): array {
             'employee' => ['label' => '员工层', 'icon' => '👤', 'fields' => ['employee_title', 'employee_desc']],
             'newcomer' => ['label' => '新员工', 'icon' => '🌟', 'fields' => ['newcomer_title', 'newcomer_desc']],
         ],
-        'flow-community' => [
-            'hero' => ['label' => 'Hero 区域', 'icon' => '🌐', 'fields' => ['hero_title', 'hero_subtitle']],
-        ],
     ];
     return $groups[$page] ?? [];
 }

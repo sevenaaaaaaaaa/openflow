@@ -72,7 +72,7 @@ admin_header('脚本与埋点');
             </div>
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
               <select name="page_scope[]" style="padding:7px;border:1.5px solid var(--border);border-radius:6px;font-size:13px"><option value="all" <?=($s['page_scope']??'all')==='all'?'selected':''?>>全部页面</option><option value="specific" <?=($s['page_scope']??'')==='specific'?'selected':''?>>指定页面</option></select>
-              <input type="text" name="page_paths[]" value="<?=htmlspecialchars($s['page_paths'])?>" placeholder="指定路径，逗号分隔，如 /article, /flow-community.html" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
+              <input type="text" name="page_paths[]" value="<?=htmlspecialchars($s['page_paths'])?>" placeholder="指定路径，逗号分隔，如 /article, /community" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
             </div>
             <textarea name="content[]" rows="3" placeholder="脚本内容（type=URL 时填 https://... 地址）" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--mono)"><?=htmlspecialchars($s['content'])?></textarea>
           </div>

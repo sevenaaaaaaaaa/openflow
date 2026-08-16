@@ -25,7 +25,7 @@ foreach (get_articles() as $a) {
 }
 
 // 页面
-$pageNames = ['index' => '首页', 'about' => '关于我们', 'capability' => '产品', 'courses' => '解决方案', 'flow-community' => 'Flow社区'];
+$pageNames = ['index' => '首页', 'about' => '关于我们', 'capability' => '产品', 'courses' => '解决方案'];
 foreach ($pageNames as $pk => $pn) {
     if (mb_strpos(mb_strtolower($pn), $ql) !== false || mb_strpos(mb_strtolower($pk), $ql) !== false) {
         $results[] = ['type' => '页面', 'icon' => '📄', 'title' => $pn, 'link' => 'pages.php?page=' . $pk, 'hint' => '页面管理'];
