@@ -44,7 +44,7 @@ admin_header('调研统计');
 <div class="admin-layout">
   <?php admin_sidebar('survey-stats'); ?>
   <div class="main">
-    <h1>📊 调研统计</h1>
+    <h1>调研统计</h1>
     <p class="sub">按角色查看统计范围 · 你的角色：<strong><?=$roleLabel?></strong>（<?=$scopeDesc?>）</p>
 
     <div class="flex gap-3 mb-4" style="flex-wrap:wrap">

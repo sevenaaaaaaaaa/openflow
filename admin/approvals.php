@@ -85,7 +85,7 @@ admin_header('审核中心');
 <div class="admin-layout">
   <?php admin_sidebar('approvals'); ?>
   <div class="main">
-    <h1>🛡️ 审核中心</h1>
+    <h1>审核中心</h1>
     <p class="sub">审核讲师申请与用户投稿</p>
 
     <div class="flex gap-2 mb-4">

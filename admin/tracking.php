@@ -45,7 +45,7 @@ admin_header('行为追踪');
 <div class="admin-layout">
   <?php admin_sidebar('tracking'); ?>
   <div class="main">
-    <h1>📡 行为追踪</h1>
+    <h1>行为追踪</h1>
     <p class="sub">统一埋点 fcTrack · 写入 SQLite · Webhook 回传第三方工具</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

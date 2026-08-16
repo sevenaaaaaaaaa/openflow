@@ -35,7 +35,7 @@ admin_header('运营分析');
 <div class="admin-layout">
   <?php admin_sidebar('analytics'); ?>
   <div class="main">
-    <h1>📈 运营分析</h1>
+    <h1>运营分析</h1>
     <p class="sub">转化漏斗 · RFM 用户分层 · 流失预警与挽回</p>
     <?php if ($winbackMsg): ?><?=msg('success', $winbackMsg)?><?php endif; ?>
 
