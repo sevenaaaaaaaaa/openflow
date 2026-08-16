@@ -45,7 +45,7 @@ admin_header('站内信');
 <div class="admin-layout">
   <?php admin_sidebar('messages'); ?>
   <div class="main">
-    <h1>🔔 站内信</h1>
+    <h1>站内信</h1>
     <p class="sub">全体广播 + 个人发送 · 会员在站内信 / 导航栏可见</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
