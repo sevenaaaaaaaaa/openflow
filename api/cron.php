@@ -135,7 +135,7 @@ if (time() - $lastEvolve > 6 * 3600) {
 $lastDriver = (int)(json_read(DATA_DIR . '/driver-scan.json')['ts'] ?? 0);
 if (time() - $lastDriver > 6 * 3600) {
     try {
-        GrowthDriver::runCycle();
+        GrowthFlywheel::runCycle();
         json_write(DATA_DIR . '/driver-scan.json', ['ts' => time()]);
     } catch (Throwable $e) {}
 }
