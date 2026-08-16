@@ -90,7 +90,7 @@
 
 | 债务 | 位置 | 状态 |
 |------|------|------|
-| `flow-community` 旧页面名 | config.php、admin/*（15 文件）、data/pages/flow-community.json | ⏳ 待处理（后台 CMS 历史页面，需谨慎） |
+| `flow-community` 旧页面名 | config.php、admin/*、data/pages/ | ✅ 已处理：前台按钮改指向 /community，后台页面类型删除 |
 | GrowthDriver vs GrowthEngine 命名歧义 | lib/ | ✅ 已处理：GrowthDriver → GrowthFlywheel |
 | CdpSystem / CdpInsight / CdpSync 边界 | lib/ | ✅ 已处理：三文件加了三层架构边界注释 |
 | FlowSystem / CanvasSystem / AutomationSystem 关系 | lib/ | ✅ 已处理：三文件加了「流程编排三件套」边界注释 |
