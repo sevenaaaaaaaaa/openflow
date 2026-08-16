@@ -806,8 +806,8 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
       <h1>设计你的<i class="si">增长系统</i>，<br>让 Agent 替你 <span class="hr-word" id="hr-word" role="button" tabindex="0" aria-label="点击切换关键词">跑流程</span></h1>
       <p class="lead">你不缺怎么做，你缺该做什么。OpenFlow 是芭乐派增长操作系统的开源底座：自动爬取行业信号、生成内容草稿、主动触达转化——让 Agent 跑流程，你只做判断。</p>
       <div class="cta-row">
-        <button class="btn primary" data-od-id="home-cta-start">免费开始</button>
-        <a class="btn ghost" href="#scenes" data-od-id="home-cta-demo">查看平台演示</a>
+        <a class="btn primary" href="/courses" data-od-id="home-cta-start">免费开始</a>
+        <a class="btn ghost" href="/product" data-od-id="home-cta-demo">查看平台演示</a>
       </div>
       <div class="trust"><span class="dot"></span>OPC 一人公司首选 · 核心能力永久开源 · 自生长 AI Engine</div>
       <div class="arena">
