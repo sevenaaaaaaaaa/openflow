@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = '已切换到「' . (ThemeSystem::get($id)['name'] ?? $id) . '」，全站立即生效。';
             try { (new FileCache())->flush(); } catch (\Throwable $e) {}
         } else $error = '主题不存在';
-        header('Location: themes.php');
+        header('Location: /xmp/themes');
         exit;
     }
     // 保存自定义（基于某预设复制 + 修改变量）
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ThemeSystem::saveCustom($id ?: ('custom_' . substr(bin2hex(random_bytes(4)), 0, 6)), $custom);
             $message = '自定义主题已保存';
         } else $error = '基础主题不存在';
-        header('Location: themes.php');
+        header('Location: /xmp/themes');
         exit;
     }
 }
@@ -59,7 +59,7 @@ if (isset($_GET['delete'])) {
     } else {
         $error = '预设主题不可删除';
     }
-    header('Location: themes.php');
+    header('Location: /xmp/themes');
     exit;
 }
 

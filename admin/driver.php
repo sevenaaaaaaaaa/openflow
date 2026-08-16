@@ -13,7 +13,7 @@ if (isset($_GET['run'])) {
     csrf_verify();
     $result = GrowthFlywheel::runCycle();
     $message = '已运行一轮增长驱动飞轮。';
-    header('Location: driver.php?done=1');
+    header('Location: /xmp/driver?done=1');
     exit;
 }
 

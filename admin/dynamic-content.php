@@ -18,24 +18,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'create') {
         $rule = DynamicContent::create($_POST);
         flash('success', '规则已创建：' . $rule['name']);
-        header('Location: dynamic-content.php');
+        header('Location: /xmp/dynamic-content');
         exit;
     } elseif ($action === 'update') {
         $id = $_POST['rule_id'] ?? '';
         DynamicContent::update($id, $_POST);
         flash('success', '规则已更新');
-        header('Location: dynamic-content.php');
+        header('Location: /xmp/dynamic-content');
         exit;
     } elseif ($action === 'delete') {
         $id = $_POST['rule_id'] ?? '';
         DynamicContent::delete($id);
         flash('success', '规则已删除');
-        header('Location: dynamic-content.php');
+        header('Location: /xmp/dynamic-content');
         exit;
     } elseif ($action === 'toggle') {
         $id = $_POST['rule_id'] ?? '';
         DynamicContent::toggle($id);
-        header('Location: dynamic-content.php');
+        header('Location: /xmp/dynamic-content');
         exit;
     }
 }

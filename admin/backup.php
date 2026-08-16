@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = trim($_POST['name'] ?? '');
         $backupFile = BackupSystem::createFullBackup($name);
         flash('success', '备份已创建：' . basename($backupFile));
-        header('Location: backup.php');
+        header('Location: /xmp/backup');
         exit;
     } elseif ($postAction === 'restore') {
         $name = $_POST['backup_name'] ?? '';
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 flash('error', '恢复失败');
             }
         }
-        header('Location: backup.php');
+        header('Location: /xmp/backup');
         exit;
     } elseif ($postAction === 'delete') {
         $name = $_POST['backup_name'] ?? '';
@@ -40,14 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             BackupSystem::deleteBackup($name);
             flash('success', '备份已删除');
         }
-        header('Location: backup.php');
+        header('Location: /xmp/backup');
         exit;
     } elseif ($postAction === 'cloud_upload') {
         $name = $_POST['backup_name'] ?? '';
         $provider = $_POST['provider'] ?? '';
         // TODO: 实现云上传
         flash('success', "正在上传到 {$provider}...");
-        header('Location: backup.php');
+        header('Location: /xmp/backup');
         exit;
     }
 }

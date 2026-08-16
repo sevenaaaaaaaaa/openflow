@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
         ApiAffiliate::saveConfig($config);
         flash('success', '配置已保存');
-        header('Location: api-affiliate.php');
+        header('Location: /xmp/api-affiliate');
         exit;
     } elseif ($action === 'track') {
         $platformId = $_POST['platform_id'] ?? '';
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ApiAffiliate::trackReferral($platformId);
             flash('success', '推荐已记录');
         }
-        header('Location: api-affiliate.php');
+        header('Location: /xmp/api-affiliate');
         exit;
     }
 }

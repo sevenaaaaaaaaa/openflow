@@ -10,7 +10,7 @@ if (isset($_GET['delete'])) {
     $courses = array_values(array_filter($courses, fn($c) => $c['id'] !== $_GET['delete']));
     json_write($coursesFile, $courses);
     flash('success', '课程已删除');
-    header('Location: courses.php');
+    header('Location: /xmp/courses');
     exit;
 }
 
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_csv'])) {
     } else {
         flash('error', '请上传 CSV 文件');
     }
-    header('Location: courses.php');
+    header('Location: /xmp/courses');
     exit;
 }
 
