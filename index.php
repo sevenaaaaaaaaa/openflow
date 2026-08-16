@@ -117,7 +117,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
 /* ── chrome 外壳（SSR） ── */
 #chrome{position:fixed;top:0;left:0;right:0;height:var(--chrome-h);z-index:60;display:flex;align-items:center;padding:0 14px;transition:background .3s,box-shadow .3s,border-color .3s,top .45s var(--ease-spring),left .45s var(--ease-spring),right .45s var(--ease-spring),height .45s var(--ease-spring),border-radius .45s var(--ease-spring);border-bottom:1px solid transparent}
-#chrome.scrolled{top:10px;left:calc(var(--sb-w) + 18px);right:18px;height:56px;border-radius:999px;border:1px solid var(--border);background:color-mix(in oklab,var(--bg) 78%,transparent);backdrop-filter:blur(20px) saturate(170%);box-shadow:var(--shadow-sm);padding:0 14px}
+#chrome.scrolled{top:10px;left:calc(var(--sb-w) + 34px);right:clamp(16px,4vw,40px);height:56px;border-radius:999px;border:1px solid var(--border);background:color-mix(in oklab,var(--bg) 78%,transparent);backdrop-filter:blur(20px) saturate(170%);box-shadow:var(--shadow-sm);padding:0 14px}
 #chrome.capsule-mode{height:50px}
 #chrome.capsule-mode .brand{font-size:12.5px}
 #chrome.capsule-mode .brand .bn-sub{display:none}
@@ -1657,6 +1657,18 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
     }, 2500);
   } else {
     $$('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ── 滚动胶囊（y>24 通栏→胶囊，y>260 缩档） ── */
+  var chromeEl = document.getElementById('chrome');
+  if (chromeEl) {
+    function onScroll() {
+      var y = window.scrollY || document.documentElement.scrollTop;
+      chromeEl.classList.toggle('scrolled', y > 24);
+      chromeEl.classList.toggle('capsule-mode', y > 260);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
   }
 })();
 </script>
