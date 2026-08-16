@@ -61,3 +61,7 @@ baota-pseudostatic.txt
 # ─── 本地部署脚本（含服务器 IP/密钥，不入库） ───
 deploy.sh
 qa-check.sh
+
+# ─── 工具生成的备份文件 ───
+*.bak
+*.bak-*
