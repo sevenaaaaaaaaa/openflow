@@ -1,0 +1,7 @@
+{
+  "id": "example-plugin",
+  "name": "示例插件",
+  "version": "1.0.0",
+  "description": "插件开发示例 — 展示如何扩展 OpenFlow CXM",
+  "author": "OpenFlow"
+}

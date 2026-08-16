@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad URL Builder</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f5f5f5; color: #1a1a1a; line-height: 1.5; padding: 24px; }
+.container { max-width: 880px; margin: 0 auto; }
+h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { font-size: 13px; color: #666; margin-bottom: 20px; }
+.subtitle a { color: #1a73e8; }
+
+.tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid #e0e0e0; }
+.tab { padding: 10px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; user-select: none; }
+.tab:hover { color: #1a73e8; }
+.tab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.card { background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.card-header { font-size: 13px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.card-header .badge { font-size: 10px; background: #e8f0fe; color: #1a73e8; padding: 1px 6px; border-radius: 3px; }
+.card-header .badge.optional { background: #fff3e0; color: #e65100; }
+
+.form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.form-row:last-child { margin-bottom: 0; }
+.form-group { flex: 1; min-width: 160px; display: flex; flex-direction: column; }
+.form-group-half { flex: 0 0 calc(50% - 6px); }
+label { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; }
+label .req { color: #e53935; }
+label .opt { color: #999; font-weight: 400; font-size: 11px; }
+input, select, textarea { padding: 8px 12px; border: 1.5px solid #ddd; border-radius: 6px; font-size: 14px; transition: border-color 0.15s; background: #fafafa; outline: none; font-family: inherit; }
+input:focus, select:focus, textarea:focus { border-color: #1a73e8; background: #fff; }
+input.error, select.error, textarea.error { border-color: #e53935; background: #fff5f5; }
+input[readonly] { background: #f0f0f0; color: #666; cursor: default; }
+textarea { resize: vertical; min-height: 120px; font-size: 12px; font-family: "SF Mono", "Menlo", monospace; }
+.err-msg { font-size: 11px; color: #e53935; margin-top: 2px; display: none; min-height: 18px; }
+
+.combo-container { position: relative; }
+.combo-input { width: 100%; }
+.combo-dropdown { position: absolute; top: 100%; left: 0; right: 0; max-height: 220px; overflow-y: auto; background: #fff; border: 1.5px solid #1a73e8; border-top: none; border-radius: 0 0 6px 6px; z-index: 10; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.combo-dropdown.show { display: block; }
+.combo-option { padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+.combo-option:last-child { border-bottom: none; }
+.combo-option:hover { background: #e8f0fe; }
+
+.platform-picker { position: relative; }
+.platform-picker .input-wrap { position: relative; }
+.platform-picker input { width: 100%; padding-right: 32px; }
+.platform-picker .arrow { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 10px; color: #888; }
+.platform-dropdown { position: absolute; top: 100%; left: 0; right: 0; max-height: 320px; overflow-y: auto; background: #fff; border: 1.5px solid #1a73e8; border-top: none; border-radius: 0 0 6px 6px; z-index: 20; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.platform-dropdown.show { display: block; }
+.platform-opt { padding: 10px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+.platform-opt:last-child { border-bottom: none; }
+.platform-opt:hover { background: #e8f0fe; }
+.platform-opt.selected { background: #e8f0fe; font-weight: 600; }
+.platform-opt .p-tag { font-size: 10px; padding: 1px 5px; border-radius: 3px; color: #fff; font-weight: 500; }
+.p-tag.search { background: #1a73e8; } .p-tag.social { background: #e91e63; }
+.p-tag.pmax { background: #7c4dff; } .p-tag.display { background: #ff6d00; }
+.p-tag.domestic { background: #00c853; } .p-tag.network { background: #78909c; }
+.platform-warn { font-size: 12px; line-height: 1.65; background: #fff8e1; border-left: 3px solid #f9a825; color: #6d4c00; padding: 9px 11px; border-radius: 4px; margin-bottom: 10px; white-space: pre-wrap; }
+.platform-docs { font-size: 11px; margin-bottom: 10px; }
+.platform-docs a { color: #1a73e8; text-decoration: none; }
+.platform-docs a:hover { text-decoration: underline; }
+.macro-item.has-note { position: relative; }
+.macro-item .note-dot { color: #f9a825; font-size: 10px; margin-left: 3px; cursor: help; }
+.macro-item.unverified { border-color: #f9a825 !important; background: #fffdf5; }
+.macro-empty { font-size: 12px; color: #999; padding: 6px 0; }
+.p-no-result { padding: 12px; text-align: center; color: #999; font-size: 13px; }
+
+.macro-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.macro-item { display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 6px 10px; border: 1.5px solid #e0e0e0; border-radius: 6px; cursor: pointer; transition: all 0.15s; flex: 0 0 calc(33.33% - 6px); user-select: none; }
+.macro-item:hover { border-color: #1a73e8; background: #fafbff; }
+.macro-item.checked { border-color: #1a73e8; background: #e8f0fe; }
+.macro-item input[type="checkbox"] { display: none; }
+.macro-tmpl { font-size: 11px; color: #888; font-family: "SF Mono", "Menlo", monospace; }
+
+.toggle-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border: 1.5px solid #e0e0e0; border-radius: 6px; background: #fff; font-size: 12px; color: #666; cursor: pointer; margin-top: 10px; }
+.toggle-btn:hover { border-color: #1a73e8; color: #1a73e8; }
+.toggle-btn .arrow-icon { font-size: 10px; transition: transform 0.2s; }
+.toggle-btn.open .arrow-icon { transform: rotate(180deg); }
+.more-macros { margin-top: 8px; display: none; }
+.more-macros.show { display: block; }
+.more-macros .macro-list { border-top: 1px solid #eee; padding-top: 8px; }
+
+.btn { padding: 10px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+.btn-primary { background: #1a73e8; color: #fff; }
+.btn-primary:hover { background: #1557b0; }
+.btn-secondary { background: #f0f0f0; color: #333; }
+.btn-secondary:hover { background: #e0e0e0; }
+.btn-outline { background: #fff; color: #1a73e8; border: 1.5px solid #1a73e8; }
+.btn-outline:hover { background: #e8f0fe; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-xs { padding: 3px 8px; font-size: 11px; }
+.actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.output-section { display: none; }
+.output-section.show { display: block; }
+.url-box { background: #f8f9fa; border: 1.5px solid #e0e0e0; border-radius: 6px; padding: 14px 16px; font-size: 12px; word-break: break-all; font-family: "SF Mono", "Menlo", monospace; line-height: 1.8; margin-bottom: 12px; max-height: 240px; overflow-y: auto; color: #333; }
+.url-box a { color: #1a73e8; text-decoration: none; }
+.toast { position: fixed; bottom: 24px; right: 24px; background: #333; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 100; }
+.toast.show { opacity: 1; }
+.toast.success { background: #2e7d32; }
+.toast.error { background: #c62828; }
+
+.batch-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+.batch-table th, .batch-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #eee; }
+.batch-table th { font-weight: 600; color: #888; font-size: 11px; text-transform: uppercase; white-space: nowrap; background: #fafafa; position: sticky; top: 0; }
+.batch-table td { font-family: "SF Mono", "Menlo", monospace; word-break: break-all; font-size: 11px; }
+.batch-table td.platform-cell { font-weight: 600; color: #1a73e8; font-family: inherit; }
+.batch-table td.status-cell { font-family: inherit; }
+.batch-table .status-err { color: #e53935; font-weight: 600; }
+.batch-table .status-ok { color: #00c853; }
+.batch-table .status-warn { color: #e65100; }
+.batch-url { max-width: 500px; }
+
+.hint { font-size: 11px; color: #999; margin-top: 2px; }
+
+@media (max-width: 700px) {
+  .form-row { flex-direction: column; gap: 10px; }
+  .form-group-half { flex: 1; }
+  .macro-item { flex: 0 0 calc(50% - 4px); }
+}
+</style>
+</head>
+<body>
+<div id="js_status" style="position:fixed;top:0;left:0;right:0;padding:6px 12px;font-size:12px;z-index:999;text-align:center;background:#fff3e0;color:#e65100;">JS initializing...</div>
+<div class="container" style="margin-top:18px;">
+  <h1>Ad URL Builder</h1>
+  <p class="subtitle">投放链接追踪参数生成器 — 按 <a href="../AD-TRACKING-PARAM-SPEC.md" target="_blank">规范文档</a></p>
+  <div class="toast" id="toast"></div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="single">Single URL</div>
+    <div class="tab" data-tab="batch">Batch Import</div>
+  </div>
+
+  <!-- ====== SINGLE URL TAB ====== -->
+  <div class="tab-panel active" id="tab_single">
+
+    <div class="card">
+      <div class="card-header"><span>0. </span>基础信息</div>
+      <div class="form-row">
+        <div class="form-group" style="flex:2; min-width:280px;">
+          <label>Landing Page URL <span class="req">*</span></label>
+          <input type="text" id="base_url" placeholder="https://lovart.ai/tools/seedance" />
+          <div class="err-msg" id="err_url"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:2;">
+          <label>投放平台 <span class="req">*</span></label>
+          <div class="platform-picker">
+            <div class="input-wrap">
+              <input type="text" id="platform_input" placeholder="搜索或选择平台..." autocomplete="off" />
+              <span class="arrow">▼</span>
+            </div>
+            <div class="platform-dropdown" id="platform_dropdown"></div>
+          </div>
+          <div class="err-msg" id="err_platform"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span>1. </span>内部追踪 <span class="badge">Layer 1</span></div>
+      <div class="form-row">
+        <div class="form-group" style="min-width:140px;flex:0.8;">
+          <label>sourceId <span class="req">*</span></label>
+          <input type="text" id="source_id" placeholder="910001" />
+          <div class="err-msg" id="err_source_id"></div>
+        </div>
+        <div class="form-group" style="flex:1.2;">
+          <label>el — 元素位置 <span class="opt">选填</span></label>
+          <div class="combo-container" id="el_combo">
+            <input type="text" class="combo-input" id="el" placeholder="cta_primary" autocomplete="off" />
+            <div class="combo-dropdown" id="el_dropdown"></div>
+          </div>
+        </div>
+        <div class="form-group" style="flex:1.2;">
+          <label>sec — 页面模块 <span class="opt">选填</span></label>
+          <div class="combo-container" id="sec_combo">
+            <input type="text" class="combo-input" id="sec" placeholder="hero-split" autocomplete="off" />
+            <div class="combo-dropdown" id="sec_dropdown"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span>2. </span>UTM 参数 <span class="badge">Layer 2</span></div>
+      <div class="form-row">
+        <div class="form-group form-group-half">
+          <label>utm_source <span class="req">*</span></label>
+          <input type="text" id="utm_source" readonly placeholder="选择平台后自动填入" />
+        </div>
+        <div class="form-group form-group-half">
+          <label>utm_medium <span class="req">*</span></label>
+          <select id="utm_medium"><option value="">— 请选择 —</option></select>
+          <div class="err-msg" id="err_utm_medium"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>utm_campaign <span class="req">*</span></label>
+          <input type="text" id="utm_campaign" placeholder="seedance-2.0-launch" />
+          <div class="err-msg" id="err_utm_campaign"></div>
+          <div class="hint">kebab-case: 小写字母 + 数字 + 连字符</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>utm_term <span class="opt">选填</span></label>
+          <input type="text" id="utm_term" placeholder="seedance_group" />
+        </div>
+        <div class="form-group">
+          <label>utm_content <span class="opt">选填</span></label>
+          <input type="text" id="utm_content" placeholder="variant_a" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="macro_card">
+      <div class="card-header"><span>3. </span>平台原生宏 <span class="badge">Layer 3</span><span class="badge optional">选填</span></div>
+      <p style="font-size:12px;color:#999;margin-bottom:12px;" id="macro_placeholder">请先选择平台</p>
+      <div id="macro_content" style="display:none;">
+        <div id="platform_warn" class="platform-warn" style="display:none;"></div>
+        <div id="platform_docs" class="platform-docs" style="display:none;"></div>
+        <div class="macro-list" id="default_macros"></div>
+        <button class="toggle-btn" id="toggle_more" type="button">展开全部宏 <span class="arrow-icon">▼</span></button>
+        <div class="more-macros" id="more_macros"><div class="macro-list" id="more_macros_list"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="actions">
+        <button class="btn btn-primary" id="btn_generate">Generate URL</button>
+      </div>
+    </div>
+
+    <div class="card output-section" id="output_section_single">
+      <div class="card-header">Output</div>
+      <div class="url-box" id="url_display"></div>
+      <div class="actions">
+        <button class="btn btn-primary btn-sm" id="btn_copy">Copy</button>
+        <button class="btn btn-outline btn-sm export-single" data-fmt="txt">Export TXT</button>
+        <button class="btn btn-outline btn-sm export-single" data-fmt="md">Export MD</button>
+        <button class="btn btn-outline btn-sm export-single" data-fmt="json">Export JSON</button>
+        <span style="font-size:11px;color:#999;margin-left:4px;" id="url_len_hint"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== BATCH IMPORT TAB ====== -->
+  <div class="tab-panel" id="tab_batch">
+
+    <div class="card">
+      <div class="card-header">Template & Import</div>
+      <p style="font-size:13px;color:#555;margin-bottom:10px;">下载模板（含全部宏字段列）→ 填写数据 → 粘贴或上传</p>
+      <div class="actions" style="margin-bottom:12px;">
+        <button class="btn btn-outline btn-sm" id="btn_template_csv">Download CSV Template</button>
+        <button class="btn btn-outline btn-sm" id="btn_template_json">Download JSON Template</button>
+        <span style="font-size:11px;color:#999;">或</span>
+        <label class="btn btn-outline btn-sm" style="cursor:pointer;">Upload File <input type="file" id="file_upload" accept=".csv,.json" style="display:none;" /></label>
+      </div>
+      <textarea id="batch_input" placeholder="在此粘贴 CSV 或 JSON 数据..."></textarea>
+      <div class="err-msg" id="err_batch" style="margin-top:6px;"></div>
+      <div class="actions" style="margin-top:10px;">
+        <button class="btn btn-primary btn-sm" id="btn_batch_parse">Parse & Preview</button>
+        <button class="btn btn-secondary btn-sm" id="btn_batch_clear">Clear</button>
+      </div>
+    </div>
+
+    <div class="card" id="batch_preview_card" style="display:none;">
+      <div class="card-header">Preview (<span id="batch_count">0</span> rows)</div>
+      <div style="overflow-x:auto; max-height:420px; overflow-y:auto;">
+        <table class="batch-table" id="batch_preview_table">
+          <thead id="batch_preview_thead"><tr></tr></thead>
+          <tbody id="batch_preview_tbody"></tbody>
+        </table>
+      </div>
+      <div class="actions" style="margin-top:12px;">
+        <button class="btn btn-primary" id="btn_batch_generate">Generate All URLs</button>
+      </div>
+    </div>
+
+    <div class="card output-section" id="output_section_batch">
+      <div class="card-header">Generated URLs (<span id="batch_gen_count">0</span>)</div>
+      <div style="overflow-x:auto;">
+        <table class="batch-table">
+          <thead><tr><th>#</th><th>Platform</th><th>URL</th></tr></thead>
+          <tbody id="batch_gen_tbody"></tbody>
+        </table>
+      </div>
+      <div class="actions" style="margin-top:12px;">
+        <button class="btn btn-outline btn-sm export-batch" data-fmt="txt">Export TXT</button>
+        <button class="btn btn-outline btn-sm export-batch" data-fmt="md">Export MD</button>
+        <button class="btn btn-outline btn-sm export-batch" data-fmt="json">Export JSON</button>
+        <button class="btn btn-outline btn-sm export-batch" data-fmt="csv">Export CSV</button>
+        <button class="btn btn-secondary btn-sm" id="btn_batch_copy_all">Copy All</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+'use strict';
+var statusEl = document.getElementById('js_status');
+
+function logStatus(msg, color) {
+  console.log('[AdURL]', msg);
+  if (statusEl) { statusEl.textContent = msg; statusEl.style.background = color || '#e8f5e9'; statusEl.style.color = '#2e7d32'; }
+}
+
+window.onerror = function(msg, url, line, col, err) {
+  var m = 'JS Error: ' + msg + ' (line ' + line + ')';
+  console.error(m, err);
+  if (statusEl) { statusEl.textContent = m; statusEl.style.background = '#ffebee'; statusEl.style.color = '#c62828'; }
+  return false;
+};
+
+try {
+
+// ====== PLATFORM CONFIG ======
+const MEDIUM_LABELS = {
+  cpc:'cpc — 搜索广告（点击付费）', cpm:'cpm — 展示广告（千次曝光）', cpa:'cpa — 效果投放（按转化）',
+  social:'social — 信息流广告', video:'video — 视频广告', shopping:'shopping — 购物广告',
+  pmax:'pmax — Performance Max', display:'display — 展示/程序化', retargeting:'retargeting — 再营销/重定向',
+};
+
+const PLATFORMS = [
+  // ══════════════════════ GOOGLE ══════════════════════
+  { code:'google', name:'Google Ads (Search)', source:'google', type:'search', syntax:'google-lower', clickId:'gclid',
+    docs:'https://support.google.com/google-ads/answer/6305348',
+    warn:'AI Max 流量下 {keyword} 返回空、{matchtype}=a、{targetid}=kwl-*。tracking template 只有 {lpurl}? / {lpurl}& / {lpurl}# / 裸 {lpurl} 四种形态安全，foo={lpurl}value 会 404。',
+    mediumOptions:['cpc','cpa','display','shopping','retargeting','video'],
+    macros:[
+      {field:'campaign_id',template:'{campaignid}',default:true},
+      {field:'adgroup_id',template:'{adgroupid}',default:true},
+      {field:'ad_id',template:'{creative}',default:true,note:'= ad_group_ad.ad.id'},
+      {field:'keyword',template:'{keyword}',default:true,note:'AI Max / DSA / PMax 下返回空'},
+      {field:'device',template:'{device}',default:true,note:'m / t / c'},
+      {field:'target_id',template:'{targetid}',default:false,note:'前缀 kwd / kwl / dsa / aud / pla / hpi；多值顺序 aud,dsa,kwd,pla,hpi；不含 affinity / in-market audience'},
+      {field:'matchtype',template:'{matchtype}',default:false,note:'e / p / b / a(AI Max keywordless)'},
+      {field:'network',template:'{network}',default:false,note:'g / s / d / ytv / vp / gtv / x / e'},
+      {field:'placement',template:'{placement}',default:false,note:'Display / Video'},
+      {field:'target',template:'{target}',default:false,note:'仅 placement-targeted campaigns'},
+      {field:'loc_interest',template:'{loc_interest_ms}',default:false,note:'仅"搜索目标地点"流量有值'},
+      {field:'loc_physical',template:'{loc_physical_ms}',default:false,note:'仅"位于目标地点"流量有值'},
+      {field:'feeditem_id',template:'{feeditemid}',default:false,note:'Display 不可用；已被 {extensionid} 取代'},
+      {field:'extension_id',template:'{extensionid}',default:false,note:'Display 不可用'},
+      {field:'adposition',template:'{adposition}',default:false,note:'形如 1t2。API 映射文档有，Help Center 主表未列'},
+      {field:'devicemodel',template:'{devicemodel}',default:false,note:'⚠️ 官方明文「Only available on Display Network campaigns」—— 在 Search 系列上会返回空值。生产链接中已发现此误用'},
+      {field:'random',template:'{random}',default:false,note:'unsigned 64-bit'},
+      {field:'param1',template:'{param1}',default:false,note:'需 AdParamService 预先设置'},
+      {field:'param2',template:'{param2}',default:false,note:'需 AdParamService 预先设置'},
+    ]},
+  { code:'google_pmax', name:'Google Ads (PMax)', source:'google', type:'pmax', syntax:'google-lower', clickId:'gclid',
+    docs:'https://developers.google.com/google-ads/api/performance-max/valuetrack',
+    warn:'{ifsearch:} / {ifcontent:} / {ifpla:} / {iflia:} 恒为 false；{keyword} 返回空；{network} 恒为 x（官方不提供分渠道数据）；{gclid} 仅 Limited support。自定义参数可设在 asset group 与 campaign 两级。',
+    mediumOptions:['pmax'],
+    macros:[
+      {field:'campaign_id',template:'{campaignid}',default:true},
+      {field:'asset_group_id',template:'{assetgroupid}',default:true,note:'✅ PMax 独有，官方 Fully supported'},
+      {field:'device',template:'{device}',default:true},
+      {field:'loc_interest',template:'{loc_interest_ms}',default:false},
+      {field:'loc_physical',template:'{loc_physical_ms}',default:false},
+      {field:'random',template:'{random}',default:false},
+      {field:'creative_type',template:'{adtype}',default:false,note:'Limited：pla / pla_multichannel / pla_with_promotion / pla_with_pog'},
+      {field:'merchant_id',template:'{merchant_id}',default:false,note:'Limited support'},
+      {field:'product_id',template:'{product_id}',default:false,note:'Limited support'},
+      {field:'product_channel',template:'{product_channel}',default:false,note:'Limited：online / local'},
+      {field:'product_country',template:'{product_country}',default:false,note:'Limited support'},
+      {field:'product_language',template:'{product_language}',default:false,note:'Limited support'},
+    ]},
+  { code:'google_display', name:'Google Ads (Display)', source:'google', type:'display', syntax:'google-lower', clickId:'gclid',
+    docs:'https://support.google.com/google-ads/answer/6305348',
+    warn:'{feeditemid} 与 {extensionid} 在 Display 不可用（官方明文）。{dclid} 不是 Google Ads 宏，属 DV360/CM360 体系。',
+    mediumOptions:['display','cpm','retargeting'],
+    macros:[
+      {field:'campaign_id',template:'{campaignid}',default:true},
+      {field:'adgroup_id',template:'{adgroupid}',default:true},
+      {field:'ad_id',template:'{creative}',default:true},
+      {field:'device',template:'{device}',default:true},
+      {field:'devicemodel',template:'{devicemodel}',default:false,note:'✅ 官方唯一点名 Display 专属的宏，如 Apple+iPhone'},
+      {field:'placement',template:'{placement}',default:false,note:'关键词定向→被点内容站点；位置定向→匹配的 placement 条件'},
+      {field:'target',template:'{target}',default:false,note:'仅 placement-targeted'},
+      {field:'keyword',template:'{keyword}',default:false,note:'返回与内容匹配的账户关键词（语义与 Search 不同）'},
+      {field:'network',template:'{network}',default:false,note:'d；Google video partners 返回 vp'},
+      {field:'loc_interest',template:'{loc_interest_ms}',default:false},
+      {field:'loc_physical',template:'{loc_physical_ms}',default:false},
+      {field:'random',template:'{random}',default:false},
+    ]},
+  { code:'google_demandgen', name:'Google Ads (Demand Gen)', source:'google', type:'display', syntax:'google-lower', clickId:'gclid',
+    docs:'https://support.google.com/google-ads/answer/6305348',
+    warn:'官方只发布"不支持"清单：{placement} {target} {keyword} {ifsearch:} {ifcontent:} {targetid} 全部不支持，且 {network} 完全不返回（API enum = UNKNOWN）。其余宏官方称回落到主表但未逐条列举。',
+    mediumOptions:['social','video','cpm','cpa','retargeting'],
+    macros:[
+      {field:'campaign_id',template:'{campaignid}',default:true},
+      {field:'adgroup_id',template:'{adgroupid}',default:true},
+      {field:'ad_id',template:'{creative}',default:true},
+      {field:'device',template:'{device}',default:true},
+      {field:'loc_interest',template:'{loc_interest_ms}',default:false},
+      {field:'loc_physical',template:'{loc_physical_ms}',default:false},
+      {field:'random',template:'{random}',default:false},
+      {field:'param1',template:'{param1}',default:false},
+      {field:'param2',template:'{param2}',default:false},
+    ]},
+  { code:'google_app', name:'Google Ads (App Campaigns)', source:'google', type:'display', syntax:'google-lower', clickId:'gclid',
+    docs:'https://support.google.com/google-ads/answer/7382504',
+    warn:'⚠️ 官方明文：tracking template 挂第三方 click tracker "excluding App campaigns"。用 ValueTrack 的唯一前提是第三方分析方案使用 Confirmed Installs。gbraid 官方仅适用 Search/Shopping/Display/PMax，不含 App。{aceid} 无法证实用于 App campaigns，已移除。',
+    mediumOptions:['cpa','cpc','video'],
+    macros:[
+      {field:'campaign_id',template:'{campaignid}',default:true},
+      {field:'adgroup_id',template:'{adgroupid}',default:true},
+      {field:'ad_id',template:'{creative}',default:true},
+      {field:'device',template:'{device}',default:true},
+      {field:'network',template:'{network}',default:false,note:'e = 全部 ACe 流量（除 Google search）'},
+      {field:'loc_interest',template:'{loc_interest_ms}',default:false},
+      {field:'loc_physical',template:'{loc_physical_ms}',default:false},
+      {field:'random',template:'{random}',default:false},
+    ]},
+  { code:'google_shopping', name:'Google Ads (Shopping)', source:'google', type:'search', syntax:'google-lower', clickId:'gclid',
+    docs:'https://support.google.com/google-ads/answer/6305348',
+    mediumOptions:['shopping','cpc','cpa','pmax'],
+    macros:[
+      {field:'campaign_id',template:'{campaignid}',default:true},
+      {field:'adgroup_id',template:'{adgroupid}',default:true},
+      {field:'ad_id',template:'{creative}',default:true},
+      {field:'device',template:'{device}',default:true},
+      {field:'product_id',template:'{product_id}',default:true},
+      {field:'creative_type',template:'{adtype}',default:false,note:'pla / pla_multichannel / pla_with_promotion / pla_with_pog'},
+      {field:'merchant_id',template:'{merchant_id}',default:false},
+      {field:'product_channel',template:'{product_channel}',default:false,note:'online / local'},
+      {field:'product_country',template:'{product_country}',default:false},
+      {field:'product_language',template:'{product_language}',default:false},
+      {field:'product_partition_id',template:'{product_partition_id}',default:false},
+      {field:'store_code',template:'{store_code}',default:false,note:'60 字符上限'},
+      {field:'target_id',template:'{targetid}',default:false,note:'pla- 前缀 = product partition'},
+    ]},
+  { code:'google_hotel', name:'Google Ads (Hotel / Travel)', source:'google', type:'search', syntax:'google-lower', clickId:'gclid',
+    docs:'https://support.google.com/google-ads/answer/6305348',
+    warn:'{targetid} 与 Hotel tROAS 不兼容（官方明文）。Vehicle Ads 与 Things-to-do 的专属参数无任何官方文档，未收录。',
+    mediumOptions:['cpc','cpa','shopping','pmax'],
+    macros:[
+      {field:'campaign_id',template:'{campaignid}',default:true},
+      {field:'adgroup_id',template:'{adgroupid}',default:true},
+      {field:'device',template:'{device}',default:true},
+      {field:'hotel_id',template:'{hotel_id}',default:true},
+      {field:'hotelcenter_id',template:'{hotelcenter_id}',default:false},
+      {field:'hotel_partition_id',template:'{hotel_partition_id}',default:false},
+      {field:'hotel_adtype',template:'{hotel_adtype}',default:false,note:'Hotel / Room'},
+      {field:'creative_type',template:'{adtype}',default:false,note:'travel_booking / travel_promoted'},
+      {field:'travel_start',template:'{travel_start_year}-{travel_start_month}-{travel_start_day}',default:false},
+      {field:'travel_end',template:'{travel_end_year}-{travel_end_month}-{travel_end_day}',default:false},
+      {field:'booking_window',template:'{advanced_booking_window}',default:false},
+      {field:'date_type',template:'{date_type}',default:false,note:'default / selected'},
+      {field:'number_of_adults',template:'{number_of_adults}',default:false},
+      {field:'price_total',template:'{price_displayed_total}',default:false},
+      {field:'price_tax',template:'{price_displayed_tax}',default:false},
+      {field:'user_currency',template:'{user_currency}',default:false,note:'3 字母'},
+      {field:'user_language',template:'{user_language}',default:false,note:'2 字母'},
+      {field:'rate_rule_id',template:'{rate_rule_id}',default:false},
+    ]},
+
+  // ══════════════════════ MICROSOFT ══════════════════════
+  { code:'bing', name:'Microsoft Bing Ads', source:'bing', type:'search', syntax:'google-pascal', clickId:'msclkid',
+    docs:'https://help.ads.microsoft.com/#apex/3/en/56799/2',
+    warn:'宏名大小写不敏感。自定义参数是自命名 {_yourkey}（不是 {Custom1}~{Custom8}，那是把"上限 8 个"误记成宏名）：Key ≤16 字节、Value ≤250 字节、campaign/ad group/criterion/ad 各 8 个、扩展默认 3 个。Microsoft 不校验自定义参数是否存在，不存在时占位符原样输出。tracking template 上限 2048 字符。',
+    mediumOptions:['cpc','cpa','display','shopping','retargeting','video'],
+    macros:[
+      {field:'campaign_id',template:'{CampaignId}',default:true},
+      {field:'adgroup_id',template:'{AdGroupId}',default:true},
+      {field:'ad_id',template:'{AdId}',default:true},
+      {field:'keyword',template:'{keyword:default}',default:true,note:'空格转 %20；建议保留 default 兜底'},
+      {field:'device',template:'{Device}',default:true,note:'m / t / c'},
+      {field:'campaign_name',template:'{Campaign}',default:false},
+      {field:'adgroup_name',template:'{AdGroup}',default:false},
+      {field:'target_id',template:'{TargetId}',default:false,note:'kwd/aud/dat/pla/loc 前缀；in-market audience 与 LinkedIn profile 定向不返回'},
+      {field:'matchtype',template:'{MatchType}',default:false,note:'e / p / b（expanded 也算 b）'},
+      {field:'bid_matchtype',template:'{BidMatchType}',default:false,note:'be / bp / bb'},
+      {field:'network',template:'{Network}',default:false,note:'o=owned&operated / s=syndicated / a=audience placements'},
+      {field:'order_item_id',template:'{OrderItemId}',default:false,note:'Shopping 时返回 product group ID'},
+      {field:'query_string',template:'{QueryString}',default:false,note:'用户输入的查询文本'},
+      {field:'feeditem_id',template:'{feeditemid}',default:false,note:'被点击的广告扩展 ID（Bing 无 {SitelinkId}）'},
+      {field:'loc_physical',template:'{loc_physical_ms}',default:false},
+      {field:'loc_interest',template:'{loc_interest_ms}',default:false},
+      {field:'param1',template:'{param1:default}',default:false,note:'取关键词的 Param1 设置'},
+      {field:'param2',template:'{param2:default}',default:false},
+      {field:'param3',template:'{param3:default}',default:false},
+    ]},
+  { code:'bing_pmax', name:'Microsoft Bing (PMax)', source:'bing', type:'pmax', syntax:'google-pascal', clickId:'msclkid',
+    docs:'https://learn.microsoft.com/en-us/advertising/guides/performance-max?view=bingads-13',
+    warn:'⚠️ 官方明示不支持 asset group 宏 —— 用 {AdGroupId} 取资产组 ID、{AdGroup} 取资产组名。{Network} 仍只返回 o/s/a，Cross-network 无独立取值。Google PMax 的 ValueTrack 不适用于 Microsoft。',
+    mediumOptions:['pmax'],
+    macros:[
+      {field:'campaign_id',template:'{CampaignId}',default:true},
+      {field:'asset_group_id',template:'{AdGroupId}',default:true,note:'PMax 下 {AdGroupId} 返回的就是 asset group ID'},
+      {field:'asset_group_name',template:'{AdGroup}',default:false,note:'PMax 下返回 asset group 名'},
+      {field:'device',template:'{Device}',default:true},
+      {field:'network',template:'{Network}',default:false,note:'o / s / a'},
+      {field:'loc_physical',template:'{loc_physical_ms}',default:false},
+    ]},
+  { code:'bing_shopping', name:'Microsoft Bing (Shopping)', source:'bing', type:'search', syntax:'google-pascal', clickId:'msclkid',
+    docs:'https://help.ads.microsoft.com/#apex/3/en/56799/2',
+    mediumOptions:['shopping','cpc','cpa'],
+    macros:[
+      {field:'campaign_id',template:'{CampaignId}',default:true},
+      {field:'adgroup_id',template:'{AdGroupId}',default:true},
+      {field:'product_id',template:'{ProductId}',default:true},
+      {field:'device',template:'{Device}',default:true},
+      {field:'criterion_id',template:'{CriterionId}',default:false,note:'= {OrderItemId}，Bing 无 {ProductPartitionId}'},
+      {field:'order_item_id',template:'{OrderItemId}',default:false},
+      {field:'product_channel',template:'{product_channel}',default:false},
+      {field:'product_country',template:'{product_country}',default:false},
+      {field:'product_language',template:'{product_language}',default:false},
+      {field:'seller_name',template:'{seller_name}',default:false},
+    ]},
+  { code:'bing_lodging', name:'Microsoft Bing (Lodging / Travel)', source:'bing', type:'search', syntax:'google-pascal', clickId:'msclkid',
+    docs:'https://help.ads.microsoft.com/#apex/3/en/56799/2',
+    mediumOptions:['cpc','cpa','shopping'],
+    macros:[
+      {field:'campaign_id',template:'{CampaignId}',default:true},
+      {field:'adgroup_id',template:'{AdGroupId}',default:true},
+      {field:'property_id',template:'{property_id}',default:true},
+      {field:'device',template:'{Device}',default:true},
+      {field:'hotelcenter_id',template:'{hotelcenter_id}',default:false},
+      {field:'hotel_partition_id',template:'{hotel_partition_id}',default:false},
+      {field:'hotel_adtype',template:'{hotel_adtype}',default:false},
+      {field:'creative_type',template:'{adtype}',default:false},
+      {field:'travel_start',template:'{travel_start_year}-{travel_start_month}-{travel_start_day}',default:false},
+      {field:'travel_end',template:'{travel_end_year}-{travel_end_month}-{travel_end_day}',default:false},
+      {field:'booking_window',template:'{advanced_booking_window}',default:false},
+      {field:'date_type',template:'{date_type}',default:false},
+      {field:'number_of_adults',template:'{number_of_adults}',default:false},
+      {field:'price_total',template:'{price_displayed_total}',default:false},
+      {field:'price_tax',template:'{price_displayed_tax}',default:false},
+      {field:'user_currency',template:'{user_currency}',default:false},
+      {field:'user_language',template:'{user_language}',default:false},
+      {field:'rate_rule_id',template:'{rate_rule_id}',default:false},
+    ]},
+
+  // ══════════════════════ 海外社交 ══════════════════════
+  { code:'meta', name:'Meta Ads (FB+IG)', source:'meta', type:'social', syntax:'meta-mustache', clickId:'fbclid',
+    docs:'https://www.facebook.com/business/help/2360940870872492',
+    warn:'⚠️ 官方仅 8 个宏，没有任何创意/素材层宏（{{ad.format}} {{creative.id}} {{publisher_platform}} {{platform}} {{product.id}} 均不存在，已移除）。最细粒度就是 Ad 层。URL parameters 字段会覆盖 Website URL 中的同名参数。动态参数不支持 IG 版位的 collection 广告与 app promotion 目标；Catalog 目录销售与 Store locations 只有 URL parameters 字段。发布后改参数可能重进学习期。',
+    mediumOptions:['social','cpm','cpa','video','retargeting','display'],
+    macros:[
+      {field:'campaign_id',template:'{{campaign.id}}',default:true},
+      {field:'adgroup_id',template:'{{adset.id}}',default:true},
+      {field:'ad_id',template:'{{ad.id}}',default:true},
+      {field:'placement',template:'{{placement}}',default:true,note:'facebook_feed / facebook_instream / facebook_marketplace / facebook_right_column / instagram_feed / instagram_stories / messenger_inbox / messenger_sponsored_messages / threads_stream / audience_network_classic / audience_network_rewarded_video。官方列表无 reels / explore'},
+      {field:'site_source_name',template:'{{site_source_name}}',default:true,note:'fb / ig / msg / an / th(Threads)'},
+      {field:'campaign_name',template:'{{campaign.name}}',default:false,note:'锁定为首次发布时的名称，之后改名不变'},
+      {field:'adgroup_name',template:'{{adset.name}}',default:false,note:'同上，改名不变'},
+      {field:'ad_name',template:'{{ad.name}}',default:false,note:'同上，改名不变'},
+    ]},
+  { code:'tiktok', name:'TikTok Ads (海外)', source:'tiktok', type:'social', syntax:'bytedance-macro', clickId:'ttclid',
+    docs:'https://ads.tiktok.com/help/article/track-offsite-web-events-with-utm-parameters',
+    warn:'⚠️ 层级易错：__AID__ = Ad Group（不是 Ad），__CID__ = Creative（不是 Campaign）。官方仅 9 个宏 —— __AD_FORMAT__ / __INTEREST_CATEGORY__ / __AGE__ / __GENDER__ 不存在（TikTok 不通过 URL 宏回传定向与人群维度），已移除。Click ID 宏是单下划线 _CLICKID_；通常无需手填，ttclid 自动附加。# 之后内容会被丢弃；UTM 大小写敏感。',
+    mediumOptions:['social','cpm','cpa','video'],
+    macros:[
+      {field:'campaign_id',template:'__CAMPAIGN_ID__',default:true},
+      {field:'adgroup_id',template:'__AID__',default:true,note:'AID = Ad Group ID'},
+      {field:'creative_id',template:'__CID__',default:true,note:'CID = Creative ID'},
+      {field:'placement',template:'__PLACEMENT__',default:true,note:'TikTok / TikTok Pangle'},
+      {field:'campaign_name',template:'__CAMPAIGN_NAME__',default:false},
+      {field:'adgroup_name',template:'__AID_NAME__',default:false},
+      {field:'creative_name',template:'__CID_NAME__',default:false},
+      {field:'ad_id',template:'__ADID_V2__',default:false,note:'仅 upgraded Smart+ campaigns'},
+      {field:'ad_name',template:'__ADID_V2_NAME__',default:false,note:'仅 Smart+，creative assets bundle 名'},
+      {field:'click_id',template:'_CLICKID_',default:false,note:'单下划线；ttclid 一般自动附加，无需手填'},
+    ]},
+  { code:'snapchat', name:'Snapchat Ads', source:'snapchat', type:'social', syntax:'meta-mustache', clickId:'ScCid',
+    docs:'https://businesshelp.snapchat.com/s/article/url-parameters',
+    warn:'⚠️ 未取证平台：官方 5 篇文档均为 Salesforce JS 站，机器不可抓。下列宏仅为搜索摘要级别，语法（尤其 adSet 的 camelCase 大写 S）未经确证，投产前请在 Ads Manager 的 URL Macros 下拉里逐个核对。{{creative.type}} 与 {{ad.is.swipeable}} 无任何证据，已移除。',
+    mediumOptions:['social','cpm','cpa','video'],
+    macros:[
+      {field:'campaign_id',template:'{{campaign.id}}',default:true,note:'⚠️ 未确证'},
+      {field:'adgroup_id',template:'{{adSet.id}}',default:true,note:'⚠️ 未确证；注意 camelCase 的大写 S'},
+      {field:'ad_id',template:'{{ad.id}}',default:true,note:'⚠️ 未确证'},
+      {field:'campaign_name',template:'{{campaign.name}}',default:false,note:'⚠️ 未确证；官方称 dynamic macro，可实时更新'},
+      {field:'adgroup_name',template:'{{adSet.name}}',default:false,note:'⚠️ 未确证'},
+      {field:'creative_name',template:'{{creative.name}}',default:false,note:'⚠️ 未确证；官方称 dynamic macro'},
+    ]},
+  { code:'pinterest', name:'Pinterest Ads', source:'pinterest', type:'social', syntax:'google-lower', clickId:'epik',
+    docs:'https://help.pinterest.com/en/business/article/third-party-and-dynamic-tracking',
+    warn:'⚠️ Pinterest 用单花括号 {param}，不是双花括号。{keyword} 官方明确不支持任何广告；{targetingtype} 不存在。dynamic parameters 在 Pin 预览时不展开。三方跟踪仅支持 ad.doubleclick.net / bs.serving-sys.com / d9.flashtalking.com / servedby.flashtalking.com。官方只确证 _epik cookie，URL 上的 epik= 参数名未在官方页出现。',
+    mediumOptions:['social','cpm','cpa','shopping'],
+    macros:[
+      {field:'campaign_id',template:'{campaignid}',default:true},
+      {field:'adgroup_id',template:'{adgroupid}',default:true},
+      {field:'creative_id',template:'{creative_id}',default:true,note:'= the Pin promotion id'},
+      {field:'ad_id',template:'{adid}',default:true,note:'与 {creative_id} 同值'},
+      {field:'device',template:'{device}',default:true,note:'t / c / m'},
+      {field:'campaign_name',template:'{campaign_name}',default:false,note:'{campaignname} 亦可'},
+      {field:'adgroup_name',template:'{ad_group_name}',default:false,note:'{adgroupname} 亦可'},
+      {field:'creative_name',template:'{creative_name}',default:false,note:'= the Pin promotion name（仅 parallel counting）'},
+      {field:'item_id',template:'{item_id}',default:false,note:'the Pin promotion item id（仅 parallel counting）'},
+      {field:'insertion_id',template:'{insertion_id}',default:false,note:'可当 cache buster'},
+      {field:'device_platform',template:'{device_platform}',default:false,note:'iOS / Android / 空字符串'},
+      {field:'publisher',template:'{publisher}',default:false,note:'硬编码为 Pinterest'},
+      {field:'timestamp',template:'{timestamp}',default:false,note:'可当 cache buster'},
+      {field:'organic_url',template:'{organic_url}',default:false,note:'Collections Ads 专属：Pin 创建时填入的完整 URL'},
+      {field:'product_id',template:'{product_id}',default:false,note:'Shopping'},
+      {field:'product_name',template:'{product_name}',default:false,note:'Shopping'},
+      {field:'product_partition_id',template:'{product_partition_id}',default:false,note:'Shopping'},
+      {field:'promoted_product_group_id',template:'{promoted_product_group_id}',default:false,note:'Shopping：Ads Manager Catalog 区的 product group ID'},
+    ]},
+  { code:'reddit', name:'Reddit Ads', source:'reddit', type:'social', syntax:'meta-mustache', clickId:'rdt_cid',
+    docs:'https://advertising.reddithelp.com/en/categories/creating-ads/how-build-campaign',
+    warn:'⚠️ 官方原文："all macros are case sensitive"（全大写 + 双花括号 + 下划线）。官方 19 行宏表中没有 "Name of the Campaign" 这一行，{{CAMPAIGN_NAME}} 疑似不存在已移除。部分宏字面量因官方页表格渲染丢列未能直连确证（标 ⚠️），建议在 Ads Manager 三方 tracker 宏表里复制核对。三方 tracker 只接受 Reddit 认证 provider。',
+    mediumOptions:['social','cpm','cpa'],
+    macros:[
+      {field:'campaign_id',template:'{{CAMPAIGN_ID}}',default:true,note:'✅ 官方示例 URL 中出现'},
+      {field:'adgroup_id',template:'{{ADGROUP_ID}}',default:true,note:'✅ 官方示例 URL 中出现'},
+      {field:'ad_id',template:'{{AD_ID}}',default:true,note:'⚠️ 字面量未直连确证'},
+      {field:'click_id',template:'{{CLICK_ID}}',default:true,note:"Reddit's Click ID"},
+      {field:'adgroup_name',template:'{{ADGROUP_NAME}}',default:false,note:'⚠️ 字面量未直连确证'},
+      {field:'ad_name',template:'{{AD_NAME}}',default:false,note:'⚠️ 字面量未直连确证'},
+      {field:'post_id',template:'{{POST_ID}}',default:false,note:'形如 t3_6lebsh'},
+      {field:'advertiser_id',template:'{{ADVERTISER_ID}}',default:false,note:'⚠️ 字面量未直连确证'},
+      {field:'country',template:'{{COUNTRY}}',default:false,note:'2 位 ISO'},
+      {field:'os',template:'{{OS}}',default:false,note:'值含前缀：osgrp,IOS / osgrp,MACOS / osgrp,ANDROID / osgrp,WINDOWS / osgrp,LINUX'},
+      {field:'device_type',template:'{{DEVICE_TYPE}}',default:false,note:'⚠️ 也可能是 {{DEVICE_GROUP}}。值：devgrp,PHN / devgrp,TAB / devgrp,DSK / devgrp,UNWN'},
+      {field:'platform',template:'{{PLATFORM}}',default:false,note:'plt,MBL / plt,DSK'},
+      {field:'creative_height',template:'{{HEIGHT}}',default:false,note:'native ad post 高度 px'},
+      {field:'creative_width',template:'{{WIDTH}}',default:false,note:'native ad post 宽度 px'},
+      {field:'cachebuster',template:'{{CACHEBUSTER}}',default:false,note:'UNIX timestamp UTC'},
+    ]},
+  { code:'x', name:'X.com (Twitter) Ads', source:'x', type:'social', syntax:'static-only', clickId:'twclid',
+    docs:'https://business.x.com/en/help/campaign-measurement-and-analytics/conversion-tracking-for-websites',
+    warn:'⚠️ X/Twitter Ads 完全没有 URL 动态宏 / tracking template 体系（原配置的 5 个 {{...}} 宏全部不存在，已清空）。UTM 必须逐条广告手写静态值，也无 bulk ad upload。twclid 由 X Pixel 自动从 URL 或首方 cookie 读取；CAPI 须至少带一个 identifier（twclid / hashed email / hashed phone）。转化去重请用 conversion_id。',
+    mediumOptions:['social','cpm','cpa'],
+    macros:[]},
+  { code:'linkedin', name:'LinkedIn Ads', source:'linkedin', type:'social', syntax:'linkedin-enum', clickId:'li_fat_id',
+    docs:'https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/dynamic-utm-tracking?view=li-lms-2026-06',
+    warn:'⚠️ 官方枚举全部是 UPPER_SNAKE_CASE，camelCase 的 {{campaignGroup.id}} / {{creativeId}} 不存在。API 侧为裸枚举（无花括号），UI 的双花括号写法未经确证 —— 以 Campaign Manager 下拉里的字面量为准。跟踪参数只能设在 Campaign 层，自动作用于全部 creative（含新建），改动实时生效且广告无需重新审核。不支持的创意格式：Conversation Ads、Message Ads。Document Ads / Thought Leader Ads 无专属参数。li_fat_id 需启用 Insight Tag 的 Enhanced conversion tracking，cookie 保留 30 天。',
+    mediumOptions:['social','cpm','cpa','display'],
+    macros:[
+      {field:'campaign_id',template:'{{CAMPAIGN_ID}}',default:true,note:'API 枚举 CAMPAIGN_ID'},
+      {field:'campaign_group_id',template:'{{CAMPAIGN_GROUP_ID}}',default:true,note:'API 枚举 CAMPAIGN_GROUP_ID'},
+      {field:'creative_id',template:'{{CREATIVE_ID}}',default:true,note:'API 枚举 CREATIVE_ID'},
+      {field:'campaign_name',template:'{{CAMPAIGN_NAME}}',default:false},
+      {field:'campaign_group_name',template:'{{CAMPAIGN_GROUP_NAME}}',default:false},
+      {field:'creative_name',template:'{{CREATIVE_NAME}}',default:false,note:'自 API version 202606 起才可用'},
+      {field:'account_id',template:'{{ACCOUNT_ID}}',default:false},
+      {field:'account_name',template:'{{ACCOUNT_NAME}}',default:false},
+    ]},
+
+  // ══════════════════════ 区域平台 ══════════════════════
+  { code:'yandex', name:'Yandex Direct (俄罗斯)', source:'yandex', type:'search', syntax:'google-snake', clickId:'yclid',
+    docs:'https://yandex.com/support/direct/en/statistics/url-tags',
+    warn:'⚠️ URL 超过 4096 字节时只有 yclid 与 openstat 的值会被传递，其他参数被丢弃。{addphrases} 在 EN/RU 官方表中均不存在（已移除，疑为下线的历史参数）；{adtarget_name} 官方标注已不再支持。快速链接（sitelinks）中 {campaign_id} {ad_id} {banner_id} {phrase_id} 的替换，只有当广告本体 URL 也含同名参数时才被保证。utm_source=yandex 有可能被截断为 ya。',
+    mediumOptions:['cpc','cpm','cpa','display','retargeting','video'],
+    macros:[
+      {field:'campaign_id',template:'{campaign_id}',default:true},
+      {field:'adgroup_id',template:'{gbid}',default:true,note:'广告组 ID'},
+      {field:'ad_id',template:'{ad_id}',default:true,note:'{banner_id} 等价'},
+      {field:'device',template:'{device_type}',default:true,note:'desktop / mobile / tablet'},
+      {field:'keyword',template:'{keyword}',default:false,note:'仅 EPK 内文字图文广告或应用推广；不含否定词'},
+      {field:'keyword_id',template:'{phrase_id}',default:false,note:'仅 EPK 内文字图文广告或应用推广'},
+      {field:'matched_keyword',template:'{matched_keyword}',default:false,note:'官方注明"代替 {match_type} 使用"'},
+      {field:'matchtype',template:'{match_type}',default:false,note:'仅两个值：rm=自动定向 / syn=语义匹配'},
+      {field:'creative_id',template:'{creative_id}',default:false,note:'Ad Builder 创意 ID'},
+      {field:'campaign_name',template:'{campaign_name}',default:false,note:'≤255 字符'},
+      {field:'campaign_name_lat',template:'{campaign_name_lat}',default:false,note:'拉丁转写，≤255'},
+      {field:'campaign_type',template:'{campaign_type}',default:false,note:'type1=EPK / type6=搜索横幅；type2/3/4 已不再支持'},
+      {field:'source',template:'{source}',default:false,note:'网络投放=站点域名；Yandex 搜索=none'},
+      {field:'source_type',template:'{source_type}',default:false,note:'search / context'},
+      {field:'position_type',template:'{position_type}',default:false,note:'premium / dynamic_places / other / none'},
+      {field:'position',template:'{position}',default:false,note:'0 = 展示在 YAN/外部网络；须与 {position_type} 配合'},
+      {field:'region_id',template:'{region_id}',default:false},
+      {field:'region_name',template:'{region_name}',default:false},
+      {field:'retargeting_id',template:'{retargeting_id}',default:false},
+      {field:'coef_goal_context_id',template:'{coef_goal_context_id}',default:false,note:'重定向列表的出价系数 ID'},
+      {field:'adtarget_id',template:'{adtarget_id}',default:false},
+    ]},
+  { code:'naver', name:'Naver Search Ads (韩国)', source:'naver', type:'search', syntax:'naver-auto', clickId:'',
+    docs:'https://m.diad.co.kr/Customer/NoticeView?idx=3165',
+    warn:'⚠️ Naver 不是宏体系，是开关：在 광고시스템 > 캠페인 수정 > 고급옵션 > 추적기능 选「자동 추적URL 파라미터」后，Naver 自动在落地页 URL 追加下列固定 query key（全小写 n_ 前缀，无占位符形态）。파워링크 = 10 个，쇼핑검색 = 12 个。n_campaign 在官方清单中不存在（只有 n_campaign_type），已修正。Naver 无 click ID。GFA（성과형 디스플레이광고）的 URL 宏完全未能证实。',
+    mediumOptions:['cpc','cpa','shopping'],
+    macros:[
+      {field:'campaign_type',template:'n_campaign_type',default:true,note:'캠페인 유형（自动追加，非占位符）'},
+      {field:'adgroup_id',template:'n_ad_group',default:true,note:'自动追加'},
+      {field:'ad_id',template:'n_ad',default:true,note:'소재/광고 层，自动追加'},
+      {field:'keyword',template:'n_keyword',default:true,note:'触发的注册关键词'},
+      {field:'query',template:'n_query',default:true,note:'用户实际检索词'},
+      {field:'keyword_id',template:'n_keyword_id',default:false},
+      {field:'adgroup_type',template:'n_ad_group_type',default:false},
+      {field:'media',template:'n_media',default:false,note:'展示媒体/지면'},
+      {field:'matchtype',template:'n_match',default:false,note:'2023-09-18 新增。1=일치 2=키워드 확장 3=연관 검색 4=일치(유사 검색어) 5=스마트 블록'},
+      {field:'rank',template:'n_rank',default:false,note:'广告顺位'},
+      {field:'product_id',template:'n_mall_pid',default:false,note:'仅 쇼핑검색 캠페인'},
+      {field:'mall_id',template:'n_mall_id',default:false,note:'仅 쇼핑검색 캠페인'},
+    ]},
+
+  // ══════════════════════ 国内平台 ══════════════════════
+  { code:'baidu', name:'百度搜索推广（落地页通配符）', source:'baidu', type:'domestic', syntax:'google-lower', clickId:'bd_vid',
+    docs:'https://dev2.baidu.com/content?sceneType=0&pageId=100230&nodeId=332',
+    warn:'这是【落地页 URL 通配符】体系，与【应用 API 监测地址宏】（见 baidu_app_api 条目）是两套完全不同的东西，不要混用。官方规则：严格区分大小写；仅关键词与创意的访问 URL / 移动访问 URL、附加创意的 PC 与无线蹊径子链可用，显示 URL 不支持；错误通配符不予替换。⚠️ {os}/{age}/{gender} 在落地页通配符体系中不存在（设备维度只有 {device}）—— 但应用 API 监测地址里确实有 __OS_TYPE__ / __OS_VERSION__，别混淆。已下线：{pagenum} {adposition} {mediatype} {placement} {bidurl} {haoci} {abtest}。',
+    mediumOptions:['cpc','cpa','retargeting'],
+    macros:[
+      {field:'campaign_id',template:'{planid}',default:true,note:'推广计划 ID'},
+      {field:'adgroup_id',template:'{unitid}',default:true,note:'推广单元 ID（不是 groupid，那是 360 的）'},
+      {field:'ad_id',template:'{creative}',default:true,note:'创意 ID，全局唯一（不是 creativeid）'},
+      {field:'keyword',template:'{kw_enc_utf8}',default:true,note:'触发的注册关键词（UTF-8 编码），不是检索词'},
+      {field:'keyword_id',template:'{keywordid}',default:false,note:'全局唯一 ID；无对应时替换为 0'},
+      {field:'matchtype',template:'{matchtype}',default:false,note:'旧定义 1精确/2短语/3广泛；现行普遍表述 3=智能匹配'},
+      {field:'device',template:'{device}',default:false,note:'pc / mobile'},
+      {field:'is_dynamic_creative',template:'{dongtai}',default:false,note:'1=展现为动态创意 0=未展现'},
+    ]},
+  { code:'baidu_app_api', name:'百度应用API监测地址（搜索+信息流通用）', source:'baidu', type:'domestic', syntax:'baidu-dual', clickId:'__CLICK_ID__',
+    docs:'https://dev2.baidu.com/content?sceneType=0&pageId=101213&nodeId=663（信息流应用API埋码指南）',
+    warn:'✅ 已按官方《信息流-应用API埋码指南》+《百度IOS端归因升级方案 v1.9 / 2026-06》+《Android BD_VID 注入归因增强方案》核实（2026-07-29 用户提供）。\n【两种写法等价】每个宏都支持 __XXX__ 与 {{XXX}} 两种形式，本工具统一用 __XXX__。\n【宏名与参数名错位，最大的坑】__IMEI__ 下发的是 imei_md5、__ANDROIDID__ 下发的是 android_id_md5、__MAC__ 对应参数 mac1（去分隔符大写后 MD5）、__MAC1__ 对应参数 mac_md5 —— 不要按字面理解。\n【__SIGN__ 必须是 URL 最后一个参数】sign = md5(替换通配符后的完整 URL（不含 &sign=）+ akey)，标准 32 位小写。\n【链接长度】监测链接不得超过 2K，接收端字符限制建议 ≥2048，过小会导致数据接收不完整。\n【百度自动追加、无需你写的参数】ip_type=v4|v6 · actType（2=点击 3=曝光）· interactionsType（1=点击 2=有效播放 6=曝光归因）· attribution_eshow_score（曝光归因时下发，0=媒体不建议回传 1=建议回传）· 联调时的 isMock 与 tokenid。\n【v1 vs v2】v1 用 __CALLBACK_URL__；v2 不需要 CALLBACK_URL，必须有 __EXT_INFO__ 且链接上要带 callType=v2。\n【强制联调】应用 API 必须联调通过后才能投放。\n【归因优先级官方建议】Android：BD_VID > OAID > IMEI > AndroidId > IP+UA/MODEL/OS_VERSION；iOS：IDFA > CAID > 模糊归因。',
+    mediumOptions:['cpa','cpc','social','display'],
+    macros:[
+      {field:'click_id',template:'__CLICK_ID__',default:true,note:'✅ 点击或曝光唯一标识，格式 sid_time（searchID + 毫秒时间戳）'},
+      {field:'callback_url',template:'__CALLBACK_URL__',default:true,note:'✅ v1 方案必填。回传时替换 {{ATYPE}} 与 {{AVALUE}} 后加 &sign= 调用；其中 s / o / ext_info 由百度处理，透传即可'},
+      {field:'account_id',template:'__USER_ID__',default:true,note:'✅ 参数名 userid，账户 ID'},
+      {field:'campaign_id',template:'__PLAN_ID__',default:true,note:'✅ 参数名 pid，计划 ID'},
+      {field:'adgroup_id',template:'__UNIT_ID__',default:true,note:'✅ 参数名 uid，单元 ID'},
+      {field:'ad_id',template:'__IDEA_ID__',default:true,note:'✅ 参数名 aid，创意 ID'},
+      {field:'timestamp',template:'__TS__',default:true,note:'✅ unix 时间戳，毫秒'},
+      {field:'ip',template:'__IP__',default:true,note:'✅ 采集到 ipv4 则下发 ipv4，采集到 ipv6 则下发 ipv6；配合自动追加的 ip_type 判断'},
+      {field:'user_agent',template:'__UA__',default:true,note:'✅ 模糊归因主力字段（从中解析系统版本）；无值时替换为 NULL'},
+      {field:'sign',template:'__SIGN__',default:true,note:'⚠️ 必须放在 URL 最后一个参数位置。sign = md5(完整URL不含&sign= + akey)'},
+      {field:'ext_info',template:'__EXT_INFO__',default:false,note:'v2 方案必填（同时链接上要带 callType=v2）；需 urlencode，不可截断'},
+      {field:'bd_vid',template:'__BD_VID__',default:false,note:'✅ Android APK V2 签名注入归因（签名 ID 0x710987bd），100% 准确归因。需邮件申请白名单 zhzz@baidu.com;cvdb@baidu.com，且推广包须托管百度应用中心。回传时加 join_type=bd_vid&bd_vid=xxx'},
+      {field:'idfa',template:'__IDFA__',default:false,note:'✅ iOS 设备标识，原值。未授权时为 00000000-0000-0000-0000-000000000000'},
+      {field:'imei_md5',template:'__IMEI__',default:false,note:'⚠️ 宏名是 IMEI，但下发的参数名与值都是 imei_md5（客户端原始值直接 md5，不做大小写转换）。无值时为空'},
+      {field:'androidid_md5',template:'__ANDROIDID__',default:false,note:'⚠️ 宏名是 ANDROIDID，下发参数名为 android_id_md5，标准 32 位 md5。无值时为 null'},
+      {field:'oaid',template:'__OAID__',default:false,note:'✅ 原文 oaid。无值时传 null'},
+      {field:'oaid_md5',template:'__OAID_MD5__',default:false,note:'✅ 标准 32 位 md5。无值时传 null'},
+      {field:'caid',template:'__CAID__',default:false,note:'✅ urlencode 后的 JSON 数组，含 vendor（0=百度规则 1=中广协）+ generateTime + 多版本 caid。2026 新算法 20260506 已于 6/30 正式切换，20230330 版本不再返回'},
+      {field:'mac_md5_nosep',template:'__MAC__',default:false,note:'⚠️ 对应参数名 mac1：去除分隔符 : 并转大写后取 MD5'},
+      {field:'mac_md5',template:'__MAC1__',default:false,note:'⚠️ 对应参数名 mac_md5：标准 32 位 md5。无 mac 时为空'},
+      {field:'ipv6',template:'__IPV6__',default:false,note:'仅下发 ipv6 地址，未采集到时下发 NULL'},
+      {field:'os_type',template:'__OS_TYPE__',default:false,note:'✅ 安卓=2 iOS=1 鸿蒙=5。无值时替换为 NULL（旧的 OS / {{OS}} 已于 2023-03-15 下线）'},
+      {field:'os_version',template:'__OS_VERSION__',default:false,note:'✅ iOS 样例 14.4.2；Android 样例 8.1.0。无值时替换为 NULL'},
+      {field:'device_model',template:'__MODEL__',default:false,note:'✅ 客户端获取的原始设备信息，如 iPhone13,4 / EVA-AL10'},
+      {field:'screen_size',template:'__SIZE__',default:false,note:'屏幕宽高，如 840_1092。无值时替换为 null'},
+      {field:'combid',template:'__COMBID__',default:false,note:'程序化创意组合 ID'},
+      {field:'deeplink_url',template:'__DEEPLINK_URL__',default:false,note:'业务端填写的 deeplink 链接直接 encode'},
+      {field:'device_info',template:'__DEVICE_INFO__',default:false,note:'⚠️ 文档自相矛盾：信息流附录标注 2023-03-15 已下线，但 2026-06 版《IOS端归因升级方案》仍将其列为模糊归因方案二的必需字段（用于取机型）。投产前请实测'},
+    ]},
+  { code:'q360', name:'360搜索推广（落地页）', source:'q360', type:'domestic', syntax:'google-lower', clickId:'qhclickid',
+    docs:'e.360.cn 帮助中心《设置URL-URL通配符》+《360点睛-转化数据回传API对接文档 2025-07》',
+    warn:'✅ 已按两份官方文档核实（2026-07-29 用户提供）。\n【Click ID 自动拼接，无需写宏】搜索推广 oCPC 会自动在落地页 URL 追加 qhclickid，**16 位编码**。拼接位置规则：有?无# → 末尾加 &qhclickid=；有?有# → 最后一个 ? 之后、第一个 # 之前加 &；无?有# → 第一个 # 之前加 ?；无?无# → 末尾加 ?。若你的 URL 有特殊规则会影响落地页打开，需提前与 360 客服沟通。\n【产品线不可混用】搜索 qhclickid 是 16 位，PC 展示是 12 位，**传错会被当作无效数据直接丢弃**。\n【回传】POST https://convert.dop.360.cn/uploadWebConvert，data_industry = ocpc_ps_convert（PC搜索）/ ocpc_ms_convert（移动搜索）。\n【宏规则】大括号内容为规定标识不可改动，& 后的参数名可自定义；可插入创意点击链接 / 关键词 URL / 比翼子链，PC 与移动端均可用。',
+    mediumOptions:['cpc','cpa'],
+    macros:[
+      {field:'campaign_id',template:'{planid}',default:true,note:'✅ 推广计划 ID'},
+      {field:'adgroup_id',template:'{groupid}',default:true,note:'✅ 推广组 ID（百度对应的是 unitid，不可互换）'},
+      {field:'ad_id',template:'{creativeid}',default:true,note:'✅ 创意 ID（百度是 {creative}）'},
+      {field:'keyword_id',template:'{keywordid}',default:true,note:'✅ 每个关键词唯一 ID，不同组下同一关键词 ID 不同。生产投放链接已交叉验证'},
+      {field:'device',template:'{device}',default:true,note:'✅ PC 端 = pc，移动端 = mobile'},
+      {field:'account_id',template:'{userid}',default:false,note:'✅ 账户 ID。feedback_url 文档已确认 userid 存在（此前标注的"待实测"已解除）'},
+      {field:'keyword_id_legacy',template:'{wordid}',default:false,note:'⚠️ 历史遗留（2015 年 CityHash64 方案，跨组不唯一），已不在现行官方文档中。请用 {keywordid}'},
+    ]},
+  { code:'q360_display', name:'360展示广告（落地页）', source:'q360', type:'domestic', syntax:'google-lower', clickId:'sourceid',
+    docs:'《360点睛-转化数据回传API对接文档 2025-07》+ open.e.360.cn/displayapi/banner_update.html',
+    warn:'🔴🔴 **参数名冲突警告**：360 展示广告点击时，投放平台会自动在落地页 URL 上追加 **`sourceid=<12位编码>`** —— 这与本规范 Layer 1 的内部渠道号 `sourceId/sourceid` **完全同名**！同一个 URL 里会出现两个 sourceid，后端取第一个还是最后一个都会出错（要么内部渠道号被覆盖，要么拿不到 360 的 click id）。展示广告落地页**必须**把内部渠道号改成别的参数名（如 ch / channel_id）。\n【上报字段名与落地页参数名不一致】落地页上叫 `sourceid`，但回传 API 里的字段名是 **`qhclickid`**。\n【位数】展示 12 位；搜索 16 位。传错会被当作无效数据丢弃。\n【回传】data_industry = `ocpc_zs_convert`，且 **`jzqs`（展示广告主 ID）必填**，在【展示广告→实用工具→API对接→落地页API】获取。\n【共享账户】PC 展示需发邮件 g-FAQ-PC@360.cn 申请，不像搜索/移动可自动共享。\n⚠️ 下列花括号宏来自 open.e.360.cn 的 banner_update API 请求示例（非官方宏定义表），取值语义与层级官方未说明，`{qaid}` 语义未知。',
+    mediumOptions:['display','cpm','cpa','social'],
+    macros:[
+      {field:'creative_id',template:'{creativeid}',default:true,note:'⚠️ 来源为官方 API 示例'},
+      {field:'banner_id',template:'{bannerid}',default:true,note:'⚠️ 物料/banner ID，注意无下划线'},
+      {field:'click_id',template:'{clickid}',default:false,note:'⚠️ 官方示例参数名 qhclickid。注意落地页的 12 位 click id 是平台自动以 sourceid= 追加的，不需要写宏'},
+      {field:'impression_id',template:'{impression_id}',default:false,note:'⚠️ 来源为官方 API 示例'},
+      {field:'exchange_id',template:'{exchange_id}',default:false,note:'⚠️ 交易/ADX ID'},
+      {field:'source_id',template:'{source_id}',default:false,note:'⚠️ 流量来源 ID，官方示例参数名 mvosr。注意与自动追加的 sourceid 不是一回事'},
+      {field:'query',template:'{query}',default:false,note:'⚠️ 检索词'},
+      {field:'keyword_id',template:'{keywordid}',default:false},
+      {field:'qaid',template:'{qaid}',default:false,note:'⚠️ 官方示例中出现，语义未知'},
+    ]},
+  { code:'q360_mobile', name:'360移动推广（落地页）', source:'q360', type:'domestic', syntax:'q360-lower-macro', clickId:'impression_id',
+    docs:'《360点睛-转化数据回传API对接文档 2025-07》3.3 / 5.10',
+    warn:'✅ 已按官方文档核实（2026-07-29）。\n【与搜索/展示不同：需要手动写宏】移动推广**不会**自动拼接，必须由广告主在落地页链接里加 `&impression_id=__impression_id__`；用户点击后 360 才会替换该参数值。\n【语法是小写双下划线】`__impression_id__` —— 注意与搜索推广的花括号 `{planid}` 是两套完全不同的语法，不可混用。\n【位数】impression_id 为 **16 或 19 位**编码。\n【回传】data_industry = `ocpc_web_convert`，回传字段名是 **`impression_id`**（不是 qhclickid），其他产品线不需要该值。\n【转化类型受限】移动推广只支持 SUBMIT / CALL / ADVISORY / SITEDOWNLOAD 四种，其余全部为 ×。\n【入口】移动推广→实用工具→转化跟踪→新建转化→落地页API 获取 Key / Secret。',
+    mediumOptions:['cpa','cpc','display','social'],
+    macros:[
+      {field:'impression_id',template:'__impression_id__',default:true,note:'✅ 唯一归因键，必须手动加。小写双下划线，16 或 19 位'},
+    ]},
+  { code:'q360_feedback', name:'360搜索点击下发（feedback_url）', source:'q360', type:'domestic', syntax:'q360-mixed-macro', clickId:'__UniqueID__',
+    docs:'《360点睛-转化数据回传API对接文档 2025-07》第二部分 · 搜索点击下发形式',
+    warn:'✅ 已按官方文档核实（2026-07-29）。这是与「网页转化数据 API」并列的**另一条链路**，适用于 **app 内 / pc 软件内**的转化上报。\n【方向】360 在用户点击时实时 GET 你的 feedback_url 下发点击信息；你匹配到转化后再请求 callback_url 回传。\n【语法陷阱：大小写混用】`__UniqueID__` 是驼峰、`__IP__` `__UA__` `__IDFA__` 全大写、其余全小写 —— 必须逐字照抄，不可统一大小写。\n【回传】`GET https://convert.dop.360.cn/ms/third?qhclickid=...&event=...&trans_id=...&value=...&event_time=...&request_time=...&qid=...&sendVer=10`。官方特别说明：产生转化时需把参数值 **`__event__` 整个替换**为枚举值（含双下划线一起替换）；`qhclickid` / `qid` / `sendVer` 无需广告主替换。\n【兜底规则】clicktime 未被替换时取收到点击数据的时间；IP 未被替换时取收到的客户端 IP。',
+    mediumOptions:['cpa','cpc'],
+    macros:[
+      {field:'unique_id',template:'__UniqueID__',default:true,note:'✅ 必填。广告点击的唯一标识。注意是驼峰 UniqueID'},
+      {field:'click_time',template:'__clicktime__',default:true,note:'✅ 必填。UTC 秒级时间戳。未被替换时请取收到点击数据的时间'},
+      {field:'ip',template:'__IP__',default:true,note:'✅ 必填，全大写。媒体客户端获取的用户终端 IP。未被替换时请取收到的客户端 IP'},
+      {field:'user_agent',template:'__UA__',default:true,note:'✅ 必填，全大写'},
+      {field:'callback_url',template:'__callback_url__',default:true,note:'✅ 必填，小写。转化回调地址，URLcode 编码'},
+      {field:'oaid_md5',template:'__oaid_md5__',default:false,note:'✅ 必填（仅移动搜索）。md5 加密后的设备 oaid'},
+      {field:'imei_md5',template:'__imei_md5__',default:false,note:'✅ 必填（仅移动搜索）。md5 加密后的设备 imei'},
+      {field:'idfa',template:'__IDFA__',default:false,note:'✅ 必填（仅移动搜索），全大写。设备 IDFA 号'},
+      {field:'account_id',template:'__userid__',default:false,note:'✅ 账户 ID'},
+      {field:'campaign_id',template:'__planid__',default:false,note:'✅ 计划 ID'},
+      {field:'adgroup_id',template:'__groupid__',default:false,note:'✅ 推广组 ID'},
+      {field:'ad_id',template:'__creativeid__',default:false,note:'✅ 创意 ID'},
+      {field:'keyword',template:'__keyword__',default:false,note:'✅ **关键词词面** —— 推翻此前"360 不明文提供关键词文本"的判断，feedback_url 链路确实下发明文关键词'},
+      {field:'keyword_id',template:'__keywordid__',default:false,note:'✅ 关键词 ID'},
+    ]},
+  { code:'gdt', name:'腾讯广告/广点通（点击监测）', source:'gdt', type:'domestic', syntax:'bytedance-macro', clickId:'gdt_vid',
+    docs:'https://datanexus.qq.com/doc/develop/guider/interface/conversion/ad_track_click',
+    warn:'⚠️ 架构与其他平台不同，腾讯有两条链路：①【点击/曝光监测链接】腾讯服务端 GET 你的服务器，用下列宏；②【落地页 URL】腾讯自动追加 gdt_vid / qz_gdt。注意：落地页 URL 里也可以手动写宏（生产投放已验证 __DYNAMIC_CREATIVE_ID__ / __ADGROUP_NAME__ / __CLICK_ID__ / __SITE_SET_NAME__ 等可正常替换），但官方宏定义表是按监测链接场景写的。落地页只自动追加 gdt_vid（微信流量：朋友圈/公众号/小程序/小游戏/视频号）或 qz_gdt（非微信：QQ/看点/优量汇）—— 先取 gdt_vid，取不到再取 qz_gdt。官方不建议把点击下发的 id 与 gdt_vid 直接匹配，如需匹配请用 __REQUEST_ID__ / __IMPRESSION_ID__ 对齐。__PLATFORM__ / __OS_VERSION__ / __CONNECTION_TYPE__ / __PLACEMENT_ID__ / __SITE_SET__ 均不存在，已修正。约束：不能含 #；必须 http/https 正式域名不能用 IP；https 不支持 SNI；转化生效后只允许改宏不允许改域名。',
+    mediumOptions:['social','cpm','cpa','video','display'],
+    macros:[
+      {field:'click_id',template:'__CLICK_ID__',default:true,note:'必填（全载体）'},
+      {field:'click_time',template:'__CLICK_TIME__',default:true,note:'必填，秒级'},
+      {field:'account_id',template:'__ACCOUNT_ID__',default:true,note:'必填（全载体）'},
+      {field:'callback',template:'__CALLBACK__',default:true,note:'必填（DataNexus 版）。URL-encode 值，decode 一次后作 POST url'},
+      {field:'adgroup_id',template:'__ADGROUP_ID__',default:true,note:'新版中这才是"广告 id"'},
+      {field:'adgroup_name',template:'__ADGROUP_NAME__',default:false},
+      {field:'campaign_id',template:'__CAMPAIGN_ID__',default:false,note:'仅旧版广告'},
+      {field:'ad_id',template:'__AD_ID__',default:false,note:'仅旧版；实际是创意 id'},
+      {field:'dynamic_creative_id',template:'__DYNAMIC_CREATIVE_ID__',default:false,note:'仅新版'},
+      {field:'creative_id',template:'__CREATIVE_ID__',default:false,note:'🔍 生产投放链接中观察到（liblib.tv sourceid=080015），官方 DataNexus 宏表未收录。投产前请确认是否被正确替换'},
+      {field:'image_id',template:'__IMAGE_ID__',default:false,note:'🔍 素材层：图片 ID。生产投放链接中观察到，官方宏表未收录 —— 若有效则这是腾讯少数的素材级宏，值得重点验证'},
+      {field:'video_id',template:'__VIDEO_ID__',default:false,note:'🔍 素材层：视频 ID。生产投放链接中观察到，官方宏表未收录 —— 同上，值得重点验证'},
+      {field:'aid',template:'__AID__',default:false,note:'🔍 生产投放链接中作为 ad_id 使用，官方宏表未收录（官方对应字段是 __ADGROUP_ID__）。疑似无效，请核对实际替换结果'},
+      {field:'creative_components_info',template:'__CREATIVE_COMPONENTS_INFO__',default:false,note:'JSON，被点击的创意组件；可能返回 AIGC 衍生素材'},
+      {field:'element_info',template:'__ELEMENT_INFO__',default:false,note:'JSON，被曝光的全部素材'},
+      {field:'material_package_id',template:'__MATERIAL_PACKAGE_ID__',default:false,note:'素材标签 ID'},
+      {field:'creative_type',template:'__AD_TYPE__',default:false,note:'1=普通 2=动态创意 7=动态元素'},
+      {field:'site_set_name',template:'__SITE_SET_NAME__',default:false,note:'SITE_SET_MOMENTS / SITE_SET_WECHAT / SITE_SET_CHANNELS / SITE_SET_MOBILE_UNION / SITE_SET_SMART'},
+      {field:'position_id',template:'__ENCRYPTED_POSITION_ID__',default:false,note:'仅联盟白名单账户下发'},
+      {field:'marketing_goal',template:'__MARKETING_GOAL__',default:false,note:'枚举 MARKETING_GOAL_*'},
+      {field:'marketing_carrier_id',template:'__MARKETING_CARRIER_ID__',default:false,note:'一级营销载体'},
+      {field:'smart_project_id',template:'__SMART_PROJECT_ID__',default:false,note:'智投项目 ID'},
+      {field:'promoted_object_id',template:'__PROMOTED_OBJECT_ID__',default:false,note:'应用类必填；投放小程序时不下发'},
+      {field:'promoted_object_type',template:'__PROMOTED_OBJECT_TYPE__',default:false,note:'12=Android 19=iOS 43=线索 46=微信小游戏 1000=网页'},
+      {field:'billing_event',template:'__BILLING_EVENT__',default:false,note:'1CPC 2CPA 3CPS 4CPM 5CPD'},
+      {field:'ad_platform_type',template:'__AD_PLATFORM_TYPE__',default:false,note:'1=GDT 5=经微信MP投放 9=移动联盟SSP'},
+      {field:'page_url',template:'__PAGE_URL__',default:false,note:'官方推荐用于区分同广告下多落地页'},
+      {field:'deeplink_url',template:'__DEEPLINK_URL__',default:false,note:'Android only'},
+      {field:'universal_link',template:'__UNIVERSAL_LINK__',default:false,note:'iOS only'},
+      {field:'keyword_id',template:'__KEYWORD_ID__',default:false,note:'搜索广告，仅旧版文档'},
+      {field:'keyword',template:'__KEYWORD_TEXT__',default:false,note:'搜索广告，仅旧版文档'},
+      {field:'device_os',template:'__DEVICE_OS_TYPE__',default:false,note:'ios / android / harmony；应用类必填'},
+      {field:'os_version',template:'__DEVICE_OS_VERSION__',default:false,note:'正确写法（不是 __OS_VERSION__）'},
+      {field:'device_model',template:'__MODEL__',default:false,note:'网页载体不可用'},
+      {field:'request_id',template:'__REQUEST_ID__',default:false,note:'可与 gdt_vid 匹配'},
+      {field:'impression_id',template:'__IMPRESSION_ID__',default:false,note:'可与 gdt_vid 匹配'},
+      {field:'wechat_openid',template:'__WECHAT_OPEN_ID__',default:false,note:'字段名 wechat_openid，宏多一个下划线；公众号/企微不可用'},
+      {field:'ip',template:'__IP__',default:false,note:'小程序不可用'},
+      {field:'user_agent',template:'__USER_AGENT__',default:false,note:'小程序不可用'},
+    ]},
+  { code:'gdt_impression', name:'腾讯广告/广点通（曝光监测）', source:'gdt', type:'domestic', syntax:'bytedance-macro', clickId:'gdt_vid',
+    docs:'https://datanexus.qq.com/doc/develop/guider/interface/conversion/ad_track_impress',
+    warn:'曝光监测宏集 = 点击监测去掉 __CLICK_ID__ / __CLICK_TIME__ / __CLICK_SKU_ID__，换为 __IMPRESSION_ID__ / __IMPRESSION_TIME__ / __IMPRESSION_SKU_ID__，其余一致。',
+    mediumOptions:['cpm','display','social','video'],
+    macros:[
+      {field:'impression_id',template:'__IMPRESSION_ID__',default:true},
+      {field:'impression_time',template:'__IMPRESSION_TIME__',default:true},
+      {field:'account_id',template:'__ACCOUNT_ID__',default:true},
+      {field:'adgroup_id',template:'__ADGROUP_ID__',default:true},
+      {field:'element_info',template:'__ELEMENT_INFO__',default:false,note:'JSON，被曝光的全部素材'},
+      {field:'site_set_name',template:'__SITE_SET_NAME__',default:false},
+      {field:'impression_sku_id',template:'__IMPRESSION_SKU_ID__',default:false},
+      {field:'device_os',template:'__DEVICE_OS_TYPE__',default:false},
+      {field:'request_id',template:'__REQUEST_ID__',default:false},
+    ]},
+  { code:'douyin', name:'巨量引擎 / 抖音广告', source:'douyin', type:'domestic', syntax:'bytedance-macro', clickId:'clickid',
+    docs:'https://event-manager.oceanengine.com/docs/8650/track_url_doc',
+    warn:'✅ 已按官方《巨量 URL 规范》参数列表逐条核实（2026-07-29 用户提供）。\n【升级版 vs 原版】PROJECT_ID / PROMOTION_ID / MID1~MID6 仅巨量营销升级版支持；AID / AID_NAME / CID / CID_NAME / CAMPAIGN_ID / CAMPAIGN_NAME / CTYPE 是原版宏，官方原文："升级版迁移过渡期暂会保留该字段，建议您在投放升级版时可忽略或不添加该宏参"。\n【层级易错】AID = 营销计划 id（不是 campaign）；CAMPAIGN_ID = 计划组 id；CID = 营销创意 id（长整型，超 int32 必须按 int64 存）。\n【串联落地页与监测链接】用 __TRACK_ID__ —— 在落地页和监测链接上都添加该宏后匹配即可（官方 FAQ 明确推荐）。\n【展示监测不支持双 IP】IPV4 / IPV6 / ADVERTISER_ID 仅"有效触点"支持，展示监测不支持；展示场景请用 __IP__。\n【销售线索收集不下发设备宏】营销目的 = 销售线索收集时，IDFA / IDFA_MD5 / ANDROIDID / OAID / OAID_MD5 / CAID 均不下发。\n【CAID】建议用 __CAID__（含最新两版本 + 版本号的 urlencode JSON），__CAID_MD5__ 当前仅星图业务支持。CAID 下发范围：竞价仅支持 ocpm 和 cpc。\n【监测域名须企业备案】无企业备案的域名会被拒绝，报"该监测链接域名无企业备案"。\n【格式约束】必须全大写否则不替换；域名需同时支持 IPv4 & IPv6；不能是下载链接；总长 ≤10K；非法字符含孤立 % / 空格 / path 中连续 //。落地页 clickid 有效期 21 天。',
+    mediumOptions:['social','cpm','cpa','video'],
+    macros:[
+      {field:'project_id',template:'__PROJECT_ID__',default:true,note:'✅ 升级版项目 ID，如 7074140945750507528。有效触点、展示均支持'},
+      {field:'promotion_id',template:'__PROMOTION_ID__',default:true,note:'✅ 升级版营销 ID。有效触点、展示均支持'},
+      {field:'site_set',template:'__CSITE__',default:true,note:'✅ 营销投放位置：今日头条 1-10000 与 80000-110001；西瓜视频 10001-10099；火山小视频 30001-30099；抖音 40001-40099；番茄小说 26001-26099；穿山甲开屏 800000000；穿山甲网盟非开屏 900000000；通投版位 33013；搜索 38016'},
+      {field:'callback_param',template:'__CALLBACK_PARAM__',default:true,note:'✅ 加密字符串，调用事件回传接口时使用（≠ 落地页自动注入的 clickid）'},
+      {field:'timestamp',template:'__TS__',default:true,note:'✅ 客户端营销点击事件时间，毫秒时间戳，如 1575194434000'},
+      {field:'track_id',template:'__TRACK_ID__',default:true,note:'✅ 请求下发 id & 创意 id 的 md5，16 位，如 b2f97be5b363764d。官方推荐用于串联落地页与监测链接'},
+      {field:'project_name',template:'__PROJECT_NAME__',default:false,note:'✅ 升级版项目名称'},
+      {field:'promotion_name',template:'__PROMOTION_NAME__',default:false,note:'✅ 升级版营销名称'},
+      {field:'material_image_id',template:'__MID1__',default:false,note:'✅ 仅升级版：图片素材宏参数（下发原始素材 id）'},
+      {field:'material_title_id',template:'__MID2__',default:false,note:'✅ 仅升级版：标题素材宏参数'},
+      {field:'material_video_id',template:'__MID3__',default:false,note:'✅ 仅升级版：视频素材宏参数'},
+      {field:'material_playable_id',template:'__MID4__',default:false,note:'✅ 仅升级版：搭配 playable 试玩落地页素材宏参数'},
+      {field:'material_landing_id',template:'__MID5__',default:false,note:'✅ 仅升级版：落地页素材宏参数'},
+      {field:'material_download_id',template:'__MID6__',default:false,note:'✅ 仅升级版：安卓下载详情页素材宏参数'},
+      {field:'ad_id',template:'__AID__',default:false,note:'⚠️ 原版宏：营销计划 id（不是 campaign），如 1645988237525045。升级版建议忽略'},
+      {field:'ad_name',template:'__AID_NAME__',default:false,note:'⚠️ 原版宏：营销计划名称'},
+      {field:'creative_id',template:'__CID__',default:false,note:'⚠️ 原版宏：营销创意 id，长整型。升级版建议忽略'},
+      {field:'creative_name',template:'__CID_NAME__',default:false,note:'⚠️ 原版宏：营销创意名称'},
+      {field:'campaign_id',template:'__CAMPAIGN_ID__',default:false,note:'⚠️ 原版宏：计划组 id，如 1651688272934434'},
+      {field:'campaign_name',template:'__CAMPAIGN_NAME__',default:false,note:'⚠️ 原版宏：计划组名称'},
+      {field:'creative_type',template:'__CTYPE__',default:false,note:'⚠️ 原版宏：创意样式 2=小图 3=大图 4=组图 5=视频。升级版建议忽略'},
+      {field:'advertiser_id',template:'__ADVERTISER_ID__',default:false,note:'✅ 客户 id。仅"有效触点"支持，展示监测不支持'},
+      {field:'convert_id',template:'__CONVERT_ID__',default:false,note:'✅ 转化 id，如 1681681272671401'},
+      {field:'request_id',template:'__REQUEST_ID__',default:false,note:'✅ 请求下发的 id，如 20191202180607010026077068090BA60A'},
+      {field:'callback_url',template:'__CALLBACK_URL__',default:false,note:'✅ 直接生成好的事件回传 url，可直接使用'},
+      {field:'union_site',template:'__UNION_SITE__',default:false,note:'✅ 对外投放版位编码，如 2045891290'},
+      {field:'product_id_inner',template:'__PRODUCTID__',default:false,note:'✅ 商品 id，仅支持站内（不支持穿山甲）'},
+      {field:'product_id_outer',template:'__OUTERID__',default:false,note:'✅ 商品 id，同时支持站内和穿山甲'},
+      {field:'os',template:'__OS__',default:false,note:'✅ 安卓=0 iOS=1 鸿蒙=2 其他=3（注意：2 是鸿蒙不是 WP）'},
+      {field:'device_model',template:'__MODEL__',default:false,note:'✅ 如 iPhone12,2（urlencode 后 iPhone12%2c2）、SM-A750GN'},
+      {field:'user_agent',template:'__UA__',default:false,note:'✅ 经过 url encode'},
+      {field:'language',template:'__SL__',default:false,note:'✅ 这次请求的语言，如 zh'},
+      {field:'geo',template:'__GEO__',default:false,note:'✅ 十进制保留 1 位小数，西经南纬为负，用 x 分割，先纬后经最后精度，如 35.7x122.4x100.0'},
+      {field:'city_code',template:'__CITY_CODE__',default:false,note:'✅ 地理位置信息，代表城市'},
+      {field:'ip',template:'__IP__',default:false,note:'✅ [0727 生效] 正常全量下发 IPv4；极少数 IPv4 无法取数时下发 IPv6。展示监测请用此宏'},
+      {field:'ipv4',template:'__IPV4__',default:false,note:'✅ 仅"有效触点"支持，展示监测不支持双 IP 方案'},
+      {field:'ipv6',template:'__IPV6__',default:false,note:'✅ 仅"有效触点"支持，展示监测不支持双 IP 方案'},
+      {field:'idfa',template:'__IDFA__',default:false,note:'✅ iOS 6+ 设备 id，32 位。用户关闭权限时全为 0。销售线索收集目的不下发'},
+      {field:'idfa_md5',template:'__IDFA_MD5__',default:false,note:'✅ 32 位 md5。销售线索收集目的不下发'},
+      {field:'androidid_md5',template:'__ANDROIDID__',default:false,note:'⚠️ 官方定义是"安卓 id 原值的 md5，32 位" —— 宏名无 _MD5 但下发的是 md5。销售线索收集目的不下发'},
+      {field:'oaid',template:'__OAID__',default:false,note:'✅ Android Q+ 设备号，32 位。无法获取时传空字符串。销售线索收集目的不下发'},
+      {field:'oaid_md5',template:'__OAID_MD5__',default:false,note:'✅ 32 位 md5。仅有效触点。销售线索收集目的不下发'},
+      {field:'caid',template:'__CAID__',default:false,note:'✅ 推荐使用。含最新两个版本的 CAID 与版本号，urlencode 后的 JSON 字符串。与 CAID1/CAID2 信息一致，用一种即可'},
+      {field:'caid_md5',template:'__CAID_MD5__',default:false,note:'⚠️ 当前仅星图业务支持，营销业务暂不支持'},
+      {field:'imei',template:'__IMEI__',default:false,note:'⚠️ 未出现在官方参数列表中，投产前请实测'},
+      {field:'imei_md5',template:'__IMEI_MD5__',default:false,note:'⚠️ 未出现在官方参数列表中，投产前请实测'},
+    ]},
+  { code:'kuaishou', name:'快手/磁力引擎（DSP 效果）', source:'kuaishou', type:'domestic', syntax:'bytedance-macro', clickId:'callback',
+    docs:'https://open.kuaishou.com/miniGameDocs/operation/DSP/DSP-IAA',
+    warn:'⚠️ 快手 DSP 有宏白名单校验 —— 官方 FAQ 原文"不能使用不在列表里面的占位符，比如：__OS__"。__PLATFORM__ / __OS_VERSION__ / __GENDER__ / __AGE__ 填入会直接校验失败，已移除。__ACCOUNTID__ 中间无下划线（不是 __ACCOUNT_ID__）；__CALLBACK__ 不可写成 __CALL_BACK__。__CID__ 示例值超 int32，必须按 int64 存。落地页/小程序 deeplink 的 callback 由系统自动拼接，第三方监测链接场景才需手写 __CALLBACK__。官方明确"创意层级的监测作为广告相关信息下发，不影响归因"。',
+    mediumOptions:['social','cpm','cpa','video'],
+    macros:[
+      {field:'campaign_id',template:'__DID__',default:true,note:'计划 ID（campaign 层）'},
+      {field:'adgroup_id',template:'__AID__',default:true,note:'广告组 ID（unit 层）'},
+      {field:'creative_id',template:'__CID__',default:true,note:'创意 ID；超 int32，须按 int64 存'},
+      {field:'callback',template:'__CALLBACK__',default:true,note:'必填；不可写成 __CALL_BACK__'},
+      {field:'campaign_name',template:'__DNAME__',default:false,note:'⚠️ 官方文档正文写作 __Dname__（混合大小写），属官方笔误，请按官方原样使用'},
+      {field:'account_id',template:'__ACCOUNTID__',default:false,note:'中间无下划线'},
+      {field:'ip',template:'__IP__',default:false},
+      {field:'user_agent',template:'__UA__',default:false},
+      {field:'oaid',template:'__OAID__',default:false,note:'保留原值，不需 MD5'},
+      {field:'oaid_md5',template:'__OAID2__',default:false},
+      {field:'imei_md5',template:'__IMEI2__',default:false,note:'小写后 md5'},
+      {field:'idfa_md5',template:'__IDFA2__',default:false,note:'大写后 md5'},
+      {field:'androidid_md5',template:'__ANDROIDID2__',default:false,note:'小写后 md5'},
+      {field:'gaid_md5',template:'__ADVERTISIINGID2__',default:false,note:'⚠️ 拼写就是 ADVERTISIING（多一个 I），快手官方拼写错误，必须原样使用'},
+      {field:'mac_md5',template:'__MAC2__',default:false},
+    ]},
+  { code:'kuaishou_brand', name:'快手品牌广告（MMA 监测）', source:'kuaishou', type:'domestic', syntax:'bytedance-macro', clickId:'',
+    docs:'https://www.kuai-ad.com/jd/5233.html',
+    warn:'品牌广告走 MMA 标准，是与 DSP 效果广告完全独立的宏池。监测事件：展示 / 点击（异步）/ 播放 / 有效播放 / 播完。',
+    mediumOptions:['cpm','video','display'],
+    macros:[
+      {field:'os',template:'__OS__',default:true},
+      {field:'user_agent',template:'__UA__',default:true},
+      {field:'ip',template:'__IP__',default:true},
+      {field:'timestamp',template:'__TS__',default:true,note:'毫秒'},
+      {field:'geo',template:'__GEO__',default:false},
+      {field:'device_id',template:'__BDID__',default:false,note:'快手 did，64 位 hex'},
+    ]},
+  { code:'zhihu', name:'知乎广告', source:'zhihu', type:'domestic', syntax:'bytedance-macro', clickId:'',
+    docs:'https://zhstatic.zhihu.com/commercial/bidding/%E5%BA%94%E7%94%A8%E4%B8%8B%E8%BD%BDAPI%E8%BD%AC%E5%8C%96%E8%B7%9F%E8%B8%AA%E6%96%87%E6%A1%A35.pdf',
+    warn:'⚠️ 知乎全部使用 __XXX__（官方原文："宏参数均为大写，且参数前后均为两个连续的英文字符下划线"），不存在 {xxx} 语法 —— 原配置的花括号宏与 {position} 全部错误已修正/移除。知乎没有自动追加的 click id，必须手写 __CALLBACK__。落地页 CALLBACK 的参数名必须是 cb；一个落地页链接只能有一个 ?；实际投放的落地页也必须包含该参数。非友盟/AppsFlyer/Talkingdata 的第三方监测链接必须包含 zhs2s=1（2024-01 升级，老链接需在尾部加 &zhs2s=1）。联调环境差异：AndroidID 为原值非 md5、__OS__ 下发字符串 ios/android、IP 与 UA 不下发。',
+    mediumOptions:['cpc','cpa','display','social'],
+    macros:[
+      {field:'campaign_id',template:'__CAMPAIGN__',default:true,note:'计划 ID（不是 __CAMPAIGN_ID__）'},
+      {field:'creative_id',template:'__CREATIVE__',default:true,note:'创意 ID（不是 __CREATIVE_ID__）'},
+      {field:'callback',template:'__CALLBACK__',default:true,note:'回传必填，urlencode；落地页参数名必须是 cb'},
+      {field:'session_id',template:'__SESSIONID__',default:false,note:'请求唯一 ID，uuid'},
+      {field:'os',template:'__OS__',default:false,note:'Android=0 iOS=1（联调下发字符串 ios/android）'},
+      {field:'ip',template:'__IP__',default:false},
+      {field:'user_agent',template:'__UA__',default:false,note:'urlencode；知乎会向 UA 添加 zhihu 信息'},
+      {field:'timestamp',template:'__TS__',default:false,note:'UTC 秒级'},
+      {field:'imei_md5',template:'__IMEI__',default:false,note:'原值小写后 md5，不支持原值'},
+      {field:'idfa_md5',template:'__IDFA__',default:false,note:'原值大写后 md5，不支持原值'},
+      {field:'oaid',template:'__OAID__',default:false,note:'原值'},
+      {field:'androidid_md5',template:'__ANDROIDID__',default:false,note:'原值小写后 md5'},
+    ]},
+  { code:'uc', name:'超级汇川 / UC广告（广告主侧）', source:'uc', type:'domestic', syntax:'uc-auto', clickId:'uctrackid',
+    docs:'https://www.uc-ad.com/jd/572.html',
+    warn:'⚠️ 汇川自动向该账户下全部落地页 URL 追加 uctrackid，无需写宏（搜索/卧龙侧同义字段为 clickid）。广告主须保证转化发生时值不变、回传时原样带回；首次使用需在后台确认「信息追加」条款。转化与 5 天内的点击拼接。⚠️ 广告主侧完整宏表不存在公开文档：官方 PDF 返回 0 字节、SPA 全部空壳。{UCTRACKID} 创意层写法多个第三方一致引用但官方原文未抓到。不要假设与东风的 __XXX__ 宏相同 —— 无任何证据。单计划最多 5 个落地页，官方称"每个页面都追加上组/计划/创意 ID"但未给出宏 token 名。',
+    mediumOptions:['cpc','cpa','display','social'],
+    macros:[
+      {field:'click_id',template:'{UCTRACKID}',default:true,note:'⚠️ 创意层写法，官方原文未抓到；落地页通常由平台自动追加 uctrackid=，无需手填'},
+    ]},
+  { code:'uc_dongfeng', name:'阿里妈妈东风（媒体接入侧）', source:'uc', type:'domestic', syntax:'bytedance-macro', clickId:'',
+    docs:'https://g.alicdn.com/mm/media/df/doc/tracking/details.html',
+    warn:'⚠️ 东风是买方/卖方另一端（媒体/流量方 → 阿里妈妈上报），方向与广告主侧的超级汇川相反，不要混用。除宏替换外不得修改或转码链接任何字符，否则加密校验失败。点击监测链接最大 500 字符。设备号取不到时禁止填默认值（null / 0 / 02:00:00:00:00:00 一律按无效流量过滤）。东风无 campaign/adgroup/creative id 宏、无 click_id 宏、无 callback 宏 —— 广告位信息编码在加密的 e= 参数里。',
+    mediumOptions:['cpm','cpc','display'],
+    macros:[
+      {field:'ip',template:'__IP__',default:true,note:'a1，必填；支持 IPv4/6；不可为私有网段'},
+      {field:'os',template:'__OS__',default:true,note:'a2，移动端必填；iOS=1 Android=2'},
+      {field:'user_agent',template:'__UA__',default:true,note:'a8，必填；优先取 WebView UA；取不到则不回传，禁止自定义'},
+      {field:'timestamp',template:'__TS__',default:true,note:'a9，必填；秒级整数'},
+      {field:'idfa',template:'__IDFA__',default:false,note:'a3，iOS 可获取时必填；36 位带连字符大写'},
+      {field:'imei',template:'__IMEI__',default:false,note:'a4，与 md5 二选一'},
+      {field:'imei_md5',template:'__IMEI_MD5__',default:false,note:'a5，32 位'},
+      {field:'oaid',template:'__OAID__',default:false,note:'a6，可获取时必填；明文'},
+      {field:'mac',template:'__MAC__',default:false,note:'a7，OTT 必填；加密前去分隔符 + 转大写'},
+      {field:'androidid',template:'__ANDROIDID__',default:false,note:'a17'},
+      {field:'ali_aaid',template:'__ALI_AAID__',default:false,note:'a26，iOS 可获取时必填；需集成阿里 SDK'},
+      {field:'caid',template:'__CAID__',default:false,note:'a27，中广协 CAID；格式 版本号_值，无版本号用 0；多个用 , 拼接后整体 URLEncode'},
+    ]},
+  { code:'weibo', name:'微博广告（点击监测）', source:'weibo', type:'domestic', syntax:'weibo-curly', clickId:'mark_id',
+    docs:'https://developers.biz.weibo.com/docs/track/guide.md',
+    warn:'⚠️ 大小写混用是最大坑：{ad_id} / {creative_id} / {oaid} / {ip} / {ua} 小写，{AD_NAME} / {CREATIVE_NAME} / {CAMPAIGN_ID} / {MODEL} / {IMP} 大写。落地页/网页场景微博自动拼接 mark_id，只允许 urlencode 一次 —— 302 跳转会自动再 encode，是 markid format error (10012) 的头号原因。APP 激活场景用 {IMP}。旧宏 {CAID} 已作废会被替换为空，改用 {RY_CAID} / {GX_CAID}。原配置的 __IP__ __TS__ __OS__ __IDFA__ __MAC__ 实际是阿里妈妈东风的宏，不是微博的，已修正。服务器需放行微博出口 IP 白名单。',
+    mediumOptions:['social','cpm','cpa'],
+    macros:[
+      {field:'ad_id',template:'{ad_id}',default:true,note:'计划层，小写'},
+      {field:'creative_id',template:'{creative_id}',default:true,note:'创意层，小写'},
+      {field:'ip',template:'{ip}',default:true,note:'强烈建议；优先下发 IPv6'},
+      {field:'user_agent',template:'{ua}',default:true,note:'强烈建议；URLEncode；联调阶段不下发'},
+      {field:'click_time',template:'{clicktime}',default:true,note:'13 位毫秒'},
+      {field:'campaign_id',template:'{CAMPAIGN_ID}',default:false,note:'系列层，大写'},
+      {field:'campaign_name',template:'{CAMPAIGN_NAME}',default:false},
+      {field:'ad_name',template:'{AD_NAME}',default:false,note:'大写'},
+      {field:'creative_name',template:'{CREATIVE_NAME}',default:false,note:'大写'},
+      {field:'customer_id',template:'{CUSTOMER_ID}',default:false,note:'广告主层'},
+      {field:'device_type',template:'{devicetype}',default:false,note:'android / ios'},
+      {field:'os_version',template:'{osversion}',default:false,note:'如 android4.4.4、ios11.4.1'},
+      {field:'device_model',template:'{MODEL}',default:false,note:'如 vivovivo+X21'},
+      {field:'language',template:'{LANGUAGE}',default:false,note:'zh_CN / zh-hans-CN'},
+      {field:'ipv4',template:'{ipv4}',default:false,note:'仅 IPv4 站点用'},
+      {field:'oaid',template:'{oaid}',default:false},
+      {field:'oaid_md5',template:'{oaid_MD5}',default:false,note:'MD5 后转大写'},
+      {field:'imei_md5',template:'{imei_MD5}',default:false,note:'字母转小写 → MD5 → 再转大写（与 iOS 相反）'},
+      {field:'idfa_md5',template:'{idfa_MD5}',default:false,note:'大写带连字符 → MD5 → 再转大写'},
+      {field:'androidid_md5',template:'{androidid_MD5}',default:false,note:'仅支持安卓 8 以下替换'},
+      {field:'mac_md5',template:'{mac_MD5}',default:false,note:'转大写后 MD5'},
+      {field:'caid_ry',template:'{RY_CAID}',default:false,note:'热云 CAID（{CAID} 已作废）'},
+      {field:'caid_gx',template:'{GX_CAID}',default:false,note:'中广协 CAID，ver_caid,ver_caid，每次传两个'},
+      {field:'ali_aaid',template:'{ALI_AAID}',default:false},
+    ]},
+  { code:'weibo_app', name:'微博广告（APP 激活）', source:'weibo', type:'domestic', syntax:'weibo-curly', clickId:'IMP',
+    docs:'https://developers.biz.weibo.com/docs/track/auth_activate.md',
+    warn:'APP 激活链路的核心是 {IMP}（新版 __CALLBACK_PARAM__），第三方必须原样带回；小程序场景参数名为 imp。回传端点 GET https://appmonitor.biz.weibo.com/sdkserver/active，company 由联调后台分配且分配后不可修改；激活 + 后续行为需回传两次。官方建议：安卓务必同时加 imei_md5 + oaid + androidid_MD5（命中任一即回传），并加 ip + ua 做模糊归因；iOS 14+ 无 IDFA 时用 RY_CAID / GX_CAID / ALI_AAID 三选。',
+    mediumOptions:['cpa','social','cpm'],
+    macros:[
+      {field:'imp',template:'{IMP}',default:true,note:'必填，激活回传必须原样带回'},
+      {field:'idfa_md5',template:'{idfa_MD5}',default:true,note:'iOS 激活必须'},
+      {field:'imei_md5',template:'{imei_MD5}',default:true,note:'Android 激活必须'},
+      {field:'oaid',template:'{oaid}',default:true,note:'Android 激活必须'},
+      {field:'oaid_md5',template:'{oaid_MD5}',default:true,note:'Android 激活必须'},
+      {field:'ip',template:'{ip}',default:true},
+      {field:'user_agent',template:'{ua}',default:true},
+      {field:'androidid_md5',template:'{androidid_MD5}',default:false,note:'仅安卓 8 以下'},
+      {field:'caid_ry',template:'{RY_CAID}',default:false},
+      {field:'caid_gx',template:'{GX_CAID}',default:false},
+      {field:'ali_aaid',template:'{ALI_AAID}',default:false},
+      {field:'device_model',template:'{MODEL}',default:false},
+      {field:'os_version',template:'{osversion}',default:false},
+      {field:'click_time',template:'{clicktime}',default:false,note:'13 位毫秒'},
+    ]},
+  { code:'xiaohongshu', name:'小红书聚光平台', source:'xiaohongshu', type:'domestic', syntax:'bytedance-macro', clickId:'click_id',
+    docs:'https://www.xiao-ad.com/jd/1071.html',
+    warn:'⚠️ 这 7 个就是公网可核实的全部 —— 不是漏配，是平台上限。官方三方监测只支持「账户」「创意」两个层级（不是 campaign/unit/creative 三层），官方 FAQ 明文"新链路目前不支持下发其他宏参数，只拼接 clickID"。__RED_ID__ / __CAID__ / __CAID_MD5__ 是敏感参数，平台默认不支持，必须删除否则报错；__CONTENT__ 在 C2S 场景必须去掉。参数只能在小红书已有的参数中选，域名必须是正式域名且需提前加白（销售提交邮件 + OA 申请）。旧链路 track_id 已于 2024-02-29 下线。⚠️ 回传时间超过 1 小时即判「回传超时」。\n🔍 生产环境已知问题：落地页外链把 click_id 写成了自定义参数名 xhsc（xhsc=__CLICK_ID__），并使用了未经证实的 __CREATIVITY_ID__ / __CREATIVITY_NAME__，该链接拿不到回传 —— 排查顺序见 PRODUCTION-LINK-AUDIT.md。',
+    mediumOptions:['social','cpm','cpa'],
+    macros:[
+      {field:'click_id',template:'__CLICK_ID__',default:true,note:'新链路唯一归因键；落地页外链由平台自动拼 click_id='},
+      {field:'placement',template:'__PLACEMENT__',default:true,note:'2024-01-06 新增，区分信息流/搜索/视频流/全站智投'},
+      {field:'oaid',template:'__OAID__',default:false},
+      {field:'oaid_md5',template:'__OAID_MD5__',default:false,note:'监测链接下发的一般是 MD5'},
+      {field:'creative_id',template:'__CREATIVITY_ID__',default:false,note:'🔍 生产投放链接中观察到（注意拼写是 CREATIVITY 不是 CREATIVE）。官方公开资料未收录，且该链接目前拿不到回传 —— 优先怀疑对象'},
+      {field:'creative_name',template:'__CREATIVITY_NAME__',default:false,note:'🔍 同上，拼写为 CREATIVITY_NAME。未经官方证实'},
+      {field:'content',template:'__CONTENT__',default:false,note:'⚠️ C2S 场景必须去掉，否则报「监测链接非法」'},
+      {field:'red_id',template:'__RED_ID__',default:false,note:'⚠️ 敏感参数，平台默认不支持，必须删除'},
+      {field:'caid',template:'__CAID__',default:false,note:'⚠️ 敏感参数，平台默认不支持'},
+    ]},
+
+  // ══════════════════════ 网盟（通用模板） ══════════════════════
+  { code:'cg', name:'CG联盟（通用模板·待核实）', source:'cg', type:'network', syntax:'affiliate-generic', clickId:'',
+    docs:'https://support.tune.com/hc/en-us/articles/1500008230302-Partner-Sub-IDs-and-Macros',
+    warn:'⚠️ 「CG联盟」在中文公开语料中无索引，未找到任何官方技术文档。下列为联盟营销通用惯例（TUNE/HasOffers 系）占位，拿到后台后请替换。拿到后确认 3 件事即可覆盖 90% 对接：① click id 参数名叫什么、是 {} 还是 __X__；② postback 里 click id 用哪个字段回（Affise 系是 sub1，TUNE 系是 transaction_id）；③ 有几个自由 sub 位、字符上限多少。',
+    mediumOptions:['cpa','cpc','cpm','display'],
+    macros:[
+      {field:'offer_id',template:'{offer_id}',default:true,note:'TUNE 系通用'},
+      {field:'affiliate_id',template:'{affiliate_id}',default:true,note:'{partner_id} 等价'},
+      {field:'click_id',template:'{transaction_id}',default:true,note:'TUNE 系 postback 主键；渠道侧唯一值应放 aff_click_id'},
+      {field:'sub1',template:'{aff_sub}',default:false,note:'只放非唯一值；≤500 字符需 URL-encode'},
+      {field:'sub2',template:'{aff_sub2}',default:false},
+      {field:'sub3',template:'{aff_sub3}',default:false},
+      {field:'source',template:'{SOURCE}',default:false},
+      {field:'payout',template:'{payout}',default:false},
+    ]},
+  { code:'aifu', name:'AiFu联盟（通用模板·待核实）', source:'aifu', type:'network', syntax:'affiliate-generic', clickId:'',
+    docs:'https://help-center.affise.com/en/articles/6474898',
+    warn:'⚠️ 「AiFu联盟」在中文公开语料中无索引，未找到任何官方技术文档。下列为 Affise 系通用惯例占位。⚠️ Affise 官方明确警告：postback 没有 clickid 宏，回传时必须用 {sub1}–{sub8} 承载 click id，混用直接导致追踪失败；sub 上限 255 字符。',
+    mediumOptions:['cpa','cpc','cpm'],
+    macros:[
+      {field:'click_id',template:'{clickid}',default:true,note:'Affise 唯一强制宏；{click_id} 等价'},
+      {field:'affiliate_id',template:'{pid}',default:true},
+      {field:'offer_id',template:'{offer_id}',default:true},
+      {field:'sub1',template:'{sub1}',default:false,note:'postback 回传 click id 必须用 sub1–sub8'},
+      {field:'sub2',template:'{sub2}',default:false},
+      {field:'sub3',template:'{sub3}',default:false},
+      {field:'ip',template:'{ip}',default:false},
+      {field:'geo',template:'{geo}',default:false},
+      {field:'device_model',template:'{device_model}',default:false},
+      {field:'os_version',template:'{os_version}',default:false},
+    ]},
+];
+
+// All unique macro fields across all platforms (for CSV template)
+const ALL_MACRO_FIELDS = [...new Set(PLATFORMS.flatMap(p => p.macros.map(m => m.field)))].sort();
+const MACRO_FIELD_DEFAULTS = {};
+PLATFORMS.forEach(p => {
+  p.macros.forEach(m => {
+    if (!MACRO_FIELD_DEFAULTS[m.field]) MACRO_FIELD_DEFAULTS[m.field] = {};
+    MACRO_FIELD_DEFAULTS[m.field][p.code] = m.template;
+  });
+});
+
+// ====== 33 Modules based el/sec presets ======
+const EL_PRESETS = [
+  'cta_primary','cta_secondary','cta_primary_bottom','cta_secondary_bottom',
+  'nav_signup','nav_login','nav_trial','nav_pricing',
+  'card_link','tab_cta','tool_card','blog_card','price_card','pricing_cta',
+  'feature_cta','showcase_cta','portrait_cta','prompt_btn','marquee_cta',
+  'hero_btn','mosaic_tile','journey_card','canvas_link','media_click',
+  'link_inline','link_footer','stats_link','proof_link','logo_click',
+  'comparison_link','before_link','after_link',
+];
+const SEC_PRESETS = [
+  'hero-split','hero-cinematic','hero-journey','hero-mosaic','hero-gallery',
+  'bento-2','bento-4','bento-6','feature-grid','cluster-block-dense',
+  'capability-tabs','tool-grid','blog-grid','feature-detail','canvas-wall',
+  'portrait-grid-3','portrait-grid-4','showcase-stacked','showcase-horizontal',
+  'prompt-launcher','logo-loop','media-marquee',
+  'cta-default','cta-bottom',
+  'workflow-horizontal','workflow-vertical',
+  'comparison-table','comparison-before-after',
+  'testimonial','review-grid-3col','review-grid-4col',
+  'stats','proof-block','pricing-block','faq',
+];
+
+// ====== STATE ======
+let selectedPlatform = null;
+let batchParsedRows = [];
+let batchGeneratedURLs = [];
+
+// ====== DOM refs ======
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+// ====== TOAST ======
+function showToast(msg, type = '') {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ====== TABS ======
+$$('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.tab').forEach(t => t.classList.remove('active'));
+    $$('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const panel = document.getElementById('tab_' + tab.dataset.tab);
+    if (panel) panel.classList.add('active');
+  });
+});
+
+// ====== PLATFORM PICKER ======
+function platformByName(name) {
+  return PLATFORMS.find(p => p.name === name);
+}
+
+function renderPlatformDropdown(filter = '') {
+  const q = filter.toLowerCase().trim();
+  const filtered = PLATFORMS.filter(p => !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q) || p.source.toLowerCase().includes(q));
+  const dd = $('#platform_dropdown');
+  dd.innerHTML = filtered.length === 0
+    ? '<div class="p-no-result">无匹配平台</div>'
+    : filtered.map(p =>
+      `<div class="platform-opt${selectedPlatform && selectedPlatform.code === p.code ? ' selected' : ''}" data-code="${h(p.code)}">
+        <span class="p-tag ${p.type}">${p.type}</span> ${p.name}
+      </div>`).join('');
+  dd.querySelectorAll('.platform-opt').forEach(div => {
+    div.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const p = PLATFORMS.find(x => x.code === div.dataset.code);
+      if (p) selectPlatform(p);
+    });
+  });
+}
+
+function selectPlatform(p) {
+  selectedPlatform = p;
+  $('#platform_input').value = p.name;
+  $('#platform_dropdown').classList.remove('show');
+  $('#utm_source').value = p.source;
+  renderMediumOptions(p);
+  renderMacros(p);
+  clearFieldError('platform');
+}
+
+$('#platform_input').addEventListener('focus', () => { renderPlatformDropdown($('#platform_input').value); $('#platform_dropdown').classList.add('show'); });
+$('#platform_input').addEventListener('input', () => {
+  const val = $('#platform_input').value.trim();
+  renderPlatformDropdown(val);
+  $('#platform_dropdown').classList.add('show');
+  if (selectedPlatform && val !== selectedPlatform.name) {
+    selectedPlatform = null;
+    $('#utm_source').value = '';
+    $('#utm_medium').innerHTML = '<option value="">— 请选择 —</option>';
+    $('#macro_content').style.display = 'none';
+    $('#macro_placeholder').style.display = '';
+  }
+});
+$('#platform_input').addEventListener('keydown', e => { if (e.key === 'Escape') $('#platform_dropdown').classList.remove('show'); });
+document.addEventListener('click', e => { if (!e.target.closest('.platform-picker')) $('#platform_dropdown').classList.remove('show'); });
+
+// ====== MEDIUM ======
+function renderMediumOptions(p) {
+  $('#utm_medium').innerHTML = '<option value="">— 请选择 —</option>' +
+    p.mediumOptions.map(m => `<option value="${m}">${MEDIUM_LABELS[m] || m}</option>`).join('');
+}
+
+// ====== MACROS (fixed: use div, not label; prevent default) ======
+function renderMacros(p) {
+  $('#macro_placeholder').style.display = 'none';
+  $('#macro_content').style.display = '';
+  const dM = p.macros.filter(m => m.default);
+  const mM = p.macros.filter(m => !m.default);
+
+  // Platform-level warning banner (verified gotchas from the official-docs audit)
+  const warnEl = $('#platform_warn');
+  if (p.warn) { warnEl.textContent = p.warn; warnEl.style.display = ''; }
+  else { warnEl.textContent = ''; warnEl.style.display = 'none'; }
+
+  const docsEl = $('#platform_docs');
+  if (p.docs) { docsEl.innerHTML = '官方文档：<a href="' + h(p.docs) + '" target="_blank" rel="noopener">' + h(p.docs) + '</a>'; docsEl.style.display = ''; }
+  else { docsEl.innerHTML = ''; docsEl.style.display = 'none'; }
+
+  const macroItem = (m, checked) => {
+    const note = m.note || '';
+    const unverified = /未确证|未证实|未直连确证|官方笔误|置信度较低|需实测|需核对/.test(note);
+    return `<div class="macro-item${checked ? ' checked' : ''}${note ? ' has-note' : ''}${unverified ? ' unverified' : ''}"${note ? ` title="${h(note)}"` : ''}>
+      <input type="checkbox" data-field="${m.field}" data-template="${h(m.template)}"${checked ? ' checked' : ''} />
+      ${m.field}<span class="macro-tmpl">${h(m.template)}</span>${note ? '<span class="note-dot">&#9432;</span>' : ''}
+    </div>`;
+  };
+
+  $('#default_macros').innerHTML = dM.length
+    ? dM.map(m => macroItem(m, true)).join('')
+    : '<div class="macro-empty">该平台无可用 URL 动态宏（仅支持静态 UTM）。</div>';
+  $('#more_macros_list').innerHTML = mM.map(m => macroItem(m, false)).join('');
+
+  $('#toggle_more').classList.remove('open');
+  $('#toggle_more').innerHTML = mM.length > 0
+    ? `展开全部宏 (+${mM.length}) <span class="arrow-icon">▼</span>`
+    : '展开全部宏 <span class="arrow-icon">▼</span>';
+  $('#toggle_more').style.display = mM.length > 0 ? '' : 'none';
+  $('#more_macros').classList.remove('show');
+
+  // Bind click handlers on individual macro items (div, not label)
+  document.querySelectorAll('#macro_content .macro-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      const cb = this.querySelector('input[type="checkbox"]');
+      cb.checked = !cb.checked;
+      this.classList.toggle('checked', cb.checked);
+    });
+  });
+}
+
+$('#toggle_more').addEventListener('click', () => {
+  $('#toggle_more').classList.toggle('open');
+  $('#more_macros').classList.toggle('show');
+  const p = selectedPlatform;
+  const mM = p ? p.macros.filter(m => !m.default) : [];
+  $('#toggle_more').innerHTML = $('#toggle_more').classList.contains('open')
+    ? `收起 <span class="arrow-icon">▼</span>`
+    : `展开全部宏 (+${mM.length}) <span class="arrow-icon">▼</span>`;
+});
+
+// ====== COMBO BOXES ======
+function initCombo(inputId, dropdownId, presets) {
+  const input = document.getElementById(inputId);
+  const dropdown = document.getElementById(dropdownId);
+  function render(filter = '') {
+    const q = filter.toLowerCase();
+    const filtered = presets.filter(v => v.toLowerCase().includes(q));
+    dropdown.innerHTML = filtered.map(v => `<div class="combo-option">${v}</div>`).join('');
+    dropdown.classList.toggle('show', filtered.length > 0);
+    dropdown.querySelectorAll('.combo-option').forEach(opt => {
+      opt.addEventListener('mousedown', e => { e.preventDefault(); input.value = opt.textContent; dropdown.classList.remove('show'); });
+    });
+  }
+  input.addEventListener('focus', () => render(input.value));
+  input.addEventListener('input', () => render(input.value));
+  input.addEventListener('keydown', e => { if (e.key === 'Escape' || e.key === 'Enter') dropdown.classList.remove('show'); });
+}
+initCombo('el', 'el_dropdown', EL_PRESETS);
+initCombo('sec', 'sec_dropdown', SEC_PRESETS);
+document.addEventListener('click', e => { if (!e.target.closest('.combo-container')) $$('.combo-dropdown').forEach(d => d.classList.remove('show')); });
+
+// ====== VALIDATION ======
+function showFieldError(fieldId, msg) {
+  const el = document.getElementById(fieldId);
+  const err = document.getElementById('err_' + fieldId);
+  if (el) el.classList.add('error');
+  if (err) { err.textContent = msg; err.style.display = ''; }
+}
+function clearFieldError(fieldId) {
+  const el = document.getElementById(fieldId);
+  const err = document.getElementById('err_' + fieldId);
+  if (el) el.classList.remove('error');
+  if (err) { err.textContent = ''; err.style.display = 'none'; }
+}
+function clearAllErrors() {
+  $$('.err-msg').forEach(e => { e.textContent = ''; e.style.display = 'none'; });
+  $$('.error').forEach(e => e.classList.remove('error'));
+}
+function validate() {
+  clearAllErrors();
+  let valid = true;
+  const baseUrl = $('#base_url').value.trim();
+  if (!baseUrl) { showFieldError('url', '请输入落地页地址'); valid = false; }
+  else if (!/^https?:\/\/.+/.test(baseUrl)) { showFieldError('url', 'URL 需以 http:// 或 https:// 开头'); valid = false; }
+  if (!$('#source_id').value.trim()) { showFieldError('source_id', 'sourceId 为必填项'); valid = false; }
+  if (!selectedPlatform) { showFieldError('platform', '请选择投放平台'); valid = false; }
+  if (!$('#utm_medium').value) { showFieldError('utm_medium', '请选择投放形式'); valid = false; }
+  const campaign = $('#utm_campaign').value.trim();
+  if (!campaign) { showFieldError('utm_campaign', '活动名称为必填项'); valid = false; }
+  else if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(campaign)) { showFieldError('utm_campaign', '请使用 kebab-case 格式'); valid = false; }
+  return valid;
+}
+
+// ====== BUILD URL ======
+function getSelectedMacros() {
+  const cbs = document.querySelectorAll('#macro_content input[type="checkbox"]:checked');
+  return Array.from(cbs).map(cb => ({ field: cb.dataset.field, template: cb.dataset.template }));
+}
+
+function buildURL(p, overrides = {}) {
+  const baseUrl = overrides.base_url !== undefined ? overrides.base_url : $('#base_url').value.trim();
+  const srcId = overrides.sourceId !== undefined ? overrides.sourceId : $('#source_id').value.trim();
+  const el = overrides.el !== undefined ? overrides.el : $('#el').value.trim();
+  const sec = overrides.sec !== undefined ? overrides.sec : $('#sec').value.trim();
+  const source = p ? p.source : (overrides.utm_source || $('#utm_source').value.trim());
+  const medium = overrides.utm_medium !== undefined ? overrides.utm_medium : $('#utm_medium').value;
+  const campaign = overrides.utm_campaign !== undefined ? overrides.utm_campaign : $('#utm_campaign').value.trim();
+  const term = overrides.utm_term !== undefined ? overrides.utm_term : $('#utm_term').value.trim();
+  const content = overrides.utm_content !== undefined ? overrides.utm_content : $('#utm_content').value.trim();
+
+  let macros;
+  if (overrides.macros !== undefined) {
+    macros = overrides.macros;
+  } else if (overrides.fromDOM) {
+    macros = getSelectedMacros();
+  } else if (p && selectedPlatform && selectedPlatform.code === p.code) {
+    macros = getSelectedMacros();
+  } else if (p) {
+    macros = p.macros.filter(m => m.default).map(m => ({ field: m.field, template: m.template }));
+  } else {
+    macros = [];
+  }
+
+  const separator = baseUrl.includes('?') ? '&' : '?';
+  const params = [];
+  if (srcId) params.push(`sourceId=${encodeURIComponent(srcId)}`);
+  if (el) params.push(`el=${encodeURIComponent(el)}`);
+  if (sec) params.push(`sec=${encodeURIComponent(sec)}`);
+  params.push(`utm_source=${encodeURIComponent(source)}`);
+  params.push(`utm_medium=${encodeURIComponent(medium)}`);
+  params.push(`utm_campaign=${encodeURIComponent(campaign)}`);
+  if (term) params.push(`utm_term=${encodeURIComponent(term)}`);
+  if (content) params.push(`utm_content=${encodeURIComponent(content)}`);
+  // 百度应用API：官方硬性要求 __SIGN__ 必须是 URL 的最后一个参数
+  const MUST_BE_LAST = ['sign'];
+  const orderedMacros = [
+    ...macros.filter(m => !MUST_BE_LAST.includes(m.field)),
+    ...macros.filter(m => MUST_BE_LAST.includes(m.field)),
+  ];
+  orderedMacros.forEach(m => params.push(`${m.field}=${m.template}`));
+  return baseUrl + separator + params.join('&');
+}
+
+// ====== SINGLE GENERATE ======
+$('#btn_generate').addEventListener('click', () => {
+  if (!validate()) return;
+  const url = buildURL(selectedPlatform, { fromDOM: true });
+  $('#url_display').innerHTML = formatURL(url);
+  $('#output_section_single').classList.add('show');
+  $('#url_len_hint').textContent = url.length > 2000 ? `⚠ ${url.length} 字符，可能被截断` : `${url.length} 字符`;
+  $('#url_len_hint').style.color = url.length > 2000 ? '#e65100' : '#999';
+  $('#output_section_single').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  window._singleUrl = url;
+  window._singlePlatform = selectedPlatform;
+});
+
+// ====== CLIPBOARD (with fallback for file://) ======
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text);
+  }
+  // Fallback for file:// or older browsers
+  return new Promise((resolve, reject) => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      resolve();
+    } catch (e) {
+      reject(e);
+    }
+    document.body.removeChild(ta);
+  });
+}
+
+// ====== COPY & EXPORT (SINGLE) ======
+$('#btn_copy').addEventListener('click', () => {
+  const url = window._singleUrl || '';
+  if (!url) { showToast('请先生成 URL', 'error'); return; }
+  copyText(url).then(() => showToast('已复制到剪贴板', 'success')).catch(() => showToast('复制失败，请手动复制', 'error'));
+});
+
+$$('.export-single').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const url = window._singleUrl || '';
+    if (!url) { showToast('请先生成 URL', 'error'); return; }
+    const fmt = btn.dataset.fmt;
+    const p = window._singlePlatform || selectedPlatform;
+    exportURLs([{ platform: p ? p.name : 'Unknown', url }], fmt, 'single-url');
+    showToast(`已导出 ${fmt.toUpperCase()}`, 'success');
+  });
+});
+
+// ====== BATCH TEMPLATES ======
+// 模板只暴露高频核心宏字段；解析时以上传文件的表头为准，ALL_MACRO_FIELDS 中的任意字段都可用。
+const CSV_CORE_MACRO_FIELDS = [
+  'campaign_id','adgroup_id','ad_id','creative_id','asset_group_id','project_id','promotion_id',
+  'keyword','keyword_id','matchtype','network','device','placement','site_set','creative_type',
+  'click_id','callback','callback_param',
+];
+const CSV_TEMPLATE_HEADER = ['platform','base_url','sourceId','el','sec','utm_medium','utm_campaign','utm_term','utm_content',...CSV_CORE_MACRO_FIELDS];
+
+const CSV_TEMPLATE_ROWS = [
+  { platform:'google', base_url:'https://lovart.ai/tools/seedance', sourceId:'910001', el:'cta_primary', sec:'hero-split', utm_medium:'cpc', utm_campaign:'seedance-2.0-launch', utm_term:'seedance_group', utm_content:'variant_a',
+    campaign_id:'{campaignid}', adgroup_id:'{adgroupid}', ad_id:'{creative}', keyword:'{keyword}', device:'{device}' },
+  { platform:'meta', base_url:'https://lovart.ai/tools/seedance', sourceId:'910001', el:'cta_primary', sec:'hero-split', utm_medium:'social', utm_campaign:'seedance-2.0-launch', utm_term:'', utm_content:'variant_b',
+    campaign_id:'{{campaign.id}}', adgroup_id:'{{adset.id}}', ad_id:'{{ad.id}}', placement:'{{placement}}' },
+  // 腾讯：宏用于点击监测链接，落地页只自动带 gdt_vid / qz_gdt
+  { platform:'gdt', base_url:'https://lovart.ai/tools/seedance', sourceId:'910002', el:'cta_primary', sec:'hero-split', utm_medium:'cpa', utm_campaign:'seedance-2.0-launch', utm_term:'', utm_content:'',
+    adgroup_id:'__ADGROUP_ID__', click_id:'__CLICK_ID__', callback:'__CALLBACK__' },
+  // 巨量：升级版结构 + 素材层 __MID*__ 见平台宏面板
+  { platform:'douyin', base_url:'https://lovart.ai/tools/seedance', sourceId:'910003', el:'cta_primary', sec:'hero-split', utm_medium:'social', utm_campaign:'seedance-2.0-launch', utm_term:'', utm_content:'',
+    project_id:'__PROJECT_ID__', promotion_id:'__PROMOTION_ID__', creative_id:'__CID__', creative_type:'__CTYPE__', site_set:'__CSITE__', callback_param:'__CALLBACK_PARAM__' },
+];
+
+function buildCSVTemplate() {
+  const lines = [CSV_TEMPLATE_HEADER.join(',')];
+  CSV_TEMPLATE_ROWS.forEach(row => {
+    const vals = CSV_TEMPLATE_HEADER.map(h => {
+      const v = row[h];
+      if (v === undefined || v === null) return '';
+      if (v.includes(',') || v.includes('"')) return '"' + v.replace(/"/g, '""') + '"';
+      return v;
+    });
+    lines.push(vals.join(','));
+  });
+  return lines.join('\n');
+}
+
+function buildJSONTemplate() {
+  return JSON.stringify(CSV_TEMPLATE_ROWS.map(row => {
+    const obj = {};
+    CSV_TEMPLATE_HEADER.forEach(h => {
+      if (row[h] !== undefined) obj[h] = row[h];
+    });
+    return obj;
+  }), null, 2);
+}
+
+$('#btn_template_csv').addEventListener('click', () => {
+  downloadText(buildCSVTemplate(), 'ad-url-template.csv', 'text/csv');
+  showToast('CSV 模板已下载', 'success');
+});
+$('#btn_template_json').addEventListener('click', () => {
+  downloadText(buildJSONTemplate(), 'ad-url-template.json', 'application/json');
+  showToast('JSON 模板已下载', 'success');
+});
+
+$('#file_upload').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { $('#batch_input').value = reader.result; };
+  reader.readAsText(file);
+});
+
+// ====== CSV PARSING ======
+function parseCSVLine(line) {
+  const result = []; let current = '', inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') { if (line[i + 1] === '"') { current += '"'; i++; } else inQuotes = false; }
+      else current += ch;
+    } else {
+      if (ch === '"') inQuotes = true;
+      else if (ch === ',') { result.push(current); current = ''; }
+      else current += ch;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) throw new Error('CSV 至少需要表头 + 1 行数据');
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  const required = ['platform', 'base_url', 'sourceid', 'utm_medium', 'utm_campaign'];
+  const missing = required.filter(r => !headers.includes(r));
+  if (missing.length > 0) throw new Error('缺少必填列: ' + missing.join(', '));
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = parseCSVLine(lines[i]);
+    if (vals.length === 0 || vals.every(v => !v.trim())) continue;
+    const row = {};
+    headers.forEach((h, idx) => { row[h] = (vals[idx] || '').trim(); });
+    rows.push(row);
+  }
+  return { headers, rows };
+}
+
+function parseJSON(text) {
+  const data = JSON.parse(text);
+  if (!Array.isArray(data)) throw new Error('JSON 格式: 必须是数组 [{...}, {...}]');
+  if (data.length === 0) throw new Error('JSON 数组不能为空');
+  return data.map(item => {
+    const row = {};
+    Object.keys(item).forEach(k => { row[k.toLowerCase()] = String(item[k] ?? ''); });
+    return row;
+  });
+}
+
+// ====== BATCH PARSE & PREVIEW ======
+function getRowField(row, name) {
+  // Try exact match, then case-insensitive
+  if (row[name] !== undefined) return row[name];
+  const key = Object.keys(row).find(k => k.toLowerCase() === name.toLowerCase());
+  return key ? row[key] : '';
+}
+
+$('#btn_batch_parse').addEventListener('click', () => {
+  const text = $('#batch_input').value.trim();
+  $('#err_batch').textContent = ''; $('#err_batch').style.display = 'none';
+  if (!text) { showToast('请粘贴或上传数据', 'error'); return; }
+  try {
+    let rows, headers;
+    if (text.startsWith('[') || text.startsWith('{')) {
+      rows = parseJSON(text);
+      // Collect all headers from JSON keys
+      const keySet = new Set();
+      rows.forEach(r => Object.keys(r).forEach(k => keySet.add(k)));
+      headers = Array.from(keySet);
+    } else {
+      const result = parseCSV(text);
+      rows = result.rows;
+      headers = result.headers;
+    }
+    if (rows.length === 0) { showToast('未解析到任何数据行', 'error'); return; }
+    batchParsedRows = rows;
+    renderBatchPreview(rows, headers);
+    showToast(`成功解析 ${rows.length} 行`, 'success');
+  } catch (e) {
+    showToast('解析失败: ' + e.message, 'error');
+    $('#err_batch').textContent = '解析失败: ' + e.message; $('#err_batch').style.display = '';
+  }
+});
+
+$('#btn_batch_clear').addEventListener('click', () => {
+  $('#batch_input').value = '';
+  $('#err_batch').textContent = ''; $('#err_batch').style.display = 'none';
+  batchParsedRows = []; batchGeneratedURLs = [];
+  $('#batch_preview_card').style.display = 'none';
+  $('#output_section_batch').classList.remove('show');
+  showToast('已清除');
+});
+
+function renderBatchPreview(rows, headers) {
+  $('#batch_count').textContent = rows.length;
+
+  // Build table headers dynamically
+  const displayHeaders = ['platform','base_url','sourceid','el','sec','utm_medium','utm_campaign','utm_term','utm_content'];
+  const extraHeaders = headers.filter(h => !displayHeaders.includes(h.toLowerCase()) && h.toLowerCase() !== 'status');
+
+  const allHeaders = [...displayHeaders, ...extraHeaders, 'status'];
+  $('#batch_preview_thead').innerHTML = '<tr>' + allHeaders.map(h =>
+    `<th>${h.replace(/_/g, ' ')}</th>`
+  ).join('') + '</tr>';
+
+  $('#batch_preview_tbody').innerHTML = rows.map((r, i) => {
+    const platformCode = getRowField(r, 'platform');
+    const p = PLATFORMS.find(p => p.code === platformCode.toLowerCase());
+    const errs = [];
+    if (!p) errs.push('平台不识');
+    if (!getRowField(r, 'base_url')) errs.push('URL缺');
+    if (!getRowField(r, 'sourceid')) errs.push('sourceId缺');
+    if (!getRowField(r, 'utm_medium')) { errs.push('medium缺'); }
+    else if (p && !p.mediumOptions.includes(getRowField(r, 'utm_medium').toLowerCase())) {
+      errs.push('medium不兼容');
+    }
+    if (!getRowField(r, 'utm_campaign')) errs.push('campaign缺');
+
+    // Check macro columns: verify platform syntax
+    const warnings = [];
+    if (p) {
+      extraHeaders.forEach(h => {
+        const val = getRowField(r, h);
+        if (!val) return;
+        const macro = p.macros.find(m => m.field === h.toLowerCase());
+        if (macro && val.trim() !== macro.template) {
+          warnings.push(`${h}语法可能不匹配`);
+        }
+        if (!macro && val.trim()) {
+          // User provided a custom macro value — that's fine
+        }
+      });
+    }
+
+    let status = '';
+    if (errs.length > 0) {
+      status = '<span class="status-err">' + errs.join(', ') + '</span>';
+    } else if (warnings.length > 0) {
+      status = '<span class="status-ok">OK</span> <span class="status-warn">(' + warnings.join(', ') + ')</span>';
+    } else {
+      status = '<span class="status-ok">OK</span>';
+    }
+
+    const cells = allHeaders.map(h => {
+      const val = getRowField(r, h);
+      if (h === 'status') return status;
+      if (h === 'platform') return `<span class="platform-cell">${p ? p.name : (val || '-')}</span>`;
+      return hd(val || '-');
+    });
+    return '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
+  }).join('');
+
+  $('#batch_preview_card').style.display = '';
+  $('#output_section_batch').classList.remove('show');
+}
+
+// ====== BATCH GENERATE ======
+$('#btn_batch_generate').addEventListener('click', () => {
+  if (batchParsedRows.length === 0) { showToast('请先解析数据', 'error'); return; }
+  batchGeneratedURLs = [];
+  batchParsedRows.forEach((r, i) => {
+    const platformCode = getRowField(r, 'platform');
+    const p = PLATFORMS.find(p => p.code === platformCode.toLowerCase());
+    if (!p) return;
+
+    const baseUrl = getRowField(r, 'base_url');
+    const srcId = getRowField(r, 'sourceid');
+    const medium = getRowField(r, 'utm_medium');
+    const campaign = getRowField(r, 'utm_campaign');
+    if (!baseUrl || !srcId || !medium || !campaign) return;
+
+    // Collect macros: use CSV values if present, otherwise platform defaults
+    const supportedFields = new Set(p.macros.map(m => m.field));
+    const macros = [];
+    const usedFields = new Set();
+
+    // First, use user-provided macro values from extra columns
+    Object.keys(r).forEach(k => {
+      const field = k.toLowerCase();
+      if (['platform','base_url','sourceid','el','sec','utm_medium','utm_campaign','utm_term','utm_content','utm_source'].includes(field)) return;
+      const val = (r[k] || '').trim();
+      if (!val) return;
+      // Check if this is a valid macro field for the platform or a custom field
+      if (supportedFields.has(field)) {
+        macros.push({ field, template: val });
+        usedFields.add(field);
+      } else {
+        // Pass through as custom param
+        macros.push({ field: k, template: val });
+      }
+    });
+
+    // Fill in platform defaults for unset fields
+    p.macros.forEach(m => {
+      if (!usedFields.has(m.field) && m.default) {
+        macros.push({ field: m.field, template: m.template });
+      }
+    });
+
+    const url = buildURL(p, {
+      base_url: baseUrl,
+      sourceId: srcId,
+      el: getRowField(r, 'el') || '',
+      sec: getRowField(r, 'sec') || '',
+      utm_source: p.source,
+      utm_medium: medium,
+      utm_campaign: campaign,
+      utm_term: getRowField(r, 'utm_term') || '',
+      utm_content: getRowField(r, 'utm_content') || '',
+      macros,
+    });
+    batchGeneratedURLs.push({ platform: p.name, code: p.code, url });
+  });
+
+  $('#batch_gen_count').textContent = batchGeneratedURLs.length;
+  $('#batch_gen_tbody').innerHTML = batchGeneratedURLs.map((r, i) =>
+    `<tr><td>${i + 1}</td><td class="platform-cell">${r.platform}</td><td class="batch-url">${hd(r.url)}</td></tr>`
+  ).join('');
+  $('#output_section_batch').classList.add('show');
+  $('#output_section_batch').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  showToast(`成功生成 ${batchGeneratedURLs.length} 个 URL`, 'success');
+});
+
+// ====== BATCH COPY & EXPORT ======
+$('#btn_batch_copy_all').addEventListener('click', () => {
+  if (batchGeneratedURLs.length === 0) { showToast('请先生成 URL', 'error'); return; }
+  const text = batchGeneratedURLs.map(r => r.url).join('\n');
+  copyText(text).then(() => showToast('已复制全部 URL', 'success')).catch(() => showToast('复制失败', 'error'));
+});
+
+$$('.export-batch').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (batchGeneratedURLs.length === 0) { showToast('请先生成 URL', 'error'); return; }
+    const fmt = btn.dataset.fmt;
+    exportURLs(batchGeneratedURLs, { fmt, includeFields: true }, 'ad-urls');
+    showToast(`已导出 ${fmt.toUpperCase()}`, 'success');
+  });
+});
+
+// ====== EXPORT ======
+function exportURLs(entries, opts, basename) {
+  const fmt = typeof opts === 'string' ? opts : opts.fmt;
+  const includeFields = typeof opts === 'object' ? opts.includeFields : false;
+  let content, mime, ext;
+  switch (fmt) {
+    case 'txt':
+      content = entries.map(r => r.url).join('\n');
+      mime = 'text/plain'; ext = 'txt'; break;
+    case 'md':
+      content = '# Ad URLs\n\n| # | Platform | URL |\n|---|----------|-----|\n' +
+        entries.map((r, i) => `| ${i + 1} | ${r.platform} | [URL](${r.url}) |`).join('\n');
+      mime = 'text/markdown'; ext = 'md'; break;
+    case 'json':
+      content = JSON.stringify(entries.map(r => ({ platform: r.platform, url: r.url })), null, 2);
+      mime = 'application/json'; ext = 'json'; break;
+    case 'csv':
+      content = 'Platform,URL\n' + entries.map(r => `"${r.platform}","${r.url}"`).join('\n');
+      mime = 'text/csv'; ext = 'csv'; break;
+    default: return;
+  }
+  downloadText(content, `${basename}.${ext}`, mime);
+}
+
+function downloadText(content, filename, mime) {
+  const blob = new Blob([content], { type: mime + ';charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ====== HELPERS ======
+function h(str) {
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+function hd(str) { return h(str); }
+
+function formatURL(url) {
+  const idx = url.indexOf('?');
+  if (idx < 0) return `<a href="${url}" target="_blank">${h(url)}</a>`;
+  const base = url.substring(0, idx);
+  const params = url.substring(idx + 1);
+  const pairs = params.split('&');
+  const lines = pairs.map(p => {
+    const eq = p.indexOf('=');
+    const k = eq >= 0 ? p.substring(0, eq) : p;
+    const v = eq >= 0 ? p.substring(eq + 1) : '';
+    return `<span style="color:#999;">${h(k)}</span>=<span style="color:#333;">${h(v)}</span>`;
+  });
+  return `<a href="${url}" target="_blank" style="color:#1a73e8;">${h(base)}</a>?<br>  ${lines.join('&<br>  ')}`;
+}
+
+// ====== INIT COMPLETE ======
+logStatus('Ready — 请选择平台开始', '#e8f5e9');
+
+} catch(e) {
+  console.error('Ad URL Builder init error:', e);
+  logStatus('Init Error: ' + e.message, '#ffebee');
+}
+
+})();
+</script>
+<footer style="background:var(--bg-soft);color:var(--fg);border-top:1px solid var(--border);padding:40px 0 30px;text-align:center;margin-top:40px">
+  <div style="font-size:14px;margin-bottom:8px">OpenFlow · AI 时代的网站增长操作系统</div>
+  <div style="font-size:12px;color:rgba(255,255,255,.5)">&copy; 2026 OpenFlow 科技有限公司　<a href="https://nownexts.com" style="color:inherit">nownexts.com</a></div>
+</footer>
+</body>
+</html>
