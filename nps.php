@@ -55,13 +55,13 @@ $active = ($project['status'] ?? 'active') === 'active';
     <div class="bg-white rounded-2xl border border-[var(--border)] p-10 text-center">
       <div style="font-size:56px"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 20 8-8M9 4l.5 3.5L13 8l-3.5.5L9 12l-.5-3.5L5 8l3.5-.5L9 4ZM16 6l.4 2.6L19 9l-2.6.4L16 12l-.4-2.6L13 9l2.6-.4L16 6ZM20 13l.3 2 2 .3-2 .3-.3 2-.3-2-2-.3 2-.3.3-2Z"/></svg></span></div>
       <h2 class="mt-3 text-xl font-bold">感谢你的反馈！</h2>
-      <p class="mt-2 text-gray-600">你的意见对我们非常重要。</p>
+      <p class="mt-2 text-[var(--muted)]">你的意见对我们非常重要。</p>
       <a href="/" class="mt-6 inline-block rounded-full bg-[var(--accent)] px-7 py-3 font-semibold text-white">返回首页</a>
     </div>
     <?php elseif (!$active): ?>
     <div class="bg-white rounded-2xl border border-[var(--border)] p-10 text-center">
       <h2 class="text-xl font-bold">本次调研已结束</h2>
-      <p class="mt-2 text-gray-600">感谢你的关注与支持。</p>
+      <p class="mt-2 text-[var(--muted)]">感谢你的关注与支持。</p>
     </div>
     <?php else: ?>
     <form method="post" action="/api/nps-submit.php?id=<?=urlencode($project['id'])?>" onsubmit="return npsSubmit()">
@@ -69,7 +69,7 @@ $active = ($project['status'] ?? 'active') === 'active';
         <p class="text-[17px] font-bold text-center"><?=htmlspecialchars($project['question'] ?: '你有多大可能向朋友或同事推荐我们？')?></p>
         <div class="text-center mt-3 mb-6">
           <span class="emoji" id="npsEmoji">😐</span>
-          <div class="flex justify-between text-[12px] text-gray-400 mt-1 px-1"><span>完全不可能</span><span>非常可能</span></div>
+          <div class="flex justify-between text-[12px] text-[var(--faint)] mt-1 px-1"><span>完全不可能</span><span>非常可能</span></div>
         </div>
         <div class="flex justify-center gap-2 flex-wrap" id="scoreRow">
           <?php for ($i = 0; $i <= 10; $i++): ?>
