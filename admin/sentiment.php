@@ -133,7 +133,7 @@ admin_header('舆情监测');
             </div>
           </div>
         </div>
-        <p class="text-sm text-muted">Bing Key 到 <a href="https://www.microsoft.com/en-us/bing/apis/bing-web-search-api" target="_blank" rel="noopener" style="color:#0284c7">Microsoft 免费申请</a>（每月免费额度）</p>
+        <p class="text-sm text-muted">Bing Key 到 <a href="https://www.microsoft.com/en-us/bing/apis/bing-web-search-api" target="_blank" rel="noopener" style="color:var(--accent)">Microsoft 免费申请</a>（每月免费额度）</p>
         <button type="submit" name="save_settings" class="btn btn-primary">保存设置</button>
       </div>
     </form>

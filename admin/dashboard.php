@@ -24,10 +24,10 @@ admin_header('经营驾驶舱');
 .kpi-card .sub{font-size:11px;color:var(--text-3);margin-top:2px}
 .dash-trend{display:flex;align-items:flex-end;gap:4px;height:140px}
 .dash-trend .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
-.dash-trend .bar{width:100%;background:linear-gradient(180deg,#86efac,#ddff0e);border-radius:4px 4px 0 0;min-height:3px}
+.dash-trend .bar{width:100%;background:linear-gradient(180deg,#7dd3fc,#38bdf8);border-radius:4px 4px 0 0;min-height:3px}
 .channel-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .channel-row .bar{flex:1;height:22px;background:var(--surface-2);border-radius:6px;overflow:hidden}
-.channel-row .bar i{display:block;height:100%;background:linear-gradient(90deg,#7dd3fc,#86efac);border-radius:6px}
+.channel-row .bar i{display:block;height:100%;background:linear-gradient(90deg,#7dd3fc,#7dd3fc);border-radius:6px}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('dashboard'); ?>
@@ -43,10 +43,10 @@ admin_header('经营驾驶舱');
       <div class="kpi-card"><span class="ic">👀</span><div class="lab">近30天访客</div><div class="val"><?=number_format($kpis['uv'])?></div><div class="sub">PV <?=number_format($kpis['pv'])?> · 今日 <?=$kpis['today_uv']?></div></div>
       <div class="kpi-card"><span class="ic">📥</span><div class="lab">累计线索</div><div class="val"><?=$kpis['leads']?></div></div>
       <div class="kpi-card"><span class="ic">🛒</span><div class="lab">订单</div><div class="val"><?=$kpis['orders']?></div><div class="sub">已支付 <?=$kpis['paid_orders']?></div></div>
-      <div class="kpi-card"><span class="ic">💰</span><div class="lab">累计收入</div><div class="val" style="color:#16a34a">¥<?=number_format($kpis['revenue'],0)?></div><div class="sub">近30天 ¥<?=number_format($kpis['revenue_30d'],0)?></div></div>
+      <div class="kpi-card"><span class="ic">💰</span><div class="lab">累计收入</div><div class="val" style="color:var(--ok)">¥<?=number_format($kpis['revenue'],0)?></div><div class="sub">近30天 ¥<?=number_format($kpis['revenue_30d'],0)?></div></div>
       <div class="kpi-card"><span class="ic">👥</span><div class="lab">会员数</div><div class="val"><?=$kpis['members']?></div></div>
       <div class="kpi-card"><span class="ic">⭐</span><div class="lab">活跃订阅</div><div class="val"><?=$kpis['active_subscribers']?></div></div>
-      <div class="kpi-card"><span class="ic">📈</span><div class="lab">NPS</div><div class="val" style="color:<?=($nps['avg_nps']??0)>=0?'#16a34a':'#dc2626'?>"><?=$nps['avg_nps'] ?? '—'?></div><div class="sub"><?=$nps['total_responses']?> 份回收</div></div>
+      <div class="kpi-card"><span class="ic">📈</span><div class="lab">NPS</div><div class="val" style="color:<?=($nps['avg_nps']??0)>=0?'var(--ok)':'var(--danger)'?>"><?=$nps['avg_nps'] ?? '—'?></div><div class="sub"><?=$nps['total_responses']?> 份回收</div></div>
       <div class="kpi-card"><span class="ic">🤝</span><div class="lab">分销佣金</div><div class="val">¥<?=number_format($kpis['commission_paid'],0)?></div></div>
     </div>
 
@@ -93,7 +93,7 @@ admin_header('经营驾驶舱');
             <tr>
               <td><strong><?=htmlspecialchars($m)?></strong></td>
               <td><?=$r['orders']?></td>
-              <td style="color:#16a34a;font-weight:600">¥<?=number_format($r['revenue'],0)?></td>
+              <td style="color:var(--ok);font-weight:600">¥<?=number_format($r['revenue'],0)?></td>
               <td>¥<?=number_format($r['commission'],0)?></td>
             </tr>
             <?php endforeach; ?>
@@ -109,7 +109,7 @@ admin_header('经营驾驶舱');
           <tbody>
             <?php if (empty($report['commission'])): ?><tr><td colspan="2" class="empty">暂无分销佣金</td></tr><?php endif; ?>
             <?php foreach ($report['commission'] as $c): ?>
-            <tr><td><strong><?=htmlspecialchars($c['name'])?></strong></td><td style="color:#16a34a">¥<?=number_format($c['commission'],2)?></td></tr>
+            <tr><td><strong><?=htmlspecialchars($c['name'])?></strong></td><td style="color:var(--ok)">¥<?=number_format($c['commission'],2)?></td></tr>
             <?php endforeach; ?>
           </tbody>
         </table>

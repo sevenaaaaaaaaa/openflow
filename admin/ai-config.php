@@ -189,8 +189,8 @@ function testProvider(id, btn) {
     body: JSON.stringify({action: 'test_provider', provider_id: id})
   }).then(function(r){return r.json();}).then(function(d){
     btn.disabled = false;
-    if (d.ok) { btn.textContent = '✅ 连接成功'; btn.style.color = '#16a34a'; }
-    else { btn.textContent = '❌ 失败'; btn.style.color = '#dc2626'; alert(d.error || '连接失败'); }
+    if (d.ok) { btn.textContent = '✅ 连接成功'; btn.style.color = 'var(--ok)'; }
+    else { btn.textContent = '❌ 失败'; btn.style.color = 'var(--danger)'; alert(d.error || '连接失败'); }
     setTimeout(function(){ btn.textContent = original; btn.style.color = ''; }, 3000);
   }).catch(function(){ btn.disabled = false; btn.textContent = '❌ 网络异常'; });
 }
@@ -203,7 +203,7 @@ function loadAiUsage() {
       if (!d.ok) { box.innerHTML = '<div class="text-sm text-muted">暂无用数据</div>'; return; }
       var h = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">' +
         '<div class="stat-card"><div class="num">' + d.total + '</div><div class="label">最近调用</div></div>' +
-        '<div class="stat-card"><div class="num" style="color:' + (d.errors > 0 ? '#dc2626' : '#16a34a') + '">' + d.errors + '</div><div class="label">失败</div></div>';
+        '<div class="stat-card"><div class="num" style="color:' + (d.errors > 0 ? 'var(--danger)' : 'var(--ok)') + '">' + d.errors + '</div><div class="label">失败</div></div>';
       Object.keys(d.by_provider || {}).forEach(function(p){
         h += '<div class="stat-card"><div class="num" style="color:var(--accent)">' + d.by_provider[p] + '</div><div class="label">' + p + '</div></div>';
       });

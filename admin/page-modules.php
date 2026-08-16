@@ -89,8 +89,8 @@ admin_header('落地页模块');
     <!-- 统计卡片 -->
     <div class="stat-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
       <div class="stat-card"><div class="num"><?=count($modules)?></div><div class="label">模块总数</div></div>
-      <div class="stat-card"><div class="num" style="color:#16a34a"><?=count(array_filter($modules, fn($m) => $m['enabled'] ?? false))?></div><div class="label">启用中</div></div>
-      <div class="stat-card"><div class="num" style="color:#d97706"><?=count($blockTypes)?></div><div class="label">区块类型</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--ok)"><?=count(array_filter($modules, fn($m) => $m['enabled'] ?? false))?></div><div class="label">启用中</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--warn)"><?=count($blockTypes)?></div><div class="label">区块类型</div></div>
       <div class="stat-card"><div class="num" style="color:var(--accent)"><?=count(get_landing_pages())?></div><div class="label">落地页</div></div>
     </div>
 
@@ -124,13 +124,13 @@ admin_header('落地页模块');
             <td><span class="badge badge-gray"><?=htmlspecialchars($typeLabel)?></span></td>
             <td class="text-sm text-muted"><?=htmlspecialchars(mb_substr($m['description'] ?? '', 0, 40))?></td>
             <td>
-              <button class="btn btn-ghost btn-sm" onclick="toggleModule('<?=htmlspecialchars($m['id'])?>')"><?=($m['enabled'] ?? false) ? '<span style="color:#16a34a">● 启用</span>' : '<span style="color:var(--text-3)">○ 停用</span>'?></button>
+              <button class="btn btn-ghost btn-sm" onclick="toggleModule('<?=htmlspecialchars($m['id'])?>')"><?=($m['enabled'] ?? false) ? '<span style="color:var(--ok)">● 启用</span>' : '<span style="color:var(--text-3)">○ 停用</span>'?></button>
             </td>
             <td><span class="badge badge-gray"><?=$usageCount?> 页</span></td>
             <td>
               <a href="page-builder.php?module=<?=urlencode($m['id'])?>" class="btn btn-ghost btn-sm">➕ 应用到页面</a>
               <a href="?edit=<?=urlencode($m['id'])?>" class="btn btn-ghost btn-sm">✏️</a>
-              <button class="btn btn-ghost btn-sm" style="color:#dc2626" onclick="deleteModule('<?=htmlspecialchars($m['id'])?>')">🗑</button>
+              <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteModule('<?=htmlspecialchars($m['id'])?>')">🗑</button>
             </td>
           </tr>
           <?php endforeach; ?>

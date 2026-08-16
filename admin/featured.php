@@ -22,7 +22,7 @@ $activeItems = FeaturedSystem::getActive();
         <div style="color:var(--muted);font-size:13px;margin-top:4px">全部推荐</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
-        <div style="font-size:28px;font-weight:700;color:#16a34a"><?=count($activeItems)?></div>
+        <div style="font-size:28px;font-weight:700;color:var(--ok)"><?=count($activeItems)?></div>
         <div style="color:var(--muted);font-size:13px;margin-top:4px">当前生效</div>
       </div>
       <div style="padding:20px;background:var(--surface);border-radius:12px;border:1px solid var(--border)">
@@ -65,7 +65,7 @@ $activeItems = FeaturedSystem::getActive();
                 </td>
                 <td style="padding:10px 20px;text-align:right">
                   <button onclick="toggleFeatured('<?=h($item['id'])?>','<?= $item['enabled'] ? 'false' : 'true' ?>')" style="padding:4px 8px;border-radius:4px;border:1px solid var(--border);background:none;cursor:pointer;font-size:12px;margin-right:4px"><?=$item['enabled']?'禁用':'启用'?></button>
-                  <button onclick="removeFeatured('<?=h($item['id'])?>')" style="padding:4px 8px;border-radius:4px;border:1px solid #dc2626;color:#dc2626;background:none;cursor:pointer;font-size:12px">删除</button>
+                  <button onclick="removeFeatured('<?=h($item['id'])?>')" style="padding:4px 8px;border-radius:4px;border:1px solid var(--danger);color:var(--danger);background:none;cursor:pointer;font-size:12px">删除</button>
                 </td>
               </tr>
             <?php endforeach; ?>

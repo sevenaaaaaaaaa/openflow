@@ -210,7 +210,7 @@ admin_header('微信群发');
                 <?= csrf_field() ?>
                 <input type="hidden" name="do" value="cancel_schedule">
                 <input type="hidden" name="id" value="<?=htmlspecialchars($s['id'])?>">
-                <button class="btn btn-ghost btn-sm" style="color:#dc2626">取消</button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--danger)">取消</button>
               </form>
             </td>
           </tr>

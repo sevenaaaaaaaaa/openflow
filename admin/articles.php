@@ -146,7 +146,7 @@ admin_header('文章管理');
 .inline-edit.editing{border-color:#2b5f7e;background:var(--surface);outline:none;min-width:120px}
 .inline-tag{display:inline-flex;align-items:center;gap:3px;padding:1px 8px;border-radius:999px;background:var(--surface-2);font-size:12px;font-weight:500}
 .inline-tag .remove{cursor:pointer;color:var(--text-3);font-size:14px;line-height:1}
-.inline-tag .remove:hover{color:#dc2626}
+.inline-tag .remove:hover{color:var(--danger)}
 .inline-select{padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:13px;background:var(--surface)}
 td.actions{white-space:nowrap;width:1%}
 .cover-thumb{width:48px;height:36px;border-radius:4px;object-fit:cover;background:var(--surface-2);vertical-align:middle}

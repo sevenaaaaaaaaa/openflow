@@ -100,7 +100,7 @@ $verifications = SelfEvolve::verifyRecentResolutions();
 $users = get_users();
 
 $sevLabel = ['critical' => '🔴 严重', 'high' => '🟠 高', 'medium' => '🟡 中', 'info' => '🔵 信息'];
-$sevColor = ['critical' => '#dc2626', 'high' => '#ea580c', 'medium' => '#ca8a04', 'info' => '#2563eb'];
+$sevColor = ['critical' => 'var(--danger)', 'high' => '#ea580c', 'medium' => '#ca8a04', 'info' => '#2563eb'];
 $catLabel = ['bug' => '🐞 Bug', 'content' => '📄 内容', 'perf' => '⚡ 性能', 'routing' => '🧭 路由', 'interaction' => '🎨 交互'];
 
 admin_header('自我进化中心');
@@ -149,10 +149,10 @@ admin_header('自我进化中心');
     <!-- 统计卡 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px">
       <div class="evo-stat"><div class="num" style="color:var(--fg)"><?=count($open)?></div><div class="text-xs text-muted">待处理建议</div></div>
-      <div class="evo-stat"><div class="num" style="color:#dc2626"><?=count($critical)?></div><div class="text-xs text-muted">严重问题</div></div>
+      <div class="evo-stat"><div class="num" style="color:var(--danger)"><?=count($critical)?></div><div class="text-xs text-muted">严重问题</div></div>
       <div class="evo-stat"><div class="num" style="color:#ea580c"><?=count($high)?></div><div class="text-xs text-muted">高优先级</div></div>
       <div class="evo-stat"><div class="num" style="color:#2563eb"><?=count($bugs)?></div><div class="text-xs text-muted">🐞 Bug</div></div>
-      <div class="evo-stat"><div class="num" style="color:#16a34a"><?=count($content)?></div><div class="text-xs text-muted">📄 内容缺失</div></div>
+      <div class="evo-stat"><div class="num" style="color:var(--ok)"><?=count($content)?></div><div class="text-xs text-muted">📄 内容缺失</div></div>
       <div class="evo-stat"><div class="num" style="color:#ca8a04"><?=count($perf)+count($routing)?></div><div class="text-xs text-muted">⚡ 性能/路由</div></div>
       <div class="evo-stat"><div class="num" style="color:var(--faint)"><?=count($history)?></div><div class="text-xs text-muted">已迭代</div></div>
     </div>

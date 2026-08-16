@@ -29,10 +29,10 @@ if (isset($_GET['export'])) {
 
     <!-- 总览指标 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px">
-      <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">情感指数</div><div style="font-size:28px;font-weight:800;color:<?=$sentimentPct>=50?'#16a34a':($sentimentPct>=30?'#d97706':'#dc2626')?>"><?=$sentimentPct?>%</div><div style="font-size:11px;color:var(--text-3)">正面占比</div></div>
-      <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">正面</div><div style="font-size:24px;font-weight:700;color:#16a34a"><?=$pos?></div></div>
-      <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">负面</div><div style="font-size:24px;font-weight:700;color:#dc2626"><?=$neg?></div></div>
-      <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">中性</div><div style="font-size:24px;font-weight:700;color:#d97706"><?=$neu?></div></div>
+      <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">情感指数</div><div style="font-size:28px;font-weight:800;color:<?=$sentimentPct>=50?'var(--ok)':($sentimentPct>=30?'var(--warn)':'var(--danger)')?>"><?=$sentimentPct?>%</div><div style="font-size:11px;color:var(--text-3)">正面占比</div></div>
+      <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">正面</div><div style="font-size:24px;font-weight:700;color:var(--ok)"><?=$pos?></div></div>
+      <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">负面</div><div style="font-size:24px;font-weight:700;color:var(--danger)"><?=$neg?></div></div>
+      <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">中性</div><div style="font-size:24px;font-weight:700;color:var(--warn)"><?=$neu?></div></div>
       <div class="card" style="text-align:center;grid-column:span 2"><div style="font-size:12px;color:var(--text-3)">风险提示</div><div style="font-size:15px;font-weight:600;margin-top:6px"><?=htmlspecialchars($risk)?></div></div>
     </div>
 
@@ -68,14 +68,14 @@ if (isset($_GET['export'])) {
       <div class="card">
         <h2>😊 情感分布</h2>
         <div style="display:flex;height:30px;border-radius:8px;overflow:hidden;margin-bottom:10px">
-          <div style="width:<?=$total>0?round($pos/$total*100):0?>%;background:#16a34a"></div>
-          <div style="width:<?=$total>0?round($neu/$total*100):0?>%;background:#d97706"></div>
-          <div style="width:<?=$total>0?round($neg/$total*100):0?>%;background:#dc2626"></div>
+          <div style="width:<?=$total>0?round($pos/$total*100):0?>%;background:var(--ok)"></div>
+          <div style="width:<?=$total>0?round($neu/$total*100):0?>%;background:var(--warn)"></div>
+          <div style="width:<?=$total>0?round($neg/$total*100):0?>%;background:var(--danger)"></div>
         </div>
         <div style="display:flex;gap:16px;font-size:13px">
-          <span><b style="color:#16a34a">■</b> 正面 <?=round($pos/max(1,$total)*100)?>%</span>
-          <span><b style="color:#d97706">■</b> 中性 <?=round($neu/max(1,$total)*100)?>%</span>
-          <span><b style="color:#dc2626">■</b> 负面 <?=round($neg/max(1,$total)*100)?>%</span>
+          <span><b style="color:var(--ok)">■</b> 正面 <?=round($pos/max(1,$total)*100)?>%</span>
+          <span><b style="color:var(--warn)">■</b> 中性 <?=round($neu/max(1,$total)*100)?>%</span>
+          <span><b style="color:var(--danger)">■</b> 负面 <?=round($neg/max(1,$total)*100)?>%</span>
         </div>
       </div>
 
@@ -116,7 +116,7 @@ if (isset($_GET['export'])) {
             <td style="max-width:220px"><strong><?=htmlspecialchars($r['title'])?></strong></td>
             <td class="text-sm text-muted"><?=htmlspecialchars($r['source'])?></td>
             <td class="text-sm text-muted" style="max-width:280px"><?=htmlspecialchars(mb_substr($r['snippet']??'',0,80))?></td>
-            <td><a href="<?=htmlspecialchars($r['url'])?>" target="_blank" rel="noopener" class="text-sm" style="color:#0284c7">查看 →</a></td>
+            <td><a href="<?=htmlspecialchars($r['url'])?>" target="_blank" rel="noopener" class="text-sm" style="color:var(--accent)">查看 →</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

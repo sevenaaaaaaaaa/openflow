@@ -146,7 +146,7 @@ admin_header('1v1 咨询');
             <?php endif; ?>
             <?php if (!empty($b['review_note'])): ?><div class="text-muted">📝 <?=htmlspecialchars($b['review_note'])?></div><?php endif; ?>
             <?php if (!empty($b['scheduled_at'])): ?><div style="color:#0891b2"><b>已约时间：</b><?=htmlspecialchars($b['scheduled_at'])?><?php if (!empty($b['meeting_link'])): ?> · <a href="<?=htmlspecialchars($b['meeting_link'])?>" target="_blank">进入会议</a><?php endif; ?></div><?php endif; ?>
-            <?php if (!empty($b['replay_url'])): ?><div style="color:#16a34a"><b>回放：</b><a href="<?=htmlspecialchars($b['replay_url'])?>" target="_blank">观看回放</a><?php if (!empty($b['delivery_note'])): ?> · <?=htmlspecialchars($b['delivery_note'])?><?php endif; ?></div><?php endif; ?>
+            <?php if (!empty($b['replay_url'])): ?><div style="color:var(--ok)"><b>回放：</b><a href="<?=htmlspecialchars($b['replay_url'])?>" target="_blank">观看回放</a><?php if (!empty($b['delivery_note'])): ?> · <?=htmlspecialchars($b['delivery_note'])?><?php endif; ?></div><?php endif; ?>
           </div>
         </div>
         <!-- 操作区 -->
@@ -182,7 +182,7 @@ admin_header('1v1 咨询');
             <input type="hidden" name="booking_action" value="complete">
             <input type="text" name="replay_url" placeholder="回放链接（交付后填写）" style="padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
             <input type="text" name="note" placeholder="交付备注（可选）" style="padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
-            <button class="btn btn-success btn-sm" style="background:#16a34a;color:#fff">✅ 完成交付 + 回放</button>
+            <button class="btn btn-success btn-sm" style="background:var(--ok);color:#fff">✅ 完成交付 + 回放</button>
           </form>
           <?php endif; ?>
           <?php if (in_array($b['status'], ['pending_review','approved','paid','confirmed'])): ?>
@@ -216,7 +216,7 @@ admin_header('1v1 咨询');
             <td class="text-sm text-muted"><?=htmlspecialchars(implode('、', array_slice($m['specialties'] ?? [], 0, 3)))?></td>
             <td><strong>¥<?=number_format($m['price'] ?? 0, 0)?></strong></td>
             <td class="text-sm text-muted"><?php foreach (array_slice($m['rep_courses'] ?? [], 0, 2) as $cid): ?><?=htmlspecialchars($courseMap[$cid] ?? $cid)?><br><?php endforeach; ?></td>
-            <td><?=!empty($m['available']) ? '<span class="text-sm" style="color:#16a34a">● 可预约</span>' : '<span class="text-sm" style="color:#9ca3af">○ 停用</span>'?></td>
+            <td><?=!empty($m['available']) ? '<span class="text-sm" style="color:var(--ok)">● 可预约</span>' : '<span class="text-sm" style="color:#9ca3af">○ 停用</span>'?></td>
             <td><a href="#edit-<?=htmlspecialchars($m['id'])?>" class="btn btn-ghost btn-sm">编辑</a> <a href="?del_mentor=<?=urlencode($m['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除？')">删除</a></td>
           </tr>
           <?php endforeach; ?>

@@ -118,8 +118,8 @@ admin_header('Cloudflare');
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:24px">
       <div class="stat-card"><div class="num" style="color:var(--accent)"><?=$zoneInfo['status'] ?? '—'?></div><div class="label">Zone 状态</div></div>
       <div class="stat-card"><div class="num"><?=$analytics['requests']['all'] ?? 0?></div><div class="label">24h 请求</div></div>
-      <div class="stat-card"><div class="num" style="color:#16a34a"><?=isset($analytics['requests']['cached']) ? round(($analytics['requests']['cached'] ?? 0) / max(1, $analytics['requests']['all'] ?? 1) * 100) . '%' : '—'?></div><div class="label">缓存命中</div></div>
-      <div class="stat-card"><div class="num" style="color:#dc2626"><?=$analytics['requests']['threats'] ?? 0?></div><div class="label">拦截威胁</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--ok)"><?=isset($analytics['requests']['cached']) ? round(($analytics['requests']['cached'] ?? 0) / max(1, $analytics['requests']['all'] ?? 1) * 100) . '%' : '—'?></div><div class="label">缓存命中</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--danger)"><?=$analytics['requests']['threats'] ?? 0?></div><div class="label">拦截威胁</div></div>
       <div class="stat-card"><div class="num"><?=count($dnsRecords)?></div><div class="label">DNS 记录</div></div>
     </div>
 
@@ -140,7 +140,7 @@ admin_header('Cloudflare');
             <td class="text-sm text-muted"><?=htmlspecialchars($d['content'] ?? '')?></td>
             <td><span class="badge <?=($d['proxied'] ?? false)?'badge-green':'badge-gray'?>"><?=($d['proxied'] ?? false)?'CF代理':'仅DNS'?></span></td>
             <td>
-              <a href="?del_dns=<?=htmlspecialchars($d['id'] ?? '')?>&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm" style="color:#dc2626" onclick="return confirm('删除 DNS 记录？')">删除</a>
+              <a href="?del_dns=<?=htmlspecialchars($d['id'] ?? '')?>&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="return confirm('删除 DNS 记录？')">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>

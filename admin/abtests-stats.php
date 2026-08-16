@@ -16,7 +16,7 @@ foreach ($tests as $t) if ($t['id'] === $currentId) { $current = $t; break; }
 if (!$current) {
     http_response_code(404);
     ?><!DOCTYPE html><html><head><meta charset="UTF-8"><title>未找到实验</title></head>
-    <body style="font-family:sans-serif;padding:40px;text-align:center">实验不存在<br><a href="abtests.php" style="color:#0284c7">返回 A/B 测试</a></body></html><?php
+    <body style="font-family:sans-serif;padding:40px;text-align:center">实验不存在<br><a href="abtests.php" style="color:var(--accent)">返回 A/B 测试</a></body></html><?php
     exit;
 }
 
@@ -71,8 +71,8 @@ admin_header('A/B 测试统计');
     <div class="card">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <h2 style="margin-bottom:0"><?=htmlspecialchars($current['name'])?></h2>
-        <span class="variant-tag" style="background:#16a34a"><?=htmlspecialchars($current['variant_a_label'] ?? '方案 A')?></span>
-        <span class="variant-tag" style="background:#0284c7"><?=htmlspecialchars($current['variant_b_label'] ?? '方案 B')?></span>
+        <span class="variant-tag" style="background:var(--ok)"><?=htmlspecialchars($current['variant_a_label'] ?? '方案 A')?></span>
+        <span class="variant-tag" style="background:var(--accent)"><?=htmlspecialchars($current['variant_b_label'] ?? '方案 B')?></span>
         <span class="text-sm text-muted">B 流量 <?=htmlspecialchars($current['traffic_b'] ?? 50)?>%</span>
         <?php if (($current['enabled'] ?? false)): ?><span class="badge badge-green">🟢 进行中</span><?php else: ?><span class="badge badge-gray">⏸ 已暂停</span><?php endif; ?>
       </div>
@@ -80,10 +80,10 @@ admin_header('A/B 测试统计');
 
     <!-- 指标对比 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px">
-      <div class="metric"><div class="lab">A 曝光</div><div class="val" style="color:#16a34a"><?=$result['A']['impression']?></div></div>
-      <div class="metric"><div class="lab">A 转化</div><div class="val" style="color:#16a34a"><?=$result['A']['conversion']?></div><div class="text-sm text-muted">转化率 <?=$result['A']['rate']?>%</div></div>
-      <div class="metric"><div class="lab">B 曝光</div><div class="val" style="color:#0284c7"><?=$result['B']['impression']?></div></div>
-      <div class="metric"><div class="lab">B 转化</div><div class="val" style="color:#0284c7"><?=$result['B']['conversion']?></div><div class="text-sm text-muted">转化率 <?=$result['B']['rate']?>%</div></div>
+      <div class="metric"><div class="lab">A 曝光</div><div class="val" style="color:var(--ok)"><?=$result['A']['impression']?></div></div>
+      <div class="metric"><div class="lab">A 转化</div><div class="val" style="color:var(--ok)"><?=$result['A']['conversion']?></div><div class="text-sm text-muted">转化率 <?=$result['A']['rate']?>%</div></div>
+      <div class="metric"><div class="lab">B 曝光</div><div class="val" style="color:var(--accent)"><?=$result['B']['impression']?></div></div>
+      <div class="metric"><div class="lab">B 转化</div><div class="val" style="color:var(--accent)"><?=$result['B']['conversion']?></div><div class="text-sm text-muted">转化率 <?=$result['B']['rate']?>%</div></div>
     </div>
 
     <!-- 结论 -->
@@ -94,7 +94,7 @@ admin_header('A/B 测试统计');
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <div style="font-size:44px"><?=$lift>=0?'📈':'📉'?></div>
         <div>
-          <div style="font-size:20px;font-weight:700;color:<?=$lift>=0?'#16a34a':'#dc2626'?>"><?=($lift>=0?'+':'')?><?=$lift?>% 转化提升</div>
+          <div style="font-size:20px;font-weight:700;color:<?=$lift>=0?'var(--ok)':'var(--danger)'?>"><?=($lift>=0?'+':'')?><?=$lift?>% 转化提升</div>
           <div class="text-sm text-muted" style="margin-top:4px">
             B 相对 A：转化率 <?=$aRate?>% → <?=$bRate?>%
             <?php if ($lift >= 5): ?>（B 显著更优，建议采用）<?php elseif ($lift <= -5): ?>（B 效果较差，建议保留 A）<?php else: ?>（差异不明显，建议继续观察）<?php endif; ?>

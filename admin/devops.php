@@ -198,7 +198,7 @@ admin_header('运维工具');
         <thead><tr><th>来源文章</th><th>损坏 URL</th><th>HTTP</th></tr></thead>
         <tbody>
           <?php foreach ($brokenLinks as $bl): ?>
-          <tr><td><?=htmlspecialchars($bl['article'])?></td><td><code><?=htmlspecialchars($bl['url'])?></code></td><td><span style="color:#dc2626"><?=$bl['http']?></span></td></tr>
+          <tr><td><?=htmlspecialchars($bl['article'])?></td><td><code><?=htmlspecialchars($bl['url'])?></code></td><td><span style="color:var(--danger)"><?=$bl['http']?></span></td></tr>
           <?php endforeach; ?>
         </tbody>
       </table>
