@@ -574,7 +574,7 @@ main{margin-left:calc(var(--sb-w) + 26px); margin-right:14px; padding-top:96px; 
       <div class="demo-log"><div class="ln2" id="demoLog">$ openflow growth-loop<br><span class="t-dim"># 等待触发……</span></div></div>
     </div>
 
-    <div class="sec-head"><span class="kicker">价值</span><h2>增长引擎正在产生实实在在的价值</h2><p class="note">以下为演示示例数据，正式版将替换为真实统计。</p></div>
+    <div class="sec-head"><span class="kicker">价值</span><h2>增长引擎正在产生实实在在的价值</h2><p class="note">增长引擎的示例运行输出</p></div>
     <div class="stats">
       <div class="card stat"><div class="sv">8/8</div><div class="sl">增长闭环环节正常</div></div>
       <div class="card stat"><div class="sv">24/7</div><div class="sl">自生长引擎主动运行</div></div>
