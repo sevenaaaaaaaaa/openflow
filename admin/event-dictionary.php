@@ -68,7 +68,7 @@ admin_header('事件字典');
   <?php admin_sidebar('event-dictionary'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">📋 事件字典</h1>
+      <h1 style="margin-bottom:0"> 事件字典</h1>
       <div class="flex gap-2 ml-auto">
         <form method="post" style="display:inline">
           <?= csrf_field() ?>

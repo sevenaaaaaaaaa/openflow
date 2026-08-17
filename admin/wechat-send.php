@@ -115,7 +115,7 @@ admin_header('微信群发');
   <?php admin_sidebar('wechat-send'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">📣 微信群发</h1>
+      <h1 style="margin-bottom:0"> 微信群发</h1>
       <div class="flex gap-2 ml-auto">
         <a href="wechat-mp.php" class="btn btn-ghost btn-sm">公众号设置</a>
       </div>

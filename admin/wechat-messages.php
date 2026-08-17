@@ -64,7 +64,7 @@ admin_header('客服消息');
   <?php admin_sidebar('wechat-messages'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">💬 客服消息 & 模板消息</h1>
+      <h1 style="margin-bottom:0"> 客服消息 & 模板消息</h1>
       <div class="flex gap-2 ml-auto">
         <a href="wechat-send.php" class="btn btn-ghost btn-sm">群发</a>
       </div>

@@ -11,7 +11,7 @@ $activeItems = FeaturedSystem::getActive();
   <?php admin_sidebar('featured'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">⭐ 推荐位管理</h1>
+      <h1 style="margin-bottom:0"> 推荐位管理</h1>
       <div class="flex gap-2 ml-auto">
         <button onclick="document.getElementById('addModal').style.display='flex'" class="btn btn-primary">+ 添加推荐</button>
       </div>

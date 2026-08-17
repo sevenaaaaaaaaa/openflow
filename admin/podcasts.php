@@ -150,7 +150,7 @@ admin_header('播客与视频');
     <?php else: ?>
     <!-- ═══ 列表页 ═══ -->
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">🎙️ 播客与视频</h1>
+      <h1 style="margin-bottom:0"> 播客与视频</h1>
       <a href="podcasts.php?edit=new" class="btn btn-primary ml-auto">➕ 新增播客</a>
     </div>
     <p class="sub">前台展示于 /podcasts.php · 支持 RSS 订阅 · 点编辑进详情</p>

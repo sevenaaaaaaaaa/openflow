@@ -53,7 +53,7 @@ admin_header('底部外链管理');
   <?php admin_sidebar('settings'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-2">
-      <h1 style="margin-bottom:0">🔗 底部外链</h1>
+      <h1 style="margin-bottom:0"> 底部外链</h1>
       <span class="badge badge-gray"><?=count($links)?> 个分组</span>
     </div>
     <p class="sub">管理网站底部的外链，支持分组、nofollow、新窗口打开</p>

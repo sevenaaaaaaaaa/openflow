@@ -18,7 +18,7 @@ foreach ($follows as $f) {
   <?php admin_sidebar('follows'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">👥 关注管理</h1>
+      <h1 style="margin-bottom:0"> 关注管理</h1>
       <div class="flex gap-2 ml-auto">
         <span class="badge" style="background:var(--accent);color:var(--on-accent);padding:4px 12px;border-radius:999px;font-size:13px"><?=count($follows)?> 条关注关系</span>
       </div>

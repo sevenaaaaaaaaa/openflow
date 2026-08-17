@@ -20,7 +20,7 @@ admin_header('路径分析');
 <div class="admin-layout">
   <?php admin_sidebar('path-analysis'); ?>
   <div class="main">
-    <h1>🧭 路径分析</h1>
+    <h1> 路径分析</h1>
     <p class="sub">基于埋点事件的用户访问路径 · 会话切分（间隔 >30 分钟）· 入口/出口 · 跳出率</p>
 
     <form method="get" class="card" style="margin-bottom:16px;padding:16px">
