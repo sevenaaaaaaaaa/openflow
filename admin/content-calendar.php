@@ -55,6 +55,35 @@ foreach ($downloads as $d) {
     ];
 }
 
+// 分发发布计划（定时发布队列：某天发到哪些渠道）
+$publishQueue = json_read(DATA_DIR . '/publish-queue.json');
+foreach ((array)$publishQueue as $pq) {
+    if (($pq['status'] ?? '') === 'done') continue;
+    $calendarItems[] = [
+        'id' => $pq['id'] ?? ('pub_' . $pq['article_id']),
+        'type' => 'publish',
+        'title' => '分发：' . ($pq['title'] ?? '内容'),
+        'platforms' => (array)($pq['platforms'] ?? []),
+        'date' => substr($pq['send_at'] ?? '', 0, 10),
+        'scheduled' => true,
+        'color' => 'oklch(60% .14 300)',
+    ];
+}
+// 已发布记录
+$publishLog = json_read(DATA_DIR . '/publish-log.json');
+foreach ((array)$publishLog as $pl) {
+    if (empty($pl['send_at'] ?? '') && empty($pl['created_at'] ?? '')) continue;
+    $calendarItems[] = [
+        'id' => ($pl['id'] ?? '') ?: ('plog_' . md5(json_encode($pl))),
+        'type' => 'publish_done',
+        'title' => '已分发：' . ($pl['title'] ?? '内容'),
+        'platforms' => array_keys((array)($pl['results'] ?? [])),
+        'date' => substr($pl['send_at'] ?? ($pl['created_at'] ?? ''), 0, 10),
+        'scheduled' => false,
+        'color' => 'var(--ok)',
+    ];
+}
+
 // 按日期排序
 usort($calendarItems, fn($a, $b) => strcmp($a['date'], $b['date']));
 
@@ -111,6 +140,8 @@ admin_header('内容日历');
       <span class="lg"><span class="dot" style="background:#2e6b4f"></span>文章</span>
       <span class="lg"><span class="dot" style="background:var(--accent)"></span>活动</span>
       <span class="lg"><span class="dot" style="background:var(--accent)"></span>资料</span>
+      <span class="lg"><span class="dot" style="background:oklch(60% .14 300)"></span>分发计划</span>
+      <span class="lg"><span class="dot" style="background:var(--ok)"></span>已分发</span>
       <span class="lg"><span class="dot dashed" style="background:var(--warn)"></span>定时发布</span>
     </div>
 
@@ -132,7 +163,13 @@ var CAL = {
 };
 
 var WEEK_NAMES = ['日','一','二','三','四','五','六'];
-var TYPE_NAMES = { article: '📝 文章', event: '🎪 活动', download: '📄 资料' };
+var TYPE_NAMES = { article: '📝 文章', event: '🎪 活动', download: '📄 资料', publish: '📣 分发计划', publish_done: '✅ 已分发' };
+
+// 平台短名
+function platLabel(p) {
+  var map = { wechat: '公众号', zhihu: '知乎', bilibili: 'B站', weibo: '微博', xiaohongshu: '小红书', douyin: '抖音', official: '官网', custom: '自定义', webhook: 'Webhook' };
+  return map[p] || p;
+}
 
 function calSetView(v) {
   CAL.view = v;
@@ -172,7 +209,7 @@ function calRender() {
         if (it.type === 'event' && !isStart) {
           return '<div class="' + chipClass + '" style="background:' + it.color + ';min-height:6px;padding:0" data-id="' + it.id + '" data-type="' + it.type + '" data-title="' + it.title.replace(/"/g,'&quot;') + '" data-start="' + it.date + '" data-end="' + (it.end_date||it.date) + '" title="' + TYPE_NAMES[it.type] + ' · ' + it.title + '"></div>';
         }
-        return '<div class="' + chipClass + '" draggable="true" ondragstart="calDragStart(event)" ondragend="calDragEnd(event)" data-id="' + it.id + '" data-type="' + it.type + '" data-title="' + it.title.replace(/"/g,'&quot;') + '" data-start="' + it.date + '" data-end="' + (it.end_date||it.date) + '" style="background:' + it.color + '" title="' + TYPE_NAMES[it.type] + ' · ' + it.title + '">' + (it.scheduled ? '⏰ ' : '') + it.title.substring(0, 14) + (it.title.length > 14 ? '…' : '') + '</div>';
+        return '<div class="' + chipClass + '" draggable="true" ondragstart="calDragStart(event)" ondragend="calDragEnd(event)" data-id="' + it.id + '" data-type="' + it.type + '" data-title="' + it.title.replace(/"/g,'&quot;') + '" data-start="' + it.date + '" data-end="' + (it.end_date||it.date) + '" style="background:' + it.color + '" title="' + TYPE_NAMES[it.type] + ' · ' + it.title + '">' + (it.scheduled ? '⏰ ' : '') + it.title.substring(0, 14) + (it.title.length > 14 ? '…' : '') + (it.platforms && it.platforms.length ? ' <span style="opacity:.85">→' + it.platforms.map(platLabel).join('/') + '</span>' : '') + '</div>';
       }).join('');
       html += '<div class="cal-day' + (isToday2 ? ' today' : '') + '" data-date="' + ds2 + '" ondragover="calDragOver(event)" ondrop="calDrop(event)" style="min-height:120px">' +
         '<div class="dnum">' + (isToday2 ? '今天' : WEEK_NAMES[wi2]) + ' ' + ds2.substring(5) + '</div>' + chips2 + '</div>';
@@ -209,6 +246,7 @@ function calRender() {
         'style="background:' + it.color + '" title="' + TYPE_NAMES[it.type] + ' · ' + it.title + (it.end_date!==it.date ? '（' + it.date + ' ~ ' + (it.end_date||it.date) + '）' : '') + '">' +
         (it.type === 'event' && it.end_date !== it.date ? '<span class="cal-handle cal-handle-l" onmousedown="startResize(event,\'start\')" title="拖动调整开始日">↔</span>' : '') +
         (it.scheduled ? '⏰ ' : '') + it.title.substring(0, 10) + (it.title.length > 10 ? '…' : '') +
+        (it.platforms && it.platforms.length ? ' <span style="opacity:.85;font-weight:400">→' + it.platforms.map(platLabel).join('/') + '</span>' : '') +
         (it.type === 'event' && it.end_date !== it.date ? '<span class="cal-handle cal-handle-r" onmousedown="startResize(event,\'end\')" title="拖动调整结束日">↔</span>' : '') +
         '</div>';
     }).join('');

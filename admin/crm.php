@@ -17,6 +17,8 @@ foreach ($users as $uKey => $u) {
 }
 $tab = $_GET['tab'] ?? 'pipeline';
 $rawLeads = get_leads();
+$customers = crm_get_customers();
+$arrData = crm_arr();
 
 // 操作处理
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -36,6 +38,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'transfer') {
         crm_transfer($email, $_POST['owner'] ?? '');
         flash('success', '线索已交接');
+    } elseif ($action === 'to_customer') {
+        $customer = crm_to_customer($email, [
+            'arr' => (float)($_POST['arr'] ?? 0),
+            'plan_type' => $_POST['plan_type'] ?? 'saas',
+            'contract_end' => $_POST['contract_end'] ?? '',
+            'notes' => $_POST['notes'] ?? '',
+        ]);
+        flash('success', $customer ? '已转为客户，可在「客户」视图管理' : '转客户失败');
+    } elseif ($action === 'update_customer') {
+        $customers = crm_get_customers();
+        foreach ($customers as &$c) if (($c['id'] ?? '') === ($_POST['customer_id'] ?? '')) {
+            if (isset($_POST['arr'])) $c['arr'] = (float)$_POST['arr'];
+            if (isset($_POST['health'])) $c['health'] = $_POST['health'];
+            if (isset($_POST['status'])) $c['status'] = $_POST['status'];
+            if (isset($_POST['contract_end'])) $c['contract_end'] = $_POST['contract_end'];
+            if (isset($_POST['plan_type'])) $c['plan_type'] = $_POST['plan_type'];
+            $c['updated_at'] = date('Y-m-d H:i:s');
+        }
+        crm_save_customers($customers);
+        flash('success', '客户信息已更新');
     } elseif ($action === 'import' && !empty($_FILES['csv_file']['tmp_name'])) {
         $imported = 0; $skipped = 0;
         $handle = fopen($_FILES['csv_file']['tmp_name'], 'r');
@@ -118,6 +140,8 @@ admin_header('CRM 线索管理');
       <a href="?tab=kanban" class="<?=$tab==='kanban'?'active':''?>">📋 看板视图</a>
       <a href="?tab=pool" class="<?=$tab==='pool'?'active':''?>">🌊 公海 (<?=$poolCount?>)</a>
       <a href="?tab=raw" class="<?=$tab==='raw'?'active':''?>">📥 原始提交 (<?=count($rawLeads)?>)</a>
+      <a href="?tab=customers" class="<?=$tab==='customers'?'active':''?>">🏢 客户 (<?=count(crm_get_customers())?>)</a>
+      <a href="?tab=arr" class="<?=$tab==='arr'?'active':''?>">💰 ARR 报表</a>
     </div>
 
     <?php if ($tab === 'kanban'): ?>
@@ -327,6 +351,72 @@ admin_header('CRM 线索管理');
       </table>
     </div>
 
+    <?php elseif ($tab === 'customers'): ?>
+    <!-- ═══ 客户管理：won 转客户，合同/续费/健康度 ═══ -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px">
+      <div class="pipe-card"><div class="lab">活跃客户</div><div class="num" style="color:var(--ok)"><?=$arrData['active_customers']?></div></div>
+      <div class="pipe-card"><div class="lab">当前 ARR</div><div class="num" style="color:var(--accent)">¥<?=number_format($arrData['arr'],0)?></div></div>
+      <div class="pipe-card"><div class="lab">流失</div><div class="num" style="color:var(--danger)"><?=$arrData['churned_count']?></div></div>
+      <div class="pipe-card"><div class="lab">流失率</div><div class="num"><?=$arrData['churn_rate']?>%</div></div>
+    </div>
+    <div class="card" style="padding:0;overflow:auto">
+      <table>
+        <thead><tr><th>客户</th><th>方案</th><th>ARR/年</th><th>合同周期</th><th>健康度</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          <?php if (empty($customers)): ?><tr><td colspan="7" class="empty">暂无客户。将「商机」阶段的线索转为客户后，在这里管理合同与续费。</td></tr><?php endif; ?>
+          <?php foreach ($customers as $c): ?>
+          <tr>
+            <td><strong><?=htmlspecialchars($c['name'] ?: '—')?></strong><div class="text-sm text-muted" style="font-size:11px"><?=htmlspecialchars($c['company'] ?: $c['email'])?></div></td>
+            <td><span class="stage-pill" style="background:var(--accent-soft);color:var(--accent)"><?=htmlspecialchars($c['plan_type'])?></span></td>
+            <td style="color:var(--ok);font-weight:600">¥<?=number_format($c['arr'] ?? 0,0)?></td>
+            <td class="text-sm text-muted"><?=htmlspecialchars($c['contract_start'] ?? '')?> ~ <?=htmlspecialchars($c['contract_end'] ?? '')?></td>
+            <td><span class="stage-pill" style="background:<?=['healthy'=>'var(--ok-soft)','at_risk'=>'var(--warn-soft)','churned'=>'var(--danger-soft)'][$c['health']]??'var(--hover)';?>;color:<?=['healthy'=>'var(--ok)','at_risk'=>'var(--warn)','churned'=>'var(--danger)'][$c['health']]??'var(--muted)';?>"><?=['healthy'=>'健康','at_risk'=>'有风险','churned'=>'流失'][$c['health']]??$c['health']?></span></td>
+            <td><span class="stage-pill" style="background:<?=$c['status']==='active'?'var(--ok-soft)':'var(--danger-soft)'?>;color:<?=$c['status']==='active'?'var(--ok)':'var(--danger)'?>"><?=$c['status']==='active'?'使用中':'已流失'?></span></td>
+            <td>
+              <form method="post" style="display:inline">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="update_customer">
+                <input type="hidden" name="customer_id" value="<?=htmlspecialchars($c['id'])?>">
+                <select name="health" onchange="this.form.submit()" style="padding:4px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
+                  <option value="healthy" <?=$c['health']==='healthy'?'selected':''?>>健康</option>
+                  <option value="at_risk" <?=$c['health']==='at_risk'?'selected':''?>>有风险</option>
+                  <option value="churned" <?=$c['health']==='churned'?'selected':''?>>流失</option>
+                </select>
+                <select name="arr" onchange="this.form.submit()" style="padding:4px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
+                  <?php foreach ([0,5000,10000,20000,50000,100000,200000] as $v): ?><option value="<?=$v?>" <?=(int)($c['arr']??0)===$v?'selected':''?>>¥<?=number_format($v,0)?></option><?php endforeach; ?>
+                </select>
+              </form>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+
+    <?php elseif ($tab === 'arr'): ?>
+    <!-- ═══ ARR 报表 ═══ -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+      <div class="pipe-card"><div class="lab">年度经常性收入 ARR</div><div class="num" style="color:var(--ok)">¥<?=number_format($arrData['arr'],0)?></div></div>
+      <div class="pipe-card"><div class="lab">客户平均 ARR</div><div class="num" style="color:var(--accent)">¥<?=number_format($arrData['avg_arr'],0)?></div></div>
+      <div class="pipe-card"><div class="lab">商机管道</div><div class="num" style="color:var(--warn)">¥<?=number_format($arrData['pipeline_value'],0)?></div><div class="lab"><?=$arrData['open_deals']?> 个开放商机</div></div>
+      <div class="pipe-card"><div class="lab">已成交商机</div><div class="num"><?=$arrData['won_deals']?></div></div>
+      <div class="pipe-card"><div class="lab">客户流失率</div><div class="num" style="color:<?=$arrData['churn_rate']>10?'var(--danger)':'var(--ok)'?>"><?=$arrData['churn_rate']?>%</div></div>
+    </div>
+    <div class="card" style="padding:24px">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px">ARR 构成</h3>
+      <?php $maxArr = max(1, $arrData['arr']); $pipelinePct = round($arrData['pipeline_value'] / max(1, $arrData['arr'] + $arrData['pipeline_value']) * 100); ?>
+      <div style="font-size:12px;color:var(--faint);margin-bottom:8px">已实现 ARR（客户合同 × 12）与商机管道（机会金额）占比</div>
+      <div style="display:flex;height:14px;border-radius:99px;overflow:hidden;background:var(--hover);margin-bottom:14px">
+        <div style="width:<?=100-$pipelinePct?>%;background:var(--ok)"></div>
+        <div style="width:<?=$pipelinePct?>%;background:var(--warn)"></div>
+      </div>
+      <div style="display:flex;gap:20px;font-size:12px;color:var(--muted)">
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--ok);margin-right:5px"></span>已实现 ARR ¥<?=number_format($arrData['arr'],0)?></span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--warn);margin-right:5px"></span>商机管道 ¥<?=number_format($arrData['pipeline_value'],0)?></span>
+      </div>
+      <p style="font-size:12px;color:var(--faint);margin-top:18px;line-height:1.7">说明：ARR 由「客户管理」中 active 客户合同的年化金额汇总；商机管道为 opportunity 阶段线索的 value 汇总。将商机转为客户后，ARR 自动计入。</p>
+    </div>
+
     <?php else: /* pipeline tab */ ?>
 
     <!-- 管线概览 -->
@@ -383,6 +473,30 @@ admin_header('CRM 线索管理');
               <span class="stage-pill" style="background:#f4f3e9">评分 <?=$focusLead['score']?></span>
               <span class="stage-pill" style="background:#f4f3e9">跟进人 <?=htmlspecialchars($adminNames[$focusLead['owner']] ?? $focusLead['owner'] ?: '未分配')?></span>
             </div>
+            <?php
+            // 线索 ↔ CDP 画像打通：按 email 找画像，展示设备/渠道/偏好
+            $profile = null;
+            try {
+                require_once __DIR__ . '/../lib/CdpSystem.php';
+                $profiles = CdpSystem::allProfiles();
+                foreach ((array)$profiles as $p) {
+                    if (mb_strtolower($p['properties']['email'] ?? '') === mb_strtolower($focusLead['email'] ?? '') || ($p['member_email'] ?? '') === ($focusLead['email'] ?? '')) { $profile = $p; break; }
+                }
+            } catch (Throwable $e) {}
+            if ($profile):
+                $prop = $profile['properties'] ?? [];
+                $ch = $prop['utm_source'] ?? ($prop['channel'] ?? '直接访问');
+            ?>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px;font-size:12px">
+              <div style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px"><div style="color:var(--faint)">来源渠道</div><b><?=htmlspecialchars($ch)?></b></div>
+              <div style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px"><div style="color:var(--faint)">设备</div><b><?=htmlspecialchars($prop['os'] ?? '—')?> / <?=htmlspecialchars($prop['browser'] ?? '—')?></b></div>
+              <div style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px"><div style="color:var(--faint)">城市</div><b><?=htmlspecialchars($prop['city'] ?? '—')?></b></div>
+              <div style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px"><div style="color:var(--faint)">事件数</div><b><?=htmlspecialchars($profile['events_count'] ?? 0)?></b></div>
+              <?php if (!empty($prop['utm_campaign'])): ?><div style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px"><div style="color:var(--faint)">活动</div><b><?=htmlspecialchars($prop['utm_campaign'])?></b></div><?php endif; ?>
+              <?php if (!empty($profile['tags'])): ?><div style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px"><div style="color:var(--faint)">标签</div><b style="font-size:11px"><?=htmlspecialchars(implode(' · ', array_slice($profile['tags'],0,4)))?></b></div><?php endif; ?>
+            </div>
+            <?php endif; ?>
+          </div>
           </div>
 
           <!-- 阶段更新 + 商机 -->
@@ -400,6 +514,23 @@ admin_header('CRM 线索管理');
             <input type="date" name="expected_close" value="<?=htmlspecialchars($focusLead['expected_close'] ?? '')?>" style="padding:7px;border:1.5px solid var(--border);border-radius:8px">
             <button type="submit" class="btn btn-primary btn-sm">更新阶段</button>
           </form>
+
+          <!-- 转为客户（商机 → 客户） -->
+          <div style="padding:12px;background:var(--surface-2);border-radius:12px;margin-bottom:12px">
+            <div style="font-size:12px;font-weight:700;margin-bottom:8px">转为客户（won 后计入 ARR）</div>
+            <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <?= csrf_field() ?>
+              <input type="hidden" name="email" value="<?=htmlspecialchars($focusLead['email'])?>">
+              <input type="hidden" name="action" value="to_customer">
+              <input type="hidden" name="focus" value="<?=htmlspecialchars($focusLead['email'])?>">
+              <input type="number" name="arr" placeholder="年化 ARR ¥" step="100" style="width:110px;padding:7px;border:1.5px solid var(--border);border-radius:8px">
+              <select name="plan_type" style="padding:7px;border:1.5px solid var(--border);border-radius:8px">
+                <option value="saas">SaaS 订阅</option><option value="private">私有化部署</option><option value="custom">定制开发</option>
+              </select>
+              <input type="date" name="contract_end" style="padding:7px;border:1.5px solid var(--border);border-radius:8px">
+              <button type="submit" class="btn btn-primary btn-sm">转客户</button>
+            </form>
+          </div>
 
           <!-- 交接 -->
           <form method="post" style="display:flex;gap:8px;margin-bottom:12px">

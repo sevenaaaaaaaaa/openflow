@@ -83,6 +83,71 @@ function dash_channel_attribution(): array {
     return $byChannel;
 }
 
+// ─── UTM 全维度归因（SEO/SEM/信息流/社媒/自定义） ───
+// 优先级：URL 的 UTM 参数 > referrer host。支持任意自定义 source。
+function dash_utm_attribution(): array {
+    $groups = [];
+    $byMedium = [];
+    $total = 0;
+    try {
+        // 1. UTM 来源落地（URL 带 utm 参数，track.php 记录的 utm_landing）
+        $landings = Database::query("SELECT props FROM events WHERE event='utm_landing'");
+        foreach ($landings as $r) {
+            $p = json_decode($r['props'] ?? '', true);
+            $source = $p['fc_utm_source'] ?? '';
+            $medium = $p['fc_utm_medium'] ?? '';
+            $campaign = $p['fc_utm_campaign'] ?? '';
+            if ($source === '') { $medium = ''; } // 无 source 不计
+            $cat = utm_medium_category($medium);
+            $key = $cat . '|' . ($source ?: '直接访问');
+            $groups[$key] = ($groups[$key] ?? ['visits'=>0, 'source'=>$source ?: '直接访问', 'medium'=>$cat]);
+            $groups[$key]['visits']++;
+            $byMedium[$cat] = ($byMedium[$cat] ?? 0) + 1;
+            $total++;
+        }
+    } catch (Exception $e) {}
+    // 2. 无 UTM 的访问按 referrer 归因（page_view 的 props.referrer）
+    try {
+        $pv = Database::query("SELECT props FROM events WHERE event='page_view' AND created_at >= ?", [date('Y-m-d', strtotime('-30 days'))]);
+        foreach ($pv as $r) {
+            $p = json_decode($r['props'] ?? '', true);
+            $ref = $p['referrer'] ?? '';
+            if ($ref === '') continue;
+            $host = parse_url($ref, PHP_URL_HOST) ?: '';
+            $cat = referrer_category($host);
+            $key = $cat . '|' . ($cat === '其他' ? $host : $cat);
+            $groups[$key] = $groups[$key] ?? ['visits'=>0, 'source'=>$host ?: '其他', 'medium'=>$cat];
+            $groups[$key]['visits']++;
+            $byMedium[$cat] = ($byMedium[$cat] ?? 0) + 1;
+            $total++;
+        }
+    } catch (Exception $e) {}
+    uasort($groups, fn($a, $b) => $b['visits'] <=> $a['visits']);
+    return ['groups'=>$groups, 'by_medium'=>$byMedium, 'total'=>$total];
+}
+
+// medium 分类：organic→SEO / paid,cpc,ppc→SEM / feed→信息流 / social→社媒 / email→邮件 / 其他→自定义
+function utm_medium_category(string $medium): string {
+    $m = strtolower(trim($medium));
+    if ($m === '') return '直接';
+    if (in_array($m, ['organic','natural'])) return 'SEO';
+    if (in_array($m, ['cpc','paid','ppc','ads','sem'])) return 'SEM';
+    if (in_array($m, ['feed','information_feed','pin'])) return '信息流';
+    if (in_array($m, ['social','socialmedia'])) return '社媒';
+    if (in_array($m, ['email','mail'])) return '邮件';
+    return '自定义';
+}
+
+// referrer host 分类
+function referrer_category(string $host): string {
+    $host = strtolower($host);
+    $searchEngines = ['google','baidu','bing','sogou','360','yahoo'];
+    foreach ($searchEngines as $se) if (str_contains($host, $se)) return 'SEO';
+    $social = ['weibo','weixin','wechat','zhihu','douyin','bilibili','xiaohongshu','twitter','facebook','linkedin','instagram'];
+    foreach ($social as $s) if (str_contains($host, $s)) return '社媒';
+    return '其他';
+}
+
 // 收入报表（按月 + 分销佣金明细）
 function dash_revenue_report(): array {
     $orders = json_read(DATA_DIR . '/shop/orders.json');

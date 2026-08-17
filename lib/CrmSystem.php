@@ -118,3 +118,73 @@ function crm_from_submission(array $submission): void {
         crm_add_followup($key, '通过表单首次提交：' . ($data['company'] ?? ''));
     }
 }
+
+// ─── 客户管理（won 后转客户，合同/续费/健康度） ───
+function crm_customers_file(): string { return DATA_DIR . '/customers.json'; }
+
+function crm_get_customers(): array {
+    $d = json_read(crm_customers_file());
+    return is_array($d) ? $d : [];
+}
+
+function crm_save_customers(array $customers): bool { return json_write(crm_customers_file(), $customers); }
+
+// 线索转客户（won → 客户）
+function crm_to_customer(string $email, array $extra = []): ?array {
+    $customers = crm_get_customers();
+    $key = mb_strtolower(trim($email));
+    foreach ($customers as &$c) if (($c['email'] ?? '') === $key) return $c; // 已存在
+    $lead = crm_get()['leads'][$key] ?? [];
+    $customer = array_merge([
+        'id' => 'cus_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 8),
+        'lead_key' => $key,
+        'name' => $lead['name'] ?? '',
+        'email' => $key,
+        'phone' => $lead['phone'] ?? '',
+        'company' => $lead['company'] ?? '',
+        'plan_type' => $extra['plan_type'] ?? 'saas',   // saas / private / custom
+        'arr' => (float)($extra['arr'] ?? 0),            // 年度经常性收入
+        'contract_start' => $extra['contract_start'] ?? date('Y-m-d'),
+        'contract_end' => $extra['contract_end'] ?? date('Y-m-d', strtotime('+1 year')),
+        'health' => $extra['health'] ?? 'healthy',       // healthy / at_risk / churned
+        'status' => 'active',                            // active / churned
+        'notes' => $extra['notes'] ?? '',
+        'created_at' => date('Y-m-d H:i:s'),
+        'updated_at' => date('Y-m-d H:i:s'),
+    ], $extra);
+    $customers[] = $customer;
+    crm_save_customers($customers);
+    // 线索标记已转客户
+    crm_update_lead($key, ['customer_id' => $customer['id'], 'stage' => 'won']);
+    return $customer;
+}
+
+// ─── ARR 报表（年度经常性收入） ───
+function crm_arr(): array {
+    $customers = crm_get_customers();
+    $active = array_values(array_filter($customers, fn($c) => ($c['status'] ?? '') === 'active'));
+    $arr = round(array_sum(array_map(fn($c) => (float)($c['arr'] ?? 0), $active)), 2);
+
+    // 商机漏斗（opportunity 阶段的线索）
+    $leads = crm_get()['leads'] ?? [];
+    $deals = array_values(array_filter($leads, fn($l) => ($l['stage'] ?? '') === 'opportunity'));
+    $pipeline = round(array_sum(array_map(fn($d) => (float)($d['value'] ?? 0), $deals)), 2);
+    $won = array_values(array_filter($leads, fn($l) => ($l['stage'] ?? '') === 'won'));
+
+    // 客户生命周期价值（按 ARR 估算）
+    $customerCount = count($active);
+    $avgArr = $customerCount > 0 ? round($arr / $customerCount, 2) : 0;
+    $churned = array_values(array_filter($customers, fn($c) => ($c['status'] ?? '') === 'churned'));
+    $churnRate = $customerCount + count($churned) > 0 ? round(count($churned) / ($customerCount + count($churned)) * 100, 1) : 0;
+
+    return [
+        'arr' => $arr,
+        'active_customers' => $customerCount,
+        'avg_arr' => $avgArr,
+        'pipeline_value' => $pipeline,
+        'open_deals' => count($deals),
+        'won_deals' => count($won),
+        'churn_rate' => $churnRate,
+        'churned_count' => count($churned),
+    ];
+}
