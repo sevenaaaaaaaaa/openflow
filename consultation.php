@@ -220,9 +220,11 @@ function submitBooking(e) {
   e.preventDefault();
   var f = document.getElementById('bookForm');
   var msg = document.getElementById('bookMsg');
+  var btn = f.querySelector('button[type=submit]');
   if (!f.slot1.value || !f.slot2.value || !f.slot3.value) {
     msg.innerHTML = '<span style="color:var(--danger)">请选择 3 个期望时段</span>'; return false;
   }
+  if (btn) { btn.disabled = true; btn.textContent = '提交中…'; }
   msg.innerHTML = '<span style="color:var(--muted)">正在提交…</span>';
   var body = new FormData(f);
   fetch('/api/consultation.php?action=book', { method: 'POST', body: body })
@@ -232,9 +234,10 @@ function submitBooking(e) {
         msg.innerHTML = '<span style="color:var(--ok)">✅ 报名成功！请前往「我的预约」等待资格审核。</span>';
         setTimeout(function(){ location.href = '/consultation?view=my'; }, 1200);
       } else {
+        if (btn) { btn.disabled = false; btn.textContent = '提交报名'; }
         msg.innerHTML = '<span style="color:var(--danger)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg></span> ' + (d.error || '提交失败') + '</span>';
       }
-    }).catch(function(){ msg.innerHTML = '<span style="color:var(--danger)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg></span> 网络异常</span>'; });
+    }).catch(function(){ if (btn) { btn.disabled = false; btn.textContent = '提交报名'; } msg.innerHTML = '<span style="color:var(--danger)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg></span> 网络异常</span>'; });
   return false;
 }
 function payBooking(id, btn) {
