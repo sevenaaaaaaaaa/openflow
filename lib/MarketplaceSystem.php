@@ -13,6 +13,8 @@ function mkt_categories(): array {
         'plugin' => ['name' => '插件', 'icon' => '🧩', 'desc' => '扩展后台功能的 PHP 模块'],
         'skill' => ['name' => '技能', 'icon' => '⚡', 'desc' => '可复用的 AI / Agent 能力包'],
         'theme' => ['name' => '主题', 'icon' => '🎨', 'desc' => '前端视觉与布局主题'],
+        'bundle' => ['name' => '组合包', 'icon' => '📦', 'desc' => '多个产品打包的套装'],
+        'membership' => ['name' => '会员', 'icon' => '👑', 'desc' => '商品会员计划'],
     ];
 }
 
@@ -80,6 +82,45 @@ function mkt_assets(): array {
                 'tags' => ['主题', 'theme'],
                 'preset' => ThemeSystem::isPreset($tid),
             ];
+        }
+    } catch (\Throwable $e) {}
+
+    // 组合包 / 会员商品（CommerceSystem 数字商品）
+    try {
+        foreach (CommerceSystem::allPublished() as $p) {
+            if (($p['type'] ?? '') === 'bundle') {
+                $items[] = [
+                    'type' => 'bundle',
+                    'id' => $p['id'],
+                    'title' => $p['title'] ?? '',
+                    'description' => $p['description'] ?? '',
+                    'icon' => '📦',
+                    'author' => $p['author_name'] ?? 'OpenFlow',
+                    'version' => '1.0.0',
+                    'installs' => $p['sales_count'] ?? 0, 'rating' => $p['rating'] ?? 0, 'rating_count' => 0,
+                    'status' => 'published',
+                    'price' => (float)($p['pricing']['price'] ?? 0),
+                    'items_count' => count(CommerceSystem::bundleContents($p)),
+                    'url' => '/marketplace?type=bundle',
+                    'tags' => ['组合包', 'bundle'],
+                    'bundle_items' => CommerceSystem::bundleContents($p),
+                ];
+            } elseif (($p['type'] ?? '') === 'membership') {
+                $items[] = [
+                    'type' => 'membership',
+                    'id' => $p['asset_id'] ?? $p['id'],
+                    'title' => $p['title'] ?? '',
+                    'description' => $p['description'] ?? '',
+                    'icon' => '👑',
+                    'author' => 'OpenFlow',
+                    'version' => '1.0.0',
+                    'installs' => $p['sales_count'] ?? 0, 'rating' => 0, 'rating_count' => 0,
+                    'status' => 'published',
+                    'price' => (float)($p['pricing']['price'] ?? 0),
+                    'url' => '/member.php?view=membership',
+                    'tags' => ['会员', 'membership'],
+                ];
+            }
         }
     } catch (\Throwable $e) {}
 
