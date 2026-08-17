@@ -552,9 +552,11 @@ main{margin-left:calc(var(--sb-w) + 26px); margin-right:14px; padding-top:96px; 
         <div style="min-width:0"><div class="drop-name" id="pfName"></div><div class="drop-mail" id="pfMail"></div></div>
       </div>
       <div class="p-stat">
-        <div class="ps"><div class="pv" id="pfC1">0</div><div class="pl">已加入课程</div></div>
-        <div class="ps"><div class="pv" id="pfC2">0</div><div class="pl">点赞帖子</div></div>
-        <div class="ps"><div class="pv" id="pfC3">0</div><div class="pl">收藏文章</div></div>
+        <a class="ps" href="/member.php?view=courses"><div class="pv" id="pfC1">0</div><div class="pl">我的课程</div></a>
+        <a class="ps" href="/member.php?view=orders"><div class="pv" id="pfC2">0</div><div class="pl">我的订单</div></a>
+        <a class="ps" href="/consultation?view=my"><div class="pv" id="pfC3">0</div><div class="pl">我的咨询</div></a>
+        <a class="drop-item" href="/messages.php" style="border-top:1px solid var(--border-soft);margin-top:2px"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span>站内信<span id="pfUnread" style="margin-left:auto;background:var(--danger-soft);color:var(--danger);font-size:11px;padding:1px 7px;border-radius:999px;display:none">0</span></a>
+        <a class="drop-item" href="/member.php" style="border-bottom:1px solid var(--border-soft);margin-bottom:2px"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.2 2.7-5 6-5s6 1.8 6 5"/><path d="M16 4.5a3.2 3.2 0 0 1 0 6.5M18 15.5c2 .8 3 2.3 3 4.5"/></svg></span>完整个人中心<span style="margin-left:auto;color:var(--faint);font-size:11px">→</span></a>
       </div>
       <div class="set-row"><div><div class="st2">深色主题</div><div class="sd">跟随你的偏好</div></div><div class="switch" id="setTheme" role="switch" aria-checked="false"></div></div>
       <div class="set-row"><div><div class="st2">减少动效</div><div class="sd">关闭动画与过渡</div></div><div class="switch" id="setRM" role="switch" aria-checked="false"></div></div>
@@ -631,7 +633,15 @@ $('#btn-av').setAttribute('aria-label',u?'账户：'+(u.nick||u.email):'登录 /
 var pv=$('#pfAv'),pn=$('#pfName'),pm=$('#pfMail');
 if(u){pv.textContent=(u.nick||u.email)[0].toUpperCase();pn.textContent=u.nick||u.email;pm.textContent=u.email;}
 else{pv.textContent='?';pn.textContent='未登录';pm.textContent='—';}
-$('#pfC1').textContent=S.enrolled.length;$('#pfC2').textContent=S.liked.length;$('#pfC3').textContent=0;
+$('#pfC1').textContent='…';$('#pfC2').textContent='…';$('#pfC3').textContent='…';
+    var un=$('#pfUnread');
+    fetch('/api/member.php?action=profile_summary',{method:'POST',headers:{'Accept':'application/json'}})
+      .then(function(r){return r.json().catch(function(){return {};});})
+      .then(function(d){
+        if(d&&d.ok&&d.stats){$('#pfC1').textContent=d.stats.courses||0;$('#pfC2').textContent=d.stats.orders||0;$('#pfC3').textContent=d.stats.consultations||0;if(un&&(d.stats.unread||0)>0){un.style.display='inline';un.textContent=d.stats.unread;}}
+        else{$('#pfC1').textContent=0;$('#pfC2').textContent=0;$('#pfC3').textContent=0;}
+      })
+      .catch(function(){$('#pfC1').textContent=0;$('#pfC2').textContent=0;$('#pfC3').textContent=0;});
 }
 function closeDrop(){$('#drop').classList.remove('open')}
 $('#btn-av').addEventListener('click',function(e){e.stopPropagation();var u=curUser();if(u){$('#drop').classList.toggle('open')}else{openAuth('login')}});

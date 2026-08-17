@@ -166,6 +166,42 @@ switch ($action) {
         echo json_encode(['ok'=>true, 'message'=>'投稿已提交，等待审核']);
         break;
 
+    // ─── 个人中心汇总（导航弹窗用） ───
+    case 'profile_summary':
+        $m = member_current();
+        if (!$m) { http_response_code(401); echo json_encode(['ok'=>false,'error'=>'未登录']); exit; }
+        // 已加入课程数（progress.json: member → course → lesson）
+        $courseCount = 0;
+        try {
+            $progress = json_read(DATA_DIR . '/courses/progress.json');
+            foreach ((array)$progress as $mid => $courses) {
+                if ($mid === $m['id']) { $courseCount = count((array)$courses); break; }
+            }
+        } catch (Exception $e) {}
+        // 订单数
+        $orderCount = 0;
+        try {
+            $orders = json_read(DATA_DIR . '/shop/orders.json');
+            $orderCount = count(array_filter((array)$orders, fn($o) => ($o['member_id'] ?? '') === $m['id']));
+        } catch (Exception $e) {}
+        // 未读站内信
+        $unread = 0;
+        try { $unread = inbox_unread($m); } catch (Exception $e) {}
+        // 我的咨询
+        $consultCount = 0;
+        try {
+            $bookings = json_read(DATA_DIR . '/consultation/bookings.json');
+            $consultCount = count(array_filter((array)$bookings, fn($b) => (($b['member_id'] ?? '') === $m['id']) || (($b['user_id'] ?? '') === $m['id'])));
+        } catch (Exception $e) {}
+        echo json_encode([
+            'ok' => true,
+            'name' => $m['name'] ?? '',
+            'email' => $m['email'] ?? '',
+            'avatar' => strtoupper(mb_substr($m['name'] ?? ($m['email'] ?? '?'), 0, 1)),
+            'stats' => ['courses' => $courseCount, 'orders' => $orderCount, 'consultations' => $consultCount, 'unread' => $unread],
+        ], JSON_UNESCAPED_UNICODE);
+        break;
+
     // ─── 登出 ───
     case 'logout':
         member_logout();
