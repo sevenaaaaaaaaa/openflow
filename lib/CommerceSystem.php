@@ -44,7 +44,7 @@ class CommerceSystem {
             'author_name' => $data['author_name'] ?? '',
             'commission_rate' => (float)($data['commission_rate'] ?? 0.9),
             'distribution_enabled' => !empty($data['distribution_enabled']),
-            'distributor_rate' => (float)($data['distributor_rate'] ?? 0.3),
+            'distributor_rate' => (float)($data['distributor_rate'] ?? 30),
             'status' => $data['status'] ?? 'draft',
             'sales_count' => 0,
             'rating' => 0,
@@ -172,7 +172,7 @@ class CommerceSystem {
         // 创建订单（goods_type=product）
         $orderId = 'order_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6);
         $period = $product['pricing']['period'] ?? 'month';
-        $distRate = (float)($product['distributor_rate'] ?? 0.3);
+        $distRate = (float)($product['distributor_rate'] ?? 30); // 百分数（30 = 30%）
         $order = [
             'id' => $orderId,
             'member_id' => $memberId,
@@ -182,7 +182,7 @@ class CommerceSystem {
             'status' => 'pending',
             'payment_method' => '',
             'referrer_id' => $referrerId,
-            'commission' => $referrerId ? round($price * $distRate, 2) : 0,
+            'commission' => $referrerId ? round($price * $distRate / 100, 2) : 0,
             'created_at' => date('Y-m-d H:i:s'),
             'paid_at' => '',
             'goods_type' => 'product',
@@ -339,7 +339,7 @@ class CommerceSystem {
             'author_name' => $data['author_name'] ?? '',
             'commission_rate' => (float)($data['commission_rate'] ?? 0.9),
             'distribution_enabled' => !empty($data['distribution_enabled']),
-            'distributor_rate' => (float)($data['distributor_rate'] ?? 0.3),
+            'distributor_rate' => (float)($data['distributor_rate'] ?? 30),
             'status' => $data['status'] ?? 'published',
         ]);
         return ['ok' => true, 'product' => $p];
@@ -449,11 +449,10 @@ class CommerceSystem {
 function commerce_resolve_referrer(string $ref, string $buyerId): string {
     $ref = trim($ref);
     if ($ref === '') return '';
-    try {
-        $rows = Database::query("SELECT id, referral_code FROM members WHERE id = ? OR referral_code = ? LIMIT 1", [$ref, $ref]);
-        $m = $rows[0] ?? null;
-        if ($m && ($m['id'] ?? '') !== $buyerId) return $m['id'];
-    } catch (Exception $e) {}
+    foreach (member_get_all() as $m) {
+        if (($m['id'] ?? '') === $buyerId) continue; // 不能自己分销自己
+        if (($m['referral_code'] ?? '') === $ref || ($m['id'] ?? '') === $ref) return $m['id'];
+    }
     return '';
 }
 
