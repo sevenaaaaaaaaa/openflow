@@ -140,7 +140,7 @@ function member_update_profile(string $memberId, array $data): array {
     if (!$member) return ['ok' => false, 'error' => '会员不存在'];
     
     // 更新允许的字段
-    $allowedFields = ['nickname', 'avatar', 'phone', 'bio', 'website', 'company', 'job_title', 'role'];
+    $allowedFields = ['nickname', 'avatar', 'phone', 'bio', 'website', 'company', 'job_title', 'role', 'developer_bio', 'developer_skills', 'developer_website'];
     foreach ($allowedFields as $field) {
         if (isset($data[$field])) {
             $member[$field] = $data[$field];
