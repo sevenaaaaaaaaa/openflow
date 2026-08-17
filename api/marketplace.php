@@ -66,10 +66,12 @@ switch ($action) {
         if (!$product) { echo json_encode(['ok'=>false,'error'=>'该技能未上架或免费']); exit; }
         if (CommerceSystem::owns($member['id'], $product['id'])) { echo json_encode(['ok'=>true,'already_purchased'=>true]); exit; }
 
-        // 创建数字商品订单
-        $r = CommerceSystem::purchase($member['id'], $product['id']);
+        // 创建数字商品订单（一级分销：ref 来自分享链接的分销码）
+        $ref = trim($_POST['ref'] ?? ($_GET['ref'] ?? $_COOKIE['of_ref'] ?? ''));
+        $r = CommerceSystem::purchase($member['id'], $product['id'], $ref);
         if (!$r['ok'] || empty($r['order'])) { echo json_encode(['ok'=>false,'error'=>$r['error'] ?? '下单失败']); exit; }
         $order = $r['order'];
+        if (!empty($order['referrer_id'])) setcookie('of_ref', $order['referrer_id'], time() + 86400 * 30, '/');
 
         // 虎皮椒支付
         $pay = shop_xfpay_create($order, $member);

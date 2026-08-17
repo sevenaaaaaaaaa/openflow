@@ -139,6 +139,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <a class="nav-item" href="/consultation?view=my">🤝 我的1v1咨询</a>
         <a class="nav-item <?=$view==='org'?'active':''?>" href="member.php?view=org"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/></svg></span> 企业控制台</a>
         <a class="nav-item <?=$view==='developer'?'active':''?>" href="member.php?view=developer"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3M13 15h4"/><path d="M7 4h13a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg></span> 开发者中心</a>
+        <a class="nav-item <?=$view==='distribution'?'active':''?>" href="member.php?view=distribution"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> 分销中心</a>
         <a class="nav-item" href="/messages.php">🔔 站内信<?php $msgUnread = inbox_unread($member); if ($msgUnread): ?> <span style="background:var(--danger);color:var(--surface);border-radius:999px;padding:1px 7px;font-size:11px"><?=$msgUnread?></span><?php endif; ?></a>
         <div style="border-top:1px solid var(--border);margin:8px 0"></div>
         <a class="nav-item <?=$view==='profile'?'active':''?>" href="member.php?view=profile">👤 个人资料</a>
@@ -172,6 +173,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <?php elseif ($tab === 'password'): include_member_password($member); ?>
         <?php elseif ($tab === 'org'): include_member_org($member); ?>
         <?php elseif ($tab === 'developer'): include_member_developer($member); ?>
+        <?php elseif ($tab === 'distribution'): include_member_distribution($member); ?>
         <?php endif; ?>
       </div>
     </div>
@@ -634,6 +636,12 @@ function include_member_developer($member): void {
           </div>
           <div class="field"><label>一句话描述</label><input type="text" name="description" placeholder="产品能做什么？"></div>
           <div class="field"><label>标签（逗号分隔）</label><input type="text" name="tags" placeholder="SEO, 文案, 增长"></div>
+          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
+            <div class="field"><label>售价 ¥（0 = 免费）</label><input type="number" name="price" min="0" step="1" value="0"></div>
+            <div class="field"><label>分销者佣金比例 %（5-80）</label><input type="number" name="distributor_rate" min="5" max="80" step="5" value="30"></div>
+          </div>
+          <div class="field"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="distribution_enabled" value="1" checked style="width:16px;height:16px"> 允许分销：任何人可帮你卖，佣金归分销者</label></div>
+          <div style="font-size:12px;color:var(--faint);margin:-6px 0 12px">分成结构：平台抽 10%（覆盖支付手续费）→ 分销者拿上比例 → 你拿剩余（约 <?=100-10-30?>%）。一级分销，不设多级。</div>
           <div class="field"><label>内容 / 指令模板 *（AI 指令 / 工具说明，用 {topic} 等占位符）</label><textarea name="content" rows="6" required placeholder="你是…请为「{topic}」…"></textarea></div>
           <div id="devSkillTip" style="font-size:12px;color:var(--faint);margin-bottom:12px">💡 开发套件：参考市场里的官方 Skill 结构。AI 指令用 <code>{topic}</code> 等变量占位，工作流可多段描述。</div>
           <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">提交审核</button>
@@ -667,6 +675,68 @@ function include_member_developer($member): void {
       fetch('/api/developer.php', { method:'POST', body: fd })
         .then(function(r){ return r.json(); })
         .then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
+    }
+    </script>
+    <?php
+}
+
+// ─── 分销中心（一级分销） ───
+function include_member_distribution($member): void {
+    $stats = commerce_distributor_stats($member['id']);
+    $refCode = $member['referral_code'] ?? ('of' . substr(md5($member['id']), 0, 8));
+    $siteUrl = site_config_get('site_url');
+    // 可推广的商品（已发布且允许分销）
+    $distProducts = array_values(array_filter(CommerceSystem::allPublished(), fn($p) => !empty($p['distribution_enabled']) && (float)($p['pricing']['price'] ?? 0) > 0));
+    ?>
+    <div class="card p-8">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;font-size:20px">💰</div>
+        <div>
+          <h2 class="text-xl font-bold">分销中心</h2>
+          <div style="font-size:12px;color:var(--muted)">帮你推广平台上的 Skill 产品，卖出即赚佣金（一级分销，平台抽 10% 覆盖支付手续费）</div>
+        </div>
+      </div>
+
+      <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:22px">
+        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--ok)">¥<?=number_format($stats['total_commission'],2)?></div><div style="font-size:12px;color:var(--muted)">累计佣金</div></div>
+        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800"><?=$stats['total_orders']?></div><div style="font-size:12px;color:var(--muted)">带来的订单</div></div>
+        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--warn)">¥<?=number_format($stats['pending_commission'],2)?></div><div style="font-size:12px;color:var(--muted)">待结算（未支付）</div></div>
+        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--accent)"><?=$refCode?></div><div style="font-size:12px;color:var(--muted)">我的分销码</div></div>
+      </div>
+
+      <div style="padding:14px 16px;border:1px dashed var(--border-strong);border-radius:14px;background:var(--surface);margin-bottom:22px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px">🔗 复制推广链接（分享给任何人，他购买你拿佣金）</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">平台抽 10% 覆盖支付手续费；分销者拿产品配置的佣金比例；作者拿剩余。</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="text" id="refBase" value="<?=htmlspecialchars($siteUrl)?>/marketplace?ref=<?=htmlspecialchars($refCode)?>" readonly style="flex:1;min-width:220px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:12.5px">
+          <button type="button" class="rounded-full px-5 py-2 font-bold" style="background:var(--accent);color:var(--on-accent);font-size:13px" onclick="var i=document.getElementById('refBase');i.select();document.execCommand('copy');alert('已复制推广链接')">复制</button>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">可推广的产品（<?=count($distProducts)?>）</h3>
+      <?php if (empty($distProducts)): ?><p style="font-size:13px;color:var(--faint)">暂无可分销产品。开发者上架时开启分销后即可推广。</p>
+      <?php else: ?>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
+        <?php foreach (array_slice($distProducts, 0, 12) as $p): ?>
+        <div style="padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:18px"><?=htmlspecialchars($p['title'] ?? '')?></span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px"><?=htmlspecialchars(mb_substr($p['description'] ?? '', 0, 50))?></div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <b style="color:var(--ok)">¥<?=number_format($p['pricing']['price'] ?? 0,0)?></b>
+            <span style="font-size:11px;color:var(--accent)">分销佣 <?=round((float)($p['distributor_rate'] ?? 0.3)*100)?>%</span>
+          </div>
+          <button class="rounded-full px-4 py-1.5 font-bold mt-2" style="background:var(--hover);font-size:12px" onclick="copyDistLink('<?=htmlspecialchars($refCode)?>','<?=htmlspecialchars($p['id'])?>')">复制专属链接</button>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <?php endif; ?>
+    </div>
+    <script>
+    function copyDistLink(ref, productId) {
+      var url = '<?=htmlspecialchars($siteUrl)?>/marketplace?ref=' + ref + '&product=' + productId;
+      navigator.clipboard.writeText(url).then(function(){ alert('已复制该产品的推广链接'); });
     }
     </script>
     <?php
