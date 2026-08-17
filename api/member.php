@@ -193,11 +193,21 @@ switch ($action) {
             $bookings = json_read(DATA_DIR . '/consultation/bookings.json');
             $consultCount = count(array_filter((array)$bookings, fn($b) => (($b['member_id'] ?? '') === $m['id']) || (($b['user_id'] ?? '') === $m['id'])));
         } catch (Exception $e) {}
+        // 所属企业（ToB）
+        $orgInfo = null;
+        try {
+            require_once __DIR__ . '/../lib/OrgSystem.php';
+            $myOrg = org_by_member($m['id']);
+            if ($myOrg) {
+                $orgInfo = ['id' => $myOrg['id'], 'name' => $myOrg['name'] ?? '', 'plan' => org_plan_label($myOrg['plan_type'] ?? ''), 'status' => $myOrg['status'] ?? ''];
+            }
+        } catch (Throwable $e) {}
         echo json_encode([
             'ok' => true,
             'name' => $m['name'] ?? '',
             'email' => $m['email'] ?? '',
             'avatar' => strtoupper(mb_substr($m['name'] ?? ($m['email'] ?? '?'), 0, 1)),
+            'org' => $orgInfo,
             'stats' => ['courses' => $courseCount, 'orders' => $orderCount, 'consultations' => $consultCount, 'unread' => $unread],
         ], JSON_UNESCAPED_UNICODE);
         break;
