@@ -39,6 +39,7 @@ class CommerceSystem {
             'description' => $data['description'] ?? '',
             'cover' => $data['cover'] ?? '',
             'pricing' => $data['pricing'] ?? ['mode' => 'one_time', 'price' => 0],
+            'items' => $data['items'] ?? [],  // 组合包内容（type=bundle 时）
             'author' => $data['author'] ?? '',
             'author_name' => $data['author_name'] ?? '',
             'commission_rate' => (float)($data['commission_rate'] ?? 0.9),
@@ -59,7 +60,7 @@ class CommerceSystem {
         foreach ($products as &$p) {
             if ($p['id'] === $id) {
                 foreach ($data as $k => $v) {
-                    if (in_array($k, ['type','asset_id','title','description','cover','pricing','author','author_name','commission_rate','distribution_enabled','distributor_rate','status'], true)) $p[$k] = $v;
+                    if (in_array($k, ['type','asset_id','title','description','cover','pricing','items','author','author_name','commission_rate','distribution_enabled','distributor_rate','status'], true)) $p[$k] = $v;
                 }
                 self::saveProducts($products);
                 return $p;
@@ -188,32 +189,20 @@ class CommerceSystem {
             'member_id' => $memberId,
             'product_id' => $product['id'],
             'type' => $product['type'],
-            'asset_id' => $product['asset_id'],
+            'asset_id' => $product['asset_id'] ?? '',
             'method' => $method,
             'granted_at' => date('Y-m-d H:i:s'),
             'expires_at' => self::expiryFor($product),
         ];
         json_write(self::$entitlementsFile, $ents);
 
-        // 按类型交付
-        switch ($product['type']) {
-            case 'skill':
-                // 写入 members.unlocked_skills
-                try {
-                    Database::execute(
-                        "UPDATE members SET unlocked_skills = json_insert(COALESCE(unlocked_skills, '[]'), '$[#]', ?) WHERE id = ?",
-                        [$product['asset_id'], $memberId]
-                    );
-                } catch (Exception $e) {}
-                break;
-            case 'api_plan':
-                // 激活 API Key 套餐（Go 订阅 / Zen 余额）
-                self::activateApiPlan($memberId, $product);
-                break;
-            case 'plugin':
-            case 'theme':
-                // 记录授权即可（下载/安装由后台或前端处理）
-                break;
+        // 组合包：递归交付所有 items（支持 skills 包 / 主题包 / 功能组合 / 大组合嵌套）
+        if (($product['type'] ?? '') === 'bundle') {
+            foreach ((array)($product['items'] ?? []) as $item) {
+                self::deliverItem($memberId, $item, $order);
+            }
+        } else {
+            self::deliverItem($memberId, $product, $order);
         }
 
         // 作者分成 + 分销者佣金（一级分销）
@@ -248,6 +237,97 @@ class CommerceSystem {
             if ($p['id'] === $product['id']) { $p['sales_count'] = ($p['sales_count'] ?? 0) + 1; break; }
         }
         self::saveProducts($products);
+    }
+
+    /**
+     * 交付单个商品/资产（组合包递归调用）
+     */
+    private static function deliverItem(string $memberId, array $item, array $order = []): void {
+        if (($item['type'] ?? '') === 'bundle' && !empty($item['product_id'])) {
+            $sub = self::getProduct($item['product_id']);
+            if ($sub && ($sub['type'] ?? '') === 'bundle') {
+                foreach ((array)($sub['items'] ?? []) as $subItem) self::deliverItem($memberId, $subItem, $order);
+            }
+            return;
+        }
+        $type = $item['type'] ?? '';
+        $assetId = $item['asset_id'] ?? '';
+        switch ($type) {
+            case 'skill':
+                if (!$assetId) break;
+                try {
+                    Database::execute(
+                        "UPDATE members SET unlocked_skills = json_insert(COALESCE(unlocked_skills, '[]'), '$[#]', ?) WHERE id = ?",
+                        [$assetId, $memberId]
+                    );
+                } catch (Exception $e) {}
+                break;
+            case 'api_plan':
+                self::activateApiPlan($memberId, $item);
+                break;
+            case 'plugin':
+            case 'theme':
+                break;
+        }
+        if ($assetId && $type !== 'bundle') {
+            $ents = json_read(self::$entitlementsFile);
+            $ents[$memberId . ':' . $type . ':' . $assetId] = [
+                'member_id' => $memberId, 'product_id' => $item['product_id'] ?? '', 'type' => $type,
+                'asset_id' => $assetId, 'method' => 'bundle', 'granted_at' => date('Y-m-d H:i:s'), 'expires_at' => '',
+            ];
+            json_write(self::$entitlementsFile, $ents);
+        }
+    }
+
+    /**
+     * 创建组合包（可嵌套：skills/主题/功能/子组合包）
+     */
+    public static function createBundle(array $data): array {
+        $items = $data['items'] ?? [];
+        if (empty($items)) return ['ok' => false, 'error' => '组合包至少需要一个内容'];
+        $seen = []; $clean = [];
+        foreach ($items as $it) {
+            $key = ($it['type'] ?? '') . ':' . ($it['asset_id'] ?? ($it['product_id'] ?? ''));
+            if ($key === '' || isset($seen[$key])) continue;
+            $seen[$key] = true;
+            $clean[] = $it;
+        }
+        $p = self::createProduct([
+            'type' => 'bundle',
+            'title' => $data['title'] ?? '组合包',
+            'description' => $data['description'] ?? '',
+            'pricing' => $data['pricing'] ?? ['mode' => 'one_time', 'price' => 0],
+            'items' => $clean,
+            'author' => $data['author'] ?? '',
+            'author_name' => $data['author_name'] ?? '',
+            'commission_rate' => (float)($data['commission_rate'] ?? 0.9),
+            'distribution_enabled' => !empty($data['distribution_enabled']),
+            'distributor_rate' => (float)($data['distributor_rate'] ?? 0.3),
+            'status' => $data['status'] ?? 'published',
+        ]);
+        return ['ok' => true, 'product' => $p];
+    }
+
+    /**
+     * 组合包内容清单（展开嵌套，供展示）
+     */
+    public static function bundleContents(array $product, int $depth = 0): array {
+        $out = [];
+        foreach ((array)($product['items'] ?? []) as $item) {
+            if (($item['type'] ?? '') === 'bundle' && !empty($item['product_id'])) {
+                $sub = self::getProduct($item['product_id']);
+                if ($sub && $depth < 3) $out = array_merge($out, self::bundleContents($sub, $depth + 1));
+                else $out[] = ['type' => 'bundle', 'title' => $sub['title'] ?? '组合包', 'asset_id' => $item['product_id']];
+            } else {
+                $title = $item['title'] ?? '';
+                if (!$title && !empty($item['asset_id'])) {
+                    if (($item['type'] ?? '') === 'skill') { $s = skill_get($item['asset_id']); $title = $s['title'] ?? $item['asset_id']; }
+                    else $title = $item['asset_id'];
+                }
+                $out[] = ['type' => $item['type'] ?? '', 'title' => $title, 'asset_id' => $item['asset_id'] ?? ''];
+            }
+        }
+        return $out;
     }
 
     private static function expiryFor(array $product): string {
