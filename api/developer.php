@@ -99,6 +99,51 @@ switch ($action) {
         echo json_encode(['ok' => true, 'message' => '已删除']);
         break;
 
+    // ─── 创建组合包（打包我的已上架产品） ───
+    case 'create_bundle':
+        if (($member['developer_status'] ?? '') !== 'approved') {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => '需先通过开发者审核'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $title = trim($_POST['title'] ?? '');
+        $itemsJson = $_POST['items'] ?? '[]';
+        $rawItems = json_decode($itemsJson, true) ?: [];
+        if ($title === '' || empty($rawItems)) {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'error' => '组合包名称和内容为必填'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        // 只允许打包自己已上架的 skill（校验归属）
+        $items = [];
+        foreach ($rawItems as $it) {
+            $parts = explode(':', $it, 2);
+            if (count($parts) !== 2) continue;
+            [$type, $assetId] = $parts;
+            if ($type !== 'skill') continue;
+            $s = skill_get($assetId);
+            if (!$s || ($s['submitted_by'] ?? '') !== $member['id'] || ($s['status'] ?? '') !== 'published') continue;
+            $items[] = ['type' => 'skill', 'asset_id' => $assetId];
+        }
+        if (empty($items)) {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'error' => '没有可打包的产品（需已上架且属于你）'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $r = CommerceSystem::createBundle([
+            'title' => $title,
+            'description' => trim($_POST['description'] ?? '') ?: ('组合包：' . count($items) . ' 个产品'),
+            'pricing' => ['mode' => 'one_time', 'price' => max(1, (float)($_POST['price'] ?? 99))],
+            'items' => $items,
+            'author' => $member['id'],
+            'author_name' => $member['name'] ?? '开发者',
+            'distribution_enabled' => !empty($_POST['distribution_enabled']),
+            'distributor_rate' => min(80, max(5, (float)($_POST['distributor_rate'] ?? 30))),
+        ]);
+        if (!$r['ok']) { http_response_code(422); echo json_encode(['ok'=>false,'error'=>$r['error'] ?? '创建失败'], JSON_UNESCAPED_UNICODE); exit; }
+        echo json_encode(['ok' => true, 'message' => "组合包「{$title}」已创建并上架", 'product_id' => $r['product']['id']], JSON_UNESCAPED_UNICODE);
+        break;
+
     // ─── 我的开发者状态 ───
     case 'public_status':
         $status = $member ? ($member['developer_status'] ?? 'none') : 'none';

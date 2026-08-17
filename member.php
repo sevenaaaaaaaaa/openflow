@@ -623,6 +623,34 @@ function include_member_developer($member): void {
         <?php endif; ?>
       </div>
 
+      <!-- 我的组合包 + 创建组合包 -->
+      <div style="margin-bottom:20px;padding:20px;border-radius:14px;background:var(--bg)">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">组合包（Skills 包 / 主题包 / 大组合）</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">把你的多个产品打包成一个套装售卖：多个 Skills、多个主题、或混合大组合（Skills + 主题 + 功能）。可嵌套组合包。</p>
+        <?php $publishedMine = array_values(array_filter($mine, fn($s) => ($s['status'] ?? '') === 'published')); ?>
+        <?php if (empty($publishedMine)): ?>
+        <p style="font-size:13px;color:var(--faint)">需要至少 1 个已上架的产品才能创建组合包。提交的产品审核通过后即可打包。</p>
+        <?php else: ?>
+        <form onsubmit="return createBundleForm(event)">
+          <div class="field"><label>组合包名称 *</label><input type="text" name="bundle_title" required placeholder="如：SEO 增长全家桶"></div>
+          <div class="field"><label>选择要打包的产品（可多选）</label>
+            <div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;padding:10px;border:1px solid var(--border);border-radius:10px">
+              <?php foreach ($publishedMine as $s): ?>
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" name="bundle_items[]" value="skill:<?=htmlspecialchars($s['id'])?>" style="width:15px;height:15px"> <?=htmlspecialchars($s['icon'] ?? '⚡')?> <?=htmlspecialchars($s['title'])?> <span style="color:var(--faint);font-size:11px">Skill</span></label>
+              <?php endforeach; ?>
+            </div>
+          </div>
+          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
+            <div class="field"><label>组合包售价 ¥</label><input type="number" name="bundle_price" min="1" step="1" value="99"></div>
+            <div class="field"><label>分销者佣金 %</label><input type="number" name="bundle_dist_rate" min="5" max="80" step="5" value="30"></div>
+          </div>
+          <div class="field"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="bundle_dist_enabled" value="1" checked style="width:16px;height:16px"> 允许分销</label></div>
+          <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">创建组合包</button>
+          <div id="bundleMsg" style="margin-top:10px;font-size:13px"></div>
+        </form>
+        <?php endif; ?>
+      </div>
+
       <!-- 提交新产品 -->
       <div style="padding:20px;border-radius:14px;background:var(--bg)">
         <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">提交新产品</h3>
@@ -675,6 +703,24 @@ function include_member_developer($member): void {
       fetch('/api/developer.php', { method:'POST', body: fd })
         .then(function(r){ return r.json(); })
         .then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
+    }
+    function createBundleForm(e) {
+      e.preventDefault();
+      var f = e.target, msg = document.getElementById('bundleMsg');
+      var items = Array.from(f.querySelectorAll('input[name="bundle_items[]"]:checked')).map(function(i){ return i.value; });
+      if (!items.length) { msg.style.color='var(--danger)'; msg.textContent='请至少选择一个产品'; return; }
+      var fd = new FormData();
+      fd.append('action', 'create_bundle');
+      fd.append('title', f.querySelector('[name=bundle_title]').value);
+      fd.append('price', f.querySelector('[name=bundle_price]').value);
+      fd.append('distributor_rate', f.querySelector('[name=bundle_dist_rate]').value);
+      fd.append('distribution_enabled', f.querySelector('[name=bundle_dist_enabled]').checked ? '1' : '');
+      fd.append('items', JSON.stringify(items));
+      msg.style.color='var(--muted)'; msg.textContent='创建中…';
+      fetch('/api/developer.php', { method:'POST', body: fd })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; msg.textContent = d.message || d.error; if (d.ok) setTimeout(function(){ location.reload(); }, 1000); });
+      return false;
     }
     </script>
     <?php
