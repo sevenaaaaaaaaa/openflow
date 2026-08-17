@@ -123,13 +123,45 @@ class CommerceSystem {
         if (!$product) return ['ok' => false, 'error' => '商品不存在'];
         if ($product['status'] !== 'published') return ['ok' => false, 'error' => '商品未上架'];
         $price = (float)($product['pricing']['price'] ?? 0);
-        if ($price <= 0) return ['ok' => false, 'error' => '商品未定价'];
 
         // 已拥有则直接交付
         if (self::owns($memberId, $productId)) {
             self::deliver($memberId, $product, 'already_owned');
             return ['ok' => true, 'order' => null, 'already_owned' => true];
         }
+
+        // ─── 商品会员：有效会员且有每日额度 → 免费下单（消耗额度，直接交付） ───
+        // 注：会员额度不适用于购买会员本身（membership 类型走正常付费）
+        $member = null;
+        try {
+            $rows = Database::query("SELECT * FROM members WHERE id = ?", [$memberId]);
+            $member = $rows[0] ?? null;
+        } catch (Exception $e) {}
+        if ($member && ($product['type'] ?? '') !== 'membership') {
+            $memberArr = [
+                'id' => $member['id'], 'membership_plan' => $member['membership_plan'] ?? '',
+                'membership_expires' => $member['membership_expires'] ?? '',
+            ];
+            $plan = member_shop_plan($memberArr);
+            $quota = $plan ? member_quota_usage($memberArr) : ['left' => 0];
+            if ($plan && ($quota['left'] ?? 0) > 0 && member_quota_consume($memberArr)) {
+                // 免费交付（记录 member_quota 订单）
+                $orderId = 'order_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6);
+                $order = [
+                    'id' => $orderId, 'member_id' => $memberId, 'course_id' => $productId,
+                    'course_title' => $product['title'], 'amount' => 0, 'status' => 'paid',
+                    'payment_method' => 'membership_quota', 'referrer_id' => '', 'commission' => 0,
+                    'created_at' => date('Y-m-d H:i:s'), 'paid_at' => date('Y-m-d H:i:s'),
+                    'goods_type' => 'product', 'product_id' => $productId, 'author' => $product['author'] ?? '',
+                    'commission_rate' => (float)($product['commission_rate'] ?? 0.9),
+                ];
+                Database::insert('orders', $order);
+                self::deliver($memberId, $product, 'membership_quota', $order);
+                return ['ok' => true, 'order' => $order, 'membership_free' => true, 'quota_left' => (int)$quota['left'] - 1];
+            }
+        }
+
+        if ($price <= 0) return ['ok' => false, 'error' => '商品未定价'];
 
         // 解析分销者（一级分销）：ref = 分销者 referral_code 或 member_id
         $referrerId = '';
@@ -261,6 +293,11 @@ class CommerceSystem {
                         [$assetId, $memberId]
                     );
                 } catch (Exception $e) {}
+                break;
+            case 'membership':
+                // 开通商品会员（annual / lifetime）
+                if (!$assetId) break;
+                try { member_grant_shop_plan($memberId, $assetId); } catch (Exception $e) {}
                 break;
             case 'api_plan':
                 self::activateApiPlan($memberId, $item);

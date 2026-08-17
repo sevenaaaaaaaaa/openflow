@@ -26,8 +26,8 @@ function mem_state_file(): string { return DATA_DIR . '/membership/state.json'; 
 function mem_plans(): array {
     return array_merge([
         ['id' => 'free', 'name' => '免费用户', 'icon' => '👤', 'price' => 0, 'period' => '', 'benefits' => ['阅读公开文章', '社区发帖与评论', '基础积分等级']],
-        ['id' => 'member', 'name' => '普通会员', 'icon' => '⭐', 'price' => 299, 'period' => 'year', 'benefits' => ['全部订阅邮件', '付费资料下载', '专享会员文章', '直播回放', '8 折购课']],
-        ['id' => 'vip', 'name' => 'VIP 会员', 'icon' => '👑', 'price' => 999, 'period' => 'year', 'benefits' => ['普通会员全部权益', '1v1 咨询 85 折', '课程免费看', '专属客服', '优先审核']],
+        ['id' => 'annual', 'name' => '年度会员', 'icon' => '⭐', 'price' => 299, 'period' => 'year', 'quota_per_day' => 5, 'benefits' => ['365 天有效期', '每天免费下单 5 个任意商品', '商品仅限本人账号使用，禁止二次开发/打包/魔改']],
+        ['id' => 'lifetime', 'name' => '永久会员', 'icon' => '👑', 'price' => 599, 'period' => 'lifetime', 'quota_per_day' => 10, 'benefits' => ['永久有效', '每天下载 10 个任意商品', '商品仅限本人账号使用，禁止二次开发/打包/魔改']],
     ], json_read(mem_plans_file()));
 }
 
@@ -155,4 +155,71 @@ function mem_upgrade_hint(string $ent): string {
         'priority_review' => 'VIP 优先',
     ];
     return $map[$ent] ?? '会员权益';
+}
+
+// ─── 商品会员（年度 5单/天 · 永久 10单/天） ───
+
+// 商品会员状态：返回 plan(id/name/quota_per_day) 或 null
+function member_shop_plan(?array $member): ?array {
+    if (!$member) return null;
+    $planId = $member['membership_plan'] ?? '';
+    if (!$planId) return null;
+    $plans = mem_plans();
+    $plan = null;
+    foreach ($plans as $p) if ($p['id'] === $planId) { $plan = $p; break; }
+    if (!$plan || ($plan['id'] ?? '') === 'free') return null;
+    // 年度会员检查有效期
+    if ($plan['period'] === 'year') {
+        $expires = $member['membership_expires'] ?? '';
+        if (!$expires || strtotime($expires) < time()) return null; // 已过期
+    }
+    return $plan;
+}
+
+// 商品会员每日已用/剩余额度
+function member_quota_usage(?array $member): array {
+    $plan = member_shop_plan($member);
+    $quota = $plan['quota_per_day'] ?? 0;
+    if (!$plan || $quota <= 0) return ['plan' => null, 'used' => 0, 'left' => 0, 'daily' => 0];
+    $file = DATA_DIR . '/membership/usage.json';
+    $usage = json_read($file);
+    $today = date('Y-m-d');
+    $key = $member['id'];
+    $used = (isset($usage[$key]) && $usage[$key]['date'] === $today) ? (int)$usage[$key]['count'] : 0;
+    return ['plan' => $plan['id'], 'used' => $used, 'left' => max(0, $quota - $used), 'daily' => $quota];
+}
+
+// 消耗一个每日额度（返回是否成功）
+function member_quota_consume(?array $member): bool {
+    $u = member_quota_usage($member);
+    if (($u['left'] ?? 0) <= 0) return false;
+    $file = DATA_DIR . '/membership/usage.json';
+    $usage = json_read($file);
+    $today = date('Y-m-d');
+    $key = $member['id'];
+    $usage[$key] = ['date' => $today, 'count' => (isset($usage[$key]) && $usage[$key]['date'] === $today) ? (int)$usage[$key]['count'] + 1 : 1];
+    if (!is_dir(dirname($file))) mkdir(dirname($file), 0755, true);
+    json_write($file, $usage);
+    return true;
+}
+
+// 开通商品会员（购买成功后调用）
+function member_grant_shop_plan(string $memberId, string $planId): array {
+    $plans = mem_plans();
+    $plan = null;
+    foreach ($plans as $p) if ($p['id'] === $planId) { $plan = $p; break; }
+    if (!$plan || ($plan['id'] ?? '') === 'free') return ['ok' => false, 'error' => '会员计划不存在'];
+    $member = member_get($memberId);
+    if (!$member) return ['ok' => false, 'error' => '用户不存在'];
+    $member['membership_plan'] = $planId;
+    if ($plan['period'] === 'year') {
+        // 从当前或到期日 +365 天
+        $base = $member['membership_expires'] ?? '';
+        $start = ($base && strtotime($base) > time()) ? $base : date('Y-m-d H:i:s');
+        $member['membership_expires'] = date('Y-m-d H:i:s', strtotime($start . ' +365 days'));
+    } else {
+        $member['membership_expires'] = '9999-12-31 23:59:59'; // 永久
+    }
+    member_save($member);
+    return ['ok' => true, 'plan' => $planId];
 }
