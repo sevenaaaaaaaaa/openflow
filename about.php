@@ -447,27 +447,27 @@ main{margin-left:calc(var(--sb-w) + 26px); margin-right:14px; padding-top:96px; 
       <div class="dd-vis"><div class="dd-frame"><div class="stats" style="grid-template-columns:repeat(2,1fr);gap:10px">
         <div class="card stat" style="padding:18px 12px"><div class="sv" style="font-size:24px">10年</div><div class="sl">增长操盘</div></div>
         <div class="card stat" style="padding:18px 12px"><div class="sv" style="font-size:24px">7</div><div class="sl">跨行业覆盖</div></div>
-        <div class="card stat" style="padding:18px 12px"><div class="sv" style="font-size:24px">¥1800万</div><div class="sl">月销峰值操盘</div></div>
-        <div class="card stat" style="padding:18px 12px"><div class="sv" style="font-size:24px">50+</div><div class="sl">方法论落地公司</div></div>
+        <div class="card stat" style="padding:18px 12px"><div class="sv" style="font-size:24px">50+</div><div class="sl">方法论落地</div></div>
+        <div class="card stat" style="padding:18px 12px"><div class="sv" style="font-size:24px">1套</div><div class="sl">Agent 增长系统</div></div>
       </div><p class="note" style="margin-top:10px">创始人Seven · 十年增长操盘</p></div></div>
     </div>
 
-    <div class="sec-head"><span class="kicker">创始人</span><h2>Seven：十年增长操盘的老兵</h2></div>
+    <div class="sec-head"><span class="kicker">创始人</span><h2>Seven：十年增长操盘手</h2></div>
     <div class="dd rev" style="align-items:start">
       <div class="dd-copy">
-        <p style="line-height:1.8;color:var(--muted)">我不是教增长理论的讲师，是操盘过增长的老兵。芭乐派的内容不是从书里摘的——是从十年、七个行业的操盘经历里提炼的。</p>
+        <p style="line-height:1.8;color:var(--muted)">我不是教增长理论的讲师，是操盘过增长的人。芭乐派的内容不是从书里摘的——是从十年、七个行业的操盘经历里提炼的。</p>
         <ul style="line-height:2;color:var(--muted);font-size:14px">
-          <li>前小帮规划策略运营：400 → 25 人团队重构，月销峰值 ¥1,800 万</li>
-          <li>前 LinkFlow 市场运营负责人：成本降六分之五，方法论复制到三星、立白、蜜雪冰城等 50+ 公司</li>
-          <li>前 Canva 运营经理：Google SEO 70% 流量占比，单日注册 1000+</li>
-          <li>现美图业务负责人：DAU 连续 6 月环比增长 70%</li>
+          <li>内容增长：把搜索流量占比做到七成，靠内容持续获客</li>
+          <li>组织效率：把大团队重构为精干小队，人效不降反升</li>
+          <li>私域获客：把获客成本降到原来的五分之一</li>
+          <li>增长体系：把方法论落地到 50+ 团队，可复制、可验证</li>
         </ul>
       </div>
       <div class="dd-vis"><div class="dd-frame"><div class="run-list">
-        <div class="run-row"><span class="rn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10M9 7h.01M9 11h.01M9 15h.01"/></svg></span><span class="rt">小帮规划</span><span class="pill ok rs">400→25人</span></div>
-        <div class="run-row"><span class="rn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg></span><span class="rt">LinkFlow</span><span class="pill ok rs">成本-83%</span></div>
-        <div class="run-row"><span class="rn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M12 2a10 10 0 0 0 0 20c1.5 0 2-.8 2-1.8 0-1-.6-1.7-.6-2.7 0-1.2 1-2 2.2-2H18a4 4 0 0 0 4-4c0-5-4.5-9.5-10-9.5Z"/><circle cx="7.5" cy="10.5" r="1.2"/><circle cx="10.5" cy="6.8" r="1.2"/><circle cx="14.5" cy="6.8" r="1.2"/></svg></span><span class="rt">Canva</span><span class="pill ok rs">SEO 70%</span></div>
-        <div class="run-row"><span class="rn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span><span class="rt">美图</span><span class="pill ok rs">DAU +70%</span></div>
+        <div class="run-row"><span class="rn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10M9 7h.01M9 11h.01M9 15h.01"/></svg></span><span class="rt">内容增长</span><span class="pill ok rs">流量七成</span></div>
+        <div class="run-row"><span class="rn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg></span><span class="rt">组织效率</span><span class="pill ok rs">人效提升</span></div>
+        <div class="run-row"><span class="rn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M12 2a10 10 0 0 0 0 20c1.5 0 2-.8 2-1.8 0-1-.6-1.7-.6-2.7 0-1.2 1-2 2.2-2H18a4 4 0 0 0 4-4c0-5-4.5-9.5-10-9.5Z"/><circle cx="7.5" cy="10.5" r="1.2"/><circle cx="10.5" cy="6.8" r="1.2"/><circle cx="14.5" cy="6.8" r="1.2"/></svg></span><span class="rt">私域获客</span><span class="pill ok rs">成本-80%</span></div>
+        <div class="run-row"><span class="rn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span><span class="rt">增长体系</span><span class="pill ok rs">50+落地</span></div>
       </div></div></div>
     </div>
 
