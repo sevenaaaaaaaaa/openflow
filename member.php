@@ -803,7 +803,7 @@ function include_member_distribution($member): void {
           <div style="font-size:12px;color:var(--muted);margin-bottom:8px"><?=htmlspecialchars(mb_substr($p['description'] ?? '', 0, 50))?></div>
           <div style="display:flex;align-items:center;justify-content:space-between">
             <b style="color:var(--ok)">¥<?=number_format($p['pricing']['price'] ?? 0,0)?></b>
-            <span style="font-size:11px;color:var(--accent)">分销佣 <?=round((float)($p['distributor_rate'] ?? 0.3)*100)?>%</span>
+            <span style="font-size:11px;color:var(--accent)">分销佣 <?=round((float)($p['distributor_rate'] ?? 30))?>%</span>
           </div>
           <button class="rounded-full px-4 py-1.5 font-bold mt-2" style="background:var(--hover);font-size:12px" onclick="copyDistLink('<?=htmlspecialchars($refCode)?>','<?=htmlspecialchars($p['id'])?>')">复制专属链接</button>
         </div>
