@@ -80,7 +80,7 @@ admin_header('站点结构');
 <div class="admin-layout">
   <?php admin_sidebar('site-builder'); ?>
   <div class="main">
-    <h1>🏗️ 全局站点结构</h1>
+    <h1> 全局站点结构</h1>
     <p class="sub">导航菜单 · Footer · 自定义页面注册（全局维护，所有页面生效）</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

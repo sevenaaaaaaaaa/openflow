@@ -114,7 +114,7 @@ admin_header('画布编辑器');
 <div class="admin-layout">
   <?php admin_sidebar('canvas'); ?>
   <div class="main">
-    <h1>🎨 画布编辑器</h1>
+    <h1> 画布编辑器</h1>
     <p class="sub">可视化流程编排 · 拖拽节点构建营销自动化流程</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

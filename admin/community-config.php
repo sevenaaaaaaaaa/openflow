@@ -47,7 +47,7 @@ admin_header('Academy 内容首页配置');
 <div class="admin-layout">
   <?php admin_sidebar('community-config'); ?>
   <div class="main">
-    <h1>🎓 Academy 内容首页配置</h1>
+    <h1> Academy 内容首页配置</h1>
     <p class="sub">配置 Academy 统一内容首页（文章 / 资料下载 / 播客 / 视频教程）的楼层与推荐</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

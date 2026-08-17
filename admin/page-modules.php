@@ -78,7 +78,7 @@ admin_header('落地页模块');
   <?php admin_sidebar('page-modules'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">🧩 落地页模块库</h1>
+      <h1 style="margin-bottom:0"> 落地页模块库</h1>
       <div class="flex gap-2 ml-auto">
         <button class="btn btn-primary" onclick="document.getElementById('addModal').style.display='flex'">+ 新建模块</button>
       </div>

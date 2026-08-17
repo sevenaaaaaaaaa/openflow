@@ -74,7 +74,7 @@ admin_header('CRM 线索管理');
   <?php admin_sidebar('crm'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-2">
-      <h1 style="margin-bottom:0">💼 CRM 线索</h1>
+      <h1 style="margin-bottom:0"> CRM 线索</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
         <span class="badge badge-gray"><?=count($data['leads'] ?? [])?> 跟进线索</span>
         <span class="badge badge-gray"><?=count($rawLeads)?> 原始提交</span>

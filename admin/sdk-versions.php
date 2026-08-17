@@ -37,7 +37,7 @@ admin_header('SDK 版本管理');
   <?php admin_sidebar('sdk-versions'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">📦 SDK 版本管理</h1>
+      <h1 style="margin-bottom:0"> SDK 版本管理</h1>
       <div class="flex gap-2 ml-auto">
         <a href="../api/sdk.php" target="_blank" class="btn btn-ghost btn-sm">查看当前 SDK</a>
       </div>

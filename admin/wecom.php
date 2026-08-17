@@ -101,7 +101,7 @@ admin_header('企业微信管理');
   <?php admin_sidebar('wecom'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">🏢 企业微信</h1>
+      <h1 style="margin-bottom:0"> 企业微信</h1>
       <div class="flex gap-2 ml-auto">
         <a href="wechat-mp.php?tab=wecom" class="btn btn-ghost btn-sm">配置</a>
       </div>

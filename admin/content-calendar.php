@@ -90,7 +90,7 @@ admin_header('内容日历');
 <div class="admin-layout">
   <?php admin_sidebar('content-calendar'); ?>
   <div class="main">
-    <h1>📅 内容日历</h1>
+    <h1> 内容日历</h1>
     <p class="sub">拖拽文章 / 资料到日历上的日期即可修改发布日期 · 未来日期 = 定时发布 · 活动支持起止日期</p>
 
     <div class="cal-toolbar">

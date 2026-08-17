@@ -100,7 +100,7 @@ admin_header('调研组织架构');
 <div class="admin-layout">
   <?php admin_sidebar('survey-org'); ?>
   <div class="main">
-    <h1>🏢 调研组织架构</h1>
+    <h1> 调研组织架构</h1>
     <p class="sub">配置公司、部门、成员与调研角色 · 决定各角色能看到的统计范围</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

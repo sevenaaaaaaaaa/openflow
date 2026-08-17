@@ -77,7 +77,7 @@ admin_header('用户画像');
   <?php admin_sidebar('profiling'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">👤 用户画像</h1>
+      <h1 style="margin-bottom:0"> 用户画像</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
         <span class="badge badge-gray"><?=$audience['total']?> 全量客户</span>
         <span class="badge badge-gray"><?=$audience['active7']?> 近7天活跃</span>

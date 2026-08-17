@@ -89,7 +89,7 @@ admin_header('营销自动化');
 <div class="admin-layout">
   <?php admin_sidebar('automation'); ?>
   <div class="main">
-    <h1>⚡ 营销自动化</h1>
+    <h1> 营销自动化</h1>
     <p class="sub">自动化邮件流程 · 触发条件 → 动作（发邮件/通知/延迟）</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

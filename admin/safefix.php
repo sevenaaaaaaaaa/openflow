@@ -55,7 +55,7 @@ admin_header('人机协同修复');
 <div class="admin-layout">
   <?php admin_sidebar('safefix'); ?>
   <div class="main">
-    <h1 style="font-size:20px;font-weight:800">🛡️ 人机协同修复</h1>
+    <h1 style="font-size:20px;font-weight:800"> 人机协同修复</h1>
     <p class="sub" style="margin-top:2px">系统只生成修复方案，绝不自动改代码。你审核确认后才应用，且可一键回滚。</p>
 
     <div class="fix-note">

@@ -49,7 +49,7 @@ admin_header('SEO 站长工具');
 <div class="admin-layout">
   <?php admin_sidebar('seo-console'); ?>
   <div class="main">
-    <h1>🔍 SEO 站长工具</h1>
+    <h1> SEO 站长工具</h1>
     <p class="sub">接入 Google Search Console / Bing / 百度 · 公开看板 · 广告回传</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

@@ -64,7 +64,7 @@ admin_header('内容分发');
   <?php admin_sidebar('publish'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">📤 内容分发</h1>
+      <h1 style="margin-bottom:0"> 内容分发</h1>
       <div class="flex gap-2 ml-auto">
         <a href="content-calendar.php" class="btn btn-ghost btn-sm">内容日历</a>
         <?php if (CloudflareApi::configured()): ?>

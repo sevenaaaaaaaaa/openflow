@@ -90,7 +90,7 @@ admin_header('付费订阅');
   <?php admin_sidebar('subscription'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">📬 付费订阅</h1>
+      <h1 style="margin-bottom:0"> 付费订阅</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
         <?php if ($settings['enabled']): ?><span class="badge badge-green">🟢 订阅已启用</span><?php else: ?><span class="badge badge-gray">⏸ 订阅未启用</span><?php endif; ?>
         <span class="badge <?=$expiredCount>0?'badge-yellow':'badge-gray'?>"><?=count($state)?> 订阅用户</span>
