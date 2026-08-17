@@ -63,6 +63,22 @@ function skill_publish(array $s): void {
     skills_save($list);
 }
 
+// 按作者（开发者）查产品
+function skill_by_author(string $submitter): array {
+    return array_values(array_filter(skills_all(), fn($s) => ($s['submitted_by'] ?? '') === $submitter));
+}
+
+// 审核 skill：approve（发布） / reject（拒绝）
+function skill_review(string $id, string $decision): bool {
+    $s = skill_get($id);
+    if (!$s) return false;
+    if ($decision === 'approve') { $s['status'] = 'published'; $s['reviewed_at'] = date('Y-m-d H:i:s'); }
+    elseif ($decision === 'reject') { $s['status'] = 'rejected'; $s['reviewed_at'] = date('Y-m-d H:i:s'); }
+    else return false;
+    skill_publish($s);
+    return true;
+}
+
 // 删除
 function skill_delete(string $id): void {
     skills_save(array_values(array_filter(skills_all(), fn($s) => $s['id'] !== $id)));

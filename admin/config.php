@@ -1280,6 +1280,7 @@ function admin_sidebar(string $current): void {
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l2-2h14l2 2m-18 0l2 12a2 2 0 002 2h10a2 2 0 002-2l2-12m-18 0h18m-12 3a4 4 0 006 0"/></svg>
     Open Eco 生态插件
   </a>
+  <a href="/xmp/developers" class="<?=$current==='developers'?'active':''?>" style="padding-left:44px;font-size:13px">🧑‍💻 开发者审核</a>
   <?php endif; ?>
   <?php if (has_perm('settings')): ?>
   <a href="/xmp/commerce" class="<?=$current==='commerce'?'active':''?>" style="padding-left:44px;font-size:13px">商业中心</a>
