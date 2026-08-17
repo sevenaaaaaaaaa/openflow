@@ -212,7 +212,8 @@ $typeNames = mkt_categories();
     <?php else: ?>
     <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
       <?php foreach ($assets as $a): ?>
-      <a href="<?=htmlspecialchars($a['url'])?>" class="mkt-card" style="text-decoration:none;color:inherit">
+      <div class="mkt-card" style="display:flex;flex-direction:column">
+        <a href="<?=htmlspecialchars($a['url'])?>" style="text-decoration:none;color:inherit">
         <div style="display:flex;align-items:center;gap:12px">
           <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--ok));display:grid;place-items:center;font-size:20px;flex-shrink:0"><?=htmlspecialchars($a['icon'])?></div>
           <div style="flex:1;min-width:0">
@@ -224,12 +225,22 @@ $typeNames = mkt_categories();
           </div>
         </div>
         <p class="text-sm text-muted line-clamp-2" style="font-size:13px"><?=htmlspecialchars($a['description'] ?? '')?></p>
+        <?php if (($a['type'] ?? '') === 'bundle'): ?>
+        <div style="font-size:12px;color:var(--accent);margin-top:4px">包含 <?=$a['items_count'] ?? 0?> 个产品</div>
+        <?php endif; ?>
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--faint);margin-top:auto">
           <?php if (($a['rating_count'] ?? 0) > 0): ?><span style="color:var(--warn)">★ <?=number_format((float)$a['rating'], 1)?></span><?php endif; ?>
           <span>⬇ <?=$a['installs'] ?? 0?> 次安装</span>
           <?php if (!empty($a['installed'])): ?><span class="mkt-badge" style="background:var(--ok-soft);color:var(--ok);margin-left:auto">已安装</span><?php endif; ?>
         </div>
-      </a>
+        </a>
+        <?php if (in_array($a['type'] ?? '', ['bundle','membership']) && ($a['price'] ?? 0) > 0): ?>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+          <span style="font-weight:800;color:var(--ok);font-size:16px">¥<?=number_format($a['price'],0)?></span>
+          <button onclick="purchaseSkill('<?=htmlspecialchars($a['id'])?>')" class="mkt-btn" style="background:var(--accent);color:var(--on-accent);font-size:13px"><?=$a['type']==='membership'?'开通会员':'购买组合包'?> →</button>
+        </div>
+        <?php endif; ?>
+      </div>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
