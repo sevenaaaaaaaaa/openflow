@@ -77,7 +77,7 @@ admin_header('生态市场');
 <div class="admin-layout">
   <?php admin_sidebar('marketplace'); ?>
   <div class="main">
-    <h1>🧩 生态市场</h1>
+    <h1> 生态市场</h1>
     <p class="sub">插件 / 技能 / 主题 · 发布管理 · 生态统计 · 前台 /marketplace.php</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

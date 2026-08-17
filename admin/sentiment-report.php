@@ -21,7 +21,7 @@ if (isset($_GET['export'])) {
   <?php admin_sidebar('sentiment'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-2">
-      <h1 style="margin-bottom:0">📊 舆情报告</h1>
+      <h1 style="margin-bottom:0"> 舆情报告</h1>
       <a href="sentiment.php" class="btn btn-ghost btn-sm ml-auto">← 返回</a>
       <a href="?report=<?=urlencode($topic['id'])?>&export=1" class="btn btn-primary btn-sm">📥 导出 CSV</a>
     </div>

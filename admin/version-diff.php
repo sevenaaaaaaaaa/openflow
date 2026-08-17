@@ -26,7 +26,7 @@ if ($selectedA && $selectedB) {
   <?php admin_sidebar('version-diff'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">📝 版本对比</h1>
+      <h1 style="margin-bottom:0"> 版本对比</h1>
     </div>
     <div style="background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:24px">
       <form method="GET" style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:16px;align-items:end">

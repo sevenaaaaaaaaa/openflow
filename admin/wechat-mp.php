@@ -65,7 +65,7 @@ code.mp{background:var(--surface-2);padding:2px 8px;border-radius:4px;font-size:
 <div class="admin-layout">
   <?php admin_sidebar('wechat-mp'); ?>
   <div class="main">
-    <h1>📱 WeChat 微信管理</h1>
+    <h1> WeChat 微信管理</h1>
     <p class="sub">公众号 & 小程序配置 · 授权完成后即可使用</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

@@ -54,7 +54,7 @@ admin_header('API 分佣管理');
   <?php admin_sidebar('settings'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-2">
-      <h1 style="margin-bottom:0">💰 API 分佣</h1>
+      <h1 style="margin-bottom:0"> API 分佣</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
         <span class="badge badge-gray"><?=$stats['total']?> 次推荐</span>
         <span class="badge badge-green"><?=$stats['approved']?> 已确认</span>

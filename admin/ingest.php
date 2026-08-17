@@ -44,7 +44,7 @@ admin_header('内容导入连接器');
 <div class="admin-layout">
   <?php admin_sidebar('ingest'); ?>
   <div class="main">
-    <h1>🔗 内容导入连接器</h1>
+    <h1> 内容导入连接器</h1>
     <p class="sub">从飞书 / Notion / Obsidian / 印象笔记发布文章到后台（自动进入审核）</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

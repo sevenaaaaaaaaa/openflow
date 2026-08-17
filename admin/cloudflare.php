@@ -80,7 +80,7 @@ admin_header('Cloudflare');
   <?php admin_sidebar('cloudflare'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">☁️ Cloudflare</h1>
+      <h1 style="margin-bottom:0"> Cloudflare</h1>
       <div class="flex gap-2 ml-auto">
         <a href="?verify=1&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm">🔌 测试连接</a>
         <a href="?purge=1&csrf_token=<?=csrf_token()?>" class="btn btn-primary btn-sm" onclick="return confirm('清理全站 Cloudflare 缓存？')">🧹 清全站缓存</a>

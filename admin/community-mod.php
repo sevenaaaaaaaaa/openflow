@@ -68,7 +68,7 @@ admin_header('社区管理');
 <div class="admin-layout">
   <?php admin_sidebar('community-mod'); ?>
   <div class="main">
-    <h1>💬 社区管理</h1>
+    <h1> 社区管理</h1>
     <p class="sub">管理话题、帖子与评论 · 前台展示于 /community.php</p>
 
     <div class="flex gap-2 mb-4">
