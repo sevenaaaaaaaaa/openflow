@@ -79,7 +79,7 @@ admin_header('品牌数字资产');
 <div class="admin-layout">
   <?php admin_sidebar('dam'); ?>
   <div class="main">
-    <h1>🅛 品牌数字资产</h1>
+    <h1> 品牌数字资产</h1>
     <p class="sub">集中管理品牌 Logo · 字体 · 色彩 · 图标 · 插画 · 模板 · 视频 · 音频</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

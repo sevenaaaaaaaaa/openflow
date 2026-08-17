@@ -42,7 +42,7 @@ admin_header('知识库');
 <div class="admin-layout">
   <?php admin_sidebar('knowledge'); ?>
   <div class="main">
-    <h1>📚 公司知识库</h1>
+    <h1> 公司知识库</h1>
     <p class="sub">沉淀公司知识 · AI agent 自动检索参考（RAG）</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

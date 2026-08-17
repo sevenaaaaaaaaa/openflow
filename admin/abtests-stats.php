@@ -57,7 +57,7 @@ admin_header('A/B 测试统计');
   <?php admin_sidebar('abtests'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4" style="align-items:center">
-      <h1 style="margin-bottom:0">📊 A/B 测试统计</h1>
+      <h1 style="margin-bottom:0"> A/B 测试统计</h1>
       <a href="abtests.php" class="btn btn-ghost btn-sm ml-auto">← 返回列表</a>
     </div>
 

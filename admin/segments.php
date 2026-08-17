@@ -15,7 +15,7 @@ $totalMembers = array_sum(array_column($segments, 'member_count'));
   <?php admin_sidebar('segments'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">🎯 用户分群</h1>
+      <h1 style="margin-bottom:0"> 用户分群</h1>
       <div class="flex gap-2 ml-auto">
         <a href="?eval" class="btn btn-ghost">重新评估</a>
         <button onclick="document.getElementById('addModal').style.display='flex'" class="btn btn-primary">+ 新建分群</button>

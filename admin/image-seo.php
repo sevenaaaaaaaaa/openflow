@@ -99,7 +99,7 @@ admin_header('图片 SEO 管理');
   <?php admin_sidebar('media'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-2">
-      <h1 style="margin-bottom:0">🖼️ 图片 SEO</h1>
+      <h1 style="margin-bottom:0"> 图片 SEO</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
         <span class="badge badge-gray"><?=$totalCount?> 张图片</span>
         <span class="badge badge-green"><?=$withAltCount?> 已设 Alt</span>

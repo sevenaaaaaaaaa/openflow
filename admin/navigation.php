@@ -72,7 +72,7 @@ admin_header('导航站管理');
 <div class="admin-layout">
   <?php admin_sidebar('navigation'); ?>
   <div class="main">
-    <h1>🧭 导航站</h1>
+    <h1> 导航站</h1>
     <p class="sub">收录国内外优秀增长、SEO、AI 运营工具与资源网站 · 前台展示于 /navigation.php</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
