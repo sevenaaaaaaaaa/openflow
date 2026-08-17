@@ -776,6 +776,7 @@ function include_member_distribution($member): void {
       </div>
 
       <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:22px">
+        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--ok)">¥<?=number_format($stats['balance'],2)?></div><div style="font-size:12px;color:var(--muted)">账户余额（可提现）</div></div>
         <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--ok)">¥<?=number_format($stats['total_commission'],2)?></div><div style="font-size:12px;color:var(--muted)">累计佣金</div></div>
         <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800"><?=$stats['total_orders']?></div><div style="font-size:12px;color:var(--muted)">带来的订单</div></div>
         <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--warn)">¥<?=number_format($stats['pending_commission'],2)?></div><div style="font-size:12px;color:var(--muted)">待结算（未支付）</div></div>
@@ -790,6 +791,27 @@ function include_member_distribution($member): void {
           <button type="button" class="rounded-full px-5 py-2 font-bold" style="background:var(--accent);color:var(--on-accent);font-size:13px" onclick="var i=document.getElementById('refBase');i.select();document.execCommand('copy');alert('已复制推广链接')">复制</button>
         </div>
       </div>
+
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">佣金明细</h3>
+      <?php if (empty($stats['details'])): ?><p style="font-size:13px;color:var(--faint);margin-bottom:20px">还没有佣金记录，分享推广链接后产生。</p>
+      <?php else: ?>
+      <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px">
+        <table style="width:100%;font-size:13px">
+          <thead><tr style="background:var(--bg);text-align:left;color:var(--muted)"><th style="padding:10px 14px">商品</th><th style="padding:10px 14px">成交额</th><th style="padding:10px 14px">我的佣金</th><th style="padding:10px 14px">状态</th><th style="padding:10px 14px">时间</th></tr></thead>
+          <tbody>
+            <?php foreach (array_slice($stats['details'],0,20) as $d): ?>
+            <tr style="border-top:1px solid var(--border-soft)">
+              <td style="padding:10px 14px"><?=htmlspecialchars($d['title'])?></td>
+              <td style="padding:10px 14px">¥<?=number_format($d['amount'],2)?></td>
+              <td style="padding:10px 14px;color:var(--ok);font-weight:600">¥<?=number_format($d['commission'],2)?></td>
+              <td style="padding:10px 14px"><span style="color:<?=$d['status']==='paid'?'var(--ok)':'var(--warn)'?>"><?=$d['status']==='paid'?'已结算':'待支付'?></span></td>
+              <td style="padding:10px 14px;color:var(--faint);font-size:12px"><?=htmlspecialchars(substr($d['time']??'',0,16))?></td>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <?php endif; ?>
 
       <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">可推广的产品（<?=count($distProducts)?>）</h3>
       <?php if (empty($distProducts)): ?><p style="font-size:13px;color:var(--faint)">暂无可分销产品。开发者上架时开启分销后即可推广。</p>

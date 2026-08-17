@@ -133,16 +133,18 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
 
     <div class="panels p2">
       <div class="panel">
-        <div class="p-head"><h3>收入报表</h3><span class="p-sub mono">按月</span></div>
+        <div class="p-head"><h3>收入报表</h3><span class="p-sub mono">按月 · 含商品/课程</span></div>
         <div class="p-body" style="padding:0">
           <table class="p-table">
-            <thead><tr><th>月份</th><th>订单数</th><th>收入</th><th>分销佣金</th></tr></thead>
+            <thead><tr><th>月份</th><th>订单</th><th>付费单</th><th>免费单</th><th>收入</th><th>分销佣金</th></tr></thead>
             <tbody>
-              <?php if (empty($report['monthly'])): ?><tr><td colspan="4" style="color:var(--faint)">暂无收入数据</td></tr><?php endif; ?>
+              <?php if (empty($report['monthly'])): ?><tr><td colspan="6" style="color:var(--faint)">暂无收入数据</td></tr><?php endif; ?>
               <?php foreach ($report['monthly'] as $m => $r): ?>
               <tr>
                 <td style="color:var(--fg);font-weight:600"><?=htmlspecialchars($m)?></td>
                 <td class="num"><?=$r['orders']?></td>
+                <td class="num"><?=$r['paid_orders']?></td>
+                <td class="num" style="color:var(--muted)"><?=$r['free_orders']?></td>
                 <td class="num" style="color:var(--ok);font-weight:600">¥<?=number_format($r['revenue'],0)?></td>
                 <td class="num">¥<?=number_format($r['commission'],0)?></td>
               </tr>

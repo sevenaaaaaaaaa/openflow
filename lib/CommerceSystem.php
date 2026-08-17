@@ -461,17 +461,29 @@ function commerce_platform_fee_rate(): float { return 0.1; }
 
 // 分销者看板：带来的订单 + 佣金统计
 function commerce_distributor_stats(string $memberId): array {
-    $stats = ['products' => [], 'total_orders' => 0, 'total_commission' => 0, 'pending_commission' => 0];
+    $stats = ['products' => [], 'total_orders' => 0, 'total_commission' => 0, 'pending_commission' => 0, 'details' => [], 'balance' => 0];
     try {
         $orders = Database::query("SELECT * FROM orders WHERE referrer_id = ? ORDER BY id DESC LIMIT 100", [$memberId]);
         $total = 0; $pending = 0;
+        $details = [];
         foreach ($orders as $o) {
             $total += (float)($o['commission'] ?? 0);
             if (($o['status'] ?? '') !== 'paid') $pending += (float)($o['commission'] ?? 0);
+            $details[] = [
+                'title' => $o['course_title'] ?? '商品',
+                'amount' => (float)($o['amount'] ?? 0),
+                'commission' => (float)($o['commission'] ?? 0),
+                'status' => $o['status'] ?? '',
+                'time' => $o['paid_at'] ?? ($o['created_at'] ?? ''),
+            ];
         }
         $stats['total_orders'] = count($orders);
         $stats['total_commission'] = round($total, 2);
         $stats['pending_commission'] = round($pending, 2);
+        $stats['details'] = $details;
+        // 当前余额
+        $rows = Database::query("SELECT balance FROM members WHERE id = ?", [$memberId]);
+        $stats['balance'] = (float)($rows[0]['balance'] ?? 0);
     } catch (Exception $e) {}
     return $stats;
 }
