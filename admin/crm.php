@@ -350,7 +350,7 @@ admin_header('CRM 线索管理');
             <div class="font-bold text-lg"><?=htmlspecialchars($focusLead['name'] ?: '—')?></div>
             <div class="text-sm text-muted"><?=htmlspecialchars($focusLead['email'])?> · <?=htmlspecialchars($focusLead['phone'])?></div>
             <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-              <span class="stage-pill" style="background:#1e1e1e;color:#38bdf8"><?=htmlspecialchars($stages[$focusLead['stage']] ?? '')?></span>
+              <span class="stage-pill" style="background:#1e1e1e;color:var(--accent)"><?=htmlspecialchars($stages[$focusLead['stage']] ?? '')?></span>
               <span class="stage-pill" style="background:#f4f3e9">评分 <?=$focusLead['score']?></span>
               <span class="stage-pill" style="background:#f4f3e9">跟进人 <?=htmlspecialchars($adminNames[$focusLead['owner']] ?? $focusLead['owner'] ?: '未分配')?></span>
             </div>

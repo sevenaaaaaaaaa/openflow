@@ -105,7 +105,7 @@ admin_header('事件字典');
               <td class="text-sm"><?=htmlspecialchars($ev['desc'])?></td>
               <td class="text-sm text-muted" style="font-size:11px;max-width:220px"><?=htmlspecialchars($ev['props'] ?? '')?></td>
               <td><span class="badge <?=($evStats[$ev['name']] ?? 0) > 0 ? 'badge-green' : 'badge-gray'?>"><?=$evStats[$ev['name']] ?? 0?></span></td>
-              <td><?=!empty($ev['conversion']) ? '<span class="badge" style="background:#1e1e1e;color:#38bdf8">转化</span>' : ''?></td>
+              <td><?=!empty($ev['conversion']) ? '<span class="badge" style="background:#1e1e1e;color:var(--accent)">转化</span>' : ''?></td>
             </tr>
             <?php endforeach; ?>
           </tbody>

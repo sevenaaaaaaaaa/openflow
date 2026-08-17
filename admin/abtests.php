@@ -118,7 +118,7 @@ admin_header('A/B 测试');
         <div class="field"><label>重定向 URL <span class="hint">· 可选</span></label><input type="text" name="url_a" value="<?=htmlspecialchars($edit['url_a'] ?? '')?>" placeholder="留空不重定向"></div>
       </div>
 
-      <div class="card" style="border-left:3px solid #38bdf8">
+      <div class="card" style="border-left:3px solid var(--accent)">
         <h2>方案 B <span class="text-sm text-muted">· 实验组</span></h2>
         <div class="field"><label>方案 B 标签</label><input type="text" name="variant_b_label" value="<?=htmlspecialchars($edit['variant_b_label'] ?? '方案 B（实验组）')?>"></div>
         <div class="field-row">
