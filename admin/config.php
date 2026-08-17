@@ -1266,6 +1266,7 @@ function admin_sidebar(string $current): void {
   </a>
   <a href="/xmp/crm?tab=raw" class="<?=$current==='leads'?'active':''?>" style="padding-left:44px;font-size:13px">Row Leads</a>
   <a href="/xmp/crm?tab=pool" class="<?=$current==='crm-pool'?'active':''?>" style="padding-left:44px;font-size:13px">公海</a>
+  <a href="/xmp/orgs" class="<?=$current==='orgs'?'active':''?>" style="padding-left:44px;font-size:13px">🏢 企业客户</a>
   <?php endif; ?>
   <?php if (has_perm('leads')): ?>
   <a href="/xmp/leads" class="<?=$current==='leads'?'active':''?>" style="padding-left:44px;font-size:13px">Leads</a>
