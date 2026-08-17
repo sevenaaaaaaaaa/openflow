@@ -1343,6 +1343,7 @@ function admin_sidebar(string $current): void {
   <a href="/xmp/payment-settings" class="<?=$current==='payment-settings'?'active':''?>" style="padding-left:44px;font-size:13px">支付设置</a>
   <a href="/xmp/mail-settings" class="<?=$current==='mail-settings'?'active':''?>" style="padding-left:44px;font-size:13px">邮件设置</a>
   <a href="/xmp/devops" class="<?=$current==='devops'?'active':''?>" style="padding-left:44px;font-size:13px">运维工具</a>
+  <a href="/xmp/migrate" class="<?=$current==='migrate'?'active':''?>" style="padding-left:44px;font-size:13px">📦 数据迁移</a>
   <a href="/xmp/health-check" class="<?=$current==='health-check'?'active':''?>" style="padding-left:44px;font-size:13px">健康检测</a>
   <?php if (has_perm('evolution')): ?>
   <a href="/xmp/evolution" class="<?=$current==='evolution'?'active':''?>" style="padding-left:44px;font-size:13px">自我进化</a>
