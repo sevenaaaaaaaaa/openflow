@@ -445,6 +445,8 @@ security_headers();
   --font-display: "Space Grotesk","PingFang SC","HarmonyOS Sans SC","MiSans","Segoe UI",system-ui,sans-serif;
   --ease-spring: cubic-bezier(.32,.72,0,1);
   --font-mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
+  --text-2:var(--muted); --text-3:var(--faint); --surface-2:var(--surface-strong);
+  --text:var(--fg); --mono:var(--font-mono); --border-soft:oklch(90% .012 80); --border-2:var(--border-strong); --radius:var(--r-md); --radius-lg:var(--r-lg); --shadow-lg:var(--shadow); --surfaces:var(--surface); --ease-out:cubic-bezier(.22,1,.36,1);
   color-scheme:light;
 }
 [data-theme="dark"]{
@@ -460,6 +462,7 @@ security_headers();
   --glass:oklch(30% .014 75 / .5); --glass-bright:oklch(34% .014 75 / .64);
   --shadow:0 24px 60px -24px oklch(0% 0 0 / .55); --shadow-sm:0 10px 28px -14px oklch(0% 0 0 / .5);
   --grad:linear-gradient(135deg,oklch(74% .13 258),oklch(70% .14 285));
+  --border-soft:oklch(100% 0 0 / .06);
   color-scheme:dark;
 }
 body{font-family:var(--font-body); color:var(--fg); background:var(--bg); -webkit-font-smoothing:antialiased; overflow-x:clip; line-height:1.5}
