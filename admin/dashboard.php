@@ -16,6 +16,7 @@ $nps = dash_nps();
 $activity = dash_activity();
 $paths = dash_paths();
 $prefs = dash_preferences();
+$utmAttr = dash_utm_attribution();
 
 admin_header('经营驾驶舱');
 ?>
@@ -94,17 +95,37 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
       </div>
 
       <div class="panel">
-        <div class="p-head"><h3>渠道归因</h3><span class="p-sub mono">按支付订单</span></div>
+        <div class="p-head"><h3>来源归因</h3><span class="p-sub mono">UTM + Referrer · 近30天</span></div>
         <div class="p-body">
-          <?php if (empty($channels)): ?><div class="empty" style="padding:16px 0">暂无支付订单，产生订单后自动归因</div>
-          <?php else: $maxCh = max(array_column($channels,'orders')) ?: 1; ?>
-          <?php foreach ($channels as $src => $c): ?>
-          <div class="channel-row">
-            <span style="font-size:12px;width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($src)?></span>
-            <div class="bar"><i style="width:<?=round($c['orders']/$maxCh*100)?>%"></i></div>
-            <span style="font-family:var(--font-mono);font-size:11px;width:74px;text-align:right;color:var(--muted)"><?=$c['orders']?>单 ¥<?=$c['revenue']?></span>
+          <?php
+          $medCat = ['SEO'=>'oklch(58% .17 152)','SEM'=>'oklch(55% .2 25)','信息流'=>'oklch(66% .15 75)','社媒'=>'oklch(60% .14 300)','邮件'=>'oklch(55% .16 290)','自定义'=>'oklch(52% .17 258)','直接'=>'oklch(46% .016 70)','其他'=>'oklch(46% .016 70)'];
+          $medOrder = ['SEO','SEM','信息流','社媒','邮件','自定义','直接','其他'];
+          ?>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+            <?php foreach ($medOrder as $m): if (($utmAttr['by_medium'][$m] ?? 0) > 0): ?>
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:<?=$medCat[$m]?>18;color:<?=$medCat[$m]?>"><span style="width:7px;height:7px;border-radius:50%;background:<?=$medCat[$m]?>"></span><?=$m?> <?=$utmAttr['by_medium'][$m]?></span>
+            <?php endif; endforeach; ?>
+            <?php if ($utmAttr['total'] <= 0): ?><span style="font-size:11px;color:var(--faint)">暂无归因数据（带 UTM 的访问落地或 referrer 数据产生后显示）</span><?php endif; ?>
           </div>
-          <?php endforeach; ?>
+          <?php if (!empty($utmAttr['groups'])): $maxG = max(array_column($utmAttr['groups'],'visits')) ?: 1; foreach (array_slice($utmAttr['groups'], 0, 6, true) as $key => $g): ?>
+          <div class="channel-row">
+            <span style="font-size:11px;width:50px;color:<?=$medCat[$g['medium']]?>;font-weight:700"><?=htmlspecialchars($g['medium'])?></span>
+            <span style="font-size:12px;width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($g['source'])?></span>
+            <div class="bar"><i style="width:<?=round($g['visits']/$maxG*100)?>%"></i></div>
+            <span class="num" style="font-size:11px;width:36px;text-align:right"><?=$g['visits']?></span>
+          </div>
+          <?php endforeach; endif; ?>
+          <?php if (!empty($channels)): ?>
+          <div style="border-top:1px solid var(--border-soft);margin-top:12px;padding-top:12px">
+            <div style="font-size:11px;font-weight:600;color:var(--faint);margin-bottom:8px">支付订单归因（按订单 UTM）</div>
+            <?php $maxCh = max(array_column($channels,'orders')) ?: 1; foreach (array_slice($channels, 0, 4, true) as $src => $c): ?>
+            <div class="channel-row">
+              <span style="font-size:12px;width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($src)?></span>
+              <div class="bar"><i style="width:<?=round($c['orders']/$maxCh*100)?>%"></i></div>
+              <span style="font-family:var(--font-mono);font-size:11px;width:70px;text-align:right;color:var(--muted)"><?=$c['orders']?>单 ¥<?=$c['revenue']?></span>
+            </div>
+            <?php endforeach; ?>
+          </div>
           <?php endif; ?>
         </div>
       </div>
