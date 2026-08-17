@@ -1284,6 +1284,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
       </div>
       <a class="drop-item" href="/messages.php" style="border-top:1px solid var(--border-soft);margin-top:2px"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span>站内信<span id="pfUnread" style="margin-left:auto;background:var(--danger-soft);color:var(--danger);font-size:11px;padding:1px 7px;border-radius:999px;display:none">0</span></a>
       <a class="drop-item" href="/member.php" style="border-bottom:1px solid var(--border-soft);margin-bottom:2px"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.2 2.7-5 6-5s6 1.8 6 5"/><path d="M16 4.5a3.2 3.2 0 0 1 0 6.5M18 15.5c2 .8 3 2.3 3 4.5"/></svg></span>完整个人中心<span style="margin-left:auto;color:var(--faint);font-size:11px">→</span></a>
+      <a class="drop-item" id="pfOrg" href="/enterprise" style="border-bottom:1px solid var(--border-soft);margin-bottom:2px"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/></svg></span>申请商业版<span style="margin-left:auto;color:var(--faint);font-size:11px">→</span></a>
       <div class="set-row"><div><div class="st2">深色主题</div><div class="sd">跟随你的偏好</div></div><div class="switch" id="setTheme" role="switch" aria-checked="false" tabindex="0"></div></div>
       <div class="set-row"><div><div class="st2">减少动效</div><div class="sd">关闭动画与过渡</div></div><div class="switch" id="setRM" role="switch" aria-checked="false" tabindex="0"></div></div>
       <button type="button" class="btn ghost" id="pfLogout" style="width:100%;margin-top:14px;color:var(--danger);border-color:var(--danger)">退出登录</button>
@@ -1617,6 +1618,11 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
           $('#pfC2').textContent=d.stats.orders||0;
           $('#pfC3').textContent=d.stats.consultations||0;
           if(un&&(d.stats.unread||0)>0){un.style.display='inline';un.textContent=d.stats.unread;}
+          var orgLink=$('#pfOrg');
+          if(orgLink&&d.org){
+            orgLink.href='/member.php?view=org';
+            orgLink.innerHTML='<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/></svg></span>'+d.org.name+' · 企业控制台<span style="margin-left:auto;color:var(--faint);font-size:11px">→</span>';
+          }
         }else{$('#pfC1').textContent=0;$('#pfC2').textContent=0;$('#pfC3').textContent=0;}
       })
       .catch(function(){$('#pfC1').textContent=0;$('#pfC2').textContent=0;$('#pfC3').textContent=0;});
