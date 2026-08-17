@@ -36,6 +36,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'transfer') {
         crm_transfer($email, $_POST['owner'] ?? '');
         flash('success', '线索已交接');
+    } elseif ($action === 'import' && !empty($_FILES['csv_file']['tmp_name'])) {
+        $imported = 0; $skipped = 0;
+        $handle = fopen($_FILES['csv_file']['tmp_name'], 'r');
+        if ($handle) {
+            $header = fgetcsv($handle); // 表头
+            while (($row = fgetcsv($handle)) !== false) {
+                $line = array_combine($header, $row);
+                $email2 = mb_strtolower(trim($line['email'] ?? ''));
+                $name2 = trim($line['name'] ?? '');
+                $phone2 = trim($line['phone'] ?? '');
+                $company2 = trim($line['company'] ?? '');
+                if ($email2 === '' && $phone2 === '') { $skipped++; continue; }
+                $lead2 = crm_ensure_lead($email2 ?: $phone2, $name2, $phone2);
+                if (!empty($company2)) $lead2['company'] = $company2;
+                $lead2['source'] = 'import';
+                $lead2['updated_at'] = date('Y-m-d H:i:s');
+                crm_update_lead($email2 ?: $phone2, ['company'=>$company2, 'source'=>'import']);
+                $imported++;
+            }
+            fclose($handle);
+        }
+        flash('success', "导入完成：新增/更新 {$imported} 条线索，跳过 {$skipped} 条");
     }
     header('Location: /xmp/crm' . (isset($_POST['focus']) ? '?focus=' . urlencode($email) : ''));
     exit;
@@ -80,9 +102,16 @@ admin_header('CRM 线索管理');
         <span class="badge badge-gray"><?=count($rawLeads)?> 原始提交</span>
         <a href="export.php?format=csv" class="btn btn-ghost btn-sm">导出 CSV</a>
         <a href="export.php?format=json" class="btn btn-ghost btn-sm">导出 JSON</a>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('csvFile').click()">导入 CSV</button>
+        <form method="post" enctype="multipart/form-data" style="display:inline">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="import">
+          <input type="file" name="csv_file" id="csvFile" accept=".csv,text/csv" style="display:none" onchange="this.form.submit()">
+        </form>
       </div>
     </div>
-    <p class="sub">线索阶段 · 打分 · 跟进 · 交接 · 商机转化 · 原始提交</p>
+    <p class="sub">线索阶段 · 打分 · 跟进 · 交接 · 商机转化 · 原始提交 · <a href="#importTip" style="color:var(--accent);cursor:pointer" onclick="document.getElementById('importTip').style.display=document.getElementById('importTip').style.display==='none'?'':'none'">CSV 导入格式</a></p>
+    <div id="importTip" style="display:none;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px">CSV 需含表头：<code>name,email,phone,company</code>，每行一条线索（email 或 phone 至少一项）。</div>
 
     <div class="tabs" style="margin-bottom:16px">
       <a href="?tab=pipeline" class="<?=$tab==='pipeline'?'active':''?>">🔀 销售管线</a>
