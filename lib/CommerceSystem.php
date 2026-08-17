@@ -41,7 +41,9 @@ class CommerceSystem {
             'pricing' => $data['pricing'] ?? ['mode' => 'one_time', 'price' => 0],
             'author' => $data['author'] ?? '',
             'author_name' => $data['author_name'] ?? '',
-            'commission_rate' => (float)($data['commission_rate'] ?? 0.7),
+            'commission_rate' => (float)($data['commission_rate'] ?? 0.9),
+            'distribution_enabled' => !empty($data['distribution_enabled']),
+            'distributor_rate' => (float)($data['distributor_rate'] ?? 0.3),
             'status' => $data['status'] ?? 'draft',
             'sales_count' => 0,
             'rating' => 0,
@@ -57,7 +59,7 @@ class CommerceSystem {
         foreach ($products as &$p) {
             if ($p['id'] === $id) {
                 foreach ($data as $k => $v) {
-                    if (in_array($k, ['type','asset_id','title','description','cover','pricing','author','author_name','commission_rate','status'], true)) $p[$k] = $v;
+                    if (in_array($k, ['type','asset_id','title','description','cover','pricing','author','author_name','commission_rate','distribution_enabled','distributor_rate','status'], true)) $p[$k] = $v;
                 }
                 self::saveProducts($products);
                 return $p;
@@ -115,7 +117,7 @@ class CommerceSystem {
      * 创建数字商品订单（复用 ShopSystem 订单表）
      * @return array ['ok'=>, 'order'=>, 'pay_url'=>]
      */
-    public static function purchase(string $memberId, string $productId): array {
+    public static function purchase(string $memberId, string $productId, string $referrer = ''): array {
         $product = self::getProduct($productId);
         if (!$product) return ['ok' => false, 'error' => '商品不存在'];
         if ($product['status'] !== 'published') return ['ok' => false, 'error' => '商品未上架'];
@@ -128,9 +130,16 @@ class CommerceSystem {
             return ['ok' => true, 'order' => null, 'already_owned' => true];
         }
 
+        // 解析分销者（一级分销）：ref = 分销者 referral_code 或 member_id
+        $referrerId = '';
+        if (!empty($referrer) && !empty($product['distribution_enabled'])) {
+            $referrerId = commerce_resolve_referrer($referrer, $memberId);
+        }
+
         // 创建订单（goods_type=product）
         $orderId = 'order_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6);
         $period = $product['pricing']['period'] ?? 'month';
+        $distRate = (float)($product['distributor_rate'] ?? 0.3);
         $order = [
             'id' => $orderId,
             'member_id' => $memberId,
@@ -139,15 +148,17 @@ class CommerceSystem {
             'amount' => $price,
             'status' => 'pending',
             'payment_method' => '',
-            'referrer_id' => '',
-            'commission' => 0,
+            'referrer_id' => $referrerId,
+            'commission' => $referrerId ? round($price * $distRate, 2) : 0,
             'created_at' => date('Y-m-d H:i:s'),
             'paid_at' => '',
             'goods_type' => 'product',
             'product_id' => $productId,
             'period' => $period,
             'author' => $product['author'] ?? '',
-            'commission_rate' => $product['commission_rate'] ?? 0.7,
+            'commission_rate' => (float)($product['commission_rate'] ?? 0.9),
+            'distributor_rate' => $distRate,
+            'platform_fee' => round($price * 0.1, 2),
         ];
         Database::insert('orders', $order);
         $order['utm'] = shop_current_utm();
@@ -205,19 +216,30 @@ class CommerceSystem {
                 break;
         }
 
-        // 作者分成入账
-        if (!empty($product['author'])) {
-            $rate = (float)($product['commission_rate'] ?? 0.7);
-            $amount = round((float)($order['amount'] ?? 0) * $rate, 2);
-            if ($amount > 0) {
-                try {
-                    Database::execute("UPDATE members SET balance = balance + ? WHERE id = ?", [$amount, $product['author']]);
-                    Database::insert('point_logs', [
-                        'member_id' => $product['author'], 'points' => 0, 'type' => 'commission',
-                        'description' => "商品「{$product['title']}」销售分成 ¥{$amount}", 'created_at' => date('Y-m-d H:i:s'),
-                    ]);
-                } catch (Exception $e) {}
-            }
+        // 作者分成 + 分销者佣金（一级分销）
+        // 佣金结构：平台抽 10%（覆盖支付手续费），分销者拿 distributor_rate%，作者拿剩余
+        $paid = (float)($order['amount'] ?? 0);
+        $platformFee = round($paid * 0.1, 2);
+        $distAmount = (float)($order['commission'] ?? 0); // 已在 purchase 计算
+        $authorAmount = round($paid - $platformFee - $distAmount, 2);
+        if (!empty($product['author']) && $authorAmount > 0) {
+            try {
+                Database::execute("UPDATE members SET balance = balance + ? WHERE id = ?", [$authorAmount, $product['author']]);
+                Database::insert('point_logs', [
+                    'member_id' => $product['author'], 'points' => 0, 'type' => 'commission',
+                    'description' => "商品「{$product['title']}」销售分成 ¥{$authorAmount}（平台费 ¥{$platformFee}）", 'created_at' => date('Y-m-d H:i:s'),
+                ]);
+            } catch (Exception $e) {}
+        }
+        // 分销者佣金入账（一级分销，仅直接推荐人）
+        if (!empty($order['referrer_id']) && $distAmount > 0) {
+            try {
+                Database::execute("UPDATE members SET balance = balance + ? WHERE id = ?", [$distAmount, $order['referrer_id']]);
+                Database::insert('point_logs', [
+                    'member_id' => $order['referrer_id'], 'points' => 0, 'type' => 'distribution',
+                    'description' => "推广「{$product['title']}」分销佣金 ¥{$distAmount}", 'created_at' => date('Y-m-d H:i:s'),
+                ]);
+            } catch (Exception $e) {}
         }
 
         // 递增销量
@@ -275,8 +297,6 @@ class CommerceSystem {
         } catch (Exception $e) {}
     }
 
-    // ─── 权益查询 ───
-
     public static function owns(string $memberId, string $productId): bool {
         $ents = json_read(self::$entitlementsFile);
         $key = $memberId . ':' . $productId;
@@ -305,4 +325,37 @@ class CommerceSystem {
             ],
         ];
     }
+}
+
+// ─── 分销辅助（一级分销，class 外顶层函数） ───
+// 解析分销者：ref 可以是 referral_code 或 member_id（不能是自己）
+function commerce_resolve_referrer(string $ref, string $buyerId): string {
+    $ref = trim($ref);
+    if ($ref === '') return '';
+    try {
+        $rows = Database::query("SELECT id, referral_code FROM members WHERE id = ? OR referral_code = ? LIMIT 1", [$ref, $ref]);
+        $m = $rows[0] ?? null;
+        if ($m && ($m['id'] ?? '') !== $buyerId) return $m['id'];
+    } catch (Exception $e) {}
+    return '';
+}
+
+// 平台费率（10%，覆盖支付手续费）
+function commerce_platform_fee_rate(): float { return 0.1; }
+
+// 分销者看板：带来的订单 + 佣金统计
+function commerce_distributor_stats(string $memberId): array {
+    $stats = ['products' => [], 'total_orders' => 0, 'total_commission' => 0, 'pending_commission' => 0];
+    try {
+        $orders = Database::query("SELECT * FROM orders WHERE referrer_id = ? ORDER BY id DESC LIMIT 100", [$memberId]);
+        $total = 0; $pending = 0;
+        foreach ($orders as $o) {
+            $total += (float)($o['commission'] ?? 0);
+            if (($o['status'] ?? '') !== 'paid') $pending += (float)($o['commission'] ?? 0);
+        }
+        $stats['total_orders'] = count($orders);
+        $stats['total_commission'] = round($total, 2);
+        $stats['pending_commission'] = round($pending, 2);
+    } catch (Exception $e) {}
+    return $stats;
 }
