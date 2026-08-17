@@ -271,24 +271,56 @@ function include_member_membership($member): void {
 
       <!-- 会员计划 -->
       <div class="mt-8">
-        <h3 class="text-sm font-bold text-muted mb-3"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span> 会员计划</h3>
+        <h3 class="text-sm font-bold text-muted mb-3"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span> 商品会员计划</h3>
+        <?php $shopPlan = member_shop_plan($member); $quota = member_quota_usage($member); ?>
+        <?php if ($shopPlan): ?>
+        <div style="padding:12px 16px;border-radius:12px;background:var(--ok-soft);margin-bottom:14px;font-size:13px;color:var(--ok)">
+          当前：<b><?=htmlspecialchars($shopPlan['name'])?></b> · 今日已用 <?=$quota['used']?>/<?=$quota['daily']?> 单 · 剩余 <b><?=$quota['left']?></b> 单免费
+          <?php if (($shopPlan['period'] ?? '') === 'year'): ?> · <?=date('Y-m-d', strtotime($member['membership_expires']))?> 到期<?php endif; ?>
+        </div>
+        <?php endif; ?>
         <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-          <?php foreach ($plans as $p): $isCurrent = ($p['id'] === $current); ?>
-          <div style="padding:18px;border-radius:14px;border:2px solid <?=$isCurrent?'var(--accent)':'var(--border)'?>;<?=$isCurrent?'background:var(--warn-soft)':''?>">
+          <?php foreach ($plans as $p): if (in_array($p['id'], ['annual','lifetime'])): $isCurrent = ($shopPlan['id'] ?? '') === $p['id']; ?>
+          <div style="padding:20px;border-radius:14px;border:2px solid <?=$isCurrent?'var(--accent)':'var(--border)'?>;<?=$isCurrent?'background:var(--warn-soft)':''?>">
             <div class="text-2xl"><?=htmlspecialchars($p['icon'] ?? '')?></div>
-            <div class="font-bold mt-1"><?=htmlspecialchars($p['name'] ?? '')?></div>
-            <div class="text-sm mt-1" style="color:var(--ok)"><?=$p['price']>0 ? '¥' . $p['price'] . '/' . htmlspecialchars($p['period'] ?? '') : '免费'?></div>
+            <div class="font-bold mt-1" style="font-size:16px"><?=htmlspecialchars($p['name'] ?? '')?></div>
+            <div class="text-lg mt-1" style="color:var(--ok);font-weight:800">¥<?=$p['price']?><span style="font-size:12px;font-weight:400;color:var(--muted)"><?=$p['period']==='year'?' /年':' /永久'?></span></div>
+            <div class="text-xs mt-1" style="color:var(--accent);font-weight:600">每天免费 <?=$p['quota_per_day']?> 个任意商品</div>
             <ul class="text-xs text-muted mt-2" style="line-height:1.8;list-style:none;padding:0">
               <?php foreach ($p['benefits'] ?? [] as $b): ?><li>✓ <?=htmlspecialchars($b)?></li><?php endforeach; ?>
             </ul>
-            <?php if ($isCurrent): ?><div class="text-xs mt-3 font-bold" style="color:var(--warn)">当前等级</div>
-            <?php elseif ($p['price'] > 0): ?><a href="member.php?view=subscribe" class="inline-block mt-3 text-xs font-bold px-4 py-2 rounded-full" style="background:var(--accent);color:var(--on-accent)">升级 →</a>
+            <?php if ($isCurrent): ?><div class="text-xs mt-3 font-bold" style="color:var(--ok)">当前会员</div>
+            <?php else: ?><button onclick="buyMembership('<?=htmlspecialchars($p['id'])?>')" class="mt-3 w-full rounded-full py-2.5 font-bold" style="background:var(--accent);color:var(--on-accent)"><?=$p['price']>0?'立即开通':'免费'?> →</button>
             <?php endif; ?>
           </div>
-          <?php endforeach; ?>
+          <?php endif; endforeach; ?>
         </div>
+        <p style="font-size:11.5px;color:var(--faint);margin-top:12px;line-height:1.7">会员商品仅限本人账号使用：不得二次开发、转售或打包分发，擅自魔改/复用构成侵权。免费下单按自然日重置。</p>
       </div>
     </div>
+    <script>
+    function buyMembership(planId) {
+      // 找到对应会员商品并下单
+      var assetId = planId;
+      var fd = new FormData();
+      fd.append('action', 'purchase');
+      fd.append('id', assetId);
+      fetch('/api/marketplace.php', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (d.ok && d.payment && d.payment.ok) {
+            var form = document.createElement('form');
+            form.method = 'POST'; form.action = d.payment.gateway; form.target = '_blank';
+            Object.keys(d.payment.params).forEach(function(k){ var i = document.createElement('input'); i.type='hidden'; i.name=k; i.value=d.payment.params[k]; form.appendChild(i); });
+            document.body.appendChild(form); form.submit();
+          } else if (d.ok && d.order) {
+            alert('支付需配置支付渠道，请联系管理员');
+          } else {
+            alert(d.error || '下单失败');
+          }
+        });
+    }
+    </script>
     <?php
 }
 
