@@ -138,6 +138,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <a class="nav-item" href="member.php?view=submit"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span> 投稿文章</a>
         <a class="nav-item" href="/consultation?view=my">🤝 我的1v1咨询</a>
         <a class="nav-item <?=$view==='org'?'active':''?>" href="member.php?view=org"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/></svg></span> 企业控制台</a>
+        <a class="nav-item <?=$view==='developer'?'active':''?>" href="member.php?view=developer"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3M13 15h4"/><path d="M7 4h13a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg></span> 开发者中心</a>
         <a class="nav-item" href="/messages.php">🔔 站内信<?php $msgUnread = inbox_unread($member); if ($msgUnread): ?> <span style="background:var(--danger);color:var(--surface);border-radius:999px;padding:1px 7px;font-size:11px"><?=$msgUnread?></span><?php endif; ?></a>
         <div style="border-top:1px solid var(--border);margin:8px 0"></div>
         <a class="nav-item <?=$view==='profile'?'active':''?>" href="member.php?view=profile">👤 个人资料</a>
@@ -170,6 +171,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <?php elseif ($tab === 'profile'): include_member_profile($member); ?>
         <?php elseif ($tab === 'password'): include_member_password($member); ?>
         <?php elseif ($tab === 'org'): include_member_org($member); ?>
+        <?php elseif ($tab === 'developer'): include_member_developer($member); ?>
         <?php endif; ?>
       </div>
     </div>
@@ -553,6 +555,120 @@ function include_member_org($member): void {
         </div>
       <?php endif; ?>
     </div>
+    <?php
+}
+
+// ─── 开发者中心（入驻/开发套件/我的产品/提交） ───
+function include_member_developer($member): void {
+    $devStatus = $member['developer_status'] ?? 'none';
+    $types = skill_types();
+    $mine = skill_by_author($member['id']);
+    ?>
+    <div class="card p-8">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:20px">🧑‍💻</div>
+        <div>
+          <h2 class="text-xl font-bold">开发者中心</h2>
+          <div style="font-size:12px;color:var(--muted)">把技能 / 主题做成产品，上架 OpenFlow 市场，被更多人使用</div>
+        </div>
+        <span class="tag <?=$devStatus==='approved'?'green':($devStatus==='pending'?'orange':'gray')?>" style="margin-left:auto">
+          <?=['none'=>'未申请','pending'=>'审核中','approved'=>'已认证开发者','rejected'=>'申请被拒'][$devStatus] ?? '未申请'?>
+        </span>
+      </div>
+
+      <?php if ($devStatus === 'none'): ?>
+      <!-- 申请成为开发者 -->
+      <div style="padding:20px;border-radius:14px;background:var(--bg);margin-bottom:20px">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">成为开发者，上传你的第一个产品</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">认证后即可提交 Skill（AI 指令 / 工具 / 工作流）和主题模板。审核通过后上架市场，供所有用户启用。</p>
+        <form onsubmit="return applyDev(event)">
+          <div class="field"><label>开发者简介 *（至少 10 字，介绍你会做什么）</label><textarea name="bio" rows="2" required placeholder="如：专注增长类 Skill，擅长小红书文案与 SEO"></textarea></div>
+          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
+            <div class="field"><label>擅长的技能方向</label><input type="text" name="skills" placeholder="SEO / 文案 / 自动化…"></div>
+            <div class="field"><label>个人/团队主页（选填）</label><input type="text" name="website" placeholder="https://…"></div>
+          </div>
+          <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">提交申请</button>
+          <div id="applyDevMsg" style="margin-top:12px;font-size:13px"></div>
+        </form>
+      </div>
+      <?php elseif ($devStatus === 'pending'): ?>
+      <div style="padding:24px;border-radius:14px;background:var(--bg);text-align:center">
+        <div style="font-size:34px;margin-bottom:8px">⏳</div>
+        <h3 style="font-size:16px;font-weight:700">申请审核中</h3>
+        <p style="font-size:13px;color:var(--muted);margin-top:6px">管理员审核通过后，你就可以上传产品了。</p>
+      </div>
+      <?php elseif ($devStatus === 'rejected'): ?>
+      <div style="padding:20px;border-radius:14px;background:var(--danger-soft);margin-bottom:20px">
+        <h3 style="font-size:15px;font-weight:700;color:var(--danger);margin-bottom:6px">申请未通过</h3>
+        <p style="font-size:13px;color:var(--muted)">可完善简介后重新提交，或联系管理员。</p>
+      </div>
+      <?php elseif ($devStatus === 'approved'): ?>
+      <!-- 我的产品 -->
+      <div style="margin-bottom:20px">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">我的产品（<?=count($mine)?>）</h3>
+        <?php if (empty($mine)): ?><p style="font-size:13px;color:var(--faint)">还没有产品，用下面的表单提交第一个。</p>
+        <?php else: ?>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <?php foreach ($mine as $s): $stMap = ['pending'=>'待审核','published'=>'已上架','rejected'=>'被拒','draft'=>'草稿']; $stCls = ['pending'=>'orange','published'=>'green','rejected'=>'red','draft'=>'gray']; ?>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:12px">
+            <span style="font-size:20px"><?=htmlspecialchars($s['icon'] ?? '⚡')?></span>
+            <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600"><?=htmlspecialchars($s['title'])?></div><div style="font-size:11.5px;color:var(--muted)"><?=htmlspecialchars($types[$s['type']]['name'] ?? $s['type'])?> · 安装 <?=$s['installs']??0?> · 评分 <?=$s['rating']??0?></div></div>
+            <span class="tag <?=$stCls[$s['status']]??'gray'?>"><?=$stMap[$s['status']]??$s['status']?></span>
+            <?php if (($s['status'] ?? '') !== 'published'): ?><button class="text-sm" style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="delProduct('<?=htmlspecialchars($s['id'])?>')">删除</button><?php endif; ?>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+      </div>
+
+      <!-- 提交新产品 -->
+      <div style="padding:20px;border-radius:14px;background:var(--bg)">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">提交新产品</h3>
+        <p style="font-size:12.5px;color:var(--faint);margin-bottom:16px">填写表单，自动生成标准 Skill 产品。审核通过后上架市场。</p>
+        <form onsubmit="return submitSkill(event)">
+          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
+            <div class="field"><label>产品名称 *</label><input type="text" name="title" required placeholder="如：小红书爆款文案"></div>
+            <div class="field"><label>类型</label><select name="type" id="devSkillType">
+              <?php foreach ($types as $k => $t): ?><option value="<?=$k?>"><?=$t['icon']?> <?=$t['name']?> — <?=$t['desc']?></option><?php endforeach; ?>
+            </select></div>
+          </div>
+          <div class="field"><label>一句话描述</label><input type="text" name="description" placeholder="产品能做什么？"></div>
+          <div class="field"><label>标签（逗号分隔）</label><input type="text" name="tags" placeholder="SEO, 文案, 增长"></div>
+          <div class="field"><label>内容 / 指令模板 *（AI 指令 / 工具说明，用 {topic} 等占位符）</label><textarea name="content" rows="6" required placeholder="你是…请为「{topic}」…"></textarea></div>
+          <div id="devSkillTip" style="font-size:12px;color:var(--faint);margin-bottom:12px">💡 开发套件：参考市场里的官方 Skill 结构。AI 指令用 <code>{topic}</code> 等变量占位，工作流可多段描述。</div>
+          <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">提交审核</button>
+          <div id="submitSkillMsg" style="margin-top:12px;font-size:13px"></div>
+        </form>
+      </div>
+      <?php endif; ?>
+    </div>
+    <script>
+    function applyDev(e) {
+      e.preventDefault();
+      var f = e.target, msg = document.getElementById('applyDevMsg');
+      var fd = new FormData(f); fd.append('action', 'apply_developer');
+      fetch('/api/developer.php', { method:'POST', body: fd })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; msg.textContent = d.message || d.error; if (d.ok) setTimeout(function(){ location.reload(); }, 1200); });
+      return false;
+    }
+    function submitSkill(e) {
+      e.preventDefault();
+      var f = e.target, msg = document.getElementById('submitSkillMsg');
+      var fd = new FormData(f); fd.append('action', 'submit_skill');
+      fetch('/api/developer.php', { method:'POST', body: fd })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; msg.textContent = d.message || d.error; if (d.ok) setTimeout(function(){ location.reload(); }, 1200); });
+      return false;
+    }
+    function delProduct(id) {
+      if (!confirm('确认删除该产品？')) return;
+      var fd = new FormData(); fd.append('action','delete_product'); fd.append('id', id);
+      fetch('/api/developer.php', { method:'POST', body: fd })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
+    }
+    </script>
     <?php
 }
 

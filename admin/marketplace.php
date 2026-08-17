@@ -57,6 +57,13 @@ if (isset($_GET['dup_skill'])) {
         $skills = skills_all();
     }
 }
+// 审核开发者提交的产品
+if (isset($_GET['approve'])) {
+    if (skill_review($_GET['approve'], 'approve')) { $message = '已通过并上架'; $skills = skills_all(); }
+}
+if (isset($_GET['reject'])) {
+    if (skill_review($_GET['reject'], 'reject')) { $message = '已拒绝该产品'; $skills = skills_all(); }
+}
 // 远程市场设置/同步
 if (isset($_POST['save_remote'])) {
     mkt_save_remote_settings(['remote_url' => trim($_POST['remote_url'] ?? '')]);
@@ -121,8 +128,12 @@ admin_header('生态市场');
             <td class="text-sm text-muted"><?=htmlspecialchars($s['author'] ?? '')?><?=($s['author_type'] ?? '') === 'user' ? ' <span style="color:#2e6b4f">(UGC)</span>' : ''?></td>
             <td><?=$s['installs'] ?? 0?></td>
             <td><?=($s['rating_count'] ?? 0) > 0 ? number_format((float)$s['rating'], 1) . ' ⭐' : '—'?></td>
-            <td><?=($s['status'] ?? '') === 'published' ? '<span class="text-sm" style="color:var(--ok)">已发布</span>' : '<span class="text-sm" style="color:var(--warn)">草稿</span>'?></td>
-            <td>
+            <td><?=($s['status'] ?? '') === 'published' ? '<span class="text-sm" style="color:var(--ok)">已发布</span>' : (($s['status'] ?? '') === 'pending' ? '<span class="text-sm" style="color:var(--warn)">待审核</span>' : (($s['status'] ?? '') === 'rejected' ? '<span class="text-sm" style="color:var(--danger)">已拒绝</span>' : '<span class="text-sm" style="color:var(--faint)">草稿</span>'))?></td>
+            <td style="white-space:nowrap">
+              <?php if (($s['status'] ?? '') === 'pending'): ?>
+              <a href="?approve=<?=urlencode($s['id'])?>" class="btn btn-primary btn-sm" onclick="return confirm('通过并上架？')">✓ 通过</a>
+              <a href="?reject=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('拒绝该产品？')">✕ 拒绝</a>
+              <?php endif; ?>
               <a href="?tab=new&edit=<?=urlencode($s['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
               <a href="?dup_skill=<?=urlencode($s['id'])?>" class="btn btn-ghost btn-sm">复制</a>
               <a href="?del_skill=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除？')">删除</a>
