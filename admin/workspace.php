@@ -4,6 +4,7 @@ require_once __DIR__ . '/../lib/RealtimeData.php';
 require_once __DIR__ . '/../lib/CdpInsight.php';
 require_once __DIR__ . '/../lib/CommerceSystem.php';
 require_once __DIR__ . '/../lib/ArticleStats.php';
+require_once __DIR__ . '/../lib/GrowthFlywheel.php';
 require_login();
 
 $local = RealtimeData::local();
@@ -44,6 +45,17 @@ try {
     $cdpCount = is_array($profiles) ? count($profiles) : 0;
 } catch (Exception $e) {}
 
+// 增长引擎真实状态
+$flyState = GrowthFlywheel::state();
+$engineEnabled = !empty($flyState['enabled']);
+$engineCycles = (int)($flyState['cycle_count'] ?? 0);
+$engineAiReady = !empty($flyState['ai_configured']);
+$engineLastRun = (int)($flyState['last_cycle'] ?? 0);
+
+// 引导状态
+$onboard = json_read(DATA_DIR . '/onboarding.json');
+$isOnboarded = !empty($onboard['completed']);
+
 admin_header('工作台');
 ?>
 <div class="admin-layout">
@@ -56,6 +68,23 @@ admin_header('工作台');
         <a href="article-edit.php" class="btn btn-p btn-sm">新建内容</a>
       </div>
     </div>
+
+    <?php if (!$isOnboarded && empty($local['events_24h']) && $artTotal === 0 && $cdpCount === 0 && $engineCycles === 0): ?>
+    <div class="panel" style="margin-bottom:16px;border-color:var(--accent)">
+      <div class="p-body" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+        <div class="eng-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8-.8-.7-2.2-.7-3 .8Z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.9A12.9 12.9 0 0 1 22 2c0 2.7-.9 7-4 11-2.9 3.8-6.1 5.7-9 7.6"/><path d="M9 12H4s.5-3 2-4c1.6-1.2 5 0 5 0"/><path d="M12 15v5s3.5-.5 4-2c.5-1.4 0-5 0-5"/></svg></div>
+        <div style="flex:1;min-width:240px">
+          <h4 style="font-size:16px">系统已就绪，三步让增长系统跑起来</h4>
+          <p style="font-size:13px;color:var(--muted);margin-top:5px;line-height:1.6">配置 AI、接好支付与邮件、发布第一篇内容——增长飞轮就会自己转起来。</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a href="ai-config.php" class="btn btn-s btn-sm">① 配置 AI</a>
+          <a href="payment-settings.php" class="btn btn-s btn-sm">② 支付 / 邮件</a>
+          <a href="article-edit.php" class="btn btn-p btn-sm">③ 发第一篇内容</a>
+        </div>
+      </div>
+    </div>
+    <?php endif; ?>
 
     <div class="kpi-grid">
       <div class="kpi"><div class="k-label">行为事件</div><div class="k-val mono"><?=(int)($local['events_24h'] ?? 0)?></div><div class="k-sub">24h 采集入库</div></div>
@@ -72,7 +101,7 @@ admin_header('工作台');
         <div class="p-body">
           <div class="eng">
             <div class="eng-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M12 20v-6"/><path d="M12 14c0-4 2.5-6 6-6 0 4-2.5 6-6 6Z"/><path d="M12 11c0-3 1.8-5 5-5 0 3-1.8 5-5 5Z"/></svg></div>
-            <div><h4>增长引擎 <span class="st st-ok">运行中</span></h4><p class="eng-d"><?=htmlspecialchars($aiInsights['summary'] ?? '自动爬取热点 → AI 洞察 → 生成草稿。')?></p></div>
+            <div><h4>增长引擎 <?php if ($engineCycles > 0): ?><span class="st st-ok">运行中 · 第 <?=$engineCycles?> 轮</span><?php elseif (!$engineAiReady): ?><span class="st st-warn">待配置 AI</span><?php else: ?><span class="st st-warn">待启动</span><?php endif; ?></h4><p class="eng-d"><?=htmlspecialchars($aiInsights['summary'] ?? '自动爬取热点 → AI 洞察 → 生成草稿。')?></p></div>
           </div>
           <div class="param-grid">
             <div class="param"><div class="p-v mono"><?=count($aiInsights['insights'] ?? [])?></div><div class="p-l">洞察产出</div></div>
