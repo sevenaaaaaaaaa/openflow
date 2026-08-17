@@ -69,6 +69,10 @@ switch ($action) {
             'status' => 'pending',
             'submitted_by' => $member['id'],
             'submitted_at' => date('Y-m-d H:i:s'),
+            // 分销配置（一级分销）
+            'distribution_enabled' => !empty($_POST['distribution_enabled']),
+            'distributor_rate' => min(80, max(5, (float)($_POST['distributor_rate'] ?? 30))),
+            'price' => max(0, (float)($_POST['price'] ?? 0)),
         ]);
         try { notify('developer', '新产品待审核', $title . '（' . ($member['name'] ?? '') . ' 提交）', '/xmp/marketplace?status=pending'); } catch (Throwable $e) {}
         echo json_encode(['ok' => true, 'message' => '产品已提交，等待审核。审核通过后自动上架到市场'], JSON_UNESCAPED_UNICODE);
