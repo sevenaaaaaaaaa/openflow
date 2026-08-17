@@ -73,7 +73,7 @@ class Database {
             created_at TEXT, paid_at TEXT
         )");
         // 数字商品订单扩展列（兼容旧库：尝试添加）
-        foreach (['goods_type TEXT DEFAULT \'\'', 'product_id TEXT DEFAULT \'\'', 'period TEXT DEFAULT \'\'', 'author TEXT DEFAULT \'\'', 'commission_rate REAL DEFAULT 0.7'] as $col) {
+        foreach (['goods_type TEXT DEFAULT \'\'', 'product_id TEXT DEFAULT \'\'', 'period TEXT DEFAULT \'\'', 'author TEXT DEFAULT \'\'', 'commission_rate REAL DEFAULT 0.7', 'distributor_rate REAL DEFAULT 0', 'platform_fee REAL DEFAULT 0'] as $col) {
             $colName = explode(' ', $col)[0];
             try { $db->exec("ALTER TABLE orders ADD COLUMN {$col}"); } catch (Exception $e) {}
         }
@@ -286,7 +286,7 @@ class Database {
             created_at TEXT
         )");
         // 会员数字资产/API套餐扩展列
-        foreach (['unlocked_skills TEXT DEFAULT \'[]\'', 'api_plans TEXT DEFAULT \'[]\''] as $col) {
+        foreach (['unlocked_skills TEXT DEFAULT \'[]\'', 'api_plans TEXT DEFAULT \'[]\'', 'membership_plan TEXT DEFAULT \'\'', 'membership_expires TEXT DEFAULT \'\''] as $col) {
             try { $db->exec("ALTER TABLE members ADD COLUMN {$col}"); } catch (Exception $e) {}
         }
         // 会员积分记录
