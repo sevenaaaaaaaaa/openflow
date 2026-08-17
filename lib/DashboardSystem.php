@@ -150,25 +150,40 @@ function referrer_category(string $host): string {
 
 // 收入报表（按月 + 分销佣金明细）
 function dash_revenue_report(): array {
-    $orders = json_read(DATA_DIR . '/shop/orders.json');
-    $paid = array_values(array_filter($orders, fn($o) => ($o['status'] ?? '') === 'paid'));
+    // 合并两类订单：JSON 课程订单 + Database 数字商品订单
+    $paid = [];
+    // 1. 课程订单（JSON）
+    $courseOrders = json_read(DATA_DIR . '/shop/orders.json');
+    foreach ((array)$courseOrders as $o) {
+        if (($o['status'] ?? '') === 'paid') $paid[] = $o;
+    }
+    // 2. 数字商品订单（Database orders 表，goods_type=product）
+    try {
+        $prodOrders = Database::query("SELECT * FROM orders WHERE status='paid' AND (goods_type='product' OR goods_type='') ORDER BY paid_at DESC");
+        foreach ($prodOrders as $o) $paid[] = $o;
+    } catch (Exception $e) {}
 
-    // 按月
+    // 按月（区分会员免费单与付费单）
     $monthly = [];
     foreach ($paid as $o) {
         $month = substr($o['paid_at'] ?? '', 0, 7);
         if (empty($month)) continue;
-        $monthly[$month] = $monthly[$month] ?? ['orders'=>0,'revenue'=>0,'commission'=>0];
+        $monthly[$month] = $monthly[$month] ?? ['orders'=>0,'revenue'=>0,'commission'=>0,'free_orders'=>0,'paid_orders'=>0];
         $monthly[$month]['orders']++;
         $monthly[$month]['revenue'] += (float)($o['amount'] ?? 0);
         $monthly[$month]['commission'] += (float)($o['commission'] ?? 0);
+        if (($o['payment_method'] ?? '') === 'membership_quota' || (float)($o['amount'] ?? 0) <= 0) {
+            $monthly[$month]['free_orders']++;
+        } else {
+            $monthly[$month]['paid_orders']++;
+        }
     }
     krsort($monthly);
 
-    // 分销佣金明细
+    // 分销佣金明细（含数字商品分销）
     $members = json_read(DATA_DIR . '/members/index.json');
     $memberName = [];
-    foreach ($members as $m) $memberName[$m['id']] = $m['name'] ?? '';
+    foreach ((array)$members as $m) $memberName[$m['id']] = $m['name'] ?? '';
     $commByRef = [];
     foreach ($paid as $o) {
         if (!empty($o['referrer_id']) && $o['commission'] > 0) {
@@ -179,7 +194,12 @@ function dash_revenue_report(): array {
     foreach ($commByRef as $mid => $amt) $commDetail[] = ['name'=>$memberName[$mid] ?? $mid, 'commission'=>round($amt,2)];
     usort($commDetail, fn($a,$b) => $b['commission'] <=> $a['commission']);
 
-    return ['monthly'=>$monthly, 'commission'=>$commDetail];
+    // 汇总：总收入、付费单、免费单
+    $totalRevenue = round(array_sum(array_map(fn($o) => (float)($o['amount'] ?? 0), $paid)), 2);
+    $freeOrders = count(array_filter($paid, fn($o) => ($o['payment_method'] ?? '') === 'membership_quota' || (float)($o['amount'] ?? 0) <= 0));
+    $paidOrders = count($paid) - $freeOrders;
+
+    return ['monthly'=>$monthly, 'commission'=>$commDetail, 'total_revenue'=>$totalRevenue, 'free_orders'=>$freeOrders, 'paid_orders'=>$paidOrders];
 }
 
 // NPS 汇总
