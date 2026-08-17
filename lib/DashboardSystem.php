@@ -129,3 +129,83 @@ function dash_nps(): array {
     }
     return ['total_responses'=>$total, 'avg_nps'=>$count > 0 ? round($npsSum/$count) : null];
 }
+
+// ─── 活跃分析（DAU/WAU/MAU + 时段热力 + 新老访客） ───
+function dash_activity(): array {
+    $out = ['dau'=>0, 'wau'=>0, 'mau'=>0, 'hours'=>array_fill(0, 24, 0), 'new_visitors'=>0, 'returning'=>0];
+    try {
+        $today = date('Y-m-d');
+        $dau = Database::query("SELECT COUNT(DISTINCT uid) c FROM events WHERE created_at >= ?", [$today]);
+        $out['dau'] = (int)($dau[0]['c'] ?? 0);
+        $wau = Database::query("SELECT COUNT(DISTINCT uid) c FROM events WHERE created_at >= ?", [date('Y-m-d', strtotime('-7 days'))]);
+        $out['wau'] = (int)($wau[0]['c'] ?? 0);
+        $mau = Database::query("SELECT COUNT(DISTINCT uid) c FROM events WHERE created_at >= ?", [date('Y-m-d', strtotime('-30 days'))]);
+        $out['mau'] = (int)($mau[0]['c'] ?? 0);
+        // 时段热力（近7天，按小时）
+        $hours = Database::query("SELECT substr(created_at,12,2) h, COUNT(*) c FROM events WHERE event='page_view' AND created_at >= ? GROUP BY h", [date('Y-m-d', strtotime('-7 days'))]);
+        foreach ($hours as $r) $out['hours'][(int)$r['h']] = (int)$r['c'];
+        // 新老访客：近30天，按 first_seen（uid 最早出现时间 < 30 天前 = 老访客）
+        $visits = Database::query("SELECT uid, MIN(created_at) first_seen, COUNT(*) c FROM events WHERE created_at >= ? GROUP BY uid", [date('Y-m-d', strtotime('-30 days'))]);
+        foreach ($visits as $v) {
+            if (substr($v['first_seen'] ?? '', 0, 10) < date('Y-m-d', strtotime('-30 days'))) $out['returning']++;
+            else $out['new_visitors']++;
+        }
+    } catch (Exception $e) {}
+    return $out;
+}
+
+// ─── 行为路径（Top 落地页 + 来源 + 转化） ───
+function dash_paths(): array {
+    $out = ['pages'=>[], 'referrers'=>[], 'conversions'=>0];
+    try {
+        // Top 落地页（page_view 按 page）
+        $pages = Database::query("SELECT page, COUNT(*) c FROM events WHERE event='page_view' GROUP BY page ORDER BY c DESC LIMIT 10");
+        foreach ($pages as $r) {
+            $label = trim($r['page'], '/') ?: '首页';
+            $out['pages'][] = ['page'=>$label, 'views'=>(int)$r['c']];
+        }
+        // 来源（解析 props.referrer 的 host）
+        $refs = Database::query("SELECT props FROM events WHERE props LIKE '%referrer%' AND created_at >= ?", [date('Y-m-d', strtotime('-30 days'))]);
+        $refCount = [];
+        foreach ($refs as $r) {
+            $p = json_decode($r['props'] ?? '', true);
+            $ref = $p['referrer'] ?? '';
+            if ($ref === '') continue;
+            $host = parse_url($ref, PHP_URL_HOST) ?: $ref;
+            $refCount[$host] = ($refCount[$host] ?? 0) + 1;
+        }
+        arsort($refCount);
+        foreach (array_slice($refCount, 0, 6, true) as $k => $n) $out['referrers'][] = ['source'=>$k, 'count'=>$n];
+        // 转化（表单提交 + 注册 + 下载）
+        $conv = Database::query("SELECT COUNT(*) c FROM events WHERE event IN ('form_submit','register','download') AND created_at >= ?", [date('Y-m-d', strtotime('-30 days'))]);
+        $out['conversions'] = (int)($conv[0]['c'] ?? 0);
+    } catch (Exception $e) {}
+    return $out;
+}
+
+// ─── 偏好洞察（设备/语言/内容分类） ───
+function dash_preferences(): array {
+    $out = ['devices'=>[], 'languages'=>[], 'content'=>[]];
+    try {
+        // 设备/语言：从 CDP 画像 properties 聚合
+        $profiles = json_read(DATA_DIR . '/cdp/profiles.json');
+        $osCount = []; $langCount = []; $contentCount = [];
+        $contentMap = ['academy'=>'学院', 'docs'=>'文档', 'courses'=>'课程', 'product'=>'产品', 'capability'=>'能力', 'blog'=>'博客', 'tools'=>'工具', 'community'=>'社区'];
+        foreach ((array)$profiles as $p) {
+            $prop = $p['properties'] ?? [];
+            if (!empty($prop['os'])) $osCount[$prop['os']] = ($osCount[$prop['os']] ?? 0) + 1;
+            if (!empty($prop['language'])) $langCount[$prop['language']] = ($langCount[$prop['language']] ?? 0) + 1;
+        }
+        // 内容偏好：从 page_view 的 page 分类聚合
+        $pages = Database::query("SELECT page, COUNT(*) c FROM events WHERE event='page_view' GROUP BY page ORDER BY c DESC LIMIT 20");
+        foreach ($pages as $r) {
+            $path = trim($r['page'], '/');
+            foreach ($contentMap as $key => $label) if (strpos($path, $key) === 0) { $contentCount[$label] = ($contentCount[$label] ?? 0) + (int)$r['c']; break; }
+        }
+        arsort($osCount); arsort($langCount); arsort($contentCount);
+        foreach ($osCount as $k => $n) $out['devices'][] = ['name'=>$k, 'count'=>$n];
+        foreach ($langCount as $k => $n) $out['languages'][] = ['name'=>$k, 'count'=>$n];
+        foreach (array_slice($contentCount, 0, 8, true) as $k => $n) $out['content'][] = ['name'=>$k, 'count'=>$n];
+    } catch (Exception $e) {}
+    return $out;
+}

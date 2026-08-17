@@ -13,6 +13,9 @@ $trend = dash_trend();
 $channels = dash_channel_attribution();
 $report = dash_revenue_report();
 $nps = dash_nps();
+$activity = dash_activity();
+$paths = dash_paths();
+$prefs = dash_preferences();
 
 admin_header('经营驾驶舱');
 ?>
@@ -140,6 +143,82 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
               <?php endforeach; ?>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 活跃分析 -->
+    <div class="panels">
+      <div class="panel">
+        <div class="p-head"><h3>活跃分析</h3><span class="p-sub mono">DAU / WAU / MAU</span></div>
+        <div class="p-body">
+          <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+            <div class="kpi" style="padding:14px 16px"><div class="k-label">DAU</div><div class="k-val mono" style="font-size:24px"><?=$activity['dau']?></div><div class="k-sub">今日</div></div>
+            <div class="kpi" style="padding:14px 16px"><div class="k-label">WAU</div><div class="k-val mono" style="font-size:24px"><?=$activity['wau']?></div><div class="k-sub">近 7 天</div></div>
+            <div class="kpi" style="padding:14px 16px"><div class="k-label">MAU</div><div class="k-val mono" style="font-size:24px"><?=$activity['mau']?></div><div class="k-sub">近 30 天</div></div>
+          </div>
+          <div style="font-size:12px;font-weight:600;color:var(--faint);margin-bottom:8px">活跃时段（近 7 天 · 按小时）</div>
+          <div style="display:flex;gap:3px;align-items:flex-end;height:60px">
+            <?php $maxH = max($activity['hours']) ?: 1; foreach ($activity['hours'] as $h => $cnt): ?>
+            <div style="flex:1;text-align:center" title="<?=$h?> 时 · <?=$cnt?> 次访问">
+              <div style="background:var(--accent);opacity:<?=max(0.15, $cnt/$maxH)?>;border-radius:3px 3px 0 0;height:<?=$cnt>0?max(4, round($cnt/$maxH*52)):2?>px"></div>
+            </div>
+            <?php endforeach; ?>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--faint);margin-top:4px"><span>00时</span><span>06时</span><span>12时</span><span>18时</span><span>23时</span></div>
+          <div style="display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--muted)">
+            <span>新访客 <b class="num" style="color:var(--ok)"><?=$activity['new_visitors']?></b></span>
+            <span>回头客 <b class="num" style="color:var(--accent)"><?=$activity['returning']?></b></span>
+            <span style="margin-left:auto;color:var(--faint)">近 30 天</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 行为路径 -->
+      <div class="panel">
+        <div class="p-head"><h3>行为路径</h3><span class="p-sub mono">落地页 · 来源 · 转化</span></div>
+        <div class="p-body">
+          <div style="font-size:12px;font-weight:600;color:var(--faint);margin-bottom:8px">Top 落地页</div>
+          <?php if (empty($paths['pages'])): ?><div class="empty" style="padding:10px 0;font-size:12px;color:var(--faint)">暂无访问数据</div>
+          <?php else: $maxP = max(array_column($paths['pages'],'views')) ?: 1; foreach (array_slice($paths['pages'],0,6) as $p): ?>
+          <div class="channel-row"><span style="font-size:12px;width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($p['page'])?></span><div class="bar"><i style="width:<?=round($p['views']/$maxP*100)?>%"></i></div><span class="num" style="font-size:11px;width:44px;text-align:right"><?=$p['views']?></span></div>
+          <?php endforeach; endif; ?>
+          <div style="font-size:12px;font-weight:600;color:var(--faint);margin:14px 0 8px">Top 来源</div>
+          <?php if (empty($paths['referrers'])): ?><div class="empty" style="padding:6px 0;font-size:12px;color:var(--faint)">暂无来源数据（需 referrer 埋点）</div>
+          <?php else: foreach ($paths['referrers'] as $r): ?>
+          <div class="channel-row"><span style="font-size:12px;width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($r['source'])?></span><div class="bar" style="height:18px"><i style="width:<?=min(100, $r['count']*10)?>%"></i></div><span class="num" style="font-size:11px;width:44px;text-align:right"><?=$r['count']?></span></div>
+          <?php endforeach; endif; ?>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 12px;border-radius:10px;background:var(--ok-soft);font-size:12px;color:var(--ok)"><b>转化</b> 近 30 天 <?=$paths['conversions']?> 次（表单提交 / 注册 / 下载）</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 偏好洞察 -->
+    <div class="panels">
+      <div class="panel">
+        <div class="p-head"><h3>偏好洞察 · 设备</h3><span class="p-sub mono">OS / 语言</span></div>
+        <div class="p-body">
+          <div style="font-size:12px;font-weight:600;color:var(--faint);margin-bottom:8px">设备系统</div>
+          <?php if (empty($prefs['devices'])): ?><div class="empty" style="padding:8px 0;font-size:12px;color:var(--faint)">暂无设备数据</div>
+          <?php else: $maxD = max(array_column($prefs['devices'],'count')) ?: 1; foreach ($prefs['devices'] as $d): ?>
+          <div class="channel-row"><span style="font-size:12px;width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($d['name'])?></span><div class="bar" style="height:18px"><i style="width:<?=round($d['count']/$maxD*100)?>%"></i></div><span class="num" style="font-size:11px;width:36px;text-align:right"><?=$d['count']?></span></div>
+          <?php endforeach; endif; ?>
+          <div style="font-size:12px;font-weight:600;color:var(--faint);margin:14px 0 8px">语言</div>
+          <?php if (empty($prefs['languages'])): ?><div class="empty" style="padding:8px 0;font-size:12px;color:var(--faint)">暂无语言数据</div>
+          <?php else: foreach ($prefs['languages'] as $l): ?>
+          <div class="channel-row"><span style="font-size:12px;width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($l['name'])?></span><div class="bar" style="height:18px"><i style="width:<?=min(100, $l['count']*20)?>%"></i></div><span class="num" style="font-size:11px;width:36px;text-align:right"><?=$l['count']?></span></div>
+          <?php endforeach; endif; ?>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="p-head"><h3>偏好洞察 · 内容</h3><span class="p-sub mono">用户爱看什么</span></div>
+        <div class="p-body">
+          <div style="font-size:12px;font-weight:600;color:var(--faint);margin-bottom:10px">内容分类偏好</div>
+          <?php if (empty($prefs['content'])): ?><div class="empty" style="padding:12px 0;font-size:12px;color:var(--faint)">暂无内容浏览数据</div>
+          <?php else: $maxC = max(array_column($prefs['content'],'count')) ?: 1; foreach ($prefs['content'] as $c): ?>
+          <div class="channel-row"><span style="font-size:12px;width:70px;color:var(--muted)"><?=htmlspecialchars($c['name'])?></span><div class="bar" style="height:20px"><i style="width:<?=round($c['count']/$maxC*100)?>%"></i></div><span class="num" style="font-size:11px;width:36px;text-align:right"><?=$c['count']?></span></div>
+          <?php endforeach; endif; ?>
+          <p style="font-size:12px;color:var(--faint);margin-top:14px;line-height:1.7">偏好基于浏览行为聚合：设备/语言来自 CDP 画像，内容分类来自页面访问分布。数据量增长后洞察更准确。</p>
         </div>
       </div>
     </div>
