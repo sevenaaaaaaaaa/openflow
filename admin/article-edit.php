@@ -1404,6 +1404,9 @@ function saveArticleAJAX() {
     if (xhr.status === 200 && xhr.responseText.indexOf('保存成功') !== -1) {
       indicator.style.background = '#2e7d32';
       indicator.textContent = '✅ 已保存 ' + new Date().toLocaleTimeString();
+    } else if (xhr.status === 200 && xhr.responseText.indexOf('内容需审核') !== -1) {
+      indicator.style.background = '#b45309';
+      indicator.textContent = '⏳ 已保存，等待审核 ' + new Date().toLocaleTimeString();
     } else {
       indicator.style.background = '#c62828';
       indicator.textContent = '❌ 保存失败，请检查字段';

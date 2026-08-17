@@ -249,7 +249,9 @@
         '<div class="mhead"><h3>个人中心</h3><button class="mx" data-close="profileModal" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>' +
         '<div class="mbody">' +
           '<div style="display:flex;align-items:center;gap:14px;margin-bottom:4px"><div class="drop-av" id="pfAv">?</div><div style="min-width:0"><div class="drop-name" id="pfName"></div><div class="drop-mail" id="pfMail"></div></div></div>' +
-          '<div class="p-stat"><div class="ps"><div class="pv" id="pfC1">0</div><div class="pl">已加入课程</div></div><div class="ps"><div class="pv" id="pfC2">0</div><div class="pl">点赞帖子</div></div><div class="ps"><div class="pv" id="pfC3">0</div><div class="pl">收藏文章</div></div></div>' +
+           '<div class="p-stat"><a class="ps" href="/member.php?view=courses"><div class="pv" id="pfC1">0</div><div class="pl">我的课程</div></a><a class="ps" href="/member.php?view=orders"><div class="pv" id="pfC2">0</div><div class="pl">我的订单</div></a><a class="ps" href="/consultation?view=my"><div class="pv" id="pfC3">0</div><div class="pl">我的咨询</div></a></div>' +
+           '<a class="drop-item" href="/messages.php" style="border-top:1px solid var(--border-soft);margin-top:2px"><span class="ic">' + I.doc + '</span><span>站内信</span><span id="pfUnread" style="margin-left:auto;background:var(--danger-soft);color:var(--danger);font-size:11px;padding:1px 7px;border-radius:999px;display:none">0</span></a>' +
+           '<a class="drop-item" href="/member.php" style="border-bottom:1px solid var(--border-soft);margin-bottom:2px"><span class="ic">' + I.users + '</span><span>完整个人中心</span><span style="margin-left:auto;color:var(--faint);font-size:11px">→</span></a>' +
           '<div class="set-row"><div><div class="st2">深色主题</div><div class="sd">跟随你的偏好</div></div><div class="switch" id="setTheme" role="switch" aria-checked="false" tabindex="0"></div></div>' +
           '<div class="set-row"><div><div class="st2">减少动效</div><div class="sd">关闭动画与过渡</div></div><div class="switch" id="setRM" role="switch" aria-checked="false" tabindex="0"></div></div>' +
           '<button type="button" class="btn ghost" id="pfLogout" style="width:100%;margin-top:14px;color:var(--danger);border-color:var(--danger)">退出登录</button>' +
@@ -488,7 +490,21 @@
       g('pfAv').textContent = (u.nick || u.email).charAt(0).toUpperCase();
       g('pfName').textContent = u.nick || u.email;
       g('pfMail').textContent = u.email;
-      g('pfC1').textContent = 0; g('pfC2').textContent = 0; g('pfC3').textContent = 0;
+      g('pfC1').textContent = '…'; g('pfC2').textContent = '…'; g('pfC3').textContent = '…';
+      var un = g('pfUnread');
+      fetch('/api/member.php?action=profile_summary', { method: 'POST', headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (d) {
+          if (d && d.ok && d.stats) {
+            g('pfC1').textContent = d.stats.courses || 0;
+            g('pfC2').textContent = d.stats.orders || 0;
+            g('pfC3').textContent = d.stats.consultations || 0;
+            if (un && (d.stats.unread || 0) > 0) { un.style.display = 'inline'; un.textContent = d.stats.unread; }
+          } else {
+            g('pfC1').textContent = 0; g('pfC2').textContent = 0; g('pfC3').textContent = 0;
+          }
+        })
+        .catch(function () { g('pfC1').textContent = 0; g('pfC2').textContent = 0; g('pfC3').textContent = 0; });
       g('setTheme').setAttribute('aria-checked', document.documentElement.dataset.theme === 'dark' ? 'true' : 'false');
       g('setRM').setAttribute('aria-checked', document.documentElement.classList.contains('rm') ? 'true' : 'false');
       lastFocus = document.activeElement; lockScroll(true);
