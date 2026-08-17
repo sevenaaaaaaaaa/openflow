@@ -45,19 +45,26 @@ switch ($action) {
         echo json_encode(['ok'=>true, 'installed'=>true], JSON_UNESCAPED_UNICODE);
         break;
 
-    // 购买付费技能（走数字商品系统 + 虎皮椒支付 + 自动交付 + 作者分成）
+    // 购买付费技能/会员（走数字商品系统 + 虎皮椒支付 + 自动交付）
     case 'purchase':
-        $id = trim($_POST['skill_id'] ?? '');
-        $s = skill_get($id);
-        if (!$s) { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'Skill 不存在']); exit; }
-        // 找到对应商品
+        $id = trim($_POST['skill_id'] ?? ($_POST['id'] ?? ''));
         require_once __DIR__ . '/../lib/CommerceSystem.php';
         $product = null;
-        foreach (CommerceSystem::products() as $p) {
-            if ($p['type'] === 'skill' && $p['asset_id'] === $id && $p['status'] === 'published') { $product = $p; break; }
+        $s = null;
+        // 优先按 skill 找
+        $s = skill_get($id);
+        if ($s) {
+            foreach (CommerceSystem::products() as $p) {
+                if ($p['type'] === 'skill' && $p['asset_id'] === $id && $p['status'] === 'published') { $product = $p; break; }
+            }
+        } else {
+            // 会员等非 skill 商品：按 asset_id 找
+            foreach (CommerceSystem::products() as $p) {
+                if ($p['asset_id'] === $id && $p['status'] === 'published') { $product = $p; break; }
+            }
         }
         // 兼容旧逻辑：未发布为商品但有 price 的 skill
-        if (!$product) {
+        if (!$product && $s) {
             $price = (float)($s['price'] ?? 0);
             if ($price > 0) {
                 $product = CommerceSystem::publishSkill($id, ['mode' => 'one_time', 'price' => $price], $s['author'] ?? '', 0.7);
