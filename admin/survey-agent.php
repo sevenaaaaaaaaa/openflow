@@ -81,7 +81,7 @@ admin_header('官方 Agent 咨询');
 <div class="admin-layout">
   <?php admin_sidebar('survey-agent'); ?>
   <div class="main">
-    <h1>🤖 官方 Agent 咨询</h1>
+    <h1> 官方 Agent 咨询</h1>
     <p class="sub">付费后与官方 Agent 对话，获得调研结果解读与组织健康建议</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

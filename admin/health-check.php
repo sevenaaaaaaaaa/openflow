@@ -365,7 +365,7 @@ admin_header('健康检测');
   <?php admin_sidebar('health-check'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">🩺 站点健康检测</h1>
+      <h1 style="margin-bottom:0"> 站点健康检测</h1>
       <a href="health-check.php" class="btn btn-primary btn-sm ml-auto" style="margin-left:auto">↻ 重新检测</a>
     </div>
     <p class="sub">一键扫描常见 Bug、安全风险与内容健康度，并给出修复建议</p>

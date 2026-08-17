@@ -16,7 +16,7 @@ admin_header('API 文档');
   <?php admin_sidebar('settings'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">📖 API 文档</h1>
+      <h1 style="margin-bottom:0"> API 文档</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
         <a href="/api/v1/docs.json" target="_blank" class="btn btn-ghost btn-sm">📥 下载 OpenAPI JSON</a>
         <a href="/api/v1/docs" target="_blank" class="btn btn-ghost btn-sm">🔗 独立页面</a>

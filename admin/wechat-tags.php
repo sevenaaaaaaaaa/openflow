@@ -88,7 +88,7 @@ admin_header('微信标签');
   <?php admin_sidebar('wechat-tags'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">🏷 微信标签管理</h1>
+      <h1 style="margin-bottom:0"> 微信标签管理</h1>
       <div class="flex gap-2 ml-auto">
         <form method="post" style="display:inline">
           <?= csrf_field() ?>

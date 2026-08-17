@@ -36,7 +36,7 @@ admin_header('脚本与埋点');
 <div class="admin-layout">
   <?php admin_sidebar('scripts'); ?>
   <div class="main">
-    <h1>🧩 脚本 & 埋点管理</h1>
+    <h1> 脚本 & 埋点管理</h1>
     <p class="sub">统一管理统计 SDK、JS 脚本、埋点代码 · 保存后自动注入全站，前端无需维护</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

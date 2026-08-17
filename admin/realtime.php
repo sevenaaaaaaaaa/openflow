@@ -47,7 +47,7 @@ admin_header('实时数据');
   <?php admin_sidebar('realtime'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">⚡ 实时数据</h1>
+      <h1 style="margin-bottom:0"> 实时数据</h1>
       <div class="flex gap-2 ml-auto">
         <a href="?clear_cache=1&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm">清缓存</a>
       </div>

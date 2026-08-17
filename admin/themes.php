@@ -81,7 +81,7 @@ admin_header('主题管理');
 <div class="admin-layout">
   <?php admin_sidebar('themes'); ?>
   <div class="main">
-    <h1>🎨 主题管理</h1>
+    <h1> 主题管理</h1>
     <p class="sub">主题不是换皮，而是不同的视觉 + 交互 + 布局，且完全兼容所有前后端功能。切换即全局生效。</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>

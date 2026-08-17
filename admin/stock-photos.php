@@ -46,7 +46,7 @@ admin_header('免费图库');
 <div class="admin-layout">
   <?php admin_sidebar('media'); ?>
   <div class="main">
-    <h1>🖼 免费图库</h1>
+    <h1> 免费图库</h1>
     <p class="sub">接入 Pexels · Unsplash · Pixabay 官方 API · 搜索免费可商用素材，一键下载到媒体库</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
