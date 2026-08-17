@@ -76,7 +76,7 @@ admin_header('A/B 测试');
 <div class="admin-layout">
   <?php admin_sidebar('abtests'); ?>
   <div class="main">
-    <h1>🧪 A/B 测试</h1>
+    <h1> A/B 测试</h1>
     <p class="sub">对特定页面做分流测试 · 基于用户唯一标识确定性分流 · 支持 CSS/JS 变体与重定向</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>

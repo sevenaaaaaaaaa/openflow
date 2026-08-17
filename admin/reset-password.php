@@ -63,7 +63,7 @@ admin_header('密码重置');
 </style>
 <div class="reset-page">
   <div class="reset-box">
-    <h1>🔑 密码重置</h1>
+    <h1> 密码重置</h1>
 
     <?php if ($message): ?>
       <div class="msg msg-success"><?=$message?></div>

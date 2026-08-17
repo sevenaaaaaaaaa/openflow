@@ -29,7 +29,7 @@ admin_header('数据连接器');
   <?php admin_sidebar('data-connector'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">🔌 数据连接器</h1>
+      <h1 style="margin-bottom:0"> 数据连接器</h1>
       <div class="flex gap-2 ml-auto">
         <a href="?sync=1&csrf_token=<?=csrf_token()?>" class="btn btn-primary">🔄 立即同步全部</a>
       </div>

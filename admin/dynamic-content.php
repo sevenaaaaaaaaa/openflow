@@ -76,7 +76,7 @@ admin_header('Dynamic Content 动态内容');
   <?php admin_sidebar('settings'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-2">
-      <h1 style="margin-bottom:0">🔀 Dynamic Content</h1>
+      <h1 style="margin-bottom:0"> Dynamic Content</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
         <span class="badge badge-gray"><?=count($rules)?> 条规则</span>
         <button onclick="document.getElementById('createDialog').style.display='flex'" class="btn btn-primary btn-sm">+ 创建规则</button>

@@ -83,7 +83,7 @@ admin_header('MA 融合同步');
 <div class="admin-layout">
   <?php admin_sidebar('ma-sync'); ?>
   <div class="main">
-    <h1>🔗 MA 融合同步</h1>
+    <h1> MA 融合同步</h1>
     <p class="sub">CMS 表单提交 → 自动同步到 Mautic（联系人/标签/Campaign）与 BillionMail（列表/欢迎信）</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>

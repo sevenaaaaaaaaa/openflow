@@ -71,7 +71,7 @@ admin_header('备份管理');
   <?php admin_sidebar('settings'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-2">
-      <h1 style="margin-bottom:0">💾 备份管理</h1>
+      <h1 style="margin-bottom:0"> 备份管理</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
         <span class="badge badge-gray"><?=count($backups)?> 个备份</span>
         <span class="badge badge-gray"><?=number_format($totalSize / 1024 / 1024, 1)?> MB</span>

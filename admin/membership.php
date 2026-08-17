@@ -57,7 +57,7 @@ admin_header('会员体系');
 <div class="admin-layout">
   <?php admin_sidebar('membership'); ?>
   <div class="main">
-    <h1>💎 会员体系</h1>
+    <h1> 会员体系</h1>
     <p class="sub">统一会员等级 + 全站权益模型 · 打通文章/资料/课程/邮件/直播/1v1/社区</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

@@ -79,7 +79,7 @@ admin_header('运营主线');
 <div class="admin-layout">
   <?php admin_sidebar('flow'); ?>
   <div class="main">
-    <h1>🔄 运营主线</h1>
+    <h1> 运营主线</h1>
     <p class="sub">一条主线串起所有模块：内容吸引 → 数据识别 → 价值转化 · 各环节自动联动</p>
 
     <!-- ═══ B. 数据流 ═══ -->

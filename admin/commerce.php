@@ -74,7 +74,7 @@ admin_header('商业中心');
   <?php admin_sidebar('commerce'); ?>
   <div class="main">
     <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0">💎 商业中心</h1>
+      <h1 style="margin-bottom:0"> 商业中心</h1>
       <div class="flex gap-2 ml-auto">
         <a href="marketplace" class="btn btn-ghost btn-sm">生态市场</a>
       </div>

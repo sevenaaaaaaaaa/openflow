@@ -23,7 +23,7 @@ admin_header('存储与性能');
 <div class="admin-layout">
   <?php admin_sidebar('storage'); ?>
   <div class="main">
-    <h1>🗄️ 存储与性能</h1>
+    <h1> 存储与性能</h1>
     <p class="sub">数据文件大小 · SQLite 统计 · 风险识别 · 一键维护</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
