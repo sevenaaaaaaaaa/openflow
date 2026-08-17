@@ -27,7 +27,7 @@ admin_header('运营分析');
 <style>
 .funnel-bar{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .funnel-step{min-width:90px;font-size:13px;font-weight:600}
-.funnel-bar .bar{height:34px;border-radius:8px;background:linear-gradient(90deg,#7dd3fc,#38bdf8);display:flex;align-items:center;padding:0 12px;font-size:13px;font-weight:700;color:#1e1e1e;white-space:nowrap;transition:width .4s}
+.funnel-bar .bar{height:34px;border-radius:8px;background:var(--accent);display:flex;align-items:center;padding:0 12px;font-size:13px;font-weight:700;color:#1e1e1e;white-space:nowrap;transition:width .4s}
 .seg-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center}
 .seg-card .num{font-size:26px;font-weight:800;margin-top:4px}
 .rfm-table td,.rfm-table th{font-size:13px}
