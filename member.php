@@ -9,6 +9,7 @@ require_once __DIR__ . '/lib/Gamification.php';
 require_once __DIR__ . '/lib/SubscriptionSystem.php';
 require_once __DIR__ . '/lib/MembershipSystem.php';
 require_once __DIR__ . '/lib/MessageSystem.php';
+require_once __DIR__ . '/lib/OrgSystem.php';
 
 $view = $_GET['view'] ?? (member_current() ? 'dashboard' : 'login');
 $member = member_current();
@@ -136,6 +137,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <a class="nav-item" href="member.php?view=teacher">👨‍<span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/></svg></span> 成为讲师</a>
         <a class="nav-item" href="member.php?view=submit"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span> 投稿文章</a>
         <a class="nav-item" href="/consultation?view=my">🤝 我的1v1咨询</a>
+        <a class="nav-item <?=$view==='org'?'active':''?>" href="member.php?view=org"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/></svg></span> 企业控制台</a>
         <a class="nav-item" href="/messages.php">🔔 站内信<?php $msgUnread = inbox_unread($member); if ($msgUnread): ?> <span style="background:var(--danger);color:var(--surface);border-radius:999px;padding:1px 7px;font-size:11px"><?=$msgUnread?></span><?php endif; ?></a>
         <div style="border-top:1px solid var(--border);margin:8px 0"></div>
         <a class="nav-item <?=$view==='profile'?'active':''?>" href="member.php?view=profile">👤 个人资料</a>
@@ -167,6 +169,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <?php elseif ($tab === 'submit'): include_member_submit($member); ?>
         <?php elseif ($tab === 'profile'): include_member_profile($member); ?>
         <?php elseif ($tab === 'password'): include_member_password($member); ?>
+        <?php elseif ($tab === 'org'): include_member_org($member); ?>
         <?php endif; ?>
       </div>
     </div>
@@ -503,6 +506,52 @@ function include_member_password($member): void {
         <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">修改密码</button>
         <div id="passwordMsg" style="margin-top:14px"></div>
       </form>
+    </div>
+    <?php
+}
+
+// ─── 企业控制台（ToB）───
+function include_member_org($member): void {
+    $org = org_by_member($member['id'] ?? '');
+    $statuses = org_statuses();
+    $plans = org_plans();
+    ?>
+    <div class="card p-8">
+      <h2 class="text-xl font-bold mb-6">企业控制台</h2>
+      <?php if ($org): $status = $statuses[$org['status']]['label'] ?? $org['status']; ?>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:20px">🏢</div>
+          <div>
+            <div style="font-size:17px;font-weight:800"><?=htmlspecialchars($org['name'])?></div>
+            <div style="font-size:12px;color:var(--muted)"><?=htmlspecialchars($org['industry'])?> / <?=htmlspecialchars($org['size'])?></div>
+          </div>
+          <span class="tag <?=$org['status']==='active'?'green':($org['status']==='lead'?'orange':'gray')?>" style="margin-left:auto"><?=htmlspecialchars($status)?></span>
+        </div>
+
+        <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:22px">
+          <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:22px;font-weight:800"><?=org_plan_label($org['plan_type'])?></div><div style="font-size:12px;color:var(--muted)">合作方案</div></div>
+          <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:22px;font-weight:800"><?=count((array)($org['members'] ?? []))?></div><div style="font-size:12px;color:var(--muted)">团队成员</div></div>
+          <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:22px;font-weight:800"><?=htmlspecialchars($org['budget'] ?: '—')?></div><div style="font-size:12px;color:var(--muted)">预算区间</div></div>
+        </div>
+
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">团队成员</h3>
+        <?php foreach ((array)($org['members'] ?? []) as $mid): $m = member_get($mid); ?>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-soft)">
+          <div style="width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent-strong);display:grid;place-items:center;font-weight:700;font-size:13px"><?=strtoupper(mb_substr(($m['name'] ?? ($m['email'] ?? '?')),0,1))?></div>
+          <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600"><?=htmlspecialchars($m['name'] ?? '')?></div><div style="font-size:12px;color:var(--muted)"><?=htmlspecialchars($m['email'] ?? '')?></div></div>
+          <?php if (($org['admin_member_id'] ?? '') === $mid): ?><span class="tag green">管理员</span><?php endif; ?>
+        </div>
+        <?php endforeach; ?>
+
+        <p style="font-size:12.5px;color:var(--faint);margin-top:16px">更多成员由商务顾问在合作确认后邀请加入。企业专属支持与部署进度将在此展示。</p>
+      <?php else: ?>
+        <div style="text-align:center;padding:30px 0">
+          <div style="font-size:40px;margin-bottom:10px">🏢</div>
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">你的企业还没有商业版申请</h3>
+          <p style="font-size:13.5px;color:var(--muted);max-width:420px;margin:0 auto 18px">为团队申请 OpenFlow 商业发行版（SaaS 订阅 / 私有化部署 / 定制开发），一个平台撑起整条增长链。</p>
+          <a href="/enterprise" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">申请商业版 →</a>
+        </div>
+      <?php endif; ?>
     </div>
     <?php
 }
