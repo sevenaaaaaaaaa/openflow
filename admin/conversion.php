@@ -72,7 +72,7 @@ admin_header('转化组件');
 .conv-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px}
 .conv-tabs a{padding:10px 18px;font-size:14px;font-weight:500;color:var(--text-2);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
 .conv-tabs a:hover{color:var(--text)}
-.conv-tabs a.active{color:var(--text);border-bottom-color:#38bdf8;font-weight:600}
+.conv-tabs a.active{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
 .preview-box{border:2px dashed var(--border-2);border-radius:12px;padding:24px;text-align:center;margin-top:16px;background:var(--surface)}
 </style>
 <div class="admin-layout">

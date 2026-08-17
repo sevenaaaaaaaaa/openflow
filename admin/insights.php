@@ -66,7 +66,7 @@ admin_header('营销洞察');
 .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .bar-row .lab{width:90px;font-size:13px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar-row .bar{flex:1;height:20px;background:var(--surface-2);border-radius:6px;overflow:hidden}
-.bar-row .bar i{display:block;height:100%;background:linear-gradient(90deg,#7dd3fc,#38bdf8);border-radius:6px}
+.bar-row .bar i{display:block;height:100%;background:var(--accent);border-radius:6px}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('insights'); ?>
