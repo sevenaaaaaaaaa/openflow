@@ -83,7 +83,7 @@ admin_header('运营主线');
     <p class="sub">一条主线串起所有模块：内容吸引 → 数据识别 → 价值转化 · 各环节自动联动</p>
 
     <!-- ═══ B. 数据流 ═══ -->
-    <div class="flow-title"><h2>📊 数据流</h2><span class="tag" style="background:#7dd3fc">匿名 → 识别 → 画像 → 线索</span></div>
+    <div class="flow-title"><h2>📊 数据流</h2><span class="tag" style="background:var(--accent-soft)">匿名 → 识别 → 画像 → 线索</span></div>
     <p class="flow-hint">埋点自动建档、行为自动打标、表单自动入 CRM、登录自动合并</p>
     <div class="flow-line" style="flex-wrap:wrap;gap:10px">
       <div class="flow-step" style="flex:1 1 150px"><div class="num"><?=number_format($totalEvents)?></div><div class="lbl">行为事件</div><div class="act"><?=count($eventMap)?> 种类型</div></div>
@@ -101,7 +101,7 @@ admin_header('运营主线');
     <?php endif; ?>
 
     <!-- ═══ A. 内容流 ═══ -->
-    <div class="flow-title"><h2>📝 内容流</h2><span class="tag" style="background:#7dd3fc">创作 → 发布 → 分发 → 互动</span></div>
+    <div class="flow-title"><h2>📝 内容流</h2><span class="tag" style="background:var(--accent-soft)">创作 → 发布 → 分发 → 互动</span></div>
     <p class="flow-hint">知识库 → 文章/课程 → 多渠道分发 → 评论点评回收洞察</p>
     <div class="flow-line" style="flex-wrap:wrap;gap:10px">
       <div class="flow-step" style="flex:1 1 150px"><div class="num"><?=$pubCount?></div><div class="lbl">已发布文章</div><div class="act"><?=$draftCount?> 篇草稿</div><a class="link" href="articles.php">去管理 →</a></div>
@@ -112,7 +112,7 @@ admin_header('运营主线');
     </div>
 
     <!-- ═══ C. 价值流 ═══ -->
-    <div class="flow-title"><h2>💰 价值流</h2><span class="tag" style="background:#38bdf8">免费 → 培育 → 付费 → 会员 → 复购</span></div>
+    <div class="flow-title"><h2>💰 价值流</h2><span class="tag" style="background:var(--accent-soft)">免费 → 培育 → 付费 → 会员 → 复购</span></div>
     <p class="flow-hint">自动化/画布培育 → 课程/咨询/订阅转化 → 会员权益 → 推荐</p>
     <div class="flow-line" style="flex-wrap:wrap;gap:10px">
       <div class="flow-step" style="flex:1 1 150px"><div class="num"><?=$automationCount + $canvasCount?></div><div class="lbl">自动化流程</div><div class="act"><?=$automationCount?> 自动化 · <?=$canvasCount?> 画布</div><a class="link" href="automation.php">去配置 →</a></div>
