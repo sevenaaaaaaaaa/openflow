@@ -9,14 +9,66 @@ require_login();
 require_perm('settings');
 
 $types = [
-    'articles' => ['label' => '文章 / CMS 内容', 'icon' => '📝', 'desc' => '从旧 CMS 导入文章（标题/正文/分类/标签/SEO）'],
-    'leads' => ['label' => '线索 / 潜在客户', 'icon' => '📥', 'desc' => '导入历史线索（姓名/邮箱/手机/公司/阶段）'],
+    'articles' => ['label' => '文章 / CMS 内容', 'icon' => '📝', 'desc' => '从旧 CMS 导入文章（标题/正文/分类/标签/SEO/定时）'],
+    'pages' => ['label' => '落地页 / 页面', 'icon' => '🛬', 'desc' => '导入落地页与 CMS 页面（标题/正文/模板/SEO）'],
+    'leads' => ['label' => '线索 / 潜在客户', 'icon' => '📥', 'desc' => '导入历史线索（姓名/邮箱/手机/公司/阶段/金额/跟进）'],
     'members' => ['label' => '用户 / 会员', 'icon' => '👥', 'desc' => '导入老系统注册用户（迁移后需重置密码登录）'],
     'comments' => ['label' => '评论', 'icon' => '💬', 'desc' => '导入历史评论（按文章标识关联）'],
+    'orders' => ['label' => '订单 / 交易', 'icon' => '🛒', 'desc' => '导入历史订单（商品/金额/状态/渠道，计入收入报表）'],
 ];
 
 $step = $_GET['step'] ?? 'select';
 $report = null;
+$aiGuide = null;
+
+// AI 体检：分析上传数据，生成导入指南
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ai_analyze'])) {
+    $mig = $_SESSION['migrate'] ?? null;
+    if ($mig) {
+        require_once __DIR__ . '/../lib/AiCenter.php';
+        $ai = AiCenter::isConfigured();
+        if (!$ai) {
+            $aiGuide = ['ok' => false, 'error' => 'AI 未配置，请在「AI Agent」配置供应商后使用 AI 体检'];
+        } else {
+            $fields = migrate_fields($mig['type']);
+            $sample = array_slice($mig['rows'], 0, 8);
+            $system = "你是数据迁移专家，帮助用户把老系统的历史数据导入 OpenFlow 增长系统。分析上传的数据，给出：1) 字段识别（哪些列对应什么含义）2) 数据质量问题 3) 字段映射建议（老列→OpenFlow 目标字段）4) 导入指南（分步骤建议、注意事项）。目标字段如下：" . json_encode(array_values($fields), JSON_UNESCAPED_UNICODE);
+            $user = "数据类型：{$types[$mig['type']]['label']}\n检测到的列：{$mig['header']}\n数据预览（前8行）：\n" . json_encode($sample, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $resp = AiCenter::chat($system, $user, ['temperature' => 0.3]);
+            $aiGuide = ['ok' => $resp['ok'] ?? false, 'text' => $resp['text'] ?? ($resp['error'] ?? 'AI 分析失败')];
+        }
+    }
+}
+
+// 下载导入模板（CSV，带完整字段 + 示例行）
+if (isset($_GET['download_template'])) {
+    $type = $_GET['download_template'];
+    $fields = migrate_fields($type);
+    if ($fields) {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="openflow-import-' . $type . '.csv"');
+        $out = fopen('php://output', 'w');
+        fwrite($out, "\xEF\xBB\xBF"); // UTF-8 BOM
+        $cols = array_keys($fields);
+        fputcsv($out, $cols);
+        // 示例行
+        $sample = [];
+        foreach ($cols as $c) {
+            $sample[$c] = match($type) {
+                'articles' => $c === 'title' ? '示例文章标题' : ($c === 'content' ? '<p>正文内容</p>' : ($c === 'status' ? 'published' : '')),
+                'leads' => $c === 'name' ? '张三' : ($c === 'email' ? 'zhangsan@example.com' : ($c === 'stage' ? 'new' : '')),
+                'members' => $c === 'email' ? 'user@example.com' : '',
+                'comments' => $c === 'content' ? '评论内容' : '',
+                'orders' => $c === 'amount' ? '99' : ($c === 'status' ? 'paid' : ''),
+                'pages' => $c === 'title' ? '示例页面' : '',
+                default => '',
+            };
+        }
+        fputcsv($out, $sample);
+        fclose($out);
+        exit;
+    }
+}
 
 // 步骤1：选择类型 + 上传
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload'])) {
@@ -93,15 +145,56 @@ admin_header('数据迁移');
         </label>
         <?php $first = false; endforeach; ?>
       </div>
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:12px">② 上传文件（CSV 或 JSON）</h3>
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:12px">② 上传文件（CSV / Excel / JSON）</h3>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <input type="file" name="file" accept=".csv,.json,text/csv,application/json" required style="font-size:13px">
+        <input type="file" name="file" accept=".csv,.json,.xlsx,.xlsm,text/csv,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required style="font-size:13px">
         <button class="btn btn-p">解析并预览 →</button>
+        <span style="color:var(--faint);font-size:12px">支持 CSV / XLSX(Excel) / JSON</span>
       </div>
-      <p style="font-size:12px;color:var(--faint);margin-top:12px">CSV 需含表头；JSON 支持数组 <code>[{...},{...}]</code> 或 <code>{"data":[...]}</code>。上传后进入字段映射，把老系统的列对应到 OpenFlow 字段。</p>
+      <p style="font-size:12px;color:var(--faint);margin-top:12px">CSV 需含表头；XLSX 自动解析第一个工作表；JSON 支持数组 <code>[{...},{...}]</code> 或 <code>{"data":[...]}</code>。上传后进入字段映射，把老系统的列对应到 OpenFlow 字段。</p>
+
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:18px;padding:16px 18px;border:1px dashed var(--border-strong);border-radius:14px;background:var(--surface)">
+        <div style="flex:1;min-width:240px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px">💡 没有模板？下载各类型的导入模板</div>
+          <div style="font-size:12px;color:var(--muted)">模板带完整字段和示例行，按格式填好数据即可上传导入。</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <?php foreach ($types as $k => $t): ?>
+          <a href="?download_template=<?=$k?>" class="btn btn-s btn-sm"><?=$t['icon']?> <?=htmlspecialchars($t['label'])?></a>
+          <?php endforeach; ?>
+        </div>
+      </div>
     </form>
 
     <?php elseif ($step === 'map' && $mig): ?>
+    <!-- AI 体检 -->
+    <div style="padding:16px 18px;border:1px solid var(--border-strong);border-radius:14px;background:var(--surface);margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:22px">🤖</span>
+        <div style="flex:1;min-width:220px">
+          <div style="font-size:14px;font-weight:700">AI 体检：智能识别字段、诊断数据、生成导入指南</div>
+          <div style="font-size:12px;color:var(--muted)">让 AI 分析你的数据，自动给出字段映射建议和质量问题，指导你正确导入。</div>
+        </div>
+        <form method="post">
+          <input type="hidden" name="ai_analyze" value="1">
+          <button class="btn btn-p btn-sm">🤖 开始 AI 体检</button>
+        </form>
+      </div>
+      <?php if ($aiGuide): ?>
+      <div style="margin-top:14px;padding:16px;border-radius:12px;background:var(--bg);border:1px solid var(--border)">
+        <?php if (!empty($aiGuide['error'])): ?>
+          <div style="color:var(--danger);font-size:13px"><?=htmlspecialchars($aiGuide['error'])?></div>
+        <?php else: ?>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:700;color:var(--accent)">AI 导入指南</span>
+            <span class="st st-ok">已生成</span>
+          </div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.8;white-space:pre-wrap"><?=htmlspecialchars($aiGuide['text'])?></div>
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
+    </div>
+
     <form method="post">
       <input type="hidden" name="import" value="1">
       <h3 style="font-size:15px;font-weight:700;margin-bottom:8px">字段映射 — <?=htmlspecialchars($types[$mig['type']]['label'])?></h3>
