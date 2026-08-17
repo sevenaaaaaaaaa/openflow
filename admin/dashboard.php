@@ -30,7 +30,28 @@ admin_header('经营驾驶舱');
 .p-table td{padding:12px 20px;border-bottom:1px solid var(--border-soft);color:var(--muted)}
 .p-table tr:last-child td{border-bottom:none}
 .p-table .num{font-family:var(--font-mono);color:var(--fg)}
+.kpi .delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;font-family:var(--font-mono);margin-top:6px}
+.kpi .delta.up{color:var(--ok)}
+.kpi .delta.down{color:var(--danger)}
+.kpi .delta.flat{color:var(--faint)}
+.target-track{height:5px;border-radius:99px;background:var(--hover);margin-top:9px;overflow:hidden}
+.target-track i{display:block;height:100%;border-radius:99px;background:var(--accent);transition:width .6s var(--ease-out)}
 </style>
+<?php
+function kpi_delta(float $cur, float $prev): array {
+    if ($prev <= 0) return ['pct' => $cur > 0 ? 100 : 0, 'cls' => $cur > 0 ? 'up' : 'flat', 'label' => $cur > 0 ? '▲ 新增' : '—'];
+    $pct = round(($cur - $prev) / $prev * 100);
+    $cls = $pct > 0 ? 'up' : ($pct < 0 ? 'down' : 'flat');
+    $arrow = $pct > 0 ? '▲' : ($pct < 0 ? '▼' : '＝');
+    return ['pct' => $pct, 'cls' => $cls, 'label' => $arrow . ' ' . ($pct > 0 ? '+' : '') . $pct . '%'];
+}
+$dUv = kpi_delta((float)$kpis['uv'], (float)$kpis['prev_uv']);
+$dRev = kpi_delta((float)$kpis['revenue_30d'], (float)$kpis['prev_revenue_30d']);
+$dLead = kpi_delta((float)$kpis['leads'], (float)$kpis['prev_leads']);
+$settings = json_read(DATA_DIR . '/settings.json');
+$revTarget = (float)($settings['monthly_revenue_target'] ?? 0);
+$revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget * 100)) : 0;
+?>
 <div class="admin-layout">
   <?php admin_sidebar('dashboard'); ?>
   <div class="main">
@@ -40,10 +61,13 @@ admin_header('经营驾驶舱');
     </div>
 
     <div class="kpi-grid">
-      <div class="kpi"><div class="k-label">近30天访客</div><div class="k-val mono"><?=number_format($kpis['uv'])?></div><div class="k-sub">PV <?=number_format($kpis['pv'])?> · 今日 <?=$kpis['today_uv']?></div></div>
-      <div class="kpi"><div class="k-label">累计线索</div><div class="k-val mono"><?=$kpis['leads']?></div><div class="k-sub">CRM 线索池</div></div>
+      <div class="kpi"><div class="k-label">近30天访客</div><div class="k-val mono"><?=number_format($kpis['uv'])?></div><div class="k-sub">PV <?=number_format($kpis['pv'])?> · 今日 <?=$kpis['today_uv']?></div><div class="delta <?=$dUv['cls']?>"><?=$dUv['label']?> <span style="font-weight:400;color:var(--faint)">vs 上期</span></div></div>
+      <div class="kpi"><div class="k-label">累计线索</div><div class="k-val mono"><?=$kpis['leads']?></div><div class="k-sub">CRM 线索池</div><div class="delta <?=$dLead['cls']?>"><?=$dLead['label']?> <span style="font-weight:400;color:var(--faint)">vs 上期</span></div></div>
       <div class="kpi"><div class="k-label">订单</div><div class="k-val mono"><?=$kpis['orders']?></div><div class="k-sub">已支付 <?=$kpis['paid_orders']?></div></div>
-      <div class="kpi"><div class="k-label">累计收入</div><div class="k-val mono" style="color:var(--ok)">¥<?=number_format($kpis['revenue'],0)?></div><div class="k-sub">近30天 ¥<?=number_format($kpis['revenue_30d'],0)?></div></div>
+      <div class="kpi"><div class="k-label">累计收入</div><div class="k-val mono" style="color:var(--ok)">¥<?=number_format($kpis['revenue'],0)?></div><div class="k-sub">近30天 ¥<?=number_format($kpis['revenue_30d'],0)?></div>
+        <div class="delta <?=$dRev['cls']?>"><?=$dRev['label']?> <span style="font-weight:400;color:var(--faint)">vs 上期</span></div>
+        <?php if ($revTarget > 0): ?><div class="target-track"><i style="width:<?=$revProgress?>%"></i></div><div style="font-size:10.5px;color:var(--faint);margin-top:4px">月目标 ¥<?=number_format($revTarget,0)?> · 完成 <?=$revProgress?>%</div><?php endif; ?>
+      </div>
       <div class="kpi"><div class="k-label">会员数</div><div class="k-val mono"><?=$kpis['members']?></div><div class="k-sub">注册会员总量</div></div>
       <div class="kpi"><div class="k-label">活跃订阅</div><div class="k-val mono"><?=$kpis['active_subscribers']?></div><div class="k-sub">订阅中会员</div></div>
       <div class="kpi"><div class="k-label">NPS</div><div class="k-val mono" style="color:<?=($nps['avg_nps']??0)>=0?'var(--ok)':'var(--danger)'?>"><?=$nps['avg_nps'] ?? '—'?></div><div class="k-sub"><?=$nps['total_responses']?> 份回收</div></div>

@@ -65,6 +65,7 @@ admin_header('内容日历');
 .cal-nav{display:flex;gap:6px;align-items:center}
 .cal-nav button{padding:8px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--text)}
 .cal-nav button:hover{border-color:var(--accent)}
+.cal-nav button.cal-view-on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .cal-day{min-height:96px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:4px;transition:background .15s}
 .cal-day.today{background:rgba(221,255,14,.12);border-color:var(--accent)}
@@ -95,10 +96,13 @@ admin_header('内容日历');
 
     <div class="cal-toolbar">
       <div class="cal-nav">
-        <button onclick="calNav(-1)">‹ 上月</button>
-        <span id="calMonthLabel" style="font-size:16px;font-weight:700;min-width:120px;text-align:center"></span>
-        <button onclick="calNav(1)">下月 ›</button>
+        <button onclick="calNav(-1)">‹</button>
+        <span id="calMonthLabel" style="font-size:16px;font-weight:700;min-width:160px;text-align:center"></span>
+        <button onclick="calNav(1)">›</button>
         <button onclick="calToday()" style="margin-left:6px">今天</button>
+        <span style="width:1px;height:20px;background:var(--border);margin:0 6px"></span>
+        <button id="calViewMonth" onclick="calSetView('month')" class="cal-view-on">月</button>
+        <button id="calViewWeek" onclick="calSetView('week')">周</button>
       </div>
       <span style="margin-left:auto" class="text-sm text-muted">当前显示 <?=count($calendarItems)?> 项内容</span>
     </div>
@@ -122,26 +126,69 @@ var CAL = {
   year: <?=date('Y')?>,
   month: <?=date('n')?>, // 1-12
   today: '<?=date('Y-m-d')?>',
+  view: 'month', // month / week
+  weekStart: null, // 周视图起始日（Date）
   items: <?=json_encode($calendarItems, JSON_UNESCAPED_UNICODE)?>
 };
 
 var WEEK_NAMES = ['日','一','二','三','四','五','六'];
 var TYPE_NAMES = { article: '📝 文章', event: '🎪 活动', download: '📄 资料' };
 
+function calSetView(v) {
+  CAL.view = v;
+  document.getElementById('calViewMonth').className = v === 'month' ? 'cal-view-on' : '';
+  document.getElementById('calViewWeek').className = v === 'week' ? 'cal-view-on' : '';
+  if (v === 'week' && !CAL.weekStart) {
+    var t = new Date();
+    var dow = t.getDay();
+    CAL.weekStart = new Date(t.getFullYear(), t.getMonth(), t.getDate() - dow);
+  }
+  calRender();
+}
+
 function calRender() {
   var grid = document.getElementById('calGrid');
-  var first = new Date(CAL.year, CAL.month - 1, 1);
-  var startDow = first.getDay();
-  var daysInMonth = new Date(CAL.year, CAL.month, 0).getDate();
   document.getElementById('calMonthLabel').textContent = CAL.year + ' 年 ' + CAL.month + ' 月';
 
   var html = WEEK_NAMES.map(function(w) { return '<div style="text-align:center;font-size:12px;font-weight:600;color:var(--text-3);padding:4px 0">' + w + '</div>'; }).join('');
 
+  if (CAL.view === 'week') {
+    // 周视图：7 天为一列，内容更展开
+    var days = [];
+    for (var wi = 0; wi < 7; wi++) {
+      var d = new Date(CAL.weekStart.getFullYear(), CAL.weekStart.getMonth(), CAL.weekStart.getDate() + wi);
+      days.push(CAL.weekStart.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'));
+    }
+    for (var wi2 = 0; wi2 < 7; wi2++) {
+      var ds2 = days[wi2];
+      var isToday2 = ds2 === CAL.today;
+      var chips2 = CAL.items.filter(function(it) {
+        if (it.type === 'event') return it.date <= ds2 && ds2 <= (it.end_date || it.date);
+        return it.date === ds2;
+      }).map(function(it) {
+        var isStart = it.date === ds2;
+        var scheduled = it.scheduled ? ' scheduled' : '';
+        var chipClass = 'cal-chip' + scheduled + (it.type === 'event' && !isStart ? ' cal-chip-cont' : '');
+        if (it.type === 'event' && !isStart) {
+          return '<div class="' + chipClass + '" style="background:' + it.color + ';min-height:6px;padding:0" data-id="' + it.id + '" data-type="' + it.type + '" data-title="' + it.title.replace(/"/g,'&quot;') + '" data-start="' + it.date + '" data-end="' + (it.end_date||it.date) + '" title="' + TYPE_NAMES[it.type] + ' · ' + it.title + '"></div>';
+        }
+        return '<div class="' + chipClass + '" draggable="true" ondragstart="calDragStart(event)" ondragend="calDragEnd(event)" data-id="' + it.id + '" data-type="' + it.type + '" data-title="' + it.title.replace(/"/g,'&quot;') + '" data-start="' + it.date + '" data-end="' + (it.end_date||it.date) + '" style="background:' + it.color + '" title="' + TYPE_NAMES[it.type] + ' · ' + it.title + '">' + (it.scheduled ? '⏰ ' : '') + it.title.substring(0, 14) + (it.title.length > 14 ? '…' : '') + '</div>';
+      }).join('');
+      html += '<div class="cal-day' + (isToday2 ? ' today' : '') + '" data-date="' + ds2 + '" ondragover="calDragOver(event)" ondrop="calDrop(event)" style="min-height:120px">' +
+        '<div class="dnum">' + (isToday2 ? '今天' : WEEK_NAMES[wi2]) + ' ' + ds2.substring(5) + '</div>' + chips2 + '</div>';
+    }
+    grid.innerHTML = html;
+    return;
+  }
+
+  // 月视图
+  var first = new Date(CAL.year, CAL.month - 1, 1);
+  var startDow = first.getDay();
+  var daysInMonth = new Date(CAL.year, CAL.month, 0).getDate();
   for (var i = 0; i < startDow; i++) html += '<div class="cal-day dim"></div>';
   for (var d = 1; d <= daysInMonth; d++) {
     var ds = CAL.year + '-' + String(CAL.month).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     var isToday = ds === CAL.today;
-    // 该日命中的内容：文章/资料按日期精确；活动按 [start,end] 区间
     var chips = CAL.items.filter(function(it) {
       if (it.type === 'event') return it.date <= ds && ds <= (it.end_date || it.date);
       return it.date === ds;
@@ -151,13 +198,11 @@ function calRender() {
       var scheduled = it.scheduled ? ' scheduled' : '';
       var chipClass = 'cal-chip' + scheduled + (it.type === 'event' && !isStart ? ' cal-chip-cont' : '');
       var label = it.title;
-      // 活动区间内的非开始日，只显示小圆点（压缩避免占满格子）
       if (it.type === 'event' && !isStart) {
         return '<div class="' + chipClass + '" style="background:' + it.color + ';min-height:6px;padding:0" ' +
           'data-id="' + it.id + '" data-type="' + it.type + '" data-title="' + it.title.replace(/"/g,'&quot;') + '" ' +
           'data-start="' + it.date + '" data-end="' + (it.end_date||it.date) + '" title="' + TYPE_NAMES[it.type] + ' · ' + it.title + '"></div>';
       }
-      // 开始日：完整卡片，带左右边缘拖拽把手
       return '<div class="' + chipClass + '" draggable="true" ondragstart="calDragStart(event)" ondragend="calDragEnd(event)" ' +
         'data-id="' + it.id + '" data-type="' + it.type + '" data-title="' + it.title.replace(/"/g,'&quot;') + '" ' +
         'data-start="' + it.date + '" data-end="' + (it.end_date||it.date) + '" ' +
