@@ -96,7 +96,7 @@ html[data-theme="dark"]{
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 html.rm *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
-body{font-family:var(--font-body);background:var(--bg);color:var(--fg);font-size:15px;line-height:1.8;-webkit-font-smoothing:antialiased;min-height:100vh}
+body{font-family:var(--font-body);background:var(--bg);color:var(--fg);font-size:15px;line-height:1.8;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:clip}
 img,svg{display:block}
 a{color:inherit;text-decoration:none}
 button{font:inherit;background:none;border:none;color:inherit;cursor:pointer}
@@ -634,7 +634,7 @@ section+section{margin-top:clamp(64px,8vw,110px)}
 
 /* 覆盖式滑动 Deck（TIPS 四力 · 下一块直接覆盖上一块） */
 .deck{display:flex;flex-direction:column;gap:14px}
-.deck-stage{display:grid}
+.deck-stage{display:grid;overflow:hidden;max-width:100%}
 .deck-p{grid-area:1/1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.92fr);gap:clamp(24px,4vw,56px);align-items:center;opacity:0;transform:translateX(48px);visibility:hidden;pointer-events:none;transition:opacity .45s var(--ease-out),transform .45s var(--ease-out)}
 .deck-p.on{opacity:1;transform:none;visibility:visible;pointer-events:auto;z-index:2}
 .deck-cta{display:flex;justify-content:center;padding-top:6px}
@@ -1430,12 +1430,13 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
     fetch('/api/form-submit.php',{method:'POST',body:fd,headers:{'Accept':'application/json'}})
       .then(function(r){return r.json().catch(function(){return {};});})
       .then(function(d){
-        btn.disabled=false;btn.textContent='提交预约 →';
         if(d&&d.ok){
+          btn.disabled=true;btn.textContent='✅ 已提交';
           msg.style.color='var(--ok)';msg.textContent='✅ 已提交，顾问将在 1 个工作日内与您联系。';
           form.reset();
           if(window.fcTrack)fcTrack('form_submit',{form:'lead',page:location.pathname});
         }else{
+          btn.disabled=false;btn.textContent='提交预约 →';
           msg.style.color='var(--danger)';msg.textContent=(d&&d.error)||'提交失败，请稍后再试';
         }
       })
