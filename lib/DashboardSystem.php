@@ -3,7 +3,7 @@
  * 经营驾驶舱数据聚合
  */
 
-// 核心 KPI
+// 核心 KPI（含环比：本期 vs 上期）
 function dash_kpis(): array {
     $kpis = [];
     try {
@@ -11,13 +11,19 @@ function dash_kpis(): array {
         $v = Database::query("SELECT COUNT(DISTINCT uid) as uv, COUNT(*) as pv FROM events WHERE event='page_view' AND created_at >= ?", [date('Y-m-d', strtotime('-30 days'))]);
         $kpis['uv'] = (int)($v[0]['uv'] ?? 0);
         $kpis['pv'] = (int)($v[0]['pv'] ?? 0);
+        // 上期（30-60 天前）访问
+        $prev = Database::query("SELECT COUNT(DISTINCT uid) as uv, COUNT(*) as pv FROM events WHERE event='page_view' AND created_at >= ? AND created_at < ?", [date('Y-m-d', strtotime('-60 days')), date('Y-m-d', strtotime('-30 days'))]);
+        $kpis['prev_uv'] = (int)($prev[0]['uv'] ?? 0);
+        $kpis['prev_pv'] = (int)($prev[0]['pv'] ?? 0);
         // 今日访问
         $today = Database::query("SELECT COUNT(DISTINCT uid) as uv FROM events WHERE event='page_view' AND created_at >= ?", [date('Y-m-d')]);
         $kpis['today_uv'] = (int)($today[0]['uv'] ?? 0);
-    } catch (Exception $e) { $kpis += ['uv'=>0,'pv'=>0,'today_uv'=>0]; }
+    } catch (Exception $e) { $kpis += ['uv'=>0,'pv'=>0,'today_uv'=>0,'prev_uv'=>0,'prev_pv'=>0]; }
 
-    // 线索
-    $kpis['leads'] = count(json_read(DATA_DIR . '/submissions/index.json'));
+    // 线索（本期 + 上期）
+    $allSubs = json_read(DATA_DIR . '/submissions/index.json');
+    $kpis['leads'] = count($allSubs);
+    $kpis['prev_leads'] = count(array_filter($allSubs, fn($s) => ($s['created_at'] ?? '') < date('Y-m-d', strtotime('-30 days'))));
 
     // 订单与收入
     $orders = json_read(DATA_DIR . '/shop/orders.json');
@@ -25,9 +31,11 @@ function dash_kpis(): array {
     $kpis['orders'] = count($orders);
     $kpis['paid_orders'] = count($paid);
     $kpis['revenue'] = round(array_sum(array_map(fn($o) => (float)($o['amount'] ?? 0), $paid)), 2);
-    // 近30天收入
+    // 近30天收入 + 上期收入
     $recentPaid = array_values(array_filter($paid, fn($o) => ($o['paid_at'] ?? '') >= date('Y-m-d', strtotime('-30 days'))));
+    $prevPaid = array_values(array_filter($paid, fn($o) => ($o['paid_at'] ?? '') >= date('Y-m-d', strtotime('-60 days')) && ($o['paid_at'] ?? '') < date('Y-m-d', strtotime('-30 days'))));
     $kpis['revenue_30d'] = round(array_sum(array_map(fn($o) => (float)($o['amount'] ?? 0), $recentPaid)), 2);
+    $kpis['prev_revenue_30d'] = round(array_sum(array_map(fn($o) => (float)($o['amount'] ?? 0), $prevPaid)), 2);
 
     // 订阅活跃数
     $activeSub = count(array_filter(json_read(DATA_DIR . '/subscription/state.json'), fn($s) => ($s['status'] ?? '') === 'active'));
