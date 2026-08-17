@@ -22,7 +22,32 @@ function member_save(array $member): bool {
     $found = false;
     foreach ($all as &$m) if ($m['id'] === $member['id']) { $m = array_merge($m, $member); $found = true; break; }
     if (!$found) { $member['id'] = $member['id'] ?? 'm_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 8); $all[] = $member; }
-    return json_write(member_file(), $all);
+    $ok = json_write(member_file(), $all);
+
+    // 同步到 Database members 表（供 CommerceSystem 的 unlocked_skills/balance/会员额度使用）
+    try {
+        member_sync_db($member['id']);
+    } catch (Exception $e) {}
+
+    return $ok;
+}
+
+// 把某个会员同步到 Database members 表（运行时数据镜像）
+function member_sync_db(string $memberId): void {
+    $m = member_get($memberId);
+    if (!$m) return;
+    Database::execute(
+        "INSERT INTO members (id, email, phone, password_hash, nickname, level, points, balance, referred_by, membership_plan, membership_expires, created_at, unlocked_skills, api_plans)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+         ON CONFLICT(id) DO UPDATE SET email=excluded.email, phone=excluded.phone, password_hash=excluded.password_hash, nickname=excluded.nickname, level=excluded.level, points=excluded.points, balance=excluded.balance, referred_by=excluded.referred_by, membership_plan=excluded.membership_plan, membership_expires=excluded.membership_expires, created_at=excluded.created_at, unlocked_skills=excluded.unlocked_skills, api_plans=excluded.api_plans",
+        [
+            $m['id'], $m['email'] ?? '', $m['phone'] ?? '', $m['password_hash'] ?? '',
+            $m['name'] ?? '', $m['role'] ?? 'user', (int)($m['points'] ?? 0), (float)($m['balance'] ?? 0),
+            $m['referred_by'] ?? '', $m['membership_plan'] ?? '', $m['membership_expires'] ?? '',
+            $m['created_at'] ?? date('Y-m-d H:i:s'),
+            $m['unlocked_skills'] ?? '[]', $m['api_plans'] ?? '[]',
+        ]
+    );
 }
 
 // 按邮箱/手机找用户
