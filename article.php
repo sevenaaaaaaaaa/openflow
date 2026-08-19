@@ -490,6 +490,8 @@ main{padding-top:96px; padding-bottom:70px; position:relative; z-index:10; max-w
 
 <script>
 var OF_SLUG = <?=json_encode($slug)?>;
+/* 内容浏览 → CDP 事件 + 行为触发 */
+if (window.fcTrack) { try { fcTrack('article_view', { slug: OF_SLUG, category: <?=json_encode($article['category'] ?? '')?>, title: document.title }); } catch (e) {} }
 function ofNewsletter(f,e){e.preventDefault();var em=f.querySelector('input').value;fetch('/api/newsletter.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em,source:'article'})}).then(function(r){return r.json();}).then(function(d){var b=f.querySelector('button');b.textContent=d.ok?'✅ 已订阅':'⚠️ '+(d.error||'失败');});return false;}
 function ofStat(action){return fetch('/api/article-stats.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action,slug:OF_SLUG})}).then(function(r){return r.json();});}
 var liked=false;
