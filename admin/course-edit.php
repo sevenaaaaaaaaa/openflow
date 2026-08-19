@@ -75,16 +75,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $lessonId = ($_POST['chapter_lesson_id'][$ci][$li] ?? '') ?: 'lesson_' . substr(bin2hex(random_bytes(6)), 0, 8);
                 $materialsRaw = trim(($_POST['chapter_lesson_materials'][$ci][$li] ?? ''));
                 $materials = $materialsRaw ? array_filter(array_map('trim', explode(',', $materialsRaw))) : [];
-                $lessons[] = [
-                    'id' => $lessonId,
-                    'title' => $lt,
-                    'duration' => ($_POST['chapter_lesson_duration'][$ci][$li] ?? '') ?: '',
-                    'video' => trim($_POST['chapter_lesson_video'][$ci][$li] ?? ''),
-                    'description' => trim($_POST['chapter_lesson_desc'][$ci][$li] ?? ''),
-                    'materials' => array_values($materials),
-                    'type' => $_POST['chapter_lesson_type'][$ci][$li] ?? 'video',
-                    'free' => !empty($_POST['chapter_lesson_free'][$ci][$li]),
-                ];
+                 $lessons[] = [
+                     'id' => $lessonId,
+                     'title' => $lt,
+                     'duration' => ($_POST['chapter_lesson_duration'][$ci][$li] ?? '') ?: '',
+                     'video' => trim($_POST['chapter_lesson_video'][$ci][$li] ?? ''),
+                     'description' => trim($_POST['chapter_lesson_desc'][$ci][$li] ?? ''),
+                     'materials' => array_values($materials),
+                     'type' => $_POST['chapter_lesson_type'][$ci][$li] ?? 'video',
+                     'free' => !empty($_POST['chapter_lesson_free'][$ci][$li]),
+                     'questions' => json_decode($_POST['chapter_lesson_questions'][$ci][$li] ?? '[]', true) ?: [],
+                 ];
             }
             $chapters[] = ['id' => $chapterId, 'title' => $ct, 'lessons' => $lessons];
         }
@@ -218,8 +219,13 @@ admin_header($isNew ? '创建课程' : '编辑课程');
                   <div class="field"><label>课时简介</label><textarea name="chapter_lesson_desc[0][]" rows="2" placeholder="本节内容概要..."><?=htmlspecialchars($l['description'] ?? '')?></textarea></div>
                   <div class="field"><label>配套资料 <span class="hint">· URL，多个逗号分隔</span></label><input type="text" name="chapter_lesson_materials[0][]" value="<?=htmlspecialchars(implode(',', $l['materials'] ?? []))?>" placeholder="https://...pdf,https://...ppt"></div>
                   <div class="field-row">
-                    <div class="field"><label>课时类型</label><select name="chapter_lesson_type[0][]"><option value="video" <?=($l['type'] ?? 'video')==='video'?'selected':''?>>视频</option><option value="text" <?=($l['type'] ?? '')==='text'?'selected':''?>>图文</option><option value="quiz" <?=($l['type'] ?? '')==='quiz'?'selected':''?>>测验</option><option value="download" <?=($l['type'] ?? '')==='download'?'selected':''?>>资料下载</option></select></div>
+                    <div class="field"><label>课时类型</label><select name="chapter_lesson_type[0][]" onchange="toggleQuizQ(this)"><option value="video" <?=($l['type'] ?? 'video')==='video'?'selected':''?>>视频</option><option value="text" <?=($l['type'] ?? '')==='text'?'selected':''?>>图文</option><option value="quiz" <?=($l['type'] ?? '')==='quiz'?'selected':''?>>测验</option><option value="download" <?=($l['type'] ?? '')==='download'?'selected':''?>>资料下载</option></select></div>
                     <div class="field"><label>试看 <span class="hint">· 免费可看</span></label><select name="chapter_lesson_free[0][]"><option value="0" <?=empty($l['free'])?'selected':''?>>否</option><option value="1" <?=!empty($l['free'])?'selected':''?>>是</option></select></div>
+                  </div>
+                  <div class="field quiz-q-field" style="<?=($l['type'] ?? '')==='quiz'?'':'display:none'?>">
+                    <label>测验题目 <span class="hint">· JSON 格式，示例：</span><button type="button" class="btn btn-ghost btn-sm" style="padding:0 8px;font-size:10px" onclick="fillQuizExample(this)">填入示例</button></label>
+                    <textarea name="chapter_lesson_questions[0][]" rows="3" placeholder='[{"type":"single","q":"什么是增长系统？","options":["A.内容","B.流程","C.两者"],"answer":"C"}]'><?=htmlspecialchars(json_encode($l['questions'] ?? [], JSON_UNESCAPED_UNICODE))?></textarea>
+                    <div class="hint" style="font-size:11px">type: single单选/multi多选/judge判断 · answer: 单选填选项字母(A)，多选填"A,C"，判断填"对/错" · 通过线 80%</div>
                   </div>
                 </div>
               </div>
@@ -251,8 +257,13 @@ admin_header($isNew ? '创建课程' : '编辑课程');
                   <div class="field"><label>课时简介</label><textarea name="chapter_lesson_desc[<?=$ci?>][]" rows="2" placeholder="本节内容概要..."><?=htmlspecialchars($l['description'] ?? '')?></textarea></div>
                   <div class="field"><label>配套资料 <span class="hint">· URL，多个逗号分隔</span></label><input type="text" name="chapter_lesson_materials[<?=$ci?>][]" value="<?=htmlspecialchars(implode(',', $l['materials'] ?? []))?>" placeholder="https://...pdf,https://...ppt"></div>
                   <div class="field-row">
-                    <div class="field"><label>课时类型</label><select name="chapter_lesson_type[<?=$ci?>][]"><option value="video" <?=($l['type'] ?? 'video')==='video'?'selected':''?>>视频</option><option value="text" <?=($l['type'] ?? '')==='text'?'selected':''?>>图文</option><option value="quiz" <?=($l['type'] ?? '')==='quiz'?'selected':''?>>测验</option><option value="download" <?=($l['type'] ?? '')==='download'?'selected':''?>>资料下载</option></select></div>
+                    <div class="field"><label>课时类型</label><select name="chapter_lesson_type[<?=$ci?>][]" onchange="toggleQuizQ(this)"><option value="video" <?=($l['type'] ?? 'video')==='video'?'selected':''?>>视频</option><option value="text" <?=($l['type'] ?? '')==='text'?'selected':''?>>图文</option><option value="quiz" <?=($l['type'] ?? '')==='quiz'?'selected':''?>>测验</option><option value="download" <?=($l['type'] ?? '')==='download'?'selected':''?>>资料下载</option></select></div>
                     <div class="field"><label>试看 <span class="hint">· 免费可看</span></label><select name="chapter_lesson_free[<?=$ci?>][]"><option value="0" <?=empty($l['free'])?'selected':''?>>否</option><option value="1" <?=!empty($l['free'])?'selected':''?>>是</option></select></div>
+                  </div>
+                  <div class="field quiz-q-field" style="<?=($l['type'] ?? '')==='quiz'?'':'display:none'?>">
+                    <label>测验题目 <span class="hint">· JSON 格式，示例：</span><button type="button" class="btn btn-ghost btn-sm" style="padding:0 8px;font-size:10px" onclick="fillQuizExample(this)">填入示例</button></label>
+                    <textarea name="chapter_lesson_questions[<?=$ci?>][]" rows="3" placeholder='[{"type":"single","q":"什么是增长系统？","options":["A.内容","B.流程","C.两者"],"answer":"C"}]'><?=htmlspecialchars(json_encode($l['questions'] ?? [], JSON_UNESCAPED_UNICODE))?></textarea>
+                    <div class="hint" style="font-size:11px">type: single单选/multi多选/judge判断 · answer: 单选填选项字母(A)，多选填"A,C"，判断填"对/错" · 通过线 80%</div>
                   </div>
                 </div>
               </div>
@@ -352,15 +363,33 @@ function addLessonToChapter(chapterIdx) {
       '<div class="field"><label>课时简介</label><textarea name="chapter_lesson_desc[' + chapterIdx + '][]" rows="2" placeholder="本节内容概要..."></textarea></div>' +
       '<div class="field"><label>配套资料 <span class="hint">· URL，多个逗号分隔</span></label><input type="text" name="chapter_lesson_materials[' + chapterIdx + '][]" placeholder="https://...pdf,https://...ppt"></div>' +
       '<div class="field-row">' +
-        '<div class="field"><label>课时类型</label><select name="chapter_lesson_type[' + chapterIdx + '][]"><option value="video">视频</option><option value="text">图文</option><option value="quiz">测验</option><option value="download">资料下载</option></select></div>' +
+        '<div class="field"><label>课时类型</label><select name="chapter_lesson_type[' + chapterIdx + '][]" onchange="toggleQuizQ(this)"><option value="video">视频</option><option value="text">图文</option><option value="quiz">测验</option><option value="download">资料下载</option></select></div>' +
         '<div class="field"><label>试看</label><select name="chapter_lesson_free[' + chapterIdx + '][]"><option value="0">否</option><option value="1">是</option></select></div>' +
+      '</div>' +
+      '<div class="field quiz-q-field" style="display:none">' +
+        '<label>测验题目 <span class="hint">· JSON 格式，示例：</span><button type="button" class="btn btn-ghost btn-sm" style="padding:0 8px;font-size:10px" onclick="fillQuizExample(this)">填入示例</button></label>' +
+        '<textarea name="chapter_lesson_questions[' + chapterIdx + '][]" rows="3" placeholder=\'[{"type":"single","q":"问题？","options":["A.","B."],"answer":"A"}]\'></textarea>' +
+        '<div class="hint" style="font-size:11px">type: single单选/multi多选/judge判断 · answer: 单选填选项字母(A)，多选填"A,C"，判断填"对/错" · 通过线 80%</div>' +
       '</div>' +
     '</div>';
   body.appendChild(row);
 }
 
-function toggleLessonDetail(btn) {
-  var detail = btn.closest('.lesson-row').querySelector('.lesson-detail');
+function toggleQuizQ(sel) {
+  var detail = sel.closest('.lesson-detail');
+  var qf = detail ? detail.querySelector('.quiz-q-field') : null;
+  if (qf) qf.style.display = (sel.value === 'quiz') ? '' : 'none';
+}
+function fillQuizExample(btn) {
+  var ta = btn.closest('.quiz-q-field').querySelector('textarea');
+  if (ta) ta.value = JSON.stringify([
+    {type:'single', q:'什么是增长系统？', options:['A. 单点优化','B. 覆盖获客-留存-变现全链路的系统化打法','C. 只做内容营销'], answer:'B'},
+    {type:'multi', q:'以下哪些属于增长系统模块？', options:['A. CDP 用户画像','B. CRM 客户运营','C. 数据分析报表'], answer:'A,B,C'},
+    {type:'judge', q:'RFM 模型适合做客户分层运营。', answer:'对'}
+  ], null, 2);
+}
+
+function toggleLessonDetail(btn) {  var detail = btn.closest('.lesson-row').querySelector('.lesson-detail');
   if (detail) detail.classList.toggle('show');
 }
 
