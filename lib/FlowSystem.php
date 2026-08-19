@@ -111,6 +111,21 @@ function flow_handle(string $event, array $ctx = []): array {
         );
         if (function_exists('automation_trigger')) { automation_trigger('flow_' . $event, $triggerData); $result['triggers'][] = 'automation'; }
         if (function_exists('canvas_trigger')) { canvas_trigger('flow_' . $event, $triggerData); $result['triggers'][] = 'canvas'; }
+
+        // ── Webhook 出站（flow 业务事件 → 订阅的 webhook 端点） ──
+        $whMap = [
+            'purchase' => 'order.paid',
+            'form_submit' => 'form.submitted',
+            'member_register' => 'member.registered',
+            'lead_from_form' => 'lead.created',
+            'course_complete' => 'course.completed',
+            'course_enroll' => 'course.enrolled',
+            'nps_submit' => 'form.submitted',
+            'member_update' => 'member.updated',
+        ];
+        if (isset($whMap[$event]) && class_exists('WebhookSystem')) {
+            try { \WebhookSystem::trigger($whMap[$event], $triggerData); } catch (Exception $e) {}
+        }
     } catch (Exception $e) {}
 
     // ── C. 价值流：高价值行为站内信 ──

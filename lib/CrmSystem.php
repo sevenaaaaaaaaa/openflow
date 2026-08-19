@@ -76,7 +76,8 @@ function crm_ensure_lead(string $email, string $name = '', string $phone = ''): 
     $data = crm_get();
     $key = mb_strtolower(trim($email));
     if ($key === '') { $key = $phone ?: ('lead_' . time()); }
-    if (empty($data['leads'][$key])) {
+    $isNew = empty($data['leads'][$key]);
+    if ($isNew) {
         $data['leads'][$key] = [
             'email' => $email, 'name' => $name, 'phone' => $phone,
             'stage' => 'new', 'score' => 0, 'owner' => '',
@@ -86,6 +87,10 @@ function crm_ensure_lead(string $email, string $name = '', string $phone = ''): 
         ];
     }
     crm_save($data);
+    // 新线索 → 出站 webhook
+    if ($isNew && class_exists('WebhookSystem')) {
+        try { \WebhookSystem::trigger('lead.created', ['email' => $email, 'name' => $name, 'phone' => $phone]); } catch (Exception $e) {}
+    }
     return $data['leads'][$key];
 }
 
@@ -97,6 +102,10 @@ function crm_update_lead(string $email, array $updates): void {
         $data['leads'][$key] = array_merge($data['leads'][$key], $updates);
         $data['leads'][$key]['updated_at'] = date('Y-m-d H:i:s');
         crm_save($data);
+        // 线索更新 → 出站 webhook
+        if (class_exists('WebhookSystem')) {
+            try { \WebhookSystem::trigger('lead.updated', array_merge(['email' => $email], $updates)); } catch (Exception $e) {}
+        }
     }
 }
 
