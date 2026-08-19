@@ -7,6 +7,7 @@ require_once __DIR__ . '/lib/MemberSystem.php';
 require_once __DIR__ . '/lib/ShopSystem.php';
 require_once __DIR__ . '/lib/ProgressSystem.php';
 require_once __DIR__ . '/lib/MembershipSystem.php';
+require_once __DIR__ . '/lib/CommentSystem.php';
 
 $courseId = req_str('id', '', false);
 $courseKey = $courseId ?: req_str('course') ?: req_str('slug');
@@ -231,7 +232,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
         </form>
         <?php endif; ?>
         <div id="rateList">
-          <?php $reviews = comment_get('course', $courseId); foreach (array_slice($reviews, 0, 3) as $c): ?>
+          <?php $reviews = comments_for('course', $courseId); foreach (array_slice($reviews, 0, 3) as $c): ?>
           <div class="py-3 border-b" style="border-color:var(--border)">
             <div class="flex justify-between"><b class="text-sm"><?=htmlspecialchars($c['author'])?></b><span class="text-xs" style="color:var(--warn)"><?=str_repeat('★', (int)$c['rating'])?></span></div>
             <div class="text-sm text-gray-600 mt-1"><?=htmlspecialchars($c['text'])?></div>
