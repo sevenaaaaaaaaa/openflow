@@ -26,6 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
             'delay_minutes' => (int)($_POST['step_delay'][$i] ?? 60),
             'title' => $_POST['step_title'][$i] ?? '',
             'link' => $_POST['step_link'][$i] ?? '',
+            'tag' => $_POST['step_tag'][$i] ?? '',
+            'points' => (int)($_POST['step_points'][$i] ?? 0),
+            'coupon_name' => $_POST['step_coupon_name'][$i] ?? '',
+            'coupon_type' => $_POST['step_coupon_type'][$i] ?? 'fixed',
+            'coupon_value' => (float)($_POST['step_coupon_value'][$i] ?? 0),
+            'coupon_min' => (float)($_POST['step_coupon_min'][$i] ?? 0),
         ];
     }
     $data = [
@@ -157,6 +163,10 @@ admin_header('营销自动化');
                 <option value="send_email" <?=($st['action']??'')==='send_email'?'selected':''?>>📧 发送邮件</option>
                 <option value="delay" <?=($st['action']??'')==='delay'?'selected':''?>>⏱ 延迟</option>
                 <option value="notify" <?=($st['action']??'')==='notify'?'selected':''?>>🔔 通知</option>
+                <option value="add_tag" <?=($st['action']??'')==='add_tag'?'selected':''?>>🏷 打标签</option>
+                <option value="award_points" <?=($st['action']??'')==='award_points'?'selected':''?>>⭐ 加积分</option>
+                <option value="send_coupon" <?=($st['action']??'')==='send_coupon'?'selected':''?>>🎫 发优惠券</option>
+                <option value="inbox" <?=($st['action']??'')==='inbox'?'selected':''?>>✉ 站内信</option>
               </select>
               <input type="text" name="step_subject[]" value="<?=htmlspecialchars($st['subject'] ?? '')?>" placeholder="邮件主题" style="flex:1;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
               <input type="number" name="step_delay[]" value="<?=htmlspecialchars($st['delay_minutes'] ?? 60)?>" placeholder="延迟(分钟)" style="width:110px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
@@ -168,6 +178,14 @@ admin_header('营销自动化');
               <input type="text" name="step_link[]" value="<?=htmlspecialchars($st['link'] ?? '')?>" placeholder="通知链接" style="flex:1;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
             </div>
             <textarea name="step_content[]" rows="2" placeholder="邮件内容（支持 {name} {email} {company} 变量 · {recommend} 自动插入个性化推荐）" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><?=htmlspecialchars($st['content'] ?? '')?></textarea>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+              <input type="text" name="step_tag[]" value="<?=htmlspecialchars($st['tag'] ?? '')?>" placeholder="标签名(打标签)" style="width:140px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
+              <input type="number" name="step_points[]" value="<?=htmlspecialchars($st['points'] ?? 0)?>" placeholder="积分(加积分)" style="width:110px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
+              <input type="text" name="step_coupon_name[]" value="<?=htmlspecialchars($st['coupon_name'] ?? '')?>" placeholder="券名(发券)" style="width:140px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
+              <select name="step_coupon_type[]" style="padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px"><option value="fixed" <?=($st['coupon_type']??'fixed')==='fixed'?'selected':''?>>满减¥</option><option value="percent" <?=($st['coupon_type']??'')==='percent'?'selected':''?>>折扣%</option></select>
+              <input type="number" name="step_coupon_value[]" value="<?=htmlspecialchars($st['coupon_value'] ?? 0)?>" placeholder="券面值" style="width:90px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
+              <input type="number" name="step_coupon_min[]" value="<?=htmlspecialchars($st['coupon_min'] ?? 0)?>" placeholder="满额门槛" style="width:100px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
+            </div>
           </div>
           <?php endforeach; ?>
         </div>
@@ -238,7 +256,7 @@ function addStep() {
   d.style.cssText = 'border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;background:var(--surface-2)';
   d.innerHTML =
     '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">' +
-      '<select name="step_action[]" style="width:130px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="send_email">📧 发送邮件</option><option value="delay">⏱ 延迟</option><option value="notify">🔔 通知</option></select>' +
+      '<select name="step_action[]" style="width:130px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="send_email">📧 发送邮件</option><option value="delay">⏱ 延迟</option><option value="notify">🔔 通知</option><option value="add_tag">🏷 打标签</option><option value="award_points">⭐ 加积分</option><option value="send_coupon">🎫 发优惠券</option><option value="inbox">✉ 站内信</option></select>' +
       '<input type="text" name="step_subject[]" placeholder="邮件主题" style="flex:1;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">' +
       '<input type="number" name="step_delay[]" value="60" placeholder="延迟(分钟)" style="width:110px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">' +
       '<button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'.step-row\').remove()">✕</button>' +
@@ -248,7 +266,15 @@ function addStep() {
       '<input type="text" name="step_title[]" placeholder="通知标题" style="width:200px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
       '<input type="text" name="step_link[]" placeholder="通知链接" style="flex:1;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
     '</div>' +
-    '<textarea name="step_content[]" rows="2" placeholder="邮件内容（支持 {name} {email} 变量）" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"></textarea>';
+    '<textarea name="step_content[]" rows="2" placeholder="邮件内容（支持 {name} {email} 变量）" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"></textarea>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">' +
+      '<input type="text" name="step_tag[]" placeholder="标签名(打标签)" style="width:140px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
+      '<input type="number" name="step_points[]" value="0" placeholder="积分(加积分)" style="width:110px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
+      '<input type="text" name="step_coupon_name[]" placeholder="券名(发券)" style="width:140px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
+      '<select name="step_coupon_type[]" style="padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px"><option value="fixed">满减¥</option><option value="percent">折扣%</option></select>' +
+      '<input type="number" name="step_coupon_value[]" value="0" placeholder="券面值" style="width:90px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
+      '<input type="number" name="step_coupon_min[]" value="0" placeholder="满额门槛" style="width:100px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
+    '</div>';
   document.getElementById('stepList').appendChild(d);
 }
 </script>
