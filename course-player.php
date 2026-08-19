@@ -109,8 +109,13 @@ foreach ($course['chapters'] ?? [] as $ch) {
                 <button onclick="togglePlay()" class="mt-5 px-8 py-3 rounded-full font-bold" style="background:var(--accent-soft);color:var(--accent)" id="playBtn">▶ 开始播放</button>
               </div>
             </div>
-            <div class="flex items-center gap-3 mt-3">
-              <button onclick="markCurrentDone()" class="text-sm font-bold px-5 py-2 rounded-full" style="background:var(--ok);color:var(--surface)">✅ 标记本节完成</button>
+            <div id="quizArea" style="display:none;padding:20px;border-radius:14px;background:var(--bg);margin-top:14px">
+              <h3 class="font-bold text-lg mb-4" style="color:var(--fg)">📝 课时测验</h3>
+              <div id="quizBody"></div>
+              <button onclick="submitQuiz()" class="mt-4 rounded-full px-8 py-3 font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">提交答案</button>
+              <div id="quizResult" class="mt-4" style="display:none;padding:14px;border-radius:10px;font-weight:700"></div>
+            </div>
+            <div class="flex items-center gap-3 mt-3">              <button onclick="markCurrentDone()" class="text-sm font-bold px-5 py-2 rounded-full" style="background:var(--ok);color:var(--surface)">✅ 标记本节完成</button>
               <span class="text-xs text-gray-400" id="resumeHint"><?=$resume ? '已记住上次进度 ' . gmdate('i:s', (int)$resume['position']) : ''?></span>
             </div>
           </div>
@@ -270,6 +275,17 @@ function openLesson(id) {
   document.getElementById('playerLessonTitle').textContent = LESSONS[id].title || '';
   document.getElementById('playerStatus').textContent = '学习「' + (LESSONS[id].title||'') + '」…';
   document.getElementById('playBtn').textContent = '▶ 开始播放';
+  // quiz 课时：渲染测验
+  var isQuiz = LESSONS[id] && LESSONS[id].type === 'quiz' && LESSONS[id].questions && LESSONS[id].questions.length;
+  var quizArea = document.getElementById('quizArea');
+  var playerVid = quizArea ? quizArea.previousElementSibling : null;
+  if (isQuiz) {
+    if (quizArea) { quizArea.style.display = 'block'; renderQuiz(LESSONS[id].questions); }
+    if (playerVid) playerVid.style.display = 'none';
+  } else {
+    if (quizArea) quizArea.style.display = 'none';
+    if (playerVid) playerVid.style.display = 'grid';
+  }
   // 高亮
   document.querySelectorAll('.lesson').forEach(function(el){
     el.classList.toggle('active', el.dataset.id === id);
@@ -294,6 +310,72 @@ function markCurrentDone() {
   if (btn) btn.classList.remove('active');
   document.getElementById('playerStatus').textContent = '✅ 本节已完成';
   alert('本节已标记完成 <span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 20 8-8M9 4l.5 3.5L13 8l-3.5.5L9 12l-.5-3.5L5 8l3.5-.5L9 4ZM16 6l.4 2.6L19 9l-2.6.4L16 12l-.4-2.6L13 9l2.6-.4L16 6ZM20 13l.3 2 2 .3-2 .3-.3 2-.3-2-2-.3 2-.3.3-2Z"/></svg></span>');
+}
+/* 测验 */
+function renderQuiz(qs) {
+  var body = document.getElementById('quizBody');
+  var html = '';
+  qs.forEach(function(q, qi) {
+    html += '<div class="mb-5" style="color:var(--fg)">';
+    html += '<div class="font-semibold mb-2 text-sm">' + (qi+1) + '. ' + (q.q||'') + ' <span style="color:var(--faint);font-size:11px;font-weight:400">' + ({single:'单选',multi:'多选',judge:'判断'}[q.type]||'') + '</span></div>';
+    if (q.type === 'judge') {
+      html += '<label style="margin-right:16px;font-size:13px"><input type="radio" name="quiz'+qi+'" value="对"> 对</label>';
+      html += '<label style="font-size:13px"><input type="radio" name="quiz'+qi+'" value="错"> 错</label>';
+    } else if (q.type === 'multi') {
+      (q.options||[]).forEach(function(op, oi) {
+        html += '<label class="block mb-1" style="font-size:13px"><input type="checkbox" name="quiz'+qi+'" value="' + String.fromCharCode(65+oi) + '"> ' + op + '</label>';
+      });
+    } else {
+      (q.options||[]).forEach(function(op, oi) {
+        html += '<label class="block mb-1" style="font-size:13px"><input type="radio" name="quiz'+qi+'" value="' + String.fromCharCode(65+oi) + '"> ' + op + '</label>';
+      });
+    }
+    html += '</div>';
+  });
+  body.innerHTML = html;
+  document.getElementById('quizResult').style.display = 'none';
+}
+function submitQuiz() {
+  var qs = LESSONS[currentLesson].questions || [];
+  var correct = 0;
+  qs.forEach(function(q, qi) {
+    var answer = (q.answer||'').toUpperCase().replace(/\s/g,'');
+    if (q.type === 'judge') {
+      var sel = document.querySelector('input[name="quiz'+qi+'"]:checked');
+      if (sel && sel.value === q.answer) correct++;
+    } else if (q.type === 'multi') {
+      var sel = document.querySelectorAll('input[name="quiz'+qi+'"]:checked');
+      var val = Array.prototype.map.call(sel, function(s){ return s.value; }).sort().join(',');
+      var exp = answer.split(',').sort().join(',');
+      if (val === exp) correct++;
+    } else {
+      var sel = document.querySelector('input[name="quiz'+qi+'"]:checked');
+      if (sel && sel.value === answer) correct++;
+    }
+  });
+  var total = qs.length;
+  var score = Math.round(correct/total*100);
+  var passed = score >= 80;
+  var res = document.getElementById('quizResult');
+  res.style.display = 'block';
+  res.style.background = passed ? 'var(--ok-soft,#e7f6ec)' : 'var(--warn-soft,#fdf0e3)';
+  res.style.color = passed ? 'var(--ok)' : 'var(--warn)';
+  res.innerHTML = passed
+    ? '🎉 恭喜通过！得分 ' + score + '%（' + correct + '/' + total + '） <button onclick="reTakeQuiz()" class="ml-3 px-4 py-1 rounded-full text-xs" style="background:var(--accent-soft);color:var(--accent)">重考</button>'
+    : '😅 得分 ' + score + '%（' + correct + '/' + total + '），未达 80% 通过线 <button onclick="reTakeQuiz()" class="ml-3 px-4 py-1 rounded-full text-xs" style="background:var(--accent-soft);color:var(--accent)">重新作答</button>';
+  if (passed) { saveProgress(currentLesson, { done: true, quiz_score: score }); markQuizDone(); }
+  else { saveProgress(currentLesson, { quiz_score: score }); }
+  res.scrollIntoView({ block:'center' });
+}
+function markQuizDone() {
+  var el = document.querySelector('.lesson[data-id="'+currentLesson+'"] .chk');
+  if (el) { el.className = 'chk done'; el.textContent = '✓'; }
+  var btn = document.querySelector('.lesson[data-id="'+currentLesson+'"]');
+  if (btn) btn.classList.remove('active');
+}
+function reTakeQuiz() {
+  var qs = LESSONS[currentLesson].questions || [];
+  renderQuiz(qs);
 }
 function saveProgress(lessonId, extra) {
   if (!MEMBER_ID) return;
