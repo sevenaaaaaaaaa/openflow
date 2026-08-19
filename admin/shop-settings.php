@@ -16,12 +16,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     csrf_verify();
     $course_prices = [];
     foreach (($_POST['course_price'] ?? []) as $cid => $price) $course_prices[$cid] = (float)$price;
+    // 课程促销（促销价 + 起止）
+    $course_promos = [];
+    foreach (($_POST['course_promo_price'] ?? []) as $cid => $pp) {
+        if ($pp === '') continue;
+        $course_promos[$cid] = [
+            'price' => (float)$pp,
+            'start' => trim($_POST['course_promo_start'][$cid] ?? ''),
+            'end' => trim($_POST['course_promo_end'][$cid] ?? ''),
+        ];
+    }
     $settings['enabled'] = isset($_POST['enabled']);
     $settings['xfpay_appid'] = trim($_POST['xfpay_appid'] ?? '');
     $settings['xfpay_secret'] = trim($_POST['xfpay_secret'] ?? '');
     $settings['commission_rate'] = max(0, min(90, (int)($_POST['commission_rate'] ?? 20)));
     $settings['min_withdraw'] = (float)($_POST['min_withdraw'] ?? 100);
     $settings['course_prices'] = $course_prices;
+    $settings['course_promos'] = $course_promos;
     json_write(shop_settings_file(), $settings);
     $message = '商城设置已保存';
 }
@@ -74,14 +85,22 @@ admin_header('商城与分销');
       <div class="card">
         <h2>💳 课程定价</h2>
         <table>
-          <thead><tr><th>课程</th><th>类型</th><th>状态</th><th style="width:140px">价格（元）</th></tr></thead>
+          <thead><tr><th>课程</th><th>类型</th><th>状态</th><th style="width:130px">价格（元）</th><th style="width:340px">限时促销</th></tr></thead>
           <tbody>
-            <?php foreach ($courses as $c): ?>
+            <?php foreach ($courses as $c): $cp = $settings['course_promos'][$c['id']] ?? []; ?>
             <tr>
               <td><strong><?=htmlspecialchars($c['title'])?></strong></td>
               <td class="text-sm text-muted"><?=htmlspecialchars($c['type'] ?? '课程')?></td>
               <td><span class="badge <?=($c['status']??'draft')==='published'?'badge-green':'badge-gray'?>"><?=$c['status']??'draft'?></span></td>
               <td><input type="number" name="course_price[<?=htmlspecialchars($c['id'])?>]" value="<?=htmlspecialchars($settings['course_prices'][$c['id']] ?? '')?>" step="0.01" min="0" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px"></td>
+              <td>
+                <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+                  <input type="number" name="course_promo_price[<?=htmlspecialchars($c['id'])?>]" value="<?=htmlspecialchars($cp['price'] ?? '')?>" placeholder="促销价" step="0.01" min="0" style="width:80px;padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
+                  <input type="datetime-local" name="course_promo_start[<?=htmlspecialchars($c['id'])?>]" value="<?=$cp['start']?str_replace(' ','T',substr($cp['start'],0,16)):''?>" style="padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
+                  <span style="font-size:11px;color:var(--faint)">至</span>
+                  <input type="datetime-local" name="course_promo_end[<?=htmlspecialchars($c['id'])?>]" value="<?=$cp['end']?str_replace(' ','T',substr($cp['end'],0,16)):''?>" style="padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
+                </div>
+              </td>
             </tr>
             <?php endforeach; ?>
           </tbody>
