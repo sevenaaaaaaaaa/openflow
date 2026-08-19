@@ -673,6 +673,27 @@ function include_member_developer($member): void {
         </span>
       </div>
 
+      <?php if ($devStatus === 'approved'):
+        // 作者收益看板：余额 + 累计销售分成
+        $devBalance = 0;
+        try { $bq = Database::query("SELECT balance FROM members WHERE id = ?", [$member['id']]); $devBalance = (float)($bq[0]['balance'] ?? 0); } catch (Exception $e) {}
+        $devSales = 0; $devComms = [];
+        try {
+            $devOrders = Database::query("SELECT * FROM orders WHERE author = ? AND status = 'paid'", [$member['id']]);
+            foreach ($devOrders as $do) { $devSales += (float)($do['amount'] ?? 0); }
+        } catch (Exception $e) { $devOrders = []; }
+        ?>
+      <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:22px">
+        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--ok)">¥<?=number_format($devBalance,2)?></div><div style="font-size:12px;color:var(--muted)">我的余额（可提现）</div></div>
+        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800"><?=count($devOrders)?></div><div style="font-size:12px;color:var(--muted)">卖出产品</div></div>
+        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--accent)">¥<?=number_format($devSales,0)?></div><div style="font-size:12px;color:var(--muted)">累计销售额</div></div>
+        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--warn)"><?=round(($member['distributor_rate'] ?? 0))?>%</div><div style="font-size:12px;color:var(--muted)">默认佣金比例</div></div>
+      </div>
+      <div style="padding:14px 16px;border:1px dashed var(--border-strong);border-radius:14px;background:var(--surface);margin-bottom:22px;font-size:12.5px;color:var(--muted)">
+        收益规则：平台抽 10% 覆盖支付手续费，分销者按产品佣金比例分成，剩余归你（作者）。余额可在 <a href="member.php?view=distribution" style="color:var(--accent)">分销中心</a> 提现。
+      </div>
+      <?php endif; ?>
+
       <?php if ($devStatus === 'none'): ?>
       <!-- 申请成为开发者 -->
       <div style="padding:20px;border-radius:14px;background:var(--bg);margin-bottom:20px">
