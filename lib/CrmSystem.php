@@ -11,6 +11,45 @@ function crm_stages(): array {
     return ['new'=>'新线索','contacted'=>'已联系','qualified'=>'有意向','opportunity'=>'商机','won'=>'已成交','lost'=>'无效'];
 }
 
+// 各阶段赢率（对标 Pipedrive：用于加权金额与销售预测）
+function crm_stage_win_rates(): array {
+    $cfg = json_read(DATA_DIR . '/crm/win-rates.json');
+    $default = ['new'=>0.05,'contacted'=>0.1,'qualified'=>0.3,'opportunity'=>0.6,'won'=>1.0,'lost'=>0];
+    return is_array($cfg) ? array_merge($default, $cfg) : $default;
+}
+
+// 管道加权金额（Σ 金额 × 阶段赢率）
+function crm_pipeline_weighted(): array {
+    $data = crm_get();
+    $rates = crm_stage_win_rates();
+    $weighted = 0; $byStage = [];
+    foreach ($data['leads'] ?? [] as $l) {
+        $stage = $l['stage'] ?? 'new';
+        $value = (float)($l['value'] ?? 0);
+        $rate = $rates[$stage] ?? 0;
+        $weighted += $value * $rate;
+        $byStage[$stage] = ($byStage[$stage] ?? 0) + $value * $rate;
+    }
+    return ['weighted'=>round($weighted,2), 'by_stage'=>$byStage];
+}
+
+// 销售预测：加权金额 + 机会数 + 预计成交时间分布
+function crm_forecast(): array {
+    $data = crm_get();
+    $rates = crm_stage_win_rates();
+    $weighted = 0; $opportunities = 0; $expected = [];
+    foreach ($data['leads'] ?? [] as $l) {
+        if (!in_array($l['stage'] ?? '', ['qualified','opportunity'], true)) continue;
+        $value = (float)($l['value'] ?? 0);
+        $weighted += $value * ($rates[$l['stage']] ?? 0);
+        $opportunities++;
+        $month = substr($l['expected_close'] ?? '', 0, 7) ?: '未排期';
+        $expected[$month] = ($expected[$month] ?? 0) + $value * ($rates[$l['stage']] ?? 0);
+    }
+    ksort($expected);
+    return ['weighted'=>round($weighted,2), 'opportunities'=>$opportunities, 'by_month'=>$expected];
+}
+
 // 获取或创建线索 CRM 记录（按 email 关联）
 // 线索查重/防撞单：按邮箱/手机/公司名查已有线索（返回冲突列表）
 function crm_find_duplicate(string $email = '', string $phone = '', string $company = ''): array {
