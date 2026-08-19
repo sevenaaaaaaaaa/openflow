@@ -46,6 +46,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
             'image' => $_POST['image'] ?? '',
             'width' => $_POST['width'] ?? '500px',
             'bg_color' => $_POST['bg_color'] ?? '#ffffff',
+            // A/B 变体：B 变体标题/内容/按钮
+            'ab_enabled' => isset($_POST['ab_enabled']),
+            'ab_variant_b' => [
+                'title' => $_POST['ab_title'] ?? '',
+                'content' => $_POST['ab_content'] ?? '',
+                'button_text' => $_POST['ab_button_text'] ?? '',
+                'button_url' => $_POST['ab_button_url'] ?? '',
+                'image' => $_POST['ab_image'] ?? '',
+            ],
         ];
     }
     if ($tab === 'inline_cta') {
@@ -152,6 +161,20 @@ admin_header('转化组件');
         <div class="field-row">
           <div class="field"><label>关联表单 <span class="hint">弹窗内嵌表单</span></label><select name="form_slug"><option value="">无</option><?php foreach ($forms as $f): ?><option value="<?=htmlspecialchars($f['slug'])?>" <?=$c['form_slug']===$f['slug']?'selected':''?>><?=htmlspecialchars($f['title'])?></option><?php endforeach; ?></select></div>
           <div class="field"><label>背景图</label><input type="text" name="image" value="<?=htmlspecialchars($c['image'])?>" placeholder="图片路径"></div>
+        </div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)">
+          <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:700;margin-bottom:8px"><input type="checkbox" name="ab_enabled" value="1" <?=!empty($c['ab_enabled'])?'checked':''?> style="width:15px;height:15px"> 🧪 启用弹窗 A/B 测试（B 变体）</label>
+          <p style="font-size:11px;color:var(--muted);margin-bottom:10px">50% 流量看到 A（上方配置），50% 看到 B。通过 fcTrackAB 上报转化，在 A/B 测试统计查看。</p>
+          <?php $ab = $c['ab_variant_b'] ?? []; ?>
+          <div class="field-row">
+            <div class="field"><label>B 标题</label><input type="text" name="ab_title" value="<?=htmlspecialchars($ab['title'] ?? '')?>" placeholder="B 变体标题"></div>
+            <div class="field"><label>B 内容 (HTML)</label><input type="text" name="ab_content" value="<?=htmlspecialchars($ab['content'] ?? '')?>" placeholder="B 变体内容"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>B 按钮文字</label><input type="text" name="ab_button_text" value="<?=htmlspecialchars($ab['button_text'] ?? '')?>" placeholder="如：立即领取"></div>
+            <div class="field"><label>B 按钮链接</label><input type="text" name="ab_button_url" value="<?=htmlspecialchars($ab['button_url'] ?? '')?>" placeholder="https://…"></div>
+            <div class="field"><label>B 背景图</label><input type="text" name="ab_image" value="<?=htmlspecialchars($ab['image'] ?? '')?>" placeholder="图片路径"></div>
+          </div>
         </div>
       </div>
       <?php endif; ?>

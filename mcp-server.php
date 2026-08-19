@@ -190,10 +190,26 @@ function mcp_handle(array $msg): ?array {
 
 // ─── 传输模式 ───
 if ($httpMode) {
-    // HTTP SSE 模式
+    // HTTP SSE 模式 — 需 API Key 鉴权（Authorization: Bearer <key> 或 X-Api-Key）
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
+    $authOk = false;
+    try {
+        $keys = json_read(DATA_DIR . '/api_key.json');
+        $expected = $keys['key'] ?? '';
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+        $apiKey = trim(str_replace('Bearer ', '', $authHeader)) ?: ($_SERVER['HTTP_X_API_KEY'] ?? '');
+        $authOk = $expected !== '' && hash_equals($expected, $apiKey);
+    } catch (Throwable $e) { $authOk = false; }
+    if (!$authOk) {
+        header('Content-Type: application/json');
+        header('Access-Control-Allow-Origin: *');
+        http_response_code(401);
+        echo json_encode(['jsonrpc'=>'2.0','id'=>null,'error'=>['code'=>-32001,'message'=>'Unauthorized: missing or invalid API Key (Authorization: Bearer <key>)']]);
+        exit;
+    }
     header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Headers: Authorization, X-Api-Key, Content-Type');
     $input = json_decode(file_get_contents('php://input'), true);
     if ($input) {
         $resp = mcp_handle($input);
