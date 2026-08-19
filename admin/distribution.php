@@ -59,14 +59,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
 
 $settings = json_read(DATA_DIR . '/shop/settings.json');
 $members = json_read(DATA_DIR . '/members/index.json');
-$orders = json_read(DATA_DIR . '/shop/orders.json');
+$orders = shop_all_orders();
 $withdrawals = json_read(DATA_DIR . '/shop/withdrawals.json');
 
 // 大使列表（有 referral_code 或 ambassador 标记的会员）
 $ambassadors = array_values(array_filter($members, fn($m) => !empty($m['referral_code'])));
 foreach ($ambassadors as &$a) {
     $a['_orders'] = count(array_filter($orders, fn($o) => ($o['referrer_id'] ?? '') === $a['id']));
-    $a['_commission'] = array_sum(array_column(array_filter($orders, fn($o) => ($o['referrer_id'] ?? '') === $a['id'] && ($o['status'] ?? '') === 'paid'), 'commission_amount'));
+    $a['_commission'] = array_sum(array_column(array_filter($orders, fn($o) => ($o['referrer_id'] ?? '') === $a['id'] && ($o['status'] ?? '') === 'paid'), 'commission'));
 }
 unset($a);
 
