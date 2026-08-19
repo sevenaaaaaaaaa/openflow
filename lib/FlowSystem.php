@@ -126,6 +126,25 @@ function flow_handle(string $event, array $ctx = []): array {
         if (isset($whMap[$event]) && class_exists('WebhookSystem')) {
             try { \WebhookSystem::trigger($whMap[$event], $triggerData); } catch (Exception $e) {}
         }
+
+        // ── 转化回传（CAPI：线索/注册/订阅等转化 → 广告平台） ──
+        $convMap = [
+            'lead_from_form' => 'Lead',
+            'member_register' => 'CompleteRegistration',
+            'subscribe' => 'Subscribe',
+            'consultation_done' => 'Lead',
+        ];
+        if (isset($convMap[$event]) && !empty($email)) {
+            try {
+                require_once __DIR__ . '/ConversionApi.php';
+                $conv_track([
+                    'event_name' => $convMap[$event],
+                    'user_id' => $memberId,
+                    'email' => $email,
+                    'value' => (float)($ctx['amount'] ?? 0),
+                ]);
+            } catch (Throwable $e) {}
+        }
     } catch (Exception $e) {}
 
     // ── C. 价值流：高价值行为站内信 ──
