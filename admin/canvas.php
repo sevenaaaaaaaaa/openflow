@@ -34,6 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
                 $node['field'] = $_POST['node_field'][$i] ?? 'email';
                 $node['op'] = $_POST['node_op'][$i] ?? 'eq';
                 $node['value'] = $_POST['node_value'][$i] ?? '';
+                $node['true_next'] = ($_POST['node_true_next'][$i] ?? '') !== '' ? (int)$_POST['node_true_next'][$i] : null;
+                $node['false_next'] = ($_POST['node_false_next'][$i] ?? '') !== '' ? (int)$_POST['node_false_next'][$i] : null;
                 break;
             case 'delay':
                 $node['delay_minutes'] = (int)($_POST['node_delay'][$i] ?? 60);
@@ -47,7 +49,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     // 自动生成边（顺序 + 条件分支）
     $edges = [];
     for ($i = 0; $i < count($nodes) - 1; $i++) {
-        $edges[] = ['from' => $nodes[$i]['id'], 'to' => $nodes[$i+1]['id']];
+        $node = $nodes[$i];
+        // 条件节点：走真/假两条分支边，不生成顺序边
+        if (($node['type'] ?? '') === 'condition') {
+            $trueNext = ($node['true_next'] ?? null);
+            $falseNext = ($node['false_next'] ?? null);
+            $hasBranch = ($trueNext !== null || $falseNext !== null);
+            if (!$hasBranch) { $edges[] = ['from' => $node['id'], 'to' => $nodes[$i+1]['id']]; continue; }
+            if ($trueNext !== null && isset($nodes[$trueNext])) $edges[] = ['from' => $node['id'], 'to' => $nodes[$trueNext]['id'], 'condition' => 'true'];
+            elseif ($trueNext === null) $edges[] = ['from' => $node['id'], 'to' => $nodes[$i+1]['id'], 'condition' => 'true'];
+            if ($falseNext !== null && isset($nodes[$falseNext])) $edges[] = ['from' => $node['id'], 'to' => $nodes[$falseNext]['id'], 'condition' => 'false'];
+            continue;
+        }
+        $edges[] = ['from' => $node['id'], 'to' => $nodes[$i+1]['id']];
     }
     $data = [
         'name' => trim($_POST['name'] ?? ''),
@@ -206,6 +220,7 @@ function canvas_render_node(array $n, int $i, array $forms): void {
             echo '<select name="node_field[]"><option value="email" ' . (($n['field']??'')==='email'?'selected':'') . '>email</option><option value="form_type" ' . (($n['field']??'')==='form_type'?'selected':'') . '>form_type</option><option value="score" ' . (($n['field']??'')==='score'?'selected':'') . '>score</option></select>';
             echo '<select name="node_op[]"><option value="eq" ' . (($n['op']??'')==='eq'?'selected':'') . '>等于</option><option value="neq" ' . (($n['op']??'')==='neq'?'selected':'') . '>不等于</option><option value="gt" ' . (($n['op']??'')==='gt'?'selected':'') . '>大于</option><option value="lt" ' . (($n['op']??'')==='lt'?'selected':'') . '>小于</option><option value="contains" ' . (($n['op']??'')==='contains'?'selected':'') . '>包含</option><option value="empty" ' . (($n['op']??'')==='empty'?'selected':'') . '>为空</option></select>';
             echo '<input type="text" name="node_value[]" value="' . htmlspecialchars($n['value']??'') . '" placeholder="条件值">';
+            echo '<div style="display:flex;gap:6px;align-items:center;margin-top:6px;font-size:11px;color:var(--text-3)">条件为真 → 跳第 <input type="number" name="node_true_next[]" value="' . htmlspecialchars(($n['true_next'] ?? '') !== null ? $n['true_next'] : '') . '" placeholder="空=下一步" style="width:52px;padding:4px;border:1px solid var(--border);border-radius:6px"> 步 / 为假 → 跳第 <input type="number" name="node_false_next[]" value="' . htmlspecialchars(($n['false_next'] ?? '') !== null ? $n['false_next'] : '') . '" placeholder="空=不执行" style="width:52px;padding:4px;border:1px solid var(--border);border-radius:6px"> 步（节点从 0 数）</div>';
             break;
         case 'delay':
             echo '<label style="font-size:11px;color:var(--text-3)">延迟分钟</label><input type="number" name="node_delay[]" value="' . htmlspecialchars($n['delay_minutes']??60) . '">';
@@ -238,6 +253,7 @@ function addNode(type) {
     body += '<input type="text" name="node_subject[]" placeholder="邮件主题"><textarea name="node_content[]" rows="3" placeholder="内容 {name} {email}"></textarea>';
   } else if (type === 'condition') {
     body += '<select name="node_field[]"><option value="email">email</option><option value="form_type">form_type</option><option value="score">score</option></select><select name="node_op[]"><option value="eq">等于</option><option value="neq">不等于</option><option value="gt">大于</option><option value="lt">小于</option><option value="contains">包含</option><option value="empty">为空</option></select><input type="text" name="node_value[]" placeholder="条件值">';
+    body += '<div style="display:flex;gap:6px;align-items:center;margin-top:6px;font-size:11px;color:var(--text-3)">为真→跳第<input type="number" name="node_true_next[]" placeholder="空=下一步" style="width:52px;padding:4px;border:1px solid var(--border);border-radius:6px">步 / 为假→跳第<input type="number" name="node_false_next[]" placeholder="空=不执行" style="width:52px;padding:4px;border:1px solid var(--border);border-radius:6px">步（节点从0数）</div>';
   } else if (type === 'delay') {
     body += '<label style="font-size:11px;color:var(--text-3)">延迟分钟</label><input type="number" name="node_delay[]" value="60">';
   } else if (type === 'notify') {

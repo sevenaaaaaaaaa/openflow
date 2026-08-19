@@ -87,8 +87,8 @@ if (isset($_GET['edit'])) {
 }
 
 $log = array_reverse(json_read(automation_log_file()));
-$triggerLabels = ['form_submit'=>'表单提交','member_register'=>'用户注册','nps_submit'=>'NPS 评分','page_view'=>'页面访问','article_view'=>'文章浏览','element_click'=>'元素点击','download'=>'资料下载','purchase'=>'购买成功','course_complete'=>'课程学完','course_enroll'=>'课程报名','lesson_complete'=>'完成课时','role_selected'=>'选择角色','tool_use'=>'使用工具'];
-$behavList = ['page_view','article_view','element_click','download','purchase','course_complete','course_enroll','lesson_complete','role_selected','tool_use'];
+$triggerLabels = ['form_submit'=>'表单提交','member_register'=>'用户注册','nps_submit'=>'NPS 评分','page_view'=>'页面访问','article_view'=>'文章浏览','element_click'=>'元素点击','download'=>'资料下载','purchase'=>'购买成功','course_complete'=>'课程学完','course_enroll'=>'课程报名','lesson_complete'=>'完成课时','role_selected'=>'选择角色','tool_use'=>'使用工具','segment_enter'=>'进入分群','segment_exit'=>'退出分群'];
+$behavList = ['page_view','article_view','element_click','download','purchase','course_complete','course_enroll','lesson_complete','role_selected','tool_use','segment_enter','segment_exit'];
 
 admin_header('营销自动化');
 ?>
@@ -131,6 +131,8 @@ admin_header('营销自动化');
             <option value="lesson_complete" <?=($edit['trigger']??'')==='lesson_complete'?'selected':''?>>✅ 完成课时</option>
             <option value="role_selected" <?=($edit['trigger']??'')==='role_selected'?'selected':''?>>👤 选择角色</option>
             <option value="tool_use" <?=($edit['trigger']??'')==='tool_use'?'selected':''?>>🧰 使用工具</option>
+            <option value="segment_enter" <?=($edit['trigger']??'')==='segment_enter'?'selected':''?>>🔵 进入分群</option>
+            <option value="segment_exit" <?=($edit['trigger']??'')==='segment_exit'?'selected':''?>>⚪ 退出分群</option>
           </select></div>
           <div class="field" id="formSelBox" style="display:<?=($edit['trigger']??'')==='form_submit'?'block':'none'?>">
             <label>指定表单 <span class="hint">· 留空=全部</span></label>
