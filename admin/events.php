@@ -7,6 +7,26 @@ $eventsFile = DATA_DIR . '/events/index.json';
 $events = json_read($eventsFile);
 $message = '';
 
+// 报名名单审核
+$regsFile = DATA_DIR . '/event-registrations.json';
+if (isset($_GET['regs'])) {
+    $data = json_read($regsFile);
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reg_action'])) {
+        csrf_verify();
+        $regId = $_POST['reg_id'] ?? '';
+        foreach ($data[$_GET['regs']] ?? [] as &$r) {
+            if (($r['id'] ?? '') === $regId) {
+                $r['status'] = $_POST['reg_action'] === 'approve' ? 'approved' : 'rejected';
+                try { inbox_send($r['member_id'] ?? '', $_POST['reg_action'] === 'approve' ? '报名通过：' . ($_GET['regs'] ?? '') : '报名未通过', '你的活动报名已处理'); } catch (Throwable $e) {}
+                break;
+            }
+        }
+        unset($r);
+        json_write($regsFile, $data);
+        $message = '报名状态已更新';
+    }
+}
+
 // Delete
 if (isset($_GET['delete'])) {
     $events = array_values(array_filter($events, fn($e) => $e['id'] !== $_GET['delete']));
@@ -88,9 +108,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         'content' => $_POST['content'] ?? '',
         'start_date' => $_POST['start_date'] ?? '',
         'end_date' => $_POST['end_date'] ?? '',
+        'event_type' => in_array($_POST['event_type'] ?? '', ['online','offline'], true) ? $_POST['event_type'] : 'online',
+        'capacity' => (int)($_POST['capacity'] ?? 0),
         'location' => $_POST['location'] ?? '',
         'location_url' => $_POST['location_url'] ?? '',
-        'speakers' => [],
+        'live_room' => $_POST['live_room'] ?? '',
+        'replay_url' => $_POST['replay_url'] ?? '',
         'gallery' => array_filter(explode("\n", str_replace("\r", "", $_POST['gallery'] ?? ''))),
         'video_url' => $_POST['video_url'] ?? '',
         'cover' => $_POST['cover'] ?? '',
@@ -151,6 +174,41 @@ admin_header('活动管理');
 <div class="admin-layout">
   <?php admin_sidebar('events'); ?>
   <div class="main">
+    <?php if (isset($_GET['regs'])): $regEventId = $_GET['regs']; $regEvent = null; foreach ($events as $ee) if ($ee['id'] === $regEventId) { $regEvent = $ee; break; } $regData = json_read($regsFile); $regList = $regData[$regEventId] ?? []; ?>
+    <div class="v-head">
+      <div><h1>报名名单：<?=htmlspecialchars($regEvent['title'] ?? '')?></h1><p class="v-sub"><?=count($regList)?> 人报名 · 名额 <?=($regEvent['capacity'] ?? 0) > 0 ? $regEvent['capacity'] : '不限'?></p></div>
+      <div class="v-actions"><a href="events.php" class="btn btn-ghost btn-sm">← 返回</a></div>
+    </div>
+    <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
+    <div class="card" style="padding:0;overflow:auto">
+      <table>
+        <thead><tr><th>姓名</th><th>邮箱</th><th>电话</th><th>备注</th><th>报名时间</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          <?php if (empty($regList)): ?><tr><td colspan="7" class="empty">暂无报名</td></tr><?php endif; ?>
+          <?php foreach ($regList as $r): ?>
+          <tr>
+            <td><b><?=htmlspecialchars($r['name'] ?? '')?></b></td>
+            <td class="text-sm text-muted"><?=htmlspecialchars($r['email'] ?? '')?></td>
+            <td class="text-sm text-muted"><?=htmlspecialchars($r['phone'] ?? '')?></td>
+            <td class="text-sm text-muted"><?=htmlspecialchars($r['note'] ?? '')?></td>
+            <td class="text-sm text-muted"><?=htmlspecialchars(substr($r['created_at'] ?? '', 0, 16))?></td>
+            <td><span class="badge <?=['pending'=>'badge-yellow','approved'=>'badge-green','rejected'=>'badge-red'][$r['status'] ?? 'pending'] ?? 'badge-gray'?>"><?=['pending'=>'待审核','approved'=>'已通过','rejected'=>'已拒绝'][$r['status'] ?? 'pending'] ?? $r['status']?></span></td>
+            <td style="white-space:nowrap">
+              <?php if (($r['status'] ?? '') === 'pending'): ?>
+              <form method="post" style="display:inline">
+                <?= csrf_field() ?><input type="hidden" name="reg_id" value="<?=htmlspecialchars($r['id'] ?? '')?>"><input type="hidden" name="reg_action" value="approve"><button class="btn btn-s btn-sm">通过</button>
+              </form>
+              <form method="post" style="display:inline">
+                <?= csrf_field() ?><input type="hidden" name="reg_id" value="<?=htmlspecialchars($r['id'] ?? '')?>"><input type="hidden" name="reg_action" value="reject"><button class="btn btn-danger btn-sm">拒绝</button>
+              </form>
+              <?php endif; ?>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+    <?php else: ?>
     <div class="flex items-center gap-4" style="align-items:center">
       <h1 style="margin-bottom:0">活动管理</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
@@ -191,7 +249,7 @@ admin_header('活动管理');
             <td class="text-sm text-muted"><?=htmlspecialchars($e['location'] ?? '')?></td>
             <td><?=count($e['speakers'] ?? [])?> 位</td>
             <td><span class="badge <?=($e['status']??'draft')==='published'?'badge-green':'badge-yellow'?>"><?=$e['status']??'draft'?></span></td>
-            <td><a href="?edit=<?=urlencode($e['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=event&id=<?=urlencode($e['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="?delete=<?=urlencode($e['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除?')">删除</a></td>
+            <td><a href="?regs=<?=urlencode($e['id'])?>" class="btn btn-s btn-sm">📋 报名</a><a href="?edit=<?=urlencode($e['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=event&id=<?=urlencode($e['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="?delete=<?=urlencode($e['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除?')">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>
@@ -217,8 +275,21 @@ admin_header('活动管理');
         <div class="card" style="margin:12px 0;padding:16px;background:var(--surface-2)">
           <h2>📅 时间地点</h2>
           <div class="field-row">
+            <div class="field"><label>活动类型</label><select name="event_type" onchange="document.getElementById('onlineFields').style.display=this.value==='online'?'':'none';document.getElementById('offlineFields').style.display=this.value==='offline'?'':'none'">
+              <option value="online" <?=($editEvent['event_type']??'online')==='online'?'selected':''?>>🌐 线上活动</option>
+              <option value="offline" <?=($editEvent['event_type']??'')==='offline'?'selected':''?>>🏢 线下活动</option>
+            </select></div>
+            <div class="field"><label>报名名额 <span class="hint">· 0=不限</span></label><input type="number" name="capacity" value="<?=htmlspecialchars($editEvent['capacity']??0)?>" min="0" placeholder="0"></div>
+          </div>
+          <div class="field-row">
             <div class="field"><label>开始时间</label><input type="datetime-local" name="start_date" value="<?=htmlspecialchars($editEvent['start_date']??'')?>"></div>
             <div class="field"><label>结束时间</label><input type="datetime-local" name="end_date" value="<?=htmlspecialchars($editEvent['end_date']??'')?>"></div>
+          </div>
+          <div id="onlineFields" style="display:<?=($editEvent['event_type']??'online')==='online'?'':'none'?>">
+            <div class="field-row">
+              <div class="field"><label>直播间 <span class="hint">· 关联直播房间</span></label><input type="text" name="live_room" value="<?=htmlspecialchars($editEvent['live_room']??'')?>" placeholder="live/room-id 或直播房间ID"></div>
+              <div class="field"><label>回放地址 <span class="hint">· 直播结束后填</span></label><input type="url" name="replay_url" value="<?=htmlspecialchars($editEvent['replay_url']??'')?>" placeholder="https://..."></div>
+            </div>
           </div>
           <div class="field-row">
             <div class="field"><label>地点</label><input type="text" name="location" value="<?=htmlspecialchars($editEvent['location']??'')?>" placeholder="线上 / 上海市..."></div>
@@ -275,6 +346,7 @@ admin_header('活动管理');
       </form>
     </div>
     <?php endif; ?>
+    <?php endif; // regs vs 列表 ?>
   </div>
 </div>
 
