@@ -326,45 +326,50 @@ class CdpSystem {
      * 自动打标签
      */
     private static function autoTag(array &$profile, string $event, array $data): void {
-        $tags = &$profile['tags'];
-
-        // 访问频率标签
-        if ($profile['events_count'] >= 100) {
-            $tags[] = 'highly_engaged';
-        } elseif ($profile['events_count'] >= 20) {
-            $tags[] = 'engaged';
+        // 规则驱动的自动标签（tag_rules.json）
+        $rules = json_read(DATA_DIR . '/cdp/tag_rules.json');
+        if (is_array($rules)) {
+            $tags = &$profile['tags'];
+            foreach ($rules as $rid => $rule) {
+                if (empty($rule['enabled']) || empty($rule['tag'])) continue;
+                $match = self::matchTagRule($rule['when'], $profile, $event, $data);
+                if ($match) {
+                    if (!isset($tags[$rule['tag']])) $tags[$rule['tag']] = ['type'=>'auto','rule_id'=>$rid,'at'=>date('Y-m-d H:i:s')];
+                }
+            }
         }
 
-        // 事件类型标签
-        if ($event === 'purchase') {
-            $tags[] = 'buyer';
-        } elseif ($event === 'form_submit') {
-            $tags[] = 'lead';
-        } elseif ($event === 'course_complete') {
-            $tags[] = 'learner';
-        } elseif ($event === 'article_view') {
-            $tags[] = 'content_reader';
-        } elseif ($event === 'tool_use') {
-            $tags[] = 'tool_user';
-        } elseif ($event === 'user_register') {
-            $tags[] = 'registered';
-        } elseif ($event === 'role_selected') {
-            if (!empty($data['role'])) $tags[] = 'role:' . $data['role'];
+        // 兼容：保留角色/渠道标签（历史行为）
+        if ($event === 'role_selected' && !empty($data['role'])) {
+            $k = 'role:' . $data['role'];
+            if (!isset($profile['tags'][$k])) $profile['tags'][$k] = ['type'=>'auto','rule_id'=>'role','at'=>date('Y-m-d H:i:s')];
         }
-
-        // 渠道标签
         if (!empty($data['channel'])) {
-            $chTag = 'channel:' . $data['channel'];
-            if (!in_array($chTag, $tags, true)) $tags[] = $chTag;
+            $k = 'channel:' . $data['channel'];
+            if (!isset($profile['tags'][$k])) $profile['tags'][$k] = ['type'=>'auto','rule_id'=>'channel','at'=>date('Y-m-d H:i:s')];
         }
+    }
 
-        // 设备标签
-        if (!empty($data['device'])) {
-            if (!in_array('device:' . $data['device'], $tags, true)) $tags[] = 'device:' . $data['device'];
+    // 标签规则匹配（event/summary/lifecycle/property）
+    private static function matchTagRule(array $cond, array $profile, string $event, array $data): bool {
+        $type = $cond['type'] ?? 'event';
+        switch ($type) {
+            case 'event':
+                if (($cond['event'] ?? '') !== $event) return false;
+                return self::compare(1, $cond['operator'] ?? 'gte', $cond['value'] ?? 1);
+            case 'summary':
+                $field = $cond['field'] ?? '';
+                $actual = $profile['summaries'][$field] ?? ($profile[$field] ?? 0);
+                return self::compare($actual, $cond['operator'] ?? 'gte', $cond['value'] ?? 0);
+            case 'lifecycle':
+                $stage = $profile['lifecycle']['stage'] ?? '';
+                return self::compare($stage, $cond['operator'] ?? 'eq', $cond['value'] ?? '');
+            case 'property':
+                $field = $cond['field'] ?? '';
+                $actual = $profile['properties'][$field] ?? '';
+                return self::compare($actual, $cond['operator'] ?? 'eq', $cond['value'] ?? '');
         }
-
-        // 去重
-        $tags = array_unique($tags);
+        return false;
     }
 
     // ─── 用户分群 ──────────────────────────────────
@@ -469,10 +474,12 @@ class CdpSystem {
 
     private static function compare($actual, string $operator, $expected): bool {
         switch ($operator) {
-            case 'equals': return $actual == $expected;
-            case 'not_equals': return $actual != $expected;
-            case 'greater_than': return $actual > $expected;
-            case 'less_than': return $actual < $expected;
+            case 'equals': case 'eq': case '==': return $actual == $expected;
+            case 'not_equals': case 'ne': return $actual != $expected;
+            case 'greater_than': case 'gt': case '>': return $actual > $expected;
+            case 'less_than': case 'lt': case '<': return $actual < $expected;
+            case 'gte': case '>=': return $actual >= $expected;
+            case 'lte': case '<=': return $actual <= $expected;
             case 'contains': return stripos((string)$actual, (string)$expected) !== false;
             case 'starts_with': return stripos((string)$actual, (string)$expected) === 0;
             case 'in': return in_array($actual, (array)$expected);
