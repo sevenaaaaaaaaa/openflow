@@ -53,6 +53,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['refund'])) {
     exit;
 }
 
+// 发货处理
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ship'])) {
+    csrf_verify();
+    $orderId = trim($_POST['order_id'] ?? '');
+    $company = trim($_POST['company'] ?? '');
+    $tracking = trim($_POST['tracking_no'] ?? '');
+    try {
+        Database::execute("INSERT INTO shipments (order_id, company, tracking_no, status, created_at, updated_at) VALUES (?,?,?,?,?,?)", [$orderId,$company,$tracking,'shipped',date('Y-m-d H:i:s'),date('Y-m-d H:i:s')]);
+        Database::execute("UPDATE orders SET status='shipped', shipped_at=? WHERE id=?", [date('Y-m-d H:i:s'),$orderId]);
+        flash('success', '已发货：' . $company . ' ' . $tracking);
+    } catch (Exception $e) { flash('error', '发货失败：' . $e->getMessage()); }
+    header('Location: /xmp/refunds');
+    exit;
+}
+
 // 订单列表（paid 状态可退款）
 try {
     $orders = Database::query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 200");
@@ -60,7 +75,7 @@ try {
 $members = json_read(DATA_DIR . '/members/index.json');
 $mName = [];
 foreach ((array)$members as $m) $mName[$m['id']] = $m['name'] ?? ($m['email'] ?? $m['id']);
-$statusMap = ['pending'=>'待支付','paid'=>'已支付','refunded'=>'已退款','cancelled'=>'已取消'];
+$statusMap = ['pending'=>'待支付','paid'=>'已支付','shipped'=>'已发货','refunded'=>'已退款','cancelled'=>'已取消'];
 
 admin_header('退款售后');
 ?>
@@ -91,15 +106,23 @@ admin_header('退款售后');
             <td><?=htmlspecialchars(mb_substr($o['course_title'] ?? '',0,24))?></td>
             <td style="font-weight:600">¥<?=number_format($o['amount']??0,2)?><?=!empty($o['original_amount']) && $o['original_amount'] != $o['amount'] ? ' <span style="color:var(--faint);text-decoration:line-through;font-size:11px">¥'.number_format($o['original_amount'],0).'</span>' : ''?></td>
             <td class="text-sm text-muted"><?=!empty($o['commission'])?'¥'.$o['commission']:'—'?></td>
-            <td><span style="color:<?=['paid'=>'var(--ok)','refunded'=>'var(--danger)','pending'=>'var(--warn)','cancelled'=>'var(--faint)'][$o['status']]??'var(--faint)'?>"><?=$statusMap[$o['status']]??$o['status']?></span></td>
+            <td><span style="color:<?=['paid'=>'var(--ok)','shipped'=>'var(--accent)','refunded'=>'var(--danger)','pending'=>'var(--warn)','cancelled'=>'var(--faint)'][$o['status']]??'var(--faint)'?>"><?=$statusMap[$o['status']]??$o['status']?></span></td>
             <td class="text-sm text-muted"><?=substr($o['created_at']??'',0,16)?></td>
             <td>
               <?php if ($o['status'] === 'paid'): ?>
               <form method="post" style="display:flex;gap:6px;align-items:center">
                 <?= csrf_field() ?>
+                <input type="hidden" name="ship" value="1">
+                <input type="hidden" name="order_id" value="<?=htmlspecialchars($o['id'])?>">
+                <input type="text" name="company" placeholder="快递公司" style="width:70px;padding:5px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
+                <input type="text" name="tracking_no" placeholder="运单号" style="width:90px;padding:5px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
+                <button class="btn btn-s btn-sm">发货</button>
+              </form>
+              <form method="post" style="display:flex;gap:6px;align-items:center;margin-top:4px">
+                <?= csrf_field() ?>
                 <input type="hidden" name="refund" value="1">
                 <input type="hidden" name="order_id" value="<?=htmlspecialchars($o['id'])?>">
-                <input type="text" name="reason" placeholder="退款原因" style="width:90px;padding:5px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
+                <input type="text" name="reason" placeholder="退款原因" style="width:70px;padding:5px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
                 <button class="btn btn-danger btn-sm" onclick="return confirm('确认退款？将扣回佣金与分成')">退款</button>
               </form>
               <?php else: ?><span class="text-sm" style="color:var(--faint)">—</span><?php endif; ?>
