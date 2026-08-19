@@ -92,6 +92,63 @@ class Personalizer {
     }
 
     /**
+     * 个性化商品推荐（基于画像标签/偏好 → 生态市场商品）
+     */
+    public static function recommendProducts(array $pref, int $limit = 4): array {
+        if (!class_exists('CommerceSystem')) return [];
+        try {
+            $products = array_values(array_filter(CommerceSystem::allPublished(), fn($p) => (float)($p['pricing']['price'] ?? 0) > 0));
+        } catch (Exception $e) { return []; }
+        $scored = [];
+        foreach ($products as $p) {
+            $score = 0;
+            foreach (($p['tags'] ?? []) as $t) {
+                if (isset($pref['tags'][$t])) $score += $pref['tags'][$t] * 2;
+            }
+            $hay = ($p['title'] ?? '') . ' ' . ($p['description'] ?? '');
+            foreach (array_keys($pref['tags'] ?? []) as $pt) {
+                if (mb_strpos($hay, $pt) !== false) $score += 2;
+            }
+            if ($score > 0) $scored[$p['id']] = $score;
+        }
+        uasort($scored, fn($x, $y) => $y <=> $x);
+        $ids = array_slice(array_keys($scored), 0, $limit);
+        if (count($ids) < $limit) {
+            foreach ($products as $p) {
+                if (count($ids) >= $limit) break;
+                if (!in_array($p['id'], $ids, true)) $ids[] = $p['id']; // 热门兜底
+            }
+        }
+        $out = [];
+        foreach ($ids as $pid) { $out[$pid] = $scored[$pid] ?? 0; }
+        return $out;
+    }
+
+    /**
+     * 个性化课程推荐（基于画像偏好 → 有价课程）
+     */
+    public static function recommendCourses(array $pref, int $limit = 3): array {
+        try {
+            $shopCfg = shop_settings();
+            $courses = array_values(array_filter(json_read(DATA_DIR . '/courses/index.json'), fn($c) => ($c['status'] ?? '') === 'published' && (float)($shopCfg['course_prices'][$c['id']] ?? 0) > 0));
+        } catch (Exception $e) { return []; }
+        $scored = [];
+        foreach ($courses as $c) {
+            $score = 0;
+            foreach (($c['tags'] ?? []) as $t) {
+                if (isset($pref['tags'][$t])) $score += $pref['tags'][$t] * 2;
+            }
+            $cat = $c['category'] ?? $c['type'] ?? '';
+            if ($cat && isset($pref['categories'][$cat])) $score += $pref['categories'][$cat] * 3;
+            if ($score > 0) $scored[$c['id']] = $score;
+        }
+        uasort($scored, fn($x, $y) => $y <=> $x);
+        $out = [];
+        foreach (array_slice($scored, 0, $limit) as $id => $s) $out[$id] = $s;
+        return $out;
+    }
+
+    /**
      * 相关文章推荐（基于当前文章 + 用户偏好）
      */
     public static function relatedArticles(string $currentId, array $pref, int $limit = 4): array {
