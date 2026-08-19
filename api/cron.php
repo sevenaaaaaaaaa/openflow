@@ -57,6 +57,30 @@ try {
     datasync_run_all();
 } catch (Exception $e) {}
 
+// 活动开始前提醒（报名者：开始前 2 小时提醒，每小时检查一次，防重复）
+try {
+    require_once __DIR__ . '/../lib/MessageSystem.php';
+    $events = json_read(DATA_DIR . '/events/index.json');
+    $regs = json_read(DATA_DIR . '/event-registrations.json');
+    $remindedFile = DATA_DIR . '/event-reminded.json';
+    $reminded = json_read($remindedFile);
+    $changed = false;
+    foreach ($events as $ev) {
+        if (($ev['status'] ?? '') !== 'published' || empty($ev['start_date'])) continue;
+        $start = strtotime($ev['start_date']);
+        if ($start < time() + 2 * 3600 && $start > time() - 1800) { // 开始前 2 小时内
+            foreach (($regs[$ev['id']] ?? []) as $r) {
+                $rid = ($r['id'] ?? '') ?: ($r['member_id'] ?? '');
+                if ($rid === '' || isset($reminded[$rid])) continue;
+                $reminded[$rid] = date('Y-m-d H:i:s');
+                $changed = true;
+                try { inbox_send($r['member_id'] ?? '', '🔔 活动即将开始：' . ($ev['title'] ?? ''), "你报名的活动「{$ev['title']}」将在 " . substr($ev['start_date'], 0, 16) . " 开始\n" . (($ev['event_type'] ?? '') === 'online' ? '线上参与' : '地点：' . ($ev['location'] ?? ''))); } catch (Throwable $e) {}
+            }
+        }
+    }
+    if ($changed) json_write($remindedFile, array_slice($reminded, -5000));
+} catch (Exception $e) {}
+
 // 多平台内容定时发布
 try { SocialPublisher::processQueue(); } catch (Exception $e) {}
 
