@@ -284,19 +284,19 @@ class CdpSystem {
     private static function applySummaries(array &$profile, string $event, array $data): void {
         $s = &$profile['summaries'];
         if ($event === 'page_view') {
-            $s['page_views_7d']++;
-            $s['page_views_30d']++;
+            $s['page_views_7d'] = ($s['page_views_7d'] ?? 0) + 1;
+            $s['page_views_30d'] = ($s['page_views_30d'] ?? 0) + 1;
         } elseif ($event === 'purchase') {
             $amount = (float)($data['amount'] ?? 0);
-            $s['purchase_count']++;
-            $s['purchase_amount_total'] += $amount;
-            $s['purchase_amount_30d'] += $amount;
+            $s['purchase_count'] = ($s['purchase_count'] ?? 0) + 1;
+            $s['purchase_amount_total'] = ($s['purchase_amount_total'] ?? 0) + $amount;
+            $s['purchase_amount_30d'] = ($s['purchase_amount_30d'] ?? 0) + $amount;
         } elseif ($event === 'form_submit') {
-            $s['form_submits']++;
+            $s['form_submits'] = ($s['form_submits'] ?? 0) + 1;
         } elseif ($event === 'course_complete') {
-            $s['courses_completed']++;
+            $s['courses_completed'] = ($s['courses_completed'] ?? 0) + 1;
         } elseif ($event === 'session_start' || $event === 'vst') {
-            $s['sessions_count']++;
+            $s['sessions_count'] = ($s['sessions_count'] ?? 0) + 1;
         }
     }
 
