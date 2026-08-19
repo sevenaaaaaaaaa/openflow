@@ -865,31 +865,34 @@ class CdpSystem {
     public static function getHealthScore(string $visitorId): int {
         $profile = self::getProfile($visitorId);
         if (!$profile) return 0;
+        $rules = json_read(DATA_DIR . '/cdp/scoring_rules.json');
+        $hcfg = $rules['health'] ?? [];
+        if (empty($hcfg)) { // 回退默认
+            $now = time();
+            $lastSeen = strtotime($profile['last_seen'] ?? '2000-01-01');
+            $daysSinceLast = ($now - $lastSeen) / 86400;
+            return max(0, 100 - (int)min(100, $daysSinceLast * 2));
+        }
 
         $score = 0;
         $now = time();
-
-        // 活跃度（最近访问时间）
-        $lastSeen = strtotime($profile['last_seen'] ?? '2000-01-01');
-        $daysSinceLast = ($now - $lastSeen) / 86400;
-        if ($daysSinceLast <= 1) $score += 40;
-        elseif ($daysSinceLast <= 7) $score += 30;
-        elseif ($daysSinceLast <= 30) $score += 20;
-        elseif ($daysSinceLast <= 90) $score += 10;
-
-        // 事件频率
-        $eventsCount = $profile['events_count'] ?? 0;
-        if ($eventsCount >= 100) $score += 30;
-        elseif ($eventsCount >= 50) $score += 25;
-        elseif ($eventsCount >= 20) $score += 20;
-        elseif ($eventsCount >= 5) $score += 10;
-
-        // 标签加成
-        $tags = $profile['tags'] ?? [];
-        if (in_array('buyer', $tags)) $score += 20;
-        if (in_array('highly_engaged', $tags)) $score += 10;
-
-        return min(100, $score);
+        // 活跃度（recency buckets）
+        $daysSinceLast = ($now - strtotime($profile['last_seen'] ?? '2000-01-01')) / 86400;
+        foreach (($hcfg['recency']['buckets'] ?? []) as $b) {
+            if (isset($b['lte_days']) && $daysSinceLast <= $b['lte_days']) { $score += $b['points']; break; }
+            if (isset($b['else'])) $score += $b['else'];
+        }
+        // 频率（frequency buckets）
+        $events = $profile['events_count'] ?? 0;
+        foreach (($hcfg['frequency']['buckets'] ?? []) as $b) {
+            if (isset($b['gte_events']) && $events >= $b['gte_events']) { $score += $b['points']; break; }
+            if (isset($b['else'])) $score += $b['else'];
+        }
+        // 标签加成（tags）
+        foreach (($hcfg['tags']['tags'] ?? []) as $tb) {
+            if (isset($profile['tags'][$tb['tag']])) $score += $tb['points'];
+        }
+        return (int)min($hcfg['cap'] ?? 100, $score);
     }
 
     // ─── 行为分析 ──────────────────────────────────
@@ -1068,26 +1071,29 @@ class CdpSystem {
     }
 
     private static function scoreRecency(float $days): int {
-        if ($days <= 1) return 5;
-        if ($days <= 7) return 4;
-        if ($days <= 30) return 3;
-        if ($days <= 90) return 2;
+        $rules = json_read(DATA_DIR . '/cdp/scoring_rules.json');
+        foreach (($rules['rfm']['r'] ?? []) as $b) {
+            if (isset($b['lte_days']) && $days <= $b['lte_days']) return $b['score'];
+            if (isset($b['else'])) return $b['else'];
+        }
         return 1;
     }
 
     private static function scoreFrequency(int $count): int {
-        if ($count >= 100) return 5;
-        if ($count >= 50) return 4;
-        if ($count >= 20) return 3;
-        if ($count >= 5) return 2;
+        $rules = json_read(DATA_DIR . '/cdp/scoring_rules.json');
+        foreach (($rules['rfm']['f'] ?? []) as $b) {
+            if (isset($b['gte']) && $count >= $b['gte']) return $b['score'];
+            if (isset($b['else'])) return $b['else'];
+        }
         return 1;
     }
 
     private static function scoreMonetary(float $amount): int {
-        if ($amount >= 1000) return 5;
-        if ($amount >= 500) return 4;
-        if ($amount >= 100) return 3;
-        if ($amount >= 10) return 2;
+        $rules = json_read(DATA_DIR . '/cdp/scoring_rules.json');
+        foreach (($rules['rfm']['m'] ?? []) as $b) {
+            if (isset($b['gte']) && $amount >= $b['gte']) return $b['score'];
+            if (isset($b['else'])) return $b['else'];
+        }
         return 1;
     }
 
