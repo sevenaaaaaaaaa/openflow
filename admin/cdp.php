@@ -789,6 +789,7 @@ document.addEventListener('DOMContentLoaded', function(){ loadAiInsights(false);
               <div style="font-size:11px;color:var(--muted)">健康分</div>
               <div style="font-size:18px;font-weight:800;color:<?=$healthColor?>"><?=$health?></div>
             </div>
+            <a href="profile-detail.php?v=<?=urlencode($vid)?>" style="flex:0 0 auto;font-size:11px;color:var(--accent)">详情 →</a>
           </div>
           <div class="health-bar" style="margin-bottom:8px"><div class="fill" style="width:<?=$health?>%;background:<?=$healthColor?>"></div></div>
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
