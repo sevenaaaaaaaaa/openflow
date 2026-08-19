@@ -200,14 +200,36 @@ function shop_xfpay_verify(array $data): bool {
 
 // 支付成功处理
 function shop_mark_paid(string $orderId, string $method = ''): bool {
+    // 统一取订单：SQLite 优先，JSON（订阅/实物订单）兜底
     $order = shop_get_order($orderId);
-    if (!$order || $order['status'] !== 'pending') return false;
-    
-    // 更新订单状态
-    Database::execute(
-        "UPDATE orders SET status = 'paid', paid_at = ?, payment_method = ? WHERE id = ?",
-        [date('Y-m-d H:i:s'), $method, $orderId]
-    );
+    $inJson = false;
+    if (!$order) {
+        $jsonFile = shop_orders_file();
+        if (is_file($jsonFile)) {
+            foreach (json_read($jsonFile) as $j) {
+                if (($j['id'] ?? '') === $orderId) { $order = $j; $inJson = true; break; }
+            }
+        }
+    }
+    if (!$order || ($order['status'] ?? '') !== 'pending') return false;
+
+    // 更新订单状态（双源）
+    if ($inJson) {
+        $orders = json_read(shop_orders_file());
+        foreach ($orders as &$o) {
+            if (($o['id'] ?? '') === $orderId) {
+                $o['status'] = 'paid'; $o['paid_at'] = date('Y-m-d H:i:s'); $o['payment_method'] = $method;
+                break;
+            }
+        }
+        unset($o);
+        json_write(shop_orders_file(), $orders);
+    } else {
+        Database::execute(
+            "UPDATE orders SET status = 'paid', paid_at = ?, payment_method = ? WHERE id = ?",
+            [date('Y-m-d H:i:s'), $method, $orderId]
+        );
+    }
     
     // 分销佣金入账
     if (!empty($order['referrer_id']) && $order['commission'] > 0) {
