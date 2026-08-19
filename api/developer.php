@@ -144,6 +144,65 @@ switch ($action) {
         echo json_encode(['ok' => true, 'message' => "组合包「{$title}」已创建并上架", 'product_id' => $r['product']['id']], JSON_UNESCAPED_UNICODE);
         break;
 
+    // ─── 发布课程（开发者/讲师提交，待审核） ───
+    case 'submit_course':
+        if (($member['developer_status'] ?? '') !== 'approved') {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'error' => '需先通过开发者审核才能发布课程'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $title = trim($_POST['title'] ?? '');
+        $desc = trim($_POST['description'] ?? '');
+        $category = trim($_POST['category'] ?? '课程');
+        $cover = trim($_POST['cover'] ?? '');
+        $chaptersJson = $_POST['chapters'] ?? '[]';
+        $chapters = json_decode($chaptersJson, true) ?: [];
+        if ($title === '') { http_response_code(422); echo json_encode(['ok'=>false,'error'=>'课程标题必填'], JSON_UNESCAPED_UNICODE); exit; }
+        // 校验章节结构 + 生成 id
+        $cleanCh = [];
+        foreach ($chapters as $ch) {
+            $lessons = [];
+            foreach (($ch['lessons'] ?? []) as $l) {
+                $lt = trim($l['title'] ?? '');
+                if ($lt === '') continue;
+                $lessons[] = [
+                    'id' => 'lesson_' . substr(bin2hex(random_bytes(6)), 0, 8),
+                    'title' => $lt,
+                    'duration' => trim($l['duration'] ?? '') ?: '',
+                    'video' => trim($l['video'] ?? ''),
+                    'description' => trim($l['description'] ?? ''),
+                    'materials' => [],
+                    'type' => in_array($l['type'] ?? '', ['video','text','quiz','download']) ? $l['type'] : 'video',
+                    'free' => false,
+                ];
+            }
+            $ct = trim($ch['title'] ?? '');
+            if ($ct === '' || empty($lessons)) continue;
+            $cleanCh[] = ['id' => 'ch_' . substr(bin2hex(random_bytes(6)), 0, 8), 'title' => $ct, 'lessons' => $lessons];
+        }
+        $coursesFile = DATA_DIR . '/courses/index.json';
+        $courses = json_read($coursesFile);
+        $course = [
+            'id' => 'course_' . date('Ymd_His') . '_' . substr(bin2hex(random_bytes(4)), 0, 8),
+            'title' => $title,
+            'type' => $category,
+            'status' => 'pending',
+            'description' => $desc,
+            'cover' => $cover,
+            'category' => $category,
+            'author_id' => $member['id'],
+            'author_name' => $member['name'] ?? $member['nickname'] ?? '开发者',
+            'chapters' => $cleanCh,
+            'submitted_by' => $member['id'],
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ];
+        $courses[] = $course;
+        json_write($coursesFile, $courses);
+        try { notify('course', '课程待审核', "开发者提交课程「{$title}」", '/xmp/courses?status=pending'); } catch (Throwable $e) {}
+        echo json_encode(['ok' => true, 'message' => '课程已提交，审核通过后上架', 'course_id' => $course['id']], JSON_UNESCAPED_UNICODE);
+        break;
+
     // ─── 我的开发者状态 ───
     case 'public_status':
         $status = $member ? ($member['developer_status'] ?? 'none') : 'none';
