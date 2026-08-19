@@ -12,18 +12,23 @@ function conv_hash_phone(string $phone): string {
     return hash('sha256', preg_replace('/[^0-9]/', '', $phone));
 }
 
-// 记录转化事件（支付成功后调用）
+// 记录转化事件（支付/线索/注册等转化后调用）
 function conv_track(array $data): void {
     $file = DATA_DIR . '/conversion_events.json';
     $list = json_read($file);
+    // Meta 标准：自动捕获 _fbp/_fbc（广告点击ID）
+    $fbp = $data['fbp'] ?? ($_COOKIE['_fbp'] ?? '');
+    $fbc = $data['fbc'] ?? ($_COOKIE['_fbc'] ?? '');
     $list[] = [
         'id' => $data['id'] ?? ('conv_' . date('YmdHis') . substr(bin2hex(random_bytes(4)), 0, 6)),
         'event_name' => $data['event_name'] ?? 'purchase',
         'user_id' => $data['user_id'] ?? '',
         'order_id' => $data['order_id'] ?? '',
-        'click_id' => $data['click_id'] ?? '',
-        'email_hash' => $data['email'] !== '' ? conv_hash_email($data['email']) : '',
-        'phone_hash' => $data['phone'] !== '' ? conv_hash_phone($data['phone']) : '',
+        'click_id' => $data['click_id'] ?? ($_COOKIE['fc_utm_click_id'] ?? ''),
+        'fbp' => $fbp,
+        'fbc' => $fbc,
+        'email_hash' => !empty($data['email']) ? conv_hash_email($data['email']) : '',
+        'phone_hash' => !empty($data['phone']) ? conv_hash_phone($data['phone']) : '',
         'value' => (float)($data['value'] ?? 0),
         'currency' => $data['currency'] ?? 'CNY',
         'event_time' => time(),
@@ -53,6 +58,8 @@ function conv_process(): array {
                 'user_data' => [
                     'em' => $c['email_hash'] ? [$c['email_hash']] : [],
                     'ph' => $c['phone_hash'] ? [$c['phone_hash']] : [],
+                    'fbp' => $c['fbp'] ?? '',
+                    'fbc' => $c['fbc'] ?? '',
                 ],
                 'custom_data' => [
                     'order_id' => $c['order_id'],
