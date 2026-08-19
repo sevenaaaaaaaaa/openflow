@@ -84,19 +84,21 @@ switch ($action) {
     // ─── 创建订单 + 支付跳转 ───
     case 'create_order':
         $courseId = trim($_POST['course_id'] ?? '');
-        $result = shop_create_order($member['id'], $courseId);
+        $ref = trim($_POST['ref'] ?? ($_GET['ref'] ?? $_COOKIE['of_ref'] ?? ''));
+        $result = shop_create_order($member['id'], $courseId, $ref);
         if (!$result['ok']) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>$result['error']]); exit; }
         $channel = trim($_POST['channel'] ?? 'xfpay');
         $pay = payment_channel_create($channel, $result['order']);
         if (!$pay['ok']) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>$pay['error']]); exit; }
+        if (!empty($result['order']['referrer_id'])) setcookie('of_ref', $result['order']['referrer_id'], time() + 86400 * 30, '/');
         echo json_encode(['ok'=>true, 'order'=>$result['order'], 'payment'=>$pay]);
         break;
 
     // ─── 查询订单 ───
     case 'order_status':
         $oid = trim($_POST['order_id'] ?? '');
-        foreach (json_read(shop_orders_file()) as $o) {
-            if ($o['id'] === $oid && $o['member_id'] === $member['id']) {
+        foreach (shop_orders_for_member($member['id']) as $o) {
+            if ($o['id'] === $oid) {
                 echo json_encode(['ok'=>true, 'status'=>$o['status']]);
                 exit;
             }

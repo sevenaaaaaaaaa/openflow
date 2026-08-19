@@ -861,8 +861,22 @@ function include_member_distribution($member): void {
         }
         exit;
     }
-    // 可推广的商品（已发布且允许分销）
+    // 可推广的商品（已发布且允许分销）+ 有价课程（课程分销）
     $distProducts = array_values(array_filter(CommerceSystem::allPublished(), fn($p) => !empty($p['distribution_enabled']) && (float)($p['pricing']['price'] ?? 0) > 0));
+    try {
+        $shopCfg = shop_settings();
+        foreach (json_read(DATA_DIR . '/courses/index.json') as $c) {
+            if (($c['status'] ?? '') !== 'published') continue;
+            $cp = (float)($shopCfg['course_prices'][$c['id']] ?? 0);
+            if ($cp <= 0) continue;
+            $distProducts[] = [
+                'id' => $c['id'], 'title' => $c['title'],
+                'category' => '课程', 'course' => true,
+                'pricing' => ['price' => $cp],
+                'distributor_rate' => (float)($shopCfg['commission_rate'] ?? 20),
+            ];
+        }
+    } catch (Exception $e) {}
     ?>
     <div class="card p-8">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
@@ -923,7 +937,7 @@ function include_member_distribution($member): void {
               <td style="padding:10px 14px;color:var(--accent)"><?=round((float)($dp['distributor_rate'] ?? 30))?>%</td>
               <td style="padding:10px 14px">
                 <div style="display:flex;gap:6px;align-items:center">
-                  <input type="text" value="<?=htmlspecialchars($siteUrl)?>/marketplace?ref=<?=htmlspecialchars($refCode)?>" readonly style="flex:1;min-width:170px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:11.5px">
+                  <input type="text" value="<?=htmlspecialchars($siteUrl)?><?=!empty($dp['course'])?('/course/' . urlencode($dp['id']) . '?id=' . urlencode($dp['id']) . '&ref='):('/marketplace?ref=')?><?=htmlspecialchars($refCode)?>" readonly style="flex:1;min-width:170px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:11.5px">
                   <button type="button" class="rounded-full px-3 py-1 font-bold" style="background:var(--accent);color:var(--on-accent);font-size:11px" onclick="var i=this.previousElementSibling;i.select();document.execCommand('copy');this.textContent='✓';setTimeout(function(){this.textContent='复制'}.bind(this),1200)">复制</button>
                 </div>
               </td>
