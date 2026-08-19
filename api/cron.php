@@ -93,6 +93,32 @@ try {
     }
 } catch (Exception $e) {}
 
+// 报表邮件订阅推送（每日 9 点 / 每周一早）
+try {
+    $subs = json_read(DATA_DIR . '/report-subscribers.json');
+    $today = date('Y-m-d');
+    $isMonday = date('N') === '1';
+    $sentFile = DATA_DIR . '/report-sent.json';
+    $sent = json_read($sentFile);
+    $needSend = [];
+    foreach ($subs as $s) {
+        if (empty($s['email'])) continue;
+        $period = $s['period'] ?? 'daily';
+        $key = ($period === 'weekly' ? 'w' : 'd') . ':' . $s['email'] . ':' . $today;
+        if (($period === 'daily' && ($sent[$key] ?? 0) === 0) || ($period === 'weekly' && $isMonday && ($sent[$key] ?? 0) === 0)) {
+            $needSend[] = $s['email'];
+            $sent[$key] = 1;
+        }
+    }
+    if (!empty($needSend)) {
+        require_once __DIR__ . '/../lib/DashboardSystem.php';
+        $html = report_build_html();
+        $subject = '【经营报表】' . $today;
+        foreach ($needSend as $em) report_send_mail($em, $subject, $html);
+        json_write($sentFile, array_slice($sent, -2000));
+    }
+} catch (Exception $e) {}
+
 // 多平台内容定时发布
 try { SocialPublisher::processQueue(); } catch (Exception $e) {}
 

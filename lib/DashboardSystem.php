@@ -294,3 +294,32 @@ function dash_preferences(): array {
     } catch (Exception $e) {}
     return $out;
 }
+
+// ─── 报表邮件构建与发送（订阅推送） ───
+function report_build_html(): string {
+    require_once __DIR__ . '/ShopSystem.php';
+    $k = function_exists('dash_kpis') ? dash_kpis() : [];
+    $orders = shop_all_orders();
+    $paid = array_values(array_filter($orders, fn($o) => ($o['status'] ?? '') === 'paid'));
+    $revenue = array_sum(array_map(fn($o) => (float)($o['amount'] ?? 0), $paid));
+    $today = date('Y-m-d');
+    $todayOrders = count(array_filter($paid, fn($o) => strpos($o['paid_at'] ?? $o['created_at'] ?? '', $today) === 0));
+    $todayRevenue = array_sum(array_map(fn($o) => (float)($o['amount'] ?? 0), array_filter($paid, fn($o) => strpos($o['paid_at'] ?? $o['created_at'] ?? '', $today) === 0)));
+    // 渠道归因 TOP
+    $ch = function_exists('dash_channel_attribution') ? dash_channel_attribution() : [];
+    $chTop = '';
+    foreach (array_slice($ch, 0, 5) as $c) { $chTop .= '<tr><td>' . htmlspecialchars($c['source'] ?? '') . '</td><td>¥' . number_format($c['revenue'] ?? 0, 0) . '</td></tr>'; }
+    $cells = function ($label, $val, $color = '#2563eb') { return '<div style="flex:1;padding:14px;border-radius:10px;background:#f8fafc;text-align:center"><div style="font-size:22px;font-weight:800;color:' . $color . '">' . $val . '</div><div style="font-size:11px;color:#64748b">' . $label . '</div></div>'; };
+    return '<div style="font-family:-apple-system,sans-serif;max-width:640px;margin:0 auto">
+      <h2 style="margin:0 0 16px">📊 经营报表 · ' . $today . '</h2>
+      <div style="display:flex;gap:10px;margin-bottom:18px">' . $cells('今日订单', $todayOrders) . $cells('今日收入', '¥' . number_format($todayRevenue, 0)) . $cells('累计订单', count($paid)) . $cells('累计收入', '¥' . number_format($revenue, 0)) . '</div>
+      <h3 style="font-size:14px;margin:16px 0 8px">来源归因 TOP5</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#f1f5f9"><th style="padding:8px;text-align:left">来源</th><th style="padding:8px;text-align:right">收入</th></tr>' . ($chTop ?: '<tr><td colspan="2" style="padding:8px;color:#94a3b8">暂无归因数据</td></tr>') . '</table>
+      <p style="font-size:11px;color:#94a3b8;margin-top:20px">由 OpenFlow 自动推送 · 可到后台取消订阅</p></div>';
+}
+function report_send_mail(string $to, string $subject, string $html): bool {
+    require_once __DIR__ . '/MailChannel.php';
+    try {
+        return mail_send($to, $subject, $html);
+    } catch (Throwable $e) { return false; }
+}
