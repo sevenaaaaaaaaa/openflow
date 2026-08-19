@@ -143,6 +143,11 @@ admin_header('落地页构建器');
         </tbody>
       </table>
       <div style="padding:12px 20px;border-top:1px solid var(--border)">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+          <input type="text" id="aiDesc" placeholder="🤖 AI 一键生成：如「AI 增长课程落地页，突出限时优惠与学员评价」" style="flex:1;min-width:260px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
+          <button type="button" class="btn btn-s btn-sm" onclick="aiGenerate()">⚡ AI 生成落地页</button>
+          <span id="aiMsg" style="font-size:12.5px"></span>
+        </div>
         <a href="?edit=new" class="btn btn-primary btn-sm">+ 新建落地页</a>
         <a href="?edit=new&ad=1" class="btn btn-ghost btn-sm">+ 新建广告落地页</a>
       </div>
@@ -216,6 +221,21 @@ admin_header('落地页构建器');
 </div>
 
 <script>
+function aiGenerate() {
+  var desc = document.getElementById('aiDesc').value.trim();
+  var msg = document.getElementById('aiMsg');
+  if (!desc) { msg.textContent = '请先描述需求'; msg.style.color = 'var(--danger)'; return; }
+  msg.textContent = 'AI 生成中…'; msg.style.color = 'var(--muted)';
+  var fd = new FormData(); fd.append('desc', desc);
+  fetch('/api/ai-landing.php', { method:'POST', body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)';
+      msg.textContent = d.message || d.error;
+      if (d.ok && d.edit_url) setTimeout(function(){ location.href = d.edit_url; }, 1200);
+    })
+    .catch(function(){ msg.textContent = '网络异常'; msg.style.color = 'var(--danger)'; });
+}
 var blockIdx = <?=count($editPage['blocks'] ?? [])?>;
 
 function addBlock(type, label) {

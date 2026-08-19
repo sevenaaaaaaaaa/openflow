@@ -54,6 +54,18 @@ if (empty($data) || isset($data['errcode'])) {
 $openid = $data['openid'] ?? '';
 $sessionKey = $data['session_key'] ?? '';
 
+// 桥接 CDP：小程序用户 → 画像（openid 身份并入）
+try {
+    require_once __DIR__ . '/../lib/CdpSystem.php';
+    require_once __DIR__ . '/../lib/CdpSync.php';
+    require_once __DIR__ . '/../lib/IdentityResolver.php';
+    $uid = IdentityResolver::merge('', '', $input['userInfo']['email'] ?? '', '', $openid);
+    $cdp = cdp_get_or_create($uid, '', $input['userInfo']['email'] ?? '', '');
+    try {
+        if ($cdp) { CdpSystem::track('mini_program_login', ['openid' => $openid, 'nickname' => $input['userInfo']['nickName'] ?? ''], $uid); }
+    } catch (Throwable $e) {}
+} catch (Throwable $e) {}
+
 // Generate a server-side token for subsequent API calls
 $token = 'mp_' . bin2hex(random_bytes(16));
 $users = json_read(DATA_DIR . '/mp_users.json');
