@@ -67,6 +67,13 @@ function member_entitlements(?array $member): array {
     if ($subActive && ($grantedTier === 'member' || $grantedTier === '')) $grantedTier = 'member';
     if ($grantedTier === 'vip') $subActive = true;
 
+    // 商品会员计划（年度/永久）→ 计入会员身份
+    $shopPlan = member_shop_plan($member);
+    if ($shopPlan) {
+        // 永久会员 = VIP 级，年度会员 = 普通会员级
+        $grantedTier = ($shopPlan['id'] === 'lifetime') ? 'vip' : 'member';
+    }
+
     // 计算等级
     $plans = mem_plans();
     $planMap = []; foreach ($plans as $p) $planMap[$p['id']] = $p;
@@ -75,13 +82,21 @@ function member_entitlements(?array $member): array {
     elseif ($points >= 1000) { $tier = 'member'; } // 高积分自动升级
     else { $tier = 'free'; }
 
-    $plan = $planMap[$tier] ?? $planMap['free'];
+    // tier 名称：优先显示商品会员名（年度/永久会员），否则用默认名称
+    if ($shopPlan) {
+        $tierName = $shopPlan['name'] ?? ($tier === 'free' ? '免费用户' : '会员');
+        $tierIcon = $shopPlan['icon'] ?? '👑';
+    } else {
+        $plan = $planMap[$tier] ?? $planMap['free'];
+        $tierName = $plan['name'] ?? ($tier === 'free' ? '免费用户' : '会员');
+        $tierIcon = $plan['icon'] ?? '👤';
+    }
 
     return [
         'tier' => $tier,
-        'tier_name' => $plan['name'] ?? ($tier === 'free' ? '免费用户' : '会员'),
-        'icon' => $plan['icon'] ?? '👤',
-        'benefits' => $plan['benefits'] ?? [],
+        'tier_name' => $tierName,
+        'icon' => $tierIcon,
+        'benefits' => ($shopPlan['benefits'] ?? ($plan['benefits'] ?? [])),
         'points' => $points,
         'level' => $level,
         'subscription' => $subActive,
