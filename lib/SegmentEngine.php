@@ -134,7 +134,7 @@ class SegmentEngine {
      */
     public static function evaluateAll(): array {
         $segments = self::getSegments();
-        $cdpFile = DATA_DIR . '/cdp_profiles.json';
+        $cdpFile = DATA_DIR . '/cdp/profiles.json';
         $profiles = json_read($cdpFile);
         $results = [];
 
