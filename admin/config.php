@@ -62,6 +62,7 @@ require_once __DIR__ . '/../lib/AIBusiness.php';
 require_once __DIR__ . '/../lib/CommerceSystem.php';
 require_once __DIR__ . '/../lib/WebTools.php';
 require_once __DIR__ . '/../lib/WebhookSystem.php';
+require_once __DIR__ . '/../lib/I18n.php';
 require_once __DIR__ . '/../lib/CloudflareApi.php';
 require_once __DIR__ . '/../lib/EventDictionary.php';
 require_once __DIR__ . '/../lib/SearchEngine.php';
