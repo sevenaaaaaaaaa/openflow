@@ -401,6 +401,8 @@ function buyCourse(payType) {
   var fd = new FormData();
   fd.append('action','create_order');
   fd.append('course_id', <?=json_encode($courseId)?>);
+  var ref = new URLSearchParams(location.search).get('ref') || '';
+  if (ref) fd.append('ref', ref);
   fetch('/api/shop.php?pay_type=' + payType + '&action=create_order', { method:'POST', body: fd })
     .then(function(r){ return r.json(); })
     .then(function(d){
