@@ -110,6 +110,70 @@ function automation_execute_flow(array $flow, array $context): void {
                 notify('自动化', $step['title'] ?? '流程通知', $context['email'] ?? '', $step['link'] ?? '');
                 automation_log($flow['id'], '发送通知: ' . ($step['title'] ?? ''));
                 break;
+            case 'add_tag':
+                // 站内动作：CDP 打标签
+                $uid = $context['uid'] ?? '';
+                $tag = trim($step['tag'] ?? '');
+                if ($uid && $tag) {
+                    try {
+                        require_once __DIR__ . '/CdpSync.php';
+                        cdp_add_tag($uid, $tag);
+                        automation_log($flow['id'], '打标签: ' . $tag);
+                    } catch (Exception $e) { automation_log($flow['id'], '打标签失败: ' . $e->getMessage(), 'error'); }
+                }
+                break;
+            case 'award_points':
+                // 站内动作：奖励积分
+                $mid = $context['member_id'] ?? '';
+                $pts = (int)($step['points'] ?? 0);
+                if ($mid && $pts > 0) {
+                    try {
+                        require_once __DIR__ . '/Gamification.php';
+                        gamification_award($mid, $pts, 'automation');
+                        automation_log($flow['id'], '奖励积分: ' . $pts);
+                    } catch (Exception $e) { automation_log($flow['id'], '积分失败: ' . $e->getMessage(), 'error'); }
+                }
+                break;
+            case 'inbox':
+                // 站内动作：站内信
+                $mid = $context['member_id'] ?? '';
+                if ($mid) {
+                    try {
+                        require_once __DIR__ . '/MessageSystem.php';
+                        inbox_send($mid, $step['title'] ?? '流程通知', $step['content'] ?? '');
+                        automation_log($flow['id'], '站内信: ' . ($step['title'] ?? ''));
+                    } catch (Exception $e) { automation_log($flow['id'], '站内信失败: ' . $e->getMessage(), 'error'); }
+                }
+                break;
+            case 'send_coupon':
+                // 站内动作：发放优惠券 + 站内信通知
+                $mid = $context['member_id'] ?? '';
+                $email = $context['email'] ?? '';
+                if ($mid || $email) {
+                    try {
+                        require_once __DIR__ . '/CouponSystem.php';
+                        $val = (float)($step['coupon_value'] ?? 0);
+                        $type = in_array($step['coupon_type'] ?? '', ['fixed','percent','free']) ? $step['coupon_type'] : 'fixed';
+                        $code = strtoupper('AUTO' . substr(bin2hex(random_bytes(4)), 0, 6));
+                        $r = coupon_save([
+                            'code' => $code,
+                            'name' => $step['coupon_name'] ?? '自动化优惠券',
+                            'type' => $type,
+                            'value' => $val,
+                            'min_amount' => (float)($step['coupon_min'] ?? 0),
+                            'max_uses' => 1,
+                            'status' => 'active',
+                        ]);
+                        if (!empty($r['ok'])) {
+                            automation_log($flow['id'], '发券: ' . $code . ' ¥' . $val);
+                            if ($mid) {
+                                require_once __DIR__ . '/MessageSystem.php';
+                                inbox_send($mid, '🎁 您的专属优惠券', "优惠码 {$code}（" . ($type === 'percent' ? $val . '% 折扣' : '¥' . $val . ' 减免') . "），下单时输入即可使用。");
+                            }
+                        }
+                    } catch (Exception $e) { automation_log($flow['id'], '发券失败: ' . $e->getMessage(), 'error'); }
+                }
+                break;
         }
     }
 }
