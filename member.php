@@ -127,20 +127,19 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
           <?php if (sub_is_active($member['id'])): ?><span class="tag orange mt-1">⭐ 订阅</span><?php endif; ?>
           <?php if (!empty($member['ambassador'])): ?><span class="tag green mt-1"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="m8.5 13-2 8 5.5-3 5.5 3-2-8"/></svg></span> 推荐大使</span><?php endif; ?>
         </div>
-        <a class="nav-item <?=$view==='dashboard'?'active':''?>" href="member.php?view=dashboard">🏠 个人中心</a>
+        <a class="nav-item <?=$view==='dashboard'?'active':''?>" href="member.php?view=dashboard"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span> 个人中心</a>
         <a class="nav-item <?=$view==='membership'?'active':''?>" href="member.php?view=membership"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9l4-6Z"/><path d="M2 9h20M9 3 7 9l5 12M15 3l2 6-5 12"/></svg></span> 会员中心</a>
         <a class="nav-item" href="member.php?view=level"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3M10 14h4v3h-4zM12 17v3M8 21h8"/></svg></span> 我的等级</a>
-        <a class="nav-item" href="member.php?view=subscribe">⭐ 付费订阅</a>
+        <a class="nav-item" href="member.php?view=subscribe"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 8 9-5 9 5-9 5-9-5Z"/><path d="M2 8v8l9 5 9-5V8M11 13v8"/></svg></span> 付费订阅</a>
         <a class="nav-item" href="member.php?view=orders"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span> 我的订单</a>
         <a class="nav-item" href="member.php?view=courses"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span> 我的课程</a>
-        <a class="nav-item" href="member.php?view=ambassador"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="m8.5 13-2 8 5.5-3 5.5 3-2-8"/></svg></span> 推荐大使</a>
-        <a class="nav-item" href="member.php?view=teacher">👨‍<span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/></svg></span> 成为讲师</a>
+        <a class="nav-item" href="member.php?view=teacher"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/></svg></span> 成为讲师</a>
         <a class="nav-item" href="member.php?view=submit"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span> 投稿文章</a>
-        <a class="nav-item" href="/consultation?view=my">🤝 我的1v1咨询</a>
+        <a class="nav-item" href="/consultation?view=my"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span> 我的1v1咨询</a>
         <a class="nav-item <?=$view==='org'?'active':''?>" href="member.php?view=org"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/></svg></span> 企业控制台</a>
         <a class="nav-item <?=$view==='developer'?'active':''?>" href="member.php?view=developer"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3M13 15h4"/><path d="M7 4h13a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg></span> 开发者中心</a>
         <a class="nav-item <?=$view==='distribution'?'active':''?>" href="member.php?view=distribution"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> 分销中心</a>
-        <a class="nav-item" href="/messages.php">🔔 站内信<?php $msgUnread = inbox_unread($member); if ($msgUnread): ?> <span style="background:var(--danger);color:var(--surface);border-radius:999px;padding:1px 7px;font-size:11px"><?=$msgUnread?></span><?php endif; ?></a>
+        <a class="nav-item" href="/messages.php"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span> 站内信<?php $msgUnread = inbox_unread($member); if ($msgUnread): ?> <span style="background:var(--danger);color:var(--surface);border-radius:999px;padding:1px 7px;font-size:11px"><?=$msgUnread?></span><?php endif; ?></a>
         <div style="border-top:1px solid var(--border);margin:8px 0"></div>
         <a class="nav-item <?=$view==='profile'?'active':''?>" href="member.php?view=profile">👤 个人资料</a>
         <a class="nav-item <?=$view==='password'?'active':''?>" href="member.php?view=password"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span> 修改密码</a>
@@ -250,7 +249,7 @@ function include_member_membership($member): void {
           <div class="text-sm text-muted mt-1"><?=$e['points']?> 积分 · <?=htmlspecialchars($e['level']['name'] ?? '')?> 等级<?php if ($e['subscription']): ?> · ⭐ 订阅中<?php endif; ?></div>
         </div>
         <?php if ($current === 'free'): ?>
-        <a href="member.php?view=subscribe" class="px-6 py-3 rounded-full font-bold" style="background:var(--accent);color:var(--on-accent)">开通会员 →</a>
+        <a href="#shop-plans" class="px-6 py-3 rounded-full font-bold" style="background:var(--accent);color:var(--on-accent)">开通会员 →</a>
         <?php endif; ?>
       </div>
 
@@ -271,7 +270,7 @@ function include_member_membership($member): void {
 
       <!-- 会员计划 -->
       <div class="mt-8">
-        <h3 class="text-sm font-bold text-muted mb-3"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span> 商品会员计划</h3>
+        <h3 class="text-sm font-bold text-muted mb-3" id="shop-plans"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span> 商品会员计划</h3>
         <?php $shopPlan = member_shop_plan($member); $quota = member_quota_usage($member); ?>
         <?php if ($shopPlan): ?>
         <div style="padding:12px 16px;border-radius:12px;background:var(--ok-soft);margin-bottom:14px;font-size:13px;color:var(--ok)">
