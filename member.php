@@ -827,6 +827,20 @@ function include_member_distribution($member): void {
     $stats = commerce_distributor_stats($member['id']);
     $refCode = $member['referral_code'] ?? ('of' . substr(md5($member['id']), 0, 8));
     $siteUrl = site_config_get('site_url');
+    // 状态筛选 + CSV 导出
+    $fst = $_GET['dstatus'] ?? 'all';
+    $details = $stats['details'] ?? [];
+    if ($fst === 'paid') $details = array_values(array_filter($details, fn($d) => $d['status'] === 'paid'));
+    if ($fst === 'pending') $details = array_values(array_filter($details, fn($d) => $d['status'] !== 'paid'));
+    if (isset($_GET['export']) && $_GET['export'] === '1') {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="commission-' . date('Ymd') . '.csv"');
+        echo "\xEF\xBB\xBF商品,成交额,佣金,状态,时间\n";
+        foreach ($details as $d) {
+            echo implode(',', [mb_convert_encoding($d['title'], 'GBK', 'UTF-8'), $d['amount'], $d['commission'], $d['status'] === 'paid' ? '已结算' : '待支付', mb_convert_encoding(substr($d['time'] ?? '', 0, 16), 'GBK', 'UTF-8')]) . "\n";
+        }
+        exit;
+    }
     // 可推广的商品（已发布且允许分销）
     $distProducts = array_values(array_filter(CommerceSystem::allPublished(), fn($p) => !empty($p['distribution_enabled']) && (float)($p['pricing']['price'] ?? 0) > 0));
     ?>
@@ -856,14 +870,62 @@ function include_member_distribution($member): void {
         </div>
       </div>
 
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">推广商品（每商品专属链接）</h3>
+      <?php if (empty($distProducts)): ?><p style="font-size:13px;color:var(--faint);margin-bottom:20px">暂无开放分销的商品。</p>
+      <?php else: ?>
+      <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px">
+        <table style="width:100%;font-size:13px">
+          <thead><tr style="background:var(--bg);text-align:left;color:var(--muted)"><th style="padding:10px 14px">商品</th><th style="padding:10px 14px">售价</th><th style="padding:10px 14px">佣金比例</th><th style="padding:10px 14px">我的链接</th></tr></thead>
+          <tbody>
+            <?php foreach ($distProducts as $dp): ?>
+            <tr style="border-top:1px solid var(--border-soft)">
+              <td style="padding:10px 14px"><b><?=htmlspecialchars($dp['title'])?></b><div style="font-size:11px;color:var(--faint)"><?=htmlspecialchars($dp['category'] ?? 'Skill')?></div></td>
+              <td style="padding:10px 14px">¥<?=number_format((float)($dp['pricing']['price'] ?? 0),0)?></td>
+              <td style="padding:10px 14px;color:var(--accent)"><?=round((float)($dp['distributor_rate'] ?? 30))?>%</td>
+              <td style="padding:10px 14px">
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="text" value="<?=htmlspecialchars($siteUrl)?>/marketplace?ref=<?=htmlspecialchars($refCode)?>" readonly style="flex:1;min-width:170px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:11.5px">
+                  <button type="button" class="rounded-full px-3 py-1 font-bold" style="background:var(--accent);color:var(--on-accent);font-size:11px" onclick="var i=this.previousElementSibling;i.select();document.execCommand('copy');this.textContent='✓';setTimeout(function(){this.textContent='复制'}.bind(this),1200)">复制</button>
+                </div>
+              </td>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <?php endif; ?>
+
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">推广数据（近30天订单）</h3>
+      <?php if (empty($stats['daily_trend'] ?? [])): ?><p style="font-size:13px;color:var(--faint);margin-bottom:20px">暂无推广订单。</p>
+      <?php else: ?>
+      <div style="display:flex;gap:3px;align-items:flex-end;height:70px;margin-bottom:6px">
+        <?php $maxT = max($stats['daily_trend']) ?: 1; foreach ($stats['daily_trend'] as $d => $n): ?>
+        <div style="flex:1;text-align:center" title="<?=$d?> · <?=$n?>单">
+          <div style="background:var(--ok);opacity:<?=max(0.25,$n/$maxT)?>;border-radius:3px 3px 0 0;height:<?=$n>0?max(3,round($n/$maxT*70)):2?>px"></div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:var(--font-mono);margin-bottom:20px"><span><?=htmlspecialchars(array_key_first($stats['daily_trend'])?:'')?></span><span><?=htmlspecialchars(array_key_last($stats['daily_trend'])?:'')?></span></div>
+      <?php if (!empty($stats['product_stats'])): ?>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">商品业绩：<?php foreach ($stats['product_stats'] as $pt => $ps): ?><span style="margin-right:12px"><?=htmlspecialchars($pt)?> · <?=$ps['orders']?>单 · <b style="color:var(--ok)">¥<?=number_format($ps['commission'],1)?></b></span><?php endforeach; ?></div>
+      <?php endif; endif; ?>
+
       <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">佣金明细</h3>
-      <?php if (empty($stats['details'])): ?><p style="font-size:13px;color:var(--faint);margin-bottom:20px">还没有佣金记录，分享推广链接后产生。</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <?php $fst = $_GET['dstatus'] ?? 'all'; foreach (['all'=>'全部','paid'=>'已结算','pending'=>'待支付'] as $fk => $fl): ?>
+        <a href="?view=distribution&dstatus=<?=$fk?>" style="padding:5px 14px;border-radius:999px;font-size:12px;border:1.5px solid var(--border);<?=$fst===$fk?'background:var(--accent);color:var(--on-accent);border-color:var(--accent)':''?>"><?=$fl?></a>
+        <?php endforeach; ?>
+        <?php if (!empty($details)): ?>
+        <a href="?view=distribution&dstatus=<?=$fst?>&export=1" style="margin-left:auto;padding:5px 14px;border-radius:999px;font-size:12px;border:1.5px solid var(--border-strong)">⬇ 导出 CSV</a>
+        <?php endif; ?>
+      </div>
+      <?php if (empty($details)): ?><p style="font-size:13px;color:var(--faint);margin-bottom:20px"><?= $fst==='all' ? '还没有佣金记录，分享推广链接后产生。' : '该状态下暂无佣金记录。' ?></p>
       <?php else: ?>
       <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px">
         <table style="width:100%;font-size:13px">
           <thead><tr style="background:var(--bg);text-align:left;color:var(--muted)"><th style="padding:10px 14px">商品</th><th style="padding:10px 14px">成交额</th><th style="padding:10px 14px">我的佣金</th><th style="padding:10px 14px">状态</th><th style="padding:10px 14px">时间</th></tr></thead>
           <tbody>
-            <?php foreach (array_slice($stats['details'],0,20) as $d): ?>
+            <?php foreach (array_slice($details,0,50) as $d): ?>
             <tr style="border-top:1px solid var(--border-soft)">
               <td style="padding:10px 14px"><?=htmlspecialchars($d['title'])?></td>
               <td style="padding:10px 14px">¥<?=number_format($d['amount'],2)?></td>
