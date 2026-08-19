@@ -54,6 +54,53 @@ if (isset($_POST['delete'])) {
 
 $editPage = null;
 if (isset($_GET['edit'])) {
+    // 基础页编辑（edit=base:/slug）
+    if (str_starts_with($_GET['edit'], 'base:')) {
+        $baseSlug = substr($_GET['edit'], 5);
+        $sitePages = json_read(DATA_DIR . '/site-pages.json');
+        $seo = json_read(DATA_DIR . '/seo.json');
+        $basePage = null;
+        foreach ((array)$sitePages as $bp) if (($bp['slug'] ?? '') === $baseSlug) { $basePage = $bp; break; }
+        if ($basePage) {
+            $sm = $seo[$baseSlug] ?? [];
+            // 保存基础页 SEO
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_base_seo'])) {
+                csrf_verify();
+                $seo[$baseSlug] = ['title'=>trim($_POST['seo_title']??''),'desc'=>trim($_POST['seo_desc']??''),'keywords'=>trim($_POST['seo_keywords']??'')];
+                json_write(DATA_DIR . '/seo.json', $seo);
+                flash('success', '基础页 SEO 已更新');
+                header('Location: /xmp/page-builder?edit=' . urlencode($_GET['edit']));
+                exit;
+            }
+            admin_header('编辑页面');
+            ?>
+            <div class="admin-layout">
+              <?php admin_sidebar('pages-list'); ?>
+              <div class="main">
+                <div class="v-head">
+                  <div><h1><?=htmlspecialchars($basePage['title'] ?? $baseSlug)?></h1><p class="v-sub">基础页（静态模板） · <?=htmlspecialchars($baseSlug)?> · 内容由模板控制，可管理 SEO 与状态</p></div>
+                  <div class="v-actions"><a href="pages-list.php" class="btn btn-s btn-sm">← 返回列表</a></div>
+                </div>
+                <div class="card" style="padding:24px;max-width:720px">
+                  <form method="post">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="save_base_seo" value="1">
+                    <h3 style="font-size:15px;font-weight:700;margin-bottom:14px">SEO 设置</h3>
+                    <div class="fld"><label style="font-size:12px;color:var(--faint)">SEO 标题</label><input class="inp" name="seo_title" value="<?=htmlspecialchars($sm['title']??'')?>" style="height:38px"></div>
+                    <div class="fld"><label style="font-size:12px;color:var(--faint)">SEO 描述</label><textarea class="inp" name="seo_desc" rows="3"><?=htmlspecialchars($sm['desc']??'')?></textarea></div>
+                    <div class="fld"><label style="font-size:12px;color:var(--faint)">关键词</label><input class="inp" name="seo_keywords" value="<?=htmlspecialchars($sm['keywords']??'')?>" style="height:38px"></div>
+                    <button class="btn btn-p btn-sm">保存</button>
+                  </form>
+                  <div style="margin-top:20px;padding:14px;border-radius:12px;background:var(--bg);font-size:12.5px;color:var(--muted);line-height:1.7">
+                    <b>说明：</b>「<?=htmlspecialchars($basePage['title'] ?? '')?>」是平台的固定模板页（内容由模板定义）。如需完全自定义区块，请创建「模块化页」或「落地页」。
+                    <a href="/xmp/pages-list" style="color:var(--accent)">查看其他页面 →</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <?php admin_footer(); exit;
+        }
+    }
     foreach ($pages as $p) { if ($p['id'] === $_GET['edit']) { $editPage = $p; break; } }
 }
 
@@ -122,11 +169,12 @@ admin_header('落地页构建器');
         <!-- Blocks Editor -->
         <div class="card" style="margin:16px 0;padding:16px">
           <h2>🧱 页面区块</h2>
-          <p class="text-sm text-muted mb-4">从上到下排列，拖拽可排序（开发中）</p>
+          <p class="text-sm text-muted mb-4">从上到下排列 · 按住 ☰ 拖拽排序 · 添加区块后填写内容</p>
           <div id="blocksList">
             <?php foreach (($editPage['blocks'] ?? []) as $bi => $blk): ?>
-            <div class="block-item" style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--surface)">
+            <div class="block-item" draggable="true" ondragstart="blkDragStart(event)" ondragover="blkDragOver(event)" ondrop="blkDrop(event)" ondragend="this.classList.remove('dragging')" style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--surface);cursor:grab">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                <span title="拖拽排序" style="cursor:grab;color:var(--faint)">☰</span>
                 <span style="font-weight:600;font-size:14px">🧱 <?=htmlspecialchars($blockTypes[$blk['type']] ?? $blk['type'])?></span>
                 <select name="block_type[]" onchange="renameBlock(this)" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px">
                   <?php foreach ($blockTypes as $btk => $btv): ?>
@@ -173,10 +221,14 @@ var blockIdx = <?=count($editPage['blocks'] ?? [])?>;
 function addBlock(type, label) {
   var div = document.createElement('div');
   div.className = 'block-item';
-  div.style.cssText = 'border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--surface)';
+  div.draggable = true;
+  div.ondragstart = blkDragStart; div.ondragover = blkDragOver; div.ondrop = blkDrop;
+  div.ondragend = function(){ this.classList.remove('dragging'); };
+  div.style.cssText = 'border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--surface);cursor:grab';
   var idx = blockIdx++;
   div.innerHTML =
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">' +
+      '<span style="cursor:grab;color:var(--faint)" title="拖拽排序">☰</span>' +
       '<span style="font-weight:600;font-size:14px">🧱 ' + label + '</span>' +
       '<select name="block_type[]" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px">' +
         '<?php foreach ($blockTypes as $btk => $btv): ?><option value="<?=$btk?>" ' + (type === '<?=$btk?>' ? 'selected' : '') + '><?=htmlspecialchars($btv)?></option><?php endforeach; ?>' +
@@ -204,5 +256,24 @@ function renameBlock(sel) {
   var title = sel.parentElement.querySelector('span');
   if (title) title.textContent = '🧱 ' + label;
 }
+
+/* 区块拖拽排序 */
+var blkDragEl = null;
+function blkDragStart(e) {
+  blkDragEl = e.target.closest('.block-item');
+  blkDragEl.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function blkDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  var target = e.target.closest('.block-item');
+  if (target && target !== blkDragEl) {
+    var list = document.getElementById('blocksList');
+    var rect = target.getBoundingClientRect();
+    list.insertBefore(blkDragEl, e.clientY < rect.top + rect.height / 2 ? target : target.nextSibling);
+  }
+}
+function blkDrop(e) { e.preventDefault(); blkDragEl = null; }
 </script>
 <?php admin_footer(); ?>
