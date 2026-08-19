@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         crm_save_customers($customers);
         flash('success', '客户信息已更新');
     } elseif ($action === 'import' && !empty($_FILES['csv_file']['tmp_name'])) {
-        $imported = 0; $skipped = 0;
+        $imported = 0; $skipped = 0; $duplicated = 0;
         $handle = fopen($_FILES['csv_file']['tmp_name'], 'r');
         if ($handle) {
             $header = fgetcsv($handle); // 表头
@@ -70,6 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $phone2 = trim($line['phone'] ?? '');
                 $company2 = trim($line['company'] ?? '');
                 if ($email2 === '' && $phone2 === '') { $skipped++; continue; }
+                // 查重：已有同邮箱/手机/公司的线索则跳过（防撞单）
+                $conflicts = crm_find_duplicate($email2, $phone2, '');
+                if (!empty($conflicts)) { $duplicated++; continue; }
                 $lead2 = crm_ensure_lead($email2 ?: $phone2, $name2, $phone2);
                 if (!empty($company2)) $lead2['company'] = $company2;
                 $lead2['source'] = 'import';
@@ -79,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             fclose($handle);
         }
-        flash('success', "导入完成：新增/更新 {$imported} 条线索，跳过 {$skipped} 条");
+        flash('success', "导入完成：新增 {$imported} 条，跳过 {$skipped} 条（缺联系），跳过 {$duplicated} 条（重复/撞单）");
     }
     header('Location: /xmp/crm' . (isset($_POST['focus']) ? '?focus=' . urlencode($email) : ''));
     exit;
