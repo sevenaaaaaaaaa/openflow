@@ -1284,6 +1284,7 @@ function admin_sidebar(string $current): void {
   <?php endif; ?>
   <?php if (has_perm('settings')): ?>
   <a href="/xmp/commerce" class="<?=$current==='commerce'?'active':''?>" style="padding-left:44px;font-size:13px">商业中心</a>
+  <a href="/xmp/ecom-reports" class="<?=$current==='ecom-reports'?'active':''?>" style="padding-left:44px;font-size:13px">📊 电商报表</a>
   <a href="/xmp/coupons" class="<?=$current==='coupons'?'active':''?>" style="padding-left:44px;font-size:13px">🎟 优惠券</a>
   <a href="/xmp/refunds" class="<?=$current==='refunds'?'active':''?>" style="padding-left:44px;font-size:13px">↩️ 退款售后</a>
   <?php endif; ?>
