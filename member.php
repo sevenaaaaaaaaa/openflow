@@ -721,6 +721,25 @@ function include_member_developer($member): void {
         <p style="font-size:13px;color:var(--muted)">可完善简介后重新提交，或联系管理员。</p>
       </div>
       <?php elseif ($devStatus === 'approved'): ?>
+      <!-- 发布课程 -->
+      <div style="padding:18px;border:1px solid var(--border);border-radius:14px;margin-bottom:20px">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">🎓 发布课程（审核后上架，售出享分成）</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:14px">收益：平台抽 10%，分销者按比例分成，剩余归你。提交后管理员审核。</p>
+        <form id="courseForm" onsubmit="return submitCourse(event)">
+          <div class="grid gap-3" style="grid-template-columns:2fr 1fr 1fr">
+            <div class="field"><label>课程标题 *</label><input type="text" name="title" required placeholder="如：AI 增长实操课"></div>
+            <div class="field"><label>分类</label><select name="category"><option>课程</option><option>专栏</option><option>认证课</option><option>系列课</option></select></div>
+            <div class="field"><label>封面图 URL</label><input type="text" name="cover" placeholder="https://…"></div>
+          </div>
+          <div class="field"><label>课程简介</label><textarea name="description" rows="2" placeholder="这门课讲什么、适合谁…"></textarea></div>
+          <div id="chaptersBox" style="margin-bottom:10px"></div>
+          <button type="button" onclick="addChapter()" style="padding:6px 14px;border:1.5px dashed var(--border-strong);border-radius:8px;background:none;font-size:12px;margin-bottom:14px">+ 添加章节</button>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">提交课程</button>
+            <span id="courseMsg" style="font-size:12.5px"></span>
+          </div>
+        </form>
+      </div>
       <!-- 我的产品 -->
       <div style="margin-bottom:20px">
         <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">我的产品（<?=count($mine)?>）</h3>
@@ -819,6 +838,52 @@ function include_member_developer($member): void {
       fetch('/api/developer.php', { method:'POST', body: fd })
         .then(function(r){ return r.json(); })
         .then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
+    }
+    function addChapter() {
+      var box = document.getElementById('chaptersBox');
+      var ci = box.children.length;
+      var ch = document.createElement('div');
+      ch.className = 'chapter-card';
+      ch.style.cssText = 'border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--surface)';
+      ch.innerHTML = '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input type="text" placeholder="章节名称" class="ch-title" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><button type="button" onclick="addLesson(this)" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:none;font-size:12px">+课时</button><button type="button" onclick="this.closest(\'.chapter-card\').remove()" style="padding:4px 8px;border:none;background:none;color:var(--danger);font-size:12px">✕</button></div><div class="lessons-box" data-ci="' + ci + '"></div>';
+      box.appendChild(ch);
+    }
+    function addLesson(btn) {
+      var box = btn.closest('.chapter-card').querySelector('.lessons-box');
+      var li = document.createElement('div');
+      li.style.cssText = 'display:grid;grid-template-columns:1fr 80px 1fr auto;gap:6px;margin-bottom:6px;align-items:center';
+      li.innerHTML = '<input type="text" placeholder="课时标题" class="l-title" style="padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px">' +
+        '<select class="l-type" style="padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px"><option value="video">视频</option><option value="text">图文</option><option value="quiz">测验</option></select>' +
+        '<input type="text" placeholder="视频URL/内容" class="l-video" style="padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px">' +
+        '<button type="button" onclick="this.parentElement.remove()" style="padding:4px 8px;border:none;background:none;color:var(--danger)">✕</button>';
+      box.appendChild(li);
+    }
+    function submitCourse(e) {
+      e.preventDefault();
+      var f = document.getElementById('courseForm'), msg = document.getElementById('courseMsg');
+      var chapters = [];
+      f.querySelectorAll('.chapter-card').forEach(function(ch){
+        var lessons = [];
+        ch.querySelectorAll('.lessons-box > div').forEach(function(l){
+          var t = l.querySelector('.l-title').value.trim();
+          if (!t) return;
+          lessons.push({ title: t, type: l.querySelector('.l-type').value, video: l.querySelector('.l-video').value.trim() });
+        });
+        var ct = ch.querySelector('.ch-title').value.trim();
+        if (ct && lessons.length) chapters.push({ title: ct, lessons: lessons });
+      });
+      var fd = new FormData();
+      fd.append('action', 'submit_course');
+      fd.append('title', f.querySelector('[name=title]').value);
+      fd.append('category', f.querySelector('[name=category]').value);
+      fd.append('cover', f.querySelector('[name=cover]').value);
+      fd.append('description', f.querySelector('[name=description]').value);
+      fd.append('chapters', JSON.stringify(chapters));
+      msg.style.color='var(--muted)'; msg.textContent='提交中…';
+      fetch('/api/developer.php', { method:'POST', body: fd })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; msg.textContent = d.message || d.error; if (d.ok) setTimeout(function(){ location.reload(); }, 1200); });
+      return false;
     }
     function createBundleForm(e) {
       e.preventDefault();
