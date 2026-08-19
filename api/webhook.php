@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../admin/config.php';
+require_once __DIR__ . '/../lib/InboundReceiver.php';
 
 $apiKeyData = json_read(DATA_DIR . '/api_key.json');
 if (empty($apiKeyData['key'])) {
@@ -17,7 +18,25 @@ if (empty($data)) {
     json_out(['ok' => false, 'message' => 'No data received'], 400);
 }
 
-// Webhook forwarding
+// ─── 入站连接器处理（InboundReceiver） ───
+// 通过 header X-Inbound-Id 指定连接器，X-Inbound-Signature 携带 HMAC 签名
+$inboundId = $_SERVER['HTTP_X_INBOUND_ID'] ?? '';
+if ($inboundId !== '') {
+    $conn = inbound_connector($inboundId);
+    if (!$conn) json_out(['ok' => false, 'message' => 'Inbound connector not found'], 404);
+    if (!empty($conn['secret'])) {
+        $sig = $_SERVER['HTTP_X_INBOUND_SIGNATURE'] ?? '';
+        if (!inbound_verify($raw, $sig, $conn['secret'])) {
+            inbound_log($inboundId, ['status' => 'auth_fail', 'type' => $conn['type'] ?? 'lead', 'error' => '签名校验失败']);
+            json_out(['ok' => false, 'message' => 'Signature verification failed'], 401);
+        }
+    }
+    $r = inbound_handle($inboundId, $data);
+    if (!$r['ok']) json_out(['ok' => false, 'message' => $r['error'] ?? '处理失败'], 400);
+    json_out(['ok' => true, 'message' => 'Inbound processed', 'detail' => $r]);
+}
+
+// ─── 传统 Webhook 转发（保持向后兼容） ───
 if (!empty($webhook['url'])) {
     $payload = json_encode([
         'event' => 'new_lead',
