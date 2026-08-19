@@ -369,7 +369,7 @@ admin_header('CRM 线索管理');
           <?php if (empty($customers)): ?><tr><td colspan="7" class="empty">暂无客户。将「商机」阶段的线索转为客户后，在这里管理合同与续费。</td></tr><?php endif; ?>
           <?php foreach ($customers as $c): ?>
           <tr>
-            <td><strong><?=htmlspecialchars($c['name'] ?: '—')?></strong><div class="text-sm text-muted" style="font-size:11px"><?=htmlspecialchars($c['company'] ?: $c['email'])?></div></td>
+            <td><strong><a href="customer-detail.php?c=<?=urlencode($c['id'])?>" style="color:var(--accent);text-decoration:none"><?=htmlspecialchars($c['name'] ?: '—')?></a></strong><div class="text-sm text-muted" style="font-size:11px"><?=htmlspecialchars($c['company'] ?: $c['email'])?></div></td>
             <td><span class="stage-pill" style="background:var(--accent-soft);color:var(--accent)"><?=htmlspecialchars($c['plan_type'])?></span></td>
             <td style="color:var(--ok);font-weight:600">¥<?=number_format($c['arr'] ?? 0,0)?></td>
             <td class="text-sm text-muted"><?=htmlspecialchars($c['contract_start'] ?? '')?> ~ <?=htmlspecialchars($c['contract_end'] ?? '')?></td>
