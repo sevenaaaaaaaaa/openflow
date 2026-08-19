@@ -207,6 +207,18 @@
             var today = new Date().toDateString();
             try { if (localStorage.getItem('fc_popup_day') === today) return; localStorage.setItem('fc_popup_day', today); } catch (e) {}
           }
+          // 弹窗 A/B 测试：50/50 分流，B 变体覆盖字段
+          var abVariant = 'A';
+          if (pp.ab_enabled && pp.ab_variant_b && (pp.ab_variant_b.title || pp.ab_variant_b.content)) {
+            var uid = '';
+            try { uid = document.cookie.match(/fc_uid=([^;]+)/) ? document.cookie.match(/fc_uid=([^;]+)/)[1] : ''; } catch (e) {}
+            var h = 0; for (var i = 0; i < (uid || 'x').length; i++) { h = ((h << 5) - h + (uid || 'x').charCodeAt(i)) | 0; }
+            if (Math.abs(h) % 100 < 50) {
+              abVariant = 'B';
+              pp = Object.assign({}, pp, pp.ab_variant_b);
+            }
+          }
+          if (window.fcTrackAB) { try { fcTrackAB('popup', abVariant, 'impression'); } catch (e) {} }
           var ov = document.createElement('div');
           ov.id = 'fc-popup';
           ov.setAttribute('data-component', 'popup');
@@ -224,6 +236,12 @@
           if (pp.form_slug) {
             var forms = cfg.forms || [];
             for (var i = 0; i < forms.length; i++) if (forms[i].slug === pp.form_slug) { box.appendChild(buildPopupForm(forms[i])); break; }
+          }
+          if (pp.button_text) {
+            var btnWrap = document.createElement('div');
+            btnWrap.style.cssText = 'text-align:center;margin-top:14px';
+            btnWrap.innerHTML = '<a href="' + esc(pp.button_url || '#') + '" target="_blank" style="background:#2563eb;color:#fff;padding:12px 32px;border-radius:10px;text-decoration:none;display:inline-block;font-weight:600" onclick="if(window.fcTrackAB){try{fcTrackAB(\'popup\',\'' + abVariant + '\',\'conversion\')}catch(e){}}">' + esc(pp.button_text) + '</a>';
+            box.appendChild(btnWrap);
           }
           ov.appendChild(box);
           ov.addEventListener('click', function(e){ if (e.target === ov) ov.remove(); });
