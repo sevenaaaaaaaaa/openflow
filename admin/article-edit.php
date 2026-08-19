@@ -353,7 +353,21 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
 
         <!-- Markdown Editor (split screen) -->
         <div id="markdown-editor" class="md-split" style="display:<?=$editorMode==='markdown'?'grid':'none'?>">
-          <textarea id="mdInput" oninput="renderMD(this.value)" placeholder="在此输入 Markdown...&#10;&#10;# 标题&#10;内容..."><?=htmlspecialchars($article['content'])?></textarea>
+          <div style="display:flex;flex-direction:column;min-width:0">
+            <div style="display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--bg)">
+              <button type="button" onclick="mdBlock('## ','')" title="标题" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">H2</button>
+              <button type="button" onclick="mdBlock('### ','')" title="小标题" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">H3</button>
+              <button type="button" onclick="mdBlock('**','**')" title="加粗" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer;font-weight:700">B</button>
+              <button type="button" onclick="mdBlock('*','*')" title="斜体" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer;font-style:italic">I</button>
+              <button type="button" onclick="mdBlock('> ','')" title="引用" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">❝ 引用</button>
+              <button type="button" onclick="mdBlock('- ','')" title="列表" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">• 列表</button>
+              <button type="button" onclick="mdBlock('```\n','\n```')" title="代码块" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">&lt;/&gt; 代码</button>
+              <button type="button" onclick="mdBlock('[链接文字](https://)','')" title="链接" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">🔗 链接</button>
+              <button type="button" onclick="insertMedia()" title="插入图片" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">🖼 图片</button>
+              <button type="button" onclick="mdBlock('---\n','')" title="分割线" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">— 分隔</button>
+            </div>
+            <textarea id="mdInput" oninput="renderMD(this.value)" placeholder="在此输入 Markdown...&#10;&#10;# 标题&#10;内容..." style="flex:1;min-height:300px"><?=htmlspecialchars($article['content'])?></textarea>
+          </div>
           <div class="md-preview" id="mdPreview"></div>
         </div>
 
@@ -576,8 +590,34 @@ function syncContent() {
 document.getElementById('article-form').addEventListener('submit', syncContent);
 
 // ─── Markdown Renderer (Enhanced with tables, code highlight, TOC) ───
-function renderMD(src) {
-  var html = src;
+/* 块编辑器工具栏：在光标处插入 Markdown 区块 */
+function mdBlock(before, after) {
+  var ta = document.getElementById('mdInput');
+  var s = ta.selectionStart, e = ta.selectionEnd;
+  var val = ta.value;
+  ta.value = val.slice(0, s) + before + val.slice(s, e) + after + val.slice(e);
+  ta.focus();
+  var pos = s + before.length + (e - s) + after.length;
+  ta.setSelectionRange(pos, pos);
+  renderMD(ta.value);
+}
+/* 插入图片：调用媒体上传 */
+function insertMedia() {
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*';
+  input.onchange = function() {
+    var fd = new FormData();
+    fd.append('file', input.files[0]);
+    fetch('/xmp/media-upload?dir=articles', { method: 'POST', body: fd })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.ok) mdBlock('![图片](' + d.url + ')\n', '');
+        else alert(d.error || '上传失败');
+      });
+  };
+  input.click();
+}
+function renderMD(src) {  var html = src;
   
   // Store code blocks to prevent processing inside them
   var codeBlocks = [];
