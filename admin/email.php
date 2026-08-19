@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/review-lib.php';
+require_once __DIR__ . '/../lib/MailCampaign.php';
 require_login();
 require_perm('email');
 
@@ -120,7 +121,6 @@ if (isset($_POST['send_newsletter'])) {
                 }
             }
 
-            require_once __DIR__ . '/../lib/MailCampaign.php';
             // 邮件模板（若有选择）
             $mailTemplate = null;
             if (!empty($_POST['mail_template'])) $mailTemplate = mailc_template($_POST['mail_template']);
@@ -365,7 +365,6 @@ admin_header('邮件营销');
 
       <?php
       // 邮件模板保存
-      require_once __DIR__ . '/../lib/MailCampaign.php';
       if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_template'])) {
           csrf_verify();
           $tpls = mailc_templates();
