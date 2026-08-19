@@ -51,6 +51,12 @@ foreach (get_articles() as $a) {
 // 处理自动化延迟队列
 automation_process_queue();
 
+// 外部数据连接器定时同步（REST API / CSV 拉取）
+try {
+    require_once __DIR__ . '/../lib/DataSync.php';
+    datasync_run_all();
+} catch (Exception $e) {}
+
 // 多平台内容定时发布
 try { SocialPublisher::processQueue(); } catch (Exception $e) {}
 
