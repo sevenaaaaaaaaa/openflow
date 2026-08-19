@@ -159,7 +159,7 @@ admin_header($isNew ? '创建课程' : '编辑课程');
         </div>
         <div class="field-row">
           <div class="field"><label>类型</label><select name="type"><option value="课程" <?=$course['type']==='课程'?'selected':''?>>单课</option><option value="专栏" <?=$course['type']==='专栏'?'selected':''?>>专栏</option><option value="认证课" <?=$course['type']==='认证课'?'selected':''?>>认证课</option></select></div>
-          <div class="field"><label>状态</label><select name="status"><option value="draft" <?=$course['status']==='draft'?'selected':''?>>草稿</option><option value="published" <?=$course['status']==='published'?'selected':''?>>已发布</option></select></div>
+          <div class="field"><label>状态</label><select name="status"><option value="draft" <?=$course['status']==='draft'?'selected':''?>>草稿</option><option value="pending" <?=$course['status']==='pending'?'selected':''?>>待审核</option><option value="published" <?=$course['status']==='published'?'selected':''?>>已发布</option><option value="rejected" <?=$course['status']==='rejected'?'selected':''?>>已拒绝</option></select></div>
         </div>
         <div class="field"><label>描述</label><textarea name="description" rows="3"><?=htmlspecialchars($course['description'])?></textarea></div>
         <div class="field-row">
