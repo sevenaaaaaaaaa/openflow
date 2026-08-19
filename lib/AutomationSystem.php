@@ -67,13 +67,13 @@ function automation_match_trigger(array $flow, string $trigger, array $context):
         $threshold = (int)($flow['nps_threshold'] ?? 7);
         if ((int)($context['score'] ?? 0) < $threshold) return false;
     }
-    // 行为类触发：页面访问 / 文章浏览 / 元素点击
-    if (in_array($trigger, ['page_view', 'article_view', 'element_click', 'download', 'purchase', 'course_complete', 'course_start', 'course_enroll', 'lesson_complete', 'role_selected', 'tool_use'], true)) {
-        // 条件：指定页面/文章/元素/标签
-        $matchField = $flow['match_field'] ?? '';   // page / url / label / element / course_id / tag
+    // 行为类触发：页面访问 / 文章浏览 / 元素点击 / 分群进出
+    if (in_array($trigger, ['page_view', 'article_view', 'element_click', 'download', 'purchase', 'course_complete', 'course_start', 'course_enroll', 'lesson_complete', 'role_selected', 'tool_use', 'segment_enter', 'segment_exit'], true)) {
+        // 条件：指定页面/文章/元素/标签/分群
+        $matchField = $flow['match_field'] ?? '';   // page / url / label / element / course_id / tag / segment_id
         $matchValue = trim($flow['match_value'] ?? '');
         if ($matchField && $matchValue) {
-            $actual = $context[$matchField] ?? '';
+            $actual = $context[$matchField] ?? ($context['segment_name'] ?? '');
             if (is_array($actual)) $actual = implode(',', $actual);
             if (mb_strpos((string)$actual, $matchValue) === false) return false;
         }
