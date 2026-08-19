@@ -33,10 +33,45 @@ function ab_compute(array $stats, string $abId): array {
     $bImp = $sum($B, 'impression');
     $aConv = $sum($A, 'conversion');
     $bConv = $sum($B, 'conversion');
+    $aRate = $aImp > 0 ? $aConv / $aImp : 0;
+    $bRate = $bImp > 0 ? $bConv / $bImp : 0;
+    // 双样本比例 Z 检验
+    $z = null; $p = null; $ciLow = null; $ciHigh = null; $minSample = null;
+    if ($aImp > 0 && $bImp > 0) {
+        $pooled = ($aConv + $bConv) / ($aImp + $bImp);
+        $se = sqrt($pooled * (1 - $pooled) * (1 / $aImp + 1 / $bImp));
+        $z = $se > 0 ? ($bRate - $aRate) / $se : 0;
+        // p 值（双尾）：正态近似 Φ
+        $p = 2 * (1 - normalCdf(abs($z)));
+        // 差值 Wald 置信区间
+        $diff = $bRate - $aRate;
+        $seDiff = sqrt($bRate * (1 - $bRate) / $bImp + $aRate * (1 - $aRate) / $aImp);
+        $ciLow = $diff - 1.96 * $seDiff;
+        $ciHigh = $diff + 1.96 * $seDiff;
+        // 最小样本量估算（power=0.8, alpha=0.05, 比例检验）
+        if ($aRate > 0 && $aRate < 1 && $bRate > 0 && $bRate < 1) {
+            $effect = abs($bRate - $aRate);
+            $pAvg = ($aRate + $bRate) / 2;
+            $minSample = $effect > 0 ? (int)ceil((1.96 + 0.84) ** 2 * 2 * $pAvg * (1 - $pAvg) / ($effect ** 2)) : null;
+        }
+    }
     return [
-        'A' => ['impression' => $aImp, 'conversion' => $aConv, 'rate' => $aImp > 0 ? round($aConv / $aImp * 100, 2) : 0, 'all' => $A],
-        'B' => ['impression' => $bImp, 'conversion' => $bConv, 'rate' => $bImp > 0 ? round($bConv / $bImp * 100, 2) : 0, 'all' => $B],
+        'A' => ['impression' => $aImp, 'conversion' => $aConv, 'rate' => round($aRate * 100, 2), 'all' => $A],
+        'B' => ['impression' => $bImp, 'conversion' => $bConv, 'rate' => round($bRate * 100, 2), 'all' => $B],
+        'z' => $z === null ? null : round($z, 3),
+        'p' => $p === null ? null : round($p, 4),
+        'ci' => $ciLow === null ? null : [round($ciLow * 100, 2), round($ciHigh * 100, 2)],
+        'min_sample' => $minSample,
+        'significant' => $p !== null && $p < 0.05,
     ];
+}
+// 标准正态分布 CDF（近似）
+function normalCdf(float $x): float {
+    $t = 1 / (1 + 0.2316419 * abs($x));
+    $d = 0.3989422804014327 * exp(-$x * $x / 2);
+    $p = $d * $t * (0.3193815 + $t * (-0.3565638 + $t * (1.781478 + $t * (-1.821256 + $t * 1.330274))));
+    if ($x > 0) return 1 - $p;
+    return $p;
 }
 $result = ab_compute($stats, $current['id']);
 
@@ -86,6 +121,19 @@ admin_header('A/B 测试统计');
       <div class="metric"><div class="lab">B 转化</div><div class="val" style="color:var(--accent)"><?=$result['B']['conversion']?></div><div class="text-sm text-muted">转化率 <?=$result['B']['rate']?>%</div></div>
     </div>
 
+    <!-- 统计显著性（Z 检验） -->
+    <?php if ($result['p'] !== null): ?>
+    <div class="card" style="margin-bottom:20px">
+      <h2 style="margin-bottom:12px">📊 统计显著性</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+        <div class="metric"><div class="lab">Z 值</div><div class="val" style="font-size:22px"><?=$result['z']?></div></div>
+        <div class="metric"><div class="lab">p 值</div><div class="val" style="font-size:22px;color:<?=$result['significant']?'var(--ok)':'var(--warn)'?>"><?=$result['p']?></div><div class="text-xs text-muted"><?=$result['significant']?'< 0.05 显著':'≥ 0.05 不显著'?></div></div>
+        <div class="metric"><div class="lab">差值 95% 置信区间</div><div class="val" style="font-size:15px"><?=$result['ci'][0]?>% ~ <?=$result['ci'][1]?>%</div><div class="text-xs text-muted"><?=$result['ci'][0] > 0 ? '区间不含 0，B 显著更好' : ($result['ci'][1] < 0 ? '区间不含 0，A 显著更好' : '区间含 0，差异不显著')?></div></div>
+        <?php if ($result['min_sample']): ?><div class="metric"><div class="lab">建议每组样本量</div><div class="val" style="font-size:15px"><?=$result['min_sample']?></div><div class="text-xs text-muted">当前 A=<?=$result['A']['impression']?> / B=<?=$result['B']['impression']?></div></div><?php endif; ?>
+      </div>
+    </div>
+    <?php endif; ?>
+
     <!-- 结论 -->
     <div class="card" style="background:<?=$lift>=0?'linear-gradient(135deg,var(--surface),rgba(134,239,172,.12))':'linear-gradient(135deg,var(--surface),rgba(252,165,165,.12))'?>">
       <?php if ($result['A']['impression'] + $result['B']['impression'] === 0): ?>
@@ -97,7 +145,11 @@ admin_header('A/B 测试统计');
           <div style="font-size:20px;font-weight:700;color:<?=$lift>=0?'var(--ok)':'var(--danger)'?>"><?=($lift>=0?'+':'')?><?=$lift?>% 转化提升</div>
           <div class="text-sm text-muted" style="margin-top:4px">
             B 相对 A：转化率 <?=$aRate?>% → <?=$bRate?>%
-            <?php if ($lift >= 5): ?>（B 显著更优，建议采用）<?php elseif ($lift <= -5): ?>（B 效果较差，建议保留 A）<?php else: ?>（差异不明显，建议继续观察）<?php endif; ?>
+            <?php
+            if ($result['significant'] !== null && $result['significant'] === true) echo $lift >= 0 ? '（<b>p=' . $result['p'] . ' 统计显著</b>，B 显著更优，建议采用）' : '（<b>p=' . $result['p'] . ' 统计显著</b>，A 显著更优，建议保留 A）';
+            elseif ($result['p'] !== null) echo '（p=' . $result['p'] . ' 未达显著，样本量不足，建议继续观察）';
+            else echo '（数据不足，无法评估显著性）';
+            ?>
           </div>
         </div>
       </div>
