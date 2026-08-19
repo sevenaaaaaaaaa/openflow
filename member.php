@@ -21,7 +21,7 @@ if (!$member && $view === 'dashboard') {
     exit;
 }
 
-$orders = json_read(DATA_DIR . '/shop/orders.json');
+$orders = shop_all_orders();
 $myOrders = $member ? array_values(array_filter($orders, fn($o) => ($o['member_id'] ?? '') === $member['id'])) : [];
 
 $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个人中心', 'profile' => '个人资料', 'password' => '修改密码', 'reset-password' => '重置密码'][$view] ?? '用户中心';
@@ -411,8 +411,7 @@ function include_member_orders(array $orders): void {
 }
 function include_member_courses($member): void {
     require_once __DIR__ . '/lib/ProgressSystem.php';
-    $orders = array_filter(json_read(DATA_DIR . '/shop/orders.json'), fn($o) => ($o['member_id']??'') === $member['id'] && $o['status'] === 'paid');
-    $courseIds = array_unique(array_map(fn($o)=>$o['course_id'], $orders));
+    $courseIds = shop_course_ids_for_member($member['id']);
     $courses = json_read(DATA_DIR . '/courses/index.json');
     echo '<div class="card p-8"><h2 class="text-xl font-bold mb-6">我的课程</h2>';
     if (empty($courseIds)) { echo '<p class="text-sm text-muted">你还没有购买课程，去逛逛 → <a href="/courses" class="text-accent">浏览课程</a></p>'; }
