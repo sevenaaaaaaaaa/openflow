@@ -86,10 +86,19 @@ class CommerceSystem {
     public static function publishSkill(string $skillId, array $pricing, string $author = '', float $rate = 0.7): array {
         $skill = skill_get($skillId);
         if (!$skill) return ['ok' => false, 'error' => 'Skill 不存在'];
+        // 作者：优先用 submitted_by（member id），兜底用传入的名字
+        $authorId = $skill['submitted_by'] ?? '';
+        if ($authorId === '' && $author !== '' && $author !== $skill['author']) $authorId = $author;
+        $authorName = $skill['author'] ?: ($authorId !== '' ? $authorId : 'OpenFlow');
         // 检查是否已发布
         foreach (self::products() as $p) {
             if ($p['type'] === 'skill' && $p['asset_id'] === $skillId) {
-                return self::updateProduct($p['id'], ['pricing' => $pricing, 'status' => 'published']);
+                return self::updateProduct($p['id'], [
+                    'pricing' => $pricing, 'status' => 'published',
+                    'author' => $authorId ?: ($p['author'] ?? ''),
+                    'distribution_enabled' => !empty($skill['distribution_enabled']) ? 1 : 0,
+                    'distributor_rate' => (float)($skill['distributor_rate'] ?? ($p['distributor_rate'] ?? 30)),
+                ]);
             }
         }
         return self::createProduct([
@@ -97,9 +106,11 @@ class CommerceSystem {
             'title' => $skill['title'] ?? $skillId,
             'description' => $skill['description'] ?? '',
             'pricing' => $pricing,
-            'author' => $author ?: ($skill['author'] ?? ''),
-            'author_name' => $author ?: ($skill['author'] ?? 'OpenFlow'),
+            'author' => $authorId,
+            'author_name' => $authorName,
             'commission_rate' => $rate,
+            'distribution_enabled' => !empty($skill['distribution_enabled']) ? 1 : 0,
+            'distributor_rate' => (float)($skill['distributor_rate'] ?? 30),
             'status' => 'published',
         ]);
     }
@@ -263,11 +274,12 @@ class CommerceSystem {
         $platformFee = round($paid * 0.1, 2);
         $distAmount = (float)($order['commission'] ?? 0); // 已在 purchase 计算
         $authorAmount = round($paid - $platformFee - $distAmount, 2);
-        if (!empty($product['author']) && $authorAmount > 0) {
+        $authorId = self::resolveAuthor($product, $memberId);
+        if ($authorId && $authorAmount > 0) {
             try {
-                Database::execute("UPDATE members SET balance = balance + ? WHERE id = ?", [$authorAmount, $product['author']]);
+                Database::execute("UPDATE members SET balance = balance + ? WHERE id = ?", [$authorAmount, $authorId]);
                 Database::insert('point_logs', [
-                    'member_id' => $product['author'], 'points' => 0, 'type' => 'commission',
+                    'member_id' => $authorId, 'points' => 0, 'type' => 'commission',
                     'description' => "商品「{$product['title']}」销售分成 ¥{$authorAmount}（平台费 ¥{$platformFee}）", 'created_at' => date('Y-m-d H:i:s'),
                 ]);
             } catch (Exception $e) {}
@@ -292,7 +304,34 @@ class CommerceSystem {
     }
 
     /**
-     * 交付单个商品/资产（组合包递归调用）—— 作者分成 + 分销佣金
+     * 解析商品作者为真实 member_id（兼容旧数据 author=名字字符串，自愈回写）
+     */
+    private static function resolveAuthor(array $product, string $buyerId = ''): string {
+        $author = (string)($product['author'] ?? '');
+        if ($author === '') return '';
+        // 已是 member_id
+        $rows = Database::query("SELECT id FROM members WHERE id = ?", [$author]);
+        if (!empty($rows)) return $author;
+        // 按名字匹配（旧数据，SQLite nickname + JSON members name 兜底）
+        $byName = Database::query("SELECT id FROM members WHERE nickname = ?", [$author]);
+        if (empty($byName)) {
+            foreach (member_get_all() as $m) {
+                if (($m['name'] ?? '') === $author || ($m['nickname'] ?? '') === $author) { $byName[] = ['id' => $m['id'] ?? '']; break; }
+            }
+        }
+        if (!empty($byName)) {
+            $aid = $byName[0]['id'];
+            if ($buyerId !== $aid) {
+                try { self::updateProduct($product['id'], ['author' => $aid]); } catch (Exception $e) {}
+            }
+            return $aid;
+        }
+        return '';
+    }
+
+    /**
+     * 交付单个商品/资产（组合包递归调用）—— 记录权益
+     */
     private static function deliverItem(string $memberId, array $item, array $order = []): void {
         if (($item['type'] ?? '') === 'bundle' && !empty($item['product_id'])) {
             $sub = self::getProduct($item['product_id']);
