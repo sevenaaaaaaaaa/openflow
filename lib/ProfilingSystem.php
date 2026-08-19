@@ -24,7 +24,7 @@ function prof_tag_defs(): array {
 function prof_auto_tags(array $member): array {
     $tags = [];
     $mid = $member['id'];
-    $orders = json_read(DATA_DIR . '/shop/orders.json');
+    $orders = shop_all_orders();
     $subs = json_read(DATA_DIR . '/submissions/index.json');
 
     // 付费
@@ -251,7 +251,7 @@ function prof_profile_detail(array $cdp): array {
         $ev = $e['event'] ?? '';
         if ($ev === 'form_submit') $submitCount++;
     }
-    $orders = json_read(DATA_DIR . '/shop/orders.json');
+    $orders = shop_all_orders();
     foreach ($orders as $o) {
         if (!empty($cdp['member_id']) && ($o['member_id'] ?? '') === $cdp['member_id'] && ($o['status'] ?? '') === 'paid') {
             $orderCount++;

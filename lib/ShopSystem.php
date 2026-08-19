@@ -62,6 +62,43 @@ function shop_get_order(string $id): ?array {
     return $results[0] ?? null;
 }
 
+// 统一订单读取：SQLite 主 + JSON 兜底（合并历史遗留 data/shop/orders.json，按 id 去重）
+function shop_all_orders(): array {
+    $map = [];
+    foreach (Database::query("SELECT * FROM orders ORDER BY created_at DESC") as $r) {
+        $rid = $r['id'] ?? '';
+        if ($rid !== '') $map[$rid] = $r;
+    }
+    // JSON 兜底：仅补入 SQLite 中没有的订单（历史数据）
+    $jsonFile = shop_orders_file();
+    if (is_file($jsonFile)) {
+        foreach (json_read($jsonFile) as $j) {
+            $jid = $j['id'] ?? '';
+            if ($jid !== '' && !isset($map[$jid])) $map[$jid] = $j;
+        }
+    }
+    return array_values($map);
+}
+
+// 某成员的订单（统一读取）
+function shop_orders_for_member(string $memberId, string $status = ''): array {
+    return array_values(array_filter(shop_all_orders(), function ($o) use ($memberId, $status) {
+        if (($o['member_id'] ?? '') !== $memberId) return false;
+        if ($status !== '' && ($o['status'] ?? '') !== $status) return false;
+        return true;
+    }));
+}
+
+// 某成员已购课程 ID（统一读取，支持 SQLite 与 JSON 两种结构）
+function shop_course_ids_for_member(string $memberId): array {
+    $ids = [];
+    foreach (shop_orders_for_member($memberId, 'paid') as $o) {
+        $cid = $o['course_id'] ?? ($o['goods_id'] ?? '');
+        if ($cid && ($o['goods_type'] ?? '') !== 'skill') $ids[] = $cid;
+    }
+    return array_unique($ids);
+}
+
 function shop_create_order(string $memberId, string $courseId): array {
     $settings = shop_settings();
     $courses = json_read(DATA_DIR . '/courses/index.json');

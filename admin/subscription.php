@@ -77,7 +77,7 @@ foreach ($state as $mid => $s) {
 $expiredCount = count(array_filter($state, fn($s) => ($s['status'] ?? '') === 'expired'));
 
 // 订阅订单
-$orders = json_read(shop_orders_file());
+$orders = shop_all_orders();
 $subOrders = array_values(array_filter($orders, fn($o) => !empty($o['plan_id']) || ($o['goods_type'] ?? '') === 'subscription'));
 
 // 计划名映射

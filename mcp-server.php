@@ -125,7 +125,7 @@ function mcp_call(string $name, array $args): array {
             return ['content'=>[['type'=>'text','text'=>json_encode(['total'=>count(json_read(DATA_DIR.'/submissions/index.json'))])]]];
 
         case 'orders_revenue':
-            $orders = json_read(DATA_DIR.'/shop/orders.json');
+            $orders = shop_all_orders();
             $paid = array_filter($orders, fn($o)=>($o['status']??'')==='paid');
             return ['content'=>[['type'=>'text','text'=>json_encode(['paid'=>count($paid),'revenue'=>round(array_sum(array_map(fn($o)=>(float)($o['amount']??0),$paid)),2)])]]];
 
