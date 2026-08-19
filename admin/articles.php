@@ -180,6 +180,7 @@ td.actions{white-space:nowrap;width:1%}
       <select onchange="location.href='?search=<?=urlencode($search)?>&category=<?=$catFilter?>&status='+this.value" style="padding:6px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface)">
         <option value="">全部状态</option>
         <option value="published" <?=$statusFilter==='published'?'selected':''?>>已发布</option>
+        <option value="scheduled" <?=$statusFilter==='scheduled'?'selected':''?>>定时</option>
         <option value="draft" <?=$statusFilter==='draft'?'selected':''?>>草稿</option>
       </select>
       <span class="text-sm text-muted"><?=count($articles)?> 篇</span>
@@ -269,7 +270,9 @@ td.actions{white-space:nowrap;width:1%}
               <select class="inline-select" data-id="<?=htmlspecialchars($a['id'])?>" data-field="status" onchange="quickUpdate(this)">
                 <option value="draft" <?=($a['status']??'')==='draft'?'selected':''?>>草稿</option>
                 <option value="published" <?=($a['status']??'')==='published'?'selected':''?>>已发布</option>
+                <option value="scheduled" <?=($a['status']??'')==='scheduled'?'selected':''?>>定时</option>
               </select>
+              <?php if (($a['status']??'')==='scheduled' && !empty($a['publish_at'])): ?><div style="font-size:10px;color:var(--faint)">⏰ <?=htmlspecialchars(substr($a['publish_at'],0,16))?></div><?php endif; ?>
             </td>
             <td>
               <label style="cursor:pointer;display:flex;align-items:center;gap:4px;font-size:12px" title="点击切换置顶">
