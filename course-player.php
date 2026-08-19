@@ -21,6 +21,11 @@ $member = member_current();
 $settings = shop_settings();
 $price = $settings['course_prices'][$courseId] ?? 0;
 
+// 收藏状态
+$favFile = DATA_DIR . '/course-favorites.json';
+$favs = json_read($favFile);
+$isFav = $member && !empty($favs[$member['id']][$courseId]);
+
 // 权益解锁：已购 / 激活码激活 / VIP 全通 / 订阅
 $hasAccess = false;
 if ($member) {
@@ -155,12 +160,102 @@ foreach ($course['chapters'] ?? [] as $ch) {
         <a href="/member.php?view=membership" class="block text-center text-sm font-semibold" style="color:#2b5f7e">开通会员，更多课程免费看 →</a>
         <?php endif; ?>
         <?php endif; ?>
+        <?php if ($member): ?>
+        <button onclick="toggleFav(<?=json_encode($courseId)?>, this)" class="mt-3 w-full rounded-full py-2 text-sm font-semibold" style="border:1.5px solid var(--border);color:<?=$isFav?'var(--warn)':'var(--muted)'?>"><?=$isFav?'★ 已收藏':'☆ 收藏课程'?></button>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+
+  <!-- 评价 + 课时笔记 -->
+  <div class="mx-auto px-5 py-10" style="max-width:1000px">
+    <div class="grid gap-6" style="grid-template-columns:1fr 1fr" id="reviewArea">
+      <!-- 课程评价 -->
+      <div class="card p-6">
+        <h3 class="font-bold text-lg mb-3">课程评价</h3>
+        <?php $rateSum = comment_rating_summary('course', $courseId); if ($rateSum['count']): ?>
+        <div class="mb-4 flex items-center gap-3">
+          <div class="text-3xl font-extrabold" style="color:var(--warn)"><?=$rateSum['avg']?></div>
+          <div>
+            <div style="color:var(--warn)"><?=str_repeat('★', (int)round($rateSum['avg']))?></div>
+            <div class="text-xs text-gray-400"><?=$rateSum['count']?> 人评价</div>
+          </div>
+        </div>
+        <?php endif; ?>
+        <?php if ($member): ?>
+        <form id="rateForm" class="mb-4">
+          <div class="flex items-center gap-2 mb-2" id="rateStars">
+            <?php for ($i=1; $i<=5; $i++): ?><button type="button" data-r="<?=$i?>" onclick="setRate(<?=$i?>)" style="font-size:22px;color:var(--warn);background:none;border:none;cursor:pointer">☆</button><?php endfor; ?>
+          </div>
+          <input type="hidden" id="rateVal" value="5">
+          <textarea id="rateContent" rows="2" placeholder="说说这门课怎么样…" class="w-full p-3 rounded-xl" style="border:1.5px solid var(--border);font-size:13px"></textarea>
+          <button type="button" onclick="submitRate()" class="mt-2 rounded-full px-5 py-2 font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">提交评价</button>
+          <span id="rateMsg" class="text-xs ml-2"></span>
+        </form>
+        <?php endif; ?>
+        <div id="rateList">
+          <?php $reviews = comment_get('course', $courseId); foreach (array_slice($reviews, 0, 3) as $c): ?>
+          <div class="py-3 border-b" style="border-color:var(--border)">
+            <div class="flex justify-between"><b class="text-sm"><?=htmlspecialchars($c['author'])?></b><span class="text-xs" style="color:var(--warn)"><?=str_repeat('★', (int)$c['rating'])?></span></div>
+            <div class="text-sm text-gray-600 mt-1"><?=htmlspecialchars($c['text'])?></div>
+          </div>
+          <?php endforeach; if (empty($reviews)): ?><p class="text-sm text-gray-400">暂无评价，来抢沙发</p><?php endif; ?>
+        </div>
+      </div>
+
+      <!-- 课时笔记 -->
+      <div class="card p-6">
+        <h3 class="font-bold text-lg mb-3">课时笔记</h3>
+        <?php if (!$member): ?><p class="text-sm text-gray-400">登录后可记录课时笔记</p>
+        <?php else: $myNotes = (json_read(DATA_DIR . '/course-notes.json')[$member['id']][$courseId] ?? []); ?>
+        <div class="mb-3 text-xs text-gray-400">选择任一课时，记录你的学习笔记（自动关联课时）</div>
+        <select id="noteLesson" class="w-full p-3 rounded-xl mb-2" style="border:1.5px solid var(--border);font-size:13px">
+          <?php foreach ($lessonsFlat as $lid => $l): ?><option value="<?=htmlspecialchars($lid)?>"><?=htmlspecialchars($l['title'])?></option><?php endforeach; ?>
+        </select>
+        <textarea id="noteContent" rows="3" placeholder="记录这节的重点 / 疑问 / 待复习…" class="w-full p-3 rounded-xl mb-2" style="border:1.5px solid var(--border);font-size:13px"><?=htmlspecialchars($myNotes[array_key_first($myNotes)]['note'] ?? '')?></textarea>
+        <button onclick="saveNote()" class="rounded-full px-5 py-2 font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">保存笔记</button>
+        <span id="noteMsg" class="text-xs ml-2"></span>
+        <?php if (!empty($myNotes)): ?>
+        <div class="mt-4 text-xs text-gray-400">已存 <?=count($myNotes)?> 节笔记</div>
+        <?php endif; endif; ?>
       </div>
     </div>
   </div>
 
 <script>
 var COURSE_ID = <?=json_encode($courseId)?>;
+/* 收藏 */
+function toggleFav(cid, btn) {
+  var fd = new FormData(); fd.append('action','toggle_fav'); fd.append('course_id', cid);
+  fetch('/api/course.php', { method:'POST', body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ if (d.ok) { btn.textContent = d.fav ? '★ 已收藏' : '☆ 收藏课程'; btn.style.color = d.fav ? 'var(--warn)' : 'var(--muted)'; } });
+}
+/* 评价 */
+var curRate = 5;
+function setRate(r) {
+  curRate = r;
+  var stars = document.querySelectorAll('#rateStars button');
+  stars.forEach(function(s, i){ s.textContent = i < r ? '★' : '☆'; });
+  document.getElementById('rateVal').value = r;
+}
+function submitRate() {
+  var content = document.getElementById('rateContent').value.trim();
+  if (!content) { document.getElementById('rateMsg').textContent = '请填写评价内容'; return; }
+  var fd = new FormData(); fd.append('action','rate_course'); fd.append('course_id', COURSE_ID); fd.append('rating', curRate); fd.append('content', content);
+  fetch('/api/course.php', { method:'POST', body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ document.getElementById('rateMsg').textContent = d.message || d.error; if (d.ok) setTimeout(function(){ location.reload(); }, 900); });
+}
+/* 笔记 */
+function saveNote() {
+  var lesson = document.getElementById('noteLesson').value;
+  var note = document.getElementById('noteContent').value.trim();
+  var fd = new FormData(); fd.append('action','save_note'); fd.append('course_id', COURSE_ID); fd.append('lesson_id', lesson); fd.append('note', note);
+  fetch('/api/course.php', { method:'POST', body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ document.getElementById('noteMsg').textContent = d.message || d.error; if (d.ok) document.getElementById('noteMsg').style.color='var(--ok)'; });
+}
 var HAS_ACCESS = <?=$hasAccess?'true':'false'?>;
 var MEMBER_ID = <?=json_encode($member ? $member['id'] : null)?>;
 var LESSONS = <?=json_encode($lessonsFlat)?>;
