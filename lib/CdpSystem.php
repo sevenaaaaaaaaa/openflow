@@ -946,7 +946,9 @@ class CdpSystem {
             $now = time();
             $lastSeen = strtotime($profile['last_seen'] ?? '2000-01-01');
             $daysSinceLast = ($now - $lastSeen) / 86400;
-            return max(0, 100 - (int)min(100, $daysSinceLast * 2));
+            $health = max(0, 100 - (int)min(100, $daysSinceLast * 2));
+            self::persistScores($visitorId, $profile, $health);
+            return $health;
         }
 
         $score = 0;
@@ -967,7 +969,35 @@ class CdpSystem {
         foreach (($hcfg['tags']['tags'] ?? []) as $tb) {
             if (isset($profile['tags'][$tb['tag']])) $score += $tb['points'];
         }
-        return (int)min($hcfg['cap'] ?? 100, $score);
+        $health = (int)min($hcfg['cap'] ?? 100, $score);
+        self::persistScores($visitorId, $profile, $health);
+        return $health;
+    }
+
+    /**
+     * 计算活跃度（engagement）并随健康分一起写入画像 scores
+     */
+    private static function persistScores(string $visitorId, array $profile, int $health): void {
+        try {
+            $now = time();
+            $lastSeen = strtotime($profile['last_seen'] ?? '2000-01-01');
+            $days = max(0, ($now - $lastSeen) / 86400);
+            // 活跃度：近 7 天有行为 + 行为频率 + 完整度
+            $engagement = 0;
+            $engagement += $days <= 1 ? 40 : ($days <= 7 ? 25 : ($days <= 30 ? 10 : 0));   // 近度
+            $engagement += min(30, ($profile['events_count'] ?? 0) * 3);                    // 频率
+            $engagement += count($profile['tags'] ?? []) >= 3 ? 20 : count($profile['tags'] ?? []) * 5; // 画像完整度
+            $engagement = (int)min(100, $engagement);
+            $scores = (array)($profile['scores'] ?? []);
+            $scores['health'] = $health;
+            $scores['engagement'] = $engagement;
+            $profiles = self::allProfiles();
+            foreach ($profiles as &$p) {
+                if (($p['visitor_id'] ?? '') === $visitorId) { $p['scores'] = $scores; break; }
+            }
+            unset($p);
+            self::saveProfiles($profiles);
+        } catch (Exception $e) {}
     }
 
     // ─── 行为分析 ──────────────────────────────────
@@ -1072,15 +1102,19 @@ class CdpSystem {
             $users = array_keys(array_filter($userCohort, fn($d) => $d === $cd));
             $size = count($users);
             $offsets = [];
-            foreach ($cohortDates as $offset => $od) {
+            $retained = [];
+            foreach ($cohortDates as $od) {
                 if ($od < $cd) continue; // 只看当期及之后
-                $retained = 0;
+                $retainedUsers = 0;
                 foreach ($users as $u) {
-                    if (isset($userEventDates[$u][$od])) $retained++;
+                    if (isset($userEventDates[$u][$od])) $retainedUsers++;
                 }
-                $offsets[$od] = $size > 0 ? round($retained / $size * 100, 1) : null;
+                $rate = $size > 0 ? round($retainedUsers / $size * 100, 1) : null;
+                $offsets[$od] = $rate;
+                $dayDiff = (int)round((strtotime($od) - strtotime($cd)) / 86400);
+                $retained[$dayDiff] = ['day' => $dayDiff, 'rate' => $rate];
             }
-            $matrix[] = ['date'=>$cd, 'cohort_size'=>$size, 'retention'=>$offsets];
+            $matrix[] = ['date'=>$cd, 'cohort_size'=>$size, 'retention'=>$offsets, 'retained'=>$retained];
         }
 
         return $matrix;
