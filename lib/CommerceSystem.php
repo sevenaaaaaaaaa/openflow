@@ -557,6 +557,22 @@ function commerce_distributor_stats(string $memberId): array {
         $stats['total_commission'] = round($total, 2);
         $stats['pending_commission'] = round($pending, 2);
         $stats['details'] = $details;
+        // 商品维度聚合
+        $productStats = [];
+        $dailyTrend = [];
+        foreach ($orders as $o) {
+            $t = $o['course_title'] ?? '其他';
+            $productStats[$t] = $productStats[$t] ?? ['orders' => 0, 'commission' => 0];
+            $productStats[$t]['orders']++;
+            $productStats[$t]['commission'] += (float)($o['commission'] ?? 0);
+            $d = substr($o['paid_at'] ?: $o['created_at'], 0, 10);
+            $dailyTrend[$d] = ($dailyTrend[$d] ?? 0) + 1;
+        }
+        foreach ($productStats as &$ps) $ps['commission'] = round($ps['commission'], 2);
+        unset($ps);
+        ksort($dailyTrend);
+        $stats['product_stats'] = $productStats;
+        $stats['daily_trend'] = array_slice($dailyTrend, -30, 30, true);
         // 当前余额
         $rows = Database::query("SELECT balance FROM members WHERE id = ?", [$memberId]);
         $stats['balance'] = (float)($rows[0]['balance'] ?? 0);
