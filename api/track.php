@@ -25,6 +25,12 @@ if ($uid === '') {
     setcookie('fc_uid', $uid, time() + 86400 * 365, '/');
 }
 
+// Tracking Plan 校验（数据质量监控，不拦截）
+try {
+    $issues = EventDictionary::validate($event, $input['props'] ?? []);
+    if (!empty($issues)) EventDictionary::logQualityIssue($event, $issues);
+} catch (Throwable $e) {}
+
 // CDP：确保匿名客户记录存在
 try { cdp_get_or_create($uid, '', '', ''); } catch (Exception $e) {}
 
