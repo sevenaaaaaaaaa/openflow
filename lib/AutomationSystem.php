@@ -100,14 +100,26 @@ function automation_execute_flow(array $flow, array $context): void {
     foreach ($steps as $step) {
         switch ($step['action'] ?? '') {
             case 'send_email':
+                // 频控检查（疲劳度管理）
+                $midCtx = $context['member_id'] ?? '';
+                if ($midCtx !== '') {
+                    try {
+                        require_once __DIR__ . '/FrequencyCap.php';
+                        if (!freq_can_send($midCtx, 'email')) { automation_log($flow['id'], '频控：今日邮件触达已达上限，跳过', 'info'); break; }
+                    } catch (Exception $e) {}
+                }
                 automation_send_email($step, $context, $flow['id']);
+                if ($midCtx !== '') { try { require_once __DIR__ . '/FrequencyCap.php'; freq_log($midCtx, 'email', $step['subject'] ?? ''); } catch (Exception $e) {} }
                 break;
             case 'delay':
                 // 简化：记录待延迟动作，由 cron 处理
                 automation_schedule_delay($step, $context, $flow['id']);
                 break;
             case 'notify':
+                $midCtx = $context['member_id'] ?? '';
+                if ($midCtx !== '') { try { require_once __DIR__ . '/FrequencyCap.php'; if (!freq_can_send($midCtx, 'notify')) { automation_log($flow['id'], '频控：通知触达已达上限', 'info'); break; } } catch (Exception $e) {} }
                 notify('自动化', $step['title'] ?? '流程通知', $context['email'] ?? '', $step['link'] ?? '');
+                if ($midCtx !== '') { try { require_once __DIR__ . '/FrequencyCap.php'; freq_log($midCtx, 'notify', $step['title'] ?? ''); } catch (Exception $e) {} }
                 automation_log($flow['id'], '发送通知: ' . ($step['title'] ?? ''));
                 break;
             case 'add_tag':
@@ -139,8 +151,13 @@ function automation_execute_flow(array $flow, array $context): void {
                 $mid = $context['member_id'] ?? '';
                 if ($mid) {
                     try {
+                        require_once __DIR__ . '/FrequencyCap.php';
+                        if (!freq_can_send($mid, 'inbox')) { automation_log($flow['id'], '频控：站内信触达已达上限，跳过', 'info'); break; }
+                    } catch (Exception $e) {}
+                    try {
                         require_once __DIR__ . '/MessageSystem.php';
                         inbox_send($mid, $step['title'] ?? '流程通知', $step['content'] ?? '');
+                        require_once __DIR__ . '/FrequencyCap.php'; freq_log($mid, 'inbox', $step['title'] ?? '');
                         automation_log($flow['id'], '站内信: ' . ($step['title'] ?? ''));
                     } catch (Exception $e) { automation_log($flow['id'], '站内信失败: ' . $e->getMessage(), 'error'); }
                 }
