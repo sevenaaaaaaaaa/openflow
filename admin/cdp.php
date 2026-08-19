@@ -548,12 +548,33 @@ admin_header('CDP 客户数据中台');
       <h2 style="margin-bottom:0">分群管理</h2>
       <button onclick="document.getElementById('segmentDialog').style.display='flex'" class="btn btn-primary btn-sm">+ 创建分群</button>
     </div>
+    <?php
+    // 导出分群成员
+    if (isset($_GET['export_segment'])) {
+        $seg = null; foreach ($segments as $s) if (($s['id'] ?? '') === $_GET['export_segment']) { $seg = $s; break; }
+        if ($seg) {
+            $members = CdpSystem::getSegmentUsers($seg['rules'] ?? [], 5000);
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="segment-' . $seg['id'] . '.csv"');
+            echo "\xEF\xBB\xBFvisitor_id,email,tags,last_seen\n";
+            foreach ($members as $m) {
+                echo implode(',', [($m['visitor_id'] ?? ''), mb_convert_encoding(($m['email'] ?? ''), 'GBK', 'UTF-8'), mb_convert_encoding(implode('|', ($m['tags'] ?? [])), 'GBK', 'UTF-8'), ($m['last_seen'] ?? '')]) . "\n";
+            }
+            exit;
+        }
+    }
+    ?>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
-      <?php foreach ($segments as $seg): ?>
+      <?php foreach ($segments as $seg): $memberList = CdpSystem::getSegmentUsers($seg['rules'] ?? [], 50); ?>
       <div class="segment-card">
         <div style="font-weight:600;margin-bottom:4px"><?=htmlspecialchars($seg['name'])?></div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:8px"><?=htmlspecialchars($seg['description'] ?? '')?></div>
         <div style="font-size:12px"><span style="font-weight:700;color:var(--accent)"><?=CdpSystem::countSegment($seg['rules'] ?? [])?></span> 用户匹配</div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <a href="cdp.php?tab=segments&export_segment=<?=urlencode($seg['id'])?>" class="btn btn-ghost btn-sm">⬇ 导出</a>
+          <button class="btn btn-ghost btn-sm" onclick="var d=this.nextElementSibling;d.style.display=d.style.display==='none'?'':'none'">成员</button>
+          <div style="display:none;flex:1;min-width:0;font-size:11px;color:var(--muted)"><?=count($memberList)?> 人：<?=htmlspecialchars(implode('、', array_slice(array_map(function($m){ $lab = ($m['email'] ?? '') ?: ($m['visitor_id'] ?? ''); return is_string($lab) ? $lab : ''; }, $memberList), 0, 20)))?><?=count($memberList) > 20 ? ' …' : ''?></div>
+        </div>
       </div>
       <?php endforeach; ?>
     </div>
@@ -570,10 +591,43 @@ admin_header('CDP 客户数据中台');
     </div>
 
     <?php elseif ($tab === 'events'): ?>
+    <?php
+    // 事件筛选 + 导出
+    $evFilter = trim($_GET['ev'] ?? '');
+    $evUid = trim($_GET['ev_uid'] ?? '');
+    $evDays = max(1, (int)($_GET['ev_days'] ?? 7));
+    $evCut = date('Y-m-d', strtotime("-{$evDays} days"));
+    $filteredEvents = array_values(array_filter($events, function ($e) use ($evFilter, $evUid, $evCut) {
+        if ($evFilter !== '' && ($e['event'] ?? '') !== $evFilter) return false;
+        if ($evUid !== '' && strpos(($e['visitor_id'] ?? ''), $evUid) === false) return false;
+        if (($e['timestamp'] ?? '') < $evCut) return false;
+        return true;
+    }));
+    if (isset($_GET['export_events'])) {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="events-' . date('Ymd') . '.csv"');
+        echo "\xEF\xBB\xBF时间,事件,用户,属性\n";
+        foreach (array_slice($filteredEvents, 0, 5000) as $e) {
+            echo implode(',', [($e['timestamp'] ?? ''), ($e['event'] ?? ''), ($e['visitor_id'] ?? ''), mb_convert_encoding(json_encode($e['properties'] ?? [], JSON_UNESCAPED_UNICODE), 'GBK', 'UTF-8')]) . "\n";
+        }
+        exit;
+    }
+    $eventNames = array_values(array_unique(array_column($events, 'event')));
+    sort($eventNames);
+    ?>
     <div class="card">
-      <h2>事件流（最近100条）</h2>
+      <h2>事件明细</h2>
+      <form method="get" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0">
+        <input type="hidden" name="tab" value="events">
+        <select name="ev" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px"><option value="">全部事件</option><?php foreach ($eventNames as $en): ?><option value="<?=htmlspecialchars($en)?>" <?=$evFilter===$en?'selected':''?>><?=htmlspecialchars($en)?></option><?php endforeach; ?></select>
+        <input type="text" name="ev_uid" value="<?=htmlspecialchars($evUid)?>" placeholder="按用户ID筛选" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;width:180px">
+        <select name="ev_days" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px"><?php foreach ([1,7,14,30] as $dd): ?><option value="<?=$dd?>" <?=$evDays===$dd?'selected':''?>>近<?=$dd?>天</option><?php endforeach; ?></select>
+        <button class="btn btn-s btn-sm">筛选</button>
+        <a href="cdp.php?tab=events&export_events=1&ev=<?=urlencode($evFilter)?>&ev_uid=<?=urlencode($evUid)?>&ev_days=<?=$evDays?>" class="btn btn-ghost btn-sm">⬇ 导出</a>
+      </form>
       <div style="max-height:600px;overflow-y:auto">
-        <?php foreach (array_slice($events, 0, 100) as $e): ?>
+        <?php if (empty($filteredEvents)): ?><p class="text-sm text-muted">无匹配事件</p><?php endif; ?>
+        <?php foreach (array_slice($filteredEvents, 0, 200) as $e): ?>
         <div class="event-row">
           <span class="event-name"><?=htmlspecialchars($e['event'])?></span>
           <span class="event-time"><?=htmlspecialchars($e['timestamp'])?></span>
@@ -793,8 +847,8 @@ document.addEventListener('DOMContentLoaded', function(){ loadAiInsights(false);
           </div>
           <div class="health-bar" style="margin-bottom:8px"><div class="fill" style="width:<?=$health?>%;background:<?=$healthColor?>"></div></div>
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
-            <?php foreach (($p['tags'] ?? []) as $tag): ?>
-            <span style="background:var(--hover);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600"><?=htmlspecialchars($tag)?></span>
+            <?php foreach (($p['tags'] ?? []) as $tagKey => $tagVal): $tagLabel = is_int($tagKey) ? $tagVal : $tagKey; if (!is_string($tagLabel)) continue; ?>
+            <span style="background:var(--hover);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600"><?=htmlspecialchars($tagLabel)?></span>
             <?php endforeach; ?>
           </div>
           <div style="font-size:11px;color:var(--muted)">事件: <?=$p['events_count']?> · 首访: <?=date('m/d', strtotime($p['first_seen']))?> · 最近: <?=date('m/d', strtotime($p['last_seen'] ?? $p['first_seen']))?></div>
