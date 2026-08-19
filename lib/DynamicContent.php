@@ -136,6 +136,10 @@ class DynamicContent {
             $params['is_vip'] = ($p['member_level'] ?? '') === 'vip' ? '1' : '0';
             // 标签：合并为逗号分隔，支持 contains 匹配
             $params['tags'] = implode(',', $cdp['tags'] ?? []);
+            // 分群：合并分群 id 与名称，支持 contains 匹配（进入分群 → 展示专属内容）
+            $segIds = array_keys($cdp['segment_memberships'] ?? []);
+            $params['segments'] = implode(',', $segIds);
+            try { $allSegs = CdpSystem::allSegments(); foreach ($allSegs as $sg) { if (in_array($sg['id'] ?? '', $segIds, true)) $params['segments'] .= ',' . ($sg['name'] ?? ''); } } catch (Exception $e) {}
         } catch (Exception $e) {}
 
         return $params;
