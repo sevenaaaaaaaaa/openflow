@@ -75,10 +75,23 @@ switch ($action) {
 
         // 创建数字商品订单（一级分销：ref 来自分享链接的分销码）
         $ref = trim($_POST['ref'] ?? ($_GET['ref'] ?? $_COOKIE['of_ref'] ?? ''));
-        $r = CommerceSystem::purchase($member['id'], $product['id'], $ref);
+        $couponCode = trim($_POST['coupon'] ?? ($_COOKIE['of_coupon'] ?? ''));
+        // 优惠券：下单前校验，折扣金额并入订单
+        $couponDiscount = 0; $couponId = '';
+        if ($couponCode !== '') {
+            require_once __DIR__ . '/../lib/CouponSystem.php';
+            $price = (float)($product['pricing']['price'] ?? 0);
+            $v = coupon_validate($member, $couponCode, $price);
+            if (!$v['ok']) { echo json_encode(['ok'=>false,'error'=>$v['error']]); exit; }
+            $couponDiscount = $v['discount'];
+            $couponId = (string)($v['coupon']['id'] ?? '');
+        }
+        $r = CommerceSystem::purchase($member['id'], $product['id'], $ref, $couponDiscount);
         if (!$r['ok'] || empty($r['order'])) { echo json_encode(['ok'=>false,'error'=>$r['error'] ?? '下单失败']); exit; }
         $order = $r['order'];
         if (!empty($order['referrer_id'])) setcookie('of_ref', $order['referrer_id'], time() + 86400 * 30, '/');
+        // 标记优惠券已使用
+        if ($couponId !== '') coupon_mark_used($couponId, $member['id'], $order['id']);
 
         // 虎皮椒支付
         $pay = shop_xfpay_create($order, $member);

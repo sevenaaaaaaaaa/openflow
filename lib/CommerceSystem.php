@@ -118,7 +118,7 @@ class CommerceSystem {
      * 创建数字商品订单（复用 ShopSystem 订单表）
      * @return array ['ok'=>, 'order'=>, 'pay_url'=>]
      */
-    public static function purchase(string $memberId, string $productId, string $referrer = ''): array {
+    public static function purchase(string $memberId, string $productId, string $referrer = '', float $couponDiscount = 0): array {
         $product = self::getProduct($productId);
         if (!$product) return ['ok' => false, 'error' => '商品不存在'];
         if ($product['status'] !== 'published') return ['ok' => false, 'error' => '商品未上架'];
@@ -173,16 +173,19 @@ class CommerceSystem {
         $orderId = 'order_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6);
         $period = $product['pricing']['period'] ?? 'month';
         $distRate = (float)($product['distributor_rate'] ?? 30); // 百分数（30 = 30%）
+        $payAmount = round(max(0, $price - $couponDiscount), 2);
         $order = [
             'id' => $orderId,
             'member_id' => $memberId,
             'course_id' => $productId,
             'course_title' => $product['title'],
-            'amount' => $price,
+            'amount' => $payAmount,
+            'original_amount' => $price,
+            'coupon_discount' => $couponDiscount,
             'status' => 'pending',
             'payment_method' => '',
             'referrer_id' => $referrerId,
-            'commission' => $referrerId ? round($price * $distRate / 100, 2) : 0,
+            'commission' => $referrerId ? round($payAmount * $distRate / 100, 2) : 0,
             'created_at' => date('Y-m-d H:i:s'),
             'paid_at' => '',
             'goods_type' => 'product',
