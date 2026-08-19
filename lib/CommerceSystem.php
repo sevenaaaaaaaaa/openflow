@@ -39,6 +39,7 @@ class CommerceSystem {
             'description' => $data['description'] ?? '',
             'cover' => $data['cover'] ?? '',
             'pricing' => $data['pricing'] ?? ['mode' => 'one_time', 'price' => 0],
+            'promo' => $data['promo'] ?? null, // 限时折扣：['price'=>折扣价,'start'=>,'end'=>]
             'items' => $data['items'] ?? [],  // 组合包内容（type=bundle 时）
             'author' => $data['author'] ?? '',
             'author_name' => $data['author_name'] ?? '',
@@ -62,7 +63,7 @@ class CommerceSystem {
         foreach ($products as &$p) {
             if ($p['id'] === $id) {
                 foreach ($data as $k => $v) {
-                    if (in_array($k, ['type','asset_id','title','description','cover','pricing','items','author','author_name','commission_rate','distribution_enabled','distributor_rate','status'], true)) $p[$k] = $v;
+                    if (in_array($k, ['type','asset_id','title','description','cover','pricing','items','author','author_name','commission_rate','distribution_enabled','distributor_rate','stock','promo','status'], true)) $p[$k] = $v;
                 }
                 self::saveProducts($products);
                 return $p;
@@ -125,6 +126,16 @@ class CommerceSystem {
         if (!$product) return ['ok' => false, 'error' => '商品不存在'];
         if ($product['status'] !== 'published') return ['ok' => false, 'error' => '商品未上架'];
         $price = (float)($product['pricing']['price'] ?? 0);
+
+        // 限时折扣（promo 生效期间用折扣价）
+        $promo = $product['promo'] ?? null;
+        if ($promo && isset($promo['price'])) {
+            $now = time();
+            $inPromo = true;
+            if (!empty($promo['start']) && strtotime($promo['start']) > $now) $inPromo = false;
+            if (!empty($promo['end']) && strtotime($promo['end']) < $now) $inPromo = false;
+            if ($inPromo) $price = (float)$promo['price'];
+        }
 
         // 已拥有则直接交付
         if (self::owns($memberId, $productId)) {
