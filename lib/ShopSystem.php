@@ -71,6 +71,15 @@ function shop_create_order(string $memberId, string $courseId): array {
     $price = $settings['course_prices'][$courseId] ?? 0;
     if ($price <= 0) return ['ok' => false, 'error' => '该课程未设置价格'];
 
+    // 课程限时折扣（促销价 + 起止时间）
+    $promo = $settings['course_promos'][$courseId] ?? [];
+    $now = time();
+    $promoOn = !empty($promo['price']) && $promo['price'] > 0
+        && (!$promo['start'] || strtotime($promo['start']) <= $now)
+        && (!$promo['end'] || strtotime($promo['end']) >= $now);
+    $original = $price;
+    if ($promoOn) $price = (float)$promo['price'];
+
     $orderId = 'order_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6);
     $referrerId = '';
     $commission = 0;
@@ -89,6 +98,7 @@ function shop_create_order(string $memberId, string $courseId): array {
         'course_id' => $courseId,
         'course_title' => $course['title'],
         'amount' => $price,
+        'original_amount' => $original,
         'status' => 'pending',
         'payment_method' => '',
         'referrer_id' => $referrerId,
