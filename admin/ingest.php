@@ -19,6 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         'evernote_token' => trim($_POST['evernote_token'] ?? ''),
         'import_category' => trim($_POST['import_category'] ?? 'insight'),
         'import_status' => $_POST['import_status'] ?? 'draft',
+        // 双向同步：出站配置
+        'sync_notion' => !empty($_POST['sync_notion']),
+        'notion_db_id' => trim($_POST['notion_db_id'] ?? ''),
+        'sync_webhook' => trim($_POST['sync_webhook'] ?? ''),
+        'sync_secret' => trim($_POST['sync_secret'] ?? ''),
     ];
     json_write($configFile, $config);
     $message = '连接器配置已保存';
@@ -77,6 +82,18 @@ admin_header('内容导入连接器');
             <?php endforeach; ?>
           </select></div>
           <div class="field"><label>默认状态</label><select name="import_status"><option value="draft" <?=($config['import_status']??'draft')==='draft'?'selected':''?>>草稿</option><option value="pending" <?=($config['import_status']??'')==='pending'?'selected':''?>>待审核</option></select></div>
+        </div>
+        <div class="field" style="margin-top:10px;padding-top:14px;border-top:1px solid var(--border)">
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">🔄 双向同步（站内 → 外部平台）</h3>
+          <p class="text-sm text-muted mb-3">文章发布后自动推送：Notion 页面 / 外部 webhook。入站（外部 → 文章）用下方各平台导入。</p>
+          <div class="field-row">
+            <div class="field"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" name="sync_notion" value="1" <?=!empty($config['sync_notion'])?'checked':''?> style="width:16px;height:16px"> 发布到 Notion</label></div>
+            <div class="field"><label>Notion 数据库 ID</label><input type="text" name="notion_db_id" value="<?=htmlspecialchars($config['notion_db_id'] ?? '')?>" placeholder="数据库 page id"></div>
+          </div>
+          <div class="field-row">
+            <div class="field" style="flex:2"><label>出站 Webhook URL <span class="hint">· 文章发布后推送</span></label><input type="text" name="sync_webhook" value="<?=htmlspecialchars($config['sync_webhook'] ?? '')?>" placeholder="https://…/receive-article"></div>
+            <div class="field"><label>Webhook 签名密钥 <span class="hint">· HMAC-SHA256</span></label><input type="text" name="sync_secret" value="<?=htmlspecialchars($config['sync_secret'] ?? '')?>" placeholder="secret"></div>
+          </div>
         </div>
         <button type="submit" name="save" class="btn btn-primary">保存配置</button>
       </div>
