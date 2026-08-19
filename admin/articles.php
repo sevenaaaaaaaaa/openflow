@@ -264,6 +264,9 @@ td.actions{white-space:nowrap;width:1%}
                 <?php endforeach; ?>
                 <?php if (count($a['tags']??[]) > 3): ?><span class="text-sm text-muted">+<?=count($a['tags'])-3?></span><?php endif; ?>
                 <?php if (empty($a['tags']??[])): ?><span class="text-sm text-muted">—</span><?php endif; ?>
+                <?php if (!empty($a['synced_to'])): $syncs = array_map(fn($p) => strtoupper($p), array_keys($a['synced_to'])); ?>
+                <span style="font-size:10px;color:var(--ok);margin-left:6px">🔄 已同步 <?=htmlspecialchars(implode('/', $syncs))?></span>
+                <?php endif; ?>
               </div>
             </td>
             <td>
