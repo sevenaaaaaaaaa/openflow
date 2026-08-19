@@ -1027,64 +1027,72 @@ class CdpSystem {
     /**
      * N日留存分析
      */
-    public static function getRetention(int $days = 30): array {
+    public static function getRetention(int $days = 30, array $opts = []): array {
         $events = self::allEvents();
         $profiles = self::allProfiles();
+        $startEvent = $opts['start_event'] ?? ''; // '' = 任意首访（用 first_seen）
+        $retEvent = $opts['ret_event'] ?? '';      // '' = 任意事件（回访）
+        $granularity = $opts['granularity'] ?? 'day'; // day/week/month
 
-        // 按用户分组事件
-        $userEvents = [];
+        // cohort 归属：用户进入（首次 start_event 或 first_seen）
+        $userCohort = []; // vid => cohort_date
+        $userEventDates = []; // vid => 事件日期集合
         foreach ($events as $e) {
             $vid = $e['visitor_id'];
-            if (!isset($userEvents[$vid])) $userEvents[$vid] = [];
-            $userEvents[$vid][] = $e['timestamp'];
-        }
-
-        $retention = [];
-        for ($i = 0; $i < $days; $i++) {
-            $date = date('Y-m-d', strtotime("-{$i} days"));
-            $retention[$date] = ['cohort_size' => 0, 'retained' => []];
-        }
-
-        // 统计每日新增用户
-        foreach ($profiles as $p) {
-            $firstSeen = date('Y-m-d', strtotime($p['first_seen']));
-            if (isset($retention[$firstSeen])) {
-                $retention[$firstSeen]['cohort_size']++;
+            if ($vid === '') continue;
+            $ts = $e['timestamp'] ?? '';
+            if ($startEvent === '' || $e['event'] === $startEvent) {
+                if (!isset($userCohort[$vid])) $userCohort[$vid] = self::granularityDate($ts, $granularity);
+            }
+            if ($retEvent === '' || $e['event'] === $retEvent) {
+                if (!isset($userEventDates[$vid])) $userEventDates[$vid] = [];
+                $userEventDates[$vid][self::granularityDate($ts, $granularity)] = true;
             }
         }
-
-        // 计算留存
-        foreach ($retention as $date => &$data) {
-            if ($data['cohort_size'] === 0) continue;
-
-            $cohortUsers = array_filter($profiles, fn($p) => date('Y-m-d', strtotime($p['first_seen'])) === $date);
-            $cohortVids = array_column($cohortUsers, 'visitor_id');
-
-            for ($day = 0; $day < $days; $day++) {
-                $checkDate = date('Y-m-d', strtotime("{$date} +{$day} days"));
-                if (!isset($retention[$checkDate])) continue;
-
-                $retained = 0;
-                foreach ($cohortVids as $vid) {
-                    if (isset($userEvents[$vid])) {
-                        foreach ($userEvents[$vid] as $ts) {
-                            if (date('Y-m-d', strtotime($ts)) === $checkDate) {
-                                $retained++;
-                                break;
-                            }
-                        }
-                    }
+        // start_event 为空时，用画像 first_seen 补 cohort
+        if ($startEvent === '') {
+            foreach ($profiles as $p) {
+                $vid = $p['visitor_id'] ?? '';
+                if ($vid !== '' && !isset($userCohort[$vid])) {
+                    $userCohort[$vid] = self::granularityDate($p['first_seen'] ?? '', $granularity);
                 }
-
-                $data['retained'][$day] = [
-                    'day' => $day,
-                    'count' => $retained,
-                    'rate' => round($retained / $data['cohort_size'] * 100, 1),
-                ];
             }
         }
 
-        return $retention;
+        // 构建 cohort 矩阵
+        $cohortDates = [];
+        for ($i = 0; $i < $days; $i++) {
+            $ts = strtotime("-{$i} day");
+            $cohortDates[] = self::granularityDate(date('Y-m-d', $ts), $granularity);
+        }
+        $cohortDates = array_values(array_unique($cohortDates));
+
+        $matrix = [];
+        foreach ($cohortDates as $cd) {
+            $users = array_keys(array_filter($userCohort, fn($d) => $d === $cd));
+            $size = count($users);
+            $offsets = [];
+            foreach ($cohortDates as $offset => $od) {
+                if ($od < $cd) continue; // 只看当期及之后
+                $retained = 0;
+                foreach ($users as $u) {
+                    if (isset($userEventDates[$u][$od])) $retained++;
+                }
+                $offsets[$od] = $size > 0 ? round($retained / $size * 100, 1) : null;
+            }
+            $matrix[] = ['date'=>$cd, 'cohort_size'=>$size, 'retention'=>$offsets];
+        }
+
+        return $matrix;
+    }
+
+    // 按粒度归一到周期起点（day/week/month）
+    private static function granularityDate(string $ts, string $granularity): string {
+        $t = strtotime($ts ?: '2000-01-01');
+        if ($t === false) $t = time();
+        if ($granularity === 'week') return date('Y-m-d', strtotime('monday this week', $t));
+        if ($granularity === 'month') return date('Y-m-01', $t);
+        return date('Y-m-d', $t);
     }
 
     // ─── RFM 分析 ──────────────────────────────────
