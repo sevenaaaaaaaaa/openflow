@@ -348,6 +348,17 @@ function get_leads(): array {
 // ─── Articles ──────────────────────────────────────
 function get_articles(): array {
     $all = json_read(ARTICLES_DIR . '/index.json');
+    // 定时发布：scheduled 且到 publish_at 自动转 published（惰性发布）
+    $changed = false;
+    foreach ($all as &$a) {
+        if (($a['status'] ?? '') === 'scheduled' && !empty($a['publish_at']) && strtotime($a['publish_at']) <= time()) {
+            $a['status'] = 'published';
+            $a['published_at'] = $a['publish_at'];
+            $changed = true;
+        }
+    }
+    unset($a);
+    if ($changed) json_write(ARTICLES_DIR . '/index.json', $all);
     usort($all, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
     return $all;
 }
