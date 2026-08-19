@@ -175,6 +175,32 @@ foreach ($course['chapters'] ?? [] as $ch) {
         <button onclick="toggleFav(<?=json_encode($courseId)?>, this)" class="mt-3 w-full rounded-full py-2 text-sm font-semibold" style="border:1.5px solid var(--border);color:<?=$isFav?'var(--warn)':'var(--muted)'?>"><?=$isFav?'★ 已收藏':'☆ 收藏课程'?></button>
         <?php endif; ?>
       </div>
+
+      <!-- 配套生态工具（课程 ↔ 生态交叉销售） -->
+      <?php
+      $relProducts = [];
+      try {
+          $allP = array_values(array_filter(CommerceSystem::allPublished(), fn($p) => (float)($p['pricing']['price'] ?? 0) > 0));
+          $kws = array_filter(preg_split('/[\s,，、\/]+/', ($course['title'] ?? '') . ' ' . implode(' ', $course['tags'] ?? [])), fn($w) => mb_strlen($w) >= 2);
+          foreach ($allP as $pp) {
+              $hay = ($pp['title'] ?? '') . ' ' . implode(' ', $pp['tags'] ?? []) . ' ' . ($pp['description'] ?? '');
+              foreach ($kws as $kw) { if (mb_strpos($hay, $kw) !== false) { $relProducts[] = $pp; break; } }
+              if (count($relProducts) >= 3) break;
+          }
+          if (empty($relProducts)) $relProducts = array_slice($allP, 0, 3);
+      } catch (Exception $e) {}
+      if (!empty($relProducts)): ?>
+      <div class="mt-4">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--muted)">🎁 配套生态工具</div>
+        <?php foreach ($relProducts as $rp): $rpUrl = in_array($rp['type'], ['skill','plugin','theme']) ? '/' . $rp['type'] . '/' . urlencode($rp['id']) : '/marketplace'; ?>
+        <a href="<?=$rpUrl?>" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:12px;margin-bottom:8px;color:var(--fg)">
+          <span style="font-size:18px"><?=['skill'=>'⚡','plugin'=>'🔌','theme'=>'🎨','membership'=>'👑','bundle'=>'📦'][$rp['type']] ?? '📦'?></span>
+          <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($rp['title'])?></div><div style="font-size:11px;color:var(--faint)">¥<?=number_format((float)($rp['pricing']['price'] ?? 0),0)?> · 即买即用</div></div>
+          <span style="font-size:12px;color:var(--accent)">去看看 →</span>
+        </a>
+        <?php endforeach; ?>
+      </div>
+      <?php endif; ?>
     </div>
   </div>
 
