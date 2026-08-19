@@ -198,6 +198,22 @@ if ($reply !== '') {
 // 意图识别 → 返回可执行的快捷操作（小福聊天里的「去执行」按钮）
 $actions = [];
 $m = mb_strtolower($message);
+
+// ─── Copilot 动作：自然语言 → 创建自动化流程 / 快速数据问答 ───
+require_once __DIR__ . '/../lib/CopilotActions.php';
+// 建自动化流程
+$parsedFlow = copilot_parse_flow($message);
+if ($parsedFlow) {
+    $created = copilot_create_flow($parsedFlow);
+    if ($created['ok']) {
+        $actions[] = ['label' => '⚡ 已创建流程：「' . $parsedFlow['name'] . '」', 'url' => 'admin/automation.php', 'icon' => '🤖'];
+    }
+}
+// 快速数据问答
+$quickData = copilot_quick_data($message);
+if ($quickData) {
+    $systemPrompt .= "\n\n【数据查询结果】\n" . ($quickData['data'] ?? '');
+}
 $want = [
     '发文章' => [['发文章', '文章'], '文章管理', 'articles.php', '📝'],
     '写文章' => [['写文章', '写一篇', '怎么写'], '写新文章', 'article-edit.php', '✍️'],
