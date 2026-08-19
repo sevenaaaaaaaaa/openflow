@@ -219,6 +219,9 @@ class CdpSystem {
         // 自动打标签
         self::autoTag($profile, $event, $data);
 
+        // 增量分群评估（进出群触发 MA）
+        self::evaluateUserSegments($profile);
+
         json_write(self::$profilesFile, $profiles);
     }
 
@@ -437,39 +440,81 @@ class CdpSystem {
      */
     private static function matchRules(array $profile, array $rules): bool {
         if (empty($rules)) return true;
+        return self::matchRuleGroup($rules, $profile);
+    }
 
-        foreach ($rules as $rule) {
-            $type = $rule['type'] ?? '';
-            $field = $rule['field'] ?? '';
-            $operator = $rule['operator'] ?? 'equals';
-            $value = $rule['value'] ?? '';
-
-            switch ($type) {
-                case 'property':
-                    $actual = $profile['properties'][$field] ?? '';
-                    if (!self::compare($actual, $operator, $value)) return false;
-                    break;
-
-                case 'event':
-                    $eventName = $rule['event'] ?? '';
-                    $count = self::countUserEvents($profile['visitor_id'], $eventName);
-                    if (!self::compare($count, $operator, (int)$value)) return false;
-                    break;
-
-                case 'tag':
-                    if (!in_array($field, $profile['tags'] ?? [])) return false;
-                    break;
-
-                case 'last_seen':
-                    $days = (int)$value;
-                    $lastSeen = strtotime($profile['last_seen'] ?? '2000-01-01');
-                    $diff = (time() - $lastSeen) / 86400;
-                    if (!self::compare($diff, $operator, $days)) return false;
-                    break;
+    // 规则组递归评估（and/or + 嵌套 group）
+    private static function matchRuleGroup(array $group, array $profile): bool {
+        $operator = $group['operator'] ?? 'and';
+        $rules = $group['rules'] ?? $group; // 兼容纯列表（默认 and）
+        if (isset($group['operator']) && isset($group['rules'])) {
+            foreach ($rules as $rule) {
+                if (($rule['type'] ?? '') === 'group') {
+                    $matched = self::matchRuleGroup($rule, $profile);
+                } else {
+                    $matched = self::matchSingleRule($rule, $profile);
+                }
+                if ($operator === 'and' && !$matched) return false;
+                if ($operator === 'or' && $matched) return true;
             }
+            return $operator === 'and';
         }
-
+        // 纯规则列表：AND
+        foreach ($rules as $rule) {
+            $matched = ($rule['type'] ?? '') === 'group' ? self::matchRuleGroup($rule, $profile) : self::matchSingleRule($rule, $profile);
+            if (!$matched) return false;
+        }
         return true;
+    }
+
+    // 单条规则评估
+    private static function matchSingleRule(array $rule, array $profile): bool {
+        $type = $rule['type'] ?? '';
+        $field = $rule['field'] ?? '';
+        $operator = $rule['operator'] ?? 'equals';
+        $value = $rule['value'] ?? '';
+
+        switch ($type) {
+            case 'property':
+                $actual = $profile['properties'][$field] ?? '';
+                return self::compare($actual, $operator, $value);
+
+            case 'event':
+                $eventName = $rule['event'] ?? '';
+                $windowDays = (int)($rule['window'] ?? 0);
+                $count = self::countUserEvents($profile['visitor_id'], $eventName, $windowDays);
+                return self::compare($count, $operator, (int)$value);
+
+            case 'summary':
+                $actual = $profile['summaries'][$field] ?? ($profile[$field] ?? 0);
+                return self::compare($actual, $operator, $value);
+
+            case 'lifecycle':
+                $stage = $profile['lifecycle']['stage'] ?? '';
+                return self::compare($stage, $operator, $value);
+
+            case 'tag':
+                $tags = $profile['tags'] ?? [];
+                if (is_array($tags)) return isset($tags[$field]) || in_array($field, $tags, true);
+                return in_array($field, $tags, true);
+
+            case 'last_seen':
+                $days = (int)$value;
+                $lastSeen = strtotime($profile['last_seen'] ?? '2000-01-01');
+                $diff = (time() - $lastSeen) / 86400;
+                return self::compare($diff, $operator, $days);
+
+            case 'first_seen':
+                $days = (int)$value;
+                $first = strtotime($profile['first_seen'] ?? '2000-01-01');
+                $diff = (time() - $first) / 86400;
+                return self::compare($diff, $operator, $days);
+
+            case 'segment':
+                $segId = $value ?? '';
+                return !empty($profile['segment_memberships'][$segId]);
+        }
+        return false;
     }
 
     private static function compare($actual, string $operator, $expected): bool {
@@ -487,15 +532,45 @@ class CdpSystem {
         }
     }
 
-    private static function countUserEvents(string $visitorId, string $event): int {
+    private static function countUserEvents(string $visitorId, string $event, int $windowDays = 0): int {
         $events = self::allEvents();
         $count = 0;
+        $cutoff = $windowDays > 0 ? date('Y-m-d H:i:s', time() - $windowDays * 86400) : '';
         foreach ($events as $e) {
             if ($e['visitor_id'] === $visitorId && $e['event'] === $event) {
+                if ($cutoff !== '' && ($e['timestamp'] ?? '') < $cutoff) continue;
                 $count++;
             }
         }
         return $count;
+    }
+
+    // 单用户增量分群评估（事件后调用，对标 Segment 实时进出群）
+    // 维护 segment_memberships + 触发 segment_enter/segment_exit 事件供 MA 消费
+    private static function evaluateUserSegments(array &$profile): void {
+        $segments = self::allSegments();
+        if (empty($segments)) return;
+        $memberships = &$profile['segment_memberships'];
+        foreach ($segments as $seg) {
+            $segId = $seg['id'] ?? '';
+            if ($segId === '') continue;
+            $rules = $seg['rules'] ?? [];
+            $operator = $seg['operator'] ?? 'and';
+            $in = self::matchRuleGroup(['operator'=>$operator, 'rules'=>$rules], $profile);
+            $wasIn = isset($memberships[$segId]);
+            if ($in && !$wasIn) {
+                $memberships[$segId] = ['joined_at'=>date('Y-m-d H:i:s'), 'evaluated_at'=>date('Y-m-d H:i:s')];
+                // 进出群事件（供 FlowSystem/AutomationSystem 消费）
+                try {
+                    if (function_exists('flow_handle')) flow_handle('segment_enter', ['profile_id'=>$profile['visitor_id'] ?? '', 'segment_id'=>$segId, 'props'=>['segment_name'=>$seg['name'] ?? $segId]]);
+                } catch (Throwable $e) {}
+            } elseif (!$in && $wasIn) {
+                unset($memberships[$segId]);
+                try {
+                    if (function_exists('flow_handle')) flow_handle('segment_exit', ['profile_id'=>$profile['visitor_id'] ?? '', 'segment_id'=>$segId, 'props'=>['segment_name'=>$seg['name'] ?? $segId]]);
+                } catch (Throwable $e) {}
+            }
+        }
     }
 
     // ─── 统计分析 ──────────────────────────────────
