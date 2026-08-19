@@ -164,6 +164,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try { flow_content_published($article); } catch (Exception $e) {}
         }
 
+        // 知识平台双向同步：发布 → Notion / 外部 webhook
+        if (($article['status'] ?? '') === 'published') {
+            try {
+                require_once __DIR__ . '/../lib/KnowledgeSync.php';
+                $syncResult = ksync_publish_article($article, $wasPublished ? 'update' : 'publish');
+                ksync_mark_synced($article['id'], $syncResult['platforms'], 'publish');
+            } catch (Throwable $e) {}
+        }
+
         // 审核命中：记录待审核 + 通知管理员/市场总监
         if ($needReview) {
             $review = review_apply('article', $article['id'], $reviewResult, [
