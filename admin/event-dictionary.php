@@ -90,6 +90,36 @@ admin_header('事件字典');
       <?php endforeach; ?>
     </div>
 
+    <!-- Tracking Plan · 数据质量 -->
+    <?php $quality = EventDictionary::qualitySummary(); ?>
+    <div class="card" style="margin-bottom:20px">
+      <h2>📊 Tracking Plan · 数据质量</h2>
+      <p class="sub">事件按 Schema 校验（必填属性/身份字段），不拦截上报，仅记录问题供修复埋点</p>
+      <?php if (empty($quality['by_event'])): ?>
+      <p class="text-sm text-muted">暂无质量问题，埋点上报合规 👍</p>
+      <?php else: ?>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+        <?php foreach ($quality['by_event'] as $ev => $cnt): ?>
+        <span class="badge badge-red" style="font-size:12px"><?=htmlspecialchars($ev)?> · <?=$cnt?> 条问题</span>
+        <?php endforeach; ?>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;overflow:auto;max-height:200px">
+        <table style="font-size:12px">
+          <thead><tr><th>时间</th><th>事件</th><th>问题</th></tr></thead>
+          <tbody>
+            <?php foreach ($quality['recent'] as $qi): ?>
+            <tr>
+              <td class="text-sm text-muted" style="white-space:nowrap"><?=htmlspecialchars(substr($qi['at'] ?? '', 5, 11))?></td>
+              <td><?=htmlspecialchars($qi['event'] ?? '')?></td>
+              <td class="text-sm text-muted"><?=htmlspecialchars(implode('；', $qi['issues'] ?? []))?></td>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <?php endif; ?>
+    </div>
+
     <form method="post">
       <?= csrf_field() ?>
       <input type="hidden" name="save_switches" value="1">

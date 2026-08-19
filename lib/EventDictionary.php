@@ -117,4 +117,71 @@ class EventDictionary {
         }
         return ['by_event' => $byEvent, 'by_category' => $byCategory, 'total' => $total];
     }
+
+    /**
+     * Tracking Plan：为内置事件生成 schema（prop => 'type:required?'）
+     */
+    public static function buildSchema(string $event): array {
+        static $schemaCache = null;
+        if ($schemaCache === null) {
+            $schemaCache = [];
+            foreach (self::builtin() as $b) {
+                $sc = [];
+                foreach (array_filter(array_map('trim', explode(',', $b['props'] ?? ''))) as $p) {
+                    if ($p === 'utm_*') continue;
+                    $sc[$p] = 'string';
+                }
+                $schemaCache[$b['name']] = $sc;
+            }
+        }
+        return $schemaCache[$event] ?? [];
+    }
+
+    /**
+     * 校验事件数据（Tracking Plan 合规）：返回质量问题列表
+     * 仅记录不拦截（避免丢事件），质量进入 data-quality.json 供监控
+     */
+    public static function validate(string $event, array $data): array {
+        $issues = [];
+        $schema = self::buildSchema($event);
+        if (empty($schema)) return $issues;
+        $required = ['member_id', 'email']; // 关键身份字段，缺失算问题
+        foreach ($required as $k) {
+            if (empty($data[$k]) && ($event === 'purchase' || $event === 'form_submit')) $issues[] = "缺少身份字段 {$k}";
+        }
+        foreach ($schema as $prop => $type) {
+            if (!array_key_exists($prop, $data)) {
+                // 必填：page_view 的 path / form_submit 的 form_id 等
+                if (in_array($prop, ['path', 'form_id', 'course_id', 'slug'], true)) $issues[] = "缺少关键属性 {$prop}";
+                continue;
+            }
+            $v = $data[$prop];
+            if ($type === 'string' && !is_scalar($v)) $issues[] = "属性 {$prop} 应为字符串";
+            if ($type === 'number' && !is_numeric($v)) $issues[] = "属性 {$prop} 应为数字";
+        }
+        return $issues;
+    }
+
+    /**
+     * 记录数据质量问题
+     */
+    public static function logQualityIssue(string $event, array $issues): void {
+        $file = DATA_DIR . '/data-quality.json';
+        $q = json_read($file);
+        $q[] = ['event' => $event, 'issues' => $issues, 'at' => date('Y-m-d H:i:s'), 'count' => 1];
+        json_write($file, array_slice($q, -500));
+    }
+
+    /**
+     * 数据质量汇总（供监控面板）
+     */
+    public static function qualitySummary(): array {
+        $q = json_read(DATA_DIR . '/data-quality.json');
+        $byEvent = [];
+        foreach ($q as $e) {
+            $byEvent[$e['event'] ?? ''] = ($byEvent[$e['event'] ?? ''] ?? 0) + ($e['count'] ?? 1);
+        }
+        arsort($byEvent);
+        return ['total' => count($q), 'by_event' => $byEvent, 'recent' => array_slice($q, 0, 20)];
+    }
 }
