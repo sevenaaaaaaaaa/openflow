@@ -160,6 +160,42 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
             <?php endif; ?>
           </div>
           <p class="text-sm text-muted mt-6">从「我的课程」开始你的学习之旅。</p>
+          <?php
+          // 个性化推荐（基于 CDP 画像）
+          try {
+              require_once __DIR__ . '/lib/Personalizer.php';
+              $pref = Personalizer::buildProfile($_COOKIE['fc_uid'] ?? '', $member['id'], $member['email'] ?? '');
+              $recProducts = Personalizer::recommendProducts($pref, 4);
+              $recCourses = Personalizer::recommendCourses($pref, 3);
+          } catch (Throwable $e) { $recProducts = []; $recCourses = []; }
+          if (!empty($recProducts) || !empty($recCourses)): ?>
+          <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">✨ 为你推荐</h3>
+            <p style="font-size:12px;color:var(--faint);margin-bottom:14px">根据你的行为画像智能推荐 · 进入分群/点击商品/浏览课程都会更新</p>
+            <?php if (!empty($recProducts)): ?>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">🎁 生态工具</div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px">
+              <?php foreach (array_keys($recProducts) as $rpid): $rp = CommerceSystem::getProduct($rpid); if (!$rp) continue; ?>
+              <a href="/skill/<?=urlencode($rpid)?>" style="flex:1;min-width:200px;max-width:260px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;color:var(--fg)">
+                <div style="font-size:13px;font-weight:600"><?=htmlspecialchars($rp['title'])?></div>
+                <div style="font-size:11px;color:var(--faint);margin-top:4px">¥<?=number_format((float)($rp['pricing']['price'] ?? 0),0)?> · 即买即用</div>
+              </a>
+              <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+            <?php if (!empty($recCourses)): ?>
+            <div style="font-size:12px;color:var(--muted);margin:14px 0 8px">🎓 相关课程</div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px">
+              <?php foreach (array_keys($recCourses) as $rcid): $rc = null; foreach (json_read(DATA_DIR . '/courses/index.json') as $cc) { if ($cc['id'] === $rcid) { $rc = $cc; break; } } if (!$rc) continue; ?>
+              <a href="/course/<?=urlencode($rcid)?>?id=<?=urlencode($rcid)?>" style="flex:1;min-width:200px;max-width:260px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;color:var(--fg)">
+                <div style="font-size:13px;font-weight:600"><?=htmlspecialchars($rc['title'])?></div>
+                <div style="font-size:11px;color:var(--faint);margin-top:4px"><?=htmlspecialchars($rc['type'] ?? '课程')?> · <?=count($rc['chapters'] ?? [])?> 章</div>
+              </a>
+              <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+          </div>
+          <?php endif; ?>
         </div>
         <?php elseif ($tab === 'membership'): include_member_membership($member); ?>
         <?php elseif ($tab === 'orders'): include_member_orders($myOrders); ?>
