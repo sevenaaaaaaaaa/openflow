@@ -120,8 +120,25 @@ if (isset($_POST['send_newsletter'])) {
                 }
             }
 
+            require_once __DIR__ . '/../lib/MailCampaign.php';
+            // 邮件模板（若有选择）
+            $mailTemplate = null;
+            if (!empty($_POST['mail_template'])) $mailTemplate = mailc_template($_POST['mail_template']);
+            $campaign = 'nl_' . $selectedId;
+
             $sentCount = 0;
             foreach ($recipients as $rcpt) {
+                // 渲染内容（模板 + 变量 + 退订链接 + pixel + 链接包装）
+                $subject = $article['title'];
+                $articleUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/article/' . $article['slug'];
+                $content = $mailTemplate
+                    ? $mailTemplate['html']
+                    : '<p>' . nl2br(htmlspecialchars($content)) . '</p>'
+                      . '<p style="text-align:center"><a href="' . $articleUrl . '" style="background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;display:inline-block">阅读全文 →</a></p>';
+                $vars = ['title' => $article['title'], 'subject' => $subject, 'content' => strip_tags($content), 'article_url' => $articleUrl];
+                $html = mailc_render($content, $vars, $campaign, $rcpt['email']);
+                $html .= '<img src="' . mailc_pixel($campaign, $rcpt['email']) . '" width="1" height="1" alt="" style="display:none">';
+
                 // Post to BillionMail
                 $ch = curl_init($bmConfig['api_url'] . '/api/batch_mail/api/send');
                 curl_setopt_array($ch, [
@@ -131,9 +148,9 @@ if (isset($_POST['send_newsletter'])) {
                         'recipient' => $rcpt['email'],
                         'addresser' => $bmConfig['default_sender'],
                         'attribs' => [
-                            'subject' => '📬 ' . $article['title'],
-                            'content' => $content,
-                            'article_url' => 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/article/' . $article['slug'],
+                            'subject' => '📬 ' . $subject,
+                            'content' => $html,
+                            'article_url' => $articleUrl,
                             'title' => $article['title'],
                         ],
                     ]),
@@ -150,7 +167,7 @@ if (isset($_POST['send_newsletter'])) {
             // Log
             $log = json_read($newsletterFile);
             if (empty($log)) $log = [];
-            $log[] = ['article_id' => $selectedId, 'title' => $article['title'], 'sent_at' => date('Y-m-d H:i:s'), 'recipients' => $sentCount, 'mode' => $mode];
+            $log[] = ['article_id' => $selectedId, 'title' => $article['title'], 'sent_at' => date('Y-m-d H:i:s'), 'recipients' => $sentCount, 'mode' => $mode, 'campaign' => $campaign];
             json_write($newsletterFile, $log);
             $message = "Newsletter 已推送: {$article['title']}（{$sentCount} 位收件人 · " . ($mode === 'test' ? '测试' : '订阅者') . "）";
         }
@@ -315,6 +332,14 @@ admin_header('邮件营销');
               <?php endforeach; ?>
             </select>
           </div>
+          <div class="field"><label>邮件模板 <span class="hint">· 留空用默认图文版</span></label>
+            <select name="mail_template">
+              <option value="">— 默认图文版 —</option>
+              <?php foreach (mailc_templates() as $t): ?>
+              <option value="<?=htmlspecialchars($t['id'])?>"><?=htmlspecialchars($t['name'])?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
           <div class="field"><label>发送方式</label>
             <select name="newsletter_mode">
               <option value="test">测试：仅发送到配置的发件人邮箱</option>
@@ -336,6 +361,56 @@ admin_header('邮件营销');
           <tr><td><code>{{content}}</code></td><td>文章内容摘要（前 500 字）</td></tr>
           <tr><td><code>{{article_url}}</code></td><td>文章链接</td></tr>
         </tbody></table>
+      </div>
+
+      <?php
+      // 邮件模板保存
+      require_once __DIR__ . '/../lib/MailCampaign.php';
+      if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_template'])) {
+          csrf_verify();
+          $tpls = mailc_templates();
+          $tpls[] = ['id' => 'tpl_' . date('YmdHis'), 'name' => trim($_POST['tpl_name'] ?? ''), 'html' => $_POST['tpl_html'] ?? '', 'created_at' => date('Y-m-d H:i:s')];
+          mailc_save_templates($tpls);
+          flash('success', '邮件模板已保存');
+          header('Location: /xmp/email');
+          exit;
+      }
+      if (isset($_GET['del_tpl'])) {
+          mailc_save_templates(array_values(array_filter(mailc_templates(), fn($t) => ($t['id'] ?? '') !== $_GET['del_tpl'])));
+          header('Location: /xmp/email');
+          exit;
+      }
+      $templates = mailc_templates();
+      // 最近群发统计
+      $nlLog = json_read($newsletterFile);
+      $lastCamp = $nlLog ? end($nlLog) : null;
+      $lastStats = $lastCamp && !empty($lastCamp['campaign']) ? mailc_campaign_stats($lastCamp['campaign'], $lastCamp['recipients'] ?? 0) : null;
+      ?>
+      <div class="card">
+        <h2>📧 邮件模板 + 效果统计</h2>
+        <p class="sub">群发可选模板（支持 {{title}} {{subject}} {{content}} {{article_url}} {{unsubscribe}}）；自动加打开统计与退订链接</p>
+        <?php if ($lastStats): ?>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px">
+          <div style="padding:12px;border-radius:10px;background:var(--bg)"><div class="text-lg font-bold"><?=$lastStats['sent']?></div><div class="text-xs text-muted">发送（最近一刊）</div></div>
+          <div style="padding:12px;border-radius:10px;background:var(--bg)"><div class="text-lg font-bold" style="color:var(--ok)"><?=$lastStats['opens']?> · <?=$lastStats['open_rate']?>%</div><div class="text-xs text-muted">打开数 · 打开率</div></div>
+          <div style="padding:12px;border-radius:10px;background:var(--bg)"><div class="text-lg font-bold" style="color:var(--accent)"><?=$lastStats['clicks']?> · <?=$lastStats['click_rate']?>%</div><div class="text-xs text-muted">点击数 · 点击率</div></div>
+        </div>
+        <?php endif; ?>
+        <?php if (empty($templates)): ?><p class="text-sm text-muted">暂无模板，用下方表单创建（不选模板则用默认图文版）</p><?php else: ?>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <?php foreach ($templates as $t): ?>
+          <span style="padding:4px 12px;border:1px solid var(--border);border-radius:999px;font-size:12px"><?=htmlspecialchars($t['name'])?> <a href="?del_tpl=<?=urlencode($t['id'])?>" style="color:var(--danger)">✕</a></span>
+          <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+        <details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:var(--muted)">+ 新建邮件模板</summary>
+        <form method="post" style="margin-top:10px">
+          <?= csrf_field() ?>
+          <div class="field"><label>模板名称</label><input type="text" name="tpl_name" placeholder="如：Newsletter 图文版"></div>
+          <div class="field"><label>HTML 内容 <span class="hint">· 支持变量与 {{unsubscribe}} 退订链接</span></label><textarea name="tpl_html" rows="6" placeholder="<h2>{{title}}</h2><p>{{content}}</p><p style='text-align:center'><a href='{{article_url}}'>阅读全文</a></p><p style='font-size:11px;color:#999'>不想收到？<a href='{{unsubscribe}}'>一键退订</a></p>"></textarea></div>
+          <button class="btn btn-s btn-sm">保存模板</button>
+        </form>
+        </details>
       </div>
 
       <div class="card">
