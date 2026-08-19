@@ -423,12 +423,30 @@ admin_header('CRM 线索管理');
     <?php else: /* pipeline tab */ ?>
 
     <!-- 管线概览 -->
+    <?php $pipelineW = crm_pipeline_weighted(); $forecast = crm_forecast(); $rates = crm_stage_win_rates(); ?>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px">
       <div class="pipe-card"><div class="lab">管线总额</div><div class="num" style="color:var(--ok)">¥<?=number_format($pipelineValue,0)?></div></div>
+      <div class="pipe-card"><div class="lab">加权金额（×赢率）</div><div class="num" style="color:var(--accent)">¥<?=number_format($pipelineW['weighted'],0)?></div></div>
+      <div class="pipe-card"><div class="lab">销售预测</div><div class="num" style="color:var(--warn)">¥<?=number_format($forecast['weighted'],0)?></div><div class="lab"><?=$forecast['opportunities']?> 个商机</div></div>
       <?php foreach ($stages as $k => $label): ?>
-      <div class="pipe-card"><div class="lab"><?=htmlspecialchars($label)?></div><div class="num" style="color:<?=['new'=>'var(--faint)','contacted'=>'var(--accent)','qualified'=>'var(--warn)','opportunity'=>'var(--accent)','won'=>'var(--ok)','lost'=>'var(--danger)'][$k]?>"><?=$stageCounts[$k] ?? 0?></div></div>
+      <div class="pipe-card"><div class="lab"><?=htmlspecialchars($label)?> <span style="font-size:10px;color:var(--faint)">赢率<?=round($rates[$k]*100)?>%</span></div><div class="num" style="color:<?=['new'=>'var(--faint)','contacted'=>'var(--accent)','qualified'=>'var(--warn)','opportunity'=>'var(--accent)','won'=>'var(--ok)','lost'=>'var(--danger)'][$k]?>"><?=$stageCounts[$k] ?? 0?></div></div>
       <?php endforeach; ?>
     </div>
+
+    <?php if (!empty($forecast['by_month'])): ?>
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">销售预测（按预计成交月 · 加权金额）</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <?php $maxF = max($forecast['by_month']) ?: 1; foreach ($forecast['by_month'] as $m => $amt): ?>
+        <div style="flex:1;min-width:100px">
+          <div style="font-size:11px;color:var(--faint)"><?=htmlspecialchars($m)?></div>
+          <div style="height:36px;border-radius:6px;background:var(--hover);margin:4px 0;overflow:hidden"><div style="height:100%;width:<?=round($amt/$maxF*100)?>%;background:var(--accent);border-radius:6px"></div></div>
+          <div style="font-size:12px;font-weight:700;color:var(--accent)">¥<?=number_format($amt,0)?></div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php endif; ?>
 
     <!-- 阶段筛选 -->
     <div class="flex gap-2 mb-4" style="flex-wrap:wrap">
