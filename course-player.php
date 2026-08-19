@@ -20,6 +20,14 @@ $courseId = $course['id'] ?? $courseKey;
 $member = member_current();
 $settings = shop_settings();
 $price = $settings['course_prices'][$courseId] ?? 0;
+// 课程限时折扣展示
+$cpromo = $settings['course_promos'][$courseId] ?? [];
+$_now = time();
+$coursePromoOn = !empty($cpromo['price']) && $cpromo['price'] > 0
+    && (!$cpromo['start'] || strtotime($cpromo['start']) <= $_now)
+    && (!$cpromo['end'] || strtotime($cpromo['end']) >= $_now);
+$originalPrice = $price;
+if ($coursePromoOn) $price = (float)$cpromo['price'];
 
 // 收藏状态
 $favFile = DATA_DIR . '/course-favorites.json';
@@ -150,7 +158,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
           <a href="/member.php?view=courses" class="mt-5 inline-block rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">我的课程</a>
         </div>
         <?php else: ?>
-        <div class="text-3xl font-bold mb-1">¥<?=number_format($price, 2)?></div>
+        <div class="text-3xl font-bold mb-1">¥<?=number_format($price, 2)?><?php if ($coursePromoOn): ?> <s class="text-base font-normal" style="color:var(--faint)">¥<?=number_format($originalPrice, 2)?></s> <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:var(--danger-soft,#fde8e8);color:var(--danger)">限时</span><?php endif; ?></div>
         <p class="text-sm text-gray-600 mb-4">一次购买，永久观看</p>
         <?php if ($member && member_can($member, 'courses', ['course_id' => $courseId])): ?>
         <div class="text-sm font-semibold mb-4" style="color:var(--ok)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9l4-6Z"/><path d="M2 9h20M9 3 7 9l5 12M15 3l2 6-5 12"/></svg></span> VIP 会员免费观看</div>
