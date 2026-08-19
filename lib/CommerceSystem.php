@@ -532,6 +532,26 @@ function commerce_resolve_referrer(string $ref, string $buyerId): string {
     return '';
 }
 
+/**
+ * 分销排行榜：按累计佣金聚合（近 N 天），返回 TOP + 自己的排名
+ */
+function commerce_leaderboard(string $selfId = '', int $days = 30, int $limit = 10): array {
+    $board = [];
+    try {
+        $rows = Database::query("SELECT referrer_id, COUNT(*) AS cnt, SUM(commission) AS comm FROM orders WHERE referrer_id != '' AND status='paid' AND paid_at >= ? GROUP BY referrer_id ORDER BY comm DESC LIMIT 50", [date('Y-m-d', strtotime("-{$days} days"))]);
+        $names = [];
+        foreach (member_get_all() as $m) $names[$m['id'] ?? ''] = $m['name'] ?? '用户';
+        foreach ($rows as $r) {
+            $board[] = ['member_id' => $r['referrer_id'], 'name' => $names[$r['referrer_id']] ?? '用户', 'orders' => (int)$r['cnt'], 'commission' => round((float)$r['comm'], 2)];
+        }
+    } catch (Exception $e) {}
+    $self = null;
+    foreach ($board as $i => $b) {
+        if ($selfId && $b['member_id'] === $selfId) $self = ['rank' => $i + 1] + $b;
+    }
+    return ['top' => array_slice($board, 0, $limit), 'self' => $self, 'total' => count($board)];
+}
+
 // 平台费率（10%，覆盖支付手续费）
 function commerce_platform_fee_rate(): float { return 0.1; }
 
