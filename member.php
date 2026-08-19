@@ -812,6 +812,45 @@ function include_member_distribution($member): void {
       </div>
       <?php endif; ?>
 
+      <!-- 提现 -->
+      <div style="padding:18px;border-radius:14px;background:var(--bg);margin-bottom:20px">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">提现</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px" class="wd-grid">
+          <div>
+            <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px">余额 <b style="color:var(--ok)">¥<?=number_format($stats['balance'],2)?></b> · 最低提现按后台配置（当前 <?=number_format((shop_settings()['min_withdraw'] ?? 100),0)?> 元）</div>
+            <form onsubmit="return submitWithdraw(event)" style="display:flex;flex-direction:column;gap:10px">
+              <input type="number" name="wd_amount" min="1" step="0.01" placeholder="提现金额 ¥" required style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
+              <select name="wd_method" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
+                <option value="wechat">微信收款</option>
+                <option value="alipay">支付宝</option>
+                <option value="bank">银行卡</option>
+              </select>
+              <input type="text" name="wd_account" placeholder="收款账户（微信号/支付宝/卡号）" required style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
+              <button class="rounded-full py-2.5 font-bold" style="background:var(--accent);color:var(--on-accent);font-size:13px">申请提现</button>
+              <div id="wdMsg" style="font-size:12.5px"></div>
+            </form>
+          </div>
+          <div>
+            <div style="font-size:12.5px;font-weight:600;margin-bottom:8px">提现记录</div>
+            <?php
+              $wdList = array_values(array_filter((array)json_read(DATA_DIR . '/shop/withdrawals.json'), fn($w) => ($w['member_id'] ?? '') === $member['id']));
+              $wdMap = ['pending'=>'待审核','paid'=>'已打款','rejected'=>'已驳回'];
+            ?>
+            <?php if (empty($wdList)): ?><p style="font-size:12.5px;color:var(--faint)">暂无提现记录</p>
+            <?php else: ?>
+            <div style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto">
+              <?php foreach (array_slice(array_reverse($wdList),0,10) as $w): ?>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px">
+                <div><b style="color:var(--ok)">¥<?=number_format($w['amount'],2)?></b><div style="font-size:11px;color:var(--faint)"><?=substr($w['created_at']??'',0,16)?></div></div>
+                <span style="color:<?=['pending'=>'var(--warn)','paid'=>'var(--ok)','rejected'=>'var(--danger)'][$w['status']]??'var(--faint)'?>"><?=$wdMap[$w['status']]??$w['status']?></span>
+              </div>
+              <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+          </div>
+        </div>
+      </div>
+
       <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">可推广的产品（<?=count($distProducts)?>）</h3>
       <?php if (empty($distProducts)): ?>
       <div style="padding:16px;border-radius:12px;background:var(--bg);border:1px dashed var(--border-strong);margin-bottom:20px">
@@ -840,6 +879,20 @@ function include_member_distribution($member): void {
     function copyDistLink(ref, productId) {
       var url = '<?=htmlspecialchars($siteUrl)?>/marketplace?ref=' + ref + '&product=' + productId;
       navigator.clipboard.writeText(url).then(function(){ alert('已复制该产品的推广链接'); });
+    }
+    function submitWithdraw(e) {
+      e.preventDefault();
+      var f = e.target, msg = document.getElementById('wdMsg');
+      var fd = new FormData();
+      fd.append('action', 'withdraw');
+      fd.append('amount', f.querySelector('[name=wd_amount]').value);
+      fd.append('pay_method', f.querySelector('[name=wd_method]').value);
+      fd.append('pay_account', f.querySelector('[name=wd_account]').value);
+      msg.style.color='var(--muted)'; msg.textContent='提交中…';
+      fetch('/api/ambassador.php', { method:'POST', body: fd })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; msg.textContent = d.message || d.error; if (d.ok) setTimeout(function(){ location.reload(); }, 1200); });
+      return false;
     }
     </script>
     <?php
