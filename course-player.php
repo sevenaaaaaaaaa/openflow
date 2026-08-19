@@ -262,6 +262,11 @@ foreach ($course['chapters'] ?? [] as $ch) {
 
 <script>
 var COURSE_ID = <?=json_encode($courseId)?>;
+/* 课程行为埋点 → CDP + 行为触发 */
+if (window.fcTrack) {
+  try { fcTrack('course_start', { course_id: COURSE_ID, title: document.title }); } catch (e) {}
+  if (<?=$hasAccess?'true':'false'?>) { try { fcTrack('course_enroll', { course_id: COURSE_ID }); } catch (e) {} }
+}
 /* 收藏 */
 function toggleFav(cid, btn) {
   var fd = new FormData(); fd.append('action','toggle_fav'); fd.append('course_id', cid);
@@ -337,6 +342,8 @@ function togglePlay() {
 function markCurrentDone() {
   if (!currentLesson) { alert('请先选择一节课'); return; }
   saveProgress(currentLesson, { done: true });
+  /* 课时完成 → 行为触发 */
+  if (window.fcTrack) { try { fcTrack('lesson_complete', { course_id: COURSE_ID, lesson_id: currentLesson }); } catch (e) {} }
   var el = document.querySelector('.lesson[data-id="'+currentLesson+'"] .chk');
   if (el) { el.className = 'chk done'; el.textContent = '✓'; }
   var btn = document.querySelector('.lesson[data-id="'+currentLesson+'"]');

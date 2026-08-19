@@ -159,7 +159,9 @@ pre.meta-out{background:var(--accent);color:var(--on-accent);padding:14px;border
   </div>
 </footer>
 
-<script>
+ <script>
+/* 工具箱使用 → 行为触发 */
+if (window.fcTrack) { try { fcTrack('tool_use', { tool_name: '工具箱', page: location.pathname }); } catch (e) {} }
 function switchTool(id, btn) {
   document.querySelectorAll('[id^="tool-"]').forEach(function(el){ el.style.display = 'none'; });
   document.getElementById('tool-' + id).style.display = '';
