@@ -46,13 +46,18 @@ switch ($action) {
         $s = shop_settings();
         if ($amount <= 0 || $amount > $balance) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'提现金额无效']); exit; }
         if ($amount < ($s['min_withdraw'] ?? 100)) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'低于最低提现金额']); exit; }
+        // 收款账户
+        $payMethod = trim($_POST['pay_method'] ?? '');
+        $payAccount = trim($_POST['pay_account'] ?? '');
+        if (!in_array($payMethod, ['wechat','alipay','bank'], true)) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'请选择收款方式']); exit; }
+        if ($payAccount === '') { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'请填写收款账户']); exit; }
         $member['balance'] = round($balance - $amount, 2);
         member_save($member);
         $withdrawals = json_read(DATA_DIR . '/shop/withdrawals.json');
-        $withdrawals[] = ['member_id'=>$member['id'],'member_name'=>$member['name'],'amount'=>$amount,'status'=>'pending','created_at'=>date('Y-m-d H:i:s')];
+        $withdrawals[] = ['id'=>'w'.date('YmdHis').substr(bin2hex(random_bytes(3)),0,5),'member_id'=>$member['id'],'member_name'=>$member['name'],'amount'=>$amount,'pay_method'=>$payMethod,'pay_account'=>$payAccount,'status'=>'pending','created_at'=>date('Y-m-d H:i:s')];
         json_write(DATA_DIR . '/shop/withdrawals.json', $withdrawals);
         notify('分销', $member['name'] . ' 申请提现 ¥' . $amount, '', 'admin/distribution.php');
-        echo json_encode(['ok'=>true, 'message'=>'提现申请已提交']);
+        echo json_encode(['ok'=>true, 'message'=>'提现申请已提交，审核通过后打款']);
         break;
 
     default:
