@@ -143,6 +143,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <div style="border-top:1px solid var(--border);margin:8px 0"></div>
         <a class="nav-item <?=$view==='profile'?'active':''?>" href="member.php?view=profile">👤 个人资料</a>
         <a class="nav-item <?=$view==='password'?'active':''?>" href="member.php?view=password"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span> 修改密码</a>
+        <a class="nav-item <?=$view==='addresses'?'active':''?>" href="member.php?view=addresses"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span> 收货地址</a>
       </div>
 
       <!-- 内容区 -->
@@ -170,6 +171,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <?php elseif ($tab === 'submit'): include_member_submit($member); ?>
         <?php elseif ($tab === 'profile'): include_member_profile($member); ?>
         <?php elseif ($tab === 'password'): include_member_password($member); ?>
+        <?php elseif ($tab === 'addresses'): include_member_addresses($member); ?>
         <?php elseif ($tab === 'org'): include_member_org($member); ?>
         <?php elseif ($tab === 'developer'): include_member_developer($member); ?>
         <?php elseif ($tab === 'distribution'): include_member_distribution($member); ?>
@@ -542,6 +544,69 @@ function include_member_password($member): void {
         <div id="passwordMsg" style="margin-top:14px"></div>
       </form>
     </div>
+    <?php
+}
+
+// ─── 收货地址管理 ───
+function include_member_addresses($member): void {
+    $addr = json_read(DATA_DIR . '/addresses.json');
+    $mine = array_values(array_filter((array)$addr, fn($a) => ($a['member_id'] ?? '') === $member['id']));
+    ?>
+    <div class="card p-8">
+      <h2 class="text-xl font-bold mb-6">收货地址</h2>
+      <div id="addrList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:20px">
+        <?php if (empty($mine)): ?><p style="grid-column:1/-1;color:var(--faint);font-size:13px">还没有收货地址，添加一个用于商品寄送。</p><?php endif; ?>
+        <?php foreach ($mine as $a): ?>
+        <div style="padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--bg)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <b style="font-size:14px"><?=htmlspecialchars($a['name'])?> <span style="color:var(--muted);font-weight:400"><?=htmlspecialchars($a['phone'])?></span></b>
+            <?php if (!empty($a['is_default'])): ?><span style="font-size:10px;background:var(--ok-soft);color:var(--ok);padding:1px 6px;border-radius:99px">默认</span><?php endif; ?>
+          </div>
+          <div style="font-size:12.5px;color:var(--muted);line-height:1.6"><?=htmlspecialchars(implode(' ', array_filter([$a['province']??'', $a['city']??'', $a['district']??'', $a['address']??''])))?></div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="rounded-full px-4 py-1 text-xs" style="background:var(--hover)" onclick="delAddr('<?=htmlspecialchars($a['id'])?>')">删除</button>
+          </div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+
+      <div style="padding:18px;border:1px solid var(--border);border-radius:14px;background:var(--bg-soft)">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">新增地址</h3>
+        <form onsubmit="return saveAddr(event)" style="display:flex;flex-direction:column;gap:10px">
+          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
+            <input type="text" name="name" placeholder="收货人姓名" required style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
+            <input type="text" name="phone" placeholder="手机号" required style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
+          </div>
+          <div class="grid gap-3" style="grid-template-columns:1fr 1fr 1fr">
+            <input type="text" name="province" placeholder="省" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
+            <input type="text" name="city" placeholder="市" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
+            <input type="text" name="district" placeholder="区/县" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
+          </div>
+          <input type="text" name="address" placeholder="详细地址" required style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)"><input type="checkbox" name="is_default" value="1" style="width:15px;height:15px"> 设为默认地址</label>
+          <button class="rounded-full py-2.5 font-bold" style="background:var(--accent);color:var(--on-accent);font-size:13px">保存地址</button>
+          <div id="addrMsg" style="font-size:12.5px"></div>
+        </form>
+      </div>
+    </div>
+    <script>
+    function saveAddr(e) {
+      e.preventDefault();
+      var f = e.target, msg = document.getElementById('addrMsg');
+      var fd = new FormData(); fd.append('action','save');
+      ['name','phone','province','city','district','address'].forEach(function(k){ fd.append(k, f.querySelector('[name="'+k+'"]').value); });
+      fd.append('is_default', f.querySelector('[name=is_default]').checked ? '1' : '');
+      fetch('/api/address.php', { method:'POST', body: fd })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; msg.textContent = d.message || d.error; if (d.ok) setTimeout(function(){ location.reload(); }, 900); });
+      return false;
+    }
+    function delAddr(id) {
+      if (!confirm('确认删除该地址？')) return;
+      var fd = new FormData(); fd.append('action','delete'); fd.append('id', id);
+      fetch('/api/address.php', { method:'POST', body: fd }).then(function(){ location.reload(); });
+    }
+    </script>
     <?php
 }
 
