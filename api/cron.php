@@ -59,8 +59,7 @@ try {
 
 // 活动开始前提醒（报名者：开始前 2 小时提醒，每小时检查一次，防重复）
 try {
-    require_once __DIR__ . '/../lib/MessageSystem.php';
-    $events = json_read(DATA_DIR . '/events/index.json');
+    require_once __DIR__ . '/../lib/MessageSystem.php';    $events = json_read(DATA_DIR . '/events/index.json');
     $regs = json_read(DATA_DIR . '/event-registrations.json');
     $remindedFile = DATA_DIR . '/event-reminded.json';
     $reminded = json_read($remindedFile);
@@ -79,6 +78,19 @@ try {
         }
     }
     if ($changed) json_write($remindedFile, array_slice($reminded, -5000));
+} catch (Exception $e) {}
+
+// 转化漏斗级巡检（每 6 小时，对比 7 天转化率环比）
+try {
+    require_once __DIR__ . '/../lib/FunnelGuard.php';
+    $fg = json_read(funnel_guard_file());
+    if (empty($fg) || strtotime($fg['scanned_at'] ?? '2000-01-01') < time() - 6 * 3600) {
+        $report = funnel_guard_scan();
+        if (($report['alerts'] ?? 0) > 0) {
+            require_once __DIR__ . '/../lib/MessageSystem.php';
+            try { notify('funnel', '🚨 转化漏斗告警', $report['alerts'] . ' 个页面/渠道转化率骤降，点击查看详情', '/xmp/funnel-guard'); } catch (Throwable $e) {}
+        }
+    }
 } catch (Exception $e) {}
 
 // 多平台内容定时发布
