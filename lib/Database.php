@@ -73,7 +73,7 @@ class Database {
             created_at TEXT, paid_at TEXT
         )");
         // 数字商品订单扩展列（兼容旧库：尝试添加）
-        foreach (['goods_type TEXT DEFAULT \'\'', 'product_id TEXT DEFAULT \'\'', 'period TEXT DEFAULT \'\'', 'author TEXT DEFAULT \'\'', 'commission_rate REAL DEFAULT 0.7', 'distributor_rate REAL DEFAULT 0', 'platform_fee REAL DEFAULT 0', 'original_amount REAL DEFAULT 0', 'coupon_discount REAL DEFAULT 0', 'refunded_at TEXT DEFAULT \'\'', 'refund_reason TEXT DEFAULT \'\''] as $col) {
+        foreach (['goods_type TEXT DEFAULT \'\'', 'product_id TEXT DEFAULT \'\'', 'period TEXT DEFAULT \'\'', 'author TEXT DEFAULT \'\'', 'commission_rate REAL DEFAULT 0.7', 'distributor_rate REAL DEFAULT 0', 'platform_fee REAL DEFAULT 0', 'original_amount REAL DEFAULT 0', 'coupon_discount REAL DEFAULT 0', 'refunded_at TEXT DEFAULT \'\'', 'refund_reason TEXT DEFAULT \'\'', 'shipped_at TEXT DEFAULT \'\''] as $col) {
             $colName = explode(' ', $col)[0];
             try { $db->exec("ALTER TABLE orders ADD COLUMN {$col}"); } catch (Exception $e) {}
         }
