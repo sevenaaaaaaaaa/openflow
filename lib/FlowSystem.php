@@ -183,5 +183,21 @@ function flow_order_paid(array $order): void {
         try { gamification_award($memberId, 50, '购买课程'); } catch (Exception $e) {}
         // 站内信
         try { inbox_notify_event('order_paid', ['member_id' => $memberId, 'title' => $order['course_title'] ?? '课程']); } catch (Exception $e) {}
+        // 转化回传（CAPI：purchase 事件 → 广告平台）
+        try {
+            require_once __DIR__ . '/ConversionApi.php';
+            $m = member_get($memberId);
+            $convData = [
+                'event_name' => 'purchase',
+                'user_id' => $memberId,
+                'order_id' => $order['id'] ?? '',
+                'email' => $m['email'] ?? '',
+                'phone' => $m['phone'] ?? '',
+                'value' => $amount,
+                'currency' => 'CNY',
+                'click_id' => $_COOKIE['fc_utm_click_id'] ?? '',
+            ];
+            conv_track($convData);
+        } catch (Throwable $e) {}
     }
 }
