@@ -38,6 +38,17 @@ if (!function_exists('seo_head')) {
         if ($canonical) {
             echo '<link rel="canonical" href="' . htmlspecialchars($canonical, ENT_QUOTES) . '">' . "\n";
         }
+        // hreflang（多语言启用时输出 alternate 链接）
+        if (function_exists('i18n_enabled') && i18n_enabled()) {
+            try {
+                $default = i18n_default_locale();
+                foreach (i18n_supported() as $loc) {
+                    $path = preg_replace('#^/([a-z]{2}(?:-[A-Z]{2})?)(/|$)#', '/', $_SERVER['REQUEST_URI'] ?? '/') ?: '/';
+                    $altUrl = $siteUrl . ($loc === $default ? $path : '/' . $loc . $path);
+                    echo '<link rel="alternate" hreflang="' . htmlspecialchars($loc) . '" href="' . htmlspecialchars($altUrl, ENT_QUOTES) . '">' . "\n";
+                }
+            } catch (Throwable $e) {}
+        }
         // favicon（SVG data URI，兼容所有浏览器）
         echo '<link rel="icon" type="image/svg+xml" href="' . $faviconData . '">' . "\n";
         echo '<link rel="apple-touch-icon" href="' . $faviconData . '">' . "\n";
