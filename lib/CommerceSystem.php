@@ -566,7 +566,8 @@ function commerce_resolve_referrer(string $ref, string $buyerId): string {
     if ($ref === '') return '';
     foreach (member_get_all() as $m) {
         if (($m['id'] ?? '') === $buyerId) continue; // 不能自己分销自己
-        if (($m['referral_code'] ?? '') === $ref || ($m['id'] ?? '') === $ref) return $m['id'];
+        $derived = 'of' . substr(md5($m['id'] ?? ''), 0, 8);
+        if (($m['referral_code'] ?? '') === $ref || ($m['id'] ?? '') === $ref || $derived === $ref) return $m['id'];
     }
     return '';
 }
