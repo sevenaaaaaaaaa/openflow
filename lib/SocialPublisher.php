@@ -25,6 +25,8 @@ class SocialPublisher {
             'twitter' => ['name' => 'X (Twitter)', 'variant' => true, 'manual' => true],
             'facebook' => ['name' => 'Facebook', 'variant' => true, 'manual' => true],
             'bilibili' => ['name' => 'B站', 'manual' => true],
+            'video' => ['name' => '视频号', 'manual' => true],
+            'douyin' => ['name' => '抖音', 'manual' => true],
             'email' => ['name' => '邮件推送', 'variant' => true],
         ];
     }
