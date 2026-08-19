@@ -32,6 +32,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'add_followup') {
         crm_add_followup($email, trim($_POST['content'] ?? ''));
         flash('success', '跟进记录已添加');
+    } elseif ($action === 'add_task') {
+        $tasks = json_read(DATA_DIR . '/tasks.json');
+        $tasks[] = [
+            'id' => 't' . date('YmdHis') . substr(bin2hex(random_bytes(3)), 0, 4),
+            'type' => 'crm_followup',
+            'email' => $email,
+            'title' => trim($_POST['title'] ?? ''),
+            'due' => $_POST['due'] ?? '',
+            'owner' => $_SESSION['admin_user'] ?? '',
+            'status' => 'pending',
+            'created_at' => date('Y-m-d H:i:s'),
+        ];
+        json_write(DATA_DIR . '/tasks.json', $tasks);
+        flash('success', '跟进任务已创建');
+    } elseif ($action === 'complete_task') {
+        $tasks = json_read(DATA_DIR . '/tasks.json');
+        foreach ($tasks as &$t) if (($t['id'] ?? '') === ($_POST['task_id'] ?? '')) $t['status'] = 'done';
+        json_write(DATA_DIR . '/tasks.json', $tasks);
+        flash('success', '任务已完成');
     } elseif ($action === 'score') {
         crm_score($email, (int)($_POST['delta'] ?? 0));
         flash('success', '评分已更新');
@@ -120,6 +139,24 @@ admin_header('CRM 线索管理');
 <div class="admin-layout">
   <?php admin_sidebar('crm'); ?>
   <div class="main">
+    <?php
+    // 待办任务提醒（跟进任务，逾期高亮）
+    $crmTasks = array_values(array_filter((array)json_read(DATA_DIR . '/tasks.json'), fn($t) => ($t['type'] ?? '') === 'crm_followup' && ($t['status'] ?? '') !== 'done'));
+    $overdue = array_values(array_filter($crmTasks, fn($t) => !empty($t['due']) && $t['due'] < date('Y-m-d')));
+    if (!empty($crmTasks)):
+    ?>
+    <div style="padding:12px 16px;border-radius:12px;background:<?=$overdue?'var(--warn-soft)':'var(--surface)'?>;border:1px solid <?=$overdue?'var(--warn)':'var(--border)'?>;margin-bottom:16px;font-size:13px">
+      <b>跟进待办（<?=count($crmTasks)?>）</b><?=count($overdue)>0?' · <span style="color:var(--danger);font-weight:700">'.$overdue[0]['due'].' 起 '.count($overdue).' 个逾期</span>':''?>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <?php foreach (array_slice($crmTasks, 0, 6) as $t): $m = $data['leads'][$t['email']]['name'] ?? $t['email']; $isOverdue = !empty($t['due']) && $t['due'] < date('Y-m-d'); ?>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:<?=$isOverdue?'var(--danger-soft)':'var(--accent-soft)'?>;color:<?=$isOverdue?'var(--danger)':'var(--accent)'?>;font-size:12px">
+          <?=htmlspecialchars(mb_substr($t['title'] ?? '', 0, 18))?> · <?=htmlspecialchars($m)?><?=$t['due']?' · '.substr($t['due'],5):''?>
+          <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="action" value="complete_task"><input type="hidden" name="task_id" value="<?=htmlspecialchars($t['id'])?>"><button style="background:none;border:none;color:inherit;cursor:pointer;font-size:11px">✓</button></form>
+        </span>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php endif; ?>
     <div class="flex items-center gap-4 mb-2">
       <h1 style="margin-bottom:0"> CRM 线索</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
@@ -593,6 +630,15 @@ admin_header('CRM 线索管理');
             <input type="hidden" name="focus" value="<?=htmlspecialchars($focusLead['email'])?>">
             <input type="text" name="content" placeholder="记录跟进内容…" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px">
             <button type="submit" class="btn btn-primary btn-sm">添加</button>
+          </form>
+          <form method="post" style="display:flex;gap:8px;margin-bottom:10px">
+            <?= csrf_field() ?>
+            <input type="hidden" name="email" value="<?=htmlspecialchars($focusLead['email'])?>">
+            <input type="hidden" name="action" value="add_task">
+            <input type="hidden" name="focus" value="<?=htmlspecialchars($focusLead['email'])?>">
+            <input type="text" name="title" placeholder="跟进任务（如：本周内电话回访）" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px">
+            <input type="date" name="due" style="padding:8px;border:1.5px solid var(--border);border-radius:8px">
+            <button type="submit" class="btn btn-ghost btn-sm">设任务</button>
           </form>
           <?php if (empty($focusLead['follow_ups'])): ?>
           <p class="text-sm text-muted">暂无跟进记录</p>
