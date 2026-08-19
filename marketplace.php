@@ -231,6 +231,7 @@ $typeNames = mkt_categories();
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--faint);margin-top:auto">
           <?php if (($a['rating_count'] ?? 0) > 0): ?><span style="color:var(--warn)">★ <?=number_format((float)$a['rating'], 1)?></span><?php endif; ?>
           <span>⬇ <?=$a['installs'] ?? 0?> 次安装</span>
+          <?php if (($a['type'] ?? '') === 'skill' && (float)($a['price'] ?? 0) <= 0): ?><span class="mkt-badge" style="background:var(--ok-soft);color:var(--ok)">免费安装</span><?php endif; ?>
           <?php if (!empty($a['installed'])): ?><span class="mkt-badge" style="background:var(--ok-soft);color:var(--ok);margin-left:auto">已安装</span><?php endif; ?>
         </div>
         </a>
