@@ -285,7 +285,7 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
         </div>
         <div class="field-row">
           <div class="field"><label>URL Slug <span class="hint">· 自动生成，可手动修改</span></label><input type="text" name="slug" id="slug" value="<?=htmlspecialchars($article['slug'])?>" placeholder="article-url-slug"></div>
-          <div class="field"><label>状态</label><select name="status"><option value="draft" <?=$article['status']==='draft'?'selected':''?>>草稿</option><option value="published" <?=$article['status']==='published'?'selected':''?>>已发布</option></select></div>
+          <div class="field"><label>状态</label><select name="status"><option value="draft" <?=$article['status']==='draft'?'selected':''?>>草稿</option><option value="published" <?=$article['status']==='published'?'selected':''?>>已发布</option><option value="scheduled" <?=$article['status']==='scheduled'?'selected':''?>>定时发布</option></select></div>
           <div class="field"><label style="display:flex;align-items:center;gap:8px;margin-top:26px;white-space:nowrap"><input type="checkbox" name="member_only" value="1" <?=!empty($article['member_only'])?'checked':''?> style="width:16px;height:16px"> 💎 会员专享 <span class="hint">· 仅会员可读</span></label></div>
         </div>
         <div class="field-row">
