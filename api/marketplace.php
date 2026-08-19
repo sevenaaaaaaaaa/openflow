@@ -58,9 +58,9 @@ switch ($action) {
                 if ($p['type'] === 'skill' && $p['asset_id'] === $id && $p['status'] === 'published') { $product = $p; break; }
             }
         } else {
-            // 会员等非 skill 商品：按 asset_id 找
+            // 会员/组合包等非 skill 商品：按 asset_id 或商品 id 找
             foreach (CommerceSystem::products() as $p) {
-                if ($p['asset_id'] === $id && $p['status'] === 'published') { $product = $p; break; }
+                if (($p['asset_id'] === $id || $p['id'] === $id) && $p['status'] === 'published') { $product = $p; break; }
             }
         }
         // 兼容旧逻辑：未发布为商品但有 price 的 skill
