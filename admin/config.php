@@ -61,6 +61,7 @@ require_once __DIR__ . '/../lib/RealtimeData.php';
 require_once __DIR__ . '/../lib/AIBusiness.php';
 require_once __DIR__ . '/../lib/CommerceSystem.php';
 require_once __DIR__ . '/../lib/WebTools.php';
+require_once __DIR__ . '/../lib/WebhookSystem.php';
 require_once __DIR__ . '/../lib/CloudflareApi.php';
 require_once __DIR__ . '/../lib/EventDictionary.php';
 require_once __DIR__ . '/../lib/SearchEngine.php';
@@ -350,15 +351,25 @@ function get_articles(): array {
     $all = json_read(ARTICLES_DIR . '/index.json');
     // 定时发布：scheduled 且到 publish_at 自动转 published（惰性发布）
     $changed = false;
+    $justPublished = [];
     foreach ($all as &$a) {
         if (($a['status'] ?? '') === 'scheduled' && !empty($a['publish_at']) && strtotime($a['publish_at']) <= time()) {
             $a['status'] = 'published';
             $a['published_at'] = $a['publish_at'];
+            $justPublished[] = $a;
             $changed = true;
         }
     }
     unset($a);
-    if ($changed) json_write(ARTICLES_DIR . '/index.json', $all);
+    if ($changed) {
+        json_write(ARTICLES_DIR . '/index.json', $all);
+        // 定时文章到点上线 → 出站 webhook
+        try {
+            if (class_exists('WebhookSystem')) {
+                foreach ($justPublished as $jp) \WebhookSystem::trigger('article.published', ['title' => $jp['title'] ?? '', 'slug' => $jp['slug'] ?? '']);
+            }
+        } catch (Exception $e) {}
+    }
     usort($all, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
     return $all;
 }
