@@ -45,6 +45,8 @@ class CommerceSystem {
             'commission_rate' => (float)($data['commission_rate'] ?? 0.9),
             'distribution_enabled' => !empty($data['distribution_enabled']),
             'distributor_rate' => (float)($data['distributor_rate'] ?? 30),
+            'stock' => (int)($data['stock'] ?? -1),       // -1 = 不限库存
+            'skus' => $data['skus'] ?? [],                 // 多规格：[['id','name','price','stock']]
             'status' => $data['status'] ?? 'draft',
             'sales_count' => 0,
             'rating' => 0,
@@ -196,6 +198,10 @@ class CommerceSystem {
             'distributor_rate' => $distRate,
             'platform_fee' => round($price * 0.1, 2),
         ];
+        // 库存扣减（有库存的商品）：不足则拒绝下单（防超卖）
+        if (!commerce_stock_decrement($productId, $_POST['sku_id'] ?? '', 1)) {
+            return ['ok' => false, 'error' => '商品库存不足'];
+        }
         Database::insert('orders', $order);
         $order['utm'] = shop_current_utm();
         return ['ok' => true, 'order' => $order];
@@ -275,8 +281,7 @@ class CommerceSystem {
     }
 
     /**
-     * 交付单个商品/资产（组合包递归调用）
-     */
+     * 交付单个商品/资产（组合包递归调用）—— 作者分成 + 分销佣金
     private static function deliverItem(string $memberId, array $item, array $order = []): void {
         if (($item['type'] ?? '') === 'bundle' && !empty($item['product_id'])) {
             $sub = self::getProduct($item['product_id']);
@@ -444,6 +449,63 @@ class CommerceSystem {
                 'api_plan' => count(array_filter($products, fn($p) => $p['type'] === 'api_plan')),
             ],
         ];
+    }
+}
+
+// ─── 库存管理（SKU 多规格） ───
+// 检查商品/SKU 是否有库存
+function commerce_stock_available(array $product, string $skuId = ''): int {
+    if ($skuId !== '') {
+        foreach (($product['skus'] ?? []) as $s) if (($s['id'] ?? '') === $skuId) return (int)($s['stock'] ?? -1);
+        return 0;
+    }
+    return (int)($product['stock'] ?? -1); // -1 = 不限
+}
+
+// 扣减库存（下单时占用）
+function commerce_stock_decrement(string $productId, string $skuId = '', int $qty = 1): bool {
+    $products = CommerceSystem::products();
+    foreach ($products as &$p) {
+        if ($p['id'] !== $productId) continue;
+        if ($skuId !== '') {
+            foreach ($p['skus'] ?? [] as &$s) {
+                if (($s['id'] ?? '') === $skuId) {
+                    $s['stock'] = (int)($s['stock'] ?? -1);
+                    if ($s['stock'] >= 0) {
+                        if ($s['stock'] < $qty) return false; // 库存不足
+                        $s['stock'] -= $qty;
+                        CommerceSystem::saveProducts($products);
+                        return true;
+                    }
+                    return true; // 不限库存
+                }
+            }
+            return false;
+        }
+        $stock = (int)($p['stock'] ?? -1);
+        if ($stock >= 0) {
+            if ($stock < $qty) return false;
+            $p['stock'] = $stock - $qty;
+            CommerceSystem::saveProducts($products);
+            return true;
+        }
+        return true; // 不限库存
+    }
+    return false;
+}
+
+// 回滚库存（退款/取消）
+function commerce_stock_increment(string $productId, string $skuId = '', int $qty = 1): void {
+    $products = CommerceSystem::products();
+    foreach ($products as &$p) {
+        if ($p['id'] !== $productId) continue;
+        if ($skuId !== '') {
+            foreach ($p['skus'] ?? [] as &$s) if (($s['id'] ?? '') === $skuId) { $s['stock'] = (int)($s['stock'] ?? -1) + $qty; break; }
+        } else {
+            $p['stock'] = (int)($p['stock'] ?? -1) + $qty;
+        }
+        CommerceSystem::saveProducts($products);
+        break;
     }
 }
 

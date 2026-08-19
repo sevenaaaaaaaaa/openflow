@@ -46,6 +46,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['refund'])) {
                     }
                 } catch (Exception $e) {}
             }
+            // 库存回滚（退款恢复库存）
+            try {
+                require_once __DIR__ . '/../lib/CommerceSystem.php';
+                commerce_stock_increment($o['product_id'] ?? '', $o['sku_id'] ?? '');
+            } catch (Exception $e) {}
             flash('success', '已退款，佣金与分成已扣回');
         }
     } catch (Exception $e) { flash('error', '退款失败：' . $e->getMessage()); }
