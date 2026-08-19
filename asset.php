@@ -67,6 +67,20 @@ usort($relatedAssets, function ($a, $b) use ($pref) {
 });
 $related = array_slice($relatedAssets, 0, 4);
 
+// 配套课程（生态 ↔ 课程交叉销售）
+$relatedCourses = [];
+try {
+    $shopCfg = shop_settings();
+    $allCourses = array_values(array_filter(json_read(DATA_DIR . '/courses/index.json'), fn($c) => ($c['status'] ?? '') === 'published' && (float)($shopCfg['course_prices'][$c['id']] ?? 0) > 0));
+    $kws = array_filter(preg_split('/[\s,，、\/]+/', ($asset['title'] ?? '') . ' ' . implode(' ', $asset['tags'] ?? [])), fn($w) => mb_strlen($w) >= 2);
+    foreach ($allCourses as $ac) {
+        $hay = ($ac['title'] ?? '') . ' ' . implode(' ', $ac['tags'] ?? []) . ' ' . ($ac['description'] ?? '');
+        foreach ($kws as $kw) { if (mb_strpos($hay, $kw) !== false) { $relatedCourses[] = $ac; break; } }
+        if (count($relatedCourses) >= 3) break;
+    }
+    if (empty($relatedCourses)) $relatedCourses = array_slice($allCourses, 0, 3);
+} catch (Exception $e) {}
+
 $typeLabel = ['skill' => 'Skill', 'plugin' => '插件', 'theme' => '主题'][$type] ?? $type;
 $stepCount = count($asset['steps'] ?? []);
 ?>
@@ -201,6 +215,26 @@ body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC'
           <?php endforeach; ?>
         </div>
       </div>
+
+      <?php if (!empty($relatedCourses)): ?>
+      <div class="dcard mb-6">
+        <h3 class="font-extrabold mb-3">🎓 配套课程</h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <?php foreach ($relatedCourses as $rc): $rcPrice = (float)($shopCfg['course_prices'][$rc['id']] ?? 0); ?>
+          <a class="rel-card" href="/course/<?=urlencode($rc['id'])?>?id=<?=urlencode($rc['id'])?>">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:24px">🎓</span>
+              <div style="flex:1;min-width:0">
+                <div class="font-bold text-[14px]"><?=htmlspecialchars($rc['title'] ?? '')?></div>
+                <div class="text-xs text-gray-600"><?=htmlspecialchars($rc['type'] ?? '课程')?> · <?=count($rc['chapters'] ?? [])?> 章 · ¥<?=number_format($rcPrice,0)?></div>
+              </div>
+              <span style="font-size:12px;color:var(--accent)">→</span>
+            </div>
+          </a>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <?php endif; ?>
     </div>
   </div>
 </div>
