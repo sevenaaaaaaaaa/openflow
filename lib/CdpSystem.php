@@ -126,14 +126,7 @@ class CdpSystem {
         $profiles = self::allProfiles();
 
         if (!isset($profiles[$visitorId])) {
-            $profiles[$visitorId] = [
-                'visitor_id' => $visitorId,
-                'member_id' => $memberId,
-                'first_seen' => date('Y-m-d H:i:s'),
-                'properties' => [],
-                'events_count' => 0,
-                'tags' => [],
-            ];
+            $profiles[$visitorId] = self::blankProfile($visitorId, $memberId);
         }
 
         $profile = &$profiles[$visitorId];
@@ -144,32 +137,119 @@ class CdpSystem {
             $profile['member_id'] = $memberId;
         }
 
-        // 合并属性（身份字段 + 设备环境 + 渠道归因 + 业务属性）
-        $profileKeys = ['email', 'name', 'phone', 'company', 'city', 'member_level', 'total_spent', 'role'];
-        $deviceKeys = ['os', 'os_version', 'browser', 'browser_version', 'device', 'screen_width', 'screen_height', 'language'];
-        $channelKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'channel', 'is_ad_channel'];
-        foreach ($data as $key => $value) {
-            if (in_array($key, $profileKeys, true)) {
-                $profile['properties'][$key] = $value;
-            }
-        }
-        // 设备环境：首次记录
-        foreach ($deviceKeys as $key) {
-            if (isset($data[$key]) && !isset($profile['properties'][$key])) {
-                $profile['properties'][$key] = $data[$key];
-            }
-        }
-        // 渠道归因：首次记录（首触归因）
-        foreach ($channelKeys as $key) {
-            if (isset($data[$key]) && !isset($profile['properties'][$key])) {
-                $profile['properties'][$key] = $data[$key];
-            }
-        }
+        // 属性字典驱动（set / set_once / increment / append）
+        self::applyProperties($profile['properties'], $data);
+
+        // 行为聚合摘要（summaries）
+        self::applySummaries($profile, $event, $data);
+
+        // 生命周期更新
+        self::applyLifecycle($profile);
 
         // 自动打标签
         self::autoTag($profile, $event, $data);
 
         json_write(self::$profilesFile, $profiles);
+    }
+
+    // 空白画像（8 层结构）
+    private static function blankProfile(string $visitorId, string $memberId): array {
+        $now = date('Y-m-d H:i:s');
+        return [
+            'visitor_id' => $visitorId,
+            'member_id' => $memberId,
+            'first_seen' => $now,
+            'last_seen' => $now,
+            'properties' => [],
+            'events_count' => 0,
+            'tags' => [],
+            'summaries' => [
+                'page_views_7d' => 0, 'page_views_30d' => 0,
+                'purchase_count' => 0, 'purchase_amount_total' => 0,
+                'purchase_amount_30d' => 0,
+                'form_submits' => 0, 'courses_completed' => 0,
+                'sessions_count' => 0,
+            ],
+            'scores' => [],
+            'lifecycle' => ['stage' => 'new', 'first_seen' => $now, 'last_seen' => $now],
+            'segment_memberships' => [],
+        ];
+    }
+
+    // 属性字典读取（内存缓存）
+    private static $propDictCache = null;
+    private static function propDict(): array {
+        if (self::$propDictCache === null) {
+            self::$propDictCache = json_read(DATA_DIR . '/cdp/properties.json');
+            if (!is_array(self::$propDictCache)) self::$propDictCache = [];
+        }
+        return self::$propDictCache;
+    }
+
+    // 按字典应用属性（四语义）
+    private static function applyProperties(array &$props, array $data): void {
+        $dict = self::propDict();
+        foreach ($data as $key => $value) {
+            if (!isset($dict[$key]) || $value === null || $value === '') continue;
+            $def = $dict[$key];
+            $update = $def['update'] ?? 'set';
+            switch ($update) {
+                case 'set_once':
+                    if (!array_key_exists($key, $props)) $props[$key] = $value;
+                    break;
+                case 'increment':
+                    $props[$key] = round((float)($props[$key] ?? 0) + (float)$value, 2);
+                    break;
+                case 'append':
+                    $arr = is_array($props[$key] ?? null) ? $props[$key] : [];
+                    if (!in_array($value, $arr, true)) { $arr[] = $value; $props[$key] = array_values($arr); }
+                    break;
+                default:
+                    $props[$key] = $value;
+            }
+        }
+    }
+
+    // 行为聚合摘要（对标 computed traits，增量更新）
+    private static function applySummaries(array &$profile, string $event, array $data): void {
+        $s = &$profile['summaries'];
+        if ($event === 'page_view') {
+            $s['page_views_7d']++;
+            $s['page_views_30d']++;
+        } elseif ($event === 'purchase') {
+            $amount = (float)($data['amount'] ?? 0);
+            $s['purchase_count']++;
+            $s['purchase_amount_total'] += $amount;
+            $s['purchase_amount_30d'] += $amount;
+        } elseif ($event === 'form_submit') {
+            $s['form_submits']++;
+        } elseif ($event === 'course_complete') {
+            $s['courses_completed']++;
+        } elseif ($event === 'session_start' || $event === 'vst') {
+            $s['sessions_count']++;
+        }
+    }
+
+    // 生命周期：new/active/dormant/at_risk/churned（按首访/末访天数）
+    private static function applyLifecycle(array &$profile): void {
+        $now = time();
+        $first = strtotime($profile['first_seen'] ?? $now);
+        $last = strtotime($profile['last_seen'] ?? $now);
+        $dFirst = ($now - $first) / 86400;
+        $dLast = ($now - $last) / 86400;
+        $cfg = json_read(DATA_DIR . '/cdp/lifecycle.json');
+        $newDays = (int)($cfg['new_days'] ?? 7);
+        $activeDays = (int)($cfg['active_days'] ?? 7);
+        $dormantDays = (int)($cfg['dormant_days'] ?? 30);
+        $churnedDays = (int)($cfg['churned_days'] ?? 90);
+        if ($dFirst <= $newDays) $stage = 'new';
+        elseif ($dLast <= $activeDays) $stage = 'active';
+        elseif ($dLast <= $dormantDays) $stage = 'dormant';
+        elseif ($dLast <= $churnedDays) $stage = 'at_risk';
+        else $stage = 'churned';
+        $profile['lifecycle']['stage'] = $stage;
+        $profile['lifecycle']['first_seen'] = $profile['first_seen'];
+        $profile['lifecycle']['last_seen'] = $profile['last_seen'];
     }
 
     /**
