@@ -870,6 +870,25 @@ function include_member_distribution($member): void {
         </div>
       </div>
 
+      <?php $board = commerce_leaderboard($member['id'], 30, 10); if (!empty($board['top'])): ?>
+      <div style="padding:18px;border-radius:14px;background:linear-gradient(135deg,var(--accent-soft),var(--surface));border:1px solid var(--border);margin-bottom:22px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <span style="font-size:18px">🏆</span><h3 style="font-size:15px;font-weight:700;margin:0">分销之星 · 近30天佣金 TOP<?=count($board['top'])?></h3>
+          <?php if ($board['self']): ?><span style="margin-left:auto;font-size:12px;color:var(--muted)">我的排名 <b style="color:var(--accent)">#<?=$board['self']['rank']?></b> / <?=$board['total']?></span><?php endif; ?>
+        </div>
+        <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
+          <?php foreach ($board['top'] as $i => $b): $isSelf = $b['member_id'] === $member['id']; ?>
+          <div style="min-width:120px;flex:1;padding:14px;border-radius:12px;background:var(--surface);border:1px solid <?=$isSelf?'var(--accent)':'var(--border)'?>;text-align:center">
+            <div style="font-size:22px;font-weight:800;color:<?=match($i){0=>'var(--warn)',1=>'#9ca3af',2=>'var(--warn)',default=>'var(--muted)'}?>"><?=($i<3)?['🥇','🥈','🥉'][$i]:'#' . ($i+1)?></div>
+            <div style="font-size:13px;font-weight:600;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($b['name'])?><?=$isSelf?'（我）':''?></div>
+            <div style="font-size:11px;color:var(--faint)"><?=$b['orders']?>单</div>
+            <div style="font-size:14px;font-weight:700;color:var(--ok)">¥<?=number_format($b['commission'],1)?></div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <?php endif; ?>
+
       <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">推广商品（每商品专属链接）</h3>
       <?php if (empty($distProducts)): ?><p style="font-size:13px;color:var(--faint);margin-bottom:20px">暂无开放分销的商品。</p>
       <?php else: ?>
