@@ -48,6 +48,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['stock_only'])) {
     exit;
 }
 
+// 设置限时折扣
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_promo'])) {
+    csrf_verify();
+    $promo = ['price' => (float)($_POST['promo_price'] ?? 0)];
+    if (!empty($_POST['promo_start'])) $promo['start'] = $_POST['promo_start'];
+    if (!empty($_POST['promo_end'])) $promo['end'] = $_POST['promo_end'];
+    CommerceSystem::updateProduct($_POST['product_id'] ?? '', ['promo' => $promo]);
+    header('Location: /xmp/commerce');
+    exit;
+}
+// 清除限时折扣
+if (isset($_GET['clear_promo'])) {
+    CommerceSystem::updateProduct($_GET['clear_promo'], ['promo' => null]);
+    header('Location: /xmp/commerce');
+    exit;
+}
+
 // 删除商品
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_product'])) {
     csrf_verify();
@@ -106,7 +123,7 @@ admin_header('商业中心');
         <h2 style="margin:0">📦 数字商品</h2>
       </div>
       <table>
-        <thead><tr><th>商品</th><th>类型</th><th>定价</th><th>库存</th><th>作者</th><th>分成</th><th>销量</th><th>状态</th><th>操作</th></tr></thead>
+        <thead><tr><th>商品</th><th>类型</th><th>定价</th><th>库存</th><th>作者</th><th>分成</th><th>销量</th><th>状态</th><th>促销</th><th>操作</th></tr></thead>
         <tbody>
           <?php if (empty($products)): ?><tr><td colspan="8" class="empty">暂无商品，用下方表单发布 Skill 或创建 API 套餐</td></tr><?php endif; ?>
           <?php foreach ($products as $p): ?>
@@ -135,6 +152,22 @@ admin_header('商业中心');
             <td><?=round(($p['commission_rate'] ?? 0.7) * 100)?>%</td>
             <td><span class="badge badge-green"><?=$p['sales_count'] ?? 0?></span></td>
             <td><span class="badge <?=($p['status'] ?? '')==='published'?'badge-green':'badge-yellow'?>"><?=$p['status'] ?? 'draft'?></span></td>
+            <td style="white-space:nowrap">
+              <?php if (!empty($p['promo']['price'])): ?>
+              <span style="font-size:11px;color:var(--danger);font-weight:700">促销 ¥<?=$p['promo']['price']?></span>
+              <a href="?clear_promo=<?=urlencode($p['id'])?>" style="font-size:10px;color:var(--muted)">清除</a>
+              <?php else: ?><span style="font-size:10px;color:var(--faint)">—</span><?php endif; ?>
+              <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px" onclick="document.getElementById('promo-<?=md5($p['id'])?>').style.display='block'">促销</button>
+              <form method="post" id="promo-<?=md5($p['id'])?>" style="display:none;margin-top:4px">
+                <?= csrf_field() ?>
+                <input type="hidden" name="set_promo" value="1">
+                <input type="hidden" name="product_id" value="<?=htmlspecialchars($p['id'])?>">
+                <input type="number" name="promo_price" placeholder="折扣价 ¥" value="<?=htmlspecialchars($p['promo']['price'] ?? '')?>" style="width:70px;padding:4px 6px;border:1.5px solid var(--border);border-radius:6px;font-size:11px">
+                <input type="datetime-local" name="promo_start" value="<?=$p['promo']['start']?str_replace(' ','T',substr($p['promo']['start'],0,16)):''?>" style="padding:4px;border:1.5px solid var(--border);border-radius:6px;font-size:11px">
+                <input type="datetime-local" name="promo_end" value="<?=$p['promo']['end']?str_replace(' ','T',substr($p['promo']['end'],0,16)):''?>" style="padding:4px;border:1.5px solid var(--border);border-radius:6px;font-size:11px">
+                <button class="btn btn-s btn-sm" style="padding:2px 8px;font-size:11px">设置</button>
+              </form>
+            </td>
             <td>
               <form method="post" style="display:inline" onsubmit="return confirm('删除商品？')">
                 <?= csrf_field() ?>
