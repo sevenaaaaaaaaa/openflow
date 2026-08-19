@@ -116,6 +116,45 @@ if (!move_uploaded_file($file['tmp_name'], $dest)) {
     exit;
 }
 
+// 图片自动压缩（GD）：宽 > 1920 等比缩放；转 WebP 质量 82 降重
+$compressed = false;
+if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif']) && function_exists('imagecreatetruecolor')) {
+    $origW = 0; $origH = 0;
+    $img = null;
+    switch ($ext) {
+        case 'jpg': case 'jpeg': $img = @imagecreatefromjpeg($dest); break;
+        case 'png': $img = @imagecreatefrompng($dest); break;
+        case 'gif': $img = @imagecreatefromgif($dest); break;
+    }
+    if ($img) {
+        $origW = imagesx($img); $origH = imagesy($img);
+        $maxW = 1920;
+        if ($origW > $maxW) {
+            $nw = $maxW; $nh = (int)round($origH * $maxW / $origW);
+            $resized = imagecreatetruecolor($nw, $nh);
+            if ($ext === 'png' || $ext === 'gif') { imagealphablending($resized, false); imagesavealpha($resized, true); }
+            imagecopyresampled($resized, $img, 0, 0, 0, 0, $nw, $nh, $origW, $origH);
+            imagedestroy($img); $img = $resized;
+        }
+        // 大图转 WebP（>300KB 或原为 png 大图）
+        $size = $file['size'];
+        if (function_exists('imagewebp') && ($size > 300 * 1024 || $ext === 'png') && $ext !== 'gif') {
+            $webpDest = $targetDir . '/' . substr($name, 0, -4) . '.webp';
+            if (@imagewebp($img, $webpDest, 82)) {
+                @unlink($dest); $dest = $webpDest;
+                $url = SITE_URL . '/uploads/' . $dir . '/' . basename($webpDest);
+                $name = basename($webpDest);
+                $compressed = true;
+            }
+        } elseif ($ext === 'jpg' || $ext === 'jpeg') {
+            @imagejpeg($img, $dest, 82); $compressed = true;
+        } elseif ($ext === 'png') {
+            imagepng($img, $dest, 6); $compressed = true;
+        }
+        imagedestroy($img);
+    }
+}
+
 // SVG sanitization
 if ($ext === 'svg') {
     $svgContent = file_get_contents($dest);
@@ -127,4 +166,4 @@ if ($ext === 'svg') {
 }
 
 $url = SITE_URL . '/uploads/' . $dir . '/' . $name;
-echo json_encode(['ok' => true, 'url' => $url, 'name' => $name, 'path' => 'uploads/' . $dir . '/' . $name]);
+echo json_encode(['ok' => true, 'url' => $url, 'name' => $name, 'path' => 'uploads/' . $dir . '/' . $name, 'compressed' => $compressed, 'size' => @filesize($dest)]);
