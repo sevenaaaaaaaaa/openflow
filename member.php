@@ -144,6 +144,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <a class="nav-item <?=$view==='profile'?'active':''?>" href="member.php?view=profile">👤 个人资料</a>
         <a class="nav-item <?=$view==='password'?'active':''?>" href="member.php?view=password"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span> 修改密码</a>
         <a class="nav-item <?=$view==='addresses'?'active':''?>" href="member.php?view=addresses"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span> 收货地址</a>
+        <a class="nav-item <?=$view==='privacy'?'active':''?>" href="member.php?view=privacy"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></span> 隐私中心</a>
       </div>
 
       <!-- 内容区 -->
@@ -208,6 +209,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <?php elseif ($tab === 'profile'): include_member_profile($member); ?>
         <?php elseif ($tab === 'password'): include_member_password($member); ?>
         <?php elseif ($tab === 'addresses'): include_member_addresses($member); ?>
+        <?php elseif ($tab === 'privacy'): include_member_privacy($member); ?>
         <?php elseif ($tab === 'org'): include_member_org($member); ?>
         <?php elseif ($tab === 'developer'): include_member_developer($member); ?>
         <?php elseif ($tab === 'distribution'): include_member_distribution($member); ?>
@@ -642,6 +644,51 @@ function include_member_addresses($member): void {
       fetch('/api/address.php', { method:'POST', body: fd }).then(function(){ location.reload(); });
     }
     </script>
+    <?php
+}
+
+// ─── 隐私中心（数据导出/注销）───
+function include_member_privacy($member): void {
+    require_once __DIR__ . '/lib/PrivacySystem.php';
+    $msg = '';
+    if (isset($_GET['export'])) {
+        $r = privacy_export_member($member['id']);
+        if ($r['ok']) {
+            header('Content-Type: application/json; charset=utf-8');
+            header('Content-Disposition: attachment; filename="my-data-' . date('Ymd') . '.json"');
+            echo json_encode($r['data'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            exit;
+        }
+        $msg = $r['error'] ?? '导出失败';
+    }
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_account'])) {
+        if ($_POST['confirm'] === 'DELETE') {
+            $r = privacy_delete_member($member['id']);
+            if ($r['ok']) { header('Location: /'); exit; }
+            $msg = $r['error'] ?? '注销失败';
+        } else { $msg = '请输入 DELETE 确认注销'; }
+    }
+    ?>
+    <div class="card p-8">
+      <h2 class="text-xl font-bold mb-6">隐私中心</h2>
+      <p class="text-sm text-muted mb-6">依据《个人信息保护法》，你可随时导出自己的数据或申请删除账号。</p>
+      <?php if ($msg): ?><div class="text-sm" style="color:var(--danger);margin-bottom:14px"><?=htmlspecialchars($msg)?></div><?php endif; ?>
+
+      <div style="padding:18px;border-radius:14px;background:var(--bg);margin-bottom:18px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">📤 导出我的数据</div>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">下载你的完整数据（个人资料、订单、消息、评论、学习进度），JSON 格式。</p>
+        <a href="?view=privacy&export=1" class="rounded-full px-6 py-2.5 font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">下载数据</a>
+      </div>
+
+      <div style="padding:18px;border-radius:14px;background:var(--danger-soft)">
+        <div style="font-size:15px;font-weight:700;color:var(--danger);margin-bottom:6px">🗑 注销账号</div>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">注销后你的个人资料将清除，不可恢复。输入 <b>DELETE</b> 确认。</p>
+        <form method="post">
+          <input type="text" name="confirm" placeholder="输入 DELETE" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;width:200px">
+          <button type="submit" name="delete_account" class="rounded-full px-6 py-2.5 font-bold text-sm ml-2" style="background:var(--danger);color:#fff;border:none;cursor:pointer">确认注销</button>
+        </form>
+      </div>
+    </div>
     <?php
 }
 

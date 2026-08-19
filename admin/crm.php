@@ -4,6 +4,7 @@
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/CrmSystem.php';
+require_once __DIR__ . '/../lib/PrivacySystem.php';
 require_login();
 require_perm('leads');
 
@@ -216,7 +217,7 @@ admin_header('CRM 线索管理');
           <?php foreach ($stageLeads as $l): ?>
           <div class="kanban-card" draggable="true" data-email="<?=htmlspecialchars($l['email'])?>" data-id="<?=htmlspecialchars($l['id'] ?? $l['email'])?>">
             <div class="name"><?=htmlspecialchars($l['name'] ?: '—')?></div>
-            <div class="email"><?=htmlspecialchars($l['email'])?></div>
+            <div class="email"><?=htmlspecialchars(privacy_mask_email($l['email']))?></div>
             <div class="meta">
               <span class="score" style="background:<?=($l['score']>=60)?'#dcfce7':(($l['score']>=30)?'#fef3c7':'#fee2e2')?>;color:<?=($l['score']>=60)?'#166534':(($l['score']>=30)?'#92400e':'#991b1b')?>"><?=$l['score']?></span>
               <?php if (!empty($l['value'])): ?><span class="value">¥<?=number_format($l['value'],0)?></span><?php endif; ?>
@@ -376,7 +377,7 @@ admin_header('CRM 线索管理');
           <tr>
             <td>
               <strong><?=htmlspecialchars($l['name'] ?: '—')?></strong>
-              <div class="text-sm text-muted" style="font-size:11px"><?=htmlspecialchars($l['email'])?></div>
+              <div class="text-sm text-muted" style="font-size:11px"><?=htmlspecialchars(privacy_mask_email($l['email']))?></div>
             </td>
             <td><span class="stage-pill" style="background:#f4f3e9;color:#6b6580"><?=htmlspecialchars($stages[$l['stage']] ?? $l['stage'])?></span></td>
             <td><b style="color:<?=($l['score']??0)>=60?'var(--ok)':(($l['score']??0)>=30?'var(--warn)':'var(--danger)')?>"><?=$l['score'] ?? 0?></b></td>
@@ -504,7 +505,7 @@ admin_header('CRM 线索管理');
             <tr>
               <td>
                 <strong><?=htmlspecialchars($l['name'] ?: '—')?></strong>
-                <div class="text-sm text-muted" style="font-size:11px"><?=htmlspecialchars($l['email'])?></div>
+                <div class="text-sm text-muted" style="font-size:11px"><?=htmlspecialchars(privacy_mask_email($l['email']))?></div>
               </td>
               <td><span class="stage-pill" style="background:<?=['new'=>'#f4f3e9','contacted'=>'#dbeafe','qualified'=>'#fef3c7','opportunity'=>'#ede9fe','won'=>'#dcfce7','lost'=>'#fee2e2'][$l['stage']]?>;color:<?=['new'=>'#6b6580','contacted'=>'#1d4ed8','qualified'=>'#92400e','opportunity'=>'#5b21b6','won'=>'#166534','lost'=>'#991b1b'][$l['stage']]?>"><?=htmlspecialchars($stages[$l['stage']] ?? $l['stage'])?></span></td>
               <td><b style="color:<?=$l['score']>=60?'var(--ok)':($l['score']>=30?'var(--warn)':'var(--danger)')?>"><?=$l['score']?></b></td>
