@@ -99,7 +99,7 @@ function shop_course_ids_for_member(string $memberId): array {
     return array_unique($ids);
 }
 
-function shop_create_order(string $memberId, string $courseId): array {
+function shop_create_order(string $memberId, string $courseId, string $ref = ''): array {
     $settings = shop_settings();
     $courses = json_read(DATA_DIR . '/courses/index.json');
     $course = null;
@@ -121,13 +121,26 @@ function shop_create_order(string $memberId, string $courseId): array {
     $referrerId = '';
     $commission = 0;
     
-    // 记录推荐人（通过会员信息）
+    // 记录推荐人/分销者：URL ref 分销码优先，其次注册推荐人
     $members = Database::query("SELECT * FROM members WHERE id = ?", [$memberId]);
     $member = $members[0] ?? null;
-    if ($member && !empty($member['referred_by'])) {
-        $referrerId = $member['referred_by'];
-        $commission = round($price * $settings['commission_rate'] / 100, 2);
+    $referrerId = '';
+    if ($ref !== '') {
+        // 解析分销码（referral_code 或 member_id 或派生码 of+md5(id)，不能是自己）
+        foreach (member_get_all() as $m) {
+            if (($m['id'] ?? '') === $memberId) continue;
+            $derived = 'of' . substr(md5($m['id'] ?? ''), 0, 8);
+            if (($m['referral_code'] ?? '') === $ref || ($m['id'] ?? '') === $ref || $derived === $ref) { $referrerId = $m['id']; break; }
+        }
     }
+    if ($referrerId === '' && $member && !empty($member['referred_by'])) {
+        $referrerId = $member['referred_by'];
+    }
+    if ($referrerId !== '') $commission = round($price * $settings['commission_rate'] / 100, 2);
+
+    // 课程作者（讲师体系）：platform 课程无 author_id，讲师课程作者分成为主
+    $authorId = $course['author_id'] ?? '';
+    $platformFee = round($price * 0.1, 2); // 平台抽 10% 覆盖支付手续费
     
     $order = [
         'id' => $orderId,
@@ -136,6 +149,9 @@ function shop_create_order(string $memberId, string $courseId): array {
         'course_title' => $course['title'],
         'amount' => $price,
         'original_amount' => $original,
+        'goods_type' => 'course',
+        'author' => $authorId,
+        'platform_fee' => $platformFee,
         'status' => 'pending',
         'payment_method' => '',
         'referrer_id' => $referrerId,
@@ -207,6 +223,21 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
             'description' => "订单 {$orderId} 分销佣金 {$order['commission']}",
             'created_at' => date('Y-m-d H:i:s'),
         ]);
+    }
+
+    // 课程作者分成入账（平台抽 10% + 分销佣金后剩余归作者；platform 课程无作者跳过）
+    if (!empty($order['author']) && ($order['goods_type'] ?? '') === 'course') {
+        $authorAmount = round((float)$order['amount'] - (float)$order['platform_fee'] - (float)$order['commission'], 2);
+        if ($authorAmount > 0) {
+            $authRows = Database::query("SELECT id FROM members WHERE id = ?", [$order['author']]);
+            if (!empty($authRows)) {
+                Database::execute("UPDATE members SET balance = balance + ? WHERE id = ?", [$authorAmount, $order['author']]);
+                Database::insert('point_logs', [
+                    'member_id' => $order['author'], 'points' => 0, 'type' => 'course_author',
+                    'description' => "课程「{$order['course_title']}」作者分成 ¥{$authorAmount}", 'created_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
+        }
     }
     
     // 订阅订单：激活订阅状态
