@@ -82,7 +82,11 @@ switch ($action) {
 
         // 虎皮椒支付
         $pay = shop_xfpay_create($order, $member);
-        if (!$pay['ok']) { echo json_encode(['ok'=>false,'error'=>$pay['error']]); exit; }
+        if (!$pay['ok']) {
+            // 支付通道异常时给用户友好提示（而非技术细节）
+            $friendly = '支付通道暂未开通，请稍后再试或联系客服。';
+            echo json_encode(['ok'=>false,'error'=>$friendly]); exit;
+        }
         echo json_encode(['ok'=>true, 'order' => $order, 'payment' => $pay], JSON_UNESCAPED_UNICODE);
         break;
 
