@@ -37,9 +37,7 @@ $isFav = $member && !empty($favs[$member['id']][$courseId]);
 // 权益解锁：已购 / 激活码激活 / VIP 全通 / 订阅
 $hasAccess = false;
 if ($member) {
-    foreach (json_read(shop_orders_file()) as $o) {
-        if ($o['course_id'] === $courseId && $o['member_id'] === $member['id'] && $o['status'] === 'paid') { $hasAccess = true; break; }
-    }
+    if (in_array($courseId, shop_course_ids_for_member($member['id']))) $hasAccess = true;
     // 激活码激活的课程
     if (!$hasAccess) {
         foreach (($member['activated_products'] ?? []) as $ap) {

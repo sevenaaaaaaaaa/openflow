@@ -269,7 +269,7 @@ admin_header('用户画像');
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
         <?php
         $mid = $fm['id'];
-        $orders = array_filter(json_read(DATA_DIR . '/shop/orders.json'), fn($o) => ($o['member_id'] ?? '') === $mid && ($o['status'] ?? '') === 'paid');
+        $orders = shop_orders_for_member($mid, 'paid');
         $totalSpent = array_sum(array_map(fn($o) => (float)($o['amount'] ?? 0), $orders));
         $posts = count(array_filter(json_read(DATA_DIR . '/community-posts.json'), fn($p) => ($p['author_id'] ?? '') === $mid));
         $comments = count(array_filter(json_read(DATA_DIR . '/community-comments.json'), fn($c) => ($c['author_id'] ?? '') === $mid));

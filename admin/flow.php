@@ -42,7 +42,7 @@ $commentCount = count(json_read(DATA_DIR . '/comments.json'));
 $commentRate = $pubCount ? round($commentCount / $pubCount * 100) : 0;
 
 // ─── C. 价值流统计 ───
-$orders = json_read(DATA_DIR . '/shop/orders.json');
+$orders = shop_all_orders();
 $paidOrders = array_values(array_filter($orders, fn($o) => ($o['status'] ?? '') === 'paid'));
 $revenue = array_sum(array_map(fn($o) => (float)($o['amount'] ?? 0), $paidOrders));
 $members = json_read(DATA_DIR . '/members/index.json');
