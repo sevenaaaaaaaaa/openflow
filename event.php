@@ -15,6 +15,18 @@ if (!$event) { http_response_code(404); header('Location: /'); exit; }
 
 $cover = $event['cover'] ?? '';
 $coverUrl = $cover ? (strpos($cover, 'http') === 0 ? $cover : '/' . ltrim($cover, '/')) : '';
+
+// 报名状态 + 名额
+require_once __DIR__ . '/lib/MemberSystem.php';
+$member = member_current();
+$regsFile = DATA_DIR . '/event-registrations.json';
+$allRegs = json_read($regsFile);
+$regList = $allRegs[$event['id']] ?? [];
+$myReg = null;
+if ($member) { foreach ($regList as $r) { if (($r['member_id'] ?? '') === $member['id']) { $myReg = $r; break; } } }
+$capacity = (int)($event['capacity'] ?? 0);
+$joinedCount = count(array_filter($regList, fn($r) => ($r['status'] ?? '') !== 'rejected'));
+$full = $capacity > 0 && $joinedCount >= $capacity;
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -53,9 +65,33 @@ $coverUrl = $cover ? (strpos($cover, 'http') === 0 ? $cover : '/' . ltrim($cover
           <div class="font-semibold mt-1"><?=htmlspecialchars($event['location'] ?? '')?></div>
         </div>
         <div class="rounded-2xl px-5 py-4 flex items-center justify-center" style="background:var(--ok-soft)">
-          <a href="<?=htmlspecialchars($event['registration_url'] ?? '/index.html#contact')?>" class="inline-block rounded-full bg-[var(--accent)] text-white px-8 py-3 font-semibold">立即报名 →</a>
+          <?php if ($myReg): ?>
+          <div class="text-center">
+            <div class="font-bold" style="color:var(--ok)"><?=['pending'=>'报名审核中','approved'=>'✅ 已报名','rejected'=>'报名未通过'][$myReg['status'] ?? 'approved'] ?? '已报名'?></div>
+            <button onclick="cancelReg()" class="text-xs mt-1" style="color:var(--danger);background:none;border:none;cursor:pointer">取消报名</button>
+          </div>
+          <?php elseif ($full): ?>
+          <div class="font-bold" style="color:var(--danger)">名额已满</div>
+          <?php elseif ($event['registration_url'] ?? ''): ?>
+          <a href="<?=htmlspecialchars($event['registration_url'])?>" class="inline-block rounded-full bg-[var(--accent)] text-white px-8 py-3 font-semibold">立即报名 →</a>
+          <?php else: ?>
+          <div class="text-center">
+            <button onclick="doRegister()" class="inline-block rounded-full bg-[var(--accent)] text-white px-8 py-3 font-semibold" style="border:none;cursor:pointer">立即报名<?=$capacity > 0 ? '（剩 ' . max(0, $capacity - $joinedCount) . ' 位）' : ''?></button>
+            <div id="regMsg" class="text-xs mt-2"></div>
+          </div>
+          <?php endif; ?>
         </div>
       </div>
+
+      <?php if (!empty($event['replay_url']) || !empty($event['live_room'])): ?>
+      <div class="mt-8 rounded-2xl overflow-hidden" style="background:#000;aspect-ratio:16/9;display:grid;place-items:center">
+        <?php if (!empty($event['replay_url'])): ?>
+        <video controls style="width:100%;height:100%" src="<?=htmlspecialchars($event['replay_url'])?>" poster="<?=htmlspecialchars($coverUrl)?>"></video>
+        <?php else: ?>
+        <div class="text-white text-center"><div style="font-size:34px">🔴</div><div class="mt-2 font-semibold">直播进行中</div><div class="text-white/60 text-sm mt-1"><?=htmlspecialchars($event['location'] ?? '')?></div></div>
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
 
       <?php if (!empty($event['content'])): ?>
       <div class="prose mt-8" style="line-height:1.9;color:var(--muted)"><?= $event['content'] ?></div>
@@ -78,6 +114,25 @@ $coverUrl = $cover ? (strpos($cover, 'http') === 0 ? $cover : '/' . ltrim($cover
     </div>
   </div>
 
+  <script>
+  var EVENT_ID = <?=json_encode($event['id'])?>;
+  var IS_LOGGED = <?=$member ? 'true' : 'false'?>;
+  function regFetch(action) {
+    var fd = new FormData(); fd.append('action', action); fd.append('event_id', EVENT_ID);
+    return fetch('/api/event-register.php', { method:'POST', body: fd }).then(function(r){ return r.json(); });
+  }
+  function doRegister() {
+    var msg = document.getElementById('regMsg');
+    if (!IS_LOGGED) { location.href = '/member.php?view=login&next=/event/' + <?=json_encode($slug)?>; return; }
+    if (!confirm('确认报名该活动？')) return;
+    msg.textContent = '提交中…'; msg.style.color = 'var(--muted)';
+    regFetch('register').then(function(d){ msg.textContent = d.message || d.error; msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; if (d.ok) setTimeout(function(){ location.reload(); }, 1000); });
+  }
+  function cancelReg() {
+    if (!confirm('确认取消报名？')) return;
+    regFetch('cancel').then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
+  }
+  </script>
   <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
     <div class="mx-auto px-5 text-center text-sm" style="max-width:1000px">
       <div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div>
