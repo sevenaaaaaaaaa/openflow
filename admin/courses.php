@@ -14,6 +14,22 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
+// 课程审核（开发者/讲师提交的待审核课程）
+if (isset($_GET['approve']) || isset($_GET['reject'])) {
+    $cid = $_GET['approve'] ?? $_GET['reject'];
+    foreach ($courses as &$c) {
+        if ($c['id'] === $cid) {
+            if (isset($_GET['approve'])) { $c['status'] = 'published'; $c['reviewed_at'] = date('Y-m-d H:i:s'); flash('success', "课程「{$c['title']}」已通过上架"); }
+            else { $c['status'] = 'rejected'; $c['reviewed_at'] = date('Y-m-d H:i:s'); flash('error', "课程「{$c['title']}」已拒绝"); }
+            break;
+        }
+    }
+    unset($c);
+    json_write($coursesFile, $courses);
+    header('Location: /xmp/courses');
+    exit;
+}
+
 // 导出 CSV
 if (isset($_GET['export'])) {
     header('Content-Type: text/csv; charset=utf-8');
@@ -117,6 +133,7 @@ admin_header('课程管理');
       <?php endforeach; ?>
       <span style="width:10px"></span>
       <a href="?status=published<?=$typeFilter?'&type='.$typeFilter:''?><?=$catFilter?'&cat='.$catFilter:''?>" class="btn btn-sm <?=$statusFilter==='published'?'btn-primary':'btn-ghost'?>">已发布</a>
+      <a href="?status=pending<?=$typeFilter?'&type='.$typeFilter:''?><?=$catFilter?'&cat='.$catFilter:''?>" class="btn btn-sm <?=$statusFilter==='pending'?'btn-primary':'btn-ghost'?>">待审核</a>
       <a href="?status=draft<?=$typeFilter?'&type='.$typeFilter:''?><?=$catFilter?'&cat='.$catFilter:''?>" class="btn btn-sm <?=$statusFilter==='draft'?'btn-primary':'btn-ghost'?>">草稿</a>
       <?php if (!empty($courseCats)): ?>
       <span style="width:10px"></span>
@@ -147,8 +164,14 @@ admin_header('课程管理');
             <td class="text-sm text-muted"><?=htmlspecialchars($c['instructor'] ?? '') ?: '—'?></td>
             <td class="text-sm text-muted"><?=['beginner'=>'入门','intermediate'=>'进阶','advanced'=>'高级'][$c['difficulty'] ?? 'beginner']?></td>
             <td><?=$c['students'] ?? 0?></td>
-            <td><span class="badge <?=($c['status']??'draft')==='published'?'badge-green':'badge-yellow'?>"><?=$c['status']??'draft'?></span></td>
-            <td style="white-space:nowrap"><a href="course-edit.php?id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=course&id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="courses.php?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除?')">删除</a></td>
+            <td><span class="badge <?=($c['status']??'draft')==='published'?'badge-green':(($c['status']??'')==='pending'?'badge-yellow':(($c['status']??'')==='rejected'?'badge-red':'badge-gray'))?>"><?=['published'=>'已发布','pending'=>'待审核','rejected'=>'已拒绝','draft'=>'草稿'][$c['status']??'draft']?></span></td>
+            <td style="white-space:nowrap">
+              <?php if (($c['status'] ?? '') === 'pending'): ?>
+              <a href="courses.php?approve=<?=urlencode($c['id'])?>" class="btn btn-success btn-sm">通过上架</a>
+              <a href="courses.php?reject=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认拒绝该课程?')">拒绝</a>
+              <?php endif; ?>
+              <a href="course-edit.php?id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=course&id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="courses.php?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除?')">删除</a>
+            </td>
           </tr>
           <?php endforeach; ?>
         </tbody>
