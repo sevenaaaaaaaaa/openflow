@@ -35,8 +35,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
         'status' => $_POST['status'] ?? 'draft',
         'pricing' => ['mode' => $_POST['mode'] ?? 'one_time', 'price' => (float)($_POST['price'] ?? 0), 'period' => $_POST['period'] ?? 'month'],
         'commission_rate' => (float)($_POST['commission_rate'] ?? 0.7),
+        'stock' => (int)($_POST['stock'] ?? -1),  // -1 = 不限库存
     ]);
     $message = '商品已更新';
+}
+
+// 快速修改库存
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['stock_only'])) {
+    csrf_verify();
+    CommerceSystem::updateProduct($_POST['product_id'] ?? '', ['stock' => (int)($_POST['stock'] ?? -1)]);
+    header('Location: /xmp/commerce');
+    exit;
 }
 
 // 删除商品
@@ -97,7 +106,7 @@ admin_header('商业中心');
         <h2 style="margin:0">📦 数字商品</h2>
       </div>
       <table>
-        <thead><tr><th>商品</th><th>类型</th><th>定价</th><th>作者</th><th>分成</th><th>销量</th><th>状态</th><th>操作</th></tr></thead>
+        <thead><tr><th>商品</th><th>类型</th><th>定价</th><th>库存</th><th>作者</th><th>分成</th><th>销量</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
           <?php if (empty($products)): ?><tr><td colspan="8" class="empty">暂无商品，用下方表单发布 Skill 或创建 API 套餐</td></tr><?php endif; ?>
           <?php foreach ($products as $p): ?>
@@ -111,6 +120,16 @@ admin_header('商业中心');
               <?php $pr = $p['pricing'] ?? []; ?>
               <?=($pr['mode'] ?? 'one_time')==='one_time'?'买断':'订阅'?> ¥<?=$pr['price'] ?? 0?>
               <?php if (($pr['period'] ?? '') === 'year'): ?><span class="text-sm text-muted">/年</span><?php endif; ?>
+            </td>
+            <td>
+              <form method="post" style="display:inline">
+                <?= csrf_field() ?>
+                <input type="hidden" name="product_id" value="<?=htmlspecialchars($p['id'])?>">
+                <input type="hidden" name="stock_only" value="1">
+                <input type="number" name="stock" value="<?=htmlspecialchars($p['stock'] ?? -1)?>" min="-1" style="width:60px;padding:4px 6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
+                <button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px">存</button>
+              </form>
+              <span style="font-size:10px;color:<?=($p['stock'] ?? -1) === 0 ? 'var(--danger)' : 'var(--faint)'?>"><?=($p['stock'] ?? -1) === -1 ? '不限' : (($p['stock'] ?? 0) === 0 ? '售罄' : '余'.$p['stock'])?></span>
             </td>
             <td class="text-sm text-muted"><?=htmlspecialchars($p['author_name'] ?? $p['author'] ?? '—')?></td>
             <td><?=round(($p['commission_rate'] ?? 0.7) * 100)?>%</td>
