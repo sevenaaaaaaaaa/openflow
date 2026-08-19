@@ -12,6 +12,27 @@ function crm_stages(): array {
 }
 
 // 获取或创建线索 CRM 记录（按 email 关联）
+// 线索查重/防撞单：按邮箱/手机/公司名查已有线索（返回冲突列表）
+function crm_find_duplicate(string $email = '', string $phone = '', string $company = ''): array {
+    $data = crm_get();
+    $conflicts = [];
+    $email = mb_strtolower(trim($email));
+    foreach ($data['leads'] ?? [] as $key => $l) {
+        if ($email !== '' && mb_strtolower($l['email'] ?? '') === $email) {
+            $conflicts[] = ['field' => 'email', 'key' => $key, 'name' => $l['name'] ?? '', 'stage' => $l['stage'] ?? ''];
+            continue;
+        }
+        if ($phone !== '' && ($l['phone'] ?? '') === $phone) {
+            $conflicts[] = ['field' => 'phone', 'key' => $key, 'name' => $l['name'] ?? '', 'stage' => $l['stage'] ?? ''];
+            continue;
+        }
+        if ($company !== '' && mb_strtolower($l['company'] ?? '') === mb_strtolower($company)) {
+            $conflicts[] = ['field' => 'company', 'key' => $key, 'name' => $l['name'] ?? '', 'stage' => $l['stage'] ?? ''];
+        }
+    }
+    return $conflicts;
+}
+
 function crm_ensure_lead(string $email, string $name = '', string $phone = ''): array {
     $data = crm_get();
     $key = mb_strtolower(trim($email));
