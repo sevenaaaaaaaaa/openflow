@@ -184,7 +184,7 @@
       }, data || {}));
     },
 
-    click: function(el, data) {
+    click: function(el, data, ev) {
       var d = {
         tag: el.tagName,
         text: (el.textContent || '').trim().substr(0, 100),
@@ -195,6 +195,13 @@
         })(),
         is_outbound: (el.href && el.hostname !== location.hostname) ? 1 : 0,
       };
+      // 热力图坐标（相对文档）
+      if (ev) {
+        d.x = Math.round((ev.pageX || ev.clientX) + (window.pageXOffset || 0));
+        d.y = Math.round((ev.pageY || ev.clientY) + (window.pageYOffset || 0));
+        d.vw = window.innerWidth; d.vh = window.innerHeight;
+        d.dh = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+      }
       this.track('element_click', Object.assign(d, data || {}));
     },
 
@@ -237,7 +244,7 @@
     if (config.trackClicks) {
       document.addEventListener('click', function(e) {
         var el = e.target.closest('a, button, [data-track-click]');
-        if (el) CDP.click(el);
+        if (el) CDP.click(el, null, e);
       });
     }
 
