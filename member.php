@@ -814,7 +814,11 @@ function include_member_distribution($member): void {
       <?php endif; ?>
 
       <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">可推广的产品（<?=count($distProducts)?>）</h3>
-      <?php if (empty($distProducts)): ?><p style="font-size:13px;color:var(--faint)">暂无可分销产品。开发者上架时开启分销后即可推广。</p>
+      <?php if (empty($distProducts)): ?>
+      <div style="padding:16px;border-radius:12px;background:var(--bg);border:1px dashed var(--border-strong);margin-bottom:20px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">当前暂无可推广的付费产品</div>
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.7">官方 Skill 目前免费开放（无分销佣金）。开发者将付费产品上架并开启分销后，你就能推广赚钱了——先复制推广链接占位，产品上架即可用。</div>
+      </div>
       <?php else: ?>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
         <?php foreach (array_slice($distProducts, 0, 12) as $p): ?>
