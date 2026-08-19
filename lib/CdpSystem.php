@@ -54,6 +54,9 @@ class CdpSystem {
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
             'ip' => self::getClientIp(),
             'timestamp' => date('Y-m-d H:i:s'),
+            'message_id' => 'evt_' . md5($visitorId . $event . microtime(true) . bin2hex(random_bytes(4))),
+            'ts' => time() * 1000,
+            'session_id' => self::currentSessionId(),
         ];
 
         $events[] = $entry;
@@ -88,11 +91,78 @@ class CdpSystem {
      * 获取事件列表
      */
     public static function allEvents(): array {
+        // 优先读 SQLite events 表（主存储），空则回退 JSON（兼容旧数据）
+        try {
+            $rows = Database::query("SELECT id, event, uid, member_id, props, page, ip, created_at, session_id, message_id, ts, event_category FROM events ORDER BY id DESC LIMIT 100000");
+            if (!empty($rows)) {
+                $out = [];
+                foreach ($rows as $r) {
+                    $props = json_decode($r['props'] ?? '[]', true);
+                    if (!is_array($props)) $props = [];
+                    // 事件类别写入 props（供分析区分）
+                    if (!empty($r['event_category']) && !isset($props['event_category'])) $props['event_category'] = $r['event_category'];
+                    $out[] = [
+                        'id' => 'evt_' . $r['id'],
+                        'event' => $r['event'] ?? '',
+                        'visitor_id' => $r['uid'] ?? '',
+                        'member_id' => $r['member_id'] ?? '',
+                        'properties' => $props,
+                        'url' => $r['page'] ?? '',
+                        'ip' => $r['ip'] ?? '',
+                        'timestamp' => $r['created_at'] ?? '',
+                        'ts' => (int)($r['ts'] ?? 0),
+                        'session_id' => $r['session_id'] ?? '',
+                        'message_id' => $r['message_id'] ?? '',
+                    ];
+                }
+                return array_reverse($out);
+            }
+        } catch (Exception $e) {}
         return json_read(self::$eventsFile);
     }
 
     private static function saveEvents(array $events): void {
-        json_write(self::$eventsFile, $events);
+        // 批量写 SQLite（message_id 去重）
+        try {
+            $conn = Database::conn();
+            $conn->beginTransaction();
+            $stmt = $conn->prepare("INSERT OR IGNORE INTO events (event, label, variant, page, uid, member_id, member_email, props, ip, created_at, session_id, message_id, ts, event_category) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            foreach (array_slice($events, -200) as $e) {
+                $props = $e['properties'] ?? [];
+                $category = '';
+                if (is_array($props)) {
+                    if (isset($props['event_category'])) { $category = $props['event_category']; unset($props['event_category']); }
+                }
+                $messageId = $e['message_id'] ?? ('evt_' . md5(($e['visitor_id'] ?? '') . ($e['event'] ?? '') . ($e['timestamp'] ?? '') . ($e['id'] ?? uniqid())));
+                $ts = (int)($e['ts'] ?? (strtotime($e['timestamp'] ?? '') ?: time()) * 1000);
+                $stmt->execute([
+                    $e['event'] ?? '', '', '',
+                    $e['url'] ?? $e['page'] ?? '', $e['visitor_id'] ?? '',
+                    $e['member_id'] ?? '', $e['member_email'] ?? '', json_encode($props, JSON_UNESCAPED_UNICODE),
+                    $e['ip'] ?? '', $e['timestamp'] ?? date('Y-m-d H:i:s'),
+                    $e['session_id'] ?? '', $messageId, $ts, $category,
+                ]);
+            }
+            $conn->commit();
+        } catch (Exception $e) {
+            // 回退：写 JSON
+            json_write(self::$eventsFile, array_slice($events, -10000));
+        }
+    }
+
+    // 当前会话 ID（30 分钟滚动，会话 ID = 会话开始时间戳，对标 Amplitude）
+    public static function currentSessionId(): string {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $now = time();
+            $sid = $_SESSION['cdp_session_id'] ?? 0;
+            $sstart = $_SESSION['cdp_session_start'] ?? 0;
+            if ($sid && $sstart && ($now - $sstart) < 1800) return (string)$sid;
+            $sid = $now * 1000;
+            $_SESSION['cdp_session_id'] = $sid;
+            $_SESSION['cdp_session_start'] = $now;
+            return (string)$sid;
+        }
+        return '';
     }
 
     // ─── 用户画像 ──────────────────────────────────
@@ -470,32 +540,81 @@ class CdpSystem {
     /**
      * 获取漏斗数据
      */
-    public static function getFunnel(array $steps, int $days = 30): array {
+    // 顺序漏斗（对标 Amplitude）：步骤 = 事件 + 过滤器，窗口内严格顺序，每用户每步只计一次
+    // $steps: [['event'=>'x','filters'=>['field'=>['op','value']]], ...]
+    // $opts: ['days'=>30, 'window_days'=>7, 'ordered'=>true, 'group_by'=>'channel']
+    public static function getFunnel(array $steps, int $days = 30, array $opts = []): array {
         $events = self::allEvents();
+        $windowDays = (int)($opts['window_days'] ?? 0); // 0 = 不限窗口
+        $ordered = ($opts['ordered'] ?? true) !== false;
         $cutoff = date('Y-m-d', strtotime("-{$days} days"));
 
-        $funnel = [];
-        $prevVisitors = null;
-
-        foreach ($steps as $step) {
-            $visitors = [];
-            foreach ($events as $e) {
-                if ($e['event'] === $step && $e['timestamp'] >= $cutoff) {
-                    $visitors[$e['visitor_id']] = true;
-                }
-            }
-
-            $count = count($visitors);
-            $funnel[] = [
-                'step' => $step,
-                'count' => $count,
-                'rate' => $prevVisitors ? round($count / $prevVisitors * 100, 1) : 100,
-            ];
-
-            $prevVisitors = $count;
+        // 步骤解析：兼容字符串（老调用）和对象
+        $stepDefs = [];
+        foreach ($steps as $i => $s) {
+            if (is_string($s)) $stepDefs[$i] = ['event' => $s, 'filters' => []];
+            else $stepDefs[$i] = ['event' => $s['event'] ?? '', 'filters' => $s['filters'] ?? []];
         }
 
+        // 按用户聚合事件（时间排序）
+        $userEvents = [];
+        foreach ($events as $e) {
+            if (($e['timestamp'] ?? '') < $cutoff) continue;
+            $uid = $e['visitor_id'] ?? '';
+            if ($uid === '') continue;
+            $userEvents[$uid][] = $e;
+        }
+        foreach ($userEvents as &$ue) usort($ue, fn($a, $b) => strcmp($a['timestamp'] ?? '', $b['timestamp'] ?? ''));
+        unset($ue);
+
+        $funnel = [];
+        $prevMatches = null; // 进入上一布的用户集合
+        foreach ($stepDefs as $i => $def) {
+            $matches = [];
+            foreach ($userEvents as $uid => $ue) {
+                // 顺序漏斗：用户必须已通过前一步
+                if ($prevMatches !== null && !isset($prevMatches[$uid])) continue;
+                foreach ($ue as $e) {
+                    if ($e['event'] !== $def['event']) continue;
+                    if (!self::matchStepFilters($e, $def['filters'])) continue;
+                    // 窗口约束（进入漏斗后 windowDays 内）
+                    if ($windowDays > 0 && isset($firstEnter[$uid])) {
+                        $enterTs = strtotime($firstEnter[$uid]);
+                        if ($enterTs && strtotime($e['timestamp'] ?? '') > $enterTs + $windowDays * 86400) continue;
+                    }
+                    if ($i === 0) $firstEnter[$uid] = $e['timestamp'] ?? $firstEnter[$uid] ?? '';
+                    $matches[$uid] = true;
+                    break; // 每用户每步只计一次
+                }
+            }
+            $count = count($matches);
+            $funnel[] = [
+                'step' => $def['event'],
+                'count' => $count,
+                'rate' => ($prevMatches && $prevMatches > 0) ? round($count / count($prevMatches) * 100, 1) : 100,
+                'users' => array_keys($matches),
+            ];
+            $prevMatches = $matches;
+            if ($count === 0) break; // 断流
+        }
         return $funnel;
+    }
+
+    // 步骤过滤（事件属性匹配）
+    private static function matchStepFilters(array $event, array $filters): bool {
+        if (empty($filters)) return true;
+        $props = $event['properties'] ?? [];
+        foreach ($filters as $field => $cond) {
+            $actual = $props[$field] ?? ($event[$field] ?? '');
+            if (is_array($cond)) {
+                $op = $cond[0] ?? 'eq';
+                $expect = $cond[1] ?? '';
+                if (!self::compare($actual, $op, $expect)) return false;
+            } else {
+                if ((string)$actual !== (string)$cond) return false;
+            }
+        }
+        return true;
     }
 
     // ─── 数据资产概览 ────────────────────────────────
