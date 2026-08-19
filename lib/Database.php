@@ -91,6 +91,12 @@ class Database {
             member_id TEXT, member_email TEXT, props TEXT,
             ip TEXT, created_at TEXT
         )");
+        // CDP 事件扩展列（session/去重/时间戳/事件类别）
+        foreach (['session_id TEXT DEFAULT \'\'', 'message_id TEXT DEFAULT \'\'', 'ts INTEGER DEFAULT 0', 'event_category TEXT DEFAULT \'\''] as $col) {
+            try { $db->exec("ALTER TABLE events ADD COLUMN {$col}"); } catch (Exception $e) {}
+        }
+        // 事件去重唯一索引（message_id）
+        try { $db->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_events_message ON events(message_id) WHERE message_id != ''"); } catch (Exception $e) {}
         // 舆情监测结果
         $db->exec("CREATE TABLE IF NOT EXISTS sentiment_results (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
