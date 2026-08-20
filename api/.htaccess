@@ -1,0 +1,4 @@
+# Protect API key file
+<Files "api_key.json">
+    Require all denied
+</Files>
