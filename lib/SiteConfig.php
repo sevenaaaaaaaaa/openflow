@@ -10,7 +10,7 @@ function site_config(): array {
     $d = json_read(DATA_DIR . '/settings.json');
     return array_merge([
         'site_name' => '芭乐派 · OpenFlow',
-        'site_url' => 'https://nownexts.com',
+        'site_url' => 'https://example.com',
         'company_name' => '芭乐派（OpenFlow）科技有限公司',
         'company_year' => '2026',
         'company_address' => '上海市',

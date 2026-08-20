@@ -160,7 +160,7 @@ function default_page_content(string $page): array {
             'cases_title' => '1000+ 网站的共同选择',
             'vision_title' => '推动 100 万网站成为自动增长型站点',
             'cta_title' => '先做一次网站增长诊断',
-            'cta_phone' => '13166373667',
+            'cta_phone' => '13800000000',
         ],
         'about' => [
             'founder_quote' => '增长不是运气，是一套可以被构建的系统',

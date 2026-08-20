@@ -114,7 +114,7 @@ if ($email !== '') {
 
     // 发送设置密码邮件
     $siteUrl = ($_SERVER['HTTPS'] ?? '') === 'on' ? 'https' : 'http';
-    $siteUrl .= '://' . ($_SERVER['HTTP_HOST'] ?? 'nownexts.com');
+    $siteUrl .= '://' . ($_SERVER['HTTP_HOST'] ?? 'example.com');
     $setUrl = $siteUrl . '/member.php?view=reset-password&step=newpassword&token=' . urlencode($token);
     $subject = $autoCreated
         ? "【OpenFlow】企业申请已收到，请设置你的账户密码"

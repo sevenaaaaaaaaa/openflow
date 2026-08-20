@@ -108,7 +108,7 @@ admin_header('官方 Agent 咨询');
           <ul style="font-size:13px;color:var(--text-2);line-height:2;padding-left:18px">
             <li>对接微信/支付宝支付后自动开通</li>
             <li>当前为演示版：管理员可手动开通</li>
-            <li>支付问题联系 admin@nownexts.com</li>
+            <li>支付问题联系 admin@example.com</li>
           </ul>
           <form method="post" style="margin-top:16px">
             <?= csrf_field() ?>

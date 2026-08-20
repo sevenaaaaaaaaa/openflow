@@ -232,7 +232,7 @@ admin_header('邮件营销');
             <div class="field"><label>API Key</label><input type="password" name="bm_api_key" value="<?=htmlspecialchars($bmConfig['api_key'] ?? '')?>" placeholder="在 BillionMail 设置页获取"></div>
           </div>
           <div class="field-row">
-            <div class="field"><label>默认发件人邮箱</label><input type="email" name="bm_default_sender" value="<?=htmlspecialchars($bmConfig['default_sender'] ?? '')?>" placeholder="noreply@nownexts.com"></div>
+            <div class="field"><label>默认发件人邮箱</label><input type="email" name="bm_default_sender" value="<?=htmlspecialchars($bmConfig['default_sender'] ?? '')?>" placeholder="noreply@example.com"></div>
             <div class="field"><label>发件人名称</label><input type="text" name="bm_default_sender_name" value="<?=htmlspecialchars($bmConfig['default_sender_name'] ?? 'OpenFlow')?>"></div>
           </div>
           <div class="field">

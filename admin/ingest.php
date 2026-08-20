@@ -146,7 +146,7 @@ admin_header('内容导入连接器');
     <div class="card">
       <h2>🔌 API 接入说明</h2>
       <p class="text-sm text-muted mb-4">各平台/工具可通过 HTTP 调用本连接器发布文章：</p>
-      <pre style="background:#1e1e1e;color:#fff;padding:14px;border-radius:8px;font-size:13px;overflow-x:auto">curl -X POST https://nownexts.com/api/ingest.php \
+      <pre style="background:#1e1e1e;color:#fff;padding:14px;border-radius:8px;font-size:13px;overflow-x:auto">curl -X POST https://example.com/api/ingest.php \
   -H "Content-Type: application/json" \
   -d '{
     "platform": "obsidian",
@@ -156,7 +156,7 @@ admin_header('内容导入连接器');
   }'
 
 # 从 URL 抓取（飞书/Notion/公众号文章链接）
-curl -X POST https://nownexts.com/api/ingest.php \
+curl -X POST https://example.com/api/ingest.php \
   -H "Content-Type: application/json" \
   -d '{"platform": "feishu", "url": "https://xxx.feishu.cn/docx/xxx"}'</pre>
       <p class="text-sm text-muted mt-4">导入的文章自动进入「内容审核」队列，审核后发布。</p>
