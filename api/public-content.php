@@ -65,6 +65,18 @@ try {
             ], array_slice($list, 0, $limit))], JSON_UNESCAPED_UNICODE);
             break;
 
+        case 'pages':
+            // 落地页 blocks（供已有前端组件网站拉取渲染，实现 CMS 与外部前端兼容）
+            $pages = array_values(array_filter(json_read(DATA_DIR . '/builder-pages.json'), fn($p) => ($p['status'] ?? 'draft') === 'published'));
+            $onlyBlocks = !empty($_GET['blocks']) && $_GET['blocks'] === '1';
+            echo json_encode(['ok' => true, 'type' => 'pages', 'items' => array_map(function($p) use ($base, $onlyBlocks) {
+                $out = ['id' => $p['id'], 'title' => $p['title'], 'slug' => $p['slug'], 'seo_title' => $p['seo_title'] ?? '', 'seo_desc' => $p['seo_desc'] ?? ''];
+                if ($onlyBlocks) { $out['blocks'] = $p['blocks'] ?? []; $out['html'] = $out['html'] ?? ''; }
+                else $out['url'] = $base . '/b/' . ($p['slug'] ?? $p['id']);
+                return $out;
+            }, $pages)], JSON_UNESCAPED_UNICODE);
+            break;
+
         case 'events':
             $list = array_values(array_filter(json_read(DATA_DIR . '/events/index.json'), fn($e) => ($e['status'] ?? '') === 'published'));
             echo json_encode(['ok' => true, 'type' => 'events', 'items' => array_map(fn($e) => [
