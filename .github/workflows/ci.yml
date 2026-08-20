@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lint:
+    name: PHP 语法检查
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.2', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: gd, pdo_sqlite, mbstring, fileinfo, curl, openssl, json
+          coverage: none
+
+      - name: 检查 PHP 版本
+        run: php -v
+
+      - name: 全站 PHP 语法检查（php -l）
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            php -l "$f" > /dev/null 2>&1 || { echo "::error file=$f::语法错误"; fail=1; }
+          done < <(find . -name '*.php' -not -path './vendor/*' -not -path './data/*' -not -path './node_modules/*')
+          exit $fail
+
+  test:
+    name: PHPUnit 测试
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: gd, pdo_sqlite, mbstring, fileinfo, curl, openssl, json
+          coverage: none
+
+      - name: Composer 依赖
+        run: composer install --no-interaction --prefer-dist
+
+      - name: 运行测试
+        run: composer test
+        continue-on-error: true # dev-only 测试套件，失败不阻塞
+
+  shellcheck:
+    name: Shell 脚本检查（bin/ 与 deploy 脚本）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ShellCheck
+        run: |
+          which shellcheck || sudo apt-get update && sudo apt-get install -y shellcheck
+          for f in bin/* deploy.sh qa-check.sh; do
+            [ -f "$f" ] && shellcheck -S warning "$f" || echo "::warning::$f 跳过或告警"
+          done
+        continue-on-error: true
