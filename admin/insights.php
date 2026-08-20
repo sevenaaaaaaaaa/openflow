@@ -83,6 +83,68 @@ admin_header('营销洞察');
       <div class="metric-card"><div class="lab">NPS 项目</div><div class="val"><?=count($npsProjects)?></div></div>
     </div>
 
+    <!-- 运营分析（CDP 聚合） -->
+    <?php
+    try {
+        $funnelRaw = CdpSystem::getFunnel(['page_view', 'element_click', 'form_submit', 'purchase'], 30);
+        $funnel = [];
+        foreach ($funnelRaw as $fname => $fdata) {
+            if (is_array($fdata) && isset($fdata['count'])) $funnel[] = ['name' => is_int($fname) ? ($fdata['name'] ?? '') : $fname, 'count' => $fdata['count']];
+        }
+        $channelAttrRaw = CdpSystem::getChannelAttribution();
+        $channelAttr = [];
+        foreach ($channelAttrRaw as $csrc => $cd) { $channelAttr[] = ['source' => $csrc, 'revenue' => $cd['revenue'] ?? 0, 'visits' => $cd['visits'] ?? 0]; }
+        usort($channelAttr, fn($a, $b) => $b['revenue'] <=> $a['revenue']);
+        $hourly = CdpSystem::getHourlyHeatmap(7);
+        $topEventsRaw = CdpSystem::getTopEvents();
+        $topEvents = [];
+        foreach ($topEventsRaw as $tev => $tcnt) $topEvents[] = ['event' => $tev, 'count' => $tcnt];
+    } catch (Throwable $e) { $funnel = []; $channelAttr = []; $hourly = []; $topEvents = []; }
+    ?>
+    <div class="card" style="margin-bottom:20px">
+      <h2>📊 运营分析（CDP · 近 30 天）</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px" class="insight-grid">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:10px">转化漏斗</div>
+          <?php if (empty($funnel)): ?><div class="empty" style="padding:20px;font-size:12px;color:var(--faint)">暂无漏斗数据</div>
+          <?php else: $maxF = !empty($funnel) ? max(array_column($funnel, 'count')) : 1; foreach ($funnel as $i => $fs): ?>
+          <div class="bar-row"><span class="lab"><?=htmlspecialchars($fs['name'] ?? '')?></span><div class="bar" style="height:26px"><i style="width:<?=round(($fs['count'] ?? 0)/$maxF*100)?>%"></i></div><span class="num" style="font-size:12px;width:50px;text-align:right"><?=$fs['count'] ?? 0?></span></div>
+          <?php if ($i > 0 && ($funnel[$i-1]['count'] ?? 0) > 0): ?><div style="font-size:10px;color:var(--faint);text-align:right;margin:-4px 0 6px">↓ 转化率 <?=round(($fs['count']??0)/($funnel[$i-1]['count']??1)*100)?>%</div><?php endif; ?>
+          <?php endforeach; endif; ?>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:10px">活跃时段（近 7 天）</div>
+          <?php if (empty($hourly)): ?><div class="empty" style="padding:20px;font-size:12px;color:var(--faint)">暂无时段数据</div>
+          <?php else: $maxH = !empty($hourly) ? max($hourly) : 1; ?>
+          <div style="display:flex;gap:2px;align-items:flex-end;height:90px">
+            <?php foreach ($hourly as $h => $n): ?>
+            <div style="flex:1;text-align:center" title="<?=$h?>:00 · <?=$n?>">
+              <div style="background:var(--accent);opacity:<?=max(0.2, $n/$maxH)?>;border-radius:2px;height:<?=$n>0?max(3, round($n/$maxH*90)):2?>px"></div>
+            </div>
+            <?php endforeach; ?>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-3);margin-top:3px"><span>0点</span><span>6点</span><span>12点</span><span>18点</span><span>24点</span></div>
+          <?php endif; ?>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px" class="insight-grid">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:10px">渠道转化收入（近 30 天）</div>
+          <?php if (empty($channelAttr)): ?><div class="empty" style="padding:20px;font-size:12px;color:var(--faint)">暂无渠道收入（有购买订单后出现）</div>
+          <?php else: $maxC = !empty($channelAttr) ? max(array_column($channelAttr, 'revenue')) : 1; foreach (array_slice($channelAttr, 0, 5) as $ca): ?>
+          <div class="bar-row"><span class="lab"><?=htmlspecialchars($ca['source'] ?? '')?></span><div class="bar" style="height:18px"><i style="width:<?=round(($ca['revenue']??0)/$maxC*100)?>%"></i></div><span class="num" style="font-size:12px;width:70px;text-align:right">¥<?=number_format($ca['revenue'] ?? 0,0)?></span></div>
+          <?php endforeach; endif; ?>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:10px">事件 TOP</div>
+          <?php if (empty($topEvents)): ?><div class="empty" style="padding:20px;font-size:12px;color:var(--faint)">暂无事件数据</div>
+          <?php else: $maxE = !empty($topEvents) ? max(array_column($topEvents, 'count')) : 1; foreach (array_slice($topEvents, 0, 6) as $te): ?>
+          <div class="bar-row"><span class="lab"><?=htmlspecialchars($te['event'] ?? '')?></span><div class="bar" style="height:18px"><i style="width:<?=round(($te['count']??0)/$maxE*100)?>%"></i></div><span class="num" style="font-size:12px;width:50px;text-align:right"><?=$te['count'] ?? 0?></span></div>
+          <?php endforeach; endif; ?>
+        </div>
+      </div>
+    </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="insight-grid">
       <!-- 提交趋势 -->
       <div class="card">
