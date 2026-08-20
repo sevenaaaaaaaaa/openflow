@@ -50,9 +50,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     }
 }
 
-// 手动同步
+// 手动同步（AJAX 返回 JSON）
 if (isset($_GET['sync'])) {
     $r = datasync_run_connector($_GET['sync']);
+    if (!empty($_GET['ajax'])) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(array_merge($r, ['message' => $r['ok'] ? ("同步完成：写入 {$r['rows']} 条，失败 {$r['failed']} 条") : ('同步失败：' . ($r['error'] ?? ''))]), JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     $message = $r['ok'] ? ("同步完成：写入 {$r['rows']} 条，失败 {$r['failed']} 条") : ('同步失败：' . ($r['error'] ?? ''));
 }
 
@@ -148,7 +153,7 @@ admin_header('外部连接器');
             <td class="text-sm text-muted"><?=htmlspecialchars($c['source'] ?? '—')?></td>
             <td class="text-sm text-muted"><?=htmlspecialchars(substr($c['last_sync'] ?? '', 5, 11)) ?: '—'?></td>
             <td><span class="badge <?=!empty($c['enabled'])?'badge-green':'badge-gray'?>"><?=!empty($c['enabled'])?'启用':'停用'?></span><?php if (!empty($c['last_count'])): ?><span style="font-size:11px;color:var(--faint);margin-left:4px"><?=$c['last_count']?>行</span><?php endif; ?></td>
-            <td style="white-space:nowrap"><a href="?sync=<?=urlencode($c['id'])?>" class="btn btn-s btn-sm" onclick="return confirm('立即同步该连接器?')">▶ 同步</a><a href="?edit=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('删除?')">删除</a></td>
+            <td style="white-space:nowrap"><button type="button" class="btn btn-s btn-sm" onclick="runSync('<?=urlencode($c['id'])?>', this)" id="sync-<?=urlencode($c['id'])?>">▶ 同步</button><a href="?edit=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('删除?')">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>
@@ -179,4 +184,22 @@ admin_header('外部连接器');
     <?php endif; ?>
   </div>
 </div>
+<script>
+function runSync(id, btn) {
+  if (!confirm('立即同步该连接器?')) return;
+  btn.disabled = true; btn.textContent = '⏳ 同步中…';
+  fetch('?sync=' + id + '&ajax=1')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      btn.disabled = false; btn.textContent = '▶ 同步';
+      var m = document.createElement('div');
+      m.style.cssText = 'position:fixed;top:16px;right:16px;z-index:9999;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.15)';
+      m.style.background = d.ok ? '#16a34a' : '#dc2626';
+      m.textContent = d.message || '操作完成';
+      document.body.appendChild(m);
+      setTimeout(function(){ m.remove(); location.reload(); }, 1800);
+    })
+    .catch(function(){ btn.disabled = false; btn.textContent = '▶ 同步'; alert('同步请求失败，请检查网络'); });
+}
+</script>
 <?php admin_footer(); ?>
