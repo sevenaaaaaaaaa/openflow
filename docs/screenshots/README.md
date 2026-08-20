@@ -1,12 +1,15 @@
 # 界面截图
 
-在此目录放置后台各模块截图（命名对应 README 引用）：
+后台各模块真实截图（1280×900，已生成）：
 
-- `01-dashboard.png` — 经营驾驶舱
-- `02-cdp.png` — CDP 用户画像 / 分群
-- `03-automation.png` — 营销自动化 / 画布
-- `04-commerce.png` — 电商 / 课程 / 分销
-- `05-ai-copilot.png` — 小福 AI Copilot
-- `06-events.png` — 活动管理 / 报名
+| 截图 | 模块 |
+|---|---|
+| `01-dashboard.png` | 经营驾驶舱 / 后台首页 |
+| `02-cdp.png` | CDP 用户画像 / 分群 / 洞察 |
+| `03-automation.png` | 营销自动化（触发器 × 动作） |
+| `04-commerce.png` | 电商运营报表（GMV / 复购 / RFM） |
+| `05-ai-copilot.png` | 增长驱动引擎 / 小福 AI Copilot 工作台 |
+| `06-events.png` | 活动管理 / 报名 |
 
-欢迎通过 PR 补充真实截图（建议 1280×720 以上）。
+> 截图基于演示数据生成，实际部署后为你的真实数据。
+> 欢迎通过 PR 补充各语言/各设备的截图。
