@@ -151,43 +151,68 @@ class GrowthFlywheel {
         }
     }
 
-    /** 3. AI 撰写：生成文章草稿（进待审，不直接发布） */
+    /** 3. AI 撰写：生成结构化文章草稿（选题精选 + 标题 + slug + SEO，进待审） */
     private static function stepDraft(array $analyze): array {
         if (!AiCenter::isConfigured() || ($analyze['status'] ?? '') !== 'ok') {
             return ['status' => 'skipped', 'detail' => '跳过撰写（需 AI + 热点总结）', 'ts' => time()];
         }
         try {
-            $topic = ($analyze['topics'] ?? ['网站增长'])[0];
-            $resp = AiCenter::chat(
-                '你是一名资深网站增长内容作者，请写一篇 800 字的文章，主题：' . $topic . '。输出标题和正文（HTML 段落）。',
-                '围绕网站增长撰写，包含 1 个核心洞察、3 个实践建议。',
-                ['max_tokens' => 1500]
+            $topics = (array)($analyze['topics'] ?? ['网站增长']);
+            $topic = is_string($topics[0] ?? '') ? $topics[0] : '网站增长';
+            // 结构化生成：选题理由 + 标题 + slug + 正文 + SEO（一次产出，保证质量）
+            $resp = AiCenter::json(
+                '你是资深网站增长内容主编。基于热点主题，撰写一篇可直接发布的 SEO 文章。'
+                . '输出 JSON（不要多余文字），字段：'
+                . '{"title":"吸引点击的标题(20字内,含关键词)","slug":"英文URL后缀(纯小写字母数字连字符,3-6个词)","summary":"核心洞察(80字内)","seo_title":"SEO标题(30字内,含主关键词)","seo_desc":"SEO描述(80字内)","seo_keywords":"3-5个关键词,逗号分隔","category":"insight|seo|product|growth 之一","tags":["2-4个标签"],"content":"800-1200字HTML正文,含<h2>小标题x3、有序/无序列表、<strong>重点、结尾行动号召CTA"}',
+                '热点主题：' . $topic,
+                ['max_tokens' => 2500]
             );
-            $text = $resp['text'] ?? $resp['content'] ?? '';
-            // 保存为待审草稿
-            if (!empty($text)) {
-                $draftId = self::saveDraft($topic, $text);
-                $s = self::state();
-                $s['pending_review'][] = ['id' => $draftId, 'title' => $topic . '·AI草稿', 'ts' => time()];
-                json_write(self::$file, $s);
-                return ['status' => 'ok', 'detail' => '已生成草稿（待审核发布）', 'draft_id' => $draftId, 'ts' => time()];
+            if (empty($resp['ok']) || empty($resp['data'])) {
+                return ['status' => 'error', 'detail' => 'AI 生成失败：' . ($resp['error'] ?? '解析失败'), 'ts' => time()];
             }
-            return ['status' => 'error', 'detail' => 'AI 返回为空：' . ($resp['error'] ?? '未知'), 'ts' => time()];
+            $d = $resp['data'];
+            $text = (string)($d['content'] ?? '');
+            if (mb_strlen(strip_tags($text)) < 200) {
+                return ['status' => 'error', 'detail' => 'AI 正文过短，已跳过保存', 'ts' => time()];
+            }
+            $draftId = self::saveDraft($topic, $text, $d);
+            $s = self::state();
+            $s['pending_review'][] = ['id' => $draftId, 'title' => ($d['title'] ?? $topic) . '·AI草稿', 'ts' => time()];
+            json_write(self::$file, $s);
+            return ['status' => 'ok', 'detail' => '已生成结构化草稿（待审核发布）', 'draft_id' => $draftId, 'ts' => time()];
         } catch (\Throwable $e) {
             return ['status' => 'error', 'detail' => '撰写失败：' . $e->getMessage(), 'ts' => time()];
         }
     }
 
-    /** 保存 AI 草稿 */
-    private static function saveDraft(string $topic, string $text): string {
+    /** 保存 AI 草稿（含标题/slug/SEO 结构化字段） */
+    private static function saveDraft(string $topic, string $text, array $d = []): string {
         $articles = json_read(ARTICLES_DIR . '/index.json');
         $id = 'ai_draft_' . date('Ymd_His') . '_' . substr(bin2hex(random_bytes(3)), 0, 5);
+        $title = trim($d['title'] ?? '') ?: $topic;
+        // slug：AI 给的英文 slug；空则拼音兜底（中文可读）或时间戳
+        $slug = strtolower(trim($d['slug'] ?? ''));
+        $slug = preg_replace('/[^a-z0-9-]/', '', $slug);
+        if ($slug === '' || strlen($slug) < 4) {
+            $pinyin = function_exists('pinyin_convert') ? pinyin_convert($title) : '';
+            $slug = $pinyin !== '' ? $pinyin : ('ai-growth-' . date('YmdHis'));
+        }
         $articles[] = [
-            'id' => $id, 'title' => $topic, 'slug' => 'ai-' . preg_replace('/[^a-z0-9-]/', '-', strtolower($topic)) . '-' . date('Ymd'),
-            'content' => $text, 'excerpt' => mb_substr(strip_tags($text), 0, 160),
-            'status' => 'draft', 'author' => 'AI 增长引擎', 'category' => 'insight',
-            'tags' => ['AI', '增长'], 'source' => 'growth_driver',
-            'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'),
+            'id' => $id,
+            'title' => $title,
+            'slug' => $slug . '-' . date('Ymd'),
+            'content' => $text,
+            'excerpt' => trim($d['summary'] ?? '') ?: mb_substr(strip_tags($text), 0, 160),
+            'status' => 'draft',
+            'author' => 'AI 增长引擎',
+            'category' => in_array($d['category'] ?? '', ['insight','seo','product','growth'], true) ? $d['category'] : 'insight',
+            'tags' => array_values(array_filter((array)($d['tags'] ?? ['AI', '增长']))),
+            'seo_title' => trim($d['seo_title'] ?? '') ?: $title,
+            'seo_desc' => trim($d['seo_desc'] ?? '') ?: ($d['summary'] ?? ''),
+            'seo_keywords' => trim($d['seo_keywords'] ?? ''),
+            'source' => 'growth_driver',
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
         ];
         json_write(ARTICLES_DIR . '/index.json', $articles);
         return $id;
