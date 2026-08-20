@@ -109,7 +109,7 @@ $blockTypes = [
     'text' => '文本段落', 'image-text' => '图文混排', 'stats' => '数据指标',
     'testimonials' => '客户证言', 'logo-wall' => 'Logo 墙', 'faq' => 'FAQ',
     'gallery' => '图片画廊', 'form' => '表单嵌入', 'newsletter' => '订阅表单',
-    'video' => '视频嵌入',
+    'video' => '视频嵌入', 'embed' => '自定义代码（嵌入）',
 ];
 
 admin_header('落地页构建器');
@@ -210,6 +210,12 @@ admin_header('落地页构建器');
             <button type="button" class="btn btn-ghost btn-sm" onclick="addBlock('<?=$btk?>','<?=htmlspecialchars($btv)?>')">+ <?=htmlspecialchars($btv)?></button>
             <?php endforeach; ?>
           </div>
+          <div style="margin-top:10px;padding-top:12px;border-top:1px dashed var(--border)">
+            <span style="font-size:12px;font-weight:600;color:var(--muted);margin-right:8px">📋 快速套用模板：</span>
+            <button type="button" class="btn btn-s btn-sm" onclick="applyTemplate('saas')">🚀 SaaS 产品页</button>
+            <button type="button" class="btn btn-s btn-sm" onclick="applyTemplate('marketing')">🎯 营销落地页</button>
+            <button type="button" class="btn btn-s btn-sm" onclick="applyTemplate('launch')">🛠 新品发布页</button>
+          </div>
         </div>
 
         <button type="submit" class="btn btn-primary">保存落地页</button>
@@ -237,6 +243,56 @@ function aiGenerate() {
     .catch(function(){ msg.textContent = '网络异常'; msg.style.color = 'var(--danger)'; });
 }
 var blockIdx = <?=count($editPage['blocks'] ?? [])?>;
+
+/* 预设模板（Webflow/Wix 式一键套用） */
+var TEMPLATES = {
+  saas: [
+    {type:'hero', title:'让增长像呼吸一样自然', subtitle:'OpenFlow — AI 时代的网站增长操作系统，内容/获客/转化一体化', button_text:'免费开始', button_url:'#', bg_color:'#f4f3e9'},
+    {type:'features', title:'四大核心能力', content:'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px"><div style="padding:20px;border:1px solid var(--border);border-radius:14px"><b>内容引擎</b><p style="color:var(--muted)">AI 选题成文 · 定时发布</p></div><div style="padding:20px;border:1px solid var(--border);border-radius:14px"><b>CDP 用户数据</b><p style="color:var(--muted)">画像/分群/洞察</p></div><div style="padding:20px;border:1px solid var(--border);border-radius:14px"><b>营销自动化</b><p style="color:var(--muted)">触发式触达闭环</p></div><div style="padding:20px;border:1px solid var(--border);border-radius:14px"><b>商业转化</b><p style="color:var(--muted)">电商/课程/分销</p></div></div>'},
+    {type:'cta', title:'准备好开始了吗？', subtitle:'30 分钟上线自带增长能力的网站', button_text:'立即体验', button_url:'#'}
+  ],
+  marketing: [
+    {type:'hero', title:'限时优惠：增长系统实操课', subtitle:'7 天学会增长系统，从流量思维到价值复利', button_text:'立即报名', button_url:'#', bg_color:'#fdfce9'},
+    {type:'stats', title:'数据说话', content:'<div style="display:flex;gap:20px;justify-content:center;text-align:center"><div><div style="font-size:32px;font-weight:800;color:var(--accent)">3000+</div><div style="color:var(--muted)">学员</div></div><div><div style="font-size:32px;font-weight:800;color:var(--accent)">4.9</div><div style="color:var(--muted)">平均评分</div></div><div><div style="font-size:32px;font-weight:800;color:var(--accent)">92%</div><div style="color:var(--muted)">完课率</div></div></div>'},
+    {type:'testimonials', title:'学员评价', content:'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px"><div style="padding:16px;border:1px solid var(--border);border-radius:12px"><p>“终于把增长做成了一套系统”</p><div style="color:var(--faint);font-size:12px">— 某一人公司创始人</div></div><div style="padding:16px;border:1px solid var(--border);border-radius:12px"><p>“工具 + 策略都有了”</p><div style="color:var(--faint);font-size:12px">— 某 SaaS 运营</div></div></div>'},
+    {type:'form', title:'抢占名额', content:'（配置表单 slug 后嵌入报名表单）', button_text:'报名', button_url:'#'},
+    {type:'cta', title:'现在加入，立即成长', button_text:'立即报名', button_url:'#'}
+  ],
+  launch: [
+    {type:'hero', title:'新品发布：Agent 增长引擎', subtitle:'自生长的 AI 增长团队成员，7×24 主动推进', button_text:'了解详情', button_url:'#', bg_color:'#1e1e1e'},
+    {type:'features', title:'核心特性', content:'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px"><div style="padding:20px;border:1px solid var(--border);border-radius:14px"><b>热点爬取</b></div><div style="padding:20px;border:1px solid var(--border);border-radius:14px"><b>AI 撰写</b></div><div style="padding:20px;border:1px solid var(--border);border-radius:14px"><b>SEO 优化</b></div></div>'},
+    {type:'video', title:'产品演示', content:'（粘贴视频地址）'},
+    {type:'newsletter', title:'订阅发布通知', subtitle:'第一时间获取更新', button_text:'订阅'},
+    {type:'cta', title:'加入内测', button_text:'申请体验', button_url:'#'}
+  ]
+};
+function applyTemplate(name) {
+  if (!confirm('套用模板将替换当前区块布局，确定？')) return;
+  var list = document.getElementById('blocksList');
+  list.innerHTML = '';
+  (TEMPLATES[name] || []).forEach(function(b, i) {
+    var div = document.createElement('div');
+    div.className = 'block-item';
+    div.style.cssText = 'border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--surface)';
+    var idx = blockIdx++;
+    div.innerHTML =
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><b style="font-size:14px">🧱 ' + b.title + '</b><button type="button" class="btn btn-danger btn-sm" style="margin-left:auto" onclick="this.closest(\'.block-item\').remove()">✕</button></div>' +
+      '<input type="hidden" name="block_type[]" value="' + b.type + '">' +
+      '<input type="text" name="block_title[]" value="' + escHtml(b.title) + '" placeholder="标题" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;margin-bottom:8px">' +
+      '<input type="text" name="block_subtitle[]" value="' + escHtml(b.subtitle || '') + '" placeholder="副标题" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;margin-bottom:8px">' +
+      '<textarea name="block_content[]" rows="3" placeholder="内容 (支持 HTML)" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--mono);margin-bottom:8px">' + escHtml(b.content || '') + '</textarea>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">' +
+        '<input type="text" name="block_image[]" value="" placeholder="图片路径" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px">' +
+        '<input type="text" name="block_bg_color[]" value="' + escHtml(b.bg_color || '') + '" placeholder="背景色" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px">' +
+        '<input type="text" name="block_button_text[]" value="' + escHtml(b.button_text || '') + '" placeholder="按钮文字" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px">' +
+      '</div>' +
+      '<input type="text" name="block_button_url[]" value="' + escHtml(b.button_url || '') + '" placeholder="按钮链接" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px;margin-top:8px">';
+    list.appendChild(div);
+  });
+}
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 function addBlock(type, label) {
   var div = document.createElement('div');
