@@ -213,27 +213,128 @@ chmod -R 775 data uploads
 
 cron 负责：定时发布 · 自动化队列 · 连接器同步 · 活动提醒 · 漏斗巡检 · 报表订阅 · 流失预警
 
-### 5. 完成
+### 5. 完成 🎉
 
-> 📸 截图占位：`docs/screenshots/01-dashboard.png` · `02-cdp.png` · `03-automation.png` · `04-commerce.png`（目录已创建，欢迎 PR 补充真实截图）
->
+至此，一个自带内容、用户数据、自动化触达与商业转化的网站已上线。
+
+### 🖼 界面预览
+
+> 后台各模块实拍（点击放大）。更多见 [docs/screenshots](docs/screenshots/README.md)。
+
+<p align="center">
+  <img src="docs/screenshots/01-dashboard.png" width="48%" alt="经营驾驶舱"/>
+  <img src="docs/screenshots/02-cdp.png" width="48%" alt="CDP 用户画像"/>
+</p>
+<p align="center">
+  <img src="docs/screenshots/03-automation.png" width="48%" alt="营销自动化"/>
+  <img src="docs/screenshots/04-commerce.png" width="48%" alt="电商运营报表"/>
+</p>
+<p align="center">
+  <img src="docs/screenshots/05-ai-copilot.png" width="48%" alt="增长驱动 / AI Copilot"/>
+  <img src="docs/screenshots/06-events.png" width="48%" alt="活动管理"/>
+</p>
+
 > 🎬 视频演示：可在 [docs/video](docs/video/README.md) 放置演示视频链接（部署演示 / 功能 walkthrough）
 
 ---
 
-## ⚙️ 部署适配
+## 🚀 部署方案
 
-| 环境 | 方式 |
-|---|---|
-| **Apache** | 项目自带 `.htaccess`，开启 `mod_rewrite` 即可 |
-| **Nginx** | 参照根目录 `nginx.site.conf`（含前台美化 URL 与 `/xmp/` 后台路由） |
-| **宝塔面板** | 站点 → 伪静态 → 粘贴 `deploy/baota-rewrites.conf` |
-| **Docker** | 纯 PHP 无框架 + JSON/SQLite，官方镜像与 Compose 即将提供（可用任意 PHP 镜像 + 数据卷） |
-| **虚拟主机** | 纯 PHP 无框架，上传即用（需 PHP 8.0+ 与 SQLite 扩展） |
-| **已有站点融合** | 公开内容 API（SSR）· SSO 统一登录 · `/growth/` 子路径挂载 |
-| **多语言** | URL 前缀 `/en/ /ja/` · 语言切换器 · hreflang |
+OpenFlow 是纯 PHP + JSON/SQLite 单体，**零外部服务依赖**，几乎可在任何能跑 PHP 的环境运行。下面覆盖从自建服务器到云主机、NAS 与 Serverless 的完整部署路径。
 
-> 数据目录可用环境变量指定：`OF_DATA_DIR` / `OF_UPLOAD_DIR`（见 `.env.example`）
+> 通用前提：PHP 8.0+（推荐 8.2+），扩展 `gd` `pdo_sqlite` `mbstring` `fileinfo` `curl` `openssl`；数据目录 `data/`、`uploads/` 可写。
+
+### 1️⃣ Apache / Nginx（通用自建服务器）
+
+```bash
+git clone https://github.com/sevenaaaaaaaaa/openflow.git /var/www/openflow
+chmod -R 775 /var/www/openflow/data /var/www/openflow/uploads
+```
+
+- **Apache**：开启 `mod_rewrite`，站点根指向项目目录（自带 `.htaccess`）
+- **Nginx**：参照根目录 `nginx.site.conf`（含前台美化 URL 与 `/xmp/` 后台路由），PHP-FPM 处理 `*.php`
+- 配置 cron：`* * * * * curl -s https://你的域名/api/cron.php`
+
+### 2️⃣ Docker（容器化）
+
+系统是无框架单体，任意 `php:8.2-apache` 或 `php:8.2-fpm` 镜像即可运行，**数据用卷持久化**：
+
+```yaml
+# docker-compose.yml
+services:
+  openflow:
+    image: php:8.2-apache
+    volumes:
+      - ./openflow:/var/www/html
+      - ./data:/var/www/html/data      # 数据卷（JSON + SQLite）
+      - ./uploads:/var/www/html/uploads
+    ports: ["8080:80"]
+    environment:
+      - OF_DATA_DIR=/var/www/html/data
+      - OF_UPLOAD_DIR=/var/www/html/uploads
+  cron:                              # 定时任务容器
+    image: curlimages/curl:latest
+    entrypoint: ["/bin/sh","-c","while true; do curl -s http://openflow/api/cron.php; sleep 300; done"]
+    depends_on: [openflow]
+```
+
+> 官方镜像与一键 Compose 正在整理，后续会放入 `deploy/docker/`。
+
+### 3️⃣ 宝塔面板（最省心，国内推荐）
+
+1. 软件商店安装 **LNMP**（Nginx + PHP 8.2 + 无需 MySQL）
+2. 添加站点 → 上传代码 / Git 拉取到站点目录
+3. **PHP 设置**：启用扩展 `gd` `pdo_sqlite` `mbstring` `fileinfo` `curl` `openssl`
+4. **伪静态**：粘贴 `deploy/baota-rewrites.conf` 内容
+5. **计划任务**（Shell 脚本）：`curl -s https://你的域名/api/cron.php`，每 1 分钟
+6. 站点目录权限 `www:www`，`data`/`uploads` 可写
+
+### 4️⃣ 飞牛 OS（fnOS）/ 绿联 UGREEN（NAS）
+
+两台 NAS 均内置 Docker / Docker Compose：
+
+1. 应用中心 / Docker → 新建项目（Compose）
+2. 粘贴上面的 `docker-compose.yml`，把数据卷映射到 NAS 存储目录（如 `/vol1/docker/openflow/data`）
+3. 端口映射 8080 → 局域网访问
+4. 如需要公网访问：NAS 自带 DDNS / 反向代理，或配合内网穿透
+
+### 5️⃣ 群晖 DSM
+
+**方式 A（推荐）**：套件中心装 **Container Manager** → 项目 → 导入上面的 Compose，卷映射到共享文件夹，设置开机自启。
+
+**方式 B（Web Station）**：Web Station → 新增虚拟主机（PHP 8）→ 指向项目目录 → Apache 伪静态用 `.htaccess`；控制面板「任务计划程序」新建计划任务每 5 分钟 `curl` cron。
+
+### 6️⃣ Vercel（组合方案：营销层加速 + 服务器动态层）
+
+OpenFlow 需要可写文件系统（JSON + SQLite）与 cron，**不能完整跑在 Vercel 的只读环境**。推荐组合方案：
+
+- **Vercel 承担营销/内容静态层**：把首页、产品、课程等展示页构建为静态站点部署到 Vercel（全球 CDN 加速）
+- **服务器承担动态层**：后台 `/xmp`、购买、表单、CDP 等留在你的服务器
+- **衔接**：
+  - 前端静态页的提交/购买/表单请求指向服务器 API（配置 CORS，见后台「设置」）
+  - 静态页数据用「公开内容 API」`/api/public-content.php` 拉取
+  - 用户登录统一走 SSO（`/api/sso.php`）
+- 也可用 Vercel Functions 做极轻量代理层转发到服务器 API
+
+> 若坚持全量 Serverless，需将存储抽象到外部（PostgreSQL + 对象存储），属大改造，一般不建议。
+
+### 7️⃣ 阿里云 ECS
+
+**方式 A（推荐）**：ECS + 宝塔（见第 3 项），1 小时上线，与生产环境一致。
+**方式 B**：ECS + Docker Compose（见第 2 项）。
+
+**加固建议**：
+- `data/` 每日打包备份到 **OSS 对象存储**（可选，见 [md-docs/backup-restore.md](md-docs/backup-restore.md)）
+- SQLite 保持本地（不建议放 OSS）
+- 域名接入 CDN / 安全组仅开放 80/443
+
+### 📦 数据迁移与已有站点融合
+
+- **迁移已有数据**：后台「数据迁移助手」支持文章/页面/线索/用户/评论/订单的 CSV/JSON/XLSX 导入
+- **已有站点渐进接入**：公开内容 API（SSR 渲染）· SSO 统一登录 · `/growth/` 子路径挂载 · 微信/知识库数据同步
+- **数据目录**：环境变量 `OF_DATA_DIR` / `OF_UPLOAD_DIR` 可指定到任意位置（见 `.env.example`）
+
+> 详细部署与运维见 [md-docs/deployment.md](md-docs/deployment.md) · 备份恢复见 [md-docs/backup-restore.md](md-docs/backup-restore.md)
 
 ---
 
