@@ -49,7 +49,7 @@ $related = array_values(array_filter($sites, fn($s) => $s['id'] !== $siteId && (
         <div class="text-sm text-gray-600 mt-2"><?=htmlspecialchars($catNames[$site['category'] ?? ''] ?? '未分类')?> · <?=($site['region']??'')==='cn'?'国内':'海外'?></div>
         <p class="text-gray-600 mt-4 leading-relaxed"><?=htmlspecialchars($site['description'] ?? '')?></p>
         <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
-          <a href="<?=htmlspecialchars($site['url'] ?? '#')?>" target="_blank" rel="noopener" class="rounded-full px-7 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">访问网站 →</a>
+          <a href="/api/nav-click.php?site=<?=urlencode($site['id'])?>" target="_blank" rel="noopener" class="rounded-full px-7 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">访问网站 →</a>
           <button class="rounded-full px-7 py-3 font-bold border border-[var(--border)]" style="background:var(--surface);color:var(--fg)" onclick="copyURL()">复制链接</button>
         </div>
       </div>
