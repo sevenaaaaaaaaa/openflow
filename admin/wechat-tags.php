@@ -98,6 +98,9 @@ admin_header('微信标签');
       </div>
     </div>
     <p class="sub">服务号用户标签 · 与 CDP 画像双向打通 · 标签用于定向群发</p>
+    <div style="padding:10px 14px;border:1px dashed var(--border-strong);border-radius:10px;background:var(--surface);margin-bottom:12px;font-size:12.5px;color:var(--muted)">
+      🧩 <b>功能归属</b>：此处「同步到 CDP / 标签双向打通」属于<b style="color:var(--accent)">用户运营</b>（CDP 画像层），微信消息/群发属微信生态。查看画像与分群：<a href="/xmp/cdp?tab=profiles" style="color:var(--accent)">CDP 用户画像 →</a> · <a href="/xmp/segments" style="color:var(--accent)">分群管理 →</a>
+    </div>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>
     <?php if (!$appid): ?><?=msg('error', '请先在「公众号设置」配置 AppID/AppSecret')?><?php endif; ?>

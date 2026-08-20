@@ -46,6 +46,35 @@ arsort($productSales);
 $rfm = [];
 try { $rfm = CdpSystem::getRFMAnalysis(); } catch (Throwable $e) {}
 
+// ─── 购买链路分析 ───
+// 全部订单（含近 days 天）状态分布
+$allOrders = [];
+try { $allOrders = Database::query("SELECT * FROM orders"); } catch (Exception $e) {}
+$statusDist = [];
+foreach ($allOrders as $o) {
+    $st = $o['status'] ?? 'unknown';
+    $statusDist[$st] = ($statusDist[$st] ?? 0) + 1;
+}
+// 支付方式分布（已支付）
+$payDist = [];
+foreach ($allOrders as $o) { if (($o['status'] ?? '') === 'paid') { $pm = $o['payment_method'] ?: 'unknown'; $payDist[$pm] = ($payDist[$pm] ?? 0) + 1; } }
+// 退款率
+$refundedCount = count(array_filter($allOrders, fn($o) => !empty($o['refunded_at'])));
+$paidCount = count(array_filter($allOrders, fn($o) => ($o['status'] ?? '') === 'paid'));
+$refundRate = $paidCount > 0 ? round($refundedCount / $paidCount * 100, 1) : 0;
+// 购买漏斗（近 days 天）：浏览→下单→支付→退款
+$funnelBrowse = 0; $funnelOrder = 0; $funnelPaid = 0; $funnelRefund = 0;
+try {
+    $funnelBrowse = (int)(Database::query("SELECT COUNT(DISTINCT uid) c FROM events WHERE event IN ('page_view','course_view','product_view') AND created_at >= ?", [$cutoff])[0]['c'] ?? 0);
+    $funnelOrder = count($recent);
+    $funnelPaid = count(array_filter($recent, fn($o) => ($o['status'] ?? '') === 'paid'));
+    $funnelRefund = count(array_filter($recent, fn($o) => !empty($o['refunded_at'])));
+} catch (Exception $e) {}
+// 客件/件单价
+$totalQty = array_sum(array_map(fn($o) => (int)($o['qty'] ?? 1), $recent));
+$totalRevenue = array_sum(array_map(fn($o) => (float)($o['amount'] ?? 0), array_filter($recent, fn($o) => ($o['status'] ?? '') === 'paid')));
+$avgItems = $orderCount > 0 ? round($totalQty / $orderCount, 1) : 0;
+
 admin_header('电商报表');
 ?>
 <div class="admin-layout">
@@ -66,6 +95,47 @@ admin_header('电商报表');
       <div class="kpi"><div class="k-label">客单价</div><div class="k-val mono">¥<?=number_format($aov,0)?></div></div>
       <div class="kpi"><div class="k-label">购买用户</div><div class="k-val mono"><?=$buyers?></div></div>
       <div class="kpi"><div class="k-label">复购率</div><div class="k-val mono" style="color:<?=$repeatRate>30?'var(--ok)':'var(--warn)'?>"><?=$repeatRate?>%</div><div class="k-sub"><?=$repeatBuyers?> 人复购</div></div>
+    </div>
+
+    <!-- 购买链路 -->
+    <div class="panel" style="margin-top:20px">
+      <div class="p-head"><h3>🔗 购买链路（近<?=$days?>天）</h3><span class="p-sub mono">浏览 → 下单 → 支付 → 退款</span></div>
+      <div class="p-body">
+        <div style="display:flex;gap:0;align-items:stretch" class="funnel-chain">
+          <?php
+          $funnelSteps = [
+              ['label' => '浏览/查看', 'count' => $funnelBrowse, 'icon' => '👀'],
+              ['label' => '下单', 'count' => $funnelOrder, 'icon' => '🛒'],
+              ['label' => '支付成功', 'count' => $funnelPaid, 'icon' => '💰'],
+              ['label' => '退款', 'count' => $funnelRefund, 'icon' => '↩️'],
+          ];
+          $prev = null;
+          foreach ($funnelSteps as $fs):
+              $rate = ($prev !== null && $prev > 0) ? round($fs['count'] / $prev * 100, 1) : 100;
+              $color = $fs['count'] === 0 ? 'var(--faint)' : ($fs['label'] === '退款' ? 'var(--warn)' : 'var(--accent)');
+          ?>
+          <div style="flex:1;padding:14px;border:1px solid var(--border);border-radius:12px;margin:0 4px;text-align:center;background:var(--bg)">
+            <div style="font-size:22px"><?=$fs['icon']?></div>
+            <div style="font-size:20px;font-weight:800;color:<?=$color?>;margin-top:4px"><?=number_format($fs['count'])?></div>
+            <div style="font-size:11px;color:var(--muted)"><?=$fs['label']?></div>
+            <?php if ($prev !== null): ?><div style="font-size:10px;color:var(--faint);margin-top:4px">转化 <?=$rate?>%</div><?php endif; ?>
+          </div>
+          <?php if ($fs['label'] !== '退款'): ?><div style="align-self:center;color:var(--faint)">→</div><?php endif; ?>
+          <?php $prev = $fs['count']; endforeach; ?>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px">
+          <div style="padding:10px 14px;border-radius:10px;background:var(--bg)"><div style="font-size:13px;font-weight:700"><?=$refundRate?>%</div><div style="font-size:11px;color:var(--muted)">退款率（<?=$refundedCount?> / <?=$paidCount?> 已支付）</div></div>
+          <div style="padding:10px 14px;border-radius:10px;background:var(--bg)"><div style="font-size:13px;font-weight:700"><?=$avgItems?> 件</div><div style="font-size:11px;color:var(--muted)">平均件单</div></div>
+          <div style="padding:10px 14px;border-radius:10px;background:var(--bg)"><div style="font-size:13px;font-weight:700"><?=count($payDist)?> 种</div><div style="font-size:11px;color:var(--muted)">支付方式</div></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <?php foreach ($payDist as $pm => $n): ?><span class="badge badge-gray" style="font-size:12px"><?=htmlspecialchars($pm ?: '未填')?> <?=$n?>单</span><?php endforeach; ?>
+          <?php if (empty($payDist)): ?><span style="font-size:11px;color:var(--faint)">暂无支付数据</span><?php endif; ?>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <?php foreach ($statusDist as $st => $n): ?><span style="font-size:11px;padding:2px 10px;border-radius:999px;background:var(--hover);color:var(--muted)"><?=htmlspecialchars($st === 'paid' ? '已支付' : ($st === 'pending' ? '待支付' : $st))?> <?=$n?></span><?php endforeach; ?>
+        </div>
+      </div>
     </div>
 
     <div class="panels" style="margin-top:20px">

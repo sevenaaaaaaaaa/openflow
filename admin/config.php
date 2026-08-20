@@ -1321,7 +1321,7 @@ function admin_sidebar(string $current): void {
   <?php if (has_perm('wechat-mp')): ?>
   <a href="/xmp/wechat-mp" class="<?=$current==='wechat-mp'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-    企业微信
+    微信生态<span style="font-size:10px;color:var(--faint)">(公众号/小程序/企微)</span>
   </a>
   <a href="/xmp/wechat-send" class="<?=$current==='wechat-send'?'active':''?>" style="padding-left:44px;font-size:13px">群发 & 私信</a>
   <a href="/xmp/wechat-tags" class="<?=$current==='wechat-tags'?'active':''?>" style="padding-left:44px;font-size:13px">服务号标签</a>
