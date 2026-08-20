@@ -74,7 +74,7 @@ $catNames = [];
 foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
 
 $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'nownexts.com';
+$host = $_SERVER['HTTP_HOST'] ?? 'example.com';
 $baseUrl = $protocol . '://' . $host;
 $pageUrl = $baseUrl . '/' . $landing['slug'];
 
@@ -280,9 +280,9 @@ $jsonLd = [
         <div>
           <p class="foot-h">联系我们</p>
           <ul class="foot-l">
-            <li><a href="tel:13166373667">13166373667</a></li>
-            <li><a href="mailto:admin@nownexts.com">admin@nownexts.com</a></li>
-            <li><a href="https://nownexts.com">nownexts.com</a></li>
+            <li><a href="tel:13800000000">13800000000</a></li>
+            <li><a href="mailto:admin@example.com">admin@example.com</a></li>
+            <li><a href="https://example.com">example.com</a></li>
           </ul>
         </div>
       </div>

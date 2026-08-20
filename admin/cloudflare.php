@@ -101,7 +101,7 @@ admin_header('Cloudflare');
           <div class="field"><label>Zone ID</label><input type="text" name="zone_id" value="<?=htmlspecialchars($cfg['zone_id'])?>" placeholder="域名对应的 Zone ID"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Zone 域名</label><input type="text" name="zone_name" value="<?=htmlspecialchars($cfg['zone_name'])?>" placeholder="如 nownexts.com"></div>
+          <div class="field"><label>Zone 域名</label><input type="text" name="zone_name" value="<?=htmlspecialchars($cfg['zone_name'])?>" placeholder="如 example.com"></div>
         </div>
         <div class="field" style="border-top:1px dashed var(--border);padding-top:12px">
           <label style="color:var(--text-3)">或使用 Global API Key（Email + Key）</label>

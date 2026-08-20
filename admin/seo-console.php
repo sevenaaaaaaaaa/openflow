@@ -71,20 +71,20 @@ admin_header('SEO 站长工具');
         <h3 style="font-size:14px;margin:12px 0 8px;color:#2b5f7e">🇺🇸 Google Search Console</h3>
         <div class="field-row">
           <div class="field"><label>Service Account Email</label><input type="text" name="gsc_email" value="<?=htmlspecialchars($settings['gsc_email'])?>" placeholder="xxx@xxx.iam.gserviceaccount.com"></div>
-          <div class="field"><label>GSC 属性</label><input type="text" name="gsc_property" value="<?=htmlspecialchars($settings['gsc_property'])?>" placeholder="sc-domain:nownexts.com"></div>
+          <div class="field"><label>GSC 属性</label><input type="text" name="gsc_property" value="<?=htmlspecialchars($settings['gsc_property'])?>" placeholder="sc-domain:example.com"></div>
         </div>
         <div class="field"><label>Service Account 私钥 JSON</label><textarea name="gsc_key" rows="4" style="font-family:var(--mono);font-size:12px"><?=htmlspecialchars($settings['gsc_key'])?></textarea></div>
 
         <h3 style="font-size:14px;margin:16px 0 8px;color:#2b5f7e">🔵 Bing Webmaster</h3>
         <div class="field-row">
           <div class="field"><label>Bing API Key</label><input type="password" name="bing_api_key" value="<?=htmlspecialchars($settings['bing_api_key'])?>"></div>
-          <div class="field"><label>Bing 站点</label><input type="text" name="bing_site" value="<?=htmlspecialchars($settings['bing_site'])?>" placeholder="https://nownexts.com/"></div>
+          <div class="field"><label>Bing 站点</label><input type="text" name="bing_site" value="<?=htmlspecialchars($settings['bing_site'])?>" placeholder="https://example.com/"></div>
         </div>
 
         <h3 style="font-size:14px;margin:16px 0 8px;color:#2b5f7e">🀄 百度站长</h3>
         <div class="field-row">
           <div class="field"><label>百度 Token</label><input type="password" name="baidu_token" value="<?=htmlspecialchars($settings['baidu_token'])?>"></div>
-          <div class="field"><label>百度站点</label><input type="text" name="baidu_site" value="<?=htmlspecialchars($settings['baidu_site'])?>" placeholder="nownexts.com"></div>
+          <div class="field"><label>百度站点</label><input type="text" name="baidu_site" value="<?=htmlspecialchars($settings['baidu_site'])?>" placeholder="example.com"></div>
         </div>
 
         <h3 style="font-size:14px;margin:16px 0 8px;color:#2b5f7e">🌍 公开看板</h3>
