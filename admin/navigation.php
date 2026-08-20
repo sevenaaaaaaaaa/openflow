@@ -26,14 +26,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     $sites = [];
     foreach (($_POST['site_name'] ?? []) as $i => $sn) {
         if (empty(trim($sn))) continue;
+        $oldId = $_POST['site_id'][$i] ?? '';
+        $old = null;
+        foreach (($nav['sites'] ?? []) as $os) if (($os['id'] ?? '') === $oldId) { $old = $os; break; }
         $sites[] = [
-            'id' => ($_POST['site_id'][$i] ?? '') ?: 'site_' . substr(bin2hex(random_bytes(4)), 0, 6),
+            'id' => $oldId ?: 'site_' . substr(bin2hex(random_bytes(4)), 0, 6),
             'name' => trim($sn),
             'url' => trim($_POST['site_url'][$i] ?? ''),
             'description' => trim($_POST['site_desc'][$i] ?? ''),
             'category' => $_POST['site_cat'][$i] ?? '',
             'featured' => isset($_POST['site_featured'][$i]),
             'region' => $_POST['site_region'][$i] ?? 'cn', // cn / intl
+            'logo' => trim($_POST['site_logo'][$i] ?? ''),             // logo URL
+            'tags' => array_filter(array_map('trim', explode(',', $_POST['site_tags'][$i] ?? ''))),
+            'reason' => trim($_POST['site_reason'][$i] ?? ''),          // 推荐理由
+            'weight' => (int)($_POST['site_weight'][$i] ?? 0),          // 排序权重
+            'status' => ($_POST['site_status'][$i] ?? 'published') === 'pending' ? 'pending' : 'published',
+            'hits' => (int)($old['hits'] ?? 0),                          // 访问数（保留原值）
+            'created_at' => ($old['created_at'] ?? date('Y-m-d H:i:s')),
         ];
     }
     $nav = [
@@ -67,6 +77,61 @@ if (isset($_GET['delete_cat'])) {
     exit;
 }
 
+// CSV 批量导入站点
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_import'])) {
+    csrf_verify();
+    $f = $_FILES['csv_import'];
+    $imported = 0; $skipped = 0;
+    if (($fp = fopen($f['tmp_name'], 'r')) !== false) {
+        $header = fgetcsv($fp);
+        while (($row = fgetcsv($fp)) !== false) {
+            if (count($row) !== count($header)) continue;
+            $d = array_combine($header, array_map('trim', $row));
+            $name = $d['name'] ?? '';
+            if ($name === '') { $skipped++; continue; }
+            // 去重（按 name 或 url）
+            $dup = false;
+            foreach (($nav['sites'] ?? []) as $s) {
+                if (($s['name'] ?? '') === $name || (($s['url'] ?? '') !== '' && ($s['url'] ?? '') === ($d['url'] ?? ''))) { $dup = true; break; }
+            }
+            if ($dup) { $skipped++; continue; }
+            $nav['sites'][] = [
+                'id' => 'site_' . substr(bin2hex(random_bytes(4)), 0, 6),
+                'name' => $name,
+                'url' => $d['url'] ?? '',
+                'description' => $d['description'] ?? '',
+                'category' => $d['category'] ?? ($nav['categories'][0]['id'] ?? ''),
+                'featured' => !empty($d['featured']),
+                'region' => in_array($d['region'] ?? '', ['cn', 'intl'], true) ? $d['region'] : 'cn',
+                'logo' => $d['logo'] ?? '',
+                'tags' => array_filter(array_map('trim', explode(',', $d['tags'] ?? ''))),
+                'reason' => $d['reason'] ?? '',
+                'weight' => (int)($d['weight'] ?? 0),
+                'status' => 'pending',
+                'hits' => 0,
+                'created_at' => date('Y-m-d H:i:s'),
+            ];
+            $imported++;
+        }
+        fclose($fp);
+        json_write($navFile, $nav);
+        flash('success', "CSV 导入完成：新增 {$imported} 个站点（待审核），跳过 {$skipped} 个（空/重复）");
+    } else {
+        flash('error', '无法读取 CSV');
+    }
+    header('Location: /xmp/navigation');
+    exit;
+}
+
+// 导出 CSV 模板
+if (isset($_GET['export_template'])) {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="navigation-sites-template.csv"');
+    echo "\xEF\xBB\xBFname,url,description,category,featured,region,logo,tags,reason,weight\n";
+    echo "AI 导航站,https://example.com,描述,ai,0,cn,https://example.com/logo.png,AI;导航,推荐理由,10\n";
+    exit;
+}
+
 admin_header('导航站管理');
 ?>
 <div class="admin-layout">
@@ -88,7 +153,7 @@ admin_header('导航站管理');
       </div>
     </div>
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
       <?= csrf_field() ?>
       <div class="card">
         <h2>🏠 导航首页设置</h2>
@@ -131,22 +196,36 @@ admin_header('导航站管理');
           <?php foreach ($nav['sites'] ?? [] as $si => $s): ?>
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;padding:8px;background:var(--surface-2);border-radius:10px">
             <input type="hidden" name="site_id[]" value="<?=htmlspecialchars($s['id'])?>">
-            <input type="text" name="site_name[]" value="<?=htmlspecialchars($s['name'])?>" placeholder="名称" style="width:130px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
-            <input type="text" name="site_url[]" value="<?=htmlspecialchars($s['url'])?>" placeholder="https://..." style="flex:1;min-width:180px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
-            <select name="site_cat[]" style="width:120px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            <input type="text" name="site_name[]" value="<?=htmlspecialchars($s['name'])?>" placeholder="名称" style="width:120px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            <input type="text" name="site_url[]" value="<?=htmlspecialchars($s['url'])?>" placeholder="https://..." style="flex:1;min-width:160px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            <select name="site_cat[]" style="width:100px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
               <option value="">— 分类 —</option>
               <?php foreach ($nav['categories'] ?? [] as $c): ?>
               <option value="<?=htmlspecialchars($c['id'])?>" <?=($s['category']??'')===$c['id']?'selected':''?>><?=htmlspecialchars($c['name'])?></option>
               <?php endforeach; ?>
             </select>
-            <select name="site_region[]" style="width:80px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="cn" <?=($s['region']??'')==='cn'?'selected':''?>>国内</option><option value="intl" <?=($s['region']??'')==='intl'?'selected':''?>>海外</option></select>
+            <select name="site_region[]" style="width:70px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="cn" <?=($s['region']??'')==='cn'?'selected':''?>>国内</option><option value="intl" <?=($s['region']??'')==='intl'?'selected':''?>>海外</option></select>
             <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" name="site_featured[]" value="1" <?=!empty($s['featured'])?'checked':''?> style="width:15px;height:15px">推荐</label>
+            <select name="site_status[]" style="width:80px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px"><option value="published" <?=($s['status']??'published')==='published'?'selected':''?>>已上架</option><option value="pending" <?=($s['status']??'')==='pending'?'selected':''?>>待审</option></select>
             <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('div').remove()">✕</button>
+            <div style="width:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <input type="text" name="site_logo[]" value="<?=htmlspecialchars($s['logo'] ?? '')?>" placeholder="Logo URL" style="width:200px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px">
+              <input type="text" name="site_tags[]" value="<?=htmlspecialchars(implode(',', $s['tags'] ?? []))?>" placeholder="标签(逗号分隔)" style="flex:1;min-width:150px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px">
+              <input type="number" name="site_weight[]" value="<?=htmlspecialchars($s['weight'] ?? 0)?>" placeholder="权重" style="width:70px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px" title="排序权重(大在前)">
+              <span style="font-size:11px;color:var(--faint)">👁 <?=(int)($s['hits'] ?? 0)?></span>
+            </div>
+            <textarea name="site_desc[]" rows="1" placeholder="描述" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"><?=htmlspecialchars($s['description'] ?? '')?></textarea>
+            <input type="text" name="site_reason[]" value="<?=htmlspecialchars($s['reason'] ?? '')?>" placeholder="推荐理由" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px">
           </div>
           <?php endforeach; ?>
         </div>
         <button type="button" class="btn btn-ghost btn-sm" onclick="addSite()">+ 添加站点</button>
-        <div style="margin-top:12px"><button type="submit" name="save" class="btn btn-primary">保存导航站</button></div>
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button type="submit" name="save" class="btn btn-primary">保存导航站</button>
+          <a href="?export_template=1" class="btn btn-ghost btn-sm">⬇ 下载导入模板</a>
+          <label class="btn btn-ghost btn-sm" style="cursor:pointer">⬆ 批量导入 CSV<input type="file" name="csv_import" accept=".csv" style="display:none" onchange="this.form.submit()"></label>
+          <span class="text-sm text-muted">模板列：name,url,description,category,featured,region,logo,tags,reason,weight（导入为待审核）</span>
+        </div>
       </div>
     </form>
   </div>
@@ -166,7 +245,7 @@ function addCat() {
 function addSite() {
   var d = document.createElement('div');
   d.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;padding:8px;background:var(--surface-2);border-radius:10px';
-  d.innerHTML = '<input type="hidden" name="site_id[]" value="site_' + Date.now() + '"><input type="text" name="site_name[]" placeholder="名称" style="width:130px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><input type="text" name="site_url[]" placeholder="https://..." style="flex:1;min-width:180px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><select name="site_cat[]" style="width:120px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="">— 分类 —</option>' + catOpts() + '</select><select name="site_region[]" style="width:80px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="cn">国内</option><option value="intl">海外</option></select><label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" name="site_featured[]" value="1" style="width:15px;height:15px">推荐</label><button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'div\').remove()">✕</button>';
+  d.innerHTML = '<input type="hidden" name="site_id[]" value="site_' + Date.now() + '"><input type="text" name="site_name[]" placeholder="名称" style="width:120px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><input type="text" name="site_url[]" placeholder="https://..." style="flex:1;min-width:160px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><select name="site_cat[]" style="width:100px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="">— 分类 —</option>' + catOpts() + '</select><select name="site_region[]" style="width:70px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="cn">国内</option><option value="intl">海外</option></select><label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" name="site_featured[]" value="1" style="width:15px;height:15px">推荐</label><select name="site_status[]" style="width:80px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px"><option value="published">已上架</option><option value="pending">待审</option></select><button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'div\').remove()">✕</button><div style="width:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input type="text" name="site_logo[]" placeholder="Logo URL" style="width:200px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"><input type="text" name="site_tags[]" placeholder="标签(逗号分隔)" style="flex:1;min-width:150px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"><input type="number" name="site_weight[]" value="0" placeholder="权重" style="width:70px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"></div><textarea name="site_desc[]" rows="1" placeholder="描述" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"></textarea><input type="text" name="site_reason[]" placeholder="推荐理由" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px">';
   document.getElementById('siteList').appendChild(d);
 }
 function presetSite(name, url, desc, region) {

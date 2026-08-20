@@ -22,6 +22,10 @@ foreach ($categories as $c) { $catNames[$c['id']] = $c['name']; $catIcons[$c['id
 $region = $_GET['region'] ?? 'all';
 $cat = $_GET['cat'] ?? '';
 $q = trim($_GET['q'] ?? '');
+// 只展示已上架站点
+$sites = array_values(array_filter($sites, fn($s) => ($s['status'] ?? 'published') === 'published'));
+// 全局按权重排序（weight 大在前）
+usort($sites, fn($a, $b) => ((int)($b['weight'] ?? 0)) <=> ((int)($a['weight'] ?? 0)));
 $filtered = $sites;
 if ($region !== 'all') $filtered = array_values(array_filter($filtered, fn($s) => ($s['region'] ?? 'cn') === $region));
 if ($cat) $filtered = array_values(array_filter($filtered, fn($s) => ($s['category'] ?? '') === $cat));
@@ -30,8 +34,8 @@ if ($q) $filtered = array_values(array_filter($filtered, fn($s) => mb_strpos(($s
 // 按分类分组
 $byCat = [];
 foreach ($filtered as $s) { $byCat[$s['category'] ?? ''] = $byCat[$s['category'] ?? ''] ?? []; $byCat[$s['category'] ?? ''][] = $s; }
-// 分类内排序（featured 优先，然后按名字）
-foreach ($byCat as &$list) usort($list, fn($a, $b) => (empty($a['featured']) <=> empty($b['featured'])) ?: strcmp($a['name'] ?? '', $b['name'] ?? ''));
+// 分类内排序（featured 优先，然后按权重）
+foreach ($byCat as &$list) usort($list, fn($a, $b) => (empty($a['featured']) <=> empty($b['featured'])) ?: (((int)($b['weight'] ?? 0)) <=> ((int)($a['weight'] ?? 0))));
 
 // 各站点评分汇总（大众点评：平均分 + 点评数）
 $ratingMap = [];
@@ -140,7 +144,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
             <?php foreach ($list as $s): ?>
             <a href="/navigation-site.php?site=<?=urlencode($s['id'])?>" class="site-card">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-                <div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg)"><?=$s['region']==='cn'?'🇨🇳':'🌍'?></div>
+                <div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);overflow:hidden"><?php if (!empty($s['logo'])): ?><img src="<?=htmlspecialchars($s['logo'])?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$s['region']==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
                 <div class="font-bold"><?=htmlspecialchars($s['name'])?><?php if (!empty($s['featured'])): ?> <span style="font-size:10px;color:#b45309">⭐</span><?php endif; ?></div>
               </div>
               <div class="text-sm text-gray-600 line-clamp-2"><?=htmlspecialchars($s['description'] ?? '')?></div>
