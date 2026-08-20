@@ -80,6 +80,17 @@ function nav_related_logo(array $s): string {
       </div>
     </div>
 
+    <!-- 站点截图（整页预览） -->
+    <?php $shotUrl = isset($site['url']) && preg_match('#^https?://#i', $site['url']) ? 'https://s.wordpress.com/mshots/v1/' . urlencode($site['url']) . '?w=720' : ''; ?>
+    <?php if ($shotUrl): ?>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:24px">
+      <h2 class="font-bold text-lg mb-3">🖥 站点预览</h2>
+      <a href="/api/nav-click.php?site=<?=urlencode($site['id'])?>" target="_blank" rel="noopener">
+        <img src="<?=htmlspecialchars($shotUrl)?>" alt="<?=htmlspecialchars($site['name'])?> 截图" loading="lazy" style="width:100%;border-radius:12px;border:1px solid var(--border)" onerror="this.parentElement.parentElement.style.display='none'">
+      </a>
+    </div>
+    <?php endif; ?>
+
     <!-- 点评/评论（大众点评化） -->
     <div style="margin-top:40px">
       <?php fc_comment_widget('site', $site['id'], ['title' => '用户点评', 'rating' => true]); ?>

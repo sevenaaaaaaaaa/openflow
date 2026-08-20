@@ -96,6 +96,9 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
         <input type="text" id="navQ" value="<?=htmlspecialchars($q)?>" placeholder="搜索网站、关键词…" style="flex:1;padding:12px 18px;border-radius:999px;border:none;font-size:15px;outline:none">
         <button class="rounded-full px-6 py-2.5 font-bold" style="background:var(--accent-soft);color:var(--accent);border:none">搜索</button>
       </form>
+      <div class="mt-3 flex justify-center gap-3">
+        <button onclick="openSubmit()" style="padding:7px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;font-size:13px;cursor:pointer">➕ 提交收录</button>
+      </div>
       <?php if ($hotSearches): ?>
       <div class="mt-4 flex gap-2 justify-center flex-wrap">
         <span class="text-sm text-[#94a3b8] mr-1">🔥 热搜：</span>
@@ -209,6 +212,49 @@ function navSearch(e) {
 function navHot(h) {
   location.href = 'navigation.php?q=' + encodeURIComponent(h);
 }
+/* 提交收录弹窗 */
+function openSubmit() {
+  document.getElementById('navSubmitModal').style.display = 'flex';
+}
+function closeSubmit() {
+  document.getElementById('navSubmitModal').style.display = 'none';
+}
+function submitSite() {
+  var f = document.getElementById('navSubmitForm');
+  var msg = document.getElementById('navSubmitMsg');
+  var fd = new FormData();
+  fd.append('name', f.querySelector('[name=name]').value.trim());
+  fd.append('url', f.querySelector('[name=url]').value.trim());
+  fd.append('description', f.querySelector('[name=description]').value.trim());
+  fd.append('category', f.querySelector('[name=category]').value);
+  fd.append('contact', f.querySelector('[name=contact]').value.trim());
+  msg.style.color = 'var(--muted)'; msg.textContent = '提交中…';
+  fetch('/api/nav-submit.php', { method:'POST', body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; msg.textContent = d.message || d.error; if (d.ok) setTimeout(closeSubmit, 1500); })
+    .catch(function(){ msg.textContent = '网络异常'; msg.style.color = 'var(--danger)'; });
+}
 </script>
+
+<!-- 提交收录弹窗 -->
+<div id="navSubmitModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.55);align-items:center;justify-content:center" onclick="if(event.target===this)closeSubmit()">
+  <div style="background:var(--surface);border-radius:18px;padding:26px;width:90%;max-width:440px">
+    <div style="display:flex;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;margin:0">➕ 提交站点收录</h3><button onclick="closeSubmit()" style="margin-left:auto;border:none;background:none;font-size:18px;cursor:pointer;color:var(--muted)">✕</button></div>
+    <form id="navSubmitForm">
+      <div style="margin-bottom:10px"><label style="font-size:12px;color:var(--muted)">站点名称 *</label><input type="text" name="name" placeholder="如：AI 导航站" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;margin-top:4px"></div>
+      <div style="margin-bottom:10px"><label style="font-size:12px;color:var(--muted)">网址 *</label><input type="text" name="url" placeholder="https://…" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;margin-top:4px"></div>
+      <div style="margin-bottom:10px"><label style="font-size:12px;color:var(--muted)">一句话介绍</label><input type="text" name="description" placeholder="这个站点是做什么的" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;margin-top:4px"></div>
+      <div style="margin-bottom:10px"><label style="font-size:12px;color:var(--muted)">分类</label>
+        <select name="category" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;margin-top:4px">
+          <option value="">— 选择 —</option>
+          <?php foreach ($categories as $c): ?><option value="<?=htmlspecialchars($c['id'])?>"><?=htmlspecialchars($c['name'])?></option><?php endforeach; ?>
+        </select>
+      </div>
+      <div style="margin-bottom:14px"><label style="font-size:12px;color:var(--muted)">你的联系方式 <span style="color:var(--faint)">(选填，用于审核沟通)</span></label><input type="text" name="contact" placeholder="邮箱或微信" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;margin-top:4px"></div>
+      <button type="button" onclick="submitSite()" style="width:100%;padding:11px;border:none;border-radius:999px;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:14px;cursor:pointer">提交（审核后上架）</button>
+      <div id="navSubmitMsg" style="margin-top:10px;font-size:12.5px;text-align:center"></div>
+    </form>
+  </div>
+</div>
 </body>
 </html>
