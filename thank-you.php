@@ -10,7 +10,7 @@ require_once __DIR__ . '/lib/SiteConfig.php';
 $from = trim($_GET['from'] ?? 'lead');
 $site = site_config();
 $siteName = $site['site_name'] ?? 'OpenFlow';
-$siteUrl = $site['site_url'] ?? 'https://nownexts.com';
+$siteUrl = $site['site_url'] ?? 'https://example.com';
 
 // 按来源定制感谢内容
 $configs = [
