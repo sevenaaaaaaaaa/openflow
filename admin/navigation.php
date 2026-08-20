@@ -191,9 +191,17 @@ admin_header('导航站管理');
       </div>
 
       <div class="card">
-        <h2>🌐 站点列表</h2>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <h2>🌐 站点列表</h2>
+          <?php $pendingCnt = count(array_filter($nav['sites'] ?? [], fn($s) => ($s['status'] ?? '') === 'pending')); ?>
+          <?php if ($pendingCnt > 0): ?>
+          <a href="?pending=1" class="badge badge-yellow" style="font-size:12px;text-decoration:none">⏳ <?=$pendingCnt?> 个待审核<?php echo isset($_GET['pending'])?'（仅显示待审）':''; ?></a>
+          <?php endif; ?>
+          <?php if (isset($_GET['pending'])): ?><a href="/xmp/navigation" class="text-sm text-muted">显示全部 →</a><?php endif; ?>
+        </div>
         <div id="siteList">
-          <?php foreach ($nav['sites'] ?? [] as $si => $s): ?>
+          <?php $renderSites = $nav['sites'] ?? []; if (isset($_GET['pending'])) $renderSites = array_values(array_filter($renderSites, fn($s) => ($s['status'] ?? '') === 'pending')); ?>
+          <?php foreach ($renderSites as $si => $s): ?>
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;padding:8px;background:var(--surface-2);border-radius:10px">
             <input type="hidden" name="site_id[]" value="<?=htmlspecialchars($s['id'])?>">
             <input type="text" name="site_name[]" value="<?=htmlspecialchars($s['name'])?>" placeholder="名称" style="width:120px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
