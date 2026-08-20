@@ -31,6 +31,11 @@ $related = array_values(array_filter($sites, fn($s) => $s['id'] !== $siteId && (
 $similarCount = count($related);
 
 // 相关站点 logo 兜底 favicon
+function nav_name(array $d): string {
+    $locale = function_exists('i18n_current') ? i18n_current() : 'zh-CN';
+    if (strpos($locale, 'en') === 0 && !empty($d['name_en'])) return $d['name_en'];
+    return $d['name'] ?? '';
+}
 function nav_related_logo(array $s): string {
     if (!empty($s['logo'])) return $s['logo'];
     $host = parse_url($s['url'] ?? '', PHP_URL_HOST);
@@ -42,7 +47,7 @@ function nav_related_logo(array $s): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?=htmlspecialchars($site['name'])?>  | <?=site_config_get("site_name")?> 增长导航</title>
+<title><?=htmlspecialchars(nav_name($site))?>  | <?=site_config_get("site_name")?> 增长导航</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
 <script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
@@ -58,7 +63,7 @@ function nav_related_logo(array $s): string {
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:24px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
       <div style="width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-size:30px;background:var(--bg);overflow:hidden"><?php if ($logo): ?><img src="<?=htmlspecialchars($logo)?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=($site['region']??'')==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
       <div style="flex:1;min-width:200px">
-        <h1 class="text-2xl font-bold"><?=htmlspecialchars($site['name'])?>
+        <h1 class="text-2xl font-bold"><?=htmlspecialchars(nav_name($site))?>
           <?php if (!empty($site['featured'])): ?><span class="text-sm text-[#b45309]">⭐ 编辑推荐</span><?php endif; ?>
         </h1>
         <div class="text-sm text-gray-600 mt-2"><?=htmlspecialchars($catNames[$site['category'] ?? ''] ?? '未分类')?> · <?=($site['region']??'')==='cn'?'国内':'海外'?><?php if (isset($site['hits'])): ?> · 👁 <?=number_format((int)$site['hits'])?> 次访问<?php endif; ?></div>
@@ -86,7 +91,7 @@ function nav_related_logo(array $s): string {
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:24px">
       <h2 class="font-bold text-lg mb-3">🖥 站点预览</h2>
       <a href="/api/nav-click.php?site=<?=urlencode($site['id'])?>" target="_blank" rel="noopener">
-        <img src="<?=htmlspecialchars($shotUrl)?>" alt="<?=htmlspecialchars($site['name'])?> 截图" loading="lazy" style="width:100%;border-radius:12px;border:1px solid var(--border)" onerror="this.parentElement.parentElement.style.display='none'">
+        <img src="<?=htmlspecialchars($shotUrl)?>" alt="<?=htmlspecialchars(nav_name($site))?> 截图" loading="lazy" style="width:100%;border-radius:12px;border:1px solid var(--border)" onerror="this.parentElement.parentElement.style.display='none'">
       </a>
     </div>
     <?php endif; ?>

@@ -12,7 +12,10 @@ require_once __DIR__ . '/lib/MemberSystem.php';
 $targets = [];
 // 网站（导航站）
 foreach (json_read(DATA_DIR . '/navigation.json')['sites'] ?? [] as $s) {
-    $targets[] = ['type' => 'site', 'id' => $s['id'], 'name' => $s['name'], 'desc' => $s['description'] ?? '', 'cover' => '', 'url' => $s['url'] ?? '', 'icon' => '🌐'];
+    if (($s['status'] ?? 'published') !== 'published') continue; // 只收录已上架
+    $host = parse_url($s['url'] ?? '', PHP_URL_HOST);
+    $logo = !empty($s['logo']) ? $s['logo'] : ($host ? 'https://www.google.com/s2/favicons?domain=' . $host . '&sz=64' : '');
+    $targets[] = ['type' => 'site', 'id' => $s['id'], 'name' => $s['name'], 'desc' => $s['description'] ?? '', 'cover' => '', 'url' => '/navigation-site.php?site=' . urlencode($s['id']), 'icon' => $logo];
 }
 // 产品
 foreach (json_read(DATA_DIR . '/courses/index.json') as $c) {
@@ -94,7 +97,7 @@ $typeIcons = ['site' => '🌐', 'product' => '🎓', 'book' => '📚', 'event' =
       <?php foreach ($ranked as $i => $t): ?>
       <a href="<?=htmlspecialchars($t['type'] === 'site' ? '/navigation-site.php?site=' . urlencode($t['id']) : $t['url'])?>" class="rv-card">
         <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7dd3fc,#86efac);display:grid;place-items:center;font-size:20px;flex-shrink:0"><?=htmlspecialchars($t['icon'])?></div>
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7dd3fc,#86efac);display:grid;place-items:center;font-size:20px;flex-shrink:0;overflow:hidden"><?php if (strpos($t['icon'], 'http') === 0): ?><img src="<?=htmlspecialchars($t['icon'])?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=htmlspecialchars($t['icon'])?><?php endif; ?></div>
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:8px">
               <span class="font-bold">#<?=$i+1?> <?=htmlspecialchars($t['name'])?></span>

@@ -1161,6 +1161,37 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
     </div>
   </section>
 
+  <!-- ══ 精选导航站（SSR） ══ -->
+  <?php
+  $navSites = [];
+  try {
+      $navData = json_read(DATA_DIR . '/navigation.json');
+      $navSites = array_values(array_filter($navData['sites'] ?? [], fn($s) => ($s['status'] ?? 'published') === 'published' && !empty($s['featured'])));
+      usort($navSites, fn($a, $b) => ((int)($b['weight'] ?? 0)) <=> ((int)($a['weight'] ?? 0)));
+      $navSites = array_slice($navSites, 0, 4);
+  } catch (Throwable $e) {}
+  if (!empty($navSites)): ?>
+  <section class="sec reveal" style="padding-top:0">
+    <div class="sec-head center">
+      <span class="kicker">增长工具库</span>
+      <h2>🧭 精选导航站</h2>
+      <p style="color:var(--muted);max-width:560px;margin:10px auto 0">AI 时代 · 开放 · 开源 · 流程打通的增长工具集，大众点评式收录</p>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;max-width:1080px;margin:0 auto">
+      <?php foreach ($navSites as $ns): $nshost = parse_url($ns['url'] ?? '', PHP_URL_HOST); $nlogo = !empty($ns['logo']) ? $ns['logo'] : ($nshost ? 'https://www.google.com/s2/favicons?domain=' . $nshost . '&sz=64' : ''); $nr = function_exists('comment_rating_summary') ? comment_rating_summary('site', $ns['id']) : ['avg' => 0, 'count' => 0]; ?>
+      <a href="/navigation-site.php?site=<?=urlencode($ns['id'])?>" style="padding:18px;border-radius:16px;border:1px solid var(--border);background:var(--surface);color:var(--fg);transition:.15s">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--bg);overflow:hidden;display:grid;place-items:center"><?php if ($nlogo): ?><img src="<?=htmlspecialchars($nlogo)?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?>🌐<?php endif; ?></div>
+          <div><div style="font-weight:700"><?=htmlspecialchars($ns['name'])?></div><div style="font-size:11px;color:var(--warn)"><?=str_repeat('★', (int)round($nr['avg']))?><?=$nr['count'] ? ' ' . number_format($nr['avg'],1) . ' · ' . $nr['count'] . '点评' : ''?></div></div>
+        </div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6"><?=htmlspecialchars(mb_substr($ns['description'] ?? '', 0, 60))?></div>
+      </a>
+      <?php endforeach; ?>
+    </div>
+    <div style="text-align:center;margin-top:20px"><a href="/navigation.php" style="display:inline-block;padding:12px 32px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-weight:700">进入导航站 →</a></div>
+  </section>
+  <?php endif; ?>
+
   <!-- ══ 增长洞察（原 JS 注入 → SSR） ══ -->
   <section id="insights" class="sec reveal" data-od-anchor data-od-id="insights">
     <div class="sec-head center">
