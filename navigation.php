@@ -15,14 +15,20 @@ $banner = $nav['banner'] ?? [];
 // 分类排序
 usort($categories, fn($a, $b) => ($a['sort'] ?? 0) <=> ($b['sort'] ?? 0));
 
-$catNames = []; $catIcons = [];
-foreach ($categories as $c) { $catNames[$c['id']] = $c['name']; $catIcons[$c['id']] = $c['icon'] ?? '🌐'; }
+$catNames = []; $catIcons = []; $catNamesEn = [];
+foreach ($categories as $c) { $catNames[$c['id']] = $c['name']; $catNamesEn[$c['id']] = $c['name_en'] ?? ''; $catIcons[$c['id']] = $c['icon'] ?? '🌐'; }
 
 // 站点 logo：有则用，无则自动取 favicon
 function nav_logo(array $s): string {
     if (!empty($s['logo'])) return $s['logo'];
     $host = parse_url($s['url'] ?? '', PHP_URL_HOST);
     return $host ? 'https://www.google.com/s2/favicons?domain=' . $host . '&sz=64' : '';
+}
+// 多语言：当前为 en 且有名则用英文名
+function nav_name(array $d, string $key = 'name', string $keyEn = 'name_en'): string {
+    $locale = function_exists('i18n_current') ? i18n_current() : 'zh-CN';
+    if (strpos($locale, 'en') === 0 && !empty($d[$keyEn])) return $d[$keyEn];
+    return $d[$key] ?? '';
 }
 
 // 筛选
@@ -115,7 +121,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
       <div style="font-size:36px"><?=$catIcons[$bs['category'] ?? ''] ?? '🌐'?></div>
       <div style="flex:1">
         <div class="text-xs font-bold" style="color:#5b7a00"><?=htmlspecialchars($banner['title'] ?? '🏆 编辑首推')?></div>
-        <div class="font-bold text-lg mt-1"><?=htmlspecialchars($bs['name'])?></div>
+        <div class="font-bold text-lg mt-1"><?=htmlspecialchars(nav_name($bs))?></div>
         <div class="text-sm text-gray-600"><?=htmlspecialchars($bs['description'] ?? '')?></div>
       </div>
       <span class="rounded-full px-5 py-2 font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">立即访问 →</span>
@@ -129,7 +135,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
           <div class="px-2 py-1 font-bold text-sm mb-1">🏷️ 全部分类</div>
           <a class="cat-nav-item <?=!$cat?'active':''?>" href="navigation.php?region=<?=$region?>">🌐 全部</a>
           <?php foreach ($categories as $c): ?>
-          <a class="cat-nav-item <?=$cat===$c['id']?'active':''?>" href="?cat=<?=urlencode($c['id'])?>&region=<?=$region?>"><?=$catIcons[$c['id']]??'🌐'?> <?=htmlspecialchars($c['name'])?></a>
+          <a class="cat-nav-item <?=$cat===$c['id']?'active':''?>" href="?cat=<?=urlencode($c['id'])?>&region=<?=$region?>"><?=$catIcons[$c['id']]??'🌐'?> <?=htmlspecialchars(nav_name($c))?></a>
           <?php endforeach; ?>
           <div style="border-top:1px solid var(--bg);margin:8px 0;padding-top:8px">
             <div class="px-2 py-1 font-bold text-sm">🌍 地区</div>
@@ -162,7 +168,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
         <div class="mb-8">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
             <span style="font-size:22px"><?=$catIcons[$cid] ?? '🌐'?></span>
-            <h2 class="font-bold text-xl"><?=htmlspecialchars($catNames[$cid] ?? '未分类')?></h2>
+            <h2 class="font-bold text-xl"><?=htmlspecialchars(nav_name(['name'=>$catNames[$cid] ?? '未分类','name_en'=>$catNamesEn[$cid] ?? '']))?></h2>
             <span class="text-sm text-gray-400"><?=count($list)?> 个</span>
             <?php if ($cid): ?><a href="?cat=<?=urlencode($cid)?>" class="ml-auto text-sm text-[#2b5f7e]">查看全部 →</a><?php endif; ?>
           </div>
@@ -171,7 +177,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
             <a href="/navigation-site.php?site=<?=urlencode($s['id'])?>" class="site-card">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
                 <div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);overflow:hidden"><?php $logo = nav_logo($s); if ($logo): ?><img src="<?=htmlspecialchars($logo)?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$s['region']==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
-                <div class="font-bold"><?=htmlspecialchars($s['name'])?><?php if (!empty($s['featured'])): ?> <span style="font-size:10px;color:#b45309">⭐</span><?php endif; ?></div>
+                <div class="font-bold"><?=htmlspecialchars(nav_name($s))?><?php if (!empty($s['featured'])): ?> <span style="font-size:10px;color:#b45309">⭐</span><?php endif; ?></div>
               </div>
               <div class="text-sm text-gray-600 line-clamp-2"><?=htmlspecialchars($s['description'] ?? '')?></div>
               <?php $rm = $ratingMap[$s['id']] ?? ['avg' => 0, 'count' => 0]; if (!empty($rm['count'])): ?>
