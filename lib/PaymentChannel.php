@@ -194,7 +194,7 @@ function payment_xfpay_sign(array $params, string $secret): string {
 
 function payment_site_base(): string {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    return $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'nownexts.com');
+    return $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'example.com');
 }
 
 function payment_notify_url(string $channel): string {
