@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         $categories[] = [
             'id' => ($_POST['cat_id'][$i] ?? '') ?: 'cat_' . substr(bin2hex(random_bytes(4)), 0, 6),
             'name' => trim($cn),
+            'name_en' => trim($_POST['cat_name_en'][$i] ?? ''),
             'icon' => $_POST['cat_icon'][$i] ?? '🌐',
             'sort' => (int)($_POST['cat_sort'][$i] ?? 0),
         ];
@@ -32,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         $sites[] = [
             'id' => $oldId ?: 'site_' . substr(bin2hex(random_bytes(4)), 0, 6),
             'name' => trim($sn),
+            'name_en' => trim($_POST['site_name_en'][$i] ?? ''),
             'url' => trim($_POST['site_url'][$i] ?? ''),
             'description' => trim($_POST['site_desc'][$i] ?? ''),
             'category' => $_POST['site_cat'][$i] ?? '',
@@ -98,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_import'])) {
             $nav['sites'][] = [
                 'id' => 'site_' . substr(bin2hex(random_bytes(4)), 0, 6),
                 'name' => $name,
+                'name_en' => $d['name_en'] ?? '',
                 'url' => $d['url'] ?? '',
                 'description' => $d['description'] ?? '',
                 'category' => $d['category'] ?? ($nav['categories'][0]['id'] ?? ''),
@@ -182,6 +185,7 @@ admin_header('导航站管理');
             <input type="hidden" name="cat_id[]" value="<?=htmlspecialchars($c['id'])?>">
             <input type="text" name="cat_icon[]" value="<?=htmlspecialchars($c['icon'] ?? '🌐')?>" style="width:50px;padding:7px;border:1.5px solid var(--border);border-radius:8px;text-align:center">
             <input type="text" name="cat_name[]" value="<?=htmlspecialchars($c['name'])?>" placeholder="分类名称" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            <input type="text" name="cat_name_en[]" value="<?=htmlspecialchars($c['name_en'] ?? '')?>" placeholder="English" style="width:150px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
             <input type="number" name="cat_sort[]" value="<?=htmlspecialchars($c['sort'] ?? 0)?>" style="width:70px;padding:7px;border:1.5px solid var(--border);border-radius:8px" title="排序">
             <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('div').remove()">✕</button>
           </div>
@@ -204,7 +208,8 @@ admin_header('导航站管理');
           <?php foreach ($renderSites as $si => $s): ?>
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;padding:8px;background:var(--surface-2);border-radius:10px">
             <input type="hidden" name="site_id[]" value="<?=htmlspecialchars($s['id'])?>">
-            <input type="text" name="site_name[]" value="<?=htmlspecialchars($s['name'])?>" placeholder="名称" style="width:120px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            <input type="text" name="site_name[]" value="<?=htmlspecialchars($s['name'])?>" placeholder="名称" style="width:110px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            <input type="text" name="site_name_en[]" value="<?=htmlspecialchars($s['name_en'] ?? '')?>" placeholder="EN" style="width:90px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
             <input type="text" name="site_url[]" value="<?=htmlspecialchars($s['url'])?>" placeholder="https://..." style="flex:1;min-width:160px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
             <select name="site_cat[]" style="width:100px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
               <option value="">— 分类 —</option>
@@ -253,7 +258,7 @@ function addCat() {
 function addSite() {
   var d = document.createElement('div');
   d.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;padding:8px;background:var(--surface-2);border-radius:10px';
-  d.innerHTML = '<input type="hidden" name="site_id[]" value="site_' + Date.now() + '"><input type="text" name="site_name[]" placeholder="名称" style="width:120px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><input type="text" name="site_url[]" placeholder="https://..." style="flex:1;min-width:160px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><select name="site_cat[]" style="width:100px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="">— 分类 —</option>' + catOpts() + '</select><select name="site_region[]" style="width:70px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="cn">国内</option><option value="intl">海外</option></select><label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" name="site_featured[]" value="1" style="width:15px;height:15px">推荐</label><select name="site_status[]" style="width:80px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px"><option value="published">已上架</option><option value="pending">待审</option></select><button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'div\').remove()">✕</button><div style="width:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input type="text" name="site_logo[]" placeholder="Logo URL" style="width:200px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"><input type="text" name="site_tags[]" placeholder="标签(逗号分隔)" style="flex:1;min-width:150px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"><input type="number" name="site_weight[]" value="0" placeholder="权重" style="width:70px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"></div><textarea name="site_desc[]" rows="1" placeholder="描述" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"></textarea><input type="text" name="site_reason[]" placeholder="推荐理由" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px">';
+  d.innerHTML = '<input type="hidden" name="site_id[]" value="site_' + Date.now() + '"><input type="text" name="site_name[]" placeholder="名称" style="width:110px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><input type="text" name="site_name_en[]" placeholder="EN" style="width:90px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px"><input type="text" name="site_url[]" placeholder="https://..." style="flex:1;min-width:140px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><select name="site_cat[]" style="width:90px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="">— 分类 —</option>' + catOpts() + '</select><select name="site_region[]" style="width:70px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="cn">国内</option><option value="intl">海外</option></select><label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" name="site_featured[]" value="1" style="width:15px;height:15px">推荐</label><select name="site_status[]" style="width:70px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px"><option value="published">已上架</option><option value="pending">待审</option></select><button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'div\').remove()">✕</button><div style="width:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input type="text" name="site_logo[]" placeholder="Logo URL" style="width:180px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"><input type="text" name="site_tags[]" placeholder="标签(逗号分隔)" style="flex:1;min-width:130px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"><input type="number" name="site_weight[]" value="0" placeholder="权重" style="width:60px;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"></div><textarea name="site_desc[]" rows="1" placeholder="描述" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px"></textarea><input type="text" name="site_reason[]" placeholder="推荐理由" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px">';
   document.getElementById('siteList').appendChild(d);
 }
 function presetSite(name, url, desc, region) {
