@@ -1,0 +1,91 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# 首页：优先动态版 index.php（避免浏览器缓存旧 index.html）
+DirectoryIndex index.php index.html
+RewriteRule ^$ index.php [L,QSA]
+
+# 多语言 URL 前缀（/en/ /ja/ /zh-CN/ 剥离 → 原路径，语言由 REQUEST_URI 检测）
+RewriteRule ^(en|ja|zh-CN)/(.*)$ $2 [L,QSA]
+
+# 融合方案：独立子路径挂载 /growth/（剥离前缀，OpenFlow 内容在既有站点子路径下共存）
+RewriteRule ^growth/(.*)$ $1 [L,QSA]
+
+# 静态资源缓存（带版本号的资源可长缓存）
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType font/woff2 "access plus 30 days"
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+  <FilesMatch "\.(png|jpe?g|gif|svg|webp|woff2?)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+</IfModule>
+
+# 后台管理 · 美化 URL
+RewriteRule ^login/?$ admin/login.php [L]
+RewriteRule ^xmp/?$ admin/index.php [L]
+RewriteRule ^xmp/([a-z0-9-]+)/?$ admin/$1.php [L,QSA]
+RewriteRule ^xmp/(.+)$ admin/$1 [L,QSA]
+
+# 主站页面（伪静态 · 去掉 .php 后缀）
+# 放在「已存在文件/目录放行」之前，避免 docs 目录冲突
+RewriteRule ^docs/?$ docs.php [L,QSA]
+RewriteRule ^academy/?$ academy.php [L,QSA]
+RewriteRule ^community/?$ community.php [L,QSA]
+RewriteRule ^tools/?$ tools.php [L,QSA]
+RewriteRule ^marketplace/?$ marketplace.php [L,QSA]
+RewriteRule ^articles/?$ articles.html [L,QSA]
+RewriteRule ^courses/?$ courses.php [L,QSA]
+RewriteRule ^about/?$ about.php [L,QSA]
+RewriteRule ^product/?$ product.php [L,QSA]
+RewriteRule ^capability/?$ capability.php [L,QSA]
+RewriteRule ^downloads/?$ downloads.php [L,QSA]
+RewriteRule ^podcasts/?$ podcasts.php [L,QSA]
+RewriteRule ^survey/?$ survey.php [L,QSA]
+RewriteRule ^reviews/?$ reviews.php [L,QSA]
+RewriteRule ^topics/?$ topics.php [L,QSA]
+RewriteRule ^consultation/?$ consultation.php [L,QSA]
+RewriteRule ^course/(.+)$ course-player.php?slug=$1 [L,QSA]
+RewriteRule ^download/(.+)$ download.php?slug=$1 [L,QSA]
+RewriteRule ^category/([a-z]+)/([a-z0-9_-]+)/?$ category.php?section=$1&subkey=$2 [L,QSA]
+RewriteRule ^community-post/(.+)$ community-post.php?id=$1 [L,QSA]
+
+# 已存在的文件/目录直接放行
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# SEO 文件
+RewriteRule ^robots\.txt$ robots.php [L]
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+RewriteRule ^llms\.txt$ llms.php [L]
+RewriteRule ^(feed|rss)(\.xml)?$ feed.php [L]
+
+# 前台内容
+RewriteRule ^article/(.+)$ article.php?slug=$1 [L,QSA,B]
+RewriteRule ^author/(.+)$ author.php?name=$1 [L,QSA,B]
+RewriteRule ^topic/(.+)$ topics.php?slug=$1 [L,QSA,B]
+RewriteRule ^event/(.+)$ event.php?slug=$1 [L,QSA,B]
+RewriteRule ^events/?$ events.php [L,QSA]
+RewriteRule ^lp/(.+)$ landing.php?slug=$1 [L,QSA,B]
+RewriteRule ^b/(.+)$ front-builder.php?slug=$1 [L,QSA,B]
+
+# 功能页
+RewriteRule ^search$ search.php [L,QSA]
+RewriteRule ^thank-you/?$ thank-you.php [L,QSA]
+RewriteRule ^activate/?$ activate.php [L,QSA]
+RewriteRule ^shop/?$ shop.php [L,QSA]
+
+# Landing 聚合页（单段 slug）
+RewriteRule ^([a-z0-9][a-z0-9-]*)/?$ landing.php?slug=$1 [L,QSA]
+</IfModule>
