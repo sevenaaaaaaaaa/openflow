@@ -124,7 +124,7 @@
 
 ### 品牌升级
 - **项目正式更名为 OpenFlow XMP** — AI 时代的网站增长、营销与运营操作系统
-- 完整品牌替换：Flowcoming → OpenFlow，域名为 nownexts.com
+- 完整品牌替换：Flowcoming → OpenFlow，域名为 example.com
 - 中文品牌标识统一
 - 产品定位从「组织幸福 CXM」升级为「网站增长 XMP」
 

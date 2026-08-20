@@ -1,6 +1,6 @@
 # WordPress 站点接入 OpenFlow CDP 埋点
 
-> 目标：让 one.nownexts.com 等 WordPress 站点的访客行为实时进入 OpenFlow CDP 分析
+> 目标：让 one.example.com 等 WordPress 站点的访客行为实时进入 OpenFlow CDP 分析
 > 方式：通过 WordPress 插件（Code Snippets / WPCode / 自定义插件）注入 SDK 脚本
 > 前提：OpenFlow 后台已配置 `cors_origins` 包含该 WordPress 域名（设置 → 跨域埋点）
 
@@ -13,7 +13,7 @@
 1. 登录 OpenFlow 后台 → **设置** → 找到 **「🌐 跨域埋点 (CORS)」**
 2. 确认「允许的来源」包含你的 WordPress 域名，例如：
    ```
-   https://one.nownexts.com
+   https://one.example.com
    ```
    （多个域名用英文逗号分隔）
 3. 保存
@@ -34,11 +34,11 @@
 
 ```php
 add_action('wp_head', function () {
-  echo '<script src="https://nownexts.com/api/sdk.php" data-api="https://nownexts.com/api/cdp.php" data-autotrack="1"></script>';
+  echo '<script src="https://example.com/api/sdk.php" data-api="https://example.com/api/cdp.php" data-autotrack="1"></script>';
 }, 1);
 ```
 
-4. 把 `nownexts.com` 替换成你的 OpenFlow 主站实际域名
+4. 把 `example.com` 替换成你的 OpenFlow 主站实际域名
 5. **保存并激活**（勾选「只在站点前端运行」）
 
 ### 2.2 使用 WPCode 插件（含 Insert Headers and Footers）
@@ -48,10 +48,10 @@ add_action('wp_head', function () {
 3. 在 **页眉 (Header)** 区域粘贴：
 
 ```html
-<script src="https://nownexts.com/api/sdk.php" data-api="https://nownexts.com/api/cdp.php" data-autotrack="1"></script>
+<script src="https://example.com/api/sdk.php" data-api="https://example.com/api/cdp.php" data-autotrack="1"></script>
 ```
 
-4. 把 `nownexts.com` 替换成你的 OpenFlow 主站实际域名
+4. 把 `example.com` 替换成你的 OpenFlow 主站实际域名
 5. 保存
 
 ### 2.3 自定义插件（专业做法）
@@ -66,7 +66,7 @@ add_action('wp_head', function () {
  * Version: 1.0.0
  */
 add_action('wp_head', function () {
-  echo '<script src="https://nownexts.com/api/sdk.php" data-api="https://nownexts.com/api/cdp.php" data-autotrack="1"></script>';
+  echo '<script src="https://example.com/api/sdk.php" data-api="https://example.com/api/cdp.php" data-autotrack="1"></script>';
 }, 1);
 ```
 
@@ -93,7 +93,7 @@ add_action('wp_head', function () {
 2. 刷新页面，过滤 `cdp`，应看到：
    - 请求 `sdk.php`（返回 JS）
    - 请求 `cdp.php`（POST，body 是 `action=track_batch` 或 `action=track`）
-3. 若 `cdp.php` 请求的响应头包含 `Access-Control-Allow-Origin: https://one.nownexts.com`，说明跨域成功
+3. 若 `cdp.php` 请求的响应头包含 `Access-Control-Allow-Origin: https://one.example.com`，说明跨域成功
 
 ### 4.2 OpenFlow 后台验证
 1. 打开 OpenFlow 后台 → **实时数据** → 刷新
@@ -131,6 +131,6 @@ add_action('wp_footer', function () {
 
 后台 `cors_origins` 支持逗号分隔，可同时监控多个站点：
 ```
-https://one.nownexts.com, https://two.example.com, https://blog.example.org
+https://one.example.com, https://two.example.com, https://blog.example.org
 ```
 每个站点的访客都会进入同一个 CDP，可在维度分析/渠道归因中按 `referrer_domain` 或 `utm_source` 区分来源站点。

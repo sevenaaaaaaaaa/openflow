@@ -189,7 +189,7 @@ function req_str(string $key, string $def = '', bool $post = false): string {
 // ─── CORS ──────────────────────────────────────────
 function cors_headers(): void {
     // 允许的跨域来源：默认主站 + 可配置的监控站点
-    $allowed = ['https://nownexts.com', 'https://nownexts.com'];
+    $allowed = [rtrim(site_config_get('site_url'), '/')];
     $settings = json_read(DATA_DIR . '/settings.json');
     $extra = $settings['cors_origins'] ?? '';
     if ($extra) {
@@ -305,7 +305,7 @@ function default_page_content(string $page): array {
             'cases_title' => '1000+ 网站的共同选择',
             'vision_title' => '推动 100 万网站成为自动增长型站点',
             'cta_title' => '先做一次网站增长诊断',
-            'cta_phone' => '13166373667',
+            'cta_phone' => '13800000000',
         ],
         'about' => [
             'founder_quote' => '增长不是运气，是一套可以被构建的系统',
