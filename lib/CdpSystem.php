@@ -876,8 +876,10 @@ class CdpSystem {
         $tags = [];
 
         foreach ($profiles as $p) {
-            foreach (($p['tags'] ?? []) as $tag) {
-                $tags[$tag] = ($tags[$tag] ?? 0) + 1;
+            foreach (($p['tags'] ?? []) as $tagKey => $tagVal) {
+                $tagName = is_int($tagKey) ? $tagVal : $tagKey; // 兼容值列表/关联数组(带元数据)
+                if (!is_string($tagName)) continue;
+                $tags[$tagName] = ($tags[$tagName] ?? 0) + 1;
             }
         }
 
