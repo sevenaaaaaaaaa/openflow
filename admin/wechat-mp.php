@@ -111,10 +111,10 @@ code.mp{background:var(--surface-2);padding:2px 8px;border-radius:4px;font-size:
         <div class="field"><textarea name="menu_json" rows="12" style="font-family:var(--mono);font-size:13px" placeholder='{
   "button": [
     { "name": "关于我们", "sub_button": [
-      {"type":"view","name":"OpenFlow","url":"https://nownexts.com/"},
+      {"type":"view","name":"OpenFlow","url":"https://example.com/"},
       {"type":"click","name":"联系方式","key":"CONTACT"}
     ]},
-    { "name": "最新文章", "type": "view", "url": "https://nownexts.com/community" }
+    { "name": "最新文章", "type": "view", "url": "https://example.com/community" }
   ]
 }'><?=htmlspecialchars($mpCfg['menu_json'])?></textarea></div>
         <button type="button" class="btn btn-ghost btn-sm" onclick="pushMenu()" <?=$mpReady ? '' : 'disabled'?>>📡 推送菜单到微信服务器</button>

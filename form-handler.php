@@ -10,7 +10,7 @@
  *       about）表单的 POST 提交；
  *    2. 必填校验（姓名、电话）+ 字段清洗；
  *    3. honeypot 隐藏字段反垃圾提交；
- *    4. 邮件 -> admin@nownexts.com（尽力而为）；
+ *    4. 邮件 -> admin@example.com（尽力而为）；
  *    5. 兜底落盘 -> leads.csv（与脚本同目录，UTF-8 BOM，Excel 直接打开）。
  *
  *  返回：application/json，前端据此给出成功 / 失败反馈。
@@ -27,8 +27,8 @@ declare(strict_types=1);
 /* 时区：线索时间按北京时间记录（CSV 与邮件均受影响），可按需修改 */
 date_default_timezone_set('Asia/Shanghai');
 
-const RECIPIENT_EMAIL = 'admin@nownexts.com'; // 线索收件邮箱
-const SENDER_EMAIL    = 'no-reply@nownexts.com';   // 发件人地址（建议换成真实域名邮箱，见部署说明）
+const RECIPIENT_EMAIL = 'admin@example.com'; // 线索收件邮箱
+const SENDER_EMAIL    = 'no-reply@example.com';   // 发件人地址（建议换成真实域名邮箱，见部署说明）
 const SENDER_NAME     = 'OpenFlow 官网';
 const CSV_FILE        = __DIR__ . '/leads.csv';      // 兜底存储，与脚本同目录
 const HONEYPOT_FIELD  = 'website';                   // 人类陷阱：隐藏字段，机器人会自动填写

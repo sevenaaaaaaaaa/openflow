@@ -13,11 +13,11 @@ $settings = json_read($settingsFile);
     'multilang_default' => 'zh-CN',
     'multilang_languages' => 'zh-CN,en,ja',
     'site_name' => 'OpenFlow',
-    'site_url' => 'https://nownexts.com',
+    'site_url' => 'https://example.com',
     'company_name' => 'OpenFlow 科技有限公司',
     'company_year' => '2021',
-    'phone' => '13166373667',
-    'email' => 'admin@nownexts.com',
+    'phone' => '13800000000',
+    'email' => 'admin@example.com',
     'address' => '上海市',
     'beian' => '',
     'site_slogan' => 'AI 时代的网站增长操作系统',
@@ -31,7 +31,7 @@ $settings = json_read($settingsFile);
     'smtp_port' => '465',
     'smtp_user' => '',
     'smtp_pass' => '',
-    'smtp_from' => 'no-reply@nownexts.com',
+    'smtp_from' => 'no-reply@example.com',
     'smtp_from_name' => 'OpenFlow 官网',
     'ga_id' => '',
     'baidu_id' => '',
@@ -39,7 +39,7 @@ $settings = json_read($settingsFile);
     'redis_port' => '6379',
     'redis_password' => '',
     'redis_database' => '0',
-    'cors_origins' => 'https://one.nownexts.com',
+    'cors_origins' => 'https://one.example.com',
 ];
     $settings = array_merge($defaults, $settings);
 
@@ -161,7 +161,7 @@ admin_header('系统设置');
       <!-- CORS 跨域 -->
       <div class="card">
         <h2>🌐 跨域埋点 (CORS) <span class="hint" style="font-weight:400">· 允许外部站点埋点到 CDP</span></h2>
-        <div class="field"><label>允许的来源 <span class="hint">· 逗号分隔，用于监控其他站点（如 WordPress）</span></label><input type="text" name="settings[cors_origins]" value="<?=htmlspecialchars($settings['cors_origins'])?>" placeholder="https://one.nownexts.com"></div>
+        <div class="field"><label>允许的来源 <span class="hint">· 逗号分隔，用于监控其他站点（如 WordPress）</span></label><input type="text" name="settings[cors_origins]" value="<?=htmlspecialchars($settings['cors_origins'])?>" placeholder="https://one.example.com"></div>
         <p class="text-sm text-muted">在这些站点的页面引入 <code>&lt;script src="https://你的域名/api/sdk.php" data-api="https://你的域名/api/cdp.php"&gt;&lt;/script&gt;</code> 即可跨域埋点。</p>
       </div>
 
