@@ -18,18 +18,31 @@ usort($categories, fn($a, $b) => ($a['sort'] ?? 0) <=> ($b['sort'] ?? 0));
 $catNames = []; $catIcons = [];
 foreach ($categories as $c) { $catNames[$c['id']] = $c['name']; $catIcons[$c['id']] = $c['icon'] ?? '🌐'; }
 
+// 站点 logo：有则用，无则自动取 favicon
+function nav_logo(array $s): string {
+    if (!empty($s['logo'])) return $s['logo'];
+    $host = parse_url($s['url'] ?? '', PHP_URL_HOST);
+    return $host ? 'https://www.google.com/s2/favicons?domain=' . $host . '&sz=64' : '';
+}
+
 // 筛选
 $region = $_GET['region'] ?? 'all';
 $cat = $_GET['cat'] ?? '';
 $q = trim($_GET['q'] ?? '');
+$tag = trim($_GET['tag'] ?? '');
 // 只展示已上架站点
 $sites = array_values(array_filter($sites, fn($s) => ($s['status'] ?? 'published') === 'published'));
 // 全局按权重排序（weight 大在前）
 usort($sites, fn($a, $b) => ((int)($b['weight'] ?? 0)) <=> ((int)($a['weight'] ?? 0)));
+// 热门标签聚合（按出现次数）
+$tagCount = [];
+foreach ($sites as $s) foreach (($s['tags'] ?? []) as $t) { $tagCount[$t] = ($tagCount[$t] ?? 0) + 1; }
+arsort($tagCount);
 $filtered = $sites;
 if ($region !== 'all') $filtered = array_values(array_filter($filtered, fn($s) => ($s['region'] ?? 'cn') === $region));
 if ($cat) $filtered = array_values(array_filter($filtered, fn($s) => ($s['category'] ?? '') === $cat));
-if ($q) $filtered = array_values(array_filter($filtered, fn($s) => mb_strpos(($s['name'] ?? '') . ($s['description'] ?? ''), $q) !== false));
+if ($tag) $filtered = array_values(array_filter($filtered, fn($s) => in_array($tag, $s['tags'] ?? [], true)));
+if ($q) $filtered = array_values(array_filter($filtered, fn($s) => mb_strpos(($s['name'] ?? '') . ($s['description'] ?? '') . implode(' ', $s['tags'] ?? []), $q) !== false));
 
 // 按分类分组
 $byCat = [];
@@ -117,10 +130,20 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
           <?php endforeach; ?>
           <div style="border-top:1px solid var(--bg);margin:8px 0;padding-top:8px">
             <div class="px-2 py-1 font-bold text-sm">🌍 地区</div>
-            <a class="cat-nav-item <?=$region==='all'?'active':''?>" href="?region=all">🌐 全部</a>
-            <a class="cat-nav-item <?=$region==='cn'?'active':''?>" href="?region=cn">🇨🇳 国内</a>
-            <a class="cat-nav-item <?=$region==='intl'?'active':''?>" href="?region=intl">🌍 海外</a>
+            <a class="cat-nav-item <?=$region==='all'?'active':''?>" href="?region=all<?=$cat?'&cat='.urlencode($cat):''?><?=$tag?'&tag='.urlencode($tag):''?>">🌐 全部</a>
+            <a class="cat-nav-item <?=$region==='cn'?'active':''?>" href="?region=cn<?=$cat?'&cat='.urlencode($cat):''?><?=$tag?'&tag='.urlencode($tag):''?>">🇨🇳 国内</a>
+            <a class="cat-nav-item <?=$region==='intl'?'active':''?>" href="?region=intl<?=$cat?'&cat='.urlencode($cat):''?><?=$tag?'&tag='.urlencode($tag):''?>">🌍 海外</a>
           </div>
+          <?php if (!empty($tagCount)): ?>
+          <div style="border-top:1px solid var(--bg);margin:8px 0;padding-top:8px">
+            <div class="px-2 py-1 font-bold text-sm">🏷 热门标签</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;padding:2px 4px">
+              <?php foreach (array_slice(array_keys($tagCount), 0, 12) as $t): ?>
+              <a href="?tag=<?=urlencode($t)?><?=$cat?'&cat='.urlencode($cat):''?><?=$region!=='all'?'&region='.$region:''?>" style="padding:3px 10px;border-radius:999px;font-size:11px;border:1px solid <?=$tag===$t?'var(--accent)':'var(--border)'?>;<?=$tag===$t?'background:var(--accent);color:var(--on-accent)':''?>"><?=htmlspecialchars($t)?></a>
+              <?php endforeach; ?>
+            </div>
+          </div>
+          <?php endif; ?>
         </div>
       </aside>
 
@@ -144,7 +167,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
             <?php foreach ($list as $s): ?>
             <a href="/navigation-site.php?site=<?=urlencode($s['id'])?>" class="site-card">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-                <div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);overflow:hidden"><?php if (!empty($s['logo'])): ?><img src="<?=htmlspecialchars($s['logo'])?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$s['region']==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
+                <div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);overflow:hidden"><?php $logo = nav_logo($s); if ($logo): ?><img src="<?=htmlspecialchars($logo)?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$s['region']==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
                 <div class="font-bold"><?=htmlspecialchars($s['name'])?><?php if (!empty($s['featured'])): ?> <span style="font-size:10px;color:#b45309">⭐</span><?php endif; ?></div>
               </div>
               <div class="text-sm text-gray-600 line-clamp-2"><?=htmlspecialchars($s['description'] ?? '')?></div>
@@ -160,6 +183,13 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
                 <span>·</span>
                 <span class="truncate"><?=htmlspecialchars($s['url'] ?? '')?></span>
               </div>
+              <?php if (!empty($s['tags'])): ?>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+                <?php foreach (array_slice($s['tags'], 0, 3) as $t): ?>
+                <a href="?tag=<?=urlencode($t)?>" style="font-size:10px;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted)">#<?=htmlspecialchars($t)?></a>
+                <?php endforeach; ?>
+              </div>
+              <?php endif; ?>
             </a>
             <?php endforeach; ?>
           </div>
