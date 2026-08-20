@@ -10,7 +10,7 @@ function seo_console_settings(): array {
     return array_merge([
         'gsc_email' => '',           // GSC Service Account Email
         'gsc_key' => '',             // GSC Service Account JSON Key（填路径或内容）
-        'gsc_property' => '',        // GSC 属性（如 sc-domain:nownexts.com）
+        'gsc_property' => '',        // GSC 属性（如 sc-domain:example.com）
         'bing_api_key' => '',        // Bing Webmaster API Key
         'bing_site' => '',           // Bing 站点 URL
         'baidu_token' => '',         // 百度站长 Token

@@ -1,6 +1,6 @@
 <?php
 /**
- * Scheduled Publisher — call via cron: * * * * * curl https://nownexts.com/api/cron.php
+ * Scheduled Publisher — call via cron: * * * * * curl https://example.com/api/cron.php
  * Publishes articles with publish_at <= now and status = draft
  */
 require_once __DIR__ . '/../admin/config.php';

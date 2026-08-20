@@ -104,9 +104,9 @@ admin_header('结构化数据');
 </div>
 <script>
 var templates = {
-  Organization: '{\n  "@context": "https://schema.org",\n  "@type": "Organization",\n  "name": "OpenFlow",\n  "url": "https://nownexts.com",\n  "logo": "https://nownexts.com/assets/images/logo.png",\n  "contactPoint": {\n    "@type": "ContactPoint",\n    "telephone": "+86-13166373667",\n    "contactType": "customer service"\n  }\n}',
+  Organization: '{\n  "@context": "https://schema.org",\n  "@type": "Organization",\n  "name": "OpenFlow",\n  "url": "https://example.com",\n  "logo": "https://example.com/assets/images/logo.png",\n  "contactPoint": {\n    "@type": "ContactPoint",\n    "telephone": "+86-13800000000",\n    "contactType": "customer service"\n  }\n}',
   Article: '{\n  "@context": "https://schema.org",\n  "@type": "Article",\n  "headline": "文章标题",\n  "description": "文章描述",\n  "datePublished": "' + new Date().toISOString().split('T')[0] + '",\n  "author": {\n    "@type": "Person",\n    "name": "OpenFlow"\n  }\n}',
-  BreadcrumbList: '{\n  "@context": "https://schema.org",\n  "@type": "BreadcrumbList",\n  "itemListElement": [{\n    "@type": "ListItem",\n    "position": 1,\n    "name": "首页",\n    "item": "https://nownexts.com"\n  },{\n    "@type": "ListItem",\n    "position": 2,\n    "name": "当前页面"\n  }]\n}',
+  BreadcrumbList: '{\n  "@context": "https://schema.org",\n  "@type": "BreadcrumbList",\n  "itemListElement": [{\n    "@type": "ListItem",\n    "position": 1,\n    "name": "首页",\n    "item": "https://example.com"\n  },{\n    "@type": "ListItem",\n    "position": 2,\n    "name": "当前页面"\n  }]\n}',
   FAQPage: '{\n  "@context": "https://schema.org",\n  "@type": "FAQPage",\n  "mainEntity": [{\n    "@type": "Question",\n    "name": "问题1",\n    "acceptedAnswer": {\n      "@type": "Answer",\n      "text": "答案1"\n    }\n  }]\n}',
   Product: '{\n  "@context": "https://schema.org",\n  "@type": "Product",\n  "name": "产品名称",\n  "description": "产品描述"\n}',
   LocalBusiness: '{\n  "@context": "https://schema.org",\n  "@type": "LocalBusiness",\n  "name": "OpenFlow 科技有限公司",\n  "address": {\n    "@type": "PostalAddress",\n    "addressLocality": "上海"\n  }\n}'

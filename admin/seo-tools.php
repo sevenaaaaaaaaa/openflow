@@ -98,7 +98,7 @@ admin_header('SEO 工具');
         </div>
         <div class="field-row">
           <div class="field"><label>Bing Webmaster</label><input type="text" name="bing_verify" value="<?=htmlspecialchars($seo['bing_verify']??'')?>" placeholder="Bing 验证代码"></div>
-          <div class="field"><label>Canonical 域名</label><input type="text" name="canonical_domain" value="<?=htmlspecialchars($seo['canonical_domain']??'')?>" placeholder="nownexts.com"></div>
+          <div class="field"><label>Canonical 域名</label><input type="text" name="canonical_domain" value="<?=htmlspecialchars($seo['canonical_domain']??'')?>" placeholder="example.com"></div>
         </div>
         <button type="submit" class="btn btn-primary">保存验证设置</button>
       </form>
