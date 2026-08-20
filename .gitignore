@@ -42,10 +42,12 @@ Thumbs.db
 .vscode/
 *.sublime-*
 
-# ─── 部署脚本（含服务器路径信息） ───
-nginx.site.conf
-.htaccess
+# ─── 部署脚本（含服务器 IP/密钥，不入库） ───
+deploy.sh
+qa-check.sh
 baota-pseudostatic.txt
+
+# ─── Web Server 配置（保留 .htaccess 与 nginx.site.conf 作为开源部署参考，均不含密钥） ───
 
 # ─── 数据库 ───
 *.db
@@ -57,10 +59,6 @@ baota-pseudostatic.txt
 .env
 .env.local
 .env.production
-
-# ─── 本地部署脚本（含服务器 IP/密钥，不入库） ───
-deploy.sh
-qa-check.sh
 
 # ─── 工具生成的备份文件 ───
 *.bak
