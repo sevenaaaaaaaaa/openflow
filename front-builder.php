@@ -52,6 +52,9 @@ function builder_render_block(array $b): string {
             return '<section ' . $bgStyle . ' style="padding:50px 0;text-align:center"><div style="max-width:520px;margin:0 auto;padding:0 20px"><h2 style="font-size:22px;font-weight:800;margin-bottom:12px">' . $title . '</h2>' . ($sub ? '<p style="color:var(--muted)">' . $sub . '</p>' : '') . $btn . '</div></section>';
         case 'video':
             return '<section ' . $bgStyle . ' style="padding:50px 0"><div style="max-width:800px;margin:0 auto;padding:0 20px"><h2 style="font-size:24px;font-weight:800;margin-bottom:16px;text-align:center">' . $title . '</h2>' . ($content ?: '<p style="color:var(--muted);text-align:center">配置视频地址</p>') . '</div></section>';
+        case 'embed':
+            // 自定义代码块：嵌入任意 HTML/JS/CSS（兼容已有前端组件）
+            return '<section ' . $bgStyle . ' style="padding:40px 0"><div style="max-width:1000px;margin:0 auto;padding:0 20px">' . ($content ?: '') . '</div></section>';
         default:
             return '<section ' . $bgStyle . ' style="padding:50px 0"><div style="max-width:800px;margin:0 auto;padding:0 20px"><h2>' . $title . '</h2><div style="color:var(--muted)">' . $content . '</div></div></section>';
     }
