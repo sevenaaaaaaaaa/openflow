@@ -198,9 +198,10 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
                 <span>·</span>
                 <span class="truncate"><?=htmlspecialchars($s['url'] ?? '')?></span>
               </div>
-              <?php if (!empty($s['tags'])): ?>
+              <?php $cardTags = array_values(array_filter($s['tags'] ?? [], fn($t) => trim((string)$t) !== '')); ?>
+              <?php if (!empty($cardTags)): ?>
               <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-                <?php foreach (array_slice($s['tags'], 0, 3) as $t): ?>
+                <?php foreach (array_slice($cardTags, 0, 3) as $t): ?>
                 <a href="?tag=<?=urlencode($t)?>" style="font-size:10px;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted)">#<?=htmlspecialchars($t)?></a>
                 <?php endforeach; ?>
               </div>
