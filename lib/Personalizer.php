@@ -16,6 +16,9 @@ class Personalizer {
     public static function buildProfile(string $visitorId = '', string $memberId = '', string $email = ''): array {
         $pref = ['tags' => [], 'categories' => [], 'member_level' => '', 'source' => '', 'total_spent' => 0];
 
+        // 游客无任何标识：跳过 CDP 全量加载，避免每次请求 OOM/拖垮服务器
+        if ($visitorId === '' && $memberId === '' && $email === '') return $pref;
+
         // 1. CDP 画像标签
         $canonical = IdentityResolver::resolve($visitorId, $memberId, $email);
         $profiles = CdpSystem::allProfiles();
