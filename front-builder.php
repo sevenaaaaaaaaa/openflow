@@ -75,7 +75,7 @@ body{font-family:"Space Grotesk","PingFang SC",sans-serif;background:var(--bg);c
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260816" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260821" data-cfasync="false" data-page="home"></script>
 <main>
 <?php foreach ($blocks as $b) echo builder_render_block($b); ?>
 </main>
