@@ -5,8 +5,8 @@ RewriteEngine On
 DirectoryIndex index.php index.html
 RewriteRule ^$ index.php [L,QSA]
 
-# 多语言 URL 前缀（/en/ /ja/ /zh-CN/ 剥离 → 原路径，语言由 REQUEST_URI 检测）
-RewriteRule ^(en|ja|zh-CN)/(.*)$ $2 [L,QSA]
+# 多语言 URL 前缀（/zh-TW/ /en/ /ja/ /ko/ /ru/ /es/ /pt/ /ar/ /fr/ /de/ 剥离 → 原路径，语言由 REQUEST_URI 检测）
+RewriteRule ^(zh-CN|zh-TW|en|ja|ko|ru|es|pt|ar|fr|de)/(.*)$ $2 [L,QSA]
 
 # 融合方案：独立子路径挂载 /growth/（剥离前缀，OpenFlow 内容在既有站点子路径下共存）
 RewriteRule ^growth/(.*)$ $1 [L,QSA]
