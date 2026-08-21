@@ -757,8 +757,8 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
       <a class="tab-pill" href="/navigation.php" data-od-id="tab-nav"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 12h6M9 19h6"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span><?=__('nav.navigation', '导航')?></a>
       <a class="tab-pill" href="/about" data-od-id="tab-about"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c1.4-3.5 4.2-5.2 7.5-5.2s6.1 1.7 7.5 5.2"/></svg></span><?=__('nav.about', '关于')?></a>
     </nav>
-    <?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><div style="margin-left:14px"><?=i18n_switcher()?></div><?php endif; ?>
     <div class="controls">
+      <?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><div style="margin-right:2px"><?=i18n_switcher()?></div><?php endif; ?>
       <button class="cbtn" id="btn-menu" data-od-id="menu-toggle" aria-label="打开导航" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <button class="kbd-chip" id="btn-cmd" data-od-id="cmd-open" aria-label="打开命令面板">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg></span>
