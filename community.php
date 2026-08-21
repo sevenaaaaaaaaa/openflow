@@ -73,7 +73,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260822" data-cfasync="false" data-page="community"></script>
+<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="community"></script>
 
   <div style="padding:clamp(16px,3vw,32px) 0 8px">
     <div class="mx-auto px-5" style="max-width:1120px">
