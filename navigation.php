@@ -44,6 +44,8 @@ $tag = trim($_GET['tag'] ?? '');
 $sites = array_values(array_filter($sites, fn($s) => ($s['status'] ?? 'published') === 'published'));
 // 全局按权重排序（weight 大在前）
 usort($sites, fn($a, $b) => ((int)($b['weight'] ?? 0)) <=> ((int)($a['weight'] ?? 0)));
+// 卡片标签黑名单：无区分度的高频通用标签（渲染时过滤，避免每张卡都是 #AI #开源 影响排版）
+$navTagBlacklist = ['AI', '开源', '创作', '精选', 'Agent', '商业', '自动化', '效率', '工具', '平台', '国内', '小众', '网站', '应用', '工具集', '开源工具'];
 // 热门标签聚合（按出现次数）
 $tagCount = [];
 foreach ($sites as $s) foreach (($s['tags'] ?? []) as $t) { $tagCount[$t] = ($tagCount[$t] ?? 0) + 1; }
@@ -226,11 +228,11 @@ $lazyGroups = [];
                 <span>·</span>
                 <span class="truncate"><?=htmlspecialchars($s['url'] ?? '')?></span>
               </div>
-              <?php $cardTags = array_values(array_filter($s['tags'] ?? [], fn($t) => trim((string)$t) !== '')); ?>
+              <?php $cardTags = array_values(array_filter($s['tags'] ?? [], fn($t) => trim((string)$t) !== '' && !in_array((string)$t, $navTagBlacklist, true))); ?>
               <?php if (!empty($cardTags)): ?>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+              <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">
                 <?php foreach (array_slice($cardTags, 0, 2) as $t): ?>
-                <a href="?tag=<?=urlencode($t)?>" style="font-size:10px;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">#<?=htmlspecialchars($t)?></a>
+                <a href="?tag=<?=urlencode($t)?>" style="font-size:10px;color:var(--faint);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">#<?=htmlspecialchars($t)?></a>
                 <?php endforeach; ?>
               </div>
               <?php endif; ?>
@@ -277,6 +279,7 @@ function navHot(h) {
 }
 /* 首页滚动懒加载 */
 if (window.NAV_LAZY) {
+  var __navBl = <?=json_encode($navTagBlacklist, JSON_UNESCAPED_UNICODE)?>;
   function __nh(s) { return String(s ?? '').replace(/[&<>]/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]); }); }
   function __na(s) { return String(s ?? '').replace(/"/g, '&quot;'); }
   function __navCard(s) {
@@ -285,8 +288,8 @@ if (window.NAV_LAZY) {
       var on = Math.max(0, Math.min(5, Math.round(rm.avg))), off = 5 - on;
       star = '<div style="margin-top:6px;font-size:12px"><span style="color:var(--warn);letter-spacing:1px">' + '★'.repeat(on) + '☆'.repeat(off) + '</span><span style="color:#b45309;font-weight:600"> ' + Number(rm.avg).toFixed(1) + '</span><span style="color:var(--faint)"> · ' + rm.count + ' 条点评</span></div>';
     }
-    var tags = (s.tags || []).slice(0, 2).map(function (t) {
-      return '<a href="navigation.php?tag=' + encodeURIComponent(t) + '" style="font-size:10px;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">#' + __nh(t) + '</a>';
+    var tags = (s.tags || []).filter(function (t) { return String(t).trim() !== '' && __navBl.indexOf(String(t)) === -1; }).slice(0, 2).map(function (t) {
+      return '<a href="navigation.php?tag=' + encodeURIComponent(t) + '" style="font-size:10px;color:var(--faint);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">#' + __nh(t) + '</a>';
     }).join('');
     var logo = s.logo ? '<img src="' + __na(s.logo) + '" alt="" onerror="this.onerror=null;this.style.display=\'none\';this.parentElement.textContent=\'🌐\';this.parentElement.style.fontSize=\'18px\'" style="width:100%;height:100%;object-fit:cover">' : (s.region === 'cn' ? '🇨🇳' : '🌍');
     var el = document.createElement('a');
