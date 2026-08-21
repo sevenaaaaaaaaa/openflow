@@ -4,11 +4,14 @@
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
+// 当前语言包（注入前端导航翻译）
+$__langFile = DATA_DIR . '/lang/' . i18n_current() . '.json';
+$__langDict = is_file($__langFile) ? (json_read($__langFile) ?: []) : [];
 $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
 ?>
 <!doctype html>
-<html lang="zh-CN" data-theme="light">
+<html lang="<?=htmlspecialchars(i18n_current())?>" dir="<?=i18n_is_rtl()?'rtl':'ltr'?>" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -679,7 +682,9 @@ main{margin-left:calc(var(--sb-w) + 26px); margin-right:14px; padding-top:96px; 
 <button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 
 <script>
+var __I18N = <?=json_encode($__langDict, JSON_UNESCAPED_UNICODE | JSON_HEX_APOS | JSON_HEX_QUOT)?>;
 (function(){
+function t(n){return (n.key && __I18N && __I18N[n.key]) ? __I18N[n.key] : n.label;}
 'use strict';
 var $=function(s){return document.querySelector(s)};
 var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
@@ -708,12 +713,12 @@ play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-
 function ic(n){return '<span class="ic">'+(I[n]||'')+'</span>'}
 
 var NAV=[
-{id:'home',label:'首页',href:'/',icon:'home',blurb:'芭乐派 · 帮一人公司设计 Agent 能跑的增长系统'},
-{id:'product',label:'产品',href:'/product',icon:'box',blurb:'痛点、原理、能力深挖与可运行演示',mega:{title:'产品与平台',blurb:'芭乐派增长操作系统 · 帮一人公司设计 Agent 能跑的增长系统',cols:[{head:'核心产品',items:[{t:'内容引擎 CMS',d:'文章 · 页面 · 发布',href:'/category/products/cms'},{t:'营销自动化 MA',d:'可视化工作流引擎',href:'/category/products/ma'},{t:'客户数据 CDP',d:'画像 · 分群 · 洞察',href:'/category/products/cdp'},{t:'SEO / GEO 引擎',d:'搜索与 AI 优化',href:'/category/products/seo'}]},{head:'增长与商业',items:[{t:'CRM 与线索',d:'线索池与转化',href:'/category/products/crm'},{t:'商业与订阅',d:'商城 · 会员 · 付费',href:'/category/products/commerce'},{t:'社区与内容',d:'论坛 · 评论 · 积分',href:'/category/products/community'},{t:'数据分析',d:'归因 · A/B · 洞察',href:'/category/products/data'}]}],foot:[{t:'产品总览',href:'/product'},{t:'能力矩阵',href:'/capability'},{t:'课程入口',href:'/courses'}]}},
-{id:'capability',label:'能力',href:'/capability',icon:'bolt',blurb:'TIPS 框架 · 触达/洞察/个性化/销售四力合一',mega:{title:'六大核心能力',blurb:'TIPS 框架 · 触达/洞察/个性化/销售四力合一',cols:[{head:'内容与增长',items:[{t:'内容引擎',d:'CMS · 课程 · 资料 · 播客',href:'/category/capabilities/content'},{t:'增长与获客',d:'落地页 · 表单 · SEO · 工具',href:'/category/capabilities/growth'},{t:'转化与留存',d:'MA 自动化 · 会员 · 订阅',href:'/category/capabilities/conversion'},{t:'数据与洞察',d:'CDP · 分析 · 归因 · A/B',href:'/category/capabilities/data'}]},{head:'商业与运营',items:[{t:'商业闭环',d:'商城 · 生态 · 分销',href:'/category/capabilities/commerce'},{t:'社区运营',d:'论坛 · 积分 · 直播 · 咨询',href:'/category/capabilities/community'},{t:'内容学院',d:'文章 · 案例 · 方法论',href:'/category/academy/articles'},{t:'生态市场',d:'Skill · 插件 · 主题',href:'/category/marketplace/skills'}]}],foot:[{t:'全部能力',href:'/capability'},{t:'进入学院',href:'/category/academy/articles'},{t:'社区讨论',href:'/community'}]}},
-{id:'courses',label:'课程',href:'/courses',icon:'book',blurb:'New-1~4 基石课 + R.B.E 训练营',mega:{title:'芭乐派 · 学习路径',blurb:'New-1~4 课程 + R.B.E 训练营 · 以 OpenFlow 为工具',cols:[{head:'课程类型',items:[{t:'基石课',d:'New-1~4 免费入门课',href:'/courses'},{t:'训练营',d:'R.B.E 八周系统设计营',href:'/courses#courseGrid'},{t:'方法论',d:'利润公式 · 四引擎',href:'/courses#coursePath'},{t:'一对一咨询',d:'O.L.B 增长诊断',href:'/consultation'}]},{head:'相关资源',items:[{t:'免费资源',d:'入门免费内容',href:'/category/courses/free'},{t:'资料下载',d:'白皮书 · 模板',href:'/downloads'},{t:'播客视频',d:'干货音视频',href:'/podcasts'},{t:'内容学院',d:'增长实践文章',href:'/category/academy/articles'}]}],foot:[{t:'浏览全部课程',href:'/courses'},{t:'报名训练营',href:'/courses#courseGrid'}]}},
-{id:'articles',label:'学院',href:'/academy',icon:'doc',blurb:'增长系统 · Agent · 一人公司方法论',mega:{title:'内容学院',blurb:'增长系统 · Agent · 一人公司方法论',cols:[{head:'内容专区',items:[{t:'文章',d:'增长实践文章',href:'/category/academy/articles'},{t:'资料',d:'白皮书 · 模板 · 报告',href:'/category/academy/downloads'},{t:'播客视频',d:'干货音视频',href:'/category/academy/podcasts'},{t:'专题合集',d:'主题系列文章',href:'/category/academy/topics'}]},{head:'文档与工具',items:[{t:'文档中心',d:'产品文档 · 使用指南',href:'/category/academy/docs'},{t:'工具箱',d:'SEO 检查 · Meta · LTV',href:'/category/academy/tools'},{t:'社区问答',d:'提问与讨论',href:'/community'}]}],foot:[{t:'进入学院',href:'/academy'},{t:'浏览工具',href:'/category/academy/tools'}]}},
-{id:'about',label:'关于我们',href:'/about',icon:'info',blurb:'芭乐派故事 · 创始人Seven · 加入门派'}
+{id:'home',label:'首页',key:'nav.home',href:'/',icon:'home',blurb:'芭乐派 · 帮一人公司设计 Agent 能跑的增长系统'},
+{id:'product',label:'产品',key:'nav.product',href:'/product',icon:'box',blurb:'痛点、原理、能力深挖与可运行演示',mega:{title:'产品与平台',blurb:'芭乐派增长操作系统 · 帮一人公司设计 Agent 能跑的增长系统',cols:[{head:'核心产品',items:[{t:'内容引擎 CMS',d:'文章 · 页面 · 发布',href:'/category/products/cms'},{t:'营销自动化 MA',d:'可视化工作流引擎',href:'/category/products/ma'},{t:'客户数据 CDP',d:'画像 · 分群 · 洞察',href:'/category/products/cdp'},{t:'SEO / GEO 引擎',d:'搜索与 AI 优化',href:'/category/products/seo'}]},{head:'增长与商业',items:[{t:'CRM 与线索',d:'线索池与转化',href:'/category/products/crm'},{t:'商业与订阅',d:'商城 · 会员 · 付费',href:'/category/products/commerce'},{t:'社区与内容',d:'论坛 · 评论 · 积分',href:'/category/products/community'},{t:'数据分析',d:'归因 · A/B · 洞察',href:'/category/products/data'}]}],foot:[{t:'产品总览',href:'/product'},{t:'能力矩阵',href:'/capability'},{t:'课程入口',href:'/courses'}]}},
+{id:'capability',label:'能力',key:'nav.capability',href:'/capability',icon:'bolt',blurb:'TIPS 框架 · 触达/洞察/个性化/销售四力合一',mega:{title:'六大核心能力',blurb:'TIPS 框架 · 触达/洞察/个性化/销售四力合一',cols:[{head:'内容与增长',items:[{t:'内容引擎',d:'CMS · 课程 · 资料 · 播客',href:'/category/capabilities/content'},{t:'增长与获客',d:'落地页 · 表单 · SEO · 工具',href:'/category/capabilities/growth'},{t:'转化与留存',d:'MA 自动化 · 会员 · 订阅',href:'/category/capabilities/conversion'},{t:'数据与洞察',d:'CDP · 分析 · 归因 · A/B',href:'/category/capabilities/data'}]},{head:'商业与运营',items:[{t:'商业闭环',d:'商城 · 生态 · 分销',href:'/category/capabilities/commerce'},{t:'社区运营',d:'论坛 · 积分 · 直播 · 咨询',href:'/category/capabilities/community'},{t:'内容学院',d:'文章 · 案例 · 方法论',href:'/category/academy/articles'},{t:'生态市场',d:'Skill · 插件 · 主题',href:'/category/marketplace/skills'}]}],foot:[{t:'全部能力',href:'/capability'},{t:'进入学院',href:'/category/academy/articles'},{t:'社区讨论',href:'/community'}]}},
+{id:'courses',label:'课程',key:'nav.courses',href:'/courses',icon:'book',blurb:'New-1~4 基石课 + R.B.E 训练营',mega:{title:'芭乐派 · 学习路径',blurb:'New-1~4 课程 + R.B.E 训练营 · 以 OpenFlow 为工具',cols:[{head:'课程类型',items:[{t:'基石课',d:'New-1~4 免费入门课',href:'/courses'},{t:'训练营',d:'R.B.E 八周系统设计营',href:'/courses#courseGrid'},{t:'方法论',d:'利润公式 · 四引擎',href:'/courses#coursePath'},{t:'一对一咨询',d:'O.L.B 增长诊断',href:'/consultation'}]},{head:'相关资源',items:[{t:'免费资源',d:'入门免费内容',href:'/category/courses/free'},{t:'资料下载',d:'白皮书 · 模板',href:'/downloads'},{t:'播客视频',d:'干货音视频',href:'/podcasts'},{t:'内容学院',d:'增长实践文章',href:'/category/academy/articles'}]}],foot:[{t:'浏览全部课程',href:'/courses'},{t:'报名训练营',href:'/courses#courseGrid'}]}},
+{id:'articles',label:'学院',key:'nav.academy',href:'/academy',icon:'doc',blurb:'增长系统 · Agent · 一人公司方法论',mega:{title:'内容学院',blurb:'增长系统 · Agent · 一人公司方法论',cols:[{head:'内容专区',items:[{t:'文章',d:'增长实践文章',href:'/category/academy/articles'},{t:'资料',d:'白皮书 · 模板 · 报告',href:'/category/academy/downloads'},{t:'播客视频',d:'干货音视频',href:'/category/academy/podcasts'},{t:'专题合集',d:'主题系列文章',href:'/category/academy/topics'}]},{head:'文档与工具',items:[{t:'文档中心',d:'产品文档 · 使用指南',href:'/category/academy/docs'},{t:'工具箱',d:'SEO 检查 · Meta · LTV',href:'/category/academy/tools'},{t:'社区问答',d:'提问与讨论',href:'/community'}]}],foot:[{t:'进入学院',href:'/academy'},{t:'浏览工具',href:'/category/academy/tools'}]}},
+{id:'about',label:'关于我们',key:'nav.about',href:'/about',icon:'info',blurb:'芭乐派故事 · 创始人Seven · 加入门派'}
 ];
 var byId={};NAV.forEach(function(n){byId[n.id]=n});
 
@@ -768,7 +773,7 @@ function renderTabs(){
   NAV.forEach(function(n){
     var el=document.createElement('a');
     el.className='tab'+(n.id===PAGE?' active':'');el.href=n.href;
-    el.innerHTML=ic(n.icon)+'<span class="t-label">'+n.label+'</span>';
+    el.innerHTML=ic(n.icon)+'<span class="t-label">'+t(n)+'</span>';
     if(n.mega){
       var mm=document.createElement('div');mm.className='mega';
       var h='<div class="mega-top"><h4>'+n.mega.title+'</h4><p>'+n.mega.blurb+'</p></div><div class="mega-cols">';
@@ -816,7 +821,7 @@ function renderSidebar(){
   NAV.forEach(function(n){
     var el=document.createElement('a');
     el.className='s-item'+(n.id===PAGE?' active':'');el.href=n.href;
-    el.innerHTML=ic(n.icon)+'<span class="s-label">'+n.label+'</span>';
+    el.innerHTML=ic(n.icon)+'<span class="s-label">'+t(n)+'</span>';
     el.addEventListener('mouseenter',function(){showPrev(el,n)});
     el.addEventListener('mouseleave',hidePrev);
     el.addEventListener('focus',function(){showPrev(el,n)});
@@ -833,13 +838,13 @@ function renderSidebar(){
     });$('#sbFav').appendChild(el);});
   var pin=['home','product','courses'];
   $('#sbPin').innerHTML='';
-  pin.forEach(function(id){var n=byId[id];var el=document.createElement('a');el.className='s-item pin-item'+(n.id===PAGE?' active':'');el.href=n.href;el.innerHTML='<span class="pin-dot"></span><span class="s-label">'+n.label+'</span>';$('#sbPin').appendChild(el);});
+  pin.forEach(function(id){var n=byId[id];var el=document.createElement('a');el.className='s-item pin-item'+(n.id===PAGE?' active':'');el.href=n.href;el.innerHTML='<span class="pin-dot"></span><span class="s-label">'+t(n)+'</span>';$('#sbPin').appendChild(el);});
 }
 var prev=$('#sb-prev');
 function showPrev(el,n){
   if(matchMedia('(max-width:860px)').matches)return;
   var r=el.getBoundingClientRect();
-  prev.innerHTML='<div class="p-k">'+n.label.toUpperCase()+'</div><div class="p-t">'+n.label+'</div><div class="p-d">'+n.blurb+'</div>';
+  prev.innerHTML='<div class="p-k">'+t(n).toUpperCase()+'</div><div class="p-t">'+t(n)+'</div><div class="p-d">'+n.blurb+'</div>';
   prev.classList.add('open');
   var left=r.right+12,w=232;
   if(left+w>window.innerWidth-12)left=Math.max(12,window.innerWidth-w-12);
@@ -863,7 +868,7 @@ document.body.dataset.sb=S.sb;
 var palItems=[];
 function buildPal(){
   palItems=[];
-  NAV.forEach(function(n){palItems.push({id:n.id,label:n.label,icon:n.icon,hint:'打开页面',href:n.href})});
+  NAV.forEach(function(n){palItems.push({id:n.id,label:t(n),icon:n.icon,hint:'打开页面',href:n.href})});
   palItems.push({id:'__theme',label:S.theme==='dark'?'切换到浅色主题':'切换到深色主题',icon:'bolt',hint:'外观'});
   palItems.push({id:'__top',label:'回到顶部',icon:'arrow',hint:'操作'});
   palItems.push({id:'__demo',label:'运行产品演示',icon:'refresh',hint:'操作'});
