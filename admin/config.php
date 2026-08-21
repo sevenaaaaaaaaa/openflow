@@ -1378,6 +1378,7 @@ function admin_sidebar(string $current): void {
   <a href="/xmp/devops" class="<?=$current==='devops'?'active':''?>" style="padding-left:44px;font-size:13px">运维工具</a>
   <a href="/xmp/migrate" class="<?=$current==='migrate'?'active':''?>" style="padding-left:44px;font-size:13px">📦 数据迁移</a>
   <a href="/xmp/health-check" class="<?=$current==='health-check'?'active':''?>" style="padding-left:44px;font-size:13px">健康检测</a>
+  <a href="/xmp/languages" class="<?=$current==='languages'?'active':''?>" style="padding-left:44px;font-size:13px">🌐 翻译管理</a>
   <?php if (has_perm('evolution')): ?>
   <a href="/xmp/evolution" class="<?=$current==='evolution'?'active':''?>" style="padding-left:44px;font-size:13px">自我进化</a>
   <a href="/xmp/safefix" class="<?=$current==='safefix'?'active':''?>" style="padding-left:44px;font-size:13px">协同修复</a>

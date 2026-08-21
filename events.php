@@ -29,7 +29,7 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
 <link rel="stylesheet" href="/assets/site.css">
 <link rel="stylesheet" href="/assets/tailwind-build.css">
 <script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
-<script src="/assets/site-shell.js?v=20260822" data-cfasync="false" data-page="events"></script>
+<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="events"></script>
 <style>
   body{background:var(--bg);color:var(--fg)}
   .ev-card{display:flex;gap:18px;padding:22px;border-radius:18px;border:1px solid var(--border);background:var(--surface);transition:.15s}

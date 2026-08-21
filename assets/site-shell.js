@@ -81,11 +81,26 @@
   };
   function ic(n) { return '<span class="ic">' + (I[n] || '') + '</span>'; }
 
+  /* ── 前端多语言：URL 前缀 / cookie → 语言包 ── */
+  var __dict = {}, __locale = 'zh-CN';
+  (function () {
+    var m = location.pathname.match(/^\/(zh-CN|zh-TW|en|ja|ko|ru|es|pt|ar|fr|de)(\/|$)/i);
+    if (m) __locale = m[1];
+    else { var c = (document.cookie.match(/(?:^|;\s*)of_lang=([^;]+)/) || [])[1]; if (c) __locale = c; }
+  })();
+  function t(n) { return (n.key && __dict[n.key]) ? __dict[n.key] : n.label; }
+  function loadLang(cb) {
+    fetch('/api/lang.php?locale=' + __locale)
+      .then(function (r) { return r.json(); })
+      .then(function (d) { __dict = d || {}; document.documentElement.lang = __locale; document.documentElement.dir = (__locale === 'ar') ? 'rtl' : 'ltr'; if (cb) cb(); })
+      .catch(function () {});
+  }
+
   /* ── 站点导航（含 mega） ── */
   var NAV = [
-    { id: 'home', label: '首页', href: '/', icon: 'home' },
+    { id: 'home', label: '首页', key: 'nav.home', href: '/', icon: 'home' },
     {
-      id: 'product', label: '产品', href: '/product', icon: 'box',
+      id: 'product', label: '产品', key: 'nav.product', href: '/product', icon: 'box',
       mega: {
         title: '产品与平台', blurb: '芭乐派增长操作系统 · 帮一人公司设计 Agent 能跑的增长系统',
         cols: [
@@ -106,7 +121,7 @@
       }
     },
     {
-      id: 'capability', label: '能力', href: '/capability', icon: 'bolt',
+      id: 'capability', label: '能力', key: 'nav.capability', href: '/capability', icon: 'bolt',
       mega: {
         title: '六大核心能力', blurb: 'TIPS 框架 · 触达/洞察/个性化/销售四力合一',
         cols: [
@@ -127,7 +142,7 @@
       }
     },
     {
-      id: 'courses', label: '课程', href: '/courses', icon: 'book',
+      id: 'courses', label: '课程', key: 'nav.courses', href: '/courses', icon: 'book',
       mega: {
         title: '芭乐派 · 学习路径', blurb: 'New-1~4 课程 + R.B.E 训练营 · 以 OpenFlow 为工具',
         cols: [
@@ -148,7 +163,7 @@
       }
     },
     {
-      id: 'articles', label: '学院', href: '/academy', icon: 'doc',
+      id: 'articles', label: '学院', key: 'nav.academy', href: '/academy', icon: 'doc',
       mega: {
         title: '内容学院', blurb: '增长系统 · Agent · 一人公司方法论',
         cols: [
@@ -168,7 +183,7 @@
       }
     },
     {
-      id: 'events', label: '活动', href: '/events', icon: 'calendar',
+      id: 'events', label: '活动', key: 'nav.events', href: '/events', icon: 'calendar',
       mega: {
         title: '活动中心', blurb: '线上 · 线下 · 训练营 · 直播 · 主题分享',
         cols: [
@@ -186,7 +201,7 @@
       }
     },
     {
-      id: 'navigation', label: '导航', href: '/navigation', icon: 'compass',
+      id: 'navigation', label: '导航', key: 'nav.navigation', href: '/navigation', icon: 'compass',
       mega: {
         title: '工具导航', blurb: '收录国内外 400+ 增长 · SEO · AI 与开源工具',
         cols: [
@@ -204,7 +219,7 @@
       }
     },
     {
-      id: 'marketplace', label: '生态', href: '/marketplace', icon: 'box',
+      id: 'marketplace', label: '生态', key: 'nav.marketplace', href: '/marketplace', icon: 'box',
       mega: {
         title: '生态市场', blurb: 'Skill · 插件 · 主题 · 一人公司增长门派',
         cols: [
@@ -223,7 +238,7 @@
         foot: [{ t: '进入生态市场', href: '/marketplace' }]
       }
     },
-    { id: 'about', label: '关于', href: '/about', icon: 'info' }
+    { id: 'about', label: '关于', key: 'nav.about', href: '/about', icon: 'info' }
   ];
 
   /* ── O+F brand logo（终版） ── */
@@ -299,33 +314,39 @@
     document.body.appendChild(ui);
 
     /* 渲染标签页导航（浏览器标签形态：左图标右文字） */
-    var tabs = g('tabs');
-    NAV.forEach(function (n) {
-      var a = document.createElement('a');
-      a.className = 'tab-pill' + (n.id === PAGE ? ' on' : '');
-      a.href = n.href;
-      a.setAttribute('data-nav', n.id);
-      a.innerHTML = '<span class="ic">' + (I[n.icon] || '') + '</span><span>' + n.label + '</span>';
-      if (n.mega) {
-        a.classList.add('tab');
-        var mm = document.createElement('div');
-        mm.className = 'mega';
-        var html = '<div class="mega-top"><h4>' + n.mega.title + '</h4><p>' + (n.mega.blurb || '') + '</p></div><div class="mega-cols">';
-        (n.mega.cols || []).forEach(function (col) {
-          html += '<div><div class="mega-col-head">' + col.head + '</div>';
-          (col.items || []).forEach(function (it) {
-            html += '<a class="mega-item" href="' + it.href + '"><b>' + it.t + '</b><span>' + it.d + '</span></a>';
+    function renderTabs() {
+      var tabs = g('tabs');
+      if (!tabs) return;
+      tabs.innerHTML = '';
+      NAV.forEach(function (n) {
+        var a = document.createElement('a');
+        a.className = 'tab-pill' + (n.id === PAGE ? ' on' : '');
+        a.href = n.href;
+        a.setAttribute('data-nav', n.id);
+        a.innerHTML = '<span class="ic">' + (I[n.icon] || '') + '</span><span>' + t(n) + '</span>';
+        if (n.mega) {
+          a.classList.add('tab');
+          var mm = document.createElement('div');
+          mm.className = 'mega';
+          var html = '<div class="mega-top"><h4>' + n.mega.title + '</h4><p>' + (n.mega.blurb || '') + '</p></div><div class="mega-cols">';
+          (n.mega.cols || []).forEach(function (col) {
+            html += '<div><div class="mega-col-head">' + col.head + '</div>';
+            (col.items || []).forEach(function (it) {
+              html += '<a class="mega-item" href="' + it.href + '"><b>' + it.t + '</b><span>' + it.d + '</span></a>';
+            });
+            html += '</div>';
           });
+          html += '</div><div class="mega-foot">';
+          (n.mega.foot || []).forEach(function (f) { html += '<a href="' + f.href + '">' + f.t + '</a>'; });
           html += '</div>';
-        });
-        html += '</div><div class="mega-foot">';
-        (n.mega.foot || []).forEach(function (f) { html += '<a href="' + f.href + '">' + f.t + '</a>'; });
-        html += '</div>';
-        mm.innerHTML = html;
-        a.appendChild(mm);
-      }
-      tabs.appendChild(a);
-    });
+          mm.innerHTML = html;
+          a.appendChild(mm);
+        }
+        tabs.appendChild(a);
+      });
+    }
+    renderTabs();
+    loadLang(function () { renderTabs(); });
 
     /* 侧栏（Arc 三态：full → rail → closed → drawer） */
     var sb = document.createElement('aside');
@@ -347,7 +368,7 @@
       var a = document.createElement('a');
       a.className = 's-item' + (n.id === PAGE ? ' on' : '');
       a.href = n.href;
-      a.innerHTML = '<span class="ic">' + (I[n.icon] || '') + '</span><b>' + n.label + '</b>';
+      a.innerHTML = '<span class="ic">' + (I[n.icon] || '') + '</span><b>' + t(n) + '</b>';
       sbNav.appendChild(a);
     });
 
@@ -584,7 +605,7 @@
       NAV.forEach(function (n) {
         var a = document.createElement('a');
         a.className = 'p-item'; a.href = n.href;
-        a.innerHTML = ic(n.icon) + '<span>' + n.label + '</span><span class="p-hint">打开页面</span>';
+        a.innerHTML = ic(n.icon) + '<span>' + t(n) + '</span><span class="p-hint">打开页面</span>';
         palList.appendChild(a);
       });
       pal.classList.add('open'); palOv.classList.add('open');
