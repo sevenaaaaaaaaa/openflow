@@ -115,19 +115,17 @@ button:disabled{opacity:.45; cursor:default}
 .light{width:12px;height:12px;border-radius:50%; box-shadow:inset 0 0 2px oklch(0% 0 0/.25)}
 .light-r{background:oklch(64% .23 25)} .light-y{background:oklch(82% .17 85)} .light-g{background:oklch(70% .2 150)}
 .tabs{min-width:0; max-width:100%; justify-self:center; display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:3px 2px}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex:1 1 0; min-width:104px; max-width:168px; height:44px; display:flex; align-items:center; gap:8px; padding:0 12px; border-radius:14px; text-decoration:none;
-  color:var(--muted); border:1px solid transparent; transition:background .22s, color .22s, border-color .22s; white-space:nowrap; cursor:pointer}
-.tab:hover{background:var(--hover); color:var(--fg)}
-.tab.active{background:var(--surface-strong); color:var(--fg); border-color:var(--border); box-shadow:var(--shadow-sm)}
-.tab .ic{width:15px;height:15px; flex-basis:15px; color:var(--faint)}
-.tab.active .ic{color:var(--accent)}
-.t-label{font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis}
-.tab{position:relative}
+ .tabs::-webkit-scrollbar{display:none}
+ .tab-pill{display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 13px; border-radius:12px; font-size:13px; font-weight:500; color:var(--muted); white-space:nowrap; border:1px solid transparent; transition:background .22s,color .22s,border-color .22s; text-decoration:none; position:relative; cursor:pointer}
+ .tab-pill:hover{background:var(--glass); color:var(--fg)}
+ .tab-pill.on{background:var(--surface-strong); color:var(--fg); border-color:var(--border); box-shadow:var(--shadow-sm)}
+ .tab-pill .ic{width:15px;height:15px; color:var(--faint)}
+ .tab-pill.on .ic{color:var(--accent)}
+ .t-label{font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis}
 .mega{position:fixed; top:72px; left:50%; transform:translateX(-50%); width:min(720px,calc(100vw - 32px)); background:var(--surface-strong);
   -webkit-backdrop-filter:blur(40px) saturate(200%); backdrop-filter:blur(40px) saturate(200%); border:1px solid var(--border); border-radius:20px;
   box-shadow:var(--shadow); padding:20px; opacity:0; pointer-events:none; transition:opacity .2s,transform .25s var(--ease-spring); z-index:80}
-.tab:hover .mega,.tab.mega-open .mega{opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0)}
+ .tab-pill:hover .mega,.tab-pill.mega-open .mega{opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0)}
 .mega-top{display:flex; align-items:baseline; gap:12px; padding-bottom:14px; border-bottom:1px solid var(--border); margin-bottom:14px}
 .mega-top h4{font-size:15px; font-weight:800}
 .mega-top p{font-size:12px; color:var(--faint)}
@@ -663,7 +661,7 @@ function renderTabs(){
   tabsEl.innerHTML='';
   NAV.forEach(function(n){
     var el=document.createElement('a');
-    el.className='tab'+(n.id===PAGE?' active':'');el.href=n.href;
+    el.className='tab-pill'+(n.id===PAGE?' on':'');el.href=n.href;
     el.innerHTML=ic(n.icon)+'<span class="t-label">'+n.label+'</span>';
     if(n.mega){
       var mm=document.createElement('div');mm.className='mega';
