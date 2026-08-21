@@ -172,8 +172,14 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
             <span class="text-sm text-gray-400"><?=count($list)?> 个</span>
             <?php if ($cid): ?><a href="?cat=<?=urlencode($cid)?>" class="ml-auto text-sm text-[#2b5f7e]">查看全部 →</a><?php endif; ?>
           </div>
+          <?php
+          // 子分类分组
+          $subGroups = [];
+          foreach ($list as $s) { $sub = $s['sub'] ?? '全部'; $subGroups[$sub][] = $s; }
+          foreach ($subGroups as $subName => $subList): ?>
+          <div style="font-size:12px;font-weight:700;color:var(--faint);margin:12px 0 8px">▍<?=htmlspecialchars(nav_name(['name'=>$subName,'name_en'=>($subGroups[$subName][0]['sub_en'] ?? '')]))?></div>
           <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
-            <?php foreach ($list as $s): ?>
+            <?php foreach ($subList as $s): ?>
             <a href="/navigation-site.php?site=<?=urlencode($s['id'])?>" class="site-card">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
                 <div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);overflow:hidden"><?php $logo = nav_logo($s); if ($logo): ?><img src="<?=htmlspecialchars($logo)?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$s['region']==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
@@ -202,6 +208,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
             </a>
             <?php endforeach; ?>
           </div>
+          <?php endforeach; // subGroups ?>
         </div>
         <?php endforeach; endif; ?>
       </main>
