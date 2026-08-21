@@ -56,7 +56,7 @@ function nav_related_logo(array $s): string {
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260821" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260822" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-8" style="max-width:900px">
     <!-- 站点主卡 -->
