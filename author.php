@@ -50,7 +50,7 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260822" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1100px">
     <!-- 作者信息 -->

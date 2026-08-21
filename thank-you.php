@@ -78,7 +78,7 @@ $cfg = $configs[$from] ?? $configs['lead'];
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
 <body>
-<script src="/assets/site-shell.js?v=20260822" data-cfasync="false" data-page="home"></script> class="min-h-screen">
+<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script> class="min-h-screen">
   
 
   <div class="mx-auto px-5 py-14 text-center" style="max-width:720px">
