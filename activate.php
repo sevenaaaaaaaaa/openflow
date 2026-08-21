@@ -26,7 +26,7 @@ if ($member) $activated = act_member_activated($member['id']);
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260821" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260822" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-14" style="max-width:720px">
     <div class="bg-white border border-[var(--border)] rounded-3xl p-8" style="box-shadow:0 8px 32px rgba(0,0,0,.06)">

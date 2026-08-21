@@ -37,7 +37,7 @@ usort($downloads, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] 
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260821" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260822" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1200px">
     <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);align-items:center;margin-bottom:28px">
