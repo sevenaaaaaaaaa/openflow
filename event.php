@@ -42,7 +42,7 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260816" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260821" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1000px">
     <a href="/academy" class="text-sm text-[#2b5f7e]">← 返回社区</a>

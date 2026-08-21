@@ -75,7 +75,9 @@
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg>',
     sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
     moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-7.54-7.54C12.92 3.04 12.46 3 12 3Z"/></svg>',
-    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>'
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>',
+    calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 8h18"/><rect x="3" y="5" width="18" height="17" rx="2"/><path d="M8 13h3M14 13h2M8 17h3"/></svg>',
+    compass: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-2.2 5-4.8 1.2L10.4 10 15 9Z"/></svg>'
   };
   function ic(n) { return '<span class="ic">' + (I[n] || '') + '</span>'; }
 
@@ -163,6 +165,42 @@
           ]}
         ],
         foot: [{ t: '进入学院', href: '/academy' }, { t: '浏览工具', href: '/category/academy/tools' }]
+      }
+    },
+    {
+      id: 'events', label: '活动', href: '/events', icon: 'calendar',
+      mega: {
+        title: '活动中心', blurb: '线上 · 线下 · 训练营 · 直播 · 主题分享',
+        cols: [
+          { head: '活动类型', items: [
+            { t: '全部活动', d: '浏览最新活动列表', href: '/events' },
+            { t: '线上直播', d: '实时互动课程与分享', href: '/events?type=live' },
+            { t: '线下见面', d: '同城交流与工作坊', href: '/events?type=offline' }
+          ]},
+          { head: '更多', items: [
+            { t: '课程训练营', d: 'R.B.E 系列训练营', href: '/courses' },
+            { t: '内容学院', d: '增长实践文章', href: '/academy' }
+          ]}
+        ],
+        foot: [{ t: '浏览全部活动', href: '/events' }]
+      }
+    },
+    {
+      id: 'navigation', label: '导航', href: '/navigation', icon: 'compass',
+      mega: {
+        title: '工具导航', blurb: '收录国内外 400+ 增长 · SEO · AI 与开源工具',
+        cols: [
+          { head: '快速浏览', items: [
+            { t: '全部站点', d: '400+ 优质工具资源', href: '/navigation' },
+            { t: '按分类', d: '9 大分类直达', href: '/navigation' },
+            { t: '提交收录', d: '推荐你的工具', href: '/navigation' }
+          ]},
+          { head: '相关', items: [
+            { t: '生态市场', d: 'Skill · 插件 · 主题', href: '/marketplace' },
+            { t: '工具箱', d: 'SEO · Meta · LTV', href: '/tools' }
+          ]}
+        ],
+        foot: [{ t: '进入导航站', href: '/navigation' }]
       }
     },
     {
