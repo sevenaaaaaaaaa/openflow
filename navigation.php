@@ -71,6 +71,12 @@ foreach ($sites as $s) if (($banner['site_id'] ?? '') === $s['id']) { $bannerSit
 
 // 热搜：点击跳转到搜索
 $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '');
+
+// ── 首页懒加载：每子分类首屏 8 个，其余滚动加载（大幅减小首屏 HTML） ──
+$PER = 8;
+$isHome = ($region === 'all' && $cat === '' && $tag === '' && $q === '');
+$gridIdx = 0;
+$lazyGroups = [];
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -170,7 +176,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
             <div class="px-2 py-1 font-bold text-sm">🏷 热门标签</div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;padding:2px 4px">
               <?php foreach (array_slice(array_keys($tagCount), 0, 12) as $t): ?>
-              <a href="?tag=<?=urlencode($t)?><?=$cat?'&cat='.urlencode($cat):''?><?=$region!=='all'?'&region='.$region:''?>" style="padding:3px 10px;border-radius:999px;font-size:11px;border:1px solid <?=$tag===$t?'var(--accent)':'var(--border)'?>;<?=$tag===$t?'background:var(--accent);color:var(--on-accent)':''?>"><?=htmlspecialchars($t)?></a>
+              <a href="?tag=<?=urlencode($t)?><?=$cat?'&cat='.urlencode($cat):''?><?=$region!=='all'?'&region='.$region:''?>" style="display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:3px 10px;border-radius:999px;font-size:11px;border:1px solid <?=$tag===$t?'var(--accent)':'var(--border)'?>;<?=$tag===$t?'background:var(--accent);color:var(--on-accent)':''?>"><?=htmlspecialchars($t)?></a>
               <?php endforeach; ?>
             </div>
           </div>
@@ -200,8 +206,8 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
           foreach ($list as $s) { $sub = $s['sub'] ?? '全部'; $subGroups[$sub][] = $s; }
           foreach ($subGroups as $subName => $subList): ?>
           <div style="font-size:12px;font-weight:700;color:var(--faint);margin:12px 0 8px">▍<?=htmlspecialchars(nav_name(['name'=>$subName,'name_en'=>($subGroups[$subName][0]['sub_en'] ?? '')]))?></div>
-          <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
-            <?php foreach ($subList as $s): ?>
+          <div class="grid gap-4" id="ng-<?=$gridIdx?>" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
+            <?php $gridIdx++; foreach (array_slice($subList, 0, $isHome ? $PER : PHP_INT_MAX) as $s): ?>
             <a href="/navigation-site.php?site=<?=urlencode($s['id'])?>" class="site-card">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
                 <div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);overflow:hidden"><?php $logo = nav_logo($s); if ($logo): ?><img src="<?=htmlspecialchars($logo)?>" alt="" <?=nav_logo_fallback()?> style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$s['region']==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
@@ -223,17 +229,38 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
               <?php $cardTags = array_values(array_filter($s['tags'] ?? [], fn($t) => trim((string)$t) !== '')); ?>
               <?php if (!empty($cardTags)): ?>
               <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-                <?php foreach (array_slice($cardTags, 0, 3) as $t): ?>
-                <a href="?tag=<?=urlencode($t)?>" style="font-size:10px;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted)">#<?=htmlspecialchars($t)?></a>
+                <?php foreach (array_slice($cardTags, 0, 2) as $t): ?>
+                <a href="?tag=<?=urlencode($t)?>" style="font-size:10px;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">#<?=htmlspecialchars($t)?></a>
                 <?php endforeach; ?>
               </div>
               <?php endif; ?>
             </a>
             <?php endforeach; ?>
           </div>
-          <?php endforeach; // subGroups ?>
+          <?php
+          // 懒加载：超出首屏的部分入列（滚动加载）
+          if ($isHome && count($subList) > $PER):
+            $lazyGroups[] = ['grid' => 'ng-' . ($gridIdx - 1), 'sites' => array_map(function ($s) use ($ratingMap) {
+                $rm = $ratingMap[$s['id']] ?? ['avg' => 0, 'count' => 0];
+                $host = parse_url($s['url'] ?? '', PHP_URL_HOST);
+                return [
+                    'id' => $s['id'], 'name' => $s['name'] ?? '', 'name_en' => $s['name_en'] ?? '',
+                    'desc' => $s['description'] ?? '', 'url' => $s['url'] ?? '',
+                    'logo' => !empty($s['logo']) ? $s['logo'] : ($host ? 'https://icons.duckduckgo.com/ip3/' . $host . '.ico' : ''),
+                    'region' => $s['region'] ?? 'cn', 'featured' => !empty($s['featured']),
+                    'cat' => $s['category'] ?? '', 'sub' => $s['sub'] ?? '',
+                    'tags' => array_values(array_filter($s['tags'] ?? [], fn($t) => trim((string)$t) !== '')),
+                    'rating' => ['avg' => $rm['avg'], 'count' => $rm['count']],
+                ];
+            }, array_slice($subList, $PER))];
+          endif;
+          endforeach; // subGroups ?>
         </div>
         <?php endforeach; endif; ?>
+        <?php if ($isHome && !empty($lazyGroups)): ?>
+        <div id="navSentinel" style="height:1px"></div>
+        <script>window.NAV_LAZY = <?=json_encode($lazyGroups, JSON_UNESCAPED_UNICODE | JSON_HEX_APOS | JSON_HEX_QUOT)?>;</script>
+        <?php endif; ?>
       </main>
     </div>
   </div>
@@ -247,6 +274,38 @@ function navSearch(e) {
 }
 function navHot(h) {
   location.href = 'navigation.php?q=' + encodeURIComponent(h);
+}
+/* 首页滚动懒加载 */
+if (window.NAV_LAZY) {
+  function __nh(s) { return String(s ?? '').replace(/[&<>]/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]); }); }
+  function __na(s) { return String(s ?? '').replace(/"/g, '&quot;'); }
+  function __navCard(s) {
+    var rm = s.rating || {}; var star = '';
+    if (rm.count) {
+      var on = Math.max(0, Math.min(5, Math.round(rm.avg))), off = 5 - on;
+      star = '<div style="margin-top:6px;font-size:12px"><span style="color:var(--warn);letter-spacing:1px">' + '★'.repeat(on) + '☆'.repeat(off) + '</span><span style="color:#b45309;font-weight:600"> ' + Number(rm.avg).toFixed(1) + '</span><span style="color:var(--faint)"> · ' + rm.count + ' 条点评</span></div>';
+    }
+    var tags = (s.tags || []).slice(0, 2).map(function (t) {
+      return '<a href="navigation.php?tag=' + encodeURIComponent(t) + '" style="font-size:10px;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">#' + __nh(t) + '</a>';
+    }).join('');
+    var logo = s.logo ? '<img src="' + __na(s.logo) + '" alt="" onerror="this.onerror=null;this.style.display=\'none\';this.parentElement.textContent=\'🌐\';this.parentElement.style.fontSize=\'18px\'" style="width:100%;height:100%;object-fit:cover">' : (s.region === 'cn' ? '🇨🇳' : '🌍');
+    var el = document.createElement('a');
+    el.href = '/navigation-site.php?site=' + encodeURIComponent(s.id);
+    el.className = 'site-card';
+    el.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);overflow:hidden">' + logo + '</div><div class="font-bold">' + __nh(s.name) + (s.featured ? ' <span style="font-size:10px;color:#b45309">⭐</span>' : '') + '</div></div>' + '<div class="text-sm text-gray-600 line-clamp-2">' + __nh(s.desc) + '</div>' + star + '<div class="site-meta"><span></span><span>·</span><span class="truncate">' + __nh(s.url) + '</span></div>' + (tags ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' + tags + '</div>' : '');
+    return el;
+  }
+  var __navCur = 0, __navBusy = false;
+  function __navMore() {
+    if (__navCur >= window.NAV_LAZY.length) { var se = document.getElementById('navSentinel'); if (se) se.style.display = 'none'; return; }
+    if (__navBusy) return; __navBusy = true;
+    window.NAV_LAZY.slice(__navCur, __navCur + 3).forEach(function (g) { var grid = document.getElementById(g.grid); if (grid) g.sites.forEach(function (s) { grid.appendChild(__navCard(s)); }); });
+    __navCur += 3; __navBusy = false;
+  }
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (en) { if (en[0].isIntersecting) __navMore(); }, { rootMargin: '900px' }).observe(document.getElementById('navSentinel'));
+  } else { window.addEventListener('scroll', function () { if (window.innerHeight + window.scrollY > document.body.scrollHeight - 800) __navMore(); }); }
+  __navMore();
 }
 /* 提交收录弹窗 */
 function openSubmit() {
