@@ -31,12 +31,17 @@ if ($type === 'skill') {
 } elseif ($type === 'plugin') {
     foreach (mkt_assets() as $a) if ($a['type'] === 'plugin' && $a['id'] === $id) $asset = $a;
 } elseif ($type === 'theme') {
-    $themes = json_read(DATA_DIR . '/themes.json');
-    foreach (($themes['themes'] ?? []) as $t) if ($t['id'] === $id) {
-        $asset = $t;
-        $asset['type'] = 'theme';
-        $asset['icon'] = '🎨';
-        $asset['version'] = $t['version'] ?? '1.0.0';
+    require_once __DIR__ . '/lib/ThemeSystem.php';
+    $presets = ThemeSystem::presets();
+    if (isset($presets[$id])) {
+        $p = $presets[$id];
+        $asset = [
+            'id' => $id, 'type' => 'theme',
+            'title' => $p['name'] ?? $id,
+            'description' => $p['desc'] ?? 'OpenFlow 主题',
+            'icon' => '🎨', 'version' => '1.0.0',
+            'tags' => ['主题', '前端', '设计'],
+        ];
     }
 }
 
