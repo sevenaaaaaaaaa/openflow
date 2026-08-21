@@ -22,7 +22,7 @@ foreach ($categories as $c) $catNames[$c['id']] = $c['name'];
 // 站点 logo（有则用，无则取 favicon）
 $logo = !empty($site['logo']) ? $site['logo'] : (function() use ($site) {
     $host = parse_url($site['url'] ?? '', PHP_URL_HOST);
-    return $host ? 'https://www.google.com/s2/favicons?domain=' . $host . '&sz=64' : '';
+    return $host ? 'https://icons.duckduckgo.com/ip3/' . $host . '.ico' : '';
 })();
 
 // 相关站点（同分类 + 已上架）
@@ -39,7 +39,7 @@ function nav_name(array $d): string {
 function nav_related_logo(array $s): string {
     if (!empty($s['logo'])) return $s['logo'];
     $host = parse_url($s['url'] ?? '', PHP_URL_HOST);
-    return $host ? 'https://www.google.com/s2/favicons?domain=' . $host . '&sz=64' : '';
+    return $host ? 'https://icons.duckduckgo.com/ip3/' . $host . '.ico' : '';
 }
 ?>
 <!DOCTYPE html>
@@ -61,7 +61,7 @@ function nav_related_logo(array $s): string {
   <div class="mx-auto px-5 py-8" style="max-width:900px">
     <!-- 站点主卡 -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:24px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
-      <div style="width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-size:30px;background:var(--bg);overflow:hidden"><?php if ($logo): ?><img src="<?=htmlspecialchars($logo)?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=($site['region']??'')==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
+      <div style="width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-size:30px;background:var(--bg);overflow:hidden"><?php if ($logo): ?><img src="<?=htmlspecialchars($logo)?>" alt="" onerror="this.onerror=null;this.style.display='none';this.parentElement.textContent='🌐';this.parentElement.style.fontSize='30px'" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=($site['region']??'')==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
       <div style="flex:1;min-width:200px">
         <h1 class="text-2xl font-bold"><?=htmlspecialchars(nav_name($site))?>
           <?php if (!empty($site['featured'])): ?><span class="text-sm text-[#b45309]">⭐ 编辑推荐</span><?php endif; ?>
@@ -108,7 +108,7 @@ function nav_related_logo(array $s): string {
       <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
         <?php foreach (array_slice($related, 0, 4) as $r): ?>
         <a href="/navigation-site.php?site=<?=urlencode($r['id'])?>" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;text-decoration:none;color:inherit;transition:.15s">
-          <div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:8px;overflow:hidden;background:var(--bg);display:grid;place-items:center"><?php $rl = nav_related_logo($r); if ($rl): ?><img src="<?=htmlspecialchars($rl)?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?>🌐<?php endif; ?></div><div class="font-bold"><?=htmlspecialchars($r['name'])?></div></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:8px;overflow:hidden;background:var(--bg);display:grid;place-items:center"><?php $rl = nav_related_logo($r); if ($rl): ?><img src="<?=htmlspecialchars($rl)?>" alt="" onerror="this.onerror=null;this.style.display='none';this.parentElement.textContent='🌐';this.parentElement.style.fontSize='14px'" style="width:100%;height:100%;object-fit:cover"><?php else: ?>🌐<?php endif; ?></div><div class="font-bold"><?=htmlspecialchars($r['name'])?></div></div>
           <div class="text-sm text-gray-600 mt-1 line-clamp-2"><?=htmlspecialchars($r['description'] ?? '')?></div>
         </a>
         <?php endforeach; ?>
