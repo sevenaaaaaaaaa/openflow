@@ -743,8 +743,37 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 <body>
 
 <a class="skip" href="#main">跳到主要内容</a>
-<script src="/assets/site-shell.js?v=20260821" data-cfasync="false" data-page="home"></script>
-<script src="/assets/inject.js?v=20260821" data-cfasync="false" data-site-inject></script>
+<header id="chrome" data-od-id="chrome">
+  <div class="bar">
+    <div class="lights" aria-hidden="true"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span></div>
+    <a class="brand" href="#top" data-od-id="brand"><span class="ic"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-b" x1="2" y1="16" x2="30" y2="16" gradientUnits="userSpaceOnUse"><stop stop-color="var(--accent)"/><stop offset="1" stop-color="oklch(58% .16 285)"/></linearGradient></defs><path d="M16 6.5a9.5 9.5 0 1 1-9.5 9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M11.5 10v13M11.5 13.5h8.2M11.5 18.5h8.2" stroke="url(#ofg-b)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M19.7 18.5c2.3 0 4.4-.7 6.1-2M25 14.3l1.6 2.2-2.9 1" stroke="url(#ofg-b)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span><span>OpenFlow<span class="bn-sub">GROWTH OS</span></span></a>
+    <nav class="topnav" id="tabs" role="navigation" aria-label="站点导航">
+      <a class="tab-pill on" href="#top" data-od-id="tab-home"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span>首页</a>
+      <a class="tab-pill" href="/product" data-od-id="tab-product"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/></svg></span>产品</a>
+      <a class="tab-pill" href="/capability" data-od-id="tab-capability"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>能力</a>
+      <a class="tab-pill" href="/courses" data-od-id="tab-courses"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span>课程</a>
+      <a class="tab-pill" href="/academy" data-od-id="tab-academy"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span>学院</a>
+      <a class="tab-pill" href="/events" data-od-id="tab-events"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 8h18"/><rect x="3" y="5" width="18" height="17" rx="2"/><path d="M8 13h3M14 13h2M8 17h3"/></svg></span>活动</a>
+      <a class="tab-pill" href="/navigation.php" data-od-id="tab-nav"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 12h6M9 19h6"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span>导航</a>
+      <a class="tab-pill" href="/about" data-od-id="tab-about"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c1.4-3.5 4.2-5.2 7.5-5.2s6.1 1.7 7.5 5.2"/></svg></span>关于</a>
+    </nav>
+    <?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><div style="margin-left:14px"><?=i18n_switcher()?></div><?php endif; ?>
+    <div class="controls">
+      <button class="cbtn" id="btn-menu" data-od-id="menu-toggle" aria-label="打开导航" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <button class="kbd-chip" id="btn-cmd" data-od-id="cmd-open" aria-label="打开命令面板">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg></span>
+        <span>搜索与命令</span><span class="kbd">⌘ K</span>
+      </button>
+      <button class="cbtn" id="btn-theme" data-od-id="theme-toggle" aria-label="切换主题"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-7.54-7.54C12.92 3.04 12.46 3 12 3Z"/></svg></button>
+      <button class="avatar" id="btn-av" data-od-id="account" aria-label="登录 / 注册"></button>
+      <div class="drop" id="drop">
+        <div class="drop-head"><div class="drop-av" id="dropAv">?</div><div style="min-width:0"><div class="drop-name" id="dropName"></div><div class="drop-mail" id="dropMail"></div></div></div>
+        <button class="drop-item" id="dropProfile" data-od-id="profile-entry"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c1.4-3.5 4.2-5.2 7.5-5.2s6.1 1.7 7.5 5.2"/></svg></span>个人中心</button>
+        <button class="drop-item danger" id="dropLogout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="m10 8-4 4 4 4M6 12h11"/></svg></span>退出登录</button>
+      </div>
+    </div>
+  </div>
+</header>
 
 <button class="scrim" id="scrim" aria-label="关闭菜单"></button>
 

@@ -54,7 +54,7 @@ $slotOptions = con_slot_options();
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260821" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260822" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1120px">
     <?php if ($view === 'detail' && $mentor): ?>
