@@ -80,6 +80,9 @@ RewriteRule ^navigation-site/?$ navigation-site.php [L,QSA]
 RewriteRule ^event/(.+)$ event.php?slug=$1 [L,QSA,B]
 RewriteRule ^events/?$ events.php [L,QSA]
 RewriteRule ^lp/(.+)$ landing.php?slug=$1 [L,QSA,B]
+RewriteRule ^skill/(.+)$ asset.php?type=skill&id=$1 [L,QSA,B]
+RewriteRule ^plugin/(.+)$ asset.php?type=plugin&id=$1 [L,QSA,B]
+RewriteRule ^theme/(.+)$ asset.php?type=theme&id=$1 [L,QSA,B]
 RewriteRule ^b/(.+)$ front-builder.php?slug=$1 [L,QSA,B]
 
 # 功能页
