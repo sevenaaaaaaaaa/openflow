@@ -103,17 +103,27 @@ function i18n_switch_url(string $targetLocale): string {
     return '/' . $targetLocale . $path;
 }
 
-// 输出语言切换器 HTML（11 语言）
+// 输出语言切换器 HTML（下拉选择器，避免平铺占满导航）
 function i18n_switcher(): string {
     if (!i18n_enabled()) return '';
     $supported = i18n_supported();
     if (count($supported) < 2) return '';
     $current = i18n_current();
-    $html = '<span style="display:inline-flex;gap:3px;font-size:12px;align-items:center;flex-wrap:wrap" title="Language / 语言">';
+    $rtl = i18n_is_rtl($current);
+    $html = '<details class="of-lang" style="position:relative;display:inline-block;margin:0">'
+        . '<summary style="display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;background:var(--glass);border:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--fg);cursor:pointer;list-style:none;user-select:none;white-space:nowrap">🌐 ' . htmlspecialchars(i18n_native($current)) . ' <span style="font-size:9px;opacity:.55">▾</span></summary>'
+        . '<div style="position:absolute;top:calc(100% + 8px);' . ($rtl ? 'left:0' : 'right:0') . ';min-width:150px;background:var(--surface-strong);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:5px;z-index:100;max-height:340px;overflow:auto">';
     foreach ($supported as $l) {
         $active = $l === $current;
-        $html .= '<a href="' . htmlspecialchars(i18n_switch_url($l)) . '" lang="' . $l . '" style="padding:2px 7px;border-radius:999px;' . ($active ? 'background:var(--accent);color:var(--on-accent)' : 'color:var(--muted)') . ';text-decoration:none">' . htmlspecialchars(i18n_native($l)) . '</a>';
+        $html .= '<a href="' . htmlspecialchars(i18n_switch_url($l)) . '" lang="' . $l . '" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;font-size:13px;color:' . ($active ? 'var(--accent-strong)' : 'var(--fg)') . ';font-weight:' . ($active ? '700' : '500') . ';text-decoration:none;background:' . ($active ? 'var(--accent-soft)' : 'transparent') . '">' . htmlspecialchars(i18n_native($l)) . ($active ? '<span style="margin-left:auto">✓</span>' : '') . '</a>';
     }
-    $html .= '</span>';
+    $html .= '</div></details>';
+    // 一次性输出：隐藏 details 原生三角 + 点击外部关闭
+    static $jsOut = false;
+    if (!$jsOut) {
+        $jsOut = true;
+        $html .= '<style>details.of-lang summary::-webkit-details-marker{display:none}</style>'
+            . '<script>(function(){document.addEventListener("click",function(e){document.querySelectorAll("details.of-lang[open]").forEach(function(d){if(!d.contains(e.target))d.removeAttribute("open")})});})();</script>';
+    }
     return $html;
 }
