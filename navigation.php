@@ -18,11 +18,15 @@ usort($categories, fn($a, $b) => ($a['sort'] ?? 0) <=> ($b['sort'] ?? 0));
 $catNames = []; $catIcons = []; $catNamesEn = [];
 foreach ($categories as $c) { $catNames[$c['id']] = $c['name']; $catNamesEn[$c['id']] = $c['name_en'] ?? ''; $catIcons[$c['id']] = $c['icon'] ?? '🌐'; }
 
-// 站点 logo：有则用，无则自动取 favicon
+// 站点 logo：有则用，无则自动取 favicon（DuckDuckGo 国内可达性好）
 function nav_logo(array $s): string {
     if (!empty($s['logo'])) return $s['logo'];
     $host = parse_url($s['url'] ?? '', PHP_URL_HOST);
-    return $host ? 'https://www.google.com/s2/favicons?domain=' . $host . '&sz=64' : '';
+    return $host ? 'https://icons.duckduckgo.com/ip3/' . $host . '.ico' : '';
+}
+// favicon 加载失败兜底（隐藏 img，显示 🌐）
+function nav_logo_fallback(): string {
+    return 'this.onerror=null;this.style.display="none";this.parentElement.textContent="🌐";this.parentElement.style.fontSize="18px"';
 }
 // 多语言：当前为 en 且有名则用英文名
 function nav_name(array $d, string $key = 'name', string $keyEn = 'name_en'): string {
@@ -182,7 +186,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
             <?php foreach ($subList as $s): ?>
             <a href="/navigation-site.php?site=<?=urlencode($s['id'])?>" class="site-card">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-                <div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);overflow:hidden"><?php $logo = nav_logo($s); if ($logo): ?><img src="<?=htmlspecialchars($logo)?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$s['region']==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
+                <div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);overflow:hidden"><?php $logo = nav_logo($s); if ($logo): ?><img src="<?=htmlspecialchars($logo)?>" alt="" onerror="<?=nav_logo_fallback()?>" style="width:100%;height:100%;object-fit:cover"><?php else: ?><?=$s['region']==='cn'?'🇨🇳':'🌍'?><?php endif; ?></div>
                 <div class="font-bold"><?=htmlspecialchars(nav_name($s))?><?php if (!empty($s['featured'])): ?> <span style="font-size:10px;color:#b45309">⭐</span><?php endif; ?></div>
               </div>
               <div class="text-sm text-gray-600 line-clamp-2"><?=htmlspecialchars($s['description'] ?? '')?></div>
