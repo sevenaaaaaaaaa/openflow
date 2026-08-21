@@ -88,8 +88,8 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
   .cat-nav-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;font-size:14px;color:var(--muted);cursor:pointer;transition:.12s;text-decoration:none}
   .cat-nav-item:hover{background:var(--surface);color:var(--fg)}
   .cat-nav-item.active{background:var(--accent);color:var(--on-accent);font-weight:600}
-  .hot-tag{display:inline-block;padding:4px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12px;color:#2b5f7e;cursor:pointer;transition:.12s}
-  .hot-tag:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+  .hot-tag{display:inline-block;padding:4px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12px;color:var(--muted);cursor:pointer;transition:.12s;box-shadow:0 1px 3px rgba(30,30,30,.05)}
+  .hot-tag:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);transform:translateY(-1px)}
   .site-meta{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--faint);margin-top:6px}
 </style>
 </head>
@@ -97,26 +97,44 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 <script src="/assets/site-shell.js?v=20260816" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-6" style="max-width:1200px">
-    <!-- 首屏：搜索 + 热搜 -->
-    <div class="text-center py-8" style="background:linear-gradient(160deg,var(--accent-strong),var(--accent));border-radius:20px;color:var(--surface);margin-bottom:24px">
-      <div style="font-size:40px">🧭</div>
-      <h1 class="text-3xl font-bold mt-3">优秀增长工具导航</h1>
-      <p class="text-[#cbd5e1] mt-2">收录国内外网站增长、SEO、AI 运营工具 · 共 <?=count($sites)?> 个优质资源</p>
-      <form class="mt-6 mx-auto flex max-w-lg gap-2" style="max-width:480px" onsubmit="return navSearch(event)">
-        <input type="text" id="navQ" value="<?=htmlspecialchars($q)?>" placeholder="搜索网站、关键词…" style="flex:1;padding:12px 18px;border-radius:999px;border:none;font-size:15px;outline:none">
-        <button class="rounded-full px-6 py-2.5 font-bold" style="background:var(--accent-soft);color:var(--accent);border:none">搜索</button>
-      </form>
-      <div class="mt-3 flex justify-center gap-3">
-        <button onclick="openSubmit()" style="padding:7px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;font-size:13px;cursor:pointer">➕ 提交收录</button>
+    <!-- 首屏：精致 Hero -->
+    <div style="position:relative;padding:52px 32px 44px;border-radius:24px;margin-bottom:28px;background:linear-gradient(150deg,var(--surface) 0%,rgba(221,255,14,.06) 45%,rgba(56,189,248,.10) 100%);border:1px solid var(--border);overflow:hidden">
+      <!-- 装饰：光晕 + 网格 -->
+      <div style="position:absolute;top:-80px;right:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.18),transparent 70%)"></div>
+      <div style="position:absolute;bottom:-100px;left:-40px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(221,255,14,.15),transparent 70%)"></div>
+      <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(30,30,30,.04) 1px,transparent 1px);background-size:22px 22px;pointer-events:none"></div>
+
+      <div style="position:relative;text-align:center">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:999px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);font-size:12.5px;color:var(--accent);font-weight:600">
+          <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok)"></span>
+          AI 时代 · 开源 · 自动化 · 增长工具集
+        </div>
+        <h1 style="font-size:42px;font-weight:800;letter-spacing:-.02em;margin:20px 0 12px;line-height:1.15;background:linear-gradient(135deg,var(--fg),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">优秀增长工具导航</h1>
+        <p style="font-size:15px;color:var(--muted);max-width:560px;margin:0 auto">收录国内外 <b style="color:var(--fg)"><?=count($sites)?></b> 个增长、SEO、AI 与开源工具 · 一站式直达高质量资源</p>
+
+        <!-- 搜索 -->
+        <form class="mt-7 mx-auto flex" style="max-width:540px;background:var(--surface);border:1.5px solid var(--border);border-radius:999px;padding:6px;box-shadow:0 8px 30px rgba(30,30,30,.08)" onsubmit="return navSearch(event)">
+          <span style="display:grid;place-items:center;padding:0 14px;color:var(--faint)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg></span>
+          <input type="text" id="navQ" value="<?=htmlspecialchars($q)?>" placeholder="搜索网站、关键词、标签…" style="flex:1;padding:10px 6px;border:none;outline:none;font-size:15px;background:transparent">
+          <button class="rounded-full px-6 font-bold" style="background:var(--accent);color:var(--on-accent);border:none;padding:10px 24px;font-size:14px">搜索</button>
+        </form>
+
+        <!-- 快捷分类 + 热搜 -->
+        <div class="mt-6 flex justify-center gap-2 flex-wrap">
+          <?php foreach (array_slice($categories, 0, 7) as $c): ?>
+          <a href="?cat=<?=urlencode($c['id'])?>" style="padding:5px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:12.5px;color:var(--muted);text-decoration:none"><?=$c['icon']?> <?=htmlspecialchars(nav_name($c))?></a>
+          <?php endforeach; ?>
+          <button onclick="openSubmit()" style="padding:5px 14px;border-radius:999px;border:1px dashed var(--accent);background:transparent;font-size:12.5px;color:var(--accent);cursor:pointer">➕ 提交收录</button>
+        </div>
+        <?php if ($hotSearches): ?>
+        <div class="mt-4 flex gap-2 justify-center flex-wrap items-center">
+          <span class="text-sm" style="color:var(--faint)">🔥 热搜</span>
+          <?php foreach (array_slice($hotSearches, 0, 5) as $h): ?>
+          <span class="hot-tag" onclick="navHot('<?=htmlspecialchars($h)?>')"><?=htmlspecialchars($h)?></span>
+          <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
       </div>
-      <?php if ($hotSearches): ?>
-      <div class="mt-4 flex gap-2 justify-center flex-wrap">
-        <span class="text-sm text-[#94a3b8] mr-1">🔥 热搜：</span>
-        <?php foreach (array_slice($hotSearches, 0, 6) as $h): ?>
-        <span class="hot-tag" onclick="navHot('<?=htmlspecialchars($h)?>')"><?=htmlspecialchars($h)?></span>
-        <?php endforeach; ?>
-      </div>
-      <?php endif; ?>
     </div>
 
     <!-- Banner 首推 -->
