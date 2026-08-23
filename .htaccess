@@ -37,6 +37,14 @@ RewriteRule ^xmp/?$ admin/index.php [L]
 RewriteRule ^xmp/([a-z0-9-]+)/?$ admin/$1.php [L,QSA]
 RewriteRule ^xmp/(.+)$ admin/$1 [L,QSA]
 
+# 老 .html → 干净 URL 重定向（demo 版已删除，保留 SEO 权重）
+RewriteRule ^index\.html$ / [R=301,L]
+RewriteRule ^product\.html$ /product [R=301,L]
+RewriteRule ^courses\.html$ /courses [R=301,L]
+RewriteRule ^capability\.html$ /capability [R=301,L]
+RewriteRule ^about\.html$ /about [R=301,L]
+RewriteRule ^community\.html$ /community [R=301,L]
+
 # 主站页面（伪静态 · 去掉 .php 后缀）
 # 放在「已存在文件/目录放行」之前，避免 docs 目录冲突
 RewriteRule ^docs/?$ docs.php [L,QSA]
