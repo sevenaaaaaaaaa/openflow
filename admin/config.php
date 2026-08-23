@@ -4,7 +4,23 @@ ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_secure', 1);
 ini_set('session.cookie_samesite', 'Lax');
 ini_set('session.gc_maxlifetime', 7200); // 2 hours
-session_start();
+
+// ─── 匿名访客边缘缓存（海外源站 + Cloudflare，加速国内外访问）───
+// 无 PHPSESSID cookie 的 GET 公开前台页：跳过 session（无 Set-Cookie），输出 s-maxage 让 CDN 边缘缓存
+// 已有会话/POST/后台/API/账户相关页：正常 session，绝不缓存
+$ofScript = $_SERVER['SCRIPT_NAME'] ?? '';
+$__guestCache = PHP_SAPI !== 'cli'
+    && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
+    && empty($_COOKIE['PHPSESSID'])
+    && strpos($ofScript, '/admin/') === false
+    && strpos($ofScript, '/api/') === false
+    && !preg_match('#/(login|member|shop|checkout|cart|messages|survey|nps|consultation|form-handler|share-card|page-preview|content-preview|mcp-server|qr|feed)\.php$#i', $ofScript);
+if ($__guestCache) {
+    $GLOBALS['of_guest_cache'] = true;
+    header('Cache-Control: public, max-age=0, s-maxage=600, stale-while-revalidate=60');
+} else {
+    session_start();
+}
 date_default_timezone_set('Asia/Shanghai');
 
 // ─── 路径配置（开源：支持环境变量 / .env 覆盖，默认本项目布局） ───
