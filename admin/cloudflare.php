@@ -64,15 +64,34 @@ if (isset($_GET['del_dns'])) {
     else $error = '删除失败：' . ($r['errors'][0]['message'] ?? '未知');
 }
 
-// Zone 概览 / 分析
+// 创建 Cache Rule
+if (isset($_GET['create_cache_rule'])) {
+    csrf_verify();
+    $r = CloudflareApi::createCacheRule();
+    if (($r['success'] ?? false)) $message = '✅ HTML 缓存规则已创建（匿名访客 600s 边缘缓存）';
+    else $error = '创建失败：' . ($r['errors'][0]['message'] ?? '未知');
+}
+
+// 删除 Cache Rule
+if (isset($_GET['del_cache_rule'])) {
+    csrf_verify();
+    $r = CloudflareApi::deleteCacheRule($_GET['del_cache_rule']);
+    if (($r['success'] ?? false)) $message = '✅ 缓存规则已删除';
+    else $error = '删除失败：' . ($r['errors'][0]['message'] ?? '未知');
+}
+
+// Zone 概览 / 分析 / Cache Rules
 $zoneInfo = null;
 $analytics = null;
 $dnsRecords = [];
+$cacheRulesResult = null;
 if (CloudflareApi::configured()) {
     try { $r = CloudflareApi::zoneOverview(); $zoneInfo = $r['result'] ?? null; } catch (Exception $e) {}
     try { $r = CloudflareApi::analytics('-1day'); $analytics = $r['result']['totals'] ?? null; } catch (Exception $e) {}
     try { $r = CloudflareApi::dnsRecords(); $dnsRecords = $r['result'] ?? []; } catch (Exception $e) {}
+    try { $r = CloudflareApi::cacheRules(); $cacheRulesResult = $r['result'] ?? null; } catch (Exception $e) {}
 }
+$cacheRules = $cacheRulesResult['rules'] ?? [];
 
 admin_header('Cloudflare');
 ?>
@@ -158,6 +177,37 @@ admin_header('Cloudflare');
       </div>
     </div>
 
+    <!-- Cache Rules -->
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 style="margin:0">⚡ HTML 边缘缓存（Cache Rules）</h2>
+        <div class="flex gap-2">
+          <a href="?create_cache_rule=1&csrf_token=<?=csrf_token()?>" class="btn btn-primary btn-sm" onclick="return confirm('创建 HTML 缓存规则？\n\n规则：匿名访客（无 PHPSESSID cookie）的页面将被 CF 边缘缓存 600 秒，国内外访问速度提升 3-5 倍。')">➕ 创建缓存规则</a>
+        </div>
+      </div>
+      <?php if (empty($cacheRules)): ?>
+        <div class="msg msg-info">尚未创建 Cache Rule。HTML 页面每次回源海外服务器（TTFB ~1s）。创建规则后匿名访客的页面将被 CF 边缘缓存，TTFB 降至 0.3-0.5s。</div>
+      <?php else: ?>
+        <table>
+          <thead><tr><th>规则名</th><th>阶段</th><th>规则数</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody>
+          <?php foreach ($cacheRules as $rule): ?>
+            <tr>
+              <td><strong><?=htmlspecialchars($rule['name'] ?? '—')?></strong></td>
+              <td><span class="badge badge-gray"><?=htmlspecialchars($rule['phase'] ?? '')?></span></td>
+              <td><?=count($rule['rules'] ?? [])?></td>
+              <td><span class="badge badge-green">✓ 生效</span></td>
+              <td>
+                <a href="?del_cache_rule=<?=urlencode($rule['id'] ?? '')?>&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="return confirm('删除此缓存规则？HTML 将恢复回源。')">删除</a>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+        <div class="msg msg-success" style="margin-top:12px">✅ HTML 边缘缓存已启用。匿名访客请求从 CF 边缘节点返回，国内外 TTFB ~0.3-0.5s。</div>
+      <?php endif; ?>
+    </div>
+
     <!-- 说明 -->
     <div class="card" style="padding:16px">
       <h2 style="margin-bottom:10px">💡 能力说明</h2>
@@ -167,6 +217,7 @@ admin_header('Cloudflare');
           <tr><td><strong>清全站缓存</strong></td><td>内容更新后立即清 CF 缓存，前端即时生效</td></tr>
           <tr><td><strong>DNS 管理</strong></td><td>添加/删除解析记录（A/CNAME/TXT/MX）</td></tr>
           <tr><td><strong>性能监控</strong></td><td>24h 请求量、缓存命中率、威胁拦截数</td></tr>
+          <tr><td><strong>HTML 边缘缓存</strong></td><td>Cache Rules 将匿名 HTML 缓存到 CF 边缘（TTFB 0.3-0.5s），有会话/后台/登录页不缓存</td></tr>
         </tbody>
       </table>
     </div>

@@ -5,7 +5,12 @@
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
-header('Cache-Control: no-cache, max-age=0');
+// 匿名访客允许 CDN 边缘缓存（s-maxage），有会话则始终新鲜
+if (!empty($GLOBALS['of_guest_cache'])) {
+    header('Cache-Control: public, max-age=0, s-maxage=600, stale-while-revalidate=60');
+} else {
+    header('Cache-Control: no-cache, max-age=0');
+}
 // 当前语言包（注入前端导航翻译）
 $__langFile = DATA_DIR . '/lang/' . i18n_current() . '.json';
 $__langDict = is_file($__langFile) ? (json_read($__langFile) ?: []) : [];
