@@ -35,7 +35,7 @@ def main():
         if not r.get('IsTruncated'): break
         ContinuationToken = r.get('NextContinuationToken')
 
-    uploaded = 0; skipped = 0; errors = 0
+    uploaded = 0; skipped = 0; errors = 0; webp_count = 0
     for root, dirs, files in os.walk(ASSETS_DIR):
         for f in files:
             ext = os.path.splitext(f)[1].lower()
@@ -50,22 +50,44 @@ def main():
                 local_md5 = hashlib.md5(fp.read()).hexdigest()
             if existing.get(key) == local_md5:
                 skipped += 1
-                continue
+            else:
+                content_type = mimetypes.guess_type(local_path)[0] or 'application/octet-stream'
+                cache = CACHE_IMAGE if ext in ('.png','.jpg','.jpeg','.gif','.ico','.webp','.svg','.woff','.woff2') else CACHE_STATIC
+                size = os.path.getsize(local_path)
+                try:
+                    with open(local_path, 'rb') as fp:
+                        s3.put_object(Bucket=BUCKET, Key=key, Body=fp,
+                                      ContentType=content_type, CacheControl=cache)
+                    print(f"  ✅ {key} ({size:,} bytes)")
+                    uploaded += 1
+                except Exception as e:
+                    print(f"  ❌ {key}: {e}")
+                    errors += 1
 
-            content_type = mimetypes.guess_type(local_path)[0] or 'application/octet-stream'
-            cache = CACHE_IMAGE if ext in ('.png','.jpg','.jpeg','.gif','.ico','.webp','.svg','.woff','.woff2') else CACHE_STATIC
-            size = os.path.getsize(local_path)
-            try:
-                with open(local_path, 'rb') as fp:
-                    s3.put_object(Bucket=BUCKET, Key=key, Body=fp,
-                                  ContentType=content_type, CacheControl=cache)
-                print(f"  ✅ {key} ({size:,} bytes)")
-                uploaded += 1
-            except Exception as e:
-                print(f"  ❌ {key}: {e}")
-                errors += 1
+            # 图片自动生成 WebP 版本（>15KB 的 png/jpg/jpeg）
+            if ext in ('.png', '.jpg', '.jpeg') and os.path.getsize(local_path) > 15000:
+                webp_key = key.rsplit('.', 1)[0] + '.webp'
+                if existing.get(webp_key):
+                    continue  # 已有 WebP
+                try:
+                    from PIL import Image
+                    import io as _io
+                    img = Image.open(local_path)
+                    if img.mode not in ('RGB', 'RGBA'): img = img.convert('RGB')
+                    buf = _io.BytesIO()
+                    img.save(buf, format='WEBP', quality=80, method=4)
+                    webp_data = buf.getvalue()
+                    if len(webp_data) < os.path.getsize(local_path) * 0.6:
+                        s3.put_object(Bucket=BUCKET, Key=webp_key, Body=webp_data,
+                                      ContentType='image/webp', CacheControl=CACHE_IMAGE)
+                        print(f"  🔄 {webp_key} ({len(webp_data):,} bytes)")
+                        webp_count += 1
+                except ImportError:
+                    pass  # Pillow not installed, skip
+                except Exception:
+                    pass  # skip conversion errors
 
-    print(f"\nR2 同步完成: 上传 {uploaded} / 跳过 {skipped} / 失败 {errors}")
+    print(f"\nR2 同步完成: 上传 {uploaded} / 跳过 {skipped} / WebP {webp_count} / 失败 {errors}")
     return 0 if errors == 0 else 1
 
 if __name__ == '__main__':
