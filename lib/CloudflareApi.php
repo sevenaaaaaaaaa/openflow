@@ -163,4 +163,47 @@ class CloudflareApi {
     public static function verify(): array {
         return self::request('GET', '/user');
     }
+
+    // ─── Cache Rules（边缘缓存 HTML）───
+
+    /** 获取 zone 的 Cache Rules */
+    public static function cacheRules(): array {
+        $zone = self::config()['zone_id'] ?? '';
+        if (!$zone) return ['success' => false, 'errors' => [['message' => 'Zone 未配置']]];
+        return self::request('GET', "/zones/{$zone}/rulesets/phases/http_request_cache_settings/entrypoint");
+    }
+
+    /** 创建匿名访客 HTML 缓存规则 */
+    public static function createCacheRule(): array {
+        $zone = self::config()['zone_id'] ?? '';
+        if (!$zone) return ['success' => false, 'errors' => [['message' => 'Zone 未配置']]];
+        $rule = [
+            'name' => 'Cache Dynamic HTML for Anonymous Visitors',
+            'kind' => 'zone',
+            'phase' => 'http_request_cache_settings',
+            'rules' => [[
+                'expression' => '(not http.cookie contains "PHPSESSID") and (not http.request.uri.path contains "/admin/") and (not http.request.uri.path contains "/api/") and (not http.request.uri.path contains "/login") and (not http.request.uri.path contains "/member") and (not http.request.uri.path contains "/cart") and (not http.request.uri.path contains "/checkout")',
+                'action' => 'set_cache_settings',
+                'action_parameters' => [
+                    'browser_ttl' => ['mode' => 'override_origin', 'default' => 0],
+                    'edge_ttl'    => ['mode' => 'override_origin', 'default' => 600],
+                    'serve_stale' => ['disable_stale_while_updating' => false],
+                ],
+                'enabled' => true,
+            ]],
+        ];
+        return self::request('POST', "/zones/{$zone}/rulesets", $rule);
+    }
+
+    /** 删除 Cache Rule（按 ruleset ID） */
+    public static function deleteCacheRule(string $rulesetId): array {
+        $zone = self::config()['zone_id'] ?? '';
+        if (!$zone) return ['success' => false, 'errors' => [['message' => 'Zone 未配置']]];
+        return self::request('DELETE', "/zones/{$zone}/rulesets/{$rulesetId}");
+    }
+
+    /** 清除指定 URL 的 CF 缓存 */
+    public static function purgeUrls(array $urls): array {
+        return self::purgeCache($urls);
+    }
 }
