@@ -5,7 +5,12 @@
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
-header('Cache-Control: no-cache, max-age=0'); // 首页始终新鲜，避免旧版缓存
+// 首页：匿名访客允许 CDN 边缘缓存（s-maxage），有会话则始终新鲜
+if (!empty($GLOBALS['of_guest_cache'])) {
+    header('Cache-Control: public, max-age=0, s-maxage=600, stale-while-revalidate=60'); // 匿名：边缘缓存10分钟
+} else {
+    header('Cache-Control: no-cache, max-age=0'); // 登录态：始终新鲜
+}
 
 // 首页文章区：动态读取已发布文章（最新 3 篇）
 $homeArticles = [];
