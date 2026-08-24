@@ -12,6 +12,7 @@ require_once __DIR__ . '/lib/ShortcodeSystem.php';
 require_once __DIR__ . '/lib/ArticleStats.php';
 require_once __DIR__ . '/lib/AdSystem.php';
 require_once __DIR__ . '/lib/ShareTrack.php';
+require_once __DIR__ . '/lib/CoverRenderer.php';
 
 $slug = trim($_GET['slug'] ?? '');
 $article = null;
@@ -390,7 +391,7 @@ main{padding-top:96px; padding-bottom:70px; position:relative; z-index:10; max-w
     <h1><?=htmlspecialchars($article['title'] ?? '')?></h1>
   </div>
 
-  <?php if ($cover): ?><img class="art-cover" src="<?=htmlspecialchars($coverUrl)?>" alt="<?=htmlspecialchars($article['title'] ?? '')?>" loading="lazy"><?php endif; ?>
+  <?= CoverRenderer::renderDetailCover($article) ?>
 
   <?php if (function_exists('ads_render')): ?><div style="margin-bottom:24px"><?=ads_render('article_top')?></div><?php endif; ?>
 
