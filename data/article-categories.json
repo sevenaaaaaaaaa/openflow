@@ -1,0 +1,113 @@
+{
+  "ai-create": {
+    "name": "AI 创作",
+    "icon": "🎨",
+    "description": "AI 驱动的内容创作工具与方法",
+    "sub": {
+      "design": {"name": "设计", "icon": "🖌️", "keywords": ["设计", "UI", "Figma", "Sketch", "配色", "Logo", "品牌", "画图", "美工", "原型", "Canva", "设计工具", "排版", "Illustrator", "PS"]},
+      "video": {"name": "视频", "icon": "🎬", "keywords": ["视频", "剪辑", "字幕", "配音", "动画", "漫剧", "数字人", "Sora", "Runway", "Kling", "Veo", "视频生成", "视频编辑", "Seedance"]},
+      "image": {"name": "图片", "icon": "🖼️", "keywords": ["文生图", "图生图", "图片", "背景", "放大", "去水印", "Midjourney", "SD", "Stable Diffusion", "DALL", "图片生成", "修图", "ComfyUI"]},
+      "writing": {"name": "写作", "icon": "✍️", "keywords": ["写作", "文案", "内容", "翻译", "摘要", "文档", "PDF", "AI写作", "Copywriting", "GPT", "Claude", "DeepSeek", "文案生成"]},
+      "audio": {"name": "音频", "icon": "🎙️", "keywords": ["音频", "语音", "播客", "TTS", "配音", "音乐", "转录", "Whisper", "语音克隆", "文字转语音"]},
+      "3d": {"name": "3D/AR", "icon": "🧊", "keywords": ["3D", "建模", "AR", "VR", "三维", "Blender", "Three.js"]}
+    }
+  },
+  "ai-marketing": {
+    "name": "AI 营销",
+    "icon": "📣",
+    "description": "AI 驱动的营销获客与品牌增长",
+    "sub": {
+      "seo": {"name": "SEO/GEO", "icon": "🔍", "keywords": ["SEO", "GEO", "搜索", "收录", "关键词", "排名", "索引", "Sitemap", "Google", "百度"]},
+      "social": {"name": "社媒运营", "icon": "📱", "keywords": ["社媒", "社交媒体", "公众号", "小红书", "抖音", "B站", "微博", "Twitter", "LinkedIn", "内容分发", "自媒体"]},
+      "email": {"name": "邮件营销", "icon": "📧", "keywords": ["邮件", "EDM", "Newsletter", "邮件营销", "退订", "邮件模板"]},
+      "distribution": {"name": "内容分发", "icon": "📤", "keywords": ["分发", "多平台", "同步", "RSS", "聚合", "渠道"]},
+      "brand": {"name": "品牌建设", "icon": "🏷️", "keywords": ["品牌", "IP", "人设", "定位", "信任", "口碑"]}
+    }
+  },
+  "ai-build": {
+    "name": "AI 建站",
+    "icon": "🏗️",
+    "description": "AI 辅助的网站搭建与页面设计",
+    "sub": {
+      "nocode": {"name": "无代码", "icon": "🧩", "keywords": ["建站", "无代码", "低代码", "WordPress", "Webflow", "Wix", "Notion建站", "落地页"]},
+      "landing": {"name": "落地页", "icon": "📄", "keywords": ["落地页", "Landing", "转化页", "着陆页", "表单"]},
+      "ecommerce": {"name": "电商", "icon": "🛒", "keywords": ["电商", "Shopify", "商城", "支付", "订单", "库存"]},
+      "cms": {"name": "CMS", "icon": "📝", "keywords": ["CMS", "内容管理", "Headless", "Strapi", "Payload"]}
+    }
+  },
+  "ai-code": {
+    "name": "AI 编程",
+    "icon": "💻",
+    "description": "AI 辅助的开发、编码与部署",
+    "sub": {
+      "agent": {"name": "Agent 开发", "icon": "🤖", "keywords": ["Agent", "智能体", "MCP", "Skills", "LangChain", "AutoGPT", "Agent框架"]},
+      "ide": {"name": "AI IDE", "icon": "⌨️", "keywords": ["IDE", "Cursor", "Copilot", "编码", "编程", "代码", "Windsurf", "Replit"]},
+      "devops": {"name": "DevOps", "icon": "🔧", "keywords": ["DevOps", "部署", "Docker", "CI", "运维", "监控", "Serverless"]},
+      "api": {"name": "API/工具", "icon": "🔌", "keywords": ["API", "SDK", "接口", "Webhook", "REST", "GraphQL"]}
+    }
+  },
+  "ai-ops": {
+    "name": "AI 运营",
+    "icon": "⚙️",
+    "description": "AI 驱动的业务运营与效率提升",
+    "sub": {
+      "automation": {"name": "自动化", "icon": "🔄", "keywords": ["自动化", "工作流", "n8n", "Dify", "流程", "Zapier", "Make"]},
+      "workflow": {"name": "工作流", "icon": "📊", "keywords": ["工作流", "编排", "SOP", "模板", "效率"]},
+      "efficiency": {"name": "效率工具", "icon": "⚡", "keywords": ["效率", "提效", "工具", "管理", "协作", "Notion", "飞书", "Obsidian"]}
+    }
+  },
+  "ai-sell": {
+    "name": "AI 销售",
+    "icon": "💰",
+    "description": "AI 辅助的销售转化与商业变现",
+    "sub": {
+      "crm": {"name": "CRM", "icon": "👥", "keywords": ["CRM", "客户", "线索", "商机", "跟进", "Salesforce"]},
+      "funnel": {"name": "转化漏斗", "icon": "🔽", "keywords": ["转化", "漏斗", "A/B", "测试", "优化", "CRO"]},
+      "pricing": {"name": "定价策略", "icon": "💲", "keywords": ["定价", "价格", "SaaS", "订阅", "会员"]},
+      "monetization": {"name": "变现方法", "icon": "💎", "keywords": ["赚钱", "变现", "副业", "ROI", "收入", "利润", "电商"]}
+    }
+  },
+  "ai-data": {
+    "name": "AI 数据分析",
+    "icon": "📈",
+    "description": "数据驱动的决策与洞察",
+    "sub": {
+      "analytics": {"name": "数据分析", "icon": "📊", "keywords": ["数据", "分析", "报表", "统计", "指标", "BI"]},
+      "visualization": {"name": "可视化", "icon": "📉", "keywords": ["可视化", "看板", "图表", "Dashboard", "仪表盘"]},
+      "abtest": {"name": "A/B 测试", "icon": "🧪", "keywords": ["A/B", "测试", "实验", "显著性", "分流"]}
+    }
+  },
+  "ai-user": {
+    "name": "AI 用户运营",
+    "icon": "👤",
+    "description": "AI 驱动的用户增长与留存",
+    "sub": {
+      "cdp": {"name": "用户画像", "icon": "🎯", "keywords": ["画像", "CDP", "分群", "标签", "用户数据"]},
+      "community": {"name": "社区运营", "icon": "💬", "keywords": ["社区", "论坛", "UGC", "互动", "积分"]},
+      "retention": {"name": "留存运营", "icon": "🔁", "keywords": ["留存", "激活", "召回", "Push", "通知"]},
+      "personalization": {"name": "个性化", "icon": "✨", "keywords": ["个性化", "推荐", "千人千面", "定制"]}
+    }
+  },
+  "agent": {
+    "name": "Agent 生态",
+    "icon": "🤖",
+    "description": "AI Agent 工具、框架与实践",
+    "sub": {
+      "tools": {"name": "Agent 工具", "icon": "🛠️", "keywords": ["Agent", "LLM", "大模型", "开源AI", "AI工具", "ChatGPT", "Claude"]},
+      "skills": {"name": "Skills 插件", "icon": "🧩", "keywords": ["Skills", "插件", "扩展", "MCP", "Function"]},
+      "mcp": {"name": "MCP 协议", "icon": "🔗", "keywords": ["MCP", "协议", "工具调用", "函数调用"]},
+      "orchestration": {"name": "编排", "icon": "🎼", "keywords": ["编排", "多Agent", "协作", "流程", "Chain"]}
+    }
+  },
+  "trend": {
+    "name": "行业趋势",
+    "icon": "🔮",
+    "description": "AI 行业动态、观点与入门指南",
+    "sub": {
+      "news": {"name": "热点新闻", "icon": "📰", "keywords": ["热点", "新闻", "趋势", "2026", "最新", "更新"]},
+      "opinion": {"name": "观点", "icon": "💭", "keywords": ["观点", "思考", "分析", "深度", "看法", "预测"]},
+      "comparison": {"name": "对比评测", "icon": "⚖️", "keywords": ["对比", "评测", "横评", "排行", "推荐", "排名", "vs", "替代"]},
+      "guide": {"name": "入门指南", "icon": "📚", "keywords": ["入门", "教程", "怎么用", "新手", "指南", "推荐", "清单", "合集"]}
+    }
+  }
+}
