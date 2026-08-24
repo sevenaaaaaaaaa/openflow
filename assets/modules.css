@@ -55,14 +55,14 @@ body[data-sb="closed"] #chrome.scrolled,body[data-sb="drawer"] #chrome.scrolled{
 .light-r{background:oklch(64% .19 28)}
 .light-y{background:oklch(82% .15 82)}
 .light-g{background:oklch(68% .15 150)}
-.tabs{display:flex;align-items:center;justify-self:center;gap:2px;min-width:0;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.tabs{display:flex;align-items:center;justify-self:center;gap:6px;min-width:0;max-width:100%;overflow-x:auto;scrollbar-width:none;padding:3px 2px}
 .tabs::-webkit-scrollbar{display:none}
-.tabs a,.tabs .tab-pill{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px;border-radius:12px;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap;border:1px solid transparent;transition:background .22s,color .22s,border-color .22s}
-.tabs a:hover,.tabs .tab-pill:hover{background:var(--glass);color:var(--fg)}
-.tabs a.on,.tabs .tab-pill.on{background:var(--surface-strong);color:var(--fg);border-color:var(--border);box-shadow:var(--shadow-sm)}
-.tabs a .ic{width:15px;height:15px;flex:0 0 auto;color:var(--faint);transition:color .2s}
-.tabs a .ic svg{width:15px;height:15px}
-.tabs a.on .ic,.tabs .tab-pill.on .ic{color:var(--accent)}
+.tabs a,.tabs .tab{flex:1 1 0;min-width:104px;max-width:168px;height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:14px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;border:1px solid transparent;text-decoration:none;cursor:pointer;transition:background .22s,color .22s,border-color .22s}
+.tabs a:hover,.tabs .tab:hover{background:var(--hover);color:var(--fg)}
+.tabs a.active,.tabs a.on,.tabs .tab.active,.tabs .tab.on{background:var(--surface-strong);color:var(--fg);border-color:var(--border);box-shadow:var(--shadow-sm)}
+.tabs a .ic,.tabs .tab .ic{width:15px;height:15px;flex:0 0 auto;color:var(--faint);transition:color .2s}
+.tabs a .ic svg,.tabs .tab .ic svg{width:15px;height:15px}
+.tabs a.active .ic,.tabs a.on .ic,.tabs .tab.active .ic,.tabs .tab.on .ic{color:var(--accent)}
 .controls{display:flex;align-items:center;justify-self:end;gap:8px;flex:0 0 auto}
 .cbtn{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--muted);transition:background .2s,color .2s}
 .cbtn:hover{background:var(--hover);color:var(--fg)}
@@ -81,12 +81,16 @@ body[data-sb="drawer"] #main{margin-left:0}
 body[data-sb="drawer"] .scrim{opacity:1;pointer-events:auto}
 
 /* ── 侧栏 ── */
-#sidebar{position:fixed;top:calc(var(--chrome-h) + 10px);left:14px;bottom:14px;width:var(--sb-w);z-index:55;padding:14px 10px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;background:color-mix(in oklab,var(--bg-soft) 62%,transparent);backdrop-filter:blur(24px) saturate(170%);border:1px solid var(--border);border-radius:var(--r-md);transition:width .45s var(--ease-spring),transform .45s var(--ease-spring),opacity .3s}
+#sidebar{position:fixed;top:76px;left:14px;bottom:14px;width:var(--sb-w);z-index:50;padding:14px 10px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;background:color-mix(in oklab,var(--bg-soft) 62%,transparent);backdrop-filter:blur(24px) saturate(170%);border:1px solid var(--border);border-radius:var(--r-md);transition:width .45s var(--ease-spring),transform .45s var(--ease-spring),opacity .3s}
 .ws{display:flex;align-items:center;gap:10px;padding:8px 10px 14px;font-size:13px;font-weight:600}
 .ws .ic{width:18px;height:18px;color:var(--accent);flex:0 0 auto}
 .ws .ic svg{width:18px;height:18px}
 .sec-title{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--faint);padding:10px 10px 4px;text-transform:uppercase}
-.s-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;font-size:13.5px;color:var(--muted);transition:background .2s,color .2s}
+.s-item{position:relative;display:flex;align-items:center;gap:10px;width:100%;height:44px;padding:0 10px;border-radius:12px;font-size:13.5px;font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-align:left;cursor:pointer;text-decoration:none;transition:background .18s,color .18s}
+.s-item:hover{background:var(--hover);color:var(--fg)}
+.s-item.active,.s-item.on{background:var(--accent-soft);color:var(--accent)}
+.s-item .ic{color:var(--faint)}
+.s-item.active .ic,.s-item.on .ic{color:var(--accent)}
 .s-item .ic{width:15px;height:15px;flex:0 0 auto}
 .s-item .ic svg{width:15px;height:15px}
 .s-item:hover{background:var(--hover);color:var(--fg)}
