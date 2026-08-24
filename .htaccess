@@ -65,6 +65,7 @@ RewriteRule ^topics/?$ topics.php [L,QSA]
 RewriteRule ^consultation/?$ consultation.php [L,QSA]
 RewriteRule ^course/(.+)$ course-player.php?slug=$1 [L,QSA]
 RewriteRule ^download/(.+)$ download.php?slug=$1 [L,QSA]
+RewriteRule ^category/academy/articles$ /articles [R=301,L]
 RewriteRule ^category/([a-z]+)/([a-z0-9_-]+)/?$ category.php?section=$1&subkey=$2 [L,QSA]
 RewriteRule ^community-post/(.+)$ community-post.php?id=$1 [L,QSA]
 
