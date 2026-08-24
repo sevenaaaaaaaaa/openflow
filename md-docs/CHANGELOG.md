@@ -5,7 +5,56 @@
 
 ---
 
-## v1.4.0（2026-08-20 · 当前版本）
+## v1.5.0（2026-08-23 · 当前版本）
+
+### 主题：全球加速 + 多语言 + Notion 双向同步
+
+从 1.4「全域智能」进阶到「全球可达、多语言覆盖、外部协作」：**Cloudflare 全栈加速 + 11 语言国际化 + Notion 内容管理**。
+
+### Cloudflare 全栈加速（Workers + R2 + Cache Rules）
+- **HTML 边缘缓存**：Cache Rule 将匿名访客 HTML 缓存到 CF 边缘节点，TTFB 从 1.5s 降至 **0.4s**（国内外一致）
+- **R2 全球边缘存储**：268 个静态资源（.js/.css/.svg/.png/.woff2）存储到 Cloudflare R2，通过 Worker 全球边缘分发
+- **API 边缘缓存 Worker**：公开 GET API（lang/articles/tools 等）在 CF 边缘缓存，命中 TTFB **<0.5s**
+- **图片优化 Worker**：自动 WebP 内容协商，PNG→WebP **节省 80-91%**，零前端改动
+- **源站性能优化**：匿名访客跳过 session 启动（无 Set-Cookie），Personalizer 匿名短路（防 OOM）
+
+### 11 语言国际化（i18n）
+- **11 种语言**：简体中文、繁體中文、English、日本語、한국어、Русский、Español、Português、العربية（RTL）、Français、Deutsch
+- **URL 前缀路由**：`/zh-TW/`、`/en/`、`/ja/`、`/ar/` 等 11 语言前缀 + 浏览器语言自动检测
+- **语言切换器**：顶栏下拉选择器（紧凑胶囊按钮，点击展开 11 语言列表）
+- **翻译管理后台**（`/xmp/languages`）：逐 key 翻译、新增 key、完成度统计、未翻译自动回退源语言
+- **前端导航翻译**：全局导航（site-shell）+ 首页/课程/产品/能力/关于页导航均按语言渲染
+- **html lang/dir 自动设置**：阿拉伯语自动 RTL
+
+### Notion 双向同步
+- **6 类数据全量同步**：导航站 417 条、文章 16 篇、课程 10 个、落地页 10 个、技能 33 个、活动
+- **自动建库**：首次推送时在 Notion 页面下自动创建数据库（含完整字段结构）
+- **双向增量**：OpenFlow ID ↔ Notion Page ID 映射，推送/拉取均增量，支持在 Notion 里编辑后同步回站点
+- **后台管理**（`/xmp/notion-sync`）：配置 Token、查看同步状态、一键推送/拉取
+
+### 导航站优化
+- **首屏懒加载**：每子分类首屏 8 卡片 + 内嵌 JSON 滚动加载（IntersectionObserver），首屏卡片从 417 降至 236
+- **标签过滤**：过滤无区分度高频标签（AI/开源/创作等），改为纯文字轻样式，每卡最多 2 个
+- **Hero 区重设计**：浅渐变 + 光晕网格装饰 + 渐变大标题 + 精致搜索框 + 分类快捷入口
+- **卡片 favicon 优化**：DuckDuckGo + onerror 兜底
+- **导航站内容管理**：后台管理字段扩展（logo/标签/理由/权重/审核状态）+ CSV 导入 + 收录申请
+
+### 后台管理增强
+- **站点健康检测**（`/xmp/health-check`）：URL 巡检 — 自动生成全站 586 条链接（技能/插件/主题/课程/落地页/文章/导航站/后台页 + 静态路由）并逐个检测 403/404/5xx
+- **Cloudflare 管理**（`/xmp/cloudflare`）：Cache Rules 管理（查看/创建/删除）、DNS 管理、缓存清除、性能监控
+- **翻译管理**（`/xmp/languages`）：11 语言逐 key 翻译、完成度统计
+- **Notion 同步管理**（`/xmp/notion-sync`）：6 类数据同步状态、推送/拉取操作
+
+### 代码质量
+- 修复导航栏换行（语言切换器从 grid 第 5 子元素移入 controls flex）
+- 修复主题 404（asset.php 改读 ThemeSystem::presets 而非空 themes.json）
+- 修复文章草稿误报（URL 巡检只检 published）
+- 清理老 demo .html 文件（index/product/courses/capability/about/community）+ 301 重定向
+- 全站导航样式统一（site-shell .tab-pill 与 index SSR topnav 一致）
+
+---
+
+## v1.4.0（2026-08-20 · 上一版本）
 
 ### 主题：全域智能增长操作系统
 
