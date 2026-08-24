@@ -142,27 +142,6 @@
       }
     },
     {
-      id: 'articles', label: '文章', key: 'nav.articles', href: '/articles', icon: 'doc',
-      mega: {
-        title: '文章精选', blurb: '增长实践 · AI 工具评测 · 行业洞察',
-        cols: [
-          { head: '内容类型', items: [
-            { t: '全部文章', d: '最新发布的深度文章', href: '/articles' },
-            { t: 'AI 创作', d: '设计/视频/图片/写作/音频', href: '/articles?cat=ai-create' },
-            { t: 'Agent 生态', d: 'Agent 工具/技能/MCP', href: '/articles?cat=agent' },
-            { t: '行业趋势', d: '热点/对比/入门指南', href: '/articles?cat=trend' }
-          ]},
-          { head: '更多分类', items: [
-            { t: 'AI 营销', d: 'SEO/社媒/邮件/分发', href: '/articles?cat=ai-marketing' },
-            { t: 'AI 编程', d: 'Agent/IDE/DevOps', href: '/articles?cat=ai-code' },
-            { t: 'AI 建站', d: '无代码/落地页/电商', href: '/articles?cat=ai-build' },
-            { t: 'AI 销售', d: 'CRM/漏斗/变现', href: '/articles?cat=ai-sell' }
-          ]}
-        ],
-        foot: [{ t: '浏览全部文章', href: '/articles' }]
-      }
-    },
-    {
       id: 'courses', label: '课程', key: 'nav.courses', href: '/courses', icon: 'book',
       mega: {
         title: '芭乐派 · 学习路径', blurb: 'New-1~4 课程 + R.B.E 训练营 · 以 OpenFlow 为工具',
