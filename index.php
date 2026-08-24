@@ -167,14 +167,16 @@ body[data-sb="drawer"] #main{margin-left:0}
 body[data-sb="drawer"] .scrim{opacity:1;pointer-events:auto}
 
 /* ── 侧栏 ── */
-#sidebar{position:fixed;top:calc(var(--chrome-h) + 10px);left:14px;bottom:14px;width:var(--sb-w);z-index:55;padding:14px 10px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;background:color-mix(in oklab,var(--bg-soft) 62%,transparent);backdrop-filter:blur(24px) saturate(170%);border:1px solid var(--border);border-radius:var(--r-md);transition:width .45s var(--ease-spring),transform .45s var(--ease-spring),opacity .3s}
+#sidebar{position:fixed;top:76px;left:14px;bottom:14px;width:var(--sb-w);z-index:50;display:flex;flex-direction:column;gap:2px;overflow-y:auto;background:color-mix(in oklab,var(--bg-soft) 62%,transparent);backdrop-filter:blur(24px) saturate(170%);border:1px solid var(--border);border-radius:var(--r-md);transition:width .45s var(--ease-spring),transform .45s var(--ease-spring),opacity .3s}
 .ws{display:flex;align-items:center;gap:10px;padding:8px 10px 14px;font-size:13px;font-weight:600}
 .ws .ic{width:18px;height:18px;color:var(--accent);flex:0 0 auto}
 .ws .ic svg{width:18px;height:18px}
 .sec-title{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--faint);padding:10px 10px 4px;text-transform:uppercase}
-.s-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;font-size:13.5px;color:var(--muted);transition:background .2s,color .2s}
-.s-item .ic{width:15px;height:15px;flex:0 0 auto}
-.s-item .ic svg{width:15px;height:15px}
+.s-item{position:relative;display:flex;align-items:center;gap:10px;width:100%;height:44px;padding:0 10px;border-radius:12px;font-size:13.5px;font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-align:left;cursor:pointer;text-decoration:none;transition:background .18s,color .18s}
+.s-item:hover{background:var(--hover);color:var(--fg)}
+.s-item.active,.s-item.on{background:var(--accent-soft);color:var(--accent)}
+.s-item .ic{color:var(--faint)}
+.s-item.active .ic,.s-item.on .ic{color:var(--accent)}
 .s-item:hover{background:var(--hover);color:var(--fg)}
 .s-item.on{background:var(--accent-soft);color:var(--accent-strong);font-weight:600}
 .ws .chev{margin-left:auto;width:15px;height:15px;color:var(--faint);flex:0 0 auto;transition:transform .35s var(--ease-spring)}
@@ -461,16 +463,11 @@ a.a-row:hover .a-body h3{color:var(--accent)}
 
 /* ── 顶栏集中导航（双导航 → 单一顶栏） ── */
 #chrome{height:64px;padding:0 18px}
-#chrome .bar{display:grid;grid-template-columns:auto auto 1fr auto;gap:14px;align-items:center}
+#chrome .bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;width:100%}
 .brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:15px;letter-spacing:-.01em;white-space:nowrap;color:var(--fg)}
 .brand .ic{width:22px;height:22px;color:var(--accent);flex:0 0 auto}
 .brand .ic svg{width:22px;height:22px}
 .brand .bn-sub{display:block;font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:.12em;color:var(--faint)}
-.topnav{display:flex;align-items:center;justify-content:center;gap:2px;min-width:0}
-.topnav .tab-pill{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px;font-size:13px}
-.topnav .tab-pill .ic{width:15px;height:15px;flex:0 0 auto;color:var(--faint);transition:color .2s}
-.topnav .tab-pill .ic svg{width:15px;height:15px}
-.topnav .tab-pill.on .ic{color:var(--accent)}
 
 /* ── avatar + 账户下拉 ── */
 .controls{position:relative}
@@ -752,15 +749,15 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
   <div class="bar">
     <div class="lights" aria-hidden="true"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span></div>
     <a class="brand" href="#top" data-od-id="brand"><span class="ic"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-b" x1="2" y1="16" x2="30" y2="16" gradientUnits="userSpaceOnUse"><stop stop-color="var(--accent)"/><stop offset="1" stop-color="oklch(58% .16 285)"/></linearGradient></defs><path d="M16 6.5a9.5 9.5 0 1 1-9.5 9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M11.5 10v13M11.5 13.5h8.2M11.5 18.5h8.2" stroke="url(#ofg-b)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M19.7 18.5c2.3 0 4.4-.7 6.1-2M25 14.3l1.6 2.2-2.9 1" stroke="url(#ofg-b)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span><span>OpenFlow<span class="bn-sub">GROWTH OS</span></span></a>
-    <nav class="topnav" id="tabs" role="navigation" aria-label="站点导航">
-      <a class="tab-pill on" href="#top" data-od-id="tab-home"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span><?=__('nav.home', '首页')?></a>
-      <a class="tab-pill" href="/product" data-od-id="tab-product"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/></svg></span><?=__('nav.product', '产品')?></a>
-      <a class="tab-pill" href="/capability" data-od-id="tab-capability"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span><?=__('nav.capability', '能力')?></a>
-      <a class="tab-pill" href="/courses" data-od-id="tab-courses"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span><?=__('nav.courses', '课程')?></a>
-      <a class="tab-pill" href="/academy" data-od-id="tab-academy"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span><?=__('nav.academy', '学院')?></a>
-      <a class="tab-pill" href="/events" data-od-id="tab-events"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 8h18"/><rect x="3" y="5" width="18" height="17" rx="2"/><path d="M8 13h3M14 13h2M8 17h3"/></svg></span><?=__('nav.events', '活动')?></a>
-      <a class="tab-pill" href="/navigation.php" data-od-id="tab-nav"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 12h6M9 19h6"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span><?=__('nav.navigation', '导航')?></a>
-      <a class="tab-pill" href="/about" data-od-id="tab-about"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c1.4-3.5 4.2-5.2 7.5-5.2s6.1 1.7 7.5 5.2"/></svg></span><?=__('nav.about', '关于')?></a>
+    <nav class="tabs" id="tabs" role="navigation" aria-label="站点导航">
+      <a class="tab active" href="#top" data-od-id="tab-home"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span><span class="t-label"><?=__('nav.home', '首页')?></span></a>
+      <a class="tab" href="/product" data-od-id="tab-product"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/></svg></span><span class="t-label"><?=__('nav.product', '产品')?></span></a>
+      <a class="tab" href="/capability" data-od-id="tab-capability"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span><span class="t-label"><?=__('nav.capability', '能力')?></span></a>
+      <a class="tab" href="/courses" data-od-id="tab-courses"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span><span class="t-label"><?=__('nav.courses', '课程')?></span></a>
+      <a class="tab" href="/academy" data-od-id="tab-academy"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span><span class="t-label"><?=__('nav.academy', '学院')?></span></a>
+      <a class="tab" href="/events" data-od-id="tab-events"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 8h18"/><rect x="3" y="5" width="18" height="17" rx="2"/><path d="M8 13h3M14 13h2M8 17h3"/></svg></span><span class="t-label"><?=__('nav.events', '活动')?></span></a>
+      <a class="tab" href="/navigation" data-od-id="tab-nav"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 12h6M9 19h6"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span><span class="t-label"><?=__('nav.navigation', '导航')?></span></a>
+      <a class="tab" href="/about" data-od-id="tab-about"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c1.4-3.5 4.2-5.2 7.5-5.2s6.1 1.7 7.5 5.2"/></svg></span><span class="t-label"><?=__('nav.about', '关于')?></span></a>
     </nav>
     <div class="controls">
       <?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><div style="margin-right:2px"><?=i18n_switcher()?></div><?php endif; ?>
