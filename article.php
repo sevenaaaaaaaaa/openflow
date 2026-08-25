@@ -284,18 +284,9 @@ h1,h2,h3,h4,p{margin:0}
 ::-webkit-scrollbar-thumb{background:var(--border-strong); border-radius:99px; border:3px solid transparent; background-clip:padding-box}
 .si{font-family:var(--font-display); font-style:italic; font-weight:700; letter-spacing:-.01em}
 .kicker{font-family:var(--font-mono); font-size:11px; font-weight:700; letter-spacing:.18em; color:var(--accent); text-transform:uppercase}
-#chrome{position:fixed; inset:0 0 auto 0; z-index:60; padding:8px 14px}
-.bar{position:relative; height:56px; display:flex; align-items:center; gap:10px; padding:0 12px; border-radius:18px; background:var(--glass); -webkit-backdrop-filter:blur(22px) saturate(170%); backdrop-filter:blur(22px) saturate(170%); border:1px solid var(--border); box-shadow:var(--shadow-sm)}
-.bar.scrolled{background:var(--glass-bright)}
-.brand{display:flex; align-items:center; gap:9px; padding:0 6px; font-size:14px; font-weight:800; letter-spacing:-.01em}
-.brand .ic{width:22px;height:22px; color:var(--accent); flex:0 0 auto}
-.nav-spacer{flex:1}
-.back-link{display:inline-flex; align-items:center; gap:6px; height:38px; padding:0 14px; border-radius:12px; font-size:13px; font-weight:600; color:var(--muted); transition:background .2s,color .2s}
-.back-link:hover{background:var(--hover); color:var(--fg)}
-.theme-btn{width:38px;height:38px; border-radius:12px; display:grid; place-items:center; color:var(--muted); transition:background .2s,color .2s}
-.theme-btn:hover{background:var(--hover); color:var(--fg)}
-.theme-btn svg{width:17px;height:17px}
-main{padding-top:96px; padding-bottom:70px; position:relative; z-index:10; max-width:820px; margin:0 auto; padding-left:20px; padding-right:20px}
+main{padding-top:calc(var(--chrome-h,56px) + 24px); padding-bottom:70px; position:relative; z-index:10; max-width:820px; margin:0 auto; padding-left:20px; padding-right:20px}
+.back-link{display:inline-flex; align-items:center; gap:6px; padding:6px 0; border-radius:8px; font-size:13px; font-weight:600; color:var(--accent); transition:color .2s}
+.back-link:hover{color:var(--accent-strong)}
 .art-head{margin-bottom:40px}
 .art-meta{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px}
 .art-meta .pill{display:inline-flex; align-items:center; height:26px; padding:0 12px; border-radius:99px; font-size:12px; font-weight:700; background:var(--accent-soft); color:var(--accent)}
@@ -359,16 +350,8 @@ main{padding-top:96px; padding-bottom:70px; position:relative; z-index:10; max-w
 </style>
 </head>
 <body>
-<div class="ambient" aria-hidden="true"><div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div></div>
 
-<header id="chrome">
-  <div class="bar" id="bar">
-    <a class="brand" href="index.html"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>Open Flow</a>
-    <div class="nav-spacer"></div>
-    <a class="back-link" href="articles">← 返回文章</a>
-    <button class="theme-btn" id="themeBtn" aria-label="切换主题"></button>
-  </div>
-</header>
+<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="articles"></script>
 
 <main>
   <?php if ($notFound): ?>
@@ -379,6 +362,7 @@ main{padding-top:96px; padding-bottom:70px; position:relative; z-index:10; max-w
     <a href="articles" class="act-btn" style="background:var(--accent);color:var(--on-accent);border:0;padding:12px 24px">返回文章列表</a>
   </div>
   <?php else: ?>
+  <a class="back-link" href="/articles">← 返回文章列表</a>
   <div class="art-head">
     <div class="art-meta">
       <?php if ($catName): ?><span class="pill"><?=htmlspecialchars($catName)?></span><?php endif; ?>
