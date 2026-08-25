@@ -182,62 +182,6 @@
         foot: [{ t: '进入学院', href: '/academy' }, { t: '浏览工具', href: '/category/academy/tools' }]
       }
     },
-    {
-      id: 'events', label: '活动', key: 'nav.events', href: '/events', icon: 'calendar',
-      mega: {
-        title: '活动中心', blurb: '线上 · 线下 · 训练营 · 直播 · 主题分享',
-        cols: [
-          { head: '活动类型', items: [
-            { t: '全部活动', d: '浏览最新活动列表', href: '/events' },
-            { t: '线上直播', d: '实时互动课程与分享', href: '/events?type=live' },
-            { t: '线下见面', d: '同城交流与工作坊', href: '/events?type=offline' }
-          ]},
-          { head: '更多', items: [
-            { t: '课程训练营', d: 'R.B.E 系列训练营', href: '/courses' },
-            { t: '内容学院', d: '增长实践文章', href: '/academy' }
-          ]}
-        ],
-        foot: [{ t: '浏览全部活动', href: '/events' }]
-      }
-    },
-    {
-      id: 'navigation', label: '导航', key: 'nav.navigation', href: '/navigation', icon: 'compass',
-      mega: {
-        title: '工具导航', blurb: '收录国内外 400+ 增长 · SEO · AI 与开源工具',
-        cols: [
-          { head: '快速浏览', items: [
-            { t: '全部站点', d: '400+ 优质工具资源', href: '/navigation' },
-            { t: '按分类', d: '9 大分类直达', href: '/navigation' },
-            { t: '提交收录', d: '推荐你的工具', href: '/navigation' }
-          ]},
-          { head: '相关', items: [
-            { t: '生态市场', d: 'Skill · 插件 · 主题', href: '/marketplace' },
-            { t: '工具箱', d: 'SEO · Meta · LTV', href: '/tools' }
-          ]}
-        ],
-        foot: [{ t: '进入导航站', href: '/navigation' }]
-      }
-    },
-    {
-      id: 'marketplace', label: '生态', key: 'nav.marketplace', href: '/marketplace', icon: 'box',
-      mega: {
-        title: '生态市场', blurb: 'Skill · 插件 · 主题 · 一人公司增长门派',
-        cols: [
-          { head: '生态分类', items: [
-            { t: 'Skill 技能', d: '开箱即用的增长能力', href: '/category/marketplace/skills' },
-            { t: '插件', d: '扩展系统功能', href: '/category/marketplace/plugins' },
-            { t: '主题', d: '视觉与布局', href: '/category/marketplace/themes' },
-            { t: '论坛', d: '社区问答与讨论', href: '/category/marketplace/forum' }
-          ]},
-          { head: '开发者', items: [
-            { t: 'API 文档', d: 'REST API 参考', href: '/api-docs.php' },
-            { t: '开发者文档', d: '架构与扩展点', href: '/md-docs/DEVELOPER.md' },
-            { t: 'GitHub', d: '开源仓库', href: 'https://github.com/balepai/openflow' }
-          ]}
-        ],
-        foot: [{ t: '进入生态市场', href: '/marketplace' }]
-      }
-    },
     { id: 'about', label: '关于', key: 'nav.about', href: '/about', icon: 'info' }
   ];
 
