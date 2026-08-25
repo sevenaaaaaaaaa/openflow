@@ -395,43 +395,9 @@ main{margin-left:calc(var(--sb-w) + 26px); margin-right:14px; padding-top:96px; 
 <body>
 
 <div class="ambient" aria-hidden="true"><div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div></div>
+<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="about"></script>
 
-<!-- ══ chrome ══ -->
-<header id="chrome">
-  <div class="bar">
-    <div class="lights" aria-hidden="true"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span></div>
-    <nav class="tabs" id="tabs" role="navigation" aria-label="站点导航"></nav>
-    <div class="controls">
-      <button class="cbtn" id="btn-drawer" data-od-id="nav-drawer" aria-label="打开导航菜单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-      <button class="kbd-chip" id="btn-cmd" data-od-id="cmd-open" aria-label="打开命令面板">
-        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg></span>
-        <span>搜索与命令</span><span class="kbd">⌘ K</span>
-      </button>
-      <button class="cbtn" id="btn-theme" data-od-id="theme-toggle" aria-label="切换主题"></button>
-      <button class="avatar anon" id="btn-av" data-od-id="account" aria-label="账户"></button>
-    </div>
-    <div class="drop" id="drop">
-      <div class="drop-head"><div class="drop-av" id="dropAv">?</div><div style="min-width:0"><div class="drop-name" id="dropName"></div><div class="drop-mail" id="dropMail"></div></div></div>
-      <button class="drop-item" id="dropProfile" data-od-id="profile-entry"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c1.4-3.5 4.2-5.2 7.5-5.2s6.1 1.7 7.5 5.2"/></svg></span>个人中心</button>
-      <button class="drop-item danger" id="dropLogout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="m10 8-4 4 4 4M6 12h11"/></svg></span>退出登录</button>
-    </div>
-  </div>
-</header>
-
-<!-- ══ sidebar ══ -->
-<aside id="sidebar" data-od-id="sidebar">
-  <div class="ws" id="ws" role="button" tabindex="0" aria-label="空间：Open Flow 官网">
-    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10l2 2h6.5A1.5 1.5 0 0 1 20 7.5v11a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-13Z"/></svg></span>
-    <span class="ws-name">Open Flow 官网</span>
-    <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
-  </div>
-  <div class="sec"><div class="sec-title"><span>导航</span></div><div id="sbNav"></div></div>
-  <div class="sec"><div class="sec-title"><span>快捷操作</span></div><div id="sbFav"></div></div>
-  <div class="sec"><div class="sec-title"><span>置顶标签</span></div><div id="sbPin"></div></div>
-  <div class="sb-foot"><button id="sb-toggle" data-od-id="sidebar-toggle" aria-label="折叠侧栏" title="折叠侧栏"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9 4v16"/></svg></button></div>
-</aside>
-<div class="scrim" id="scrim"></div>
-<div id="sb-prev"></div>
+<!-- 侧栏由 site-shell.js 统一管理 -->
 
 <main id="main" data-od-id="main">
 
