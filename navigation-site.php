@@ -85,6 +85,58 @@ function nav_related_logo(array $s): string {
       </div>
     </div>
 
+    <!-- 功能特性 -->
+    <?php
+    $tags = $site['tags'] ?? [];
+    $catName = $catNames[$site['category'] ?? ''] ?? '';
+    $subName = $site['sub'] ?? '';
+    // 推荐场景映射（基于分类）
+    $useCases = [
+        'ai' => ['内容创作', '知识问答', '代码生成', '数据整理'],
+        'open' => ['自托管部署', '二次开发', 'API 集成'],
+        'growth' => ['SEO 优化', '营销自动化', '增长实验'],
+        'data' => ['数据采集', '数据分析', '可视化看板'],
+        'site' => ['快速建站', '落地页设计', '电商运营'],
+        'content' => ['内容创作', '图文编辑', '视频制作'],
+        'agent' => ['Agent 构建', '工作流编排', 'MCP 集成'],
+        'design' => ['UI 设计', '视觉生成', '原型制作'],
+        'commerce' => ['商品管理', '支付对接', '分销推广'],
+    ];
+    $cases = $useCases[$site['category'] ?? ''] ?? ['AI 辅助', '效率提升'];
+    ?>
+    <?php if ($tags || $subName): ?>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px">
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:16px;letter-spacing:-.01em">⚙️ 功能特性</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+        <?php if ($subName): ?>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:var(--bg);border:1px solid var(--border)">
+          <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#818cf8);display:grid;place-items:center;color:#fff;font-size:14px">📂</div>
+          <div><div style="font-size:13px;font-weight:700"><?=htmlspecialchars($subName)?></div><div style="font-size:11px;color:var(--faint)">所属分类</div></div>
+        </div>
+        <?php endif; ?>
+        <?php foreach (array_slice($tags, 0, 5) as $i => $t): ?>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:var(--bg);border:1px solid var(--border)">
+          <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent-soft),var(--ok-soft));display:grid;place-items:center;color:var(--accent);font-size:14px">✦</div>
+          <div><div style="font-size:13px;font-weight:700"><?=htmlspecialchars($t)?></div><div style="font-size:11px;color:var(--faint)">功能标签</div></div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- 适用场景 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px">
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:16px;letter-spacing:-.01em">🎯 适用场景</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+        <?php foreach ($cases as $c): ?>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:linear-gradient(135deg,var(--surface),var(--accent-soft));border:1px solid var(--border)">
+          <span style="font-size:16px">🎯</span>
+          <span style="font-size:13px;font-weight:600;color:var(--fg)"><?=htmlspecialchars($c)?></span>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+
     <!-- 站点截图（整页预览） -->
     <?php $shotUrl = isset($site['url']) && preg_match('#^https?://#i', $site['url']) ? 'https://s.wordpress.com/mshots/v1/' . urlencode($site['url']) . '?w=720' : ''; ?>
     <?php if ($shotUrl): ?>
