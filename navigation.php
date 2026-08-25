@@ -156,33 +156,7 @@ $lazyGroups = [];
     </a>
     <?php endif; endif; ?>
 
-    <div style="display:grid;grid-template-columns:200px 1fr;gap:24px" class="nav-grid">
-      <!-- 左侧导航 -->
-      <aside style="position:sticky;top:20px;align-self:start" class="hidden sm:block">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px">
-          <div class="px-2 py-1 font-bold text-sm mb-1">🏷️ 全部分类</div>
-          <a class="cat-nav-item <?=!$cat?'active':''?>" href="navigation.php?region=<?=$region?>">🌐 全部</a>
-          <?php foreach ($categories as $c): ?>
-          <a class="cat-nav-item <?=$cat===$c['id']?'active':''?>" href="?cat=<?=urlencode($c['id'])?>&region=<?=$region?>"><?=$catIcons[$c['id']]??'🌐'?> <?=htmlspecialchars(nav_name($c))?></a>
-          <?php endforeach; ?>
-          <div style="border-top:1px solid var(--bg);margin:8px 0;padding-top:8px">
-            <div class="px-2 py-1 font-bold text-sm">🌍 地区</div>
-            <a class="cat-nav-item <?=$region==='all'?'active':''?>" href="?region=all<?=$cat?'&cat='.urlencode($cat):''?><?=$tag?'&tag='.urlencode($tag):''?>">🌐 全部</a>
-            <a class="cat-nav-item <?=$region==='cn'?'active':''?>" href="?region=cn<?=$cat?'&cat='.urlencode($cat):''?><?=$tag?'&tag='.urlencode($tag):''?>">🇨🇳 国内</a>
-            <a class="cat-nav-item <?=$region==='intl'?'active':''?>" href="?region=intl<?=$cat?'&cat='.urlencode($cat):''?><?=$tag?'&tag='.urlencode($tag):''?>">🌍 海外</a>
-          </div>
-          <?php if (!empty($tagCount)): ?>
-          <div style="border-top:1px solid var(--bg);margin:8px 0;padding-top:8px">
-            <div class="px-2 py-1 font-bold text-sm">🏷 热门标签</div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px;padding:2px 4px">
-              <?php foreach (array_slice(array_keys($tagCount), 0, 12) as $t): ?>
-              <a href="?tag=<?=urlencode($t)?><?=$cat?'&cat='.urlencode($cat):''?><?=$region!=='all'?'&region='.$region:''?>" style="display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:3px 10px;border-radius:999px;font-size:11px;border:1px solid <?=$tag===$t?'var(--accent)':'var(--border)'?>;<?=$tag===$t?'background:var(--accent);color:var(--on-accent)':''?>"><?=htmlspecialchars($t)?></a>
-              <?php endforeach; ?>
-            </div>
-          </div>
-          <?php endif; ?>
-        </div>
-      </aside>
+    <div class="main" style="display:flex;flex-direction:column;gap:0">
 
       <!-- 楼层内容 -->
       <main>
@@ -340,5 +314,46 @@ function submitSite() {
     </form>
   </div>
 </div>
+<script>
+// 把导航分类注入 site-shell 侧栏
+(function(){
+  var cats = <?=json_encode(array_map(function($c) use ($catIcons) {
+    return ['id'=>$c['id'], 'name'=>nav_name($c), 'icon'=>$catIcons[$c['id']]??'🌐'];
+  }, $categories), JSON_UNESCAPED_UNICODE)?>;
+  var region = '<?=addslashes($region)?>';
+  var currentCat = '<?=addslashes($cat)?>';
+
+  function injectSidebar(){
+    var sb = document.getElementById('sidebar');
+    if (!sb) return;
+    // 找"站点"section，插入"导航分类"
+    var siteSec = sb.querySelector('.sec-title');
+    if (!siteSec) return;
+    var sec = document.createElement('div');
+    sec.className = 'sec';
+    sec.innerHTML = '<div class="sec-title"><span>导航分类</span></div>';
+    var wrap = document.createElement('div');
+    // 全部
+    var all = document.createElement('a');
+    all.className = 's-item' + (!currentCat ? ' active' : '');
+    all.href = '/navigation.php?region=' + region;
+    all.innerHTML = '<span class="ic">🌐</span><span class="s-label">全部分类</span>';
+    wrap.appendChild(all);
+    // 各分类
+    cats.forEach(function(c){
+      var a = document.createElement('a');
+      a.className = 's-item' + (currentCat === c.id ? ' active' : '');
+      a.href = '?cat=' + encodeURIComponent(c.id) + '&region=' + region;
+      a.innerHTML = '<span class="ic">' + c.icon + '</span><span class="s-label">' + c.name + '</span>';
+      wrap.appendChild(a);
+    });
+    sec.appendChild(wrap);
+    // 插入到"站点"section 之前
+    siteSec.parentNode.insertBefore(sec, siteSec);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectSidebar);
+  else setTimeout(injectSidebar, 100);
+})();
+</script>
 </body>
 </html>
