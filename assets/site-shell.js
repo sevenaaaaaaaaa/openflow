@@ -192,141 +192,111 @@
 
   /* ── 挂载 ── */
   function mount() {
-    if (g('chrome')) return;
+    /* 创建 DOM 元素（仅当 SSR chrome 不存在时） */
+    if (!g('chrome')) {
+      var header = document.createElement('header');
+      header.id = 'chrome';
+      header.innerHTML =
+        '<div class="bar">' +
+          '<div class="bar-start"><div class="lights" aria-hidden="true"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span></div>' +
+          '<a class="brand" href="/" aria-label="OpenFlow 首页"><span class="ic">' + BRAND_SVG + '</span><span>OpenFlow<span class="bn-sub">GROWTH OS</span></span></a></div>' +
+          '<nav class="tabs" id="tabs" role="navigation" aria-label="站点导航"></nav>' +
+          '<div class="controls">' +
+            '<button class="cbtn" id="btn-menu" aria-label="打开导航" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>' +
+            '<button class="kbd-chip" id="btn-cmd" aria-label="打开命令面板"><span class="ic">' + I.search + '</span><span>搜索与命令</span><span class="kbd">⌘ K</span></button>' +
+            '<button class="cbtn" id="btn-theme" aria-label="切换主题"></button>' +
+            '<button class="avatar anon" id="btn-av" aria-label="登录 / 注册"></button>' +
+          '</div>' +
+          '<div class="drop" id="drop">' +
+            '<div class="drop-head"><div class="drop-av" id="dropAv">?</div><div style="min-width:0"><div class="drop-name" id="dropName"></div><div class="drop-mail" id="dropMail"></div></div></div>' +
+            '<button class="drop-item" id="dropProfile">' + ic('users') + '<b>个人中心</b></button>' +
+            '<button class="drop-item danger" id="dropLogout">' + ic('info') + '<b>退出登录</b></button>' +
+          '</div>' +
+        '</div>';
+      document.body.insertBefore(header, document.body.firstChild);
 
-    var header = document.createElement('header');
-    header.id = 'chrome';
-    header.innerHTML =
-      '<div class="bar">' +
-        '<div class="bar-start"><div class="lights" aria-hidden="true"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span></div>' +
-        '<a class="brand" href="/" aria-label="OpenFlow 首页"><span class="ic">' + BRAND_SVG + '</span><span>OpenFlow<span class="bn-sub">GROWTH OS</span></span></a></div>' +
-        '<nav class="tabs" id="tabs" role="navigation" aria-label="站点导航"></nav>' +
-        '<div class="controls">' +
-          '<button class="cbtn" id="btn-menu" aria-label="打开导航" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>' +
-          '<button class="kbd-chip" id="btn-cmd" aria-label="打开命令面板"><span class="ic">' + I.search + '</span><span>搜索与命令</span><span class="kbd">⌘ K</span></button>' +
-          '<button class="cbtn" id="btn-theme" aria-label="切换主题"></button>' +
-          '<button class="avatar anon" id="btn-av" aria-label="登录 / 注册"></button>' +
-        '</div>' +
-        '<div class="drop" id="drop">' +
-          '<div class="drop-head"><div class="drop-av" id="dropAv">?</div><div style="min-width:0"><div class="drop-name" id="dropName"></div><div class="drop-mail" id="dropMail"></div></div></div>' +
-          '<button class="drop-item" id="dropProfile">' + ic('users') + '<b>个人中心</b></button>' +
-          '<button class="drop-item danger" id="dropLogout">' + ic('info') + '<b>退出登录</b></button>' +
-        '</div>' +
-      '</div>';
-    document.body.insertBefore(header, document.body.firstChild);
+      if (!document.getElementById('of-blobs')) {
+        var blobs = document.createElement('div');
+        blobs.className = 'of-blobs'; blobs.id = 'of-blobs';
+        blobs.innerHTML = '<div class="of-blob of-blob-a"></div><div class="of-blob of-blob-b"></div><div class="of-blob of-blob-c"></div>';
+        document.body.insertBefore(blobs, document.body.firstChild);
+      }
 
-    /* 背景光斑 */
-    if (!document.getElementById('of-blobs')) {
-      var blobs = document.createElement('div');
-      blobs.className = 'of-blobs'; blobs.id = 'of-blobs';
-      blobs.innerHTML = '<div class="of-blob of-blob-a"></div><div class="of-blob of-blob-b"></div><div class="of-blob of-blob-c"></div>';
-      document.body.insertBefore(blobs, document.body.firstChild);
-    }
+      var ui = document.createElement('div');
+      ui.innerHTML =
+        '<div class="scrim" id="scrim"></div>' +
+        '<div class="overlay" id="palOverlay"></div>' +
+        '<div class="palette" id="palette" role="dialog" aria-label="命令面板"><input id="palInput" placeholder="搜索页面或命令…" autocomplete="off"><div class="p-list" id="palList"></div></div>' +
+        '<div class="modal" id="authModal"><div class="mbox"><div class="mhead"><h3 id="authTitle">登录</h3><button class="mx" id="authClose">×</button></div>' +
+          '<div class="auth-tabs" id="authTabs"><button class="auth-tab active" data-mode="login">登录</button><button class="auth-tab" data-mode="register">注册</button></div>' +
+          '<div class="mbody" id="authBody"></div>' +
+          '<div id="authMsg" class="err"></div>' +
+          '<div class="auth-foot">登录即同意 <a href="/terms">服务条款</a> 和 <a href="/privacy">隐私政策</a></div>' +
+        '</div></div>' +
+        '<div class="toast" id="toast"></div>';
+      document.body.appendChild(ui);
 
-    /* 遮罩 + 命令面板 + toast + 弹窗 */
-    var ui = document.createElement('div');
-    ui.innerHTML =
-      '<div class="scrim" id="scrim"></div>' +
-      '<div class="overlay" id="palOverlay"></div>' +
-      '<div class="palette" id="palette" role="dialog" aria-label="命令面板"><input id="palInput" placeholder="搜索页面或命令…" autocomplete="off"><div class="p-list" id="palList"></div></div>' +
-      '<div id="toasts" aria-live="polite"></div>' +
-      '<div class="modal" id="authModal" role="dialog" aria-modal="true" aria-label="登录"><div class="mbox">' +
-        '<div class="mhead"><h3 id="authTitle">登录 OpenFlow</h3><button class="mx" data-close="authModal" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>' +
-        '<div class="mbody">' +
-          '<div class="auth-tabs"><button type="button" class="auth-tab on" id="tabLogin">登录</button><button type="button" class="auth-tab" id="tabReg">注册</button></div>' +
-          '<div id="regFields" style="display:none"><div class="field"><label for="fNick">昵称</label><input class="inp" id="fNick" placeholder="2-20 个字符" autocomplete="nickname"></div></div>' +
-          '<div class="field"><label for="fMail">邮箱</label><input class="inp" id="fMail" placeholder="you@example.com" type="email" autocomplete="email"></div>' +
-          '<div class="field"><label for="fPwd">密码</label><input class="inp" id="fPwd" placeholder="至少 6 位" type="password" autocomplete="current-password"></div>' +
-          '<div class="err" id="authErr" role="alert"></div>' +
-          '<button type="button" class="btn primary" id="authSubmit" style="width:100%">登录</button>' +
-          '<p class="auth-foot">登录即开通 OpenFlow 社区账号，课程与社区内容跨站同步。</p>' +
-        '</div>' +
-      '</div></div>' +
-      '<div class="modal" id="profileModal" role="dialog" aria-modal="true" aria-label="个人中心"><div class="mbox">' +
-        '<div class="mhead"><h3>个人中心</h3><button class="mx" data-close="profileModal" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>' +
-        '<div class="mbody">' +
-          '<div style="display:flex;align-items:center;gap:14px;margin-bottom:4px"><div class="drop-av" id="pfAv">?</div><div style="min-width:0"><div class="drop-name" id="pfName"></div><div class="drop-mail" id="pfMail"></div></div></div>' +
-           '<div class="p-stat"><a class="ps" href="/member.php?view=courses"><div class="pv" id="pfC1">0</div><div class="pl">我的课程</div></a><a class="ps" href="/member.php?view=orders"><div class="pv" id="pfC2">0</div><div class="pl">我的订单</div></a><a class="ps" href="/consultation?view=my"><div class="pv" id="pfC3">0</div><div class="pl">我的咨询</div></a></div>' +
-           '<a class="drop-item" href="/messages.php" style="border-top:1px solid var(--border-soft);margin-top:2px"><span class="ic">' + I.doc + '</span><span>站内信</span><span id="pfUnread" style="margin-left:auto;background:var(--danger-soft);color:var(--danger);font-size:11px;padding:1px 7px;border-radius:999px;display:none">0</span></a>' +
-           '<a class="drop-item" href="/member.php" style="border-bottom:1px solid var(--border-soft);margin-bottom:2px"><span class="ic">' + I.users + '</span><span>完整个人中心</span><span style="margin-left:auto;color:var(--faint);font-size:11px">→</span></a>' +
-           '<a class="drop-item" id="pfOrg" href="/enterprise" style="border-bottom:1px solid var(--border-soft);margin-bottom:2px"><span class="ic">' + I.box + '</span><span>申请商业版</span><span style="margin-left:auto;color:var(--faint);font-size:11px">→</span></a>' +
-          '<div class="set-row"><div><div class="st2">深色主题</div><div class="sd">跟随你的偏好</div></div><div class="switch" id="setTheme" role="switch" aria-checked="false" tabindex="0"></div></div>' +
-          '<div class="set-row"><div><div class="st2">减少动效</div><div class="sd">关闭动画与过渡</div></div><div class="switch" id="setRM" role="switch" aria-checked="false" tabindex="0"></div></div>' +
-          '<button type="button" class="btn ghost" id="pfLogout" style="width:100%;margin-top:14px;color:var(--danger);border-color:var(--danger)">退出登录</button>' +
-        '</div>' +
-      '</div></div>';
-    document.body.appendChild(ui);
+      /* 渲染标签页导航 */
+      function renderTabs() {
+        var tabs = g('tabs');
+        if (!tabs) return;
+        tabs.innerHTML = '';
+        NAV.forEach(function (n) {
+          var a = document.createElement('a');
+          a.className = 'tab' + (n.id === PAGE ? ' active' : '');
+          a.href = n.href;
+          a.setAttribute('data-nav', n.id);
+          a.innerHTML = '<span class="ic">' + (I[n.icon] || '') + '</span><span>' + t(n) + '</span>';
+          if (n.mega) {
+            a.classList.add('tab');
+            var mm = document.createElement('div');
+            mm.className = 'mega';
+            var html = '<div class="mega-top"><h4>' + n.mega.title + '</h4><p>' + (n.mega.blurb || '') + '</p></div><div class="mega-cols">';
+            (n.mega.cols || []).forEach(function (col) {
+              html += '<div><div class="mega-col-head">' + col.head + '</div>';
+              (col.items || []).forEach(function (it) {
+                html += '<a class="mega-item" href="' + it.href + '"><b>' + it.t + '</b><span>' + it.d + '</span></a>';
+              });
+              html += '</div>';
+            });
+            html += '</div><div class="mega-foot">';
+            (n.mega.foot || []).forEach(function (f) { html += '<a href="' + f.href + '">' + f.t + '</a>'; });
+            html += '</div>';
+            mm.innerHTML = html;
+            a.appendChild(mm);
+          }
+          tabs.appendChild(a);
+        });
+      }
+      renderTabs();
+      loadLang(function () { renderTabs(); });
 
-    /* 渲染标签页导航（浏览器标签形态：左图标右文字） */
-    function renderTabs() {
-      var tabs = g('tabs');
-      if (!tabs) return;
-      tabs.innerHTML = '';
+      /* 侧栏 */
+      var sb = document.createElement('aside');
+      sb.id = 'sidebar';
+      sb.innerHTML = '<div class="ws" id="ws" role="button" tabindex="0" aria-label="收起侧栏" title="收起侧栏"><span class="ic">' + BRAND_SVG + '</span><b>Open Flow · ' + (PAGE === 'home' ? '首页' : PAGE) + '</b><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span></div><div class="sec-title"><span>站点</span></div><div id="sbNav"></div><div class="sec-title"><span>账户</span></div><button class="drop-item" id="drawer-auth"><span class="ic">' + I.users + '</span><b id="drawer-auth-label">登录 / 注册</b></button><div class="sb-foot"><button id="sb-toggle" aria-label="折叠侧栏" title="折叠侧栏"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9 4v16"/></svg></button></div>';
+      document.body.appendChild(sb);
+      var sbNav = g('sbNav');
       NAV.forEach(function (n) {
         var a = document.createElement('a');
-        a.className = 'tab' + (n.id === PAGE ? ' active' : '');
+        a.className = 's-item' + (n.id === PAGE ? ' on' : '');
         a.href = n.href;
-        a.setAttribute('data-nav', n.id);
-        a.innerHTML = '<span class="ic">' + (I[n.icon] || '') + '</span><span>' + t(n) + '</span>';
-        if (n.mega) {
-          a.classList.add('tab');
-          var mm = document.createElement('div');
-          mm.className = 'mega';
-          var html = '<div class="mega-top"><h4>' + n.mega.title + '</h4><p>' + (n.mega.blurb || '') + '</p></div><div class="mega-cols">';
-          (n.mega.cols || []).forEach(function (col) {
-            html += '<div><div class="mega-col-head">' + col.head + '</div>';
-            (col.items || []).forEach(function (it) {
-              html += '<a class="mega-item" href="' + it.href + '"><b>' + it.t + '</b><span>' + it.d + '</span></a>';
-            });
-            html += '</div>';
-          });
-          html += '</div><div class="mega-foot">';
-          (n.mega.foot || []).forEach(function (f) { html += '<a href="' + f.href + '">' + f.t + '</a>'; });
-          html += '</div>';
-          mm.innerHTML = html;
-          a.appendChild(mm);
-        }
-        tabs.appendChild(a);
+        a.innerHTML = '<span class="ic">' + (I[n.icon] || '') + '</span><b>' + t(n) + '</b>';
+        sbNav.appendChild(a);
+      });
+
+      /* 主内容避让 */
+      var mains = document.querySelectorAll('main');
+      (mains.length ? mains : [document.body]).forEach(function (m) {
+        var cur = parseInt(getComputedStyle(m).marginLeft, 10) || 0;
+        if (cur < 262) m.style.marginLeft = '282px';
+        if (m === document.body) m.style.paddingTop = '96px';
+        var ml = parseInt(getComputedStyle(m).marginLeft, 10) || 0;
+        document.documentElement.style.setProperty('--content-x', ml + 'px');
       });
     }
-    renderTabs();
-    loadLang(function () { renderTabs(); });
 
-    /* 侧栏（Arc 三态：full → rail → closed → drawer） */
-    var sb = document.createElement('aside');
-    sb.id = 'sidebar';
-    var sbHtml =
-      '<div class="ws" id="ws" role="button" tabindex="0" aria-label="收起侧栏" title="收起侧栏">' +
-        '<span class="ic">' + BRAND_SVG + '</span><b>Open Flow · ' + (PAGE === 'home' ? '首页' : PAGE) + '</b>' +
-        '<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>' +
-      '</div>' +
-      '<div class="sec-title"><span>站点</span></div>' +
-      '<div id="sbNav"></div>' +
-      '<div class="sec-title"><span>账户</span></div>' +
-      '<button class="drop-item" id="drawer-auth"><span class="ic">' + I.users + '</span><b id="drawer-auth-label">登录 / 注册</b></button>' +
-      '<div class="sb-foot"><button id="sb-toggle" aria-label="折叠侧栏" title="折叠侧栏"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9 4v16"/></svg></button></div>';
-    sb.innerHTML = sbHtml;
-    document.body.appendChild(sb);
-    var sbNav = g('sbNav');
-    NAV.forEach(function (n) {
-      var a = document.createElement('a');
-      a.className = 's-item' + (n.id === PAGE ? ' on' : '');
-      a.href = n.href;
-      a.innerHTML = '<span class="ic">' + (I[n.icon] || '') + '</span><b>' + t(n) + '</b>';
-      sbNav.appendChild(a);
-    });
-
-    /* 主内容避让（侧栏 + 胶囊 chrome） */
-    var mains = document.querySelectorAll('main');
-    (mains.length ? mains : [document.body]).forEach(function (m) {
-      var cur = parseInt(getComputedStyle(m).marginLeft, 10) || 0;
-      if (cur < 262) m.style.marginLeft = '282px';
-      if (m === document.body) m.style.paddingTop = '96px';
-      var ml = parseInt(getComputedStyle(m).marginLeft, 10) || 0;
-      document.documentElement.style.setProperty('--content-x', ml + 'px');
-    });
-
-    /* ── 状态：主题 / 侧栏 / 胶囊 ── */
+    /* ── 事件绑定（无论 chrome 是 SSR 还是 JS 创建都执行）─── */
     var LS = 'openflow-site-v3', SK = 'of_session_v3';
     var S;
     try { S = JSON.parse(localStorage.getItem(LS) || '{}'); } catch (e) { S = {}; }
@@ -342,7 +312,7 @@
     }
     applyTheme();
     var themeBtn = g('btn-theme');
-    themeBtn.addEventListener('click', function () {
+    if (themeBtn) themeBtn.addEventListener('click', function () {
       document.documentElement.classList.add('theme-switching');
       S.theme = S.theme === 'dark' ? 'light' : 'dark';
       try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {}
@@ -352,223 +322,33 @@
 
     /* 侧栏状态机 */
     var menuBtn = g('btn-menu'), scrim = g('scrim'), sbToggle = g('sb-toggle'), wsBtn = g('ws');
+    var sbNav = g('sbNav');
     var sbOrder = ['full', 'rail', 'closed'];
     function sbSet(v) { document.body.dataset.sb = v; S.sb = v; try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {} }
-    function sbOpen(v) { document.body.dataset.sb = v ? 'drawer' : (S.sb || 'full'); menuBtn.setAttribute('aria-expanded', v ? 'true' : 'false'); }
+    function sbOpen(v) { document.body.dataset.sb = v ? 'drawer' : (S.sb || 'full'); if (menuBtn) menuBtn.setAttribute('aria-expanded', v ? 'true' : 'false'); }
     if (S.sb === 'rail' || S.sb === 'closed') sbSet(S.sb);
-    sbToggle.addEventListener('click', function () {
+    if (sbToggle) sbToggle.addEventListener('click', function () {
       if (matchMedia('(max-width:860px)').matches) { sbOpen(false); return; }
       var cur = document.body.dataset.sb === 'drawer' ? (S.sb || 'full') : document.body.dataset.sb;
       var i = sbOrder.indexOf(cur); if (i < 0) i = 0;
       sbSet(sbOrder[(i + 1) % 3]);
     });
-    wsBtn.addEventListener('click', function () { sbSet('closed'); });
-    wsBtn.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sbSet('closed'); } });
-    menuBtn.addEventListener('click', function () { sbOpen(document.body.dataset.sb !== 'drawer'); });
-    scrim.addEventListener('click', function () { sbOpen(false); });
-    sbNav.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { sbOpen(false); }); });
+    if (wsBtn) wsBtn.addEventListener('click', function () { sbSet('closed'); });
+    if (menuBtn) menuBtn.addEventListener('click', function () { sbOpen(document.body.dataset.sb !== 'drawer'); });
+    if (scrim) scrim.addEventListener('click', function () { sbOpen(false); });
+    if (sbNav) sbNav.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { sbOpen(false); }); });
 
-    /* 滚动胶囊（y>24 收胶囊，y>260 缩档） */
+    /* 滚动胶囊 */
     var chrome = g('chrome');
     function onScroll() {
       var y = window.scrollY || document.documentElement.scrollTop;
-      chrome.classList.toggle('scrolled', y > 24);
-      chrome.classList.toggle('capsule-mode', y > 260);
+      if (chrome) {
+        chrome.classList.toggle('scrolled', y > 24);
+        chrome.classList.toggle('capsule-mode', y > 260);
+      }
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
-
-    /* ── 账户（真实 API /api/member.php） ── */
-    function curUser() { return S.user || null; }
-    function setUser(u) {
-      S.user = u || null;
-      try { if (u) localStorage.setItem(SK, u.email); else localStorage.removeItem(SK); } catch (e) {}
-      refreshAuth();
-    }
-    try { var sess = localStorage.getItem(SK); if (sess && !S.user) { S.user = { email: sess, nick: sess.split('@')[0] }; } } catch (e) {}
-    function toast(txt) {
-      var t = document.createElement('div');
-      t.className = 'toast'; t.textContent = txt;
-      t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite');
-      document.body.appendChild(t);
-      setTimeout(function () { t.classList.add('out'); setTimeout(function () { t.remove(); }, 400); }, 2600);
-    }
-    var avBtn = g('btn-av'), drop = g('drop');
-    function refreshAuth() {
-      var u = curUser(), lab = g('drawer-auth-label');
-      if (u) {
-        avBtn.textContent = (u.nick || u.email || '?').charAt(0).toUpperCase();
-        avBtn.classList.add('logged');
-        avBtn.setAttribute('aria-label', '账户：' + (u.nick || u.email));
-        if (lab) lab.textContent = '个人中心';
-        g('dropName').textContent = u.nick || u.email;
-        g('dropMail').textContent = u.email;
-      } else {
-        avBtn.textContent = '';
-        avBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c1.4-3.5 4.2-5.2 7.5-5.2s6.1 1.7 7.5 5.2"/></svg>';
-        avBtn.classList.remove('logged');
-        avBtn.setAttribute('aria-label', '登录 / 注册');
-        if (lab) lab.textContent = '登录 / 注册';
-      }
-    }
-    refreshAuth();
-    avBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      if (curUser()) drop.classList.toggle('open');
-      else openAuth('login');
-    });
-    g('dropProfile').addEventListener('click', function () { drop.classList.remove('open'); openProfile(); });
-    g('dropLogout').addEventListener('click', function () { drop.classList.remove('open'); setUser(null); toast('已退出登录'); });
-    g('drawer-auth').addEventListener('click', function () { if (curUser()) openProfile(); else openAuth('login'); });
-    document.addEventListener('click', function (e) {
-      if (drop.classList.contains('open') && !drop.contains(e.target) && !avBtn.contains(e.target)) drop.classList.remove('open');
-    });
-
-    /* 焦点陷阱 + 滚动锁 */
-    var lastFocus = null;
-    function lockScroll(on) { document.body.style.overflow = on ? 'hidden' : ''; }
-    function trapFocus(cont, e) {
-      var f = cont.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');
-      if (!f.length) return;
-      var first = f[0], lastF = f[f.length - 1];
-      if (e.key === 'Tab') {
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); lastF.focus(); }
-        else if (!e.shiftKey && document.activeElement === lastF) { e.preventDefault(); first.focus(); }
-      }
-    }
-
-    /* 登录 / 注册 */
-    var authModal = g('authModal');
-    function openAuth(mode) {
-      lastFocus = document.activeElement; lockScroll(true);
-      authModal.classList.add('open'); setAuthMode(mode || 'login');
-      setTimeout(function () { var f = authModal.querySelector('#fMail'); if (f) f.focus(); }, 30);
-    }
-    function closeAuth() {
-      authModal.classList.remove('open'); g('authErr').classList.remove('show');
-      lockScroll(false); if (lastFocus) lastFocus.focus();
-    }
-    function setAuthMode(m) {
-      var login = m === 'login';
-      g('tabLogin').classList.toggle('on', login); g('tabReg').classList.toggle('on', !login);
-      g('regFields').style.display = login ? 'none' : 'block';
-      g('authTitle').textContent = login ? '登录 OpenFlow' : '注册 OpenFlow';
-      authModal.setAttribute('aria-label', login ? '登录' : '注册');
-      g('authSubmit').textContent = login ? '登录' : '注册并进入个人中心';
-    }
-    g('tabLogin').addEventListener('click', function () { setAuthMode('login'); });
-    g('tabReg').addEventListener('click', function () { setAuthMode('register'); });
-    authModal.addEventListener('keydown', function (e) { if (authModal.classList.contains('open')) trapFocus(authModal, e); });
-    g('authSubmit').addEventListener('click', function () {
-      var mail = g('fMail').value.trim(), pwd = g('fPwd').value, nick = g('fNick').value.trim(), err = g('authErr');
-      var reg = !g('tabLogin').classList.contains('on');
-      err.classList.remove('show');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { err.textContent = '请输入有效的邮箱地址'; err.classList.add('show'); return; }
-      if (pwd.length < 6) { err.textContent = '密码至少 6 位'; err.classList.add('show'); return; }
-      if (reg && (nick.length < 2 || nick.length > 20)) { err.textContent = '昵称需 2-20 个字符'; err.classList.add('show'); return; }
-      var btn = g('authSubmit'), orig = btn.textContent;
-      btn.disabled = true; btn.textContent = '处理中…';
-      var fd = new FormData();
-      fd.append('account', mail); fd.append('password', pwd);
-      if (reg) { fd.append('name', nick); fd.append('email', mail); }
-      fetch('/api/member.php?action=' + (reg ? 'register' : 'login'), { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
-        .then(function (r) { return r.json().then(function (d) { return { http: r.status, d: d }; }).catch(function () { return { http: 0, d: {} }; }); })
-        .then(function (res) {
-          btn.disabled = false; btn.textContent = orig;
-          var d = res.d || {};
-          if (res.http === 200 && d.ok) {
-            setUser({ email: mail, nick: reg ? nick : mail.split('@')[0] });
-            closeAuth(); toast(reg ? '注册成功，欢迎加入芭乐派' : '已登录，欢迎回来');
-            openProfile();
-          } else {
-            err.textContent = d.error || '操作失败，请稍后再试'; err.classList.add('show');
-          }
-        })
-        .catch(function () { btn.disabled = false; btn.textContent = orig; err.textContent = '网络异常，请稍后再试'; err.classList.add('show'); });
-    });
-
-    /* 个人中心 */
-    var pfModal = g('profileModal');
-    function openProfile() {
-      var u = curUser(); if (!u) { openAuth('login'); return; }
-      g('pfAv').textContent = (u.nick || u.email).charAt(0).toUpperCase();
-      g('pfName').textContent = u.nick || u.email;
-      g('pfMail').textContent = u.email;
-      g('pfC1').textContent = '…'; g('pfC2').textContent = '…'; g('pfC3').textContent = '…';
-      var un = g('pfUnread');
-      fetch('/api/member.php?action=profile_summary', { method: 'POST', headers: { 'Accept': 'application/json' } })
-        .then(function (r) { return r.json().catch(function () { return {}; }); })
-        .then(function (d) {
-          if (d && d.ok && d.stats) {
-            g('pfC1').textContent = d.stats.courses || 0;
-            g('pfC2').textContent = d.stats.orders || 0;
-            g('pfC3').textContent = d.stats.consultations || 0;
-            if (un && (d.stats.unread || 0) > 0) { un.style.display = 'inline'; un.textContent = d.stats.unread; }
-            var orgLink = g('pfOrg');
-            if (orgLink && d.org) {
-              orgLink.href = '/member.php?view=org';
-              orgLink.innerHTML = '<span class="ic">' + I.box + '</span><span>' + (d.org.name || '企业') + ' · 企业控制台</span><span style="margin-left:auto;color:var(--faint);font-size:11px">→</span>';
-            }
-          } else {
-            g('pfC1').textContent = 0; g('pfC2').textContent = 0; g('pfC3').textContent = 0;
-          }
-        })
-        .catch(function () { g('pfC1').textContent = 0; g('pfC2').textContent = 0; g('pfC3').textContent = 0; });
-      g('setTheme').setAttribute('aria-checked', document.documentElement.dataset.theme === 'dark' ? 'true' : 'false');
-      g('setRM').setAttribute('aria-checked', document.documentElement.classList.contains('rm') ? 'true' : 'false');
-      lastFocus = document.activeElement; lockScroll(true);
-      pfModal.classList.add('open');
-      setTimeout(function () { var f = pfModal.querySelector('.mbox button,.mbox .switch'); if (f) f.focus(); }, 30);
-    }
-    function closePf() { pfModal.classList.remove('open'); lockScroll(false); if (lastFocus) lastFocus.focus(); }
-    g('setTheme').addEventListener('click', function () {
-      themeBtn.click();
-      this.setAttribute('aria-checked', document.documentElement.dataset.theme === 'dark' ? 'true' : 'false');
-    });
-    g('setRM').addEventListener('click', function () {
-      var on = this.getAttribute('aria-checked') === 'true';
-      this.setAttribute('aria-checked', on ? 'false' : 'true');
-      document.documentElement.classList.toggle('rm', !on);
-      window.__timers = window.__timers || [];
-      if (!on) window.__timers.forEach(function (t) { clearInterval(t); });
-    });
-    g('pfLogout').addEventListener('click', function () { closePf(); setUser(null); toast('已退出登录'); });
-    pfModal.addEventListener('keydown', function (e) { if (pfModal.classList.contains('open')) trapFocus(pfModal, e); });
-    document.querySelectorAll('[data-close]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var t = b.getAttribute('data-close');
-        if (t === 'authModal') closeAuth();
-        else if (t === 'profileModal') closePf();
-      });
-    });
-
-    /* ── 命令面板 ── */
-    var pal = g('palette'), palOv = g('palOverlay'), palInput = g('palInput'), palList = g('palList');
-    function openPalette() {
-      palList.innerHTML = '';
-      NAV.forEach(function (n) {
-        var a = document.createElement('a');
-        a.className = 'p-item'; a.href = n.href;
-        a.innerHTML = ic(n.icon) + '<span>' + t(n) + '</span><span class="p-hint">打开页面</span>';
-        palList.appendChild(a);
-      });
-      pal.classList.add('open'); palOv.classList.add('open');
-      palInput.value = ''; palInput.focus();
-    }
-    function closePalette() { pal.classList.remove('open'); palOv.classList.remove('open'); }
-    g('btn-cmd').addEventListener('click', openPalette);
-    palOv.addEventListener('click', closePalette);
-    palInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closePalette();
-      if (e.key === 'Enter') { var a = palList.querySelector('a'); if (a) location.href = a.href; }
-    });
-    document.addEventListener('keydown', function (e) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        pal.classList.contains('open') ? closePalette() : openPalette();
-      }
-      if (e.key === 'Escape') { closePalette(); drop.classList.remove('open'); }
-    });
   }
 
   if (document.body) mount();
