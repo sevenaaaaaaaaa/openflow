@@ -29,6 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     $settings['enabled'] = isset($_POST['enabled']);
     $settings['xfpay_appid'] = trim($_POST['xfpay_appid'] ?? '');
     $settings['xfpay_secret'] = trim($_POST['xfpay_secret'] ?? '');
+    $settings['xfpay_wechat_appid'] = trim($_POST['xfpay_wechat_appid'] ?? '');
+    $settings['xfpay_wechat_secret'] = trim($_POST['xfpay_wechat_secret'] ?? '');
+    $settings['xfpay_alipay_appid'] = trim($_POST['xfpay_alipay_appid'] ?? '');
+    $settings['xfpay_alipay_secret'] = trim($_POST['xfpay_alipay_secret'] ?? '');
+    $settings['xfpay_gateway'] = trim($_POST['xfpay_gateway'] ?? 'https://api.xunhupay.com/payment/do.html');
     $settings['commission_rate'] = max(0, min(90, (int)($_POST['commission_rate'] ?? 20)));
     $settings['min_withdraw'] = (float)($_POST['min_withdraw'] ?? 100);
     $settings['course_prices'] = $course_prices;
@@ -76,10 +81,21 @@ admin_header('商城与分销');
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px"><input type="checkbox" name="enabled" value="1" <?=$settings['enabled']?'checked':''?> style="width:16px;height:16px"> 启用在线购买</label>
         </div>
         <div class="field-row">
-          <div class="field"><label>虎皮椒 APPID</label><input type="text" name="xfpay_appid" value="<?=htmlspecialchars($settings['xfpay_appid'])?>" placeholder="在虎皮椒后台获取"></div>
-          <div class="field"><label>虎皮椒通讯密钥</label><input type="password" name="xfpay_secret" value="<?=htmlspecialchars($settings['xfpay_secret'])?>" placeholder="通讯密钥"></div>
+          <div class="field"><label>默认 APPID（兼容旧配置）</label><input type="text" name="xfpay_appid" value="<?=htmlspecialchars($settings['xfpay_appid'])?>" placeholder="虎皮椒后台获取"></div>
+          <div class="field"><label>默认通讯密钥</label><input type="password" name="xfpay_secret" value="<?=htmlspecialchars($settings['xfpay_secret'])?>" placeholder="通讯密钥"></div>
         </div>
-        <p class="text-sm text-muted">虎皮椒（XorPay）聚合支付，一个商户号支持微信/支付宝/云闪付等。访问 <a href="https://www.xunhupay.com" target="_blank" rel="noopener" style="color:var(--accent)">xunhupay.com</a> 注册获取。</p>
+        <div class="field-row" style="margin-top:8px">
+          <div class="field"><label>🟢 微信支付 APPID</label><input type="text" name="xfpay_wechat_appid" value="<?=htmlspecialchars($settings['xfpay_wechat_appid'])?>" placeholder="微信通道 APPID（优先）"></div>
+          <div class="field"><label>微信支付密钥</label><input type="password" name="xfpay_wechat_secret" value="<?=htmlspecialchars($settings['xfpay_wechat_secret'])?>" placeholder="微信通道密钥"></div>
+        </div>
+        <div class="field-row" style="margin-top:8px">
+          <div class="field"><label>🔵 支付宝 APPID</label><input type="text" name="xfpay_alipay_appid" value="<?=htmlspecialchars($settings['xfpay_alipay_appid'])?>" placeholder="支付宝通道 APPID（优先）"></div>
+          <div class="field"><label>支付宝密钥</label><input type="password" name="xfpay_alipay_secret" value="<?=htmlspecialchars($settings['xfpay_alipay_secret'])?>" placeholder="支付宝通道密钥"></div>
+        </div>
+        <div class="field-row" style="margin-top:8px">
+          <div class="field"><label>支付网关</label><input type="text" name="xfpay_gateway" value="<?=htmlspecialchars($settings['xfpay_gateway'] ?? 'https://api.xunhupay.com/payment/do.html')?>" placeholder="虎皮椒支付网关"></div>
+        </div>
+        <p class="text-sm text-muted" style="margin-top:8px">虎皮椒（XunhuPay）聚合支付。微信/支付宝通道可分别配置 APPID 和密钥（优先级高于默认值）。访问 <a href="https://www.xunhupay.com" target="_blank" rel="noopener" style="color:var(--accent)">xunhupay.com</a> 注册获取。</p>
       </div>
 
       <div class="card">
