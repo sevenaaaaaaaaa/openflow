@@ -92,7 +92,7 @@ admin_header('文章');
   .cat-chip.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 </style>
 
-<div class="mx-auto px-5" style="max-width:1200px;padding-top:24px;padding-bottom:64px">
+<div style="padding:0 clamp(16px,4vw,40px);padding-top:24px;padding-bottom:64px">
 
   <!-- 页面标题 -->
   <div style="margin-bottom:24px">
