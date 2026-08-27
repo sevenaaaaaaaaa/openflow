@@ -29,7 +29,7 @@ $topic = $topicNames[$post['topic'] ?? ''] ?? ['name'=>'综合','icon'=>'💬'];
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?=htmlspecialchars($post['title'])?> | OpenFlow 社区</title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   /* ── 设计语言统一：token 语义工具类 ── */
   .text-fg{color:var(--fg)}.text-muted{color:var(--muted)}.text-faint{color:var(--faint)}
@@ -40,10 +40,17 @@ $topic = $topicNames[$post['topic'] ?? ''] ?? ['name'=>'综合','icon'=>'💬'];
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="community"></script>
+  <header class="border-b" style="background:var(--glass-bright);border-color:var(--border);backdrop-filter:blur(10px);position:sticky;top:0;z-index:40">
+    <div class="mx-auto px-5 py-3 flex items-center justify-between" style="max-width:900px">
+      <a href="/" class="font-bold text-lg text-fg">OpenFlow</a>
+      <nav class="flex items-center gap-4 text-sm">
+        <a href="/community" class="text-muted">← 返回社区</a>
+        <?php if ($member): ?><a href="/member.php" class="font-semibold text-ok"><?=htmlspecialchars($member['name'])?></a><?php endif; ?>
+      </nav>
+    </div>
+  </header>
 
-  <div style="padding:calc(var(--chrome-h,56px) + 24px) 20px 40px;max-width:900px;margin:0 auto">
-    <a href="/community" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--accent);margin-bottom:16px">← 返回社区</a>
+  <div class="mx-auto px-5 py-8" style="max-width:900px">
     <!-- 帖子 -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px">
       <div style="font-size:12px;color:var(--faint);margin-bottom:8px"><?=$topic['icon']?> <?=htmlspecialchars($topic['name'])?> · by <?=htmlspecialchars($post['author_name'])?> · <?=htmlspecialchars(substr($post['created_at']??'',0,10))?></div>

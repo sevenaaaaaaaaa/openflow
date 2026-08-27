@@ -417,35 +417,6 @@ admin_header('健康检测');
       <?php endforeach; ?>
     </div>
 
-    <!-- URL 巡检：自动检测 403/404 -->
-    <div class="card">
-      <div class="flex items-center gap-3" style="align-items:center">
-        <h2 style="margin-bottom:0">🔗 URL 巡检（403/404 自动检测）</h2>
-        <button id="scanBtn" class="btn btn-primary btn-sm" onclick="siteHealthScan(this)" style="margin-left:auto">▶ 开始巡检</button>
-      </div>
-      <p class="sub" style="margin-top:8px">自动从数据生成全站链接（技能/插件/主题/课程/落地页/文章/导航站/后台页 + 静态路由）并逐个请求检测，揪出 403/404/5xx 死链，无需人工逐个点击。</p>
-      <div id="scanProgress" class="mt-3" style="display:none">
-        <div class="flex justify-between text-xs mb-1" style="color:var(--text-3)">
-          <span id="scanPos">0</span><span id="scanStat">准备中…</span>
-        </div>
-        <div style="height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden">
-          <i id="scanBar" style="display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .2s"></i>
-        </div>
-      </div>
-      <div id="scanSummary" class="mt-3" style="display:none">
-        <div class="stat-chips">
-          <span class="chip" style="color:var(--ok)">✓ <b id="sumOk">0</b> 正常</span>
-          <span class="chip" style="color:var(--danger)">✕ <b id="sumFail">0</b> 异常(403/404/5xx)</span>
-          <span class="chip" style="color:var(--text-3)">共 <b id="sumTotal">0</b> 条</span>
-          <span style="margin-left:auto">
-            <button class="btn btn-ghost btn-sm" onclick="scanFilter('all')">全部</button>
-            <button class="btn btn-sm" style="background:var(--danger);color:#fff;border:none" onclick="scanFilter('fail')">仅异常</button>
-          </span>
-        </div>
-      </div>
-      <div id="scanResults" class="mt-3" style="display:none"></div>
-    </div>
-
     <!-- 待修复清单 -->
     <div class="card">
       <h2>🔧 需要处理的事项</h2>
@@ -469,51 +440,4 @@ admin_header('健康检测');
     </div>
   </div>
 </div>
-<script>
-let scanAll = [];
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function siteHealthScan(btn) {
-  if (btn && btn.dataset.running) return;
-  btn.dataset.running = '1'; btn.textContent = '⏳ 巡检中…';
-  ['scanProgress','scanSummary','scanResults'].forEach(id => document.getElementById(id).style.display = 'block');
-  document.getElementById('scanResults').innerHTML = '<div class="empty-fix" style="padding:16px">正在构建巡检清单…</div>';
-  const b = await (await fetch('/api/site-health.php?action=build')).json();
-  const total = b.total; scanAll = [];
-  document.getElementById('sumTotal').textContent = total;
-  document.getElementById('scanStat').textContent = '共 ' + total + ' 条链接';
-  const STEP = 6;
-  for (let off = 0; off < total; off += STEP) {
-    const r = await fetch('/api/site-health.php?action=scan&offset=' + off + '&limit=' + STEP).then(x => x.json());
-    scanAll = scanAll.concat(r.items);
-    const done = Math.min(off + STEP, total);
-    document.getElementById('scanPos').textContent = done + ' / ' + total;
-    document.getElementById('scanBar').style.width = (done / total * 100).toFixed(1) + '%';
-    const fails = scanAll.filter(i => !i.ok);
-    document.getElementById('sumOk').textContent = done - fails.length;
-    document.getElementById('sumFail').textContent = fails.length;
-    document.getElementById('scanStat').textContent = fails.length ? '发现 ' + fails.length + ' 条异常' : '全部正常';
-  }
-  renderScan();
-  btn.textContent = '↻ 重新巡检'; delete btn.dataset.running;
-}
-function renderScan() {
-  const fails = scanAll.filter(i => !i.ok);
-  const show = scanFilterMode === 'fail' ? fails : scanAll;
-  const box = document.getElementById('scanResults');
-  if (!fails.length) { box.innerHTML = '<div class="empty-fix" style="padding:20px">🎉 全部链接可正常访问，未发现 403/404</div>'; return; }
-  let h = '<table style="width:100%;border-collapse:collapse;font-size:13px">' +
-    '<tr style="color:var(--text-3);text-align:left"><th style="padding:8px;border-bottom:1px solid var(--border)">链接</th><th style="padding:8px;border-bottom:1px solid var(--border)">分组</th><th style="padding:8px;border-bottom:1px solid var(--border)">状态码</th><th style="padding:8px;border-bottom:1px solid var(--border)">耗时</th></tr>';
-  show.forEach(i => {
-    const bad = !i.ok;
-    h += '<tr><td style="padding:8px;border-bottom:1px solid var(--border)"><a href="' + esc(i.url) + '" target="_blank" style="' + (bad ? 'color:var(--danger);font-weight:600' : 'color:var(--accent)') + '">' + esc(i.label) + '</a></td>' +
-      '<td style="padding:8px;border-bottom:1px solid var(--border);color:var(--text-2)">' + esc(i.group) + '</td>' +
-      '<td style="padding:8px;border-bottom:1px solid var(--border)"><b style="color:' + (bad ? 'var(--danger)' : 'var(--ok)') + '">' + i.code + '</b></td>' +
-      '<td style="padding:8px;border-bottom:1px solid var(--border);color:var(--text-3)">' + i.ms + 'ms</td></tr>';
-  });
-  h += '</table>';
-  box.innerHTML = h;
-}
-let scanFilterMode = 'fail';
-function scanFilter(m) { scanFilterMode = m; renderScan(); }
-</script>
 <?php admin_footer(); ?>

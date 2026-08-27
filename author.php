@@ -1,7 +1,7 @@
 <?php
 /**
  * 作者/讲师主页
- * /author/{name} — 显示该作者的简介、文章、课程、Skills/插件
+ * /authors/{name} — 显示该作者的简介、文章、课程、Skills/插件
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
@@ -42,7 +42,7 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
 <title><?=htmlspecialchars($pageTitle)?></title>
 <meta name="description" content="<?=htmlspecialchars($authorName)?> 在 <?=site_config_get('site_name')?> 发布的文章、课程与技能">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .acard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;transition:.15s;display:block;text-decoration:none;color:inherit}
@@ -50,7 +50,7 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1100px">
     <!-- 作者信息 -->
@@ -78,7 +78,7 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
     <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span> 专栏文章 (<?=count($articles)?>)</h2>
     <div class="grid gap-3 mb-10 md:grid-cols-2">
       <?php foreach (array_slice($articles, 0, 12) as $a): ?>
-      <a href="/article/<?=htmlspecialchars($a['slug'])?>" class="acard">
+      <a href="/articles/<?=htmlspecialchars($a['slug'])?>" class="acard">
         <div class="font-semibold text-gray-900"><?=htmlspecialchars($a['title'])?></div>
         <div class="text-xs text-gray-400 mt-1"><?=htmlspecialchars($catNames[$a['category'] ?? ''] ?? '')?> · <?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?></div>
       </a>
@@ -90,7 +90,7 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
     <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span> 课程</h2>
     <div class="grid gap-3 mb-10 md:grid-cols-2">
       <?php foreach ($courses as $c): ?>
-      <a href="/course/<?=htmlspecialchars($c['id'])?>" class="acard">
+      <a href="/courses/<?=htmlspecialchars($c['id'])?>" class="acard">
         <div class="flex items-center justify-between">
           <div class="font-semibold text-gray-900"><?=htmlspecialchars($c['title'] ?? '')?></div>
           <span class="text-xs font-bold text-green-600"><?=($c['price'] ?? 0) ? '¥'.$c['price'] : '免费'?></span>

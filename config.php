@@ -204,8 +204,21 @@ function get_leads(): array {
 
 // ─── Articles ──────────────────────────────────────
 function get_articles(): array {
-    $all = json_read(ARTICLES_DIR . '/index.json');
+    $file = ARTICLES_DIR . '/index.json';
+    $cacheKey = 'articles:' . md5((string)@filemtime($file)) . ':' . @filesize($file);
+    try {
+        require_once __DIR__ . '/../lib/Cache.php';
+        $fc = new FileCache();
+        $cached = $fc->get($cacheKey);
+        if (is_array($cached) && !empty($cached)) return $cached;
+    } catch (\Throwable $e) {}
+    $all = json_read($file);
     usort($all, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
+    try {
+        require_once __DIR__ . '/../lib/Cache.php';
+        $fc = new FileCache();
+        $fc->set($cacheKey, $all, 300);
+    } catch (\Throwable $e) {}
     return $all;
 }
 
@@ -1376,7 +1389,6 @@ window.fcMarkErrors = function(errors) {
 };
 </script>
 <!-- ═══ 全局 AI 小助手 ═══ -->
-<link href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.3/index.min.css" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
   :root{
     --h-head-grad:linear-gradient(135deg,#1a1625,#2b5f7e);

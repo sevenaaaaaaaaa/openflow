@@ -6,7 +6,7 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 
 // 页面缓存（5 分钟）
-if (PageCache::begin('docs', 300)) exit;
+if (PageCache::begin('docs', 1800)) exit;
 
 $siteName = site_config_get('site_name', 'OpenFlow');
 
@@ -107,25 +107,25 @@ $docTitle = $docIndex[$docName]['title'] ?? $docName;
 
 // API 端点列表
 $apiEndpoints = [
-    ['path' => '/api/form-submit.php', 'method' => 'POST', 'desc' => '统一表单提交：线索入库 + CRM + 通知 + 数据流', 'params' => 'form_slug + 字段（或 slug + data JSON）'],
-    ['path' => '/api/community.php', 'method' => 'GET/POST', 'desc' => '论坛：topics / posts 拉取，create_post / vote 操作', 'params' => 'action, topic, title, content'],
-    ['path' => '/api/articles.php', 'method' => 'GET', 'desc' => '文章列表：type=list 按分类/标签筛选', 'params' => 'type, category, tag, limit'],
-    ['path' => '/api/member.php', 'method' => 'POST', 'desc' => '会员：注册 / 登录 / 登出 / 申请讲师', 'params' => 'action, account, password'],
-    ['path' => '/api/track.php', 'method' => 'POST', 'desc' => '统一行为埋点：page_view / button_click / form_submit 等', 'params' => 'event, props, label'],
-    ['path' => '/api/newsletter.php', 'method' => 'POST', 'desc' => 'Newsletter 订阅', 'params' => 'email, source'],
-    ['path' => '/api/download.php', 'method' => 'POST', 'desc' => '资料下载门禁：验证后返回下载链接', 'params' => 'download_id, name, email, company'],
-    ['path' => '/api/conversion.php', 'method' => 'GET', 'desc' => '转化组件配置：top_bar / bottom_cta / popup', 'params' => '—'],
-    ['path' => '/api/site-structure.php', 'method' => 'GET', 'desc' => '站点结构：全局导航 / 页脚 / 自定义页面', 'params' => '—'],
-    ['path' => '/api/landing.php', 'method' => 'GET', 'desc' => '聚合页数据：slug → 页面 + 聚合文章', 'params' => 'slug'],
-    ['path' => '/api/search.php', 'method' => 'GET', 'desc' => '站内搜索：文章 / 课程 / 资料', 'params' => 'q'],
+    ['path' => '/api/form-submit', 'method' => 'POST', 'desc' => '统一表单提交：线索入库 + CRM + 通知 + 数据流', 'params' => 'form_slug + 字段（或 slug + data JSON）'],
+    ['path' => '/api/community', 'method' => 'GET/POST', 'desc' => '论坛：topics / posts 拉取，create_post / vote 操作', 'params' => 'action, topic, title, content'],
+    ['path' => '/api/articles', 'method' => 'GET', 'desc' => '文章列表：type=list 按分类/标签筛选', 'params' => 'type, category, tag, limit'],
+    ['path' => '/api/member', 'method' => 'POST', 'desc' => '会员：注册 / 登录 / 登出 / 申请讲师', 'params' => 'action, account, password'],
+    ['path' => '/api/track', 'method' => 'POST', 'desc' => '统一行为埋点：page_view / button_click / form_submit 等', 'params' => 'event, props, label'],
+    ['path' => '/api/newsletter', 'method' => 'POST', 'desc' => 'Newsletter 订阅', 'params' => 'email, source'],
+    ['path' => '/api/download', 'method' => 'POST', 'desc' => '资料下载门禁：验证后返回下载链接', 'params' => 'download_id, name, email, company'],
+    ['path' => '/api/conversion', 'method' => 'GET', 'desc' => '转化组件配置：top_bar / bottom_cta / popup', 'params' => '—'],
+    ['path' => '/api/site-structure', 'method' => 'GET', 'desc' => '站点结构：全局导航 / 页脚 / 自定义页面', 'params' => '—'],
+    ['path' => '/api/landing', 'method' => 'GET', 'desc' => '聚合页数据：slug → 页面 + 聚合文章', 'params' => 'slug'],
+    ['path' => '/api/search', 'method' => 'GET', 'desc' => '站内搜索：文章 / 课程 / 资料', 'params' => 'q'],
 ];
 
 // 模板库
 $inlineCta = json_read(DATA_DIR . '/conversion.json')['inline_cta'] ?? [];
 $templates = [
-    ['name' => '预约诊断表单', 'type' => '线索转化', 'desc' => '姓名/企业/职位/联系方式/问题 → CRM 线索自动建档', 'usage' => '表单提交 /api/form-submit.php（form_slug=appointment）'],
-    ['name' => 'Newsletter 订阅框', 'type' => '内容订阅', 'desc' => '邮箱订阅，自动写入订阅列表并触发欢迎邮件', 'usage' => 'POST /api/newsletter.php {email}'],
-    ['name' => '资料下载门禁', 'type' => '线索转化', 'desc' => '白皮书/报告门禁，填表后返回下载链接', 'usage' => 'downloads.php 卡片 + POST /api/download.php'],
+    ['name' => '预约诊断表单', 'type' => '线索转化', 'desc' => '姓名/企业/职位/联系方式/问题 → CRM 线索自动建档', 'usage' => '表单提交 /api/form-submit（form_slug=appointment）'],
+    ['name' => 'Newsletter 订阅框', 'type' => '内容订阅', 'desc' => '邮箱订阅，自动写入订阅列表并触发欢迎邮件', 'usage' => 'POST /api/newsletter {email}'],
+    ['name' => '资料下载门禁', 'type' => '线索转化', 'desc' => '白皮书/报告门禁，填表后返回下载链接', 'usage' => 'downloads.php 卡片 + POST /api/download'],
     ['name' => '顶部通知条', 'type' => '全局组件', 'desc' => '全站置顶通知，可关闭，可埋点', 'usage' => '后台「转化组件」启用 top_bar'],
     ['name' => '底部 CTA 区块', 'type' => '全局组件', 'desc' => '页面底部转化区块，标题+描述+按钮', 'usage' => '后台「转化组件」启用 bottom_cta'],
     ['name' => '弹窗（含内嵌表单）', 'type' => '全局组件', 'desc' => '定时/滚动/离开触发弹窗，可关联表单', 'usage' => '后台「转化组件」启用 popup'],
@@ -142,7 +142,7 @@ if ($inlineCta['enabled'] ?? false) {
 <title>文档中心 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="产品文档 · 模板库 · 开放 API，快速上手 OpenFlow">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .doc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;transition:.15s}
@@ -173,7 +173,7 @@ if ($inlineCta['enabled'] ?? false) {
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="docs"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="docs"></script>
 
 <section style="padding:clamp(20px,4vw,44px) 0 clamp(28px,4vw,48px)">
   <div class="mx-auto px-5" style="max-width:1120px">
@@ -274,7 +274,7 @@ if ($inlineCta['enabled'] ?? false) {
     <div class="doc-card mt-4">
       <h3 class="font-extrabold mb-2">调用示例</h3>
       <pre class="code">// 提交预约线索
-fetch('/api/form-submit.php', {
+fetch('/api/form-submit', {
   method: 'POST',
   body: new URLSearchParams({
     form_slug: 'appointment',
@@ -335,4 +335,4 @@ fetch('/api/form-submit.php', {
 </footer>
 </body>
 </html>
-<?php PageCache::end('docs', 300); ?>
+<?php PageCache::end('docs', 1800); ?>

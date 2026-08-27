@@ -15,7 +15,7 @@ if (!$landing) {
     http_response_code(404);
     ?><!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 | OpenFlow</title>
     <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
     <body style="background:var(--bg);color:var(--fg)"><div class="mx-auto px-5 py-[180px] text-center" style="max-width:var(--container)">

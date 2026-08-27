@@ -20,7 +20,7 @@ $siteName = site_config_get('site_name');
 <title>商业发行版 | 芭乐派 · OpenFlow</title>
 <meta name="description" content="OpenFlow 商业发行版：SaaS 订阅、私有化部署、定制开发。一个 all-in-one 平台，缺什么用插件和技能自己改造。">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
 :root{
   --bg:oklch(96.5% .016 85);--bg-soft:oklch(94% .02 85);
@@ -55,7 +55,7 @@ select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
 <section style="padding:clamp(30px,5vw,64px) 0">
   <div class="mx-auto px-5" style="max-width:1080px">
@@ -141,7 +141,7 @@ function submitTob(e) {
   btn.disabled = true; btn.textContent = '提交中…';
   msg.style.color = 'var(--muted)'; msg.textContent = '正在提交…';
   var fd = new FormData(f);
-  fetch('/api/tob-apply.php', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
+  fetch('/api/tob-apply', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
     .then(function(r){ return r.json().catch(function(){ return {}; }); })
     .then(function(d){
       if (d && d.ok) {

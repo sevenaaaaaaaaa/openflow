@@ -28,7 +28,7 @@ $shopSettings = shop_settings();
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?=$room ? htmlspecialchars($room['title']) : htmlspecialchars($settings['page_title'])?> | <?=site_config_get("site_name")?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .chat-box{height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:14px;background:#faf9f4;border-radius:14px;border:1px solid var(--border)}
@@ -40,13 +40,13 @@ $shopSettings = shop_settings();
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-8" style="max-width:1100px">
     <?php if ($room): ?>
     <?php $st = live_status($room); $sellCourse = !empty($room['sell_course']) ? ($courseMap[$room['sell_course']] ?? null) : null; ?>
     <!-- ═══ 直播间 ═══ -->
-    <a href="/live.php" class="text-sm text-[#2b5f7e]">← 返回直播列表</a>
+    <a href="/live" class="text-sm text-[#2b5f7e]">← 返回直播列表</a>
     <div class="mt-4 grid gap-6" style="grid-template-columns:1fr 320px">
       <div>
         <!-- 播放器 -->
@@ -91,7 +91,7 @@ $shopSettings = shop_settings();
           </div>
           <div class="text-right">
             <div class="text-2xl font-extrabold" style="color:var(--ok)"><?=$price > 0 ? '¥' . number_format($price, 0) : '限时'?></div>
-            <a href="/course/<?=urlencode($sellCourse['id'])?>" class="inline-block mt-2 px-6 py-2 rounded-full font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">查看课程 →</a>
+            <a href="/courses/<?=urlencode($sellCourse['id'])?>" class="inline-block mt-2 px-6 py-2 rounded-full font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">查看课程 →</a>
           </div>
         </div>
         <?php endif; ?>
@@ -113,7 +113,7 @@ $shopSettings = shop_settings();
       var ROOM_ID = <?=json_encode($room['id'])?>;
       var LAST_COUNT = 0;
       function loadChat() {
-        fetch('/api/live.php?action=chat&room_id=' + encodeURIComponent(ROOM_ID)).then(function(r){ return r.json(); }).then(function(d) {
+        fetch('/api/live?action=chat&room_id=' + encodeURIComponent(ROOM_ID)).then(function(r){ return r.json(); }).then(function(d) {
           if (!d.ok) return;
           var box = document.getElementById('chatBox');
           if (d.messages.length > LAST_COUNT) {
@@ -136,7 +136,7 @@ $shopSettings = shop_settings();
         var body = new FormData();
         body.append('room_id', ROOM_ID);
         body.append('text', text);
-        fetch('/api/live.php?action=send', { method: 'POST', body: body })
+        fetch('/api/live?action=send', { method: 'POST', body: body })
           .then(function(r){ return r.json(); }).then(function(d) {
             if (d.ok) { input.value = ''; loadChat(); }
             else alert(d.error || '发送失败');
@@ -165,7 +165,7 @@ $shopSettings = shop_settings();
     <?php else: ?>
     <div class="grid gap-5" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
       <?php foreach ($rooms as $r): $st = live_status($r); ?>
-      <a href="/live.php?room=<?=urlencode($r['id'])?>" class="bg-white rounded-2xl overflow-hidden" style="border:1px solid var(--border);text-decoration:none;color:inherit;transition:.15s">
+      <a href="/live?room=<?=urlencode($r['id'])?>" class="bg-white rounded-2xl overflow-hidden" style="border:1px solid var(--border);text-decoration:none;color:inherit;transition:.15s">
         <div style="aspect-ratio:16/9;background:linear-gradient(135deg,var(--fg),#2b5f7e);display:grid;place-items:center;position:relative">
           <?php if (!empty($r['cover'])): ?><img src="<?=htmlspecialchars($r['cover'])?>" class="w-full h-full object-cover"><?php else: ?><span style="font-size:38px"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12a15 15 0 0 1 20 0M5 15a10 10 0 0 1 14 0M8.5 18a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1.2" fill="currentColor"/></svg></span></span><?php endif; ?>
           <span class="absolute top-3 left-3 text-xs px-3 py-1 rounded-full flex items-center gap-1.5" style="background:<?=$st==='live'?'#dc2626':'var(--accent)'?>;color:var(--surface);font-weight:600"><?=$st==='live'?'<span class="live-dot"></span>':'▶️'?> <?=live_status_label($st)?></span>

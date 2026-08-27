@@ -1,27 +1,69 @@
 <?php
 // Session security settings (must be before session_start)
+$requestHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$requestIsHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
 ini_set('session.cookie_httponly', 1);
-ini_set('session.cookie_secure', 1);
+ini_set('session.cookie_secure', $requestIsHttps ? '1' : '0');
 ini_set('session.cookie_samesite', 'Lax');
 ini_set('session.gc_maxlifetime', 7200); // 2 hours
-
-// ─── 匿名访客边缘缓存（海外源站 + Cloudflare，加速国内外访问）───
-// 无 PHPSESSID cookie 的 GET 公开前台页：跳过 session（无 Set-Cookie），输出 s-maxage 让 CDN 边缘缓存
-// 已有会话/POST/后台/API/账户相关页：正常 session，绝不缓存
-$ofScript = $_SERVER['SCRIPT_NAME'] ?? '';
-$__guestCache = PHP_SAPI !== 'cli'
-    && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
-    && empty($_COOKIE['PHPSESSID'])
-    && strpos($ofScript, '/admin/') === false
-    && strpos($ofScript, '/api/') === false
-    && !preg_match('#/(login|member|shop|checkout|cart|messages|survey|nps|consultation|form-handler|share-card|page-preview|content-preview|mcp-server|qr|feed)\.php$#i', $ofScript);
-if ($__guestCache) {
-    $GLOBALS['of_guest_cache'] = true;
-    header('Cache-Control: public, max-age=0, s-maxage=600, stale-while-revalidate=60');
-} else {
-    session_start();
-}
+session_start();
 date_default_timezone_set('Asia/Shanghai');
+
+// ─── 全局错误处理（稳定性） ───
+// 生产环境：不显示原始错误，记录日志，友好提示；开发环境：显示详细错误
+$OF_ENV = ($_SERVER['OF_ENV'] ?? getenv('OF_ENV') ?: (preg_match('/^(localhost|127\.0\.0\.1)(:\d+)?$/', $requestHost) ? 'dev' : 'prod'));
+if ($OF_ENV === 'dev') {
+    ini_set('display_errors', '1');
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', '0');
+    error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
+}
+
+// 错误日志路径
+$OF_ERRLOG = dirname(__DIR__) . '/data/php-error.log';
+ini_set('log_errors', '1');
+ini_set('error_log', $OF_ERRLOG);
+
+// 未捕获异常捕获
+set_exception_handler(function ($e) use ($OF_ENV, $OF_ERRLOG) {
+    $msg = '[' . date('Y-m-d H:i:s') . '] Uncaught Exception: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() . "\n";
+    @file_put_contents($OF_ERRLOG, $msg, FILE_APPEND);
+    $isApi = strpos($_SERVER['REQUEST_URI'] ?? '', '/api/') === 0;
+    if ($isApi) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => false, 'error' => '服务器内部错误', 'type' => 'error'], JSON_UNESCAPED_UNICODE);
+    } elseif ($OF_ENV === 'dev') {
+        http_response_code(500);
+        echo '<pre style="padding:40px;font-family:monospace;color:#dc2626">' . htmlspecialchars($e->getMessage()) . "\n\n" . htmlspecialchars($e->getFile() . ':' . $e->getLine()) . '</pre>';
+    } else {
+        http_response_code(500);
+        echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>出错了 | OpenFlow</title></head><body style="font-family:system-ui,-apple-system,sans-serif;background:#f4f3e9;display:grid;place-items:center;min-height:100vh;margin:0"><div style="text-align:center;max-width:420px;padding:40px"><div style="font-size:48px;margin-bottom:12px">😥</div><h1 style="color:#1a1625;font-size:22px;margin:0 0 8px">系统开小差了</h1><p style="color:#6b6580;font-size:14px;line-height:1.8">服务器遇到一点问题，我们已记录。请稍后重试。</p><a href="/" style="display:inline-block;margin-top:20px;padding:10px 24px;border-radius:999px;background:#1e1e1e;color:#ddff0e;font-size:14px;font-weight:700;text-decoration:none">返回首页</a></div></body></html>';
+    }
+    exit;
+});
+
+// 致命错误捕获（E_ERROR / E_PARSE 等）
+register_shutdown_function(function () use ($OF_ENV, $OF_ERRLOG) {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])) {
+        $msg = '[' . date('Y-m-d H:i:s') . '] Fatal Error: ' . $err['message'] . ' in ' . $err['file'] . ':' . $err['line'] . "\n";
+        @file_put_contents($OF_ERRLOG, $msg, FILE_APPEND);
+        if (strpos($_SERVER['REQUEST_URI'] ?? '', '/api/') === 0) {
+            http_response_code(500);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['ok' => false, 'error' => '服务器内部错误']);
+        } elseif ($OF_ENV === 'dev') {
+            http_response_code(500);
+            echo '<pre style="padding:40px;font-family:monospace;color:#dc2626">' . htmlspecialchars($err['message']) . "\n" . htmlspecialchars($err['file'] . ':' . $err['line']) . '</pre>';
+        } else {
+            http_response_code(500);
+            echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>出错了 | OpenFlow</title></head><body style="font-family:system-ui,sans-serif;background:#f4f3e9;display:grid;place-items:center;min-height:100vh;margin:0"><div style="text-align:center;max-width:420px;padding:40px"><div style="font-size:48px">😥</div><h1 style="color:#1a1625;font-size:22px;margin:0 0 8px">系统开小差了</h1><p style="color:#6b6580;font-size:14px">请稍后重试，我们已记录问题。</p></div></body></html>';
+        }
+    }
+});
 
 // ─── 路径配置（开源：支持环境变量 / .env 覆盖，默认本项目布局） ───
 // 支持的方式（优先级从高到低）：
@@ -51,8 +93,45 @@ foreach ([DATA_DIR, PAGES_DIR, ARTICLES_DIR, UPLOAD_DIR] as $dir) {
     if (!is_dir($dir)) mkdir($dir, 0755, true);
 }
 
+// ─── 提前页面缓存检查（命中时直接输出并 exit，不加载任何 lib） ───
+// 大幅优化有 PageCache 页面的命中速度：此处只做最小操作（无需加载 lib 类）
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
+    && empty($_SESSION['admin_login']) && empty($_SESSION['member_id'])
+    && !isset($_GET['nocache'])) {
+    $__uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+    $__uri = preg_replace('~^/(zh-CN|zh-TW|en|ja|ko|ru|es|pt|ar|fr|de)(/|$)~', '/', $__uri);
+    $__path = trim($__uri, '/');
+    $__seg = explode('/', $__path)[0] ?? '';
+    // 用首段做缓存 key（匹配页面 PageCache::begin 传入的 key，如 /academy→academy, /category/xxx→category）
+    if ($__seg !== '') {
+        $__cacheFile = DATA_DIR . '/cache/' . md5('page:' . $__seg) . '.cache';
+        if (is_file($__cacheFile)) {
+            $__data = json_decode(@file_get_contents($__cacheFile), true);
+            if (is_array($__data) && ($__data['expires'] ?? 0) > time() && !empty($__data['value'])) {
+                echo $__data['value'];
+                exit;
+            }
+        }
+    }
+}
+
+// ─── 自动加载（按需加载 lib 下纯类） ───
+spl_autoload_register(function ($class) {
+    $map = [
+        'SiteConfig' => 'SiteConfig.php',
+        'Cache' => 'Cache.php',
+        'FileCache' => 'Cache.php',
+        'RedisCache' => 'Cache.php',
+    ];
+    $file = __DIR__ . '/../lib/' . ($map[$class] ?? $class . '.php');
+    if (is_file($file)) require_once $file;
+});
+
 require_once __DIR__ . '/seo-functions.php';
 require_once __DIR__ . '/review-lib.php';
+
+// ─── 框架库（纯类 + 全局函数型，全部加载以保证函数/类可用） ───
+// 说明：函数型库提供全局函数，无法走 autoload，必须显式 require。opcache 下函数定义开销极小。
 require_once __DIR__ . '/../lib/PluginSystem.php';
 require_once __DIR__ . '/../lib/CommandPalette.php';
 require_once __DIR__ . '/../lib/BookmarkSystem.php';
@@ -62,11 +141,9 @@ require_once __DIR__ . '/../lib/FeaturedSystem.php';
 require_once __DIR__ . '/../lib/VersionDiff.php';
 require_once __DIR__ . '/../lib/AttributionModel.php';
 require_once __DIR__ . '/../lib/SegmentEngine.php';
-require_once __DIR__ . '/../lib/CdpSync.php';
 require_once __DIR__ . '/../lib/IdentityResolver.php';
 require_once __DIR__ . '/../lib/DataConnector.php';
 require_once __DIR__ . '/../lib/Personalizer.php';
-require_once __DIR__ . '/../lib/SocialPublisher.php';
 require_once __DIR__ . '/../lib/BillionMail.php';
 require_once __DIR__ . '/../lib/WechatMp.php';
 require_once __DIR__ . '/../lib/Wecom.php';
@@ -78,11 +155,9 @@ require_once __DIR__ . '/../lib/AIBusiness.php';
 require_once __DIR__ . '/../lib/CommerceSystem.php';
 require_once __DIR__ . '/../lib/WebTools.php';
 require_once __DIR__ . '/../lib/WebhookSystem.php';
-require_once __DIR__ . '/../lib/I18n.php';
 require_once __DIR__ . '/../lib/CloudflareApi.php';
 require_once __DIR__ . '/../lib/EventDictionary.php';
 require_once __DIR__ . '/../lib/SearchEngine.php';
-require_once __DIR__ . '/../lib/SeoHead.php';
 require_once __DIR__ . '/../lib/CrawlerDetect.php';
 require_once __DIR__ . '/../lib/PageCache.php';
 require_once __DIR__ . '/../lib/SelfEvolve.php';
@@ -90,8 +165,64 @@ require_once __DIR__ . '/../lib/GrowthEngine.php';
 require_once __DIR__ . '/../lib/SafeFix.php';
 require_once __DIR__ . '/../lib/ThemeSystem.php';
 require_once __DIR__ . '/../lib/GrowthFlywheel.php';
+
+// ─── 业务函数库（全局函数，必须加载以保证被各类/页面调用） ───
+require_once __DIR__ . '/../lib/SiteConfig.php';
+require_once __DIR__ . '/../lib/CdpSync.php';
+require_once __DIR__ . '/../lib/CdpSystem.php';
+require_once __DIR__ . '/../lib/I18n.php';
+require_once __DIR__ . '/../lib/SeoHead.php';
 require_once __DIR__ . '/../lib/SkillSystem.php';
 require_once __DIR__ . '/../lib/SkillGenerator.php';
+require_once __DIR__ . '/../lib/MemberSystem.php';
+require_once __DIR__ . '/../lib/FlowSystem.php';
+require_once __DIR__ . '/../lib/CrmSystem.php';
+require_once __DIR__ . '/../lib/AnalyticsSystem.php';
+require_once __DIR__ . '/../lib/DashboardSystem.php';
+require_once __DIR__ . '/../lib/ShopSystem.php';
+require_once __DIR__ . '/../lib/MallSystem.php';
+require_once __DIR__ . '/../lib/MessageSystem.php';
+require_once __DIR__ . '/../lib/MembershipSystem.php';
+require_once __DIR__ . '/../lib/SubscriptionSystem.php';
+require_once __DIR__ . '/../lib/ConsultationSystem.php';
+require_once __DIR__ . '/../lib/LiveSystem.php';
+require_once __DIR__ . '/../lib/KnowledgeSystem.php';
+require_once __DIR__ . '/../lib/AutomationSystem.php';
+require_once __DIR__ . '/../lib/CanvasSystem.php';
+require_once __DIR__ . '/../lib/MailCampaign.php';
+require_once __DIR__ . '/../lib/MailChannel.php';
+require_once __DIR__ . '/../lib/GeoSystem.php';
+require_once __DIR__ . '/../lib/SentimentSystem.php';
+require_once __DIR__ . '/../lib/SocialPublisher.php';
+require_once __DIR__ . '/../lib/ModerationSystem.php';
+require_once __DIR__ . '/../lib/NotifyChannels.php';
+require_once __DIR__ . '/../lib/StorageSystem.php';
+require_once __DIR__ . '/../lib/ProfilingSystem.php';
+require_once __DIR__ . '/../lib/ArticleStats.php';
+require_once __DIR__ . '/../lib/FunnelGuard.php';
+require_once __DIR__ . '/../lib/FrequencyCap.php';
+require_once __DIR__ . '/../lib/Gamification.php';
+require_once __DIR__ . '/../lib/ProgressSystem.php';
+require_once __DIR__ . '/../lib/CouponSystem.php';
+require_once __DIR__ . '/../lib/QrTrack.php';
+require_once __DIR__ . '/../lib/ShareTrack.php';
+require_once __DIR__ . '/../lib/SeoConsole.php';
+require_once __DIR__ . '/../lib/ShortcodeSystem.php';
+require_once __DIR__ . '/../lib/CommentSystem.php';
+require_once __DIR__ . '/../lib/OrgSystem.php';
+require_once __DIR__ . '/../lib/AdSystem.php';
+require_once __DIR__ . '/../lib/AdCampaign.php';
+require_once __DIR__ . '/../lib/ActivationSystem.php';
+require_once __DIR__ . '/../lib/MarketplaceSystem.php';
+require_once __DIR__ . '/../lib/PaymentChannel.php';
+require_once __DIR__ . '/../lib/PrivacySystem.php';
+require_once __DIR__ . '/../lib/ConversionApi.php';
+require_once __DIR__ . '/../lib/CopilotActions.php';
+require_once __DIR__ . '/../lib/InboundReceiver.php';
+require_once __DIR__ . '/../lib/KnowledgeSync.php';
+require_once __DIR__ . '/../lib/MigrationSystem.php';
+require_once __DIR__ . '/../lib/DataSync.php';
+require_once __DIR__ . '/../lib/comment-widget.php';
 PluginSystem::load_plugins();
 
 // ─── RBAC ──────────────────────────────────────────
@@ -130,8 +261,8 @@ if (empty($users)) {
 // Role permission map
 function role_perms(): array {
     return [
-        'admin'     => ['pages', 'articles', 'ingest', 'categories', 'tags', 'topics', 'landing', 'events', 'courses', 'downloads', 'community-config', 'tasks', 'survey', 'nps', 'campaigns', 'ai-config', 'knowledge', 'sms', 'forms', 'submissions', 'channels', 'wechat-mp', 'social', 'conversion', 'seo', 'seo-tools', 'seo-batch', 'redirects', 'structured', 'geo', 'sentiment', 'seo-console', 'profiling', 'notify-channels', 'cdp', 'themes', 'plugins', 'activity', 'media', 'dam', 'qr', 'utm-builder', 'scripts', 'abtests', 'ma-sync', 'reviews', 'approvals', 'shop-settings', 'navigation', 'site-builder', 'podcasts', 'community-mod', 'automation', 'insights', 'subscription', 'consultation', 'live', 'membership', 'messages', 'storage', 'moderation', 'marketplace', 'flow', 'tracking', 'canvas', 'analytics', 'dashboard', 'crm', 'leads', 'export', 'settings', 'evolution', 'devops', 'users', 'email', 'bookmarks', 'follows', 'featured', 'version-diff', 'segments', 'notion-sync'],
-        'marketing' => ['pages', 'articles', 'ingest', 'categories', 'tags', 'topics', 'landing', 'events', 'courses', 'downloads', 'community-config', 'tasks', 'survey', 'nps', 'campaigns', 'ai-config', 'knowledge', 'sms', 'forms', 'submissions', 'channels', 'wechat-mp', 'social', 'conversion', 'seo', 'seo-tools', 'seo-batch', 'redirects', 'structured', 'geo', 'sentiment', 'seo-console', 'profiling', 'notify-channels', 'cdp', 'themes', 'plugins', 'activity', 'media', 'dam', 'qr', 'utm-builder', 'reviews', 'approvals', 'shop-settings', 'navigation', 'site-builder', 'podcasts', 'community-mod', 'automation', 'insights', 'subscription', 'consultation', 'live', 'membership', 'messages', 'storage', 'moderation', 'marketplace', 'flow', 'tracking', 'canvas', 'analytics', 'dashboard', 'crm', 'email', 'bookmarks', 'follows', 'featured', 'version-diff', 'segments'],
+        'admin'     => ['pages', 'articles', 'ingest', 'categories', 'tags', 'topics', 'landing', 'events', 'courses', 'downloads', 'community-config', 'tasks', 'survey', 'nps', 'campaigns', 'ai-config', 'knowledge', 'sms', 'forms', 'submissions', 'channels', 'wechat-mp', 'social', 'conversion', 'seo', 'seo-tools', 'seo-batch', 'redirects', 'structured', 'geo', 'sentiment', 'seo-console', 'profiling', 'notify-channels', 'cdp', 'themes', 'plugins', 'activity', 'media', 'dam', 'qr', 'utm-builder', 'scripts', 'abtests', 'ma-sync', 'reviews', 'approvals', 'shop-settings', 'commerce', 'navigation', 'site-builder', 'podcasts', 'community-mod', 'automation', 'insights', 'subscription', 'consultation', 'live', 'membership', 'messages', 'storage', 'moderation', 'marketplace', 'flow', 'tracking', 'canvas', 'analytics', 'dashboard', 'crm', 'leads', 'export', 'settings', 'evolution', 'devops', 'users', 'email', 'bookmarks', 'follows', 'featured', 'version-diff', 'segments'],
+        'marketing' => ['pages', 'articles', 'ingest', 'categories', 'tags', 'topics', 'landing', 'events', 'courses', 'downloads', 'community-config', 'tasks', 'survey', 'nps', 'campaigns', 'ai-config', 'knowledge', 'sms', 'forms', 'submissions', 'channels', 'wechat-mp', 'social', 'conversion', 'seo', 'seo-tools', 'seo-batch', 'redirects', 'structured', 'geo', 'sentiment', 'seo-console', 'profiling', 'notify-channels', 'cdp', 'themes', 'plugins', 'activity', 'media', 'dam', 'qr', 'utm-builder', 'reviews', 'approvals', 'shop-settings', 'commerce', 'navigation', 'site-builder', 'podcasts', 'community-mod', 'automation', 'insights', 'subscription', 'consultation', 'live', 'membership', 'messages', 'storage', 'moderation', 'marketplace', 'flow', 'tracking', 'canvas', 'analytics', 'dashboard', 'crm', 'email', 'bookmarks', 'follows', 'featured', 'version-diff', 'segments'],
         'sales'     => ['leads'],
     ];
 }
@@ -240,16 +371,16 @@ function user_login_url(string $username): string {
     if (function_exists('site_config_get')) {
         $base = site_config_get('site_url');
         if ($base && !str_contains($base, 'localhost')) {
-            return rtrim($base, '/') . '/login';
+            return rtrim($base, '/') . '/xmp/login';
         }
     }
     $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? '';
     if ($host) {
         $base = $protocol . '://' . $host;
-        return $base . '/login';
+        return $base . '/xmp/login';
     }
-    return '/login';
+    return '/xmp/login';
 }
 
 function user_reset_password(string $username, string $newPassword): array {
@@ -272,7 +403,7 @@ function user_send_reset_email(string $username): array {
     $users[$username]['reset_token_expires'] = time() + 3600;
     save_users($users);
 
-    $url = site_config_get('site_url') . '/admin/reset-password.php?token=' . $token;
+    $url = site_config_get('site_url') . '/xmp/reset-password?token=' . $token;
     $subject = 'OpenFlow 密码重置';
     $body = "你好 {$u['name']}，\n\n点击以下链接重置密码（1小时内有效）：\n{$url}\n\n如非本人操作请忽略。";
 
@@ -391,6 +522,46 @@ function get_articles(): array {
     return $all;
 }
 
+// 轻量文章列表（供 academy/列表页用）：剥离 content 等重字段，缓存轻量结果（约726KB），避免每次解码7MB全文
+function get_articles_list(): array {
+    $file = ARTICLES_DIR . '/index.json';
+    $key = 'articles_list:' . md5((string)@filemtime($file)) . ':' . @filesize($file);
+    try {
+        $fc = new FileCache();
+        $cached = $fc->get($key);
+        if (is_array($cached) && !empty($cached)) return $cached;
+    } catch (\Throwable $e) {}
+
+    $all = json_read($file);
+    // 惰性发布（与 get_articles 一致）
+    $changed = false;
+    foreach ($all as &$a) {
+        if (($a['status'] ?? '') === 'scheduled' && !empty($a['publish_at']) && strtotime($a['publish_at']) <= time()) {
+            $a['status'] = 'published';
+            $a['published_at'] = $a['publish_at'];
+            $changed = true;
+        }
+    }
+    unset($a);
+    if ($changed) json_write($file, $all);
+
+    // 剥离重字段，仅保留列表展示所需
+    $keep = ['id', 'title', 'slug', 'excerpt', 'status', 'author', 'category', 'tags', 'cover', 'created_at', 'updated_at'];
+    $light = [];
+    foreach ($all as &$a) {
+        $row = [];
+        foreach ($keep as $k) if (isset($a[$k])) $row[$k] = $a[$k];
+        $light[] = $row;
+    }
+    unset($a);
+    usort($light, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
+    try {
+        $fc = new FileCache();
+        $fc->set($key, $light, 300);
+    } catch (\Throwable $e) {}
+    return $light;
+}
+
 function get_article(string $id): ?array {
     foreach (get_articles() as $a) {
         if ($a['id'] === $id) return $a;
@@ -458,9 +629,7 @@ security_headers();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
 <script>try{var t=localStorage.getItem('of_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <title><?=htmlspecialchars($title)?> | OpenFlow 运营台</title>
 <style>
@@ -942,7 +1111,7 @@ $roleLabel = $roleLabels[$role] ?? $role;
         <?php if ($unreadCount === 0): ?><div class="notif-item"><div class="msg" style="text-align:center;padding:12px">暂无新通知</div></div><?php endif; ?>
       </div>
       <span class="who" title="<?=htmlspecialchars($name)?> · <?=htmlspecialchars($roleLabel)?>"><span class="ava"><?=htmlspecialchars(mb_substr($name,0,1))?></span><span><?=htmlspecialchars($name)?><em><?=htmlspecialchars($roleLabel)?></em></span></span>
-      <a href="/xmp/logout.php" class="cbtn" aria-label="退出登录" title="退出登录"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="m10 8-4 4 4 4M6 12h11"/></svg></a>
+      <a href="/xmp/logout" class="cbtn" aria-label="退出登录" title="退出登录"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="m10 8-4 4 4 4M6 12h11"/></svg></a>
     </div>
   </div>
 </header>
@@ -1320,7 +1489,7 @@ function admin_sidebar(string $current): void {
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Sales">ToC</div>
-  <?php if (has_perm('marketplace') || has_perm('wechat-mp') || has_perm('social') || has_perm('conversion') || has_perm('shop-settings')): ?>
+  <?php if (has_perm('marketplace') || has_perm('commerce') || has_perm('wechat-mp') || has_perm('social') || has_perm('conversion') || has_perm('shop-settings')): ?>
   <?php if (has_perm('marketplace')): ?>
   <a href="/xmp/marketplace" class="<?=$current==='marketplace'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l2-2h14l2 2m-18 0l2 12a2 2 0 002 2h10a2 2 0 002-2l2-12m-18 0h18m-12 3a4 4 0 006 0"/></svg>
@@ -1328,7 +1497,7 @@ function admin_sidebar(string $current): void {
   </a>
   <a href="/xmp/developers" class="<?=$current==='developers'?'active':''?>" style="padding-left:44px;font-size:13px">🧑‍💻 开发者审核</a>
   <?php endif; ?>
-  <?php if (has_perm('settings')): ?>
+  <?php if (has_perm('commerce')): ?>
   <a href="/xmp/commerce" class="<?=$current==='commerce'?'active':''?>" style="padding-left:44px;font-size:13px">商业中心</a>
   <a href="/xmp/ecom-reports" class="<?=$current==='ecom-reports'?'active':''?>" style="padding-left:44px;font-size:13px">📊 电商报表</a>
   <a href="/xmp/coupons" class="<?=$current==='coupons'?'active':''?>" style="padding-left:44px;font-size:13px">🎟 优惠券</a>
@@ -1337,7 +1506,7 @@ function admin_sidebar(string $current): void {
   <?php if (has_perm('wechat-mp')): ?>
   <a href="/xmp/wechat-mp" class="<?=$current==='wechat-mp'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-    微信生态<span style="font-size:10px;color:var(--faint)">(公众号/小程序/企微)</span>
+    企业微信
   </a>
   <a href="/xmp/wechat-send" class="<?=$current==='wechat-send'?'active':''?>" style="padding-left:44px;font-size:13px">群发 & 私信</a>
   <a href="/xmp/wechat-tags" class="<?=$current==='wechat-tags'?'active':''?>" style="padding-left:44px;font-size:13px">服务号标签</a>
@@ -1394,8 +1563,6 @@ function admin_sidebar(string $current): void {
   <a href="/xmp/devops" class="<?=$current==='devops'?'active':''?>" style="padding-left:44px;font-size:13px">运维工具</a>
   <a href="/xmp/migrate" class="<?=$current==='migrate'?'active':''?>" style="padding-left:44px;font-size:13px">📦 数据迁移</a>
   <a href="/xmp/health-check" class="<?=$current==='health-check'?'active':''?>" style="padding-left:44px;font-size:13px">健康检测</a>
-  <a href="/xmp/languages" class="<?=$current==='languages'?'active':''?>" style="padding-left:44px;font-size:13px">🌐 翻译管理</a>
-  <a href="/xmp/notion-sync" class="<?=$current==='notion-sync'?'active':''?>" style="padding-left:44px;font-size:13px">🔄 Notion 同步</a>
   <?php if (has_perm('evolution')): ?>
   <a href="/xmp/evolution" class="<?=$current==='evolution'?'active':''?>" style="padding-left:44px;font-size:13px">自我进化</a>
   <a href="/xmp/safefix" class="<?=$current==='safefix'?'active':''?>" style="padding-left:44px;font-size:13px">协同修复</a>
@@ -1465,9 +1632,6 @@ function admin_sidebar(string $current): void {
   <?php if (has_perm('activity')): ?>
   <a href="/xmp/activity" class="<?=$current==='activity'?'active':''?>" style="padding-left:44px;font-size:13px">操作日志</a>
   <?php endif; ?>
-  <?php if (has_perm('export')): ?>
-  <a href="/xmp/export" class="<?=$current==='export'?'active':''?>" style="padding-left:44px;font-size:13px">数据导出</a>
-  <?php endif; ?>
   <?php if (has_perm('ai-config')): ?>
   <a href="/xmp/ai-config" class="<?=$current==='ai-config'?'active':''?>" style="padding-left:44px;font-size:13px">AI Agent</a>
   <?php endif; ?>
@@ -1523,7 +1687,7 @@ function fcToggleTheme() {
 })();
 function markNotifRead() {
   var xhr = new XMLHttpRequest();
-  xhr.open('POST', '../api/notifications.php', true);
+  xhr.open('POST', '/api/notifications', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.onload = function() {
     var dot = document.getElementById('notifDot'); if (dot) dot.style.display = 'none';
@@ -1823,7 +1987,6 @@ window.fcMarkErrors = function(errors) {
 };
 </script>
 <!-- ═══ 全局 AI 小助手 ═══ -->
-<link href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.3/index.min.css" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
   :root{
     --h-head-grad:linear-gradient(135deg,#1a1625,#2b5f7e);
@@ -1987,7 +2150,7 @@ function fcHelperCycleTheme() {
 })();
 function fcHelperReset() {
   if (!confirm('清空当前对话记录，开始新会话？')) return;
-  fetch('../api/assistant.php?action=reset', { method: 'POST' }).catch(function() {});
+  fetch('/api/assistant?action=reset', { method: 'POST' }).catch(function() {});
   document.getElementById('fcHelperBody').innerHTML = '';
   FC_HELPER.open = true;
   fcHelperBoot();
@@ -2041,7 +2204,7 @@ function fcHelperSend() {
   var thinking = '<div class="fc-msg bot" id="fcThinking"><span class="thinking">小福正在思考…</span></div>';
   body.insertAdjacentHTML('beforeend', thinking);
   body.scrollTop = body.scrollHeight;
-  fetch('../api/assistant.php', {
+  fetch('/api/assistant', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message: msg })
@@ -2222,6 +2385,9 @@ function selected(string $value, string $current): string {
  * @param mixed $audience 受众：'all' 全部 / 角色数组 ['admin','marketing'] / 定向用户 'user:username' / 数组混排
  */
 function notify(string $type, string $title, string $message, string $link = '', $audience = 'all'): void {
+    if (preg_match('#^/?admin/([a-z0-9-]+)\.php(.*)$#i', $link, $m)) {
+        $link = '/xmp/' . $m[1] . $m[2];
+    }
     $n = json_read(DATA_DIR . '/notifications.json');
     $n['unread'][] = [
         'id' => 'notif_' . date('Ymd_His') . '_' . substr(bin2hex(random_bytes(4)), 0, 6),
