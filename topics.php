@@ -1,7 +1,7 @@
 <?php
 /**
  * 专题聚合页 — 浏览所有专题及其下文章
- * /topic/{slug}  单个专题详情
+ * /topics/{slug}  单个专题详情
  * /topics.php    专题列表
  */
 require_once __DIR__ . '/admin/config.php';
@@ -40,10 +40,10 @@ if ($currentTopic) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= $currentTopic ? (htmlspecialchars($currentTopic['title'] ?? '专题') . ' | ' . site_config_get('site_name')) : ('专题合集 | ' . site_config_get('site_name')) ?></title>
-<link rel="stylesheet" href="/assets/tokens.css?v=20260816">
-<link rel="stylesheet" href="/assets/modules.css?v=20260816">
+<link rel="stylesheet" href="/assets/tokens.css?v=20260826b">
+<link rel="stylesheet" href="/assets/modules.css?v=20260826b">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .topic-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;transition:.15s;display:block;text-decoration:none;color:inherit}
@@ -54,7 +54,7 @@ if ($currentTopic) {
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
 <body>
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="topics"></script> class="min-h-screen">
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="topics"></script> class="min-h-screen">
   
 
   <div class="mx-auto px-5 py-10" style="max-width:1100px">
@@ -76,7 +76,7 @@ if ($currentTopic) {
     <?php else: ?>
     <div class="grid gap-3">
       <?php foreach ($topicArticles as $a): ?>
-      <a href="/article/<?=htmlspecialchars($a['slug'])?>" class="art-row rounded-2xl px-5 py-4" style="background:var(--surface);border:1px solid var(--border)">
+      <a href="/articles/<?=htmlspecialchars($a['slug'])?>" class="art-row rounded-2xl px-5 py-4" style="background:var(--surface);border:1px solid var(--border)">
         <div style="flex:1">
           <div class="font-semibold text-gray-900"><?=htmlspecialchars($a['title'])?></div>
           <div class="text-xs text-gray-400 mt-1"><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?> · <?=htmlspecialchars($catNames[$a['category'] ?? ''] ?? '')?></div>
@@ -109,7 +109,7 @@ if ($currentTopic) {
       </div>
       <div class="mt-4">
         <?php foreach (array_slice($tArts, 0, 5) as $a): ?>
-        <a href="/article/<?=htmlspecialchars($a['slug'])?>" class="art-row">
+        <a href="/articles/<?=htmlspecialchars($a['slug'])?>" class="art-row">
           <span class="text-[#2b5f7e] text-sm">▸</span>
           <span class="flex-1 text-sm font-medium"><?=htmlspecialchars($a['title'])?></span>
           <span class="text-xs text-gray-400"><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?></span>

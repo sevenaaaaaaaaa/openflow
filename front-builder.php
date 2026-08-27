@@ -52,9 +52,6 @@ function builder_render_block(array $b): string {
             return '<section ' . $bgStyle . ' style="padding:50px 0;text-align:center"><div style="max-width:520px;margin:0 auto;padding:0 20px"><h2 style="font-size:22px;font-weight:800;margin-bottom:12px">' . $title . '</h2>' . ($sub ? '<p style="color:var(--muted)">' . $sub . '</p>' : '') . $btn . '</div></section>';
         case 'video':
             return '<section ' . $bgStyle . ' style="padding:50px 0"><div style="max-width:800px;margin:0 auto;padding:0 20px"><h2 style="font-size:24px;font-weight:800;margin-bottom:16px;text-align:center">' . $title . '</h2>' . ($content ?: '<p style="color:var(--muted);text-align:center">配置视频地址</p>') . '</div></section>';
-        case 'embed':
-            // 自定义代码块：嵌入任意 HTML/JS/CSS（兼容已有前端组件）
-            return '<section ' . $bgStyle . ' style="padding:40px 0"><div style="max-width:1000px;margin:0 auto;padding:0 20px">' . ($content ?: '') . '</div></section>';
         default:
             return '<section ' . $bgStyle . ' style="padding:50px 0"><div style="max-width:800px;margin:0 auto;padding:0 20px"><h2>' . $title . '</h2><div style="color:var(--muted)">' . $content . '</div></div></section>';
     }
@@ -68,14 +65,14 @@ function builder_render_block(array $b): string {
 <title><?=htmlspecialchars($page['seo_title'] ?: ($page['title'] . ' | ' . $siteName))?></title>
 <meta name="description" content="<?=htmlspecialchars($page['seo_desc'] ?? '')?>">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
 :root{--accent:oklch(52% .17 258);--fg:oklch(22% .02 70);--muted:oklch(46% .016 70);--bg:oklch(96.5% .016 85)}
 body{font-family:"Space Grotesk","PingFang SC",sans-serif;background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:clip}
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 <main>
 <?php foreach ($blocks as $b) echo builder_render_block($b); ?>
 </main>

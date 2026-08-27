@@ -6,7 +6,7 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 
 // 页面缓存（300 秒）
-if (PageCache::begin('academy', 300)) exit;
+if (PageCache::begin('academy', 1800)) exit;
 
 $cfg = json_read(DATA_DIR . '/community.json');
 $floors = $cfg['floors'] ?? [];
@@ -14,7 +14,7 @@ $hotReadCount = (int)($cfg['hot_read_count'] ?? 5);
 $showReport = $cfg['show_report_section'] ?? true;
 
 // 文章（已发布 + 有标题的草稿作为预告）
-$allArticles = get_articles();
+$allArticles = get_articles_list();
 $published = array_values(array_filter($allArticles, fn($a) => ($a['status'] ?? '') === 'published'));
 // 有标题的草稿（预告内容，无正文）
 $drafts = array_values(array_filter($allArticles, fn($a) => ($a['status'] ?? '') !== 'published' && !empty(trim($a['title'] ?? ''))));
@@ -85,7 +85,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 <title>学院 · 门派知识库 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="芭乐派增长方法论内容库：文章 · 资料下载 · 播客 · 视频教程，从利润公式到 Agent 系统，把增长讲清楚、用起来">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .sec-floor{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;transition:.15s}
@@ -99,9 +99,10 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
   .text-ok{color:var(--ok)}.text-accent{color:var(--accent)}.text-danger{color:var(--danger)}
   .bg-surface{background:var(--surface)}
 </style>
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="articles"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="articles"></script>
 
 <section style="padding:clamp(20px,4vw,44px) 0 clamp(28px,4vw,48px)">
   <div class="mx-auto px-5" style="max-width:1120px">
@@ -110,7 +111,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         <span class="kicker" style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--accent);text-transform:uppercase">CONTENT · ACADEMY</span>
         <h1 style="font-size:clamp(32px,4.5vw,48px);font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--fg)">门派的知识库<br><span style="font-family:var(--font-display);font-style:italic">随时可学、随时可用</span></h1>
         <p style="color:var(--muted);font-size:15px;line-height:1.8;max-width:560px">文章 · 资料 · 播客 · 视频，芭乐派增长方法论的完整内容库。从利润公式到 Agent 系统，把增长讲清楚、用起来。</p>
-        <form action="/search.php" method="get" style="display:flex;gap:8px;max-width:480px;margin-top:6px">
+        <form action="/search" method="get" style="display:flex;gap:8px;max-width:480px;margin-top:6px">
           <input type="search" name="q" placeholder="搜索文章、课程、资料…" style="flex:1;padding:12px 18px;border-radius:999px;font-size:14px;outline:none;border:1.5px solid var(--border);background:var(--surface)">
           <button style="padding:12px 24px;border-radius:999px;font-weight:700;font-size:14px;background:var(--accent);color:var(--on-accent);border:0;cursor:pointer">搜索</button>
         </form>
@@ -174,7 +175,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
       </div>
       <div class="grid gap-4 mt-4" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
         <?php foreach ($featured as $a): $cv = $a['cover'] ?? ''; $cvUrl = $cv ? (strpos($cv,'http')===0 ? $cv : $baseUrl.'/'.ltrim($cv,'/')) : ''; ?>
-        <a href="/article/<?=htmlspecialchars($a['slug'])?>" class="card-hover">
+        <a href="/articles/<?=htmlspecialchars($a['slug'])?>" class="card-hover">
           <div style="aspect-ratio:16/9;background:linear-gradient(135deg,var(--border),var(--accent-soft));overflow:hidden">
             <?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="" class="w-full h-full object-cover" loading="lazy"><?php else: ?><div class="h-full grid place-items-center text-3xl"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span></div><?php endif; ?>
           </div>
@@ -208,7 +209,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         <?php
         // 空楼层引导：指向真实可学内容（New 课程 / 门派）
         $fallbacks = [
-          ['<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8-.8-.7-2-.7-3 0Z"/><path d="M12 15l-3-3c2-5.5 5-9 9-9s3 6-1 11l-5 1Z"/><path d="M9 12c-2.5 1-4 3-4.5 5"/></svg>', '从 New-1 开始', '一人公司冷启动，免费课稿', '/article/ai-bonus-opc-cold-start'],
+          ['<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8-.8-.7-2-.7-3 0Z"/><path d="M12 15l-3-3c2-5.5 5-9 9-9s3 6-1 11l-5 1Z"/><path d="M9 12c-2.5 1-4 3-4.5 5"/></svg>', '从 New-1 开始', '一人公司冷启动，免费课稿', '/articles/ai-bonus-opc-cold-start'],
           ['<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>', '学方法论', '利润公式 + 四引擎，边学边用', '/courses'],
           ['<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg>', '进门派聊聊', '提问、交作业、晒增长数据', '/community'],
         ];
@@ -228,7 +229,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         foreach ($merged as $a):
           $isPreview = ($a['status'] ?? '') !== 'published';
           $cv = $a['cover'] ?? ''; $cvUrl = $cv ? (strpos($cv,'http')===0 ? $cv : $baseUrl.'/'.ltrim($cv,'/')) : '';
-          $link = $isPreview ? '/academy' : '/article/'.htmlspecialchars($a['slug']);
+          $link = $isPreview ? '/academy' : '/articles/'.htmlspecialchars($a['slug']);
         ?>
         <a href="<?=$link?>" class="card-hover">
           <div style="aspect-ratio:16/9;background:linear-gradient(135deg,var(--border),var(--accent-soft));overflow:hidden">
@@ -307,7 +308,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         <?php else: ?>
         <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(255px,1fr))">
           <?php foreach ($courses as $c): $cc = $c['cover'] ?? ''; $ccUrl = $cc ? (strpos($cc,'http')===0 ? $cc : $baseUrl.'/'.ltrim($cc,'/')) : ''; ?>
-          <a href="/course/<?=urlencode($c['slug'])?>" class="card-hover">
+          <a href="/courses/<?=urlencode($c['slug'])?>" class="card-hover">
             <div style="aspect-ratio:16/9;background:linear-gradient(135deg,var(--border),var(--warn)55);overflow:hidden;position:relative">
               <?php if ($ccUrl): ?><img src="<?=htmlspecialchars($ccUrl)?>" alt="" class="w-full h-full object-cover" loading="lazy"><?php else: ?><div class="h-full grid place-items-center text-3xl"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5L10 9.5Z" fill="currentColor" stroke="none"/></svg></span></div><?php endif; ?>
               <div style="position:absolute;inset:0;display:grid;place-items:center"><span class="grid place-items-center w-11 h-11 rounded-full text-white" style="background:rgba(0,0,0,.55)">▶</span></div>
@@ -332,7 +333,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         <?php else: ?>
         <div class="grid gap-2.5">
           <?php foreach ($hot as $i => $a): ?>
-          <a href="/article/<?=htmlspecialchars($a['slug'])?>" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface transition" style="text-decoration:none;color:inherit">
+          <a href="/articles/<?=htmlspecialchars($a['slug'])?>" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface transition" style="text-decoration:none;color:inherit">
             <span class="font-extrabold text-lg <?=$i<3?'':'text-faint'?>" style="<?=$i<3?'color:var(--warn)':''?>"><?=$i+1?></span>
             <span class="min-w-0">
               <span class="block text-[13.5px] font-semibold truncate"><?=htmlspecialchars($a['title'])?></span>
@@ -368,7 +369,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         <p class="text-[11px] mb-4" style="color:var(--faint)">根据「<?=htmlspecialchars($recPref['shape_label'])?>」形态为你挑选</p>
         <div class="grid gap-2.5">
           <?php foreach ($recArticles as $rid => $rscore): $ra = get_article($rid); if (!$ra) continue; ?>
-          <a href="/article/<?=htmlspecialchars($ra['slug'] ?? '')?>" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface transition" style="text-decoration:none;color:inherit">
+          <a href="/articles/<?=htmlspecialchars($ra['slug'] ?? '')?>" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface transition" style="text-decoration:none;color:inherit">
             <span style="width:30px;height:30px;border-radius:var(--r-sm);background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:14px;flex-shrink:0"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span></span>
             <span class="min-w-0">
               <span class="block text-[13px] font-semibold truncate"><?=htmlspecialchars($ra['title'])?></span>
@@ -450,4 +451,4 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 </script>
 </body>
 </html>
-<?php PageCache::end('academy', 300); ?>
+<?php PageCache::end('academy', 1800); ?>

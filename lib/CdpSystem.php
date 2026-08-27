@@ -16,6 +16,7 @@ class CdpSystem {
     private static string $profilesFile = DATA_DIR . '/cdp/profiles.json';
     private static string $segmentsFile = DATA_DIR . '/cdp/segments.json';
     private static string $propertiesFile = DATA_DIR . '/cdp/properties.json';
+    private static array $eventsCache = [];
 
     // ─── 事件追踪 ──────────────────────────────────
 
@@ -28,6 +29,18 @@ class CdpSystem {
             require_once __DIR__ . '/EventDictionary.php';
         }
         if (class_exists('EventDictionary') && !EventDictionary::isEnabled($event)) return false;
+
+        // heartbeat 服务端限流（防前端bug/爬虫高频刷事件表）：同一访客 90 秒内只记 1 次
+        if ($event === 'heartbeat') {
+            $visitorId = $visitorId ?: self::getVisitorId();
+            $hbKey = 'hb_limit:' . substr(md5($visitorId), 0, 16);
+            try {
+                $fc = new FileCache();
+                $last = (int)$fc->get($hbKey);
+                if ($last && (time() - $last) < 90) return true; // 静默丢弃，不写库
+                $fc->set($hbKey, time(), 120);
+            } catch (\Throwable $e) {}
+        }
 
         $events = self::allEvents();
 
@@ -90,10 +103,14 @@ class CdpSystem {
     /**
      * 获取事件列表
      */
-    public static function allEvents(): array {
+    public static function allEvents(int $limit = 10000): array {
+        // 与 JSON 存储的 10,000 条保留上限一致，避免大库后台页面一次性
+        // fetchAll 数十万行并耗尽 PHP 内存。需要更小窗口的调用方可显式传入。
+        $limit = max(1, min(100000, $limit));
+        if (isset(self::$eventsCache[$limit])) return self::$eventsCache[$limit];
         // 优先读 SQLite events 表（主存储），空则回退 JSON（兼容旧数据）
         try {
-            $rows = Database::query("SELECT id, event, uid, member_id, props, page, ip, created_at, session_id, message_id, ts, event_category FROM events ORDER BY id DESC LIMIT 100000");
+            $rows = Database::query("SELECT id, event, uid, member_id, props, page, ip, created_at, session_id, message_id, ts, event_category FROM events ORDER BY id DESC LIMIT {$limit}");
             if (!empty($rows)) {
                 $out = [];
                 foreach ($rows as $r) {
@@ -115,13 +132,14 @@ class CdpSystem {
                         'message_id' => $r['message_id'] ?? '',
                     ];
                 }
-                return array_reverse($out);
+                return self::$eventsCache[$limit] = array_reverse($out);
             }
         } catch (Exception $e) {}
-        return json_read(self::$eventsFile);
+        return self::$eventsCache[$limit] = array_slice(json_read(self::$eventsFile), -$limit);
     }
 
     private static function saveEvents(array $events): void {
+        self::$eventsCache = [];
         // 批量写 SQLite（message_id 去重）
         try {
             $conn = Database::conn();

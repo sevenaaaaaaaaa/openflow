@@ -6,7 +6,7 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 
 // 页面缓存（300 秒）
-if (PageCache::begin('podcasts', 300)) exit;
+if (PageCache::begin('podcasts', 1800)) exit;
 
 $pods = json_read(DATA_DIR . '/podcasts.json');
 $items = array_values(array_filter($pods['items'] ?? [], fn($p) => ($p['status'] ?? 'published') === 'published'));
@@ -65,7 +65,7 @@ $featured = array_values(array_filter($items, fn($p) => !empty($p['featured'])))
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>播客与视频 | <?=site_config_get("site_name")?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .pod-item{display:flex;gap:14px;align-items:center;padding:14px;border-radius:12px;cursor:pointer;transition:.12s;border:1px solid transparent}
@@ -75,7 +75,7 @@ $featured = array_values(array_filter($items, fn($p) => !empty($p['featured'])))
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="articles"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="articles"></script>
 
   <div class="mx-auto px-5 py-8" style="max-width:1200px">
     <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);align-items:center;margin-bottom:24px">
@@ -152,4 +152,4 @@ $featured = array_values(array_filter($items, fn($p) => !empty($p['featured'])))
 <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)"><div class="mx-auto px-5 text-center text-sm" style="max-width:1100px"><div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div><div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div></div></footer>
 </body>
 </html>
-<?php PageCache::end('podcasts', 300); ?>
+<?php PageCache::end('podcasts', 1800); ?>

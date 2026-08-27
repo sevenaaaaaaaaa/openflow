@@ -1,7 +1,7 @@
 <?php
 /**
  * 资料详情页 — 单个资料的完整展示 + 门禁表单下载
- * /download/{slug}
+ * /downloads/{slug}
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
@@ -31,14 +31,14 @@ $catName = $catNames[$dl['category'] ?? ''] ?? $dl['category'] ?? '资料';
 <title><?=htmlspecialchars($dl['title'])?> | <?=site_config_get('site_name')?></title>
 <meta name="description" content="<?=htmlspecialchars(mb_substr($dl['description'] ?? '', 0, 120))?>">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body);color:var(--fg)}
   .dl-detail{border:1px solid var(--border);background:var(--surface);border-radius:24px}
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:900px">
     <a href="/downloads" style="color:var(--muted);text-decoration:none;font-size:13px">← 返回资料中心</a>
@@ -89,7 +89,7 @@ function submitDl(e) {
   e.preventDefault();
   var msg = document.getElementById('dlMsg');
   var body = new FormData(e.target);
-  fetch('/api/download.php', { method: 'POST', body: body })
+  fetch('/api/download', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (d.ok) {

@@ -11,7 +11,7 @@ $settings = json_read($settingsFile);
     'staging_banner' => '🧪 测试环境 · 数据不会永久保存',
     'multilang_enabled' => false,
     'multilang_default' => 'zh-CN',
-    'multilang_languages' => 'zh-CN,zh-TW,en,ja,ko,ru,es,pt,ar,fr,de',
+    'multilang_languages' => 'zh-CN,en,ja',
     'site_name' => 'OpenFlow',
     'site_url' => 'https://example.com',
     'company_name' => 'OpenFlow 科技有限公司',
@@ -50,10 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle checkboxes (not sent when unchecked)
     $settings['staging_mode'] = isset($_POST['settings']['staging_mode']);
     $settings['multilang_enabled'] = isset($_POST['settings']['multilang_enabled']);
-    // 多语言复选框数组 → 逗号分隔
-    if (isset($_POST['settings']['multilang_languages']) && is_array($_POST['settings']['multilang_languages'])) {
-        $settings['multilang_languages'] = implode(',', array_values(array_filter(array_map('trim', $_POST['settings']['multilang_languages']))));
-    }
     json_write($settingsFile, $settings);
     $message = '设置已保存';
 }
@@ -132,24 +128,11 @@ admin_header('系统设置');
       <div class="card">
         <h2>🌐 多语言</h2>
         <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="settings[multilang_enabled]" value="1" <?=$settings['multilang_enabled']?'checked':''?> style="width:18px;height:18px">启用多语言版本</label></div>
-        <div class="field"><label>默认语言</label>
-          <select name="settings[multilang_default]" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
-            <?php require_once __DIR__ . '/../lib/I18n.php'; foreach (i18n_languages() as $code => $meta): ?>
-            <option value="<?=$code?>" <?=$settings['multilang_default']===$code?'selected':''?>><?=htmlspecialchars($meta['native'])?><?=$code!=='zh-CN'?' (' . $code . ')':''?></option>
-            <?php endforeach; ?>
-          </select>
+        <div class="field-row">
+          <div class="field"><label>默认语言</label><input type="text" name="settings[multilang_default]" value="<?=htmlspecialchars($settings['multilang_default'])?>" placeholder="zh-CN"></div>
+          <div class="field"><label>支持的语言 <span class="hint">逗号分隔</span></label><input type="text" name="settings[multilang_languages]" value="<?=htmlspecialchars($settings['multilang_languages'])?>" placeholder="zh-CN,en,ja"></div>
         </div>
-        <div class="field"><label>启用语言 <span class="hint">勾选可在前台切换的语言</span></label>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
-            <?php $langEnabled = array_flip(array_values(array_filter(array_map('trim', explode(',', $settings['multilang_languages'])))));
-            foreach (i18n_languages() as $code => $meta): ?>
-            <label style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1.5px solid <?=isset($langEnabled[$code])?'var(--accent)':'var(--border)'?>;border-radius:10px;cursor:pointer;font-size:13px;background:<?=isset($langEnabled[$code])?'var(--accent-soft)':'transparent'?>">
-              <input type="checkbox" name="settings[multilang_languages][]" value="<?=$code?>" <?=isset($langEnabled[$code])?'checked':''?>> <?=htmlspecialchars($meta['native'])?><?=$meta['rtl']?' <span style="font-size:11px;color:var(--faint)">RTL</span>':''?>
-            </label>
-            <?php endforeach; ?>
-          </div>
-        </div>
-        <div class="msg msg-info" style="margin-top:8px">启用后前台出现语言切换器，URL 以 /en/、/ja/、/zh-TW/ 等前缀区分；翻译包在 <a href="languages.php">翻译管理</a> 中维护。</div>
+        <div class="msg msg-info" style="margin-top:8px">启用后每个内容类型可创建多语言版本，前台根据用户浏览器语言自动切换。</div>
       </div>
 
       <!-- Redis 配置 -->

@@ -22,7 +22,7 @@ foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>商城 | <?=site_config_get('site_name')?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .pcard{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;transition:.2s}
@@ -32,13 +32,13 @@ foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1100px">
     <?php if ($member): ?>
     <div class="rounded-2xl px-5 py-4 mb-8 flex items-center justify-between" style="background:var(--ok-soft);color:var(--ok)">
       <div>当前积分：<strong class="text-xl"><?=(int)($member['points'] ?? 0)?></strong></div>
-      <a href="/member.php" class="text-sm underline">如何获得积分 →</a>
+      <a href="/account" class="text-sm underline">如何获得积分 →</a>
     </div>
     <?php endif; ?>
 
@@ -101,10 +101,10 @@ foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
 <script>
 function buyProduct(id, title) {
   <?php if (!$member): ?>
-  location.href = '/member.php?view=login&next=/shop'; return;
+  location.href = '/account?view=login&next=/shop'; return;
   <?php endif; ?>
   if (!confirm('确认购买「' + title + '」？')) return;
-  fetch('/api/mall.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'order_product', product_id:id, qty:1})})
+  fetch('/api/mall', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'order_product', product_id:id, qty:1})})
     .then(function(r){return r.json();})
     .then(function(d){
       if (d.ok && d.payment && d.payment.ok) {
@@ -120,12 +120,12 @@ function buyProduct(id, title) {
 }
 function redeem(id, title, points) {
   <?php if (!$member): ?>
-  location.href = '/member.php?view=login&next=/shop'; return;
+  location.href = '/account?view=login&next=/shop'; return;
   <?php endif; ?>
   var myPoints = <?=(int)($member['points'] ?? 0)?>;
   if (myPoints < points) { alert('积分不足，需要 ' + points + ' 积分'); return; }
   if (!confirm('确认用 ' + points + ' 积分兑换「' + title + '」？')) return;
-  fetch('/api/mall.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'redeem', points_product_id:id})})
+  fetch('/api/mall', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'redeem', points_product_id:id})})
     .then(function(r){return r.json();})
     .then(function(d){
       if (d.ok) { alert('🎉 兑换成功！'); location.reload(); }
