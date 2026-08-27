@@ -8,7 +8,7 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 
 // 页面缓存（300 秒）
-if (PageCache::begin('category', 300)) exit;
+if (PageCache::begin('category', 1800)) exit;
 
 $content = require __DIR__ . '/data/site-nav-content.php';
 
@@ -80,7 +80,7 @@ if ($section === 'courses') {
     'canonical' => site_config_get('site_url') . '/category/' . $section . '/' . $subkey,
 ]); endif; ?>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body);color:var(--fg)}
   .cat-hero{background:linear-gradient(135deg,var(--bg-soft),var(--accent-soft));border:1px solid var(--border);border-radius:24px}
@@ -89,7 +89,7 @@ if ($section === 'courses') {
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="<?=htmlspecialchars($navPage)?>"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="<?=htmlspecialchars($navPage)?>"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1100px">
 
@@ -112,7 +112,7 @@ if ($section === 'courses') {
     <div class="grid gap-4 mb-10" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
       <?php if (!empty($realItems)): ?>
         <?php foreach ($realItems as $ri): $isArt = isset($ri['content']); $isDl = isset($ri['file']); ?>
-        <a href="<?=htmlspecialchars($isArt ? '/article/' . urlencode($ri['slug'] ?? $ri['id']) : ($isDl ? '/download/' . urlencode($ri['slug'] ?? $ri['id']) : ($realLink . (strpos($realLink, '?') !== false ? '&' : '?') . 'id=' . urlencode($ri['id'] ?? ''))))?>" class="cat-card block p-5" style="text-decoration:none;color:inherit">
+        <a href="<?=htmlspecialchars($isArt ? '/articles/' . urlencode($ri['slug'] ?? $ri['id']) : ($isDl ? '/downloads/' . urlencode($ri['slug'] ?? $ri['id']) : ($realLink . (strpos($realLink, '?') !== false ? '&' : '?') . 'id=' . urlencode($ri['id'] ?? ''))))?>" class="cat-card block p-5" style="text-decoration:none;color:inherit">
           <div style="width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--ok));display:grid;place-items:center;font-size:22px;margin-bottom:12px"><?=$isArt?'📄':($isDl?'📚':'🎓')?></div>
           <div style="font-weight:700;font-size:15px;line-height:1.4;margin-bottom:6px"><?=htmlspecialchars(mb_substr($ri['title'] ?? '未命名', 0, 40))?></div>
           <div style="font-size:12.5px;color:var(--muted);line-height:1.6"><?=htmlspecialchars(mb_substr(strip_tags($ri['excerpt'] ?? $ri['description'] ?? $ri['content'] ?? ''), 0, 80))?></div>
@@ -188,4 +188,4 @@ if ($section === 'courses') {
 
 </body>
 </html>
-<?php PageCache::end('category', 300); ?>
+<?php PageCache::end('category', 1800); ?>

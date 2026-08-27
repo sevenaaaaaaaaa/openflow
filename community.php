@@ -6,7 +6,7 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 
 // 页面缓存（60 秒）
-if (PageCache::begin('community', 60)) exit;
+if (PageCache::begin('community', 900)) exit;
 require_once __DIR__ . '/lib/MemberSystem.php';
 
 $topics = json_read(DATA_DIR . '/community-topics.json');
@@ -54,7 +54,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>门派社区 | <?=site_config_get('site_name')?> · 讨论</title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .topic-btn{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--r-sm);font-size:14px;color:var(--muted);cursor:pointer;transition:.12s;text-decoration:none}
@@ -73,7 +73,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="community"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="community"></script>
 
   <div style="padding:clamp(16px,3vw,32px) 0 8px">
     <div class="mx-auto px-5" style="max-width:1120px">
@@ -164,7 +164,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 <script>
 var MEMBER = <?=json_encode(is_array($member) && isset($member['id']) ? ['id'=>$member['id']] : null)?>;
 function showNewPost() {
-  if (!MEMBER) { location.href = '/member.php?view=login&next=/community.php'; return; }
+  if (!MEMBER) { location.href = '/account?view=login&next=/community'; return; }
   var b = document.getElementById('newPostBox');
   b.style.display = b.style.display === 'none' ? 'block' : 'none';
 }
@@ -174,15 +174,15 @@ function createPost() {
   fd.append('title', document.getElementById('np_title').value);
   fd.append('content', document.getElementById('np_content').value);
   fd.append('topic', document.getElementById('np_topic').value);
-  fetch('/api/community.php', {method:'POST', body:fd})
+  fetch('/api/community', {method:'POST', body:fd})
     .then(function(r){return r.json();})
     .then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
 }
 function vote(postId, delta) {
-  if (!MEMBER) { location.href = '/member.php?view=login'; return; }
+  if (!MEMBER) { location.href = '/account?view=login'; return; }
   var fd = new FormData();
   fd.append('action','vote'); fd.append('post_id', postId); fd.append('delta', delta);
-  fetch('/api/community.php', {method:'POST', body:fd})
+  fetch('/api/community', {method:'POST', body:fd})
     .then(function(r){return r.json();})
     .then(function(d){ if (d.ok) document.getElementById('votes_' + postId).textContent = d.votes; });
 }
@@ -237,4 +237,4 @@ function vote(postId, delta) {
 </footer>
 </body>
 </html>
-<?php PageCache::end('community', 60); ?>
+<?php PageCache::end('community', 900); ?>

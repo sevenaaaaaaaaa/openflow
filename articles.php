@@ -64,7 +64,7 @@ function renderCard(array $a, array $catLabels, $size = 'normal'): string {
     $coverHtml = CoverRenderer::renderCardCover($a);
 
     if ($size === 'large') {
-        return '<a href="/article/' . $slug . '" style="display:grid;grid-template-columns:1fr 1fr;border-radius:16px;overflow:hidden;background:var(--surface);border:1px solid var(--border);text-decoration:none;color:inherit;transition:.2s" onmouseover="this.style.boxShadow=\'0 12px 40px rgba(0,0,0,.12)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.boxShadow=\'none\';this.style.transform=\'none\'">'
+        return '<a href="/articles/' . $slug . '" style="display:grid;grid-template-columns:1fr 1fr;border-radius:16px;overflow:hidden;background:var(--surface);border:1px solid var(--border);text-decoration:none;color:inherit;transition:.2s" onmouseover="this.style.boxShadow=\'0 12px 40px rgba(0,0,0,.12)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.boxShadow=\'none\';this.style.transform=\'none\'">'
             . '<div style="aspect-ratio:4/3;overflow:hidden">' . $coverHtml . '</div>'
             . '<div style="padding:24px;display:flex;flex-direction:column;gap:8px;justify-content:center">'
             . '<div style="font-size:11px;font-weight:700;color:' . $cl['color'] . ';text-transform:uppercase;letter-spacing:.06em">' . $cl['icon'] . ' ' . $cl['name'] . '</div>'
@@ -73,7 +73,7 @@ function renderCard(array $a, array $catLabels, $size = 'normal'): string {
             . '<div style="font-size:12px;color:var(--faint);margin-top:auto">' . $date . ' · Gana</div>'
             . '</div></a>';
     }
-    return '<a href="/article/' . $slug . '" class="card-hover" style="text-decoration:none;color:inherit">'
+    return '<a href="/articles/' . $slug . '" class="card-hover" style="text-decoration:none;color:inherit">'
         . $coverHtml
         . '<div style="padding:14px 16px;display:flex;flex-direction:column;gap:6px;flex:1">'
         . '<div style="font-size:11px;font-weight:600;color:' . $cl['color'] . '">' . $cl['icon'] . ' ' . $cl['name'] . '</div>'
@@ -92,8 +92,8 @@ function renderCard(array $a, array $catLabels, $size = 'normal'): string {
 <title>内容学院 · 文章精选 | <?=$siteName?></title>
 <meta name="description" content="增长实践、AI 工具评测、行业洞察 — 共 <?=$total?> 篇深度文章">
 <link rel="stylesheet" href="/assets/tailwind-build.css">
-<script src="/assets/inject.js" data-cfasync="false" data-site-inject></script>
-<script src="/assets/site-shell.js" data-cfasync="false" data-page="articles"></script>
+<script src="/assets/inject.js" defer></script>
+<script src="/assets/site-shell.js?v=20260826b" defer></script>
 <style>
   .hero{position:relative;overflow:hidden;border-radius:24px;padding:52px 36px 44px;background:linear-gradient(150deg,var(--surface) 0%,rgba(221,255,14,.06) 45%,rgba(56,189,248,.10) 100%);border:1px solid var(--border);margin-bottom:28px}
   .hero .glow-r{position:absolute;top:-80px;right:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.18),transparent 70%)}
@@ -184,7 +184,7 @@ function renderCard(array $a, array $catLabels, $size = 'normal'): string {
       $catSlug = explode('/', $a['category'] ?? '')[0] ?: 'trend';
       $cl = $catLabels[$catSlug] ?? ['icon' => '📦', 'name' => $catSlug, 'color' => 'var(--accent)'];
     ?>
-    <a href="/article/<?=$slug?>" class="ranking-item">
+    <a href="/articles/<?=$slug?>" class="ranking-item">
       <div class="ranking-num"><?=$i+1?></div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:700;font-size:14px;line-height:1.35"><?=$title?></div>

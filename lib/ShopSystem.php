@@ -23,13 +23,9 @@ function shop_settings(): array {
     return array_merge([
         'enabled' => false,
         'currency' => 'CNY',
-        'xfpay_appid' => '',       // 虎皮椒 默认APPID（兼容旧配置）
-        'xfpay_secret' => '',      // 虎皮椒 默认通讯密钥（兼容旧配置）
+        'xfpay_appid' => '',       // 虎皮椒 APPID
+        'xfpay_secret' => '',      // 虎皮椒 通讯密钥
         'xfpay_gateway' => 'https://api.xunhupay.com/payment/do.html',
-        'xfpay_wechat_appid' => '',   // 微信支付通道 APPID
-        'xfpay_wechat_secret' => '',  // 微信支付通道 密钥
-        'xfpay_alipay_appid' => '',   // 支付宝通道 APPID
-        'xfpay_alipay_secret' => '',  // 支付宝通道 密钥
         'commission_rate' => 20,  // 分销佣金比例 %
         'min_withdraw' => 100,    // 最低提现金额
         'course_prices' => [],    // course_id => price
@@ -172,50 +168,33 @@ function shop_create_order(string $memberId, string $courseId, string $ref = '')
 // 虎皮椒下单
 function shop_xfpay_create(array $order, array $member): array {
     $s = shop_settings();
-    $payType = $_GET['pay_type'] ?? 'wechat';
-
-    // 按通道选择凭证（优先通道专属，回退默认）
-    if ($payType === 'alipay') {
-        $appid = $s['xfpay_alipay_appid'] ?: $s['xfpay_appid'];
-        $secret = $s['xfpay_alipay_secret'] ?: $s['xfpay_secret'];
-    } else {
-        $appid = $s['xfpay_wechat_appid'] ?: $s['xfpay_appid'];
-        $secret = $s['xfpay_wechat_secret'] ?: $s['xfpay_secret'];
-    }
-
-    if (empty($appid) || empty($secret)) {
+    if (empty($s['xfpay_appid']) || empty($s['xfpay_secret'])) {
         return ['ok' => false, 'error' => '支付未配置，请联系管理员'];
     }
     $params = [
         'version' => '1.1',
-        'appid' => $appid,
+        'appid' => $s['xfpay_appid'],
         'trade_order_id' => $order['id'],
         'total_fee' => (string)$order['amount'],
         'title' => $order['course_title'],
         'time' => time(),
         'notify_url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/api/shop.php?action=notify',
         'return_url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/member.php?view=orders',
-        'type' => $payType,
+        'type' => $_GET['pay_type'] ?? 'wechat', // wechat / alipay
     ];
     ksort($params);
-    $signStr = urldecode(http_build_query($params)) . $secret;
+    $signStr = urldecode(http_build_query($params)) . $s['xfpay_secret'];
     $params['sign'] = md5($signStr);
     return ['ok' => true, 'params' => $params, 'gateway' => $s['xfpay_gateway']];
 }
 
-// 虎皮椒回调验签（按支付类型选密钥）
+// 虎皮椒回调验签
 function shop_xfpay_verify(array $data): bool {
     $s = shop_settings();
     $sign = $data['sign'] ?? '';
-    $payType = $data['type'] ?? 'wechat';
-    if ($payType === 'alipay') {
-        $secret = $s['xfpay_alipay_secret'] ?: $s['xfpay_secret'];
-    } else {
-        $secret = $s['xfpay_wechat_secret'] ?: $s['xfpay_secret'];
-    }
     unset($data['sign'], $data['extra']);
     ksort($data);
-    $signStr = urldecode(http_build_query($data)) . $secret;
+    $signStr = urldecode(http_build_query($data)) . $s['xfpay_secret'];
     return md5($signStr) === $sign;
 }
 

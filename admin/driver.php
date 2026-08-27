@@ -97,57 +97,16 @@ admin_header('增长驱动引擎');
     </div>
     <?php endforeach; ?>
 
-    <!-- 热点结论（爬取 + AI 洞察） -->
-    <?php
-    $analyzeR = $state['steps']['analyze'] ?? null;
-    $collectR = $state['steps']['collect'] ?? null;
-    $hotInsights = [];
-    if ($analyzeR && !empty($analyzeR['data'])) {
-        $hotInsights = is_array($analyzeR['data']) ? $analyzeR['data'] : [['summary' => $analyzeR['data']]];
-    }
-    $collectTopics = $collectR['topics'] ?? [];
-    if (!empty($hotInsights) || !empty($collectTopics)): ?>
-    <div style="padding:16px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(135deg,var(--surface),rgba(221,255,14,.05));margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="font-size:18px">🔥</span><b style="font-size:15px">热点结论</b>
-        <span class="text-xs text-muted"><?=$analyzeR ? 'AI 洞察 · ' . date('m-d H:i', $analyzeR['ts'] ?? 0) : '尚未总结（点击右上角运行）'?></span>
-      </div>
-      <?php if (!empty($collectTopics)): ?>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-        <span class="text-xs text-muted" style="padding-top:3px">爬取主题：</span>
-        <?php foreach ($collectTopics as $t): ?><span class="badge badge-gray" style="font-size:12px"><?=htmlspecialchars(is_string($t) ? $t : ($t['name'] ?? ''))?></span><?php endforeach; ?>
-      </div>
-      <?php endif; ?>
-      <?php if (!empty($hotInsights)): foreach (array_slice($hotInsights, 0, 5) as $hi): ?>
-      <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);margin-bottom:8px">
-        <div style="font-weight:700;font-size:13px">📌 <?=htmlspecialchars($hi['主题'] ?? $hi['topic'] ?? $hi['title'] ?? '热点主题')?></div>
-        <?php if (!empty($hi['核心观点'])): ?><div style="font-size:12.5px;color:var(--muted);margin-top:4px">💡 <?=htmlspecialchars($hi['核心观点'])?></div><?php endif; ?>
-        <?php if (!empty($hi['机会点'])): ?><div style="font-size:12.5px;color:var(--ok);margin-top:3px">🎯 机会点：<?=htmlspecialchars($hi['机会点'])?></div><?php endif; ?>
-      </div>
-      <?php endforeach; endif; ?>
-    </div>
-    <?php endif; ?>
-
     <!-- 待审核内容 -->
     <?php if (!empty($pending)): ?>
-    <h2 style="font-size:16px;font-weight:800;margin:16px 0 12px">🕐 待审核内容（AI 草稿）</h2>
-    <?php foreach (array_slice(array_reverse($pending), 0, 10) as $p): $pArticle = get_article($p['id'] ?? ''); ?>
+    <h2 style="font-size:16px;font-weight:800;margin:16px 0 12px">🕐 待审核内容</h2>
+    <?php foreach (array_slice(array_reverse($pending), 0, 10) as $p): ?>
     <div class="driver-card">
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
         <b><?=htmlspecialchars($p['title'] ?? '')?></b>
         <span class="text-xs text-muted" style="margin-left:auto"><?=date('Y-m-d H:i', $p['ts'] ?? 0)?></span>
       </div>
-      <?php if ($pArticle): ?>
-      <div style="font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.7"><?=htmlspecialchars(mb_substr(strip_tags($pArticle['content'] ?? ''), 0, 160))?><?=mb_strlen(strip_tags($pArticle['content'] ?? '')) > 160 ? '…' : ''?></div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-        <?php if (!empty($pArticle['seo_title'])): ?><span class="badge badge-gray" style="font-size:11px">SEO: <?=htmlspecialchars(mb_substr($pArticle['seo_title'], 0, 24))?></span><?php endif; ?>
-        <?php if (!empty($pArticle['tags'])): ?><span class="badge badge-gray" style="font-size:11px"><?=htmlspecialchars(implode('、', array_slice($pArticle['tags'], 0, 3)))?></span><?php endif; ?>
-      </div>
-      <?php endif; ?>
-      <div style="margin-top:8px;display:flex;gap:8px">
-        <a href="/admin/article-edit.php?id=<?=htmlspecialchars($p['id'] ?? '')?>" class="btn btn-s btn-sm">✍️ 编辑发布</a>
-        <a href="../content-preview.php?type=article&id=<?=htmlspecialchars($p['id'] ?? '')?>" class="btn btn-ghost btn-sm" target="_blank">👁 预览</a>
-      </div>
+      <a href="/admin/article-edit.php?id=<?=htmlspecialchars($p['id'] ?? '')?>" class="btn btn-ghost btn-sm" style="margin-top:8px">审核草稿 →</a>
     </div>
     <?php endforeach; ?>
     <?php endif; ?>

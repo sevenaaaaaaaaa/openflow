@@ -68,7 +68,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?=htmlspecialchars($course['title'])?> | OpenFlow 课程</title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .lesson{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;cursor:pointer;transition:.12s;font-size:14px}
@@ -81,7 +81,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-8" style="max-width:1100px">
     <div class="grid gap-6" style="grid-template-columns:1fr 340px">
@@ -154,7 +154,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
           <div style="font-size:44px"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span></div>
           <p class="font-bold text-lg mt-3">课程已解锁</p>
           <?php if ($summary['percent'] >= 100): ?><p class="text-sm mt-1" style="color:var(--ok)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3M10 14h4v3h-4zM12 17v3M8 21h8"/></svg></span> 已全部学完，太棒了！</p><?php else: ?><p class="text-sm mt-1 text-gray-600">已学 <?=$summary['done']?>/<?=$summary['total']?> 节</p><?php endif; ?>
-          <a href="/member.php?view=courses" class="mt-5 inline-block rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">我的课程</a>
+          <a href="/account?view=courses" class="mt-5 inline-block rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">我的课程</a>
         </div>
         <?php else: ?>
         <div class="text-3xl font-bold mb-1">¥<?=number_format($price, 2)?><?php if ($coursePromoOn): ?> <s class="text-base font-normal" style="color:var(--faint)">¥<?=number_format($originalPrice, 2)?></s> <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:var(--danger-soft,#fde8e8);color:var(--danger)">限时</span><?php endif; ?></div>
@@ -169,7 +169,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
         </div>
         <p class="text-xs text-gray-400 text-center mb-4">支付由虎皮椒聚合支付提供</p>
         <?php if ($member): ?>
-        <a href="/member.php?view=membership" class="block text-center text-sm font-semibold" style="color:#2b5f7e">开通会员，更多课程免费看 →</a>
+        <a href="/account?view=membership" class="block text-center text-sm font-semibold" style="color:#2b5f7e">开通会员，更多课程免费看 →</a>
         <?php endif; ?>
         <?php endif; ?>
         <?php if ($member): ?>
@@ -270,7 +270,7 @@ if (window.fcTrack) {
 /* 收藏 */
 function toggleFav(cid, btn) {
   var fd = new FormData(); fd.append('action','toggle_fav'); fd.append('course_id', cid);
-  fetch('/api/course.php', { method:'POST', body: fd })
+  fetch('/api/course', { method:'POST', body: fd })
     .then(function(r){ return r.json(); })
     .then(function(d){ if (d.ok) { btn.textContent = d.fav ? '★ 已收藏' : '☆ 收藏课程'; btn.style.color = d.fav ? 'var(--warn)' : 'var(--muted)'; } });
 }
@@ -286,7 +286,7 @@ function submitRate() {
   var content = document.getElementById('rateContent').value.trim();
   if (!content) { document.getElementById('rateMsg').textContent = '请填写评价内容'; return; }
   var fd = new FormData(); fd.append('action','rate_course'); fd.append('course_id', COURSE_ID); fd.append('rating', curRate); fd.append('content', content);
-  fetch('/api/course.php', { method:'POST', body: fd })
+  fetch('/api/course', { method:'POST', body: fd })
     .then(function(r){ return r.json(); })
     .then(function(d){ document.getElementById('rateMsg').textContent = d.message || d.error; if (d.ok) setTimeout(function(){ location.reload(); }, 900); });
 }
@@ -295,7 +295,7 @@ function saveNote() {
   var lesson = document.getElementById('noteLesson').value;
   var note = document.getElementById('noteContent').value.trim();
   var fd = new FormData(); fd.append('action','save_note'); fd.append('course_id', COURSE_ID); fd.append('lesson_id', lesson); fd.append('note', note);
-  fetch('/api/course.php', { method:'POST', body: fd })
+  fetch('/api/course', { method:'POST', body: fd })
     .then(function(r){ return r.json(); })
     .then(function(d){ document.getElementById('noteMsg').textContent = d.message || d.error; if (d.ok) document.getElementById('noteMsg').style.color='var(--ok)'; });
 }
@@ -424,20 +424,20 @@ function saveProgress(lessonId, extra) {
   fd.append('course_id', COURSE_ID);
   fd.append('lesson_id', lessonId);
   Object.keys(extra||{}).forEach(function(k){ fd.append(k, extra[k]); });
-  fetch('/api/course-progress.php', { method:'POST', body: fd });
+  fetch('/api/course-progress', { method:'POST', body: fd });
 }
 // 初始化：若已有续播，自动打开
 var resume = <?=json_encode($resume ? $resume['lesson_id'] : null)?>;
 if (resume) { openLesson(resume); }
 function buyCourse(payType) {
   var member = <?=json_encode($member ? ['id'=>$member['id']] : null)?>;
-  if (!member) { location.href = '/member.php?view=login&next=/course/' + <?=json_encode($courseId)?>; return; }
+  if (!member) { location.href = '/account?view=login&next=/courses/' + <?=json_encode($courseId)?>; return; }
   var fd = new FormData();
   fd.append('action','create_order');
   fd.append('course_id', <?=json_encode($courseId)?>);
   var ref = new URLSearchParams(location.search).get('ref') || '';
   if (ref) fd.append('ref', ref);
-  fetch('/api/shop.php?pay_type=' + payType + '&action=create_order', { method:'POST', body: fd })
+  fetch('/api/shop?pay_type=' + payType + '&action=create_order', { method:'POST', body: fd })
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (!d.ok) { alert(d.error); return; }

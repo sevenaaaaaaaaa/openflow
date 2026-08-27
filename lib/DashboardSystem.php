@@ -5,6 +5,9 @@
 
 // 核心 KPI（含环比：本期 vs 上期）
 function dash_kpis(): array {
+    // 结果缓存 60s（驾驶舱 KPI 无需分钟级实时，避免实时重聚合扫 events）
+    $cacheKey = 'dash:kpis';
+    try { $fc = new FileCache(); $c = $fc->get($cacheKey); if (is_array($c)) return $c; } catch (\Throwable $e) {}
     $kpis = [];
     try {
         // 近30天访问（唯一访客 + PV）
@@ -47,11 +50,15 @@ function dash_kpis(): array {
     // 分销佣金
     $kpis['commission_paid'] = round(array_sum(array_map(fn($o) => (float)($o['commission'] ?? 0), $paid)), 2);
 
+    try { (new FileCache())->set($cacheKey, $kpis, 60); } catch (\Throwable $e) {}
     return $kpis;
 }
 
 // 近14天访问趋势
 function dash_trend(): array {
+    // 结果缓存 60s（近14天每日UV 重聚合）
+    $cacheKey = 'dash:trend';
+    try { $fc = new FileCache(); $c = $fc->get($cacheKey); if (is_array($c)) return $c; } catch (\Throwable $e) {}
     $days = [];
     try {
         $rows = Database::query("SELECT substr(created_at,1,10) as d, COUNT(DISTINCT uid) as uv FROM events WHERE event='page_view' GROUP BY d ORDER BY d DESC LIMIT 14");
@@ -63,6 +70,7 @@ function dash_trend(): array {
         $d = date('Y-m-d', strtotime("-$i day"));
         $result[$d] = $days[$d] ?? 0;
     }
+    try { (new FileCache())->set($cacheKey, $result, 60); } catch (\Throwable $e) {}
     return $result;
 }
 
@@ -217,6 +225,9 @@ function dash_nps(): array {
 
 // ─── 活跃分析（DAU/WAU/MAU + 时段热力 + 新老访客） ───
 function dash_activity(): array {
+    // 结果缓存 60s（DAU/WAU/MAU + 时段热力重聚合，避免每次实时扫）
+    $cacheKey = 'dash:activity';
+    try { $fc = new FileCache(); $c = $fc->get($cacheKey); if (is_array($c)) return $c; } catch (\Throwable $e) {}
     $out = ['dau'=>0, 'wau'=>0, 'mau'=>0, 'hours'=>array_fill(0, 24, 0), 'new_visitors'=>0, 'returning'=>0];
     try {
         $today = date('Y-m-d');
@@ -236,6 +247,7 @@ function dash_activity(): array {
             else $out['new_visitors']++;
         }
     } catch (Exception $e) {}
+    try { (new FileCache())->set($cacheKey, $out, 60); } catch (\Throwable $e) {}
     return $out;
 }
 
@@ -243,53 +255,29 @@ function dash_activity(): array {
 function dash_paths(): array {
     $out = ['pages'=>[], 'referrers'=>[], 'conversions'=>0];
     try {
-        // Top 落地页（page_view 按 page）+ 美化 label
-        $pages = Database::query("SELECT page, COUNT(*) c FROM events WHERE event='page_view' GROUP BY page ORDER BY c DESC LIMIT 12");
+        // Top 落地页（page_view 按 page）
+        $pages = Database::query("SELECT page, COUNT(*) c FROM events WHERE event='page_view' GROUP BY page ORDER BY c DESC LIMIT 10");
         foreach ($pages as $r) {
-            $path = trim($r['page'], '/');
-            $label = dash_pretty_page($path);
-            $out['pages'][] = ['page'=>$path, 'label'=>$label, 'views'=>(int)$r['c']];
+            $label = trim($r['page'], '/') ?: '首页';
+            $out['pages'][] = ['page'=>$label, 'views'=>(int)$r['c']];
         }
-        // 来源（UTM source 优先 + referrer host 兜底，近30天）
-        $refs = Database::query("SELECT props FROM events WHERE event='page_view' AND created_at >= ? AND (props LIKE '%utm%' OR props LIKE '%referrer%')", [date('Y-m-d', strtotime('-30 days'))]);
+        // 来源（解析 props.referrer 的 host）
+        $refs = Database::query("SELECT props FROM events WHERE props LIKE '%referrer%' AND created_at >= ?", [date('Y-m-d', strtotime('-30 days'))]);
         $refCount = [];
         foreach ($refs as $r) {
             $p = json_decode($r['props'] ?? '', true);
-            if (!is_array($p)) $p = [];
-            $src = trim($p['utm_source'] ?? '');
-            if ($src !== '') { $label = ['google'=>'Google','baidu'=>'百度','bing'=>'Bing','toutiao'=>'头条','wechat'=>'微信','direct'=>'直接访问','' => '直接访问'][$src] ?? $src; $refCount[$label] = ($refCount[$label] ?? 0) + 1; continue; }
             $ref = $p['referrer'] ?? '';
             if ($ref === '') continue;
             $host = parse_url($ref, PHP_URL_HOST) ?: $ref;
-            $refCount[trim($host)] = ($refCount[$host] ?? 0) + 1;
+            $refCount[$host] = ($refCount[$host] ?? 0) + 1;
         }
         arsort($refCount);
-        if (empty($refCount)) $refCount['直接访问'] = 0;
         foreach (array_slice($refCount, 0, 6, true) as $k => $n) $out['referrers'][] = ['source'=>$k, 'count'=>$n];
-        // 转化（表单 + 注册 + 下载 + 购买，近30天）
-        $conv = Database::query("SELECT COUNT(*) c FROM events WHERE event IN ('form_submit','register','download','purchase') AND created_at >= ?", [date('Y-m-d', strtotime('-30 days'))]);
+        // 转化（表单提交 + 注册 + 下载）
+        $conv = Database::query("SELECT COUNT(*) c FROM events WHERE event IN ('form_submit','register','download') AND created_at >= ?", [date('Y-m-d', strtotime('-30 days'))]);
         $out['conversions'] = (int)($conv[0]['c'] ?? 0);
-        // 分类型转化
-        $convByType = Database::query("SELECT event, COUNT(*) c FROM events WHERE event IN ('form_submit','register','download','purchase') AND created_at >= ? GROUP BY event", [date('Y-m-d', strtotime('-30 days'))]);
-        $out['conv_types'] = [];
-        $convLabels = ['form_submit'=>'表单','register'=>'注册','download'=>'下载','purchase'=>'购买'];
-        foreach ($convByType as $ct) { $out['conv_types'][] = ['name'=>$convLabels[$ct['event']] ?? $ct['event'], 'count'=>(int)$ct['c']]; }
     } catch (Exception $e) {}
     return $out;
-}
-
-// 落地页路径美化
-function dash_pretty_page(string $path): string {
-    if ($path === '' || $path === 'index.php' || $path === 'index.html') return '🏠 首页';
-    $map = [
-        'article' => '📄 文章', 'category/academy' => '📖 学院', 'category' => '🗂 专题',
-        'courses' => '🎓 课程', 'course' => '🎓 课程', 'product' => '📦 产品', 'capability' => '⚡ 能力',
-        'about' => 'ℹ️ 关于', 'marketplace' => '🛒 生态', 'navigation' => '🧭 导航', 'community' => '💬 社区',
-        'tools' => '🛠 工具', 'docs' => '📚 文档', 'downloads' => '📥 下载', 'podcasts' => '🎧 播客',
-        'lp' => '🎯 落地页', 'events' => '🎪 活动', 'event' => '🎪 活动', 'search' => '🔍 搜索',
-    ];
-    foreach ($map as $k => $v) if (strpos($path, $k) === 0) return $v;
-    return '🌐 ' . (mb_strlen($path) > 18 ? mb_substr($path, 0, 18) . '…' : $path);
 }
 
 // ─── 偏好洞察（设备/语言/内容分类） ───
@@ -305,47 +293,18 @@ function dash_preferences(): array {
             if (!empty($prop['os'])) $osCount[$prop['os']] = ($osCount[$prop['os']] ?? 0) + 1;
             if (!empty($prop['language'])) $langCount[$prop['language']] = ($langCount[$prop['language']] ?? 0) + 1;
         }
-        // 内容偏好：页面路径分类 + 热门内容标题聚合
-        $pages = Database::query("SELECT page, COUNT(*) c FROM events WHERE event='page_view' AND page != '' GROUP BY page ORDER BY c DESC LIMIT 40");
-        $contentCount = [];
-        $topContent = [];
+        // 内容偏好：从 page_view 的 page 分类聚合
+        $pages = Database::query("SELECT page, COUNT(*) c FROM events WHERE event='page_view' GROUP BY page ORDER BY c DESC LIMIT 20");
         foreach ($pages as $r) {
             $path = trim($r['page'], '/');
-            $c = (int)$r['c'];
-            $mapped = false;
-            foreach ($contentMap as $key => $label) if (strpos($path, $key) === 0) { $contentCount[$label] = ($contentCount[$label] ?? 0) + $c; $mapped = true; break; }
-            if (!$mapped) $contentCount['其他'] = ($contentCount['其他'] ?? 0) + $c;
-            // 具体内容 TOP（文章/课程页 → 标题）
-            $title = dash_content_title($path);
-            if ($title !== null) $topContent[$title] = ($topContent[$title] ?? 0) + $c;
+            foreach ($contentMap as $key => $label) if (strpos($path, $key) === 0) { $contentCount[$label] = ($contentCount[$label] ?? 0) + (int)$r['c']; break; }
         }
         arsort($osCount); arsort($langCount); arsort($contentCount);
         foreach ($osCount as $k => $n) $out['devices'][] = ['name'=>$k, 'count'=>$n];
         foreach ($langCount as $k => $n) $out['languages'][] = ['name'=>$k, 'count'=>$n];
         foreach (array_slice($contentCount, 0, 8, true) as $k => $n) $out['content'][] = ['name'=>$k, 'count'=>$n];
-        // 热门内容 TOP（文章/课程标题）
-        if (!empty($topContent)) {
-            arsort($topContent);
-            foreach (array_slice($topContent, 0, 6, true) as $k => $n) $out['top_content'][] = ['title'=>$k, 'views'=>$n];
-        }
     } catch (Exception $e) {}
     return $out;
-}
-
-// 从页面路径解析内容标题（文章/课程/专题）
-function dash_content_title(string $path): ?string {
-    if (strpos($path, 'article/') === 0) {
-        $slug = trim(substr($path, 8), '/');
-        $a = null;
-        foreach (get_articles() as $x) if (($x['slug'] ?? '') === $slug) { $a = $x; break; }
-        return $a ? ('📄 ' . mb_substr($a['title'] ?? '', 0, 24)) : null;
-    }
-    if (strpos($path, 'course/') === 0) {
-        $id = trim(substr($path, 7), '/');
-        foreach (json_read(DATA_DIR . '/courses/index.json') as $c) if (($c['id'] ?? '') === $id) return '🎓 ' . mb_substr($c['title'] ?? '', 0, 24);
-        return null;
-    }
-    return null;
 }
 
 // ─── 报表邮件构建与发送（订阅推送） ───

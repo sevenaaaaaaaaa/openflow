@@ -6,7 +6,7 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 
 // 页面缓存（300 秒）
-if (PageCache::begin('tools', 300)) exit;
+if (PageCache::begin('tools', 1800)) exit;
 
 $siteName = site_config_get('site_name', 'OpenFlow');
 admin_header_reset(); // 确保无残留输出
@@ -47,7 +47,7 @@ pre.meta-out{background:var(--accent);color:var(--on-accent);padding:14px;border
 </head>
 <body class="min-h-screen">
 <script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="tools"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="tools"></script>
 
 <section style="padding:clamp(20px,4vw,44px) 0 clamp(28px,4vw,48px)">
   <div class="mx-auto px-5" style="max-width:1120px">
@@ -169,7 +169,7 @@ function switchTool(id, btn) {
   btn.style.background = 'var(--accent)'; btn.style.color = 'var(--on-accent)';
 }
 function api(action, data, cb) {
-  fetch('/api/tools.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(Object.assign({action:action}, data))})
+  fetch('/api/tools', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(Object.assign({action:action}, data))})
     .then(function(r){return r.json();}).then(cb);
 }
 function esc(s){ var d=document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function(){ addFunnelStage(); addF
 </script>
 </body>
 </html>
-<?php PageCache::end('tools', 300); ?>
+<?php PageCache::end('tools', 1800); ?>
 <?php
 function admin_header_reset(): void {
     // 确保无残留输出（占位，防止前面 require 产生输出）

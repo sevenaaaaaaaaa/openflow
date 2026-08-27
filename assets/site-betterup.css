@@ -1,0 +1,232 @@
+/* OpenFlow — Betterup design-language override
+   Loaded AFTER site-betterup.js. Adapts the sibling to Betterup's
+   editorial serif + cream canvas + rubine accent look. */
+
+:root {
+  --bu-bg:        #f4f3e9;
+  --bu-cream:     #f4f3e9;
+  --bu-beige:     #ebe9e1;
+  --bu-white:     #ffffff;
+  --bu-text:      #000000;
+  --bu-muted:     #6e6e6e;
+  --bu-border:    #cccccc;
+  --bu-rubine:    #ce0058;
+  --bu-rubine-2:  #e81259;
+  --bu-yellow:    #ddff0e;
+  --bu-error:     #ff0000;
+}
+
+/* — Typography: serif display headings, sans body, weight 400 editorial */
+body { font-family: 'Inter','PingFang SC','Noto Sans SC','Source Han Sans SC',system-ui,sans-serif; }
+h1, h2 {
+  font-family: 'Newsreader','Times New Roman',Georgia,serif !important;
+  font-weight: 400 !important;
+  letter-spacing: -.01em;
+}
+h3, h4 { font-weight: 400; letter-spacing: -.005em; }
+.font-num { font-family: 'JetBrains Mono','SohneMono-Buch','Roboto Mono',ui-monospace,monospace; font-variant-numeric: tabular-nums; }
+
+/* Hero h1 bigger, editorial */
+.hero-stagger h1 { font-size: clamp(44px, 7vw, 88px) !important; line-height: 1.05 !important; font-weight: 400 !important; letter-spacing: -.02em !important; }
+
+/* — Eyebrow: mono, rubine, tighter */
+.eyebrow, .eyebrow-sun {
+  color: var(--bu-rubine) !important;
+  font-family: 'JetBrains Mono','Roboto Mono',monospace;
+  letter-spacing: .12em;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+/* — Buttons — Betterup: primary yellow square (0 radius), filled rubine pill (32px), ghost square */
+.btn-ink {
+  background: var(--bu-yellow) !important;
+  color: var(--bu-text) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  font-weight: 500;
+}
+.btn-ink:hover { background: #c8e600 !important; transform: translateY(-1px); box-shadow: none !important; }
+.btn-ink:active { transform: translateY(1px) scale(.98); box-shadow: none !important; }
+.btn-ghost {
+  border-radius: 6px !important;
+  border: 1px solid var(--bu-text) !important;
+  background: transparent !important;
+  color: var(--bu-text) !important;
+  font-weight: 500;
+}
+.btn-ghost:hover { border-color: var(--bu-rubine) !important; color: var(--bu-rubine) !important; background: transparent !important; }
+.btn-line {
+  border-radius: 6px !important;
+  border: 1px solid var(--bu-text) !important;
+  color: var(--bu-text) !important;
+  background: transparent !important;
+}
+.btn-line:hover { background: var(--bu-text) !important; color: #fff !important; }
+
+/* — Nav CTA pill — rubine filled, 32px radius */
+.bg-jade {
+  background: var(--bu-rubine) !important;
+  color: #fff !important;
+  border-radius: 32px !important;
+  box-shadow: none !important;
+}
+.bg-jade:hover { background: var(--bu-rubine-2) !important; }
+
+/* — Inputs: flat, grey border, 6px radius */
+.inp { border-radius: 6px !important; border-color: var(--bu-border) !important; background: #fff !important; box-shadow: none !important; }
+.inp:focus { border-color: var(--bu-rubine) !important; box-shadow: none !important; outline: 2px solid var(--bu-rubine); outline-offset: 1px; }
+
+/* — Cards — 32px radius, flat with border only */
+.case-card, .expert, .card, .cat {
+  border-radius: 32px !important;
+  box-shadow: none !important;
+  border: 1px solid var(--bu-border) !important;
+  background: #fff !important;
+}
+.case-card:hover, .expert:hover, .card:hover {
+  box-shadow: none !important;
+  transform: translateY(-2px);
+  border-color: var(--bu-text) !important;
+}
+.card-cream { border-radius: 32px !important; border: 1px solid var(--bu-border) !important; background: var(--bu-beige) !important; }
+
+/* — Logo wall cells — flat, no shadow, grey border */
+.lw-cell { background:#fff !important; border: 1px solid var(--bu-border) !important; border-radius: 16px !important; box-shadow: none !important; }
+.lw-cell:hover { box-shadow: none !important; border-color: var(--bu-text) !important; }
+.lw-cell img { filter: grayscale(.4) !important; }
+.lw-cell:hover img { filter: grayscale(0) !important; }
+
+/* — Tab buttons — flat, rubine active */
+.tab-btn { border-radius: 16px !important; border: 1px solid var(--bu-border) !important; background: #fff !important; box-shadow: none !important; }
+.tab-btn[aria-selected="true"] {
+  border-color: var(--bu-text) !important;
+  background: var(--bu-yellow) !important;
+  box-shadow: none !important;
+}
+.tab-progress { background: linear-gradient(90deg, var(--bu-rubine), var(--bu-rubine-2)) !important; }
+
+/* — Flow accent line + mesh — rubine + yellow */
+.flow-line {
+  background: linear-gradient(90deg, transparent 0%, var(--bu-rubine) 25%, var(--bu-yellow) 50%, var(--bu-rubine) 75%, transparent 100%) !important;
+  background-size: 50% 100% !important;
+  opacity: .4 !important;
+  height: 2px !important;
+}
+.flow-mesh {
+  opacity: .15 !important;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 30%, var(--bu-rubine) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 70%, var(--bu-yellow) 0%, transparent 55%) !important;
+  background-size: 200% 200% !important;
+}
+
+/* — WellQ panel / case media / expert photo — beige cream backgrounds */
+.case-media { background: linear-gradient(135deg, var(--bu-beige) 0%, #fff 50%, var(--bu-beige) 100%) !important; }
+.expert-photo { background: linear-gradient(160deg, var(--bu-beige), #fff) !important; }
+.expert-photo::after { background: linear-gradient(to bottom, rgba(235,233,225,.18) 0%, rgba(206,0,88,.10) 100%) !important; }
+
+/* — Hex ring / pyramid / progress — rubine + yellow */
+.hex-center {
+  background: var(--bu-rubine) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.hex-petal:hover { border-color: var(--bu-yellow) !important; }
+.hex-petal .petal-icon { background: color-mix(in srgb, var(--bu-yellow) 30%, #fff) !important; }
+.prog-dot { background: var(--bu-rubine) !important; }
+.flow-num, .step-num { background: var(--bu-rubine) !important; }
+.mod-cell .mod-icon { background: color-mix(in srgb, var(--bu-yellow) 25%, #fff) !important; }
+.pyramid-row:hover { box-shadow: none !important; border-color: var(--bu-text) !important; }
+
+/* — Catalog header beige */
+.cat-h { background: var(--bu-beige) !important; border-bottom: 1px solid var(--bu-border) !important; }
+.cat-row:hover { background: color-mix(in srgb, var(--bu-yellow) 8%, #fff) !important; }
+.cat-dur { color: var(--bu-rubine) !important; }
+.cap-li::before { background: color-mix(in srgb, var(--bu-rubine) 16%, #fff) !important; box-shadow: inset 0 0 0 1.5px var(--bu-rubine) !important; }
+
+/* — Pills / chips */
+.pill { background: color-mix(in srgb, var(--bu-yellow) 20%, #fff) !important; border-color: var(--bu-border) !important; color: var(--bu-text) !important; }
+.chip { background: color-mix(in srgb, var(--bu-rubine) 8%, #fff) !important; border-color: var(--bu-border) !important; color: var(--bu-rubine) !important; }
+.cr { background: color-mix(in srgb, var(--bu-yellow) 30%, #fff) !important; color: #6a6a00 !important; }
+.ind { background: color-mix(in srgb, var(--bu-rubine) 7%, #fff) !important; border-color: color-mix(in srgb, var(--bu-rubine) 14%, var(--bu-border)) !important; color: var(--bu-rubine) !important; }
+.tag { border-color: var(--bu-border) !important; }
+.lvl, .mod { background: #fff !important; border-color: var(--bu-border) !important; border-radius: 12px !important; }
+.model-row:hover { background: color-mix(in srgb, var(--bu-yellow) 8%, #fff) !important; }
+.course-k { color: var(--bu-rubine) !important; }
+.course-t em { color: #6a6a00 !important; }
+.expert-en { color: var(--bu-rubine) !important; }
+.expert-list li::before { background: var(--bu-yellow) !important; }
+.benefit::before { background: var(--bu-yellow) !important; }
+
+/* — Vision section turned light beige (Betterup: no dark backgrounds) */
+section[style*="linear-gradient(160deg,#ebe9e1"], 
+section[style*="linear-gradient(160deg,#f4f3e1"] {
+  background: linear-gradient(160deg, var(--bu-beige) 0%, #fff 100%) !important;
+}
+section[style*="linear-gradient(160deg,#ebe9e1"] .text-white\/90,
+section[style*="linear-gradient(160deg,#f4f3e1"] .text-white\/90 { color: #000 !important; }
+section[style*="linear-gradient(160deg,#ebe9e1"] .text-white\/85,
+section[style*="linear-gradient(160deg,#f4f3e1"] .text-white\/85 { color: #000 !important; }
+section[style*="linear-gradient(160deg,#ebe9e1"] .text-white\/80,
+section[style*="linear-gradient(160deg,#f4f3e1"] .text-white\/80 { color: rgba(0,0,0,.72) !important; }
+section[style*="linear-gradient(160deg,#ebe9e1"] .text-white\/50,
+section[style*="linear-gradient(160deg,#f4f3e1"] .text-white\/50 { color: rgba(0,0,0,.55) !important; }
+section[style*="linear-gradient(160deg,#ebe9e1"] .text-white\/35,
+section[style*="linear-gradient(160deg,#f4f3e1"] .text-white\/35 { color: rgba(0,0,0,.4) !important; }
+section[style*="linear-gradient(160deg,#ebe9e1"] .text-white,
+section[style*="linear-gradient(160deg,#f4f3e1"] .text-white { color: #000 !important; }
+section[style*="linear-gradient(160deg,#ebe9e1"] .text-sun,
+section[style*="linear-gradient(160deg,#f4f3e1"] .text-sun { color: var(--bu-rubine) !important; }
+/* Yellow fails contrast as text on cream — use rubine for all .text-sun text usages;
+   yellow stays for fills/icons/backgrounds only. */
+.text-sun, .text-sun\/80, .text-sun\/70 { color: var(--bu-rubine) !important; }
+section[style*="linear-gradient(160deg,#ebe9e1"] .border-white\/10,
+section[style*="linear-gradient(160deg,#f4f3e1"] .border-white\/10 { border-color: rgba(0,0,0,.1) !important; }
+
+/* — Footer — light beige with black text (was dark) */
+footer {
+  background: var(--bu-beige) !important;
+  color: var(--bu-text) !important;
+}
+footer .text-white\/80 { color: var(--bu-text) !important; }
+footer .text-white\/45 { color: var(--bu-muted) !important; }
+footer .text-white\/40 { color: var(--bu-muted) !important; }
+footer .text-white { color: var(--bu-text) !important; }
+footer .border-white\/10 { border-color: rgba(0,0,0,.1) !important; }
+footer .hover\:text-white\/70:hover { color: var(--bu-rubine) !important; }
+footer svg [stroke="#fff"] { stroke: var(--bu-text) !important; }
+footer .foot-h { color: var(--bu-muted) !important; }
+footer .foot-l a { color: var(--bu-text) !important; }
+footer .foot-l a:hover { color: var(--bu-rubine) !important; }
+footer .social {
+  background: #fff !important;
+  border: 1px solid var(--bu-border) !important;
+  color: var(--bu-text) !important;
+}
+footer .social:hover { border-color: var(--bu-rubine) !important; color: var(--bu-rubine) !important; }
+
+/* — CTA form submit — rubine pill */
+#contact form button[type="submit"] {
+  background: var(--bu-rubine) !important;
+  color: #fff !important;
+  border-radius: 32px !important;
+  box-shadow: none !important;
+  font-weight: 500;
+}
+#contact form button[type="submit"]:hover { background: var(--bu-rubine-2) !important; }
+#form-msg { background: color-mix(in srgb, var(--bu-yellow) 20%, #fff) !important; color: var(--bu-text) !important; }
+
+/* — Grid bg softer on cream */
+.grid-bg { background-image:
+  linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px) !important;
+  background-size: 48px 48px !important;
+}
+
+/* — reveal easing keeps base */
+
+/* — Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .flow-line, .flow-mesh { display: none !important; }
+}
