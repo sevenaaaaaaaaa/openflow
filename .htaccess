@@ -5,8 +5,8 @@ RewriteEngine On
 DirectoryIndex index.php index.html
 RewriteRule ^$ index.php [L,QSA]
 
-# 多语言 URL 前缀（/zh-TW/ /en/ /ja/ /ko/ /ru/ /es/ /pt/ /ar/ /fr/ /de/ 剥离 → 原路径，语言由 REQUEST_URI 检测）
-RewriteRule ^(zh-CN|zh-TW|en|ja|ko|ru|es|pt|ar|fr|de)/(.*)$ $2 [L,QSA]
+# 多语言 URL 前缀（/en/ /ja/ /zh-CN/ 剥离 → 原路径，语言由 REQUEST_URI 检测）
+RewriteRule ^(en|ja|zh-CN)/(.*)$ $2 [L,QSA]
 
 # 融合方案：独立子路径挂载 /growth/（剥离前缀，OpenFlow 内容在既有站点子路径下共存）
 RewriteRule ^growth/(.*)$ $1 [L,QSA]
@@ -37,14 +37,6 @@ RewriteRule ^xmp/?$ admin/index.php [L]
 RewriteRule ^xmp/([a-z0-9-]+)/?$ admin/$1.php [L,QSA]
 RewriteRule ^xmp/(.+)$ admin/$1 [L,QSA]
 
-# 老 .html → 干净 URL 重定向（demo 版已删除，保留 SEO 权重）
-RewriteRule ^index\.html$ / [R=301,L]
-RewriteRule ^product\.html$ /product [R=301,L]
-RewriteRule ^courses\.html$ /courses [R=301,L]
-RewriteRule ^capability\.html$ /capability [R=301,L]
-RewriteRule ^about\.html$ /about [R=301,L]
-RewriteRule ^community\.html$ /community [R=301,L]
-
 # 主站页面（伪静态 · 去掉 .php 后缀）
 # 放在「已存在文件/目录放行」之前，避免 docs 目录冲突
 RewriteRule ^docs/?$ docs.php [L,QSA]
@@ -65,7 +57,6 @@ RewriteRule ^topics/?$ topics.php [L,QSA]
 RewriteRule ^consultation/?$ consultation.php [L,QSA]
 RewriteRule ^course/(.+)$ course-player.php?slug=$1 [L,QSA]
 RewriteRule ^download/(.+)$ download.php?slug=$1 [L,QSA]
-RewriteRule ^category/academy/articles$ /articles [R=301,L]
 RewriteRule ^category/([a-z]+)/([a-z0-9_-]+)/?$ category.php?section=$1&subkey=$2 [L,QSA]
 RewriteRule ^community-post/(.+)$ community-post.php?id=$1 [L,QSA]
 
@@ -81,6 +72,7 @@ RewriteRule ^llms\.txt$ llms.php [L]
 RewriteRule ^(feed|rss)(\.xml)?$ feed.php [L]
 
 # 前台内容
+RewriteRule ^articles/(.+)$ article.php?slug=$1 [L,QSA,B]
 RewriteRule ^article/(.+)$ article.php?slug=$1 [L,QSA,B]
 RewriteRule ^author/(.+)$ author.php?name=$1 [L,QSA,B]
 RewriteRule ^topic/(.+)$ topics.php?slug=$1 [L,QSA,B]
@@ -89,9 +81,6 @@ RewriteRule ^navigation-site/?$ navigation-site.php [L,QSA]
 RewriteRule ^event/(.+)$ event.php?slug=$1 [L,QSA,B]
 RewriteRule ^events/?$ events.php [L,QSA]
 RewriteRule ^lp/(.+)$ landing.php?slug=$1 [L,QSA,B]
-RewriteRule ^skill/(.+)$ asset.php?type=skill&id=$1 [L,QSA,B]
-RewriteRule ^plugin/(.+)$ asset.php?type=plugin&id=$1 [L,QSA,B]
-RewriteRule ^theme/(.+)$ asset.php?type=theme&id=$1 [L,QSA,B]
 RewriteRule ^b/(.+)$ front-builder.php?slug=$1 [L,QSA,B]
 
 # 功能页

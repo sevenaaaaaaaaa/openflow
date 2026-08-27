@@ -6,7 +6,7 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 
 // 页面缓存（300 秒）
-if (PageCache::begin('downloads', 300)) exit;
+if (PageCache::begin('downloads', 1800)) exit;
 
 $all = json_read(DATA_DIR . '/downloads.json');
 $downloads = array_values(array_filter($all, fn($d) => ($d['status'] ?? 'draft') === 'published'));
@@ -29,7 +29,7 @@ usort($downloads, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>资料下载 | <?=site_config_get('site_name')?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .dl-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;transition:.15s}
@@ -37,7 +37,7 @@ usort($downloads, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] 
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1200px">
     <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);align-items:center;margin-bottom:28px">
@@ -95,7 +95,7 @@ usort($downloads, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] 
           <?php endforeach; ?>
         </div>
         <?php endif; ?>
-        <a href="/download/<?=urlencode($d['slug'] ?: $d['id'])?>" class="mt-4 w-full rounded-full py-2.5 font-bold text-sm block text-center" style="background:var(--accent);color:var(--on-accent)">查看详情 →</a>
+        <a href="/downloads/<?=urlencode($d['slug'] ?: $d['id'])?>" class="mt-4 w-full rounded-full py-2.5 font-bold text-sm block text-center" style="background:var(--accent);color:var(--on-accent)">查看详情 →</a>
       </div>
       <?php endforeach; ?>
     </div>
@@ -137,7 +137,7 @@ function submitDl(e) {
   e.preventDefault();
   var msg = document.getElementById('dlMsg');
   var body = new FormData(e.target);
-  fetch('/api/download.php', { method: 'POST', body: body })
+  fetch('/api/download', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (d.ok) {
@@ -151,4 +151,4 @@ function submitDl(e) {
 </script>
 </body>
 </html>
-<?php PageCache::end('downloads', 300); ?>
+<?php PageCache::end('downloads', 1800); ?>

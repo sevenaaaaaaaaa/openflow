@@ -20,7 +20,7 @@ $configs = [
         'sub'   => '你的信息已收到，我们会在 1 个工作日内与你联系。',
         'blocks' => [
             ['type' => 'tip', 'icon' => '📌', 'title' => '接下来会发生什么', 'desc' => '我们的增长顾问会通过你留下的联系方式联系你，安排 30 分钟一对一沟通。'],
-            ['type' => 'link', 'icon' => '📄', 'title' => '先看一份增长报告样本', 'desc' => '在等待期间，可以先查看同行业脱敏增长报告。', 'url' => '/downloads.php', 'btn' => '查看资料'],
+            ['type' => 'link', 'icon' => '📄', 'title' => '先看一份增长报告样本', 'desc' => '在等待期间，可以先查看同行业脱敏增长报告。', 'url' => '/downloads', 'btn' => '查看资料'],
             ['type' => 'link', 'icon' => '📚', 'title' => '浏览社区', 'desc' => '网站增长洞察、AI 运营实践与专题报告。', 'url' => '/community', 'btn' => '去社区'],
         ],
     ],
@@ -46,7 +46,7 @@ $configs = [
         'title' => '资料下载',
         'sub'   => '你需要的资料已准备好，点击下方按钮获取。',
         'blocks' => [
-            ['type' => 'link', 'icon' => '⬇️', 'title' => '下载资料', 'desc' => '点击下载你申请的资料文件。', 'url' => '/downloads.php', 'btn' => '下载资料'],
+            ['type' => 'link', 'icon' => '⬇️', 'title' => '下载资料', 'desc' => '点击下载你申请的资料文件。', 'url' => '/downloads', 'btn' => '下载资料'],
         ],
     ],
     'subscribe' => [
@@ -68,17 +68,17 @@ $cfg = $configs[$from] ?? $configs['lead'];
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?=htmlspecialchars($cfg['title'])?> | <?=htmlspecialchars($siteName)?></title>
-<link rel="stylesheet" href="/assets/tokens.css?v=20260816">
-<link rel="stylesheet" href="/assets/modules.css?v=20260816">
+<link rel="stylesheet" href="/assets/tokens.css?v=20260826b">
+<link rel="stylesheet" href="/assets/modules.css?v=20260826b">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
 </style>
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
 <body>
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script> class="min-h-screen">
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script> class="min-h-screen">
   
 
   <div class="mx-auto px-5 py-14 text-center" style="max-width:720px">

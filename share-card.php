@@ -76,7 +76,7 @@ body{font-family:-apple-system,'Inter','PingFang SC','Noto Sans SC',system-ui,sa
 .controls .close:hover{background:rgba(255,255,255,.2)}
 @media(max-width:600px){.card{width:100%;border-radius:16px}.card-inner{padding:32px 24px}.title{font-size:28px}}
 </style>
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 </head>
 <body>
 
@@ -119,7 +119,7 @@ function downloadCard() {
   } else {
     // Load html2canvas dynamically
     var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    s.src = '/assets/vendor/html2canvas.min.js';
     s.onload = function() { downloadCard(); };
     document.head.appendChild(s);
   }

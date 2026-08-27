@@ -1,7 +1,7 @@
 <?php
 /**
  * 活动详情页
- * /event/{slug}
+ * /events/{slug}
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
@@ -36,13 +36,13 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
 <title><?=htmlspecialchars($event['seo_title'] ?? $event['title'])?> | <?=site_config_get('site_name')?></title>
 <meta name="description" content="<?=htmlspecialchars($event['seo_desc'] ?? $event['description'] ?? '')?>">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1000px">
     <a href="/academy" class="text-sm text-[#2b5f7e]">← 返回社区</a>
@@ -119,11 +119,11 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
   var IS_LOGGED = <?=$member ? 'true' : 'false'?>;
   function regFetch(action) {
     var fd = new FormData(); fd.append('action', action); fd.append('event_id', EVENT_ID);
-    return fetch('/api/event-register.php', { method:'POST', body: fd }).then(function(r){ return r.json(); });
+    return fetch('/api/event-register', { method:'POST', body: fd }).then(function(r){ return r.json(); });
   }
   function doRegister() {
     var msg = document.getElementById('regMsg');
-    if (!IS_LOGGED) { location.href = '/member.php?view=login&next=/event/' + <?=json_encode($slug)?>; return; }
+    if (!IS_LOGGED) { location.href = '/account?view=login&next=/events/' + <?=json_encode($slug)?>; return; }
     if (!confirm('确认报名该活动？')) return;
     msg.textContent = '提交中…'; msg.style.color = 'var(--muted)';
     regFetch('register').then(function(d){ msg.textContent = d.message || d.error; msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; if (d.ok) setTimeout(function(){ location.reload(); }, 1000); });
