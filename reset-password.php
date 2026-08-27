@@ -2,7 +2,7 @@
 /**
  * 密码重置 — 支持 token 验证 + 自助重置
  */
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/admin/config.php';
 
 $message = '';
 $error = '';

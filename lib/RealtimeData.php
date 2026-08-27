@@ -10,6 +10,7 @@
  */
 require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/AiCenter.php';
+require_once __DIR__ . '/MemberSystem.php';
 
 class RealtimeData {
     private static string $cacheFile = DATA_DIR . '/realtime-cache.json';

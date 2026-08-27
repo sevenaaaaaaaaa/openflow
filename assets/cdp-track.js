@@ -304,8 +304,15 @@
         if (dur >= 3) queue('time_on_page', { duration_sec: dur, path: location.pathname });
         flushBatch();
       });
-      // 30s 心跳（活跃用户）
-      setInterval(function(){ queue('heartbeat', { duration_sec: Math.round((Date.now() - startTime) / 1000) }); }, 30000);
+      // 活跃心跳（降频防刷：延迟60s启动，每120s一次，单页最多20次）
+      var hbCount = 0, HBS_MAX = 20;
+      setTimeout(function() {
+        var hbTimer = setInterval(function() {
+          if (hbCount >= HBS_MAX) { clearInterval(hbTimer); return; }
+          hbCount++;
+          queue('heartbeat', { duration_sec: Math.round((Date.now() - startTime) / 1000), session_heartbeat: hbCount });
+        }, 120000);
+      }, 60000);
     }
   }
 

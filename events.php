@@ -28,8 +28,8 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
 <meta name="description" content="<?=htmlspecialchars($siteSlogan)?> 的线上直播与线下活动，报名参加获得一手增长打法。">
 <link rel="stylesheet" href="/assets/site.css">
 <link rel="stylesheet" href="/assets/tailwind-build.css">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="events"></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
+<script src="/assets/site-shell.js?v=20260826b" defer></script>
 <style>
   body{background:var(--bg);color:var(--fg)}
   .ev-card{display:flex;gap:18px;padding:22px;border-radius:18px;border:1px solid var(--border);background:var(--surface);transition:.15s}
@@ -52,7 +52,7 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
   <?php if (empty($events)): ?><div class="text-center py-20 text-muted">暂无活动，敬请期待</div><?php endif; ?>
   <div class="grid gap-5">
     <?php foreach ($events as $e): $sd = strtotime($e['start_date'] ?? ''); $ed = strtotime($e['end_date'] ?? ''); ?>
-    <a href="/event/<?=urlencode($e['slug'])?>" class="ev-card">
+    <a href="/events/<?=urlencode($e['slug'])?>" class="ev-card">
       <div class="ev-date">
         <div style="font-size:24px;font-weight:800"><?=$sd ? date('d', $sd) : '--'?></div>
         <div style="font-size:11px"><?=$sd ? date('M', $sd) : ''?></div>

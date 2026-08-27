@@ -37,7 +37,7 @@ $slotOptions = con_slot_options();
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?=htmlspecialchars($settings['page_title'] ?? '1v1 咨询')?>  | <?=site_config_get("site_name")?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .mentor-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;transition:.18s;display:flex;flex-direction:column;gap:12px}
@@ -54,7 +54,7 @@ $slotOptions = con_slot_options();
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1120px">
     <?php if ($view === 'detail' && $mentor): ?>
@@ -87,7 +87,7 @@ $slotOptions = con_slot_options();
     <h2 class="font-bold text-lg mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span> 代表课程</h2>
     <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
       <?php foreach ($repCourses as $cid): $c = $courseMap[$cid]; ?>
-      <a href="/course/<?=urlencode($cid)?>" class="bg-surface rounded-2xl overflow-hidden" style="border:1px solid var(--border);text-decoration:none;color:inherit">
+      <a href="/courses/<?=urlencode($cid)?>" class="bg-surface rounded-2xl overflow-hidden" style="border:1px solid var(--border);text-decoration:none;color:inherit">
         <?php if (!empty($c['cover'])): ?><img src="<?=htmlspecialchars($c['cover'])?>" class="w-full h-36 object-cover" onerror="this.style.display='none'"><?php endif; ?>
         <div class="p-4">
           <div class="font-bold text-sm"><?=htmlspecialchars($c['title'])?></div>
@@ -105,7 +105,7 @@ $slotOptions = con_slot_options();
       <?php if (!$member): ?>
       <div class="rounded-2xl p-6 text-center" style="background:var(--bg)">
         <p class="text-sm mb-4">报名前请先登录/注册会员账号</p>
-        <a href="/member.php?view=login&next=<?=urlencode('/consultation?view=detail&mentor=' . $mentor['id'] . '#book')?>" class="inline-block px-8 py-3 rounded-full font-bold" style="background:var(--accent);color:var(--on-accent)">登录后报名</a>
+        <a href="/account?view=login&next=<?=urlencode('/consultation?view=detail&mentor=' . $mentor['id'] . '#book')?>" class="inline-block px-8 py-3 rounded-full font-bold" style="background:var(--accent);color:var(--on-accent)">登录后报名</a>
       </div>
       <?php else: ?>
       <form id="bookForm" onsubmit="return submitBooking(event)">
@@ -227,7 +227,7 @@ function submitBooking(e) {
   if (btn) { btn.disabled = true; btn.textContent = '提交中…'; }
   msg.innerHTML = '<span style="color:var(--muted)">正在提交…</span>';
   var body = new FormData(f);
-  fetch('/api/consultation.php?action=book', { method: 'POST', body: body })
+  fetch('/api/consultation?action=book', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (d.ok) {
@@ -244,7 +244,7 @@ function payBooking(id, btn) {
   btn.disabled = true;
   btn.textContent = '跳转支付…';
   var body = new FormData(); body.append('booking_id', id);
-  fetch('/api/consultation.php?action=pay', { method: 'POST', body: body })
+  fetch('/api/consultation?action=pay', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (d.ok && d.payment && d.payment.ok) {

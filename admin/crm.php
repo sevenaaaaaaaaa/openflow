@@ -27,32 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $action = $_POST['action'] ?? '';
 
-    // 工单解决
-    if (!empty($_POST['case_action']) && !empty($_POST['case_id'])) {
-        crm_update_case($_POST['case_id'], ['status' => 'resolved']);
-        flash('success', '工单已解决');
-        header('Location: /xmp/crm?tab=cases');
-        exit;
-    }
-    // 报价决策
-    if (!empty($_POST['quote_action']) && !empty($_POST['quote_id'])) {
-        crm_quote_decision($_POST['quote_id'], $_POST['quote_action']);
-        flash('success', $_POST['quote_action'] === 'accept' ? '报价已接受，线索标记为成交' : '报价已拒绝');
-        header('Location: /xmp/crm?tab=quotes');
-        exit;
-    }
-    // 添加类型化活动
-    if ($action === 'add_activity' && $email) {
-        $atype = in_array($_POST['activity_type'] ?? '', ['call','email','meeting','wechat','note'], true) ? $_POST['activity_type'] : 'note';
-        $content = trim($_POST['activity_content'] ?? '');
-        if ($content !== '') {
-            crm_add_activity($email, $atype, $content, $_SESSION['admin_user'] ?? '');
-            flash('success', '活动已记录');
-        }
-        header('Location: /xmp/crm?tab=pipeline&focus=' . urlencode($email));
-        exit;
-    }
-
     if ($action === 'update_stage') {
         crm_convert($email, $_POST['stage'] ?? 'new', (float)($_POST['value'] ?? 0), $_POST['expected_close'] ?? '');
         flash('success', '阶段已更新');
@@ -209,9 +183,6 @@ admin_header('CRM 线索管理');
       <a href="?tab=raw" class="<?=$tab==='raw'?'active':''?>">📥 原始提交 (<?=count($rawLeads)?>)</a>
       <a href="?tab=customers" class="<?=$tab==='customers'?'active':''?>">🏢 客户 (<?=count(crm_get_customers())?>)</a>
       <a href="?tab=arr" class="<?=$tab==='arr'?'active':''?>">💰 ARR 报表</a>
-      <a href="?tab=reports" class="<?=$tab==='reports'?'active':''?>">📊 报表看板</a>
-      <a href="?tab=cases" class="<?=$tab==='cases'?'active':''?>">🎫 工单</a>
-      <a href="?tab=quotes" class="<?=$tab==='quotes'?'active':''?>">📄 报价</a>
     </div>
 
     <?php if ($tab === 'kanban'): ?>
@@ -686,76 +657,4 @@ admin_header('CRM 线索管理');
   </div>
 </div>
 <style>@media(max-width:900px){.crm-grid{grid-template-columns:1fr!important}}</style>
-
-<?php if ($tab === 'reports'): $crep = crm_reports(); ?>
-<!-- ═══ 报表看板 ═══ -->
-<div class="crm-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
-  <div style="padding:16px;border-radius:12px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--accent)"><?=$crep['total_leads']?></div><div style="font-size:12px;color:var(--muted)">线索总数</div></div>
-  <div style="padding:16px;border-radius:12px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--ok)">¥<?=number_format($crep['won_total'],0)?></div><div style="font-size:12px;color:var(--muted)">赢单金额（<?=$crep['won_count']?> 单）</div></div>
-  <div style="padding:16px;border-radius:12px;background:var(--bg)"><div style="font-size:24px;font-weight:800"><?=$crep['activity_count']?></div><div style="font-size:12px;color:var(--muted)">跟进活动</div></div>
-  <div style="padding:16px;border-radius:12px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--warn)"><?=$crep['active7']?></div><div style="font-size:12px;color:var(--muted)">近7天活跃</div></div>
-  <div style="padding:16px;border-radius:12px;background:var(--bg)"><div style="font-size:24px;font-weight:800"><?=$crep['cases_open']?></div><div style="font-size:12px;color:var(--muted)">未结工单</div></div>
-  <div style="padding:16px;border-radius:12px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--ok)"><?=$crep['quotes_accepted']?></div><div style="font-size:12px;color:var(--muted)">成交报价</div></div>
-</div>
-<div class="card">
-  <h2 style="margin-bottom:12px">管线阶段分布</h2>
-  <?php if (empty($crep['by_stage'])): ?><p class="text-sm text-muted">暂无线索</p>
-  <?php else: $labels = crm_stages(); $maxS = max($crep['by_stage']) ?: 1; foreach ($crep['by_stage'] as $st => $n): ?>
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:12px;width:90px;color:var(--muted)"><?=htmlspecialchars($labels[$st] ?? $st)?></span><div style="flex:1;height:20px;background:var(--hover);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:<?=round($n/$maxS*100)?>%;background:var(--accent)"></i></div><span style="font-size:11px;width:30px;text-align:right"><?=$n?></span><span style="font-size:11px;color:var(--faint);width:90px;text-align:right">¥<?=number_format($crep['stage_value'][$st] ?? 0,0)?></span></div>
-  <?php endforeach; endif; ?>
-</div>
-<?php endif; ?>
-
-<?php if ($tab === 'cases'): $allCases = json_read(DATA_DIR . '/crm.json')['cases'] ?? []; ?>
-<!-- ═══ 工单 ═══ -->
-<div class="card">
-  <h2 style="margin-bottom:12px">🎫 客户服务工单（<?=count($allCases)?>）</h2>
-  <?php if (empty($allCases)): ?><p class="text-sm text-muted">暂无工单 · 可通过 CRM 函数 API 创建</p>
-  <?php else: ?>
-  <table style="font-size:13px">
-    <thead><tr><th>工单</th><th>线索</th><th>优先级</th><th>负责人</th><th>状态</th><th>创建</th><th>操作</th></tr></thead>
-    <tbody>
-      <?php foreach (array_reverse($allCases) as $case): ?>
-      <tr>
-        <td><b><?=htmlspecialchars($case['subject'] ?? '')?></b></td>
-        <td class="text-sm text-muted"><?=htmlspecialchars($case['email'] ?? '')?></td>
-        <td><span class="badge <?=['low'=>'badge-gray','normal'=>'badge-green','high'=>'badge-yellow','urgent'=>'badge-red'][$case['priority'] ?? 'normal'] ?? 'badge-gray'?>"><?=htmlspecialchars($case['priority'] ?? 'normal')?></span></td>
-        <td class="text-sm text-muted"><?=htmlspecialchars($case['assignee'] ?? '—')?></td>
-        <td><span class="badge <?=($case['status'] ?? '')==='resolved'?'badge-green':'badge-yellow'?>"><?=($case['status'] ?? '')==='resolved'?'已解决':'处理中'?></span></td>
-        <td class="text-sm text-muted"><?=htmlspecialchars(substr($case['created_at'] ?? '', 0, 10))?></td>
-        <td><?php if (($case['status'] ?? '') !== 'resolved'): ?><form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="case_id" value="<?=htmlspecialchars($case['id'])?>"><input type="hidden" name="case_action" value="resolve"><button class="btn btn-s btn-sm">✓ 解决</button></form><?php endif; ?></td>
-      </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
-  <?php endif; ?>
-</div>
-<?php endif; ?>
-
-<?php if ($tab === 'quotes'): $allQuotes = json_read(DATA_DIR . '/crm.json')['quotes'] ?? []; ?>
-<!-- ═══ 报价单 ═══ -->
-<div class="card">
-  <h2 style="margin-bottom:12px">📄 报价单（<?=count($allQuotes)?>）</h2>
-  <?php if (empty($allQuotes)): ?><p class="text-sm text-muted">暂无报价 · 可通过 CRM 函数 API 为商机生成报价</p>
-  <?php else: ?>
-  <table style="font-size:13px">
-    <thead><tr><th>报价</th><th>线索</th><th>金额</th><th>状态</th><th>操作</th></tr></thead>
-    <tbody>
-      <?php foreach (array_reverse($allQuotes) as $q): ?>
-      <tr>
-        <td><b><?=htmlspecialchars($q['id'] ?? '')?></b><div style="font-size:11px;color:var(--faint)"><?=count($q['items'] ?? [])?> 项</div></td>
-        <td class="text-sm text-muted"><?=htmlspecialchars($q['email'] ?? '')?></td>
-        <td class="mono">¥<?=number_format($q['total'] ?? 0,0)?></td>
-        <td><span class="badge <?=['draft'=>'badge-gray','sent'=>'badge-yellow','accepted'=>'badge-green','rejected'=>'badge-red'][$q['decision'] ?? ($q['status'] ?? 'draft')] ?? 'badge-gray'?>"><?=['draft'=>'草稿','sent'=>'已发送','accepted'=>'已接受','rejected'=>'已拒绝'][$q['decision'] ?? ($q['status'] ?? 'draft')] ?? ($q['status'] ?? '草稿')?></span></td>
-        <td>
-          <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="quote_id" value="<?=htmlspecialchars($q['id'])?>"><input type="hidden" name="quote_action" value="accept"><button class="btn btn-s btn-sm">✓ 接受</button></form>
-          <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="quote_id" value="<?=htmlspecialchars($q['id'])?>"><input type="hidden" name="quote_action" value="reject"><button class="btn btn-danger btn-sm">✕ 拒绝</button></form>
-        </td>
-      </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
-  <?php endif; ?>
-</div>
-<?php endif; ?>
 <?php admin_footer(); ?>

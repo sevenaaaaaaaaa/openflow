@@ -7,7 +7,7 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 
 // 页面缓存（300 秒）
-if (PageCache::begin('marketplace', 300)) exit;
+if (PageCache::begin('marketplace', 1800)) exit;
 require_once __DIR__ . '/lib/MarketplaceSystem.php';
 require_once __DIR__ . '/lib/SkillSystem.php';
 require_once __DIR__ . '/lib/MemberSystem.php';
@@ -47,7 +47,7 @@ $typeNames = mkt_categories();
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>生态市场 | <?=site_config_get("site_name")?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .mkt-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;transition:.15s;display:flex;flex-direction:column;gap:10px}
@@ -62,7 +62,7 @@ $typeNames = mkt_categories();
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="marketplace"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="marketplace"></script>
 
   <div class="mx-auto px-5 py-10" style="max-width:1120px">
     <?php if ($view === 'skill' && $skill): ?>
@@ -142,7 +142,7 @@ $typeNames = mkt_categories();
         </div>
         <div class="text-center" style="min-width:120px">
           <div class="mkt-badge" style="background:var(--ok-soft);color:var(--ok);display:inline-flex;align-items:center"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><path d="m4 12.5 5 5L20 6.5"/></svg>已安装</div>
-          <a href="/admin/plugins.php" class="mkt-btn mt-3" style="background:var(--accent);color:var(--on-accent)">去后台管理</a>
+          <a href="/xmp/plugins" class="mkt-btn mt-3" style="background:var(--accent);color:var(--on-accent)">去后台管理</a>
         </div>
       </div>
     </div>
@@ -250,7 +250,7 @@ $typeNames = mkt_categories();
     <div class="rounded-3xl p-6 mt-10 text-center" style="background:var(--surface);border:1px solid var(--border)">
       <div class="font-bold text-lg">想发布你的插件 / 技能？</div>
       <p class="text-sm text-muted mt-2 mb-4">用 AI 生成插件骨架，或直接发布一个可复用的 Skill，分享给整个社区。</p>
-      <a href="/member.php?view=login" class="mkt-btn" style="background:var(--accent);color:var(--on-accent)">开始创作 →</a>
+      <a href="/account?view=login" class="mkt-btn" style="background:var(--accent);color:var(--on-accent)">开始创作 →</a>
     </div>
     <?php endif; ?>
   </div>
@@ -265,9 +265,9 @@ $typeNames = mkt_categories();
 <script>
 var MEMBER = <?=json_encode($member ? ['id' => $member['id']] : null)?>;
 function installSkill(id) {
-  if (!MEMBER) { location.href = '/member.php?view=login&next=/marketplace?view=skill&id=' + encodeURIComponent(id); return; }
+  if (!MEMBER) { location.href = '/account?view=login&next=/marketplace?view=skill&id=' + encodeURIComponent(id); return; }
   var body = new FormData(); body.append('skill_id', id);
-  fetch('/api/marketplace.php?action=install', { method: 'POST', body: body })
+  fetch('/api/marketplace?action=install', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (d.ok) { alert('✅ 技能已安装'); location.reload(); }
@@ -276,9 +276,9 @@ function installSkill(id) {
     });
 }
 function purchaseSkill(id) {
-  if (!MEMBER) { location.href = '/member.php?view=login&next=/marketplace?view=skill&id=' + encodeURIComponent(id); return; }
+  if (!MEMBER) { location.href = '/account?view=login&next=/marketplace?view=skill&id=' + encodeURIComponent(id); return; }
   var body = new FormData(); body.append('skill_id', id);
-  fetch('/api/marketplace.php?action=purchase', { method: 'POST', body: body })
+  fetch('/api/marketplace?action=purchase', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (d.ok && d.payment && d.payment.ok) {
@@ -297,4 +297,4 @@ function copySkillPrompt() {
 </script>
 </body>
 </html>
-<?php PageCache::end('marketplace', 300); ?>
+<?php PageCache::end('marketplace', 1800); ?>

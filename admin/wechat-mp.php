@@ -198,7 +198,7 @@ code.mp{background:var(--surface-2);padding:2px 8px;border-radius:4px;font-size:
           <tr><td><strong>客户标签 / 分组</strong></td><td>给客户打标签、建分组，按标签定向触达</td></tr>
           <tr><td><strong>定向私信</strong></td><td>给单个客户/客户群发送应用消息（文本/图片/图文）</td></tr>
           <tr><td><strong>群发助手</strong></td><td>向多个客户/客户群批量群发消息</td></tr>
-          <tr><td><strong>CDP 打通</strong></td><td>企微客户身份与 CDP 画像关联，标签双向同步（<b>用户运营</b> · 详见 <a href="/xmp/cdp?tab=profiles" style="color:var(--accent)">CDP 画像</a>）</td></tr>
+          <tr><td><strong>CDP 打通</strong></td><td>企微客户身份与 CDP 画像关联，标签双向同步</td></tr>
         </table>
         <p class="text-sm text-muted" style="margin-top:10px">回调 URL（用于接收企微消息）：<code class="mp"><?=(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http')?>://<?=htmlspecialchars($_SERVER['HTTP_HOST'] ?? '')?>/api/wecom.php</code></p>
         <p class="text-sm text-muted">对应管理界面见「侧边栏 → Sales → 企业微信」下的群发&私信、标签管理。</p>

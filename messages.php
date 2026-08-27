@@ -8,7 +8,7 @@ require_once __DIR__ . '/lib/MessageSystem.php';
 
 $member = member_current();
 if (!$member) {
-    header('Location: member.php?view=login&next=' . urlencode('/messages.php'));
+    header('Location: /account?view=login&next=' . urlencode('/messages'));
     exit;
 }
 $messages = inbox_inbox($member);
@@ -25,7 +25,7 @@ $typeColors = ['system' => '#2b5f7e', 'order' => 'var(--ok)', 'consultation' => 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>站内信 | OpenFlow</title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
   .msg-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;transition:.15s}
@@ -33,7 +33,7 @@ $typeColors = ['system' => '#2b5f7e', 'order' => 'var(--ok)', 'consultation' => 
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-8" style="max-width:900px">
     <div class="flex items-center justify-between mb-6">
@@ -64,7 +64,7 @@ $typeColors = ['system' => '#2b5f7e', 'order' => 'var(--ok)', 'consultation' => 
 function delMsg(id, btn) {
   if (!confirm('删除这条消息？')) return;
   var body = new FormData(); body.append('msg_id', id);
-  fetch('/api/message.php?action=delete', { method: 'POST', body: body })
+  fetch('/api/message?action=delete', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){ if (d.ok) btn.closest('.msg-item').remove(); });
 }

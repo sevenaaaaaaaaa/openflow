@@ -6,6 +6,9 @@
 // ─── 转化漏斗 ───
 // 环节：访客(page_view) → 线索(form_submit/lead) → 订阅/订单 → 付费
 function analytics_funnel(): array {
+    // 结果缓存 15 分钟（实时重聚合开销大，数据变化不频繁）
+    $cacheKey = 'analytics:funnel';
+    try { $fc = new FileCache(); $c = $fc->get($cacheKey); if (is_array($c)) return $c; } catch (\Throwable $e) {}
     $steps = [];
     try {
         // 访客：唯一 uid 的 page_view 数（近30天）
@@ -38,6 +41,7 @@ function analytics_funnel(): array {
         $steps[$i]['rate'] = ($i === 0) ? 100 : ($steps[$i-1]['count'] > 0 ? round($s['count'] / $steps[$i-1]['count'] * 100, 1) : 0);
         $steps[$i]['drop'] = ($i === 0) ? 0 : (($steps[$i-1]['count'] - $s['count']) > 0 ? $steps[$i-1]['count'] - $s['count'] : 0);
     }
+    try { (new FileCache())->set($cacheKey, $steps, 900); } catch (\Throwable $e) {}
     return $steps;
 }
 
@@ -45,6 +49,9 @@ function analytics_funnel(): array {
 // R=最近购买/互动天数, F=购买频率, M=累计金额
 // 输出每个会员的分层：高价值/潜力/新客/流失/沉睡
 function analytics_rfm(): array {
+    // 结果缓存 15 分钟（O(M×N) 嵌套重算，缓存显著提速后台）
+    $cacheKey = 'analytics:rfm';
+    try { $fc = new FileCache(); $c = $fc->get($cacheKey); if (is_array($c)) return $c; } catch (\Throwable $e) {}
     $members = json_read(DATA_DIR . '/members/index.json');
     $orders = json_read(DATA_DIR . '/shop/orders.json');
     $subs = json_read(DATA_DIR . '/submissions/index.json');
@@ -75,6 +82,7 @@ function analytics_rfm(): array {
         $result[$seg]++;
         $result['members'][] = ['id'=>$mid,'name'=>$m['name']??'','email'=>$m['email']??'','segment'=>$seg,'r'=>$daysSince,'f'=>$freq,'m'=>$total];
     }
+    try { (new FileCache())->set($cacheKey, $result, 900); } catch (\Throwable $e) {}
     return $result;
 }
 

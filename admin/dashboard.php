@@ -204,20 +204,14 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
           <div style="font-size:12px;font-weight:600;color:var(--faint);margin-bottom:8px">Top 落地页</div>
           <?php if (empty($paths['pages'])): ?><div class="empty" style="padding:10px 0;font-size:12px;color:var(--faint)">暂无访问数据</div>
           <?php else: $maxP = max(array_column($paths['pages'],'views')) ?: 1; foreach (array_slice($paths['pages'],0,6) as $p): ?>
-          <div class="channel-row"><span style="font-size:12px;width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($p['label'] ?? $p['page'])?></span><div class="bar"><i style="width:<?=round($p['views']/$maxP*100)?>%"></i></div><span class="num" style="font-size:11px;width:44px;text-align:right"><?=$p['views']?></span></div>
+          <div class="channel-row"><span style="font-size:12px;width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($p['page'])?></span><div class="bar"><i style="width:<?=round($p['views']/$maxP*100)?>%"></i></div><span class="num" style="font-size:11px;width:44px;text-align:right"><?=$p['views']?></span></div>
           <?php endforeach; endif; ?>
           <div style="font-size:12px;font-weight:600;color:var(--faint);margin:14px 0 8px">Top 来源</div>
-          <?php if (empty($paths['referrers']) || ($paths['referrers'][0]['count'] ?? 0) === 0): ?><div class="empty" style="padding:6px 0;font-size:12px;color:var(--faint)">暂无来源数据（UTM 落地后自动归因）</div>
+          <?php if (empty($paths['referrers'])): ?><div class="empty" style="padding:6px 0;font-size:12px;color:var(--faint)">暂无来源数据（需 referrer 埋点）</div>
           <?php else: foreach ($paths['referrers'] as $r): ?>
           <div class="channel-row"><span style="font-size:12px;width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($r['source'])?></span><div class="bar" style="height:18px"><i style="width:<?=min(100, $r['count']*10)?>%"></i></div><span class="num" style="font-size:11px;width:44px;text-align:right"><?=$r['count']?></span></div>
           <?php endforeach; endif; ?>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 12px;border-radius:10px;background:var(--ok-soft);font-size:12px;color:var(--ok)"><b>转化</b> 近 30 天 <?=$paths['conversions']?> 次
-            <?php if (!empty($paths['conv_types'])): ?>
-            <span style="margin-left:auto;display:flex;gap:8px">
-              <?php foreach ($paths['conv_types'] as $ct): ?><span style="background:var(--surface);padding:2px 8px;border-radius:999px"><?=htmlspecialchars($ct['name'])?> <?=$ct['count']?></span><?php endforeach; ?>
-            </span>
-            <?php endif; ?>
-          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 12px;border-radius:10px;background:var(--ok-soft);font-size:12px;color:var(--ok)"><b>转化</b> 近 30 天 <?=$paths['conversions']?> 次（表单提交 / 注册 / 下载）</div>
         </div>
       </div>
     </div>
@@ -247,12 +241,7 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
           <?php else: $maxC = max(array_column($prefs['content'],'count')) ?: 1; foreach ($prefs['content'] as $c): ?>
           <div class="channel-row"><span style="font-size:12px;width:70px;color:var(--muted)"><?=htmlspecialchars($c['name'])?></span><div class="bar" style="height:20px"><i style="width:<?=round($c['count']/$maxC*100)?>%"></i></div><span class="num" style="font-size:11px;width:36px;text-align:right"><?=$c['count']?></span></div>
           <?php endforeach; endif; ?>
-          <div style="font-size:12px;font-weight:600;color:var(--faint);margin:14px 0 8px">🔥 热门内容 TOP</div>
-          <?php if (empty($prefs['top_content'])): ?><div class="empty" style="padding:8px 0;font-size:12px;color:var(--faint)">暂无具体内容浏览（访问 /article/、/course/ 后出现）</div>
-          <?php else: foreach ($prefs['top_content'] as $tc): ?>
-          <div class="channel-row"><span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($tc['title'])?></span><span class="num" style="font-size:11px;color:var(--accent)"><?=$tc['views']?> 次</span></div>
-          <?php endforeach; endif; ?>
-          <p style="font-size:12px;color:var(--faint);margin-top:14px;line-height:1.7">偏好基于浏览行为聚合：设备/语言来自 CDP 画像，内容分类与热门内容来自页面访问分布。数据量增长后洞察更准确。</p>
+          <p style="font-size:12px;color:var(--faint);margin-top:14px;line-height:1.7">偏好基于浏览行为聚合：设备/语言来自 CDP 画像，内容分类来自页面访问分布。数据量增长后洞察更准确。</p>
         </div>
       </div>
     </div>

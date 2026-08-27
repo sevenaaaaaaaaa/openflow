@@ -11,6 +11,7 @@ require_once __DIR__ . '/../lib/StorageSystem.php';
 require_once __DIR__ . '/../lib/ModerationSystem.php';
 require_once __DIR__ . '/../lib/WechatMp.php';
 require_once __DIR__ . '/../lib/SocialPublisher.php';
+require_once __DIR__ . '/../lib/Database.php';
 
 // Require cron secret token for authentication
 $cronSecret = json_read(DATA_DIR . '/cron_secret.json')['secret'] ?? '';
@@ -219,6 +220,20 @@ try {
     }
     if ($stale) { CdpInsight::generate(30); }
 } catch (Throwable $e) {}
+
+// 事件数据保留策略（每 24 小时清理 90 天前的埋点事件，防止数据库无限增长）
+$lastEventsCleanup = (int)(json_read(DATA_DIR . '/events-cleanup.json')['ts'] ?? 0);
+if (time() - $lastEventsCleanup > 24 * 3600) {
+    try {
+        $cutoff = date('Y-m-d H:i:s', strtotime('-90 days'));
+        $removed = Database::execute("DELETE FROM events WHERE created_at < ?", [$cutoff]);
+        // 顺手清理 heartbeat 噪音（保留最近 7 天）
+        Database::execute("DELETE FROM events WHERE event = 'heartbeat' AND created_at < ?", [date('Y-m-d H:i:s', strtotime('-7 days'))]);
+        json_write(DATA_DIR . '/events-cleanup.json', ['ts' => time()]);
+        // 记录清理结果
+        json_write(DATA_DIR . '/events-cleanup-log.json', ['ts' => time(), 'cutoff' => $cutoff]);
+    } catch (Throwable $e) {}
+}
 
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['ok' => true, 'published' => $published, 'time' => date('Y-m-d H:i:s')]);
