@@ -31,17 +31,12 @@ if ($type === 'skill') {
 } elseif ($type === 'plugin') {
     foreach (mkt_assets() as $a) if ($a['type'] === 'plugin' && $a['id'] === $id) $asset = $a;
 } elseif ($type === 'theme') {
-    require_once __DIR__ . '/lib/ThemeSystem.php';
-    $presets = ThemeSystem::presets();
-    if (isset($presets[$id])) {
-        $p = $presets[$id];
-        $asset = [
-            'id' => $id, 'type' => 'theme',
-            'title' => $p['name'] ?? $id,
-            'description' => $p['desc'] ?? 'OpenFlow 主题',
-            'icon' => '🎨', 'version' => '1.0.0',
-            'tags' => ['主题', '前端', '设计'],
-        ];
+    $themes = json_read(DATA_DIR . '/themes.json');
+    foreach (($themes['themes'] ?? []) as $t) if ($t['id'] === $id) {
+        $asset = $t;
+        $asset['type'] = 'theme';
+        $asset['icon'] = '🎨';
+        $asset['version'] = $t['version'] ?? '1.0.0';
     }
 }
 
@@ -124,7 +119,7 @@ body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC'
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
 <div class="mx-auto px-5 py-8" style="max-width:1100px">
   <!-- 面包屑 -->
@@ -208,7 +203,7 @@ body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC'
         <h3 class="font-extrabold mb-3">🕹 相关推荐</h3>
         <div style="display:flex;flex-direction:column;gap:10px">
           <?php foreach ($related as $ra): ?>
-          <a class="rel-card" href="/asset.php?type=<?=$ra['type']?>&id=<?=urlencode($ra['id'])?>">
+          <a class="rel-card" href="/<?=urlencode($ra['type'])?>/<?=urlencode($ra['id'])?>">
             <div style="display:flex;align-items:center;gap:10px">
               <span style="font-size:24px"><?=htmlspecialchars($ra['icon'] ?? '📦')?></span>
               <div>
@@ -226,7 +221,7 @@ body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC'
         <h3 class="font-extrabold mb-3">🎓 配套课程</h3>
         <div style="display:flex;flex-direction:column;gap:10px">
           <?php foreach ($relatedCourses as $rc): $rcPrice = (float)($shopCfg['course_prices'][$rc['id']] ?? 0); ?>
-          <a class="rel-card" href="/course/<?=urlencode($rc['id'])?>?id=<?=urlencode($rc['id'])?>">
+          <a class="rel-card" href="/courses/<?=urlencode($rc['id'])?>?id=<?=urlencode($rc['id'])?>">
             <div style="display:flex;align-items:center;gap:10px">
               <span style="font-size:24px">🎓</span>
               <div style="flex:1;min-width:0">
@@ -259,9 +254,9 @@ body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC'
 var ASSET_TYPE = <?=json_encode($type)?>;
 var ASSET_ID = <?=json_encode($id)?>;
 function purchase() {
-  <?php if (!$member): ?>location.href = '/member.php?view=login&next=/asset.php?type=' + ASSET_TYPE + '&id=' + encodeURIComponent(ASSET_ID); return;<?php endif; ?>
+  <?php if (!$member): ?>location.href = '/account?view=login&next=/' + ASSET_TYPE + '/' + encodeURIComponent(ASSET_ID); return;<?php endif; ?>
   var body = new FormData(); body.append('skill_id', ASSET_ID);
-  fetch('/api/marketplace.php?action=purchase', { method: 'POST', body: body })
+  fetch('/api/marketplace?action=purchase', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (d.ok && d.payment && d.payment.ok) {
@@ -274,7 +269,7 @@ function purchase() {
 }
 function installAsset() {
   var body = new FormData(); body.append('skill_id', ASSET_ID);
-  fetch('/api/marketplace.php?action=install', { method: 'POST', body: body })
+  fetch('/api/marketplace?action=install', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){
       if (d.ok) { alert('✅ 已安装'); location.reload(); }

@@ -19,14 +19,14 @@ if ($member) $activated = act_member_activated($member['id']);
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>激活码兑换 | <?=site_config_get('site_name')?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260813ad" defer></script>
 <style>
   body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
   .code-input{letter-spacing:3px;text-align:center;font-family:ui-monospace,'SF Mono',monospace;font-weight:700}
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260823" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-14" style="max-width:720px">
     <div class="bg-white border border-[var(--border)] rounded-3xl p-8" style="box-shadow:0 8px 32px rgba(0,0,0,.06)">
@@ -39,7 +39,7 @@ if ($member) $activated = act_member_activated($member['id']);
       <?php if (empty($member)): ?>
       <div class="mt-8 text-center">
         <p class="text-sm text-gray-600 mb-4">请先登录后再兑换激活码</p>
-        <a href="/member.php?view=login&next=/activate" class="inline-block rounded-full bg-[var(--accent)] text-white px-8 py-3 font-semibold">登录 / 注册</a>
+        <a href="/account?view=login&next=/activate" class="inline-block rounded-full bg-[var(--accent)] text-white px-8 py-3 font-semibold">登录 / 注册</a>
       </div>
       <?php else: ?>
       <div class="mt-8 flex gap-3">
@@ -84,14 +84,14 @@ function doActivate() {
   var msg = document.getElementById('actMsg');
   if (!code) { showMsg('请输入激活码', 'error'); return; }
   btn.disabled = true; btn.textContent = '激活中…';
-  fetch('/api/activation.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'activate', code:code})})
+  fetch('/api/activation', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'activate', code:code})})
     .then(function(r){return r.json();})
     .then(function(d){
       if (d.ok) {
         showMsg('🎉 激活成功！' + (d.goods_type || '') + ' 已解锁', 'success');
         setTimeout(function(){ location.reload(); }, 1200);
       } else {
-        if (d.need_login) { location.href = '/member.php?view=login&next=/activate'; return; }
+        if (d.need_login) { location.href = '/account?view=login&next=/activate'; return; }
         showMsg('⚠️ ' + d.error, 'error');
       }
     })
