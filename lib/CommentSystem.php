@@ -82,6 +82,12 @@ function comment_add(string $type, string $targetId, array $data, ?array $member
     $all = comments_all();
     $all[] = $comment;
     comments_save($all);
+
+    // 评论落库 → 插件钩子（旁路）。带评分的走 review_added，纯评论走 comment_added。
+    if (class_exists('PluginSystem')) {
+        PluginSystem::do_action('comment_added', $type, $targetId, $comment);
+        if ($rating > 0) PluginSystem::do_action('review_added', $type, $targetId, $rating, $comment);
+    }
     return ['ok' => true, 'comment' => $comment];
 }
 

@@ -325,6 +325,14 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
         }
     } catch (Exception $e) {}
 
+    // 支付成功 → 插件钩子（旁路）
+    if (class_exists('PluginSystem')) {
+        PluginSystem::do_action('payment_success', $orderId, $order, $method);
+        if (!empty($order['course_id'])) {
+            PluginSystem::do_action('course_enrolled', (string)($order['member_id'] ?? ''), (string)$order['course_id'], $order);
+        }
+    }
+
     // 数字商品交付（Skill/插件/API套餐）——需在订单标记已支付后执行
     try {
         if (($order['goods_type'] ?? '') === 'product') {
