@@ -59,6 +59,7 @@ function shop_orders_file(): string { return DATA_DIR . '/shop/orders.json'; }
 function sub_get_member($m) { return $GLOBALS['SUBS'][$m] ?? null; }
 function sub_set_member($m, $d) { $GLOBALS['SUBS'][$m] = $d; }
 function inbox_send($m, $t, $b) { $GLOBALS['INBOX'][] = [$m, $t, $b]; }
+function gamification_award(string $m, int $p, string $r) { $GLOBALS['PTS'][] = [$m, $p, $r]; return null; }
 function flow_handle(string $e, array $c = []): array { $GLOBALS['FLOW'][] = [$e, $c]; return []; }
 
 require_once __DIR__ . '/../lib/PluginSystem.php';
@@ -79,6 +80,7 @@ function check(string $n, bool $ok, string $d = '') {
 function reset_state(array $o) {
     $GLOBALS['ORDER'] = $o;
     $GLOBALS['BAL'] = []; $GLOBALS['LOGS'] = []; $GLOBALS['FLOW'] = []; $GLOBALS['INBOX'] = [];
+    $GLOBALS['PTS'] = [];
     $GLOBALS['SUBS'] = ['m1' => ['member_id'=>'m1','status'=>'active','expires_at'=>'2027-01-01']];
     $GLOBALS['SKILLS'] = ['m1' => ['sk_1', 'sk_2']];
 }
@@ -114,6 +116,12 @@ check('事件带订单号', ($GLOBALS['FLOW'][0][1]['order_id'] ?? '') === 'o1')
 check('事件标记非部分退款', ($GLOBALS['FLOW'][0][1]['props']['partial'] ?? null) === 0);
 check('发了站内信', count($GLOBALS['INBOX']) === 1);
 
+echo "\n── 4b. 购物积分等比回收（shop_mark_paid 按 1元=10积分 发放）──\n";
+check('回收了积分', count($GLOBALS['PTS']) === 1, (string)count($GLOBALS['PTS']));
+check('积分为负数（扣减）', ($GLOBALS['PTS'][0][1] ?? 0) < 0);
+check('全额退款回收 10000 分', ($GLOBALS['PTS'][0][1] ?? 0) === -10000, (string)($GLOBALS['PTS'][0][1] ?? 0));
+check('回收给下单会员', ($GLOBALS['PTS'][0][0] ?? '') === 'm1');
+
 echo "\n── 5. 部分退款：按比例回收，且保留权益 ──\n";
 reset_state($courseOrder);
 $r = shop_refund_order('o1', '部分退', 250);   // 25%
@@ -122,6 +130,7 @@ check('佣金按比例回收 -25', ($GLOBALS['BAL']['r1'] ?? 0) === -25.0, (stri
 check('作者分成按比例回收 -200', ($GLOBALS['BAL']['a1'] ?? 0) === -200.0, (string)($GLOBALS['BAL']['a1'] ?? 0));
 check('订阅仍为 active（部分退不撤权益）', ($GLOBALS['SUBS']['m1']['status'] ?? '') === 'active');
 check('事件标记为部分退款', ($GLOBALS['FLOW'][0][1]['props']['partial'] ?? null) === 1);
+check('积分按退款额回收 -2500', ($GLOBALS['PTS'][0][1] ?? 0) === -2500, (string)($GLOBALS['PTS'][0][1] ?? 0));
 
 echo "\n── 5b. 订阅订单：全额退款置为 cancelled ──\n";
 reset_state(['id'=>'os','status'=>'paid','amount'=>299.0,'member_id'=>'m1',

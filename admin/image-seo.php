@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ImageMeta::setAlt($path, $alt);
             flash('success', 'Alt 文本已更新');
         }
-        header('Location: /xmp/image-seo');
+        header('Location: /xmp/seo-center?tab=images');
         exit;
     } elseif ($action === 'batch_update') {
         $alts = $_POST['alt'] ?? [];
@@ -33,13 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         flash('success', "已更新 {$count} 张图片的 Alt 文本");
-        header('Location: /xmp/image-seo');
+        header('Location: /xmp/seo-center?tab=images');
         exit;
     } elseif ($action === 'auto_generate') {
         $dir = $_POST['dir'] ?? '';
         $count = ImageMeta::autoGenerateAlts($dir);
         flash('success', "已为 {$count} 张图片自动生成 Alt 文本");
-        header('Location: /xmp/image-seo');
+        header('Location: /xmp/seo-center?tab=images');
         exit;
     }
 }
@@ -114,9 +114,9 @@ if (!defined('OF_EMBED')) admin_header('图片 SEO 管理');
     <div class="card mb-4">
       <div class="flex items-center gap-4" style="flex-wrap:wrap">
         <div class="flex gap-2">
-          <a href="?filter=" class="btn btn-sm <?=!$filter?'btn-primary':'btn-ghost'?>">全部 (<?=$totalCount?>)</a>
-          <a href="?filter=missing" class="btn btn-sm <?=$filter==='missing'?'btn-primary':'btn-ghost'?>">缺少 Alt (<?=$missingAltCount?>)</a>
-          <a href="?filter=has_alt" class="btn btn-sm <?=$filter==='has_alt'?'btn-primary':'btn-ghost'?>">已设 Alt (<?=$withAltCount?>)</a>
+          <a href="<?=of_hub_url()?>" class="btn btn-sm <?=!$filter?'btn-primary':'btn-ghost'?>">全部 (<?=$totalCount?>)</a>
+          <a href="<?=of_hub_url(['filter'=>'missing'])?>" class="btn btn-sm <?=$filter==='missing'?'btn-primary':'btn-ghost'?>">缺少 Alt (<?=$missingAltCount?>)</a>
+          <a href="<?=of_hub_url(['filter'=>'has_alt'])?>" class="btn btn-sm <?=$filter==='has_alt'?'btn-primary':'btn-ghost'?>">已设 Alt (<?=$withAltCount?>)</a>
         </div>
         <div style="margin-left:auto">
           <form method="post" style="display:flex;gap:8px;align-items:center">

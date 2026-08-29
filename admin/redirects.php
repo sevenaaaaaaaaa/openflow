@@ -94,7 +94,7 @@ if (!defined('OF_EMBED')) admin_header('301 重定向');
         </tbody>
       </table>
       <div class="flex gap-2 mt-4">
-        <a href="?export=1" class="btn btn-ghost btn-sm">导出为服务器规则</a>
+        <a href="<?=of_hub_url(['export'=>1])?>" class="btn btn-ghost btn-sm">导出为服务器规则</a>
       </div>
     </div>
 

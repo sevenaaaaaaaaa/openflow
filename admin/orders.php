@@ -37,17 +37,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'refun
 $status = $_GET['status'] ?? '';
 $q      = trim($_GET['q'] ?? '');
 
+// 订单是双源存储：SQLite 为主，data/shop/orders.json 存历史与订阅/实物订单。
+// 必须走 shop_all_orders()，否则订阅类订单在后台根本看不见，也就退不了款。
 $orders = [];
 try {
-    $sql = "SELECT * FROM orders";
-    $where = []; $args = [];
-    if ($status !== '') { $where[] = 'status = ?'; $args[] = $status; }
-    if ($q !== '')      { $where[] = '(id LIKE ? OR email LIKE ? OR member_id LIKE ?)';
-                          $args[] = "%{$q}%"; $args[] = "%{$q}%"; $args[] = "%{$q}%"; }
-    if ($where) $sql .= ' WHERE ' . implode(' AND ', $where);
-    $sql .= ' ORDER BY created_at DESC LIMIT 200';
-    $orders = Database::query($sql, $args);
-} catch (Exception $e) { $error = $error ?: '读取订单失败：' . $e->getMessage(); }
+    $all = shop_all_orders();
+    $orders = array_values(array_filter($all, function ($o) use ($status, $q) {
+        if ($status !== '' && ($o['status'] ?? '') !== $status) return false;
+        if ($q === '') return true;
+        $hay = ($o['id'] ?? '') . ' ' . ($o['email'] ?? '') . ' ' . ($o['member_id'] ?? '');
+        return mb_stripos($hay, $q) !== false;
+    }));
+    usort($orders, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
+    $total  = count($orders);
+    $orders = array_slice($orders, 0, 200);
+} catch (Exception $e) { $error = $error ?: '读取订单失败：' . $e->getMessage(); $total = 0; }
 
 $statusLabels = ['pending'=>'待支付','paid'=>'已支付','refunded'=>'已退款','cancelled'=>'已取消'];
 
@@ -59,7 +63,9 @@ if (!defined('OF_EMBED')) admin_header('订单与退款');
   <div class="main">
 <?php endif; ?>
     <h1>订单与退款</h1>
-    <p class="sub">查询订单并办理退款。退款会同步回收分销佣金、作者分成，并撤销订阅与技能解锁。</p>
+    <p class="sub">查询订单并办理退款。退款会同步回收分销佣金、作者分成、购物积分，并撤销订阅与技能解锁。<?php
+      if (!empty($total)) echo '共 ' . (int)$total . ' 笔' . ($total > 200 ? '，显示最近 200 笔' : '') . '。';
+    ?></p>
 
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>
