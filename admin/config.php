@@ -1188,7 +1188,6 @@ function admin_sidebar(string $current): void {
   </a>
   <a href="/xmp/articles" class="<?=$current==='articles'?'active':''?>" style="padding-left:44px;font-size:13px">Article List</a>
   <a href="/xmp/categories?type=article" class="<?=$current==='categories'?'active':''?>" style="padding-left:44px;font-size:13px">Article 分类</a>
-  <a href="/xmp/tags" class="<?=$current==='tags'?'active':''?>" style="padding-left:44px;font-size:13px">标签</a>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Touch">Landing Pages</div>
@@ -1221,7 +1220,6 @@ function admin_sidebar(string $current): void {
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
     任务分配
   </a>
-  <a href="/xmp/content-calendar" class="<?=$current==='content-calendar'?'active':''?>" style="padding-left:44px;font-size:13px">内容日历</a>
   <a href="/xmp/publish" class="<?=$current==='publish'?'active':''?>" style="padding-left:44px;font-size:13px">内容分发</a>
   <?php endif; ?>
   <?php if (has_perm('channels')): ?>
@@ -1420,9 +1418,6 @@ function admin_sidebar(string $current): void {
     Campaign
   </a>
   <?php endif; ?>
-  <?php if (has_perm('conversion')): ?>
-  <a href="/xmp/conversion" class="<?=$current==='conversion'?'active':''?>" style="padding-left:44px;font-size:13px">转化组件</a>
-  <?php endif; ?>
   <?php if (has_perm('settings')): ?>
   <a href="/xmp/dynamic-content" class="<?=$current==='dynamic-content'?'active':''?>" style="padding-left:44px;font-size:13px">Dynamic Engine</a>
   <?php endif; ?>
@@ -1516,9 +1511,6 @@ function admin_sidebar(string $current): void {
   <?php if (has_perm('social')): ?>
   <a href="/xmp/social" class="<?=$current==='social'?'active':''?>" style="padding-left:44px;font-size:13px">社交媒体</a>
   <?php endif; ?>
-  <?php if (has_perm('conversion')): ?>
-  <a href="/xmp/share-kols" class="<?=$current==='share-kols'?'active':''?>" style="padding-left:44px;font-size:13px">传播链</a>
-  <?php endif; ?>
   <?php if (has_perm('shop-settings')): ?>
   <a href="/xmp/distribution" class="<?=$current==='distribution'?'active':''?>" style="padding-left:44px;font-size:13px">分销</a>
   <a href="/xmp/mall" class="<?=$current==='mall'?'active':''?>" style="padding-left:44px;font-size:13px">商城管理</a>
@@ -1549,9 +1541,6 @@ function admin_sidebar(string $current): void {
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h18M3 12h18M3 19h18M7 5v14m10-14v14"/></svg>
     站点结构
   </a>
-  <?php endif; ?>
-  <?php if (has_perm('navigation')): ?>
-  <a href="/xmp/navigation" class="<?=$current==='navigation'?'active':''?>" style="padding-left:44px;font-size:13px">导航设置</a>
   <?php endif; ?>
   <?php if (has_perm('settings')): ?>
   <a href="/xmp/settings" class="<?=$current==='settings'?'active':''?>">
