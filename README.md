@@ -116,7 +116,7 @@ flowchart LR
 
 | 维度 | 你的收益 |
 |---|---|
-| **一体化** | CMS + SEO/GEO + CDP + MA + CRM + 电商 + 课程 + 社区 + 活动 + 分销 全在一个系统，数据天然打通，**不用接 6 个 SaaS 再拼数据** |
+| **一体化** | CMS + SEO/GEO + CDP + MA + CRM + 电商 + 课程 + 社区 + 活动 + 分销 + **11 语言 i18n + Notion 同步** 全在一个系统，数据天然打通，**不用接 6 个 SaaS 再拼数据** |
 | **AI Agent 原生** | 小福 Copilot 自然语言建自动化 · 漏斗 AI 巡检自动告警 · AI 一键生成落地页/文章 · MCP Server 开放给外部 AI |
 | **数据闭环** | 采集 → Schema 校验 → 画像 → 分群 → 触达（频控）→ 转化 → CAPI 回传 → 投放归因，**全链路零断点** |
 | **一方/三方数据** | 入站 Webhook 接收 + 外部连接器拉取 + CRM/订单/微信用户回填画像 |
@@ -134,6 +134,7 @@ flowchart LR
 - SEO：301 · Sitemap · 结构化数据 · 页面级 SEO · 多语言 hreflang
 - GEO：面向 AI 搜索引擎优化 · IndexNow 即时收录
 - 知识库 RAG（飞书/Notion/印象笔记/Obsidian 双向同步）
+- **Notion 全内容同步**：导航站/文章/课程/活动/落地页/技能 6 类数据 ↔ Notion Database 双向同步
 
 ### 2. 用户数据（CDP）
 - 行为采集（页面/点击/滚动/表单/站外）· Tracking Plan 数据质量校验
@@ -152,12 +153,25 @@ flowchart LR
 - 课程：多课时 · 测验（自动批改）· 笔记/评分 · 讲师/开发者发布 + 审核
 - 活动：线上/线下 · 原生报名（名额/审核）· 开始前提醒 · 直播/回放
 - 生态市场：Skill/插件/主题 · 开发者入驻 · 分销推广 + 排行榜
+- **虎皮椒聚合支付**：微信/支付宝双通道 · 虚拟商品自动发货 · 退款对账
 
 ### 5. AI Agent 原生
 - 小福 Copilot：自然语言 → 创建自动化流程 / 查询数据
 - 转化漏斗 AI 巡检：落地页/渠道转化率骤降自动告警 + 根因建议
 - AI 一键生成落地页 · AI 写文章（标题/slug/SEO 一次产出）
 - MCP Server（HTTP/stdio，API Key 鉴权）
+
+### 6. 多语言国际化（i18n）
+- **11 种语言**：简体中文 · 繁體中文 · English · 日本語 · 한국어 · Русский · Español · Português · العربية（RTL）· Français · Deutsch
+- **URL 前缀路由**：`/zh-TW/`、`/en/`、`/ja/` 等，浏览器语言自动检测 + cookie 持久化
+- **全局导航翻译**：site-shell 导航 + 首页/课程/产品等页面均按语言渲染
+- **翻译管理后台**：逐 key 翻译、新增 key、完成度统计、未翻译自动回退源语言
+
+### 7. 全球加速（Cloudflare Workers + R2）
+- **HTML 边缘缓存**：Cache Rule 将匿名访客页面缓存到 CF 边缘，TTFB 降至 ~0.4s
+- **R2 全球存储**：静态资源（JS/CSS/图片/字体）存 Cloudflare R2，Worker 全球边缘分发
+- **API 边缘缓存**：公开 API 响应在 CF 边缘缓存（TTL 1 小时 ~ 1 分钟）
+- **图片自动优化**：WebP 内容协商，PNG→WebP 节省 80-91%，零前端改动
 
 ---
 
@@ -217,6 +231,8 @@ cron 负责：定时发布 · 自动化队列 · 连接器同步 · 活动提醒
 
 至此，一个自带内容、用户数据、自动化触达与商业转化的网站已上线。
 
+> 💡 **生产加速提示**：域名接入 Cloudflare（免费），后台「Cloudflare」页一键创建 Cache Rules，匿名访客 HTML 从边缘节点返回（TTFB ~0.4s），国内用户无需 VPN 也能快速访问。
+
 ### 🖼 界面预览
 
 > 后台各模块实拍（点击放大）。更多见 [docs/screenshots](docs/screenshots/README.md)。
@@ -241,6 +257,8 @@ cron 负责：定时发布 · 自动化队列 · 连接器同步 · 活动提醒
 ## 🚀 部署方案
 
 OpenFlow 是纯 PHP + JSON/SQLite 单体，**零外部服务依赖**，几乎可在任何能跑 PHP 的环境运行。下面覆盖从自建服务器到云主机、NAS 与 Serverless 的完整部署路径。
+
+> **Cloudflare 加速推荐**：域名接入 Cloudflare（免费），配合 Workers + R2 + Cache Rules 可实现全球边缘加速（HTML/静态资源/API 均从边缘返回），详见后台 `/xmp/cloudflare` 管理页。
 
 > 通用前提：PHP 8.0+（推荐 8.2+），扩展 `gd` `pdo_sqlite` `mbstring` `fileinfo` `curl` `openssl`；数据目录 `data/`、`uploads/` 可写。
 
@@ -342,14 +360,20 @@ OpenFlow 需要可写文件系统（JSON + SQLite）与 cron，**不能完整跑
 
 > 完整路线图见 [md-docs/ROADMAP.md](md-docs/ROADMAP.md)
 
-- **近期（P0）**：
-  - GEO 话题 → 自动成文 → 自动提交一键流
+- **已完成（v1.4~v1.5）**：
+  - ✅ 11 语言国际化（i18n）· URL 前缀路由 · 翻译管理后台
+  - ✅ Cloudflare 全栈加速（Cache Rules + R2 + Workers + WebP 图片优化）
+  - ✅ Notion 全内容双向同步（导航站/文章/课程/落地页/技能）
+  - ✅ 虎皮椒聚合支付（微信 + 支付宝双通道）
+  - ✅ 全站前端统一（site-shell.js 全局导航 + 侧栏 + 主题切换）
+  - ✅ 站点健康检测 · 翻译管理 · Cloudflare 管理 · Notion 同步管理后台
+- **近期**：
   - 线索多来源去重合并 · 渠道数据回传画布节点
   - 会员到期自动降级提醒 · 课程/回放按权益解锁
   - Agent 工具调用（小福直接执行后台操作 + 操作确认）
   - 双因素认证（TOTP）· 权限细化到操作级
-- **中期（P1）**：写作工作台 · 网站增长诊断报告 · 建议规则可配置
-- **远期（P2）**：生长数据迁移 · 形态驱动前台排序 · 半自动修复扩展
+- **中期**：写作工作台 · 网站增长诊断报告 · 建议规则可配置
+- **远期**：生长数据迁移 · 形态驱动前台排序 · 半自动修复扩展
 
 ---
 
