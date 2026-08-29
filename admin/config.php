@@ -437,6 +437,28 @@ function msg(string $type, string $text): string {
     return '<div class="msg msg-' . $type . '">' . htmlspecialchars($text) . '</div>';
 }
 
+/**
+ * 生成「保留当前标签页」的链接。
+ *
+ * 子页被 SEO 中心 / 内容中心 / 二级 Tab 页 include 之后，原来的相对链接
+ * href="?filter=x" 会解析到 hub 自身并丢掉 tab/sub 参数，于是点一下筛选
+ * 就被弹回默认标签页。凡是子页里的「?参数」链接都应改用本函数。
+ *
+ *   <a href="<?= of_hub_url(['filter' => 'missing']) ?>">缺少 Alt</a>
+ *
+ * 未被嵌入时（独立访问子页）行为与原来的相对链接一致。
+ */
+function of_hub_url(array $params = []): string {
+    $path = strtok((string)($_SERVER['REQUEST_URI'] ?? ''), '?');
+    if ($path === '' || $path === false) $path = '';
+    $keep = [];
+    foreach (['tab', 'sub'] as $k) {
+        if (isset($_GET[$k]) && $_GET[$k] !== '') $keep[$k] = (string)$_GET[$k];
+    }
+    $query = array_merge($keep, $params);
+    return $path . ($query ? '?' . http_build_query($query) : '');
+}
+
 // ─── Pages ─────────────────────────────────────────
 function default_page_content(string $page): array {
     $d = [
@@ -1697,7 +1719,7 @@ var MS_MAP = {
   'pages-list':'Touch','pages':'Touch','page-builder':'Touch','page-editor-config':'Touch',  'page-categories':'Touch','page-modules':'Touch','cluster':'Touch','landing-pages':'Touch','articles':'Touch','article-edit':'Touch','ingest':'Touch','api-batch':'Touch','categories':'Touch','tags':'Touch','topics':'Touch','events':'Touch','media':'Touch','media-upload':'Touch','dam':'Touch','stock-photos':'Touch','navigation':'Touch','site-builder':'Touch','content-preview':'Touch','page-preview':'Touch','tasks':'Touch','content-calendar':'Touch','publish':'Touch','featured':'Touch','version-diff':'Touch','community-config':'Touch','courses':'Touch','course-edit':'Touch','downloads':'Touch','download-edit':'Touch','podcasts':'Touch','image-seo':'Touch','community-mod':'Touch','comments':'Touch','moderation':'Touch','reports':'Touch','bookmarks':'Touch','follows':'Touch',
   'cdp':'Insight','analytics':'Insight','path-analysis':'Insight','attribution':'Insight','attribution-model':'Insight','insights':'Insight','share-kols':'Insight','segments':'Insight','profiling':'Insight',  'data-connector':'Insight','inbound':'Insight','data-sync':'Insight','event-dictionary':'Insight','heatmap':'Insight','funnel-guard':'Insight','frequency-cap':'Insight','session-replay':'Insight','report-subscribe':'Insight','abtests':'Insight','abtests-stats':'Insight','tracking':'Insight','scripts':'Insight','realtime':'Insight','survey':'Insight','survey-stats':'Insight','survey-org':'Insight','survey-agent':'Insight','nps':'Insight','seo':'Insight','seo-tools':'Insight','seo-batch':'Insight','redirects':'Insight','structured-data':'Insight','geo':'Insight','sentiment':'Insight','seo-console':'Insight',
   'campaigns':'Personalize','conversion':'Personalize','dynamic-content':'Personalize','automation':'Personalize','canvas':'Personalize','ma-sync':'Personalize','sms':'Personalize','email':'Personalize','channels':'Personalize','forms':'Personalize','submissions':'Personalize','qr':'Personalize','utm-builder':'Personalize',
-  'crm':'Sales','leads':'Sales','wechat-mp':'Sales','wechat-send':'Sales','wechat-tags':'Sales','wecom':'Sales','wechat-messages':'Sales','social':'Sales','marketplace':'Sales','commerce':'Sales','distribution':'Sales','activation':'Sales','mall':'Sales','shop-settings':'Sales','membership':'Sales','subscription':'Sales','consultation':'Sales','live':'Sales',
+  'crm':'Sales','leads':'Sales','wechat-mp':'Sales','wechat-send':'Sales','wechat-tags':'Sales','wecom':'Sales','wechat-messages':'Sales','social':'Sales','marketplace':'Sales','commerce':'Sales','distribution':'Sales','activation':'Sales','mall':'Sales','shop-settings':'Sales','orders':'Sales','membership':'Sales','subscription':'Sales','consultation':'Sales','live':'Sales',
   'settings':'Settings','devops':'Settings','plugins':'Settings','themes':'Settings','ai-config':'Settings','knowledge':'Settings','users':'Settings','activity':'Settings','export':'Settings','notify-channels':'Settings','messages':'Settings','storage':'Settings','reviews':'Settings','review-settings':'Settings','approvals':'Settings','onboarding':'Settings','health-check':'Settings','cloudflare':'Settings','sdk-versions':'Settings','api-keys':'Settings','webhooks':'Settings','api-docs':'Settings','api-affiliate':'Settings','backup':'Settings','audit-log':'Settings','data-export':'Settings','footer-links':'Settings','ads':'Settings','ad-campaigns':'Settings'
 };
 document.addEventListener('DOMContentLoaded', function() {
