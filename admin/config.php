@@ -1243,7 +1243,6 @@ function admin_sidebar(string $current): void {
   <a href="/xmp/stock-photos" class="<?=$current==='stock-photos'?'active':''?>" style="padding-left:44px;font-size:13px">免费图库</a>
   <?php endif; ?>
   <?php if (has_perm('media')): ?>
-  <a href="/xmp/image-seo" class="<?=$current==='image-seo'?'active':''?>" style="padding-left:44px;font-size:13px">图片 SEO</a>
   <?php endif; ?>
 
   <div class="sub-sec" data-sec="Touch">内容生产</div>
@@ -1383,30 +1382,16 @@ function admin_sidebar(string $current): void {
 
   <div class="sub-sec" data-sec="Insight">SEO</div>
   <?php if (has_perm('seo') || has_perm('seo-tools') || has_perm('redirects') || has_perm('structured') || has_perm('geo') || has_perm('sentiment') || has_perm('seo-console')): ?>
-  <?php if (has_perm('seo')): ?>
-  <a href="/xmp/seo" class="<?=$current==='seo'?'active':''?>">
+  <?php // SEO 中心：页面SEO/工具/批量策略/站长工具/结构化数据/图片SEO/301 七合一 ?>
+  <a href="/xmp/seo-center" class="<?=$current==='seo-center'?'active':''?>">
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 4a7 7 0 100 14 7 7 0 000-14z"/></svg>
-    页面 SEO
+    SEO 中心
   </a>
-  <?php endif; ?>
-  <?php if (has_perm('seo-tools')): ?>
-  <a href="/xmp/seo-tools" class="<?=$current==='seo-tools'?'active':''?>" style="padding-left:44px;font-size:13px">SEO 工具</a>
-  <a href="/xmp/seo-batch" class="<?=$current==='seo-batch'?'active':''?>" style="padding-left:44px;font-size:13px">批量 SEO 策略</a>
-  <?php endif; ?>
-  <?php if (has_perm('redirects')): ?>
-  <a href="/xmp/redirects" class="<?=$current==='redirects'?'active':''?>" style="padding-left:44px;font-size:13px">301 重定向</a>
-  <?php endif; ?>
-  <?php if (has_perm('structured')): ?>
-  <a href="/xmp/structured-data" class="<?=$current==='structured'?'active':''?>" style="padding-left:44px;font-size:13px">结构化数据</a>
-  <?php endif; ?>
   <?php if (has_perm('geo')): ?>
   <a href="/xmp/geo" class="<?=$current==='geo'?'active':''?>" style="padding-left:44px;font-size:13px">GEO 话题监控</a>
   <?php endif; ?>
   <?php if (has_perm('sentiment')): ?>
   <a href="/xmp/sentiment" class="<?=$current==='sentiment'?'active':''?>" style="padding-left:44px;font-size:13px">舆情监测</a>
-  <?php endif; ?>
-  <?php if (has_perm('seo-console')): ?>
-  <a href="/xmp/seo-console" class="<?=$current==='seo-console'?'active':''?>" style="padding-left:44px;font-size:13px">SEO 站长工具</a>
   <?php endif; ?>
   <?php endif; ?>
 
