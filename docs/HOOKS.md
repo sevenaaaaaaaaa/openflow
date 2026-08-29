@@ -1,6 +1,6 @@
 # OpenFlow 插件钩子参考
 
-> 32 个钩子，覆盖 CDP / CRM / 营销自动化 / 内容 / 支付 / 社区 / 系统。
+> 33 个钩子，覆盖 CDP / CRM / 营销自动化 / 内容 / 支付 / 社区 / 系统。
 >
 > **旁路契约**：所有钩子回调的异常都会被 `PluginSystem` 捕获并写入
 > `data/plugin-errors.log`，绝不冒泡到业务代码。插件写坏不会让主流程挂掉。
@@ -76,6 +76,7 @@ PluginSystem::add_filter('cdp_event_received', function ($event) {
 | 钩子 | 类型 | 触发时机 | 参数 |
 |---|---|---|---|
 | `payment_success` | action | 订单标记已支付 | `$orderId, $order, $method` |
+| `payment_refund` | action | 订单退款完成 | `$orderId, $order, $refundAmount, $reason` |
 | `course_enrolled` | action | 支付的订单含课程 | `$memberId, $courseId, $order` |
 
 ## 社区
@@ -106,7 +107,8 @@ PluginSystem::add_filter('cdp_event_received', function ($event) {
 | 钩子 | 原因 |
 |---|---|
 | `ma_sms_sent` | 全仓无短信发送实现 |
-| `payment_refund` | `ShopSystem` 无退款分支（已单独立项） |
+
+`payment_refund` 原本因「无退款功能」缺席，退款功能已实现，该钩子现已可用。
 
 ---
 
@@ -116,4 +118,7 @@ PluginSystem::add_filter('cdp_event_received', function ($event) {
 php tests/crm_flow_hooks_test.php        # 17 项：CRM 阶段变化 + 旁路契约
 php tests/content_payment_hooks_test.php # 18 项：内容/支付/评论
 php tests/cdp_ma_hooks_test.php          # 12 项：filter 改写/丢弃/异常隔离
+php tests/canvas_crm_condition_test.php  # 27 项：画布条件节点读 CRM
+php tests/refund_test.php                # 31 项：退款金额对称回滚
+php tests/hub_merge_test.php             # 167 项：后台合并契约
 ```
