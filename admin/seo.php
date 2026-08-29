@@ -21,11 +21,13 @@ $pages = [
     'courses' => '解决方案',
 ];
 
-admin_header('SEO 管理');
+if (!defined('OF_EMBED')) admin_header('SEO 管理');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('seo'); ?>
   <div class="main">
+<?php endif; ?>
     <h1>SEO 管理</h1>
     <p class="sub">设置每个页面的 SEO 标题、描述和关键词</p>
 
@@ -54,6 +56,7 @@ admin_header('SEO 管理');
       <?php endforeach; ?>
       <button type="submit" class="btn btn-primary">保存所有 SEO 设置</button>
     </form>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>

@@ -55,11 +55,13 @@ if (isset($_GET['export'])) {
     exit;
 }
 
-admin_header('301 重定向');
+if (!defined('OF_EMBED')) admin_header('301 重定向');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('redirects'); ?>
   <div class="main">
+<?php endif; ?>
     <h1>301 重定向</h1>
     <p class="sub">管理已删除页面的 301 跳转 · 支持批量导入 · 可导出为服务器配置</p>
 
@@ -117,6 +119,7 @@ admin_header('301 重定向');
         <button type="submit" name="bulk" class="btn btn-primary mt-4">批量导入</button>
       </form>
     </div>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>
