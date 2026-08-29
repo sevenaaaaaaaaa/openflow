@@ -86,6 +86,15 @@ if (!defined('OF_EMBED')) admin_header('页面列表');
   <?php admin_sidebar('pages-list'); ?>
   <div class="main">
 <?php endif; ?>
+<?php
+// B3：浅 CRUD 页归并为本页的子 tab
+require_once __DIR__ . '/_subtabs.php';
+$SUBTABS = ['self' => ['页面列表', '', 'pages'],
+            'cats' => ['分类', 'page-categories.php', 'pages'],
+            'tags' => ['标签', 'tags.php', 'pages']];
+$__sub = of_subtab_begin($SUBTABS);
+if ($__sub === 'self'):
+?>
     <div class="v-head">
       <div><h1>页面列表</h1><p class="v-sub">统一管理所有页面：基础页（SEO/状态）· 模块化页（区块编辑）· 落地页（聚合编辑）</p></div>
       <div class="v-actions">
@@ -152,6 +161,7 @@ if (!defined('OF_EMBED')) admin_header('页面列表');
         </tbody>
       </table>
     </div>
+<?php else: of_subtab_include($SUBTABS, $__sub); endif; ?>
 <?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
