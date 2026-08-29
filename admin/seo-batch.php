@@ -109,11 +109,13 @@ if (isset($_POST['preview'])) {
 
 $templates = $strategy['templates'] ?? [];
 
-admin_header('批量 SEO 策略');
+if (!defined('OF_EMBED')) admin_header('批量 SEO 策略');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('seo-batch'); ?>
   <div class="main">
+<?php endif; ?>
     <h1>批量 SEO 策略</h1>
     <p class="sub">为文章/聚合页/课程/资料设置 TDK 生成规则，支持变量替换，一键应用</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
@@ -178,6 +180,7 @@ admin_header('批量 SEO 策略');
         <tr><td><code>{date}</code></td><td>当前日期</td><td>2026-08-09</td></tr>
       </tbody></table>
     </div>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>
