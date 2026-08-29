@@ -44,11 +44,13 @@ if (isset($_GET['pull'])) {
 $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '');
 $publicUrl = $baseUrl . '/' . ($settings['public_slug'] ?: 'seo-board');
 
-admin_header('SEO 站长工具');
+if (!defined('OF_EMBED')) admin_header('SEO 站长工具');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('seo-console'); ?>
   <div class="main">
+<?php endif; ?>
     <h1> SEO 站长工具</h1>
     <p class="sub">接入 Google Search Console / Bing / 百度 · 公开看板 · 广告回传</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
@@ -154,4 +156,4 @@ function addAd() {
   document.getElementById('adList').appendChild(d);
 }
 </script>
-<?php admin_footer(); ?>
+<?php if (!defined('OF_EMBED')) admin_footer(); ?>
