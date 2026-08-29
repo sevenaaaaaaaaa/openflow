@@ -104,6 +104,7 @@ function inbox_notify_event(string $event, array $data = []): void {
         'live_started' => fn() => inbox_send('all', '🔴 直播开始啦！', ($data['title'] ?? '直播') . ' 正在直播中，速来围观。', ['type' => 'live', 'link' => '/live.php?room=' . ($data['room_id'] ?? ''), 'icon' => '📡']),
         'membership_upgraded' => fn() => inbox_send($data['member_id'] ?? '', '👑 会员等级已升级', '恭喜升级为 ' . ($data['tier'] ?? '') . '，解锁更多权益。', ['type' => 'membership', 'link' => '/member.php?view=membership', 'icon' => '💎']),
         'points_awarded' => fn() => inbox_send($data['member_id'] ?? '', '⭐ 获得积分', '你获得了 ' . ($data['points'] ?? 0) . ' 积分（' . ($data['reason'] ?? '') . '）。', ['type' => 'membership', 'link' => '/member.php?view=level', 'icon' => '🏆']),
+        'points_deducted' => fn() => inbox_send($data['member_id'] ?? '', '积分扣除', '已扣除 ' . ($data['points'] ?? 0) . ' 积分（' . ($data['reason'] ?? '') . '）。', ['type' => 'membership', 'link' => '/member.php?view=level', 'icon' => '📉']),
         'submission_reviewed' => fn() => inbox_send($data['member_id'] ?? '', '📝 投稿审核结果', '你的投稿「' . ($data['title'] ?? '') . '」已' . ($data['result'] ?? '') . '。', ['type' => 'system', 'link' => '/member.php?view=submit', 'icon' => '📝']),
     ];
     $fn = $map[$event] ?? null;
