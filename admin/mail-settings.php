@@ -27,11 +27,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $channels = mail_channels();
 $defs = mail_channel_defs();
 
-admin_header('邮件设置');
+if (!defined('OF_EMBED')) admin_header('邮件设置');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('mail-settings'); ?>
   <div class="main">
+<?php endif; ?>
     <div class="v-head">
       <div><h1>邮件设置</h1><p class="v-sub">配置邮件渠道，用于表单提交等通知邮件。SMTP 已完整实现，其余渠道 HTTP 接入。</p></div>
       <div class="v-actions"></div>
@@ -77,6 +79,7 @@ admin_header('邮件设置');
 
       <button type="submit" class="btn btn-p">保存邮件设置</button>
     </form>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>

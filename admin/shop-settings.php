@@ -59,11 +59,21 @@ $withdrawals = json_read(DATA_DIR . '/shop/withdrawals.json');
 $pendingWithdrawals = array_values(array_filter($withdrawals, fn($w) => ($w['status'] ?? '') === 'pending'));
 $members = member_get_all();
 
-admin_header('商城与分销');
+if (!defined('OF_EMBED')) admin_header('商城与分销');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('shop-settings'); ?>
   <div class="main">
+<?php endif; ?>
+<?php
+// B3：浅 CRUD 页归并为本页的子 tab
+require_once __DIR__ . '/_subtabs.php';
+$SUBTABS = ['self' => ['商城与分销', '', 'shop-settings'],
+            'pay'  => ['支付设置', 'payment-settings.php', 'shop-settings']];
+$__sub = of_subtab_begin($SUBTABS);
+if ($__sub === 'self'):
+?>
     <h1>商城与分销</h1>
     <p class="sub">课程定价 · 虎皮椒支付 · 分销佣金 · 提现审核</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
@@ -143,6 +153,8 @@ admin_header('商城与分销');
         </tbody>
       </table>
     </div>
+<?php else: of_subtab_include($SUBTABS, $__sub); endif; ?>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>

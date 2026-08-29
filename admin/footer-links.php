@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-admin_header('底部外链管理');
+if (!defined('OF_EMBED')) admin_header('底部外链管理');
 ?>
 <style>
 .group-box{border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
@@ -49,9 +49,11 @@ admin_header('底部外链管理');
 .link-row input[type=text]{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px}
 .link-row input[type=url]{width:240px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px}
 </style>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('settings'); ?>
   <div class="main">
+<?php endif; ?>
     <div class="flex items-center gap-4 mb-2">
       <h1 style="margin-bottom:0"> 底部外链</h1>
       <span class="badge badge-gray"><?=count($links)?> 个分组</span>
@@ -157,4 +159,4 @@ function addLink(gi) {
   container.appendChild(row);
 }
 </script>
-<?php admin_footer(); ?>
+<?php if (!defined('OF_EMBED')) admin_footer(); ?>

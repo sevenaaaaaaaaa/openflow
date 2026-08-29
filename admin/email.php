@@ -179,7 +179,7 @@ if (isset($_POST['send_newsletter'])) {
 // ─── Stats ───
 $newsletterLog = json_read($newsletterFile);
 
-admin_header('邮件营销');
+if (!defined('OF_EMBED')) admin_header('邮件营销');
 ?>
 <style>
 .tab-content{display:none}
@@ -188,9 +188,19 @@ admin_header('邮件营销');
 .status-dot.on{background:#22c55e}
 .status-dot.off{background:#ef4444}
 </style>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('email'); ?>
   <div class="main">
+<?php endif; ?>
+<?php
+// B3：浅 CRUD 页归并为本页的子 tab
+require_once __DIR__ . '/_subtabs.php';
+$SUBTABS = ['self' => ['邮件营销', '', 'email'],
+            'smtp' => ['邮件服务设置', 'mail-settings.php', 'email']];
+$__sub = of_subtab_begin($SUBTABS);
+if ($__sub === 'self'):
+?>
     <h1>邮件营销</h1>
     <p class="sub">BillionMail + Mautic 集成管理 · 部署后填写配置即可启用</p>
 
@@ -472,4 +482,5 @@ document.querySelector('select[name="mautic_version"]')?.addEventListener('chang
   document.getElementById('mauticOAuth').style.display = this.value === 'OAuth2' ? 'block' : 'none';
 });
 </script>
-<?php admin_footer(); ?>
+<?php else: of_subtab_include($SUBTABS, $__sub); endif; ?>
+<?php if (!defined('OF_EMBED')) admin_footer(); ?>

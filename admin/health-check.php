@@ -332,7 +332,7 @@ $fixItems = collect_fix_items($checks);
 $statusCss = ['pass' => 'var(--ok)', 'warn' => 'var(--warn)', 'fail' => 'var(--danger)'];
 $statusIco = ['pass' => '✓', 'warn' => '!', 'fail' => '✕'];
 
-admin_header('健康检测');
+if (!defined('OF_EMBED')) admin_header('健康检测');
 ?>
 <style>
 .health-hero{display:flex;gap:32px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
@@ -361,9 +361,19 @@ admin_header('健康检测');
 .item-fix a{color:var(--accent)}
 .empty-fix{text-align:center;padding:32px;color:var(--text-3)}
 </style>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('health-check'); ?>
   <div class="main">
+<?php endif; ?>
+<?php
+// B3：浅 CRUD 页归并为本页的子 tab
+require_once __DIR__ . '/_subtabs.php';
+$SUBTABS = ['self' => ['健康检测', '', 'health-check'],
+            'stor' => ['存储', 'storage.php', 'storage']];
+$__sub = of_subtab_begin($SUBTABS);
+if ($__sub === 'self'):
+?>
     <div class="flex items-center gap-4 mb-4">
       <h1 style="margin-bottom:0"> 站点健康检测</h1>
       <a href="health-check.php" class="btn btn-primary btn-sm ml-auto" style="margin-left:auto">↻ 重新检测</a>
@@ -438,6 +448,8 @@ admin_header('健康检测');
         <?php endforeach; ?>
       <?php endif; ?>
     </div>
+<?php else: of_subtab_include($SUBTABS, $__sub); endif; ?>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>
