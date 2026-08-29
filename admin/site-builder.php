@@ -75,11 +75,21 @@ if (isset($_GET['generate'])) {
     exit;
 }
 
-admin_header('站点结构');
+if (!defined('OF_EMBED')) admin_header('站点结构');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('site-builder'); ?>
   <div class="main">
+<?php endif; ?>
+<?php
+// B3：浅 CRUD 页归并为本页的子 tab
+require_once __DIR__ . '/_subtabs.php';
+$SUBTABS = ['self' => ['站点结构', '', 'site-builder'],
+            'foot' => ['页脚链接', 'footer-links.php', 'site-builder']];
+$__sub = of_subtab_begin($SUBTABS);
+if ($__sub === 'self'):
+?>
     <h1> 全局站点结构</h1>
     <p class="sub">导航菜单 · Footer · 自定义页面注册（全局维护，所有页面生效）</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
@@ -179,4 +189,5 @@ function addCustomPage() {
   document.getElementById('cpList').appendChild(d);
 }
 </script>
-<?php admin_footer(); ?>
+<?php else: of_subtab_include($SUBTABS, $__sub); endif; ?>
+<?php if (!defined('OF_EMBED')) admin_footer(); ?>

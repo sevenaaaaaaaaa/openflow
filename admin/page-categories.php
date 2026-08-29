@@ -73,7 +73,7 @@ $assignments = json_read(DATA_DIR . '/page-assignments.json');
 $parentOpts = ['' => '— 顶级分类 —'];
 foreach ($cats as $c) if (empty($c['parent'])) $parentOpts[$c['key']] = $c['name'];
 
-admin_header('页面分类');
+if (!defined('OF_EMBED')) admin_header('页面分类');
 ?>
 <style>
 .cat-table{width:100%;border-collapse:collapse}
@@ -83,9 +83,11 @@ admin_header('页面分类');
 .assign-page{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px}
 .assign-page .picon{width:32px;height:32px;border-radius:8px;background:var(--surface);display:grid;place-items:center;font-size:16px}
 </style>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('page-categories'); ?>
   <div class="main">
+<?php endif; ?>
     <div class="flex items-center gap-4 mb-4">
       <h1 style="margin-bottom:0">页面分类</h1>
       <div class="flex gap-2 ml-auto">
@@ -177,4 +179,4 @@ function deleteCat(key) {
   fetch('page-categories.php', {method: 'POST', body: fd, headers: {'X-CSRF-Token': '<?=csrf_token()?>'}}).then(function(){ location.reload(); });
 }
 </script>
-<?php admin_footer(); ?>
+<?php if (!defined('OF_EMBED')) admin_footer(); ?>
