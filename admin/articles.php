@@ -31,7 +31,7 @@ if (isset($_GET['copy'])) {
         save_article($orig['id'], $orig);
         flash('success', '文章已复制');
     }
-    header('Location: /xmp/articles');
+    header('Location: /xmp/content-hub?tab=articles');
     exit;
 }
 
@@ -70,7 +70,7 @@ if (isset($_GET['delete'])) {
         delete_article($_GET['delete']);
         flash('success', '文章已移至回收站');
     }
-    header('Location: /xmp/articles');
+    header('Location: /xmp/content-hub?tab=articles');
     exit;
 }
 
@@ -87,7 +87,7 @@ if (isset($_GET['restore'])) {
         save_article($found['id'], $found);
         flash('success', '文章已从回收站恢复');
     }
-    header('Location: /xmp/articles?trash=1');
+    header('Location: /xmp/content-hub?tab=articles&trash=1');
     exit;
 }
 
@@ -97,7 +97,7 @@ if (isset($_GET['permanent_delete'])) {
     $trash = array_values(array_filter($trash, fn($t) => $t['id'] !== $_GET['permanent_delete']));
     json_write(DATA_DIR . '/trash.json', $trash);
     flash('success', '文章已永久删除');
-    header('Location: /xmp/articles?trash=1');
+    header('Location: /xmp/content-hub?tab=articles&trash=1');
     exit;
 }
 
@@ -121,7 +121,7 @@ if (isset($_POST['batch_action']) && isset($_POST['selected'])) {
         elseif ($action === 'category' && !empty($_POST['batch_category'])) { $a['category'] = $_POST['batch_category']; save_article($id, $a); $count++; }
     }
     flash('success', "批量操作完成：{$count} 篇文章已处理");
-    header('Location: /xmp/articles');
+    header('Location: /xmp/content-hub?tab=articles');
     exit;
 }
 
@@ -163,8 +163,8 @@ td.actions{white-space:nowrap;width:1%}
       <div class="flex gap-2 ml-auto">
         <a href="article-edit.php" class="btn btn-primary">写新文章</a>
         <a href="api-batch.php" class="btn btn-ghost">批量导入</a>
-        <a href="?trash=1" class="btn btn-ghost <?=$showTrash?'btn-primary':''?>">🗑 回收站</a>
-        <?php if ($showTrash): ?><a href="articles.php" class="btn btn-ghost">← 返回文章列表</a><?php endif; ?>
+        <a href="<?=of_hub_url(['trash'=>1])?>" class="btn btn-ghost <?=$showTrash?'btn-primary':''?>">🗑 回收站</a>
+        <?php if ($showTrash): ?><a href="<?=of_hub_url()?>" class="btn btn-ghost">← 返回文章列表</a><?php endif; ?>
       </div>
     </div>
 
@@ -289,8 +289,8 @@ td.actions{white-space:nowrap;width:1%}
             <td class="text-sm text-muted" style="white-space:nowrap"><?=htmlspecialchars(substr($a['created_at']??'',0,10))?></td>
             <td class="actions">
               <?php if ($showTrash): ?>
-              <a href="?restore=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm">♻️ 恢复</a>
-              <a href="?permanent_delete=<?=urlencode($a['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('永久删除?无法恢复!')">🗑 永久删除</a>
+              <a href="<?=of_hub_url(['trash'=>1,'restore'=>$a['id']])?>" class="btn btn-ghost btn-sm">♻️ 恢复</a>
+              <a href="<?=of_hub_url(['trash'=>1,'permanent_delete'=>$a['id']])?>" class="btn btn-danger btn-sm" onclick="return confirm('永久删除?无法恢复!')">🗑 永久删除</a>
               <?php else: ?>
               <a href="article-edit.php?id=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
               <a href="../content-preview.php?type=article&id=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a>

@@ -119,6 +119,8 @@ php tests/crm_flow_hooks_test.php        # 17 项：CRM 阶段变化 + 旁路契
 php tests/content_payment_hooks_test.php # 18 项：内容/支付/评论
 php tests/cdp_ma_hooks_test.php          # 12 项：filter 改写/丢弃/异常隔离
 php tests/canvas_crm_condition_test.php  # 27 项：画布条件节点读 CRM
-php tests/refund_test.php                # 31 项：退款金额对称回滚
+php tests/refund_test.php                # 36 项：退款金额/积分对称回滚
 php tests/hub_merge_test.php             # 167 项：后台合并契约
+php tests/render_smoke_test.php          # 24 个页面：中心页与各 tab 真实渲染
+php tests/qa_full.php                    # 全仓质检（跑上面全部 + 结构性检查）
 ```

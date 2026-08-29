@@ -51,7 +51,7 @@ if (!defined('OF_EMBED')) admin_header('SEO 工具');
       <div class="stat-card"><div class="num">✓</div><div class="label">Sitemap 已生成</div><div style="margin-top:4px"><a href="javascript:copy('<?=$base?>/sitemap.xml')" class="btn btn-ghost btn-xs">复制</a> <a href="https://www.google.com/ping?sitemap=<?=urlencode($base.'/sitemap.xml')?>" target="_blank" class="btn btn-ghost btn-xs">提交 Google</a> <a href="https://www.bing.com/ping?sitemap=<?=urlencode($base.'/sitemap.xml')?>" target="_blank" class="btn btn-ghost btn-xs">提交 Bing</a></div></div>
       <div class="stat-card"><div class="num">✓</div><div class="label">robots.txt 已生成</div><div style="margin-top:4px"><a href="javascript:copy('<?=$base?>/robots.txt')" class="btn btn-ghost btn-xs">复制</a> <a href="<?=$base?>/robots.txt" target="_blank" class="btn btn-ghost btn-xs">查看</a></div></div>
       <div class="stat-card"><div class="num">✓</div><div class="label">llms.txt 已生成</div><div style="margin-top:4px"><a href="javascript:copy('<?=$base?>/llms.txt')" class="btn btn-ghost btn-xs">复制</a> <a href="<?=$base?>/llms.txt" target="_blank" class="btn btn-ghost btn-xs">查看</a></div></div>
-      <div class="stat-card"><div class="num"><?=$seo['google_verify']?'✓':'—'?></div><div class="label">站长验证</div></div>
+      <div class="stat-card"><div class="num"><?=!empty($seo['google_verify'])?'✓':'—'?></div><div class="label">站长验证</div></div>
     </div>
 
     <form method="post">
