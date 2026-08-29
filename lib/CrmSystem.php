@@ -91,6 +91,10 @@ function crm_ensure_lead(string $email, string $name = '', string $phone = ''): 
     if ($isNew && class_exists('WebhookSystem')) {
         try { \WebhookSystem::trigger('lead.created', ['email' => $email, 'name' => $name, 'phone' => $phone]); } catch (Exception $e) {}
     }
+    // 新线索 → 插件钩子（旁路）
+    if ($isNew && class_exists('PluginSystem')) {
+        PluginSystem::do_action('crm_lead_created', $email, $data['leads'][$key]);
+    }
     return $data['leads'][$key];
 }
 
@@ -99,12 +103,31 @@ function crm_update_lead(string $email, array $updates): void {
     $data = crm_get();
     $key = mb_strtolower(trim($email));
     if (isset($data['leads'][$key])) {
+        // 合并前先留存旧阶段——array_merge 之后就拿不到了
+        $oldStage = (string)($data['leads'][$key]['stage'] ?? '');
         $data['leads'][$key] = array_merge($data['leads'][$key], $updates);
         $data['leads'][$key]['updated_at'] = date('Y-m-d H:i:s');
         crm_save($data);
+        $lead = $data['leads'][$key];
+        $newStage = (string)($lead['stage'] ?? '');
+
         // 线索更新 → 出站 webhook
         if (class_exists('WebhookSystem')) {
             try { \WebhookSystem::trigger('lead.updated', array_merge(['email' => $email], $updates)); } catch (Exception $e) {}
+        }
+
+        // ── 阶段变化联动（旁路，失败不影响 CRM 主流程）──
+        if ($newStage !== '' && $newStage !== $oldStage) {
+            // 事件总线：CDP 打标 + MA/画布触发器
+            if (function_exists('flow_crm_stage_change')) {
+                try { flow_crm_stage_change($email, $oldStage, $newStage, $lead); } catch (\Throwable $e) {}
+            }
+            // 插件钩子
+            if (class_exists('PluginSystem')) {
+                PluginSystem::do_action('crm_stage_changed', $email, $oldStage, $newStage, $lead);
+                if ($newStage === 'won')  PluginSystem::do_action('crm_deal_won', $email, $lead);
+                if ($newStage === 'lost') PluginSystem::do_action('crm_deal_lost', $email, $lead);
+            }
         }
     }
 }
@@ -114,12 +137,16 @@ function crm_add_followup(string $email, string $content, string $owner = ''): v
     $data = crm_get();
     $key = mb_strtolower(trim($email));
     if (isset($data['leads'][$key])) {
-        $data['leads'][$key]['follow_ups'][] = [
+        $entry = [
             'content' => $content, 'owner' => $owner ?: ($_SESSION['admin_name'] ?? ''),
             'time' => date('Y-m-d H:i:s'),
         ];
+        $data['leads'][$key]['follow_ups'][] = $entry;
         $data['leads'][$key]['updated_at'] = date('Y-m-d H:i:s');
         crm_save($data);
+        if (class_exists('PluginSystem')) {
+            PluginSystem::do_action('crm_followup_added', $email, $entry, $data['leads'][$key]);
+        }
     }
 }
 
