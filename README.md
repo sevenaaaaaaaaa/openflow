@@ -120,7 +120,8 @@ flowchart LR
 | **AI Agent 原生** | 小福 Copilot 自然语言建自动化 · 漏斗 AI 巡检自动告警 · AI 一键生成落地页/文章 · MCP Server 开放给外部 AI |
 | **数据闭环** | 采集 → Schema 校验 → 画像 → 分群 → 触达（频控）→ 转化 → CAPI 回传 → 投放归因，**全链路零断点** |
 | **一方/三方数据** | 入站 Webhook 接收 + 外部连接器拉取 + CRM/订单/微信用户回填画像 |
-| **开箱即用** | PHP 单体、零生产依赖、JSON + SQLite、Apache/Nginx/宝塔/Docker 都能跑，**30 分钟上线** |
+| **开发者生态** | 插件系统（30+ hooks）· Skills marketplace · MCP Server · 开发者 SDK · 贡献指南，**基于 TIPS 模型构建扩展** |
+| **全球可达** | 11 语言国际化 · Cloudflare 全栈加速 · R2 全球边缘存储 · Notion 双向同步 · 国内外用户一致体验 |
 | **数据主权** | 数据 100% 本地，不依赖任何外部服务；支持数据导出、注销、脱敏，符合个保法/GDPR |
 | **开源 MIT** | 永久免费，可商用，可二次开发，可私有部署 |
 
@@ -172,6 +173,13 @@ flowchart LR
 - **R2 全球存储**：静态资源（JS/CSS/图片/字体）存 Cloudflare R2，Worker 全球边缘分发
 - **API 边缘缓存**：公开 API 响应在 CF 边缘缓存（TTL 1 小时 ~ 1 分钟）
 - **图片自动优化**：WebP 内容协商，PNG→WebP 节省 80-91%，零前端改动
+
+### 8. 开发者生态
+- **插件系统**：30+ hooks（CDP/CRM/MA/内容/SEO 全覆盖），GitHub 一键安装，enable/disable
+- **Skills Marketplace**：prompt / tool / workflow 三种 Skill 类型，公开 API 提交/搜索/安装
+- **MCP Server**：10 个 AI 工具（stdio + HTTP），API Key 鉴权，AI Agent 原生接入
+- **开发者 SDK**（`lib/PluginSDK.php`）：数据访问 / UI 注入 / 配置管理 / 日志
+- **开发者文档**：插件开发指南 + Skill 开发指南 + API 参考
 
 ---
 
@@ -360,20 +368,19 @@ OpenFlow 需要可写文件系统（JSON + SQLite）与 cron，**不能完整跑
 
 > 完整路线图见 [md-docs/ROADMAP.md](md-docs/ROADMAP.md)
 
-- **已完成（v1.4~v1.5）**：
-  - ✅ 11 语言国际化（i18n）· URL 前缀路由 · 翻译管理后台
-  - ✅ Cloudflare 全栈加速（Cache Rules + R2 + Workers + WebP 图片优化）
-  - ✅ Notion 全内容双向同步（导航站/文章/课程/落地页/技能）
-  - ✅ 虎皮椒聚合支付（微信 + 支付宝双通道）
-  - ✅ 全站前端统一（site-shell.js 全局导航 + 侧栏 + 主题切换）
-  - ✅ 站点健康检测 · 翻译管理 · Cloudflare 管理 · Notion 同步管理后台
-- **近期**：
-  - 线索多来源去重合并 · 渠道数据回传画布节点
-  - 会员到期自动降级提醒 · 课程/回放按权益解锁
-  - Agent 工具调用（小福直接执行后台操作 + 操作确认）
-  - 双因素认证（TOTP）· 权限细化到操作级
-- **中期**：写作工作台 · 网站增长诊断报告 · 建议规则可配置
-- **远期**：生长数据迁移 · 形态驱动前台排序 · 半自动修复扩展
+- **P0 本月**：
+  - 🔴 **系统联动**：CRM↔MA↔CDP 双向桥接（线索阶段变化触发自动化 + CDP 回写）
+  - 🔴 **后台统一**：合并碎片页面（内容中心/SEO 中心/数据洞察/系统设置统一入口）
+  - 🔴 **开发者生态基础**：30+ hooks · 插件 SDK · 官方示例插件 · Skills marketplace API · 开发者文档
+- **P1 下季度**：
+  - CDP 性能优化（事件分层缓存 / 画像预计算）
+  - 后台前端组件化（admin-ui.css + PHP 组件库）
+  - 版本历史 · 关键词库 · CRM 任务通知
+- **P2 年度**：
+  - 插件付费市场（作者 80% / 平台 20%）
+  - 多 Agent 分工 · 预测式转化 · 自动化诊断报告
+- **P3 愿景**：
+  - 多租户 SaaS · Headless API · 可视化低代码 · 全自动增长引擎
 
 ---
 
@@ -398,6 +405,9 @@ OpenFlow 需要可写文件系统（JSON + SQLite）与 cron，**不能完整跑
 - 🧩 提交修复：Fork + PR（CI 会自动跑 PHP 语法检查）
 - 📝 补充截图/文档：`docs/` 目录随时欢迎
 - 🌐 本地化翻译：语言包位于 `data/lang/`
+- 🧩 开发插件：插件系统支持 30+ hooks，详见 `lib/PluginSystem.php` + `lib/PluginSDK.php`
+- ⚡ 开发 Skills：prompt / tool / workflow 三种类型，详见 `lib/SkillSystem.php`
+- 🔌 提交 MCP 工具：`api/mcp-server.php` 支持 HTTP/stdio 接入
 
 ## License
 
