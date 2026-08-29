@@ -155,14 +155,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $article['review_status'] = 'approved';
         }
-        $wasPublished = ($article['status'] === 'published');
         save_article($article['id'], $article);
         PluginSystem::do_action('article_saved', $article['id'], $article);
 
-        // 内容流：发布后联动（IndexNow 收录等）
-        if (($article['status'] ?? '') === 'published' && !$wasPublished) {
-            try { flow_content_published($article); } catch (Exception $e) {}
-        }
+        // 内容流联动（IndexNow 收录 / content_published 钩子）已下沉到
+        // save_article()，所有写入路径统一生效，此处不再单独触发。
+        //
+        // 注：原先这里的判断是 $wasPublished = ($article['status'] === 'published')
+        // 取在 $article 被赋新状态之后，恒等于 $isPublished，
+        // 于是 `&& !$wasPublished` 永远为假 —— flow_content_published() 实际从未执行。
 
         // 知识平台双向同步：发布 → Notion / 外部 webhook
         if (($article['status'] ?? '') === 'published') {
