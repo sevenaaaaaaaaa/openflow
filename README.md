@@ -20,8 +20,25 @@
 
 OpenFlow 不是"又一个建站工具"，而是一套**增长操作系统**。它把网站的每一项能力——内容生产、搜索获取、用户洞察、自动化触达、交易转化——串成一个**自动运转的增长闭环**，让网站从"被动的展示页"升级为"自动获客的增长引擎"。
 
-```
-内容 → 获取 → 承接 → 转化 → 洞察 → 运营 → （回到内容）
+更独特的是，OpenFlow 内置了 **Platform Intelligence（平台智能层）**——系统能自动体检、诊断问题、建议修复方案、甚至帮你自动修。这是市面上**唯一一个有自我进化能力的增长系统**。
+
+```mermaid
+flowchart LR
+  subgraph PI["🧠 Platform Intelligence"]
+    EVO[自我进化] --> FIX[协同修复]
+    HC[健康检测] --> AI[AI 配置]
+  end
+  subgraph TIPS["🎯 TIPS 增长框架"]
+    A[Touch 内容] --> B[Insight 数据]
+    B --> C[Personalize 触达]
+    C --> D[Sell 交易]
+  end
+  subgraph ECO["🧩 开发者生态"]
+    PLUGIN[插件] --> SKILL[Skills]
+    SKILL --> MCP[MCP Server]
+  end
+  PI -.监控.-> TIPS
+  ECO -.扩展.-> TIPS
 ```
 
 每 6 小时，内置的 AI 增长引擎会自动爬热点、写草稿、做 SEO、盯转化、提醒运营动作——像一个**全年无休的增长团队成员**。
@@ -60,41 +77,38 @@ OpenFlow 不是"又一个建站工具"，而是一套**增长操作系统**。�
 
 ```mermaid
 graph TB
-  subgraph 前端
-    WEB[网站页面 / 落地页]
-    TRACK[inject.js · cdp-track.js 自动埋点]
+  subgraph PI["🧠 Platform Intelligence（智能层）"]
+    EVO[自我进化引擎<br/>AI 体检 + 诊断 + 修复]
+    FIX[协同修复<br/>人机协同代码修补]
+    HC[健康检测<br/>443 项全站扫描]
+    AI[AI 配置<br/>多供应商大模型]
   end
 
-  subgraph 入口层
-    API[api/ 接口层]
-    MCP[MCP Server]
-    INBOUND[入站 Webhook]
-    CONN[外部连接器]
+  subgraph TIPS["🎯 TIPS 增长框架"]
+    TOUCH[Touch 内容触达<br/>CMS · SEO · 导航 · 落地页]
+    INSIGHT[Insight 数据洞察<br/>CDP · RFM · 留存 · 热力图]
+    PERS[Personalize 触达<br/>MA 画布 · 邮件 · 频控]
+    SELL[Sell 商业转化<br/>CRM · 电商 · 课程 · 分销]
   end
 
-  subgraph 核心引擎
-    FLOW[FlowSystem 统一事件总线]
-    CDP[CDP 用户画像/分群/洞察]
-    MA[自动化 / 画布编排]
-    CRM[线索/商机/客户]
-    COMM[电商/课程/分销]
-    AI[AI 引擎 · 小福 Copilot]
+  subgraph BRIDGE["🔗 跨层桥梁"]
+    CDP[CDP 用户数据平台]
+    GD[Growth Driver 增长飞轮]
+    COURSE[课程 = 内容 × 交易]
   end
 
-  subgraph 存储
-    JSON[(data/ JSON)]
-    DB[(SQLite)]
+  subgraph ECO["🧩 开发者生态"]
+    PLUGIN[插件系统<br/>30+ hooks]
+    SKILL[Skills Marketplace<br/>prompt · tool · workflow]
+    MCP[MCP Server<br/>AI 原生接入]
+    SDK[开发者 SDK]
   end
 
-  WEB --> TRACK --> API --> FLOW
-  MCP --> FLOW
-  INBOUND --> FLOW
-  CONN --> FLOW
-  FLOW --> CDP --> MA --> COMM
-  FLOW --> CRM
-  AI --> FLOW
-  CDP --> JSON
-  FLOW --> DB
+  EVO --> CDP --> TOUCH --> INSIGHT --> PERS --> SELL
+  FIX --> AI
+  CDP --> GD --> COURSE
+  PLUGIN --> TIPS
+  SKILL --> PI
 ```
 
 ### 增长闭环
@@ -116,70 +130,61 @@ flowchart LR
 
 | 维度 | 你的收益 |
 |---|---|
-| **一体化** | CMS + SEO/GEO + CDP + MA + CRM + 电商 + 课程 + 社区 + 活动 + 分销 + **11 语言 i18n + Notion 同步** 全在一个系统，数据天然打通，**不用接 6 个 SaaS 再拼数据** |
+| **平台智能** | **唯一一个内置自我进化能力的增长系统**——AI 体检、诊断修复、协同修补、健康评分，系统越用越聪明 |
+| **一体化** | CMS + SEO/GEO + CDP + MA + CRM + 电商 + 课程 + 社区 + 活动 + 分销 + **11 语言 i18n + Notion 同步** 全在一个系统，数据天然打通 |
 | **AI Agent 原生** | 小福 Copilot 自然语言建自动化 · 漏斗 AI 巡检自动告警 · AI 一键生成落地页/文章 · MCP Server 开放给外部 AI |
-| **数据闭环** | 采集 → Schema 校验 → 画像 → 分群 → 触达（频控）→ 转化 → CAPI 回传 → 投放归因，**全链路零断点** |
-| **一方/三方数据** | 入站 Webhook 接收 + 外部连接器拉取 + CRM/订单/微信用户回填画像 |
-| **开发者生态** | 插件系统（30+ hooks）· Skills marketplace · MCP Server · 开发者 SDK · 贡献指南，**基于 TIPS 模型构建扩展** |
-| **全球可达** | 11 语言国际化 · Cloudflare 全栈加速 · R2 全球边缘存储 · Notion 双向同步 · 国内外用户一致体验 |
-| **数据主权** | 数据 100% 本地，不依赖任何外部服务；支持数据导出、注销、脱敏，符合个保法/GDPR |
+| **数据闭环** | CDP 全域画像 → RFM 分层 → 营销画布 → 转化归因 → 自动优化，**TIPS 四力合一** |
+| **开发者生态** | 插件系统（30+ hooks）· Skills Marketplace · MCP Server · 开发者 SDK，**基于 TIPS 构建扩展** |
+| **全球可达** | 11 语言国际化 · Cloudflare 全栈加速 · R2 全球边缘存储 · 国内外一致体验 |
+| **数据主权** | 数据 100% 本地，不依赖外部服务；支持导出/注销/脱敏，符合个保法/GDPR |
 | **开源 MIT** | 永久免费，可商用，可二次开发，可私有部署 |
 
 ---
 
 ## 🗺 能力地图
 
-### 1. 内容引擎 + SEO/GEO
-- AI 选题/成文（OpenAI / Claude / DeepSeek / MiniMax 多供应商）
-- 批量发布 · 定时发布 · 内容日历 · 多平台分发（公众号/知乎/小红书/B站/视频号/抖音）
-- SEO：301 · Sitemap · 结构化数据 · 页面级 SEO · 多语言 hreflang
-- GEO：面向 AI 搜索引擎优化 · IndexNow 即时收录
-- 知识库 RAG（飞书/Notion/印象笔记/Obsidian 双向同步）
-- **Notion 全内容同步**：导航站/文章/课程/活动/落地页/技能 6 类数据 ↔ Notion Database 双向同步
+### 0. Platform Intelligence（平台智能 — 市面独一无二）
 
-### 2. 用户数据（CDP）
-- 行为采集（页面/点击/滚动/表单/站外）· Tracking Plan 数据质量校验
-- 用户画像 360°（匿名→登录→微信 openid 身份合并）· 行为时间线
-- 标签 · 健康分/RFM · 规则分群（实时进出群）· 留存/漏斗/路径/营收
+> 系统自带的"自我进化层"——不是业务功能，而是让整个平台越用越聪明的底层能力。
+
+- **自我进化引擎**：AI 自动体检（错误/404/空数据/性能）→ 迭代建议 → 价值排序 → 人机协同修复
+- **协同修复**：生成补丁 → 人工确认 → 应用 → 回滚（绝不自动改代码）
+- **健康检测**：443 项全站扫描 + 评分 + URL 巡检（自动检测死链/403/404/5xx）
+- **AI 配置**：多供应商（OpenAI / Claude / DeepSeek / MiniMax）统一配置
+- **生长数据**：行为信号 → 形态画像 → 个性权重 → 周期报告
+
+### 1. Touch（内容触达）
+- AI 选题/成文（多供应商）· 批量发布 · 定时发布 · 内容日历 · 多平台分发
+- SEO：301 · Sitemap · 结构化数据 · GEO/IndexNow · 页面级 SEO
+- 知识库 RAG（飞书/Notion/Obsidian 双向同步）· Notion 全内容双向同步
+- 导航站（417 站 · 9 分类 · 搜索/筛选/推荐）· 落地页生成器
+- 课程体系 · 播客/视频 · 下载资源 · 活动管理
+
+### 2. Insight（数据洞察）
+- CDP 用户画像 360°（匿名→登录→微信 openid 合并）· 行为时间线
+- RFM 分层 · 规则分群（实时进出群）· 留存/漏斗/路径/营收分析
 - 点击热力图 · 会话回放 · A/B 测试（Z 检验显著性）
+- 营销洞察（AI 自动生成）· 用户行为风控 · 舆情监测
+- 问卷/NPS · 数据导出 · 翻译管理后台
 
-### 3. 触达体系（MA/CRM）
-- 营销自动化：15+ 触发器 × 邮件/延迟/通知/打标签/积分/发券/站内信 · 条件分支并行
-- 可视化画布 · 邮件营销闭环（模板/退订/打开点击统计）· 跨渠道频控
-- CRM：线索/商机/客户管道 · 查重防撞单 · 赢率预测 · 跟进任务
-- 私域：公众号（群发/模板消息）· 企业微信（私信/群发）
+### 3. Personalize（营销触达）
+- 营销自动化画布：15+ 触发器 × 条件分支 × 多渠道（邮件/站内信/积分/优惠券）
+- 邮件营销闭环（模板/退订/打开点击统计）· 跨渠道频控
+- 动态内容引擎 · 转化组件 · 弹窗 A/B
+- 表单构建器 · 二维码 · UTM 参数
 
-### 4. 商业化
-- 电商：SKU 库存 · 限时促销 · 优惠券 · 组合包 · 会员额度 · 三层分成
-- 课程：多课时 · 测验（自动批改）· 笔记/评分 · 讲师/开发者发布 + 审核
-- 活动：线上/线下 · 原生报名（名额/审核）· 开始前提醒 · 直播/回放
-- 生态市场：Skill/插件/主题 · 开发者入驻 · 分销推广 + 排行榜
-- **虎皮椒聚合支付**：微信/支付宝双通道 · 虚拟商品自动发货 · 退款对账
+### 4. Sell（商业转化）
+- CRM 管道（漏斗/预测/ARR/查重/AI 评分）· 客户生命周期管理
+- 电商：SKU · 促销 · 优惠券 · 三层分成 · 虎皮椒支付（微信/支付宝）
+- 课程：多课时 · 测验 · 笔记 · 讲师发布 + 审核 · 会员体系
+- 活动：线上/线下 · 原生报名 · 直播/回放 · 咨询预约
+- 分销：推广员 · 佣金 · 提现 · 排行榜
 
-### 5. AI Agent 原生
-- 小福 Copilot：自然语言 → 创建自动化流程 / 查询数据
-- 转化漏斗 AI 巡检：落地页/渠道转化率骤降自动告警 + 根因建议
-- AI 一键生成落地页 · AI 写文章（标题/slug/SEO 一次产出）
-- MCP Server（HTTP/stdio，API Key 鉴权）
-
-### 6. 多语言国际化（i18n）
-- **11 种语言**：简体中文 · 繁體中文 · English · 日本語 · 한국어 · Русский · Español · Português · العربية（RTL）· Français · Deutsch
-- **URL 前缀路由**：`/zh-TW/`、`/en/`、`/ja/` 等，浏览器语言自动检测 + cookie 持久化
-- **全局导航翻译**：site-shell 导航 + 首页/课程/产品等页面均按语言渲染
-- **翻译管理后台**：逐 key 翻译、新增 key、完成度统计、未翻译自动回退源语言
-
-### 7. 全球加速（Cloudflare Workers + R2）
-- **HTML 边缘缓存**：Cache Rule 将匿名访客页面缓存到 CF 边缘，TTFB 降至 ~0.4s
-- **R2 全球存储**：静态资源（JS/CSS/图片/字体）存 Cloudflare R2，Worker 全球边缘分发
-- **API 边缘缓存**：公开 API 响应在 CF 边缘缓存（TTL 1 小时 ~ 1 分钟）
-- **图片自动优化**：WebP 内容协商，PNG→WebP 节省 80-91%，零前端改动
-
-### 8. 开发者生态
-- **插件系统**：30+ hooks（CDP/CRM/MA/内容/SEO 全覆盖），GitHub 一键安装，enable/disable
-- **Skills Marketplace**：prompt / tool / workflow 三种 Skill 类型，公开 API 提交/搜索/安装
-- **MCP Server**：10 个 AI 工具（stdio + HTTP），API Key 鉴权，AI Agent 原生接入
-- **开发者 SDK**（`lib/PluginSDK.php`）：数据访问 / UI 注入 / 配置管理 / 日志
-- **开发者文档**：插件开发指南 + Skill 开发指南 + API 参考
+### 5. 开发者生态
+- **插件系统**：30+ hooks（CDP/CRM/MA/内容/SEO/支付全覆盖），GitHub 一键安装
+- **Skills Marketplace**：prompt / tool / workflow 三种类型，公开 API
+- **MCP Server**：10 个 AI 工具（stdio + HTTP），AI Agent 原生接入
+- **开发者 SDK**：数据访问 / UI 注入 / 配置管理 / 日志
 
 ---
 
@@ -368,19 +373,21 @@ OpenFlow 需要可写文件系统（JSON + SQLite）与 cron，**不能完整跑
 
 > 完整路线图见 [md-docs/ROADMAP.md](md-docs/ROADMAP.md)
 
-- **P0 本月**：
-  - 🔴 **系统联动**：CRM↔MA↔CDP 双向桥接（线索阶段变化触发自动化 + CDP 回写）
-  - 🔴 **后台统一**：合并碎片页面（内容中心/SEO 中心/数据洞察/系统设置统一入口）
-  - 🔴 **开发者生态基础**：30+ hooks · 插件 SDK · 官方示例插件 · Skills marketplace API · 开发者文档
-- **P1 下季度**：
-  - CDP 性能优化（事件分层缓存 / 画像预计算）
-  - 后台前端组件化（admin-ui.css + PHP 组件库）
-  - 版本历史 · 关键词库 · CRM 任务通知
-- **P2 年度**：
-  - 插件付费市场（作者 80% / 平台 20%）
-  - 多 Agent 分工 · 预测式转化 · 自动化诊断报告
-- **P3 愿景**：
-  - 多租户 SaaS · Headless API · 可视化低代码 · 全自动增长引擎
+### 重点深做（护城河功能）
+- **自我进化引擎**深化：AI 体检 → 诊断 → 建议 → 协同修复 → 生长数据闭环
+- **CDP + RFM + 留存**深化：对标 Mixpanel，单体 PHP 全功能用户数据平台
+- **营销自动化画布**升级：A/B 分流 + 多路径测试 + 条件嵌套
+- **AI Copilot**深化：自然语言建流程 + 查数据 + 管内容 + 直接执行
+
+### 系统联动（P0 打通 TIPS 数据流）
+- CRM ↔ MA ↔ CDP 双向桥接（线索阶段变化触发自动化 + CDP 回写）
+- 后台页面合并（碎片页面统一入口：内容中心 / SEO 中心 / 数据洞察）
+
+### 开发者生态（P0 基础设施）
+- 30+ hooks 覆盖全操作 · 插件 SDK · 官方示例插件 · Skills marketplace API · 开发者文档
+
+### 全球化 + 性能
+- CDP 事件分层缓存 · 后台组件化 · 多租户 SaaS · Headless API
 
 ---
 
