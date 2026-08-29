@@ -18,11 +18,13 @@ $risks = storage_risks($scan);
 $totalJson = array_sum(array_map(fn($j) => $j['size'], $scan['json']));
 $totalUp = $scan['uploads']['total'] ?? 0;
 
-admin_header('存储与性能');
+if (!defined('OF_EMBED')) admin_header('存储与性能');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('storage'); ?>
   <div class="main">
+<?php endif; ?>
     <h1> 存储与性能</h1>
     <p class="sub">数据文件大小 · SQLite 统计 · 风险识别 · 一键维护</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
@@ -88,4 +90,4 @@ admin_header('存储与性能');
   </div>
 </div>
 <style>@media(max-width:900px){.st-grid{grid-template-columns:1fr!important}}</style>
-<?php admin_footer(); ?>
+<?php if (!defined('OF_EMBED')) admin_footer(); ?>
