@@ -50,7 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle checkboxes (not sent when unchecked)
     $settings['staging_mode'] = isset($_POST['settings']['staging_mode']);
     $settings['multilang_enabled'] = isset($_POST['settings']['multilang_enabled']);
+    $settingsBefore = json_read($settingsFile);
     json_write($settingsFile, $settings);
+    if (class_exists('PluginSystem')) {
+        PluginSystem::do_action('settings_changed', $settings, $settingsBefore);
+    }
     $message = '设置已保存';
 }
 
