@@ -36,11 +36,13 @@ $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $base = $protocol . '://' . $host;
 
-admin_header('SEO 工具');
+if (!defined('OF_EMBED')) admin_header('SEO 工具');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('seo-tools'); ?>
   <div class="main">
+<?php endif; ?>
     <h1>SEO 工具</h1>
     <p class="sub">Sitemap · robots.txt · 站点验证 · 一键提交搜索引擎</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
@@ -111,4 +113,4 @@ function copy(t) {
   navigator.clipboard.writeText(t).then(function() { alert('已复制: ' + t); });
 }
 </script>
-<?php admin_footer(); ?>
+<?php if (!defined('OF_EMBED')) admin_footer(); ?>

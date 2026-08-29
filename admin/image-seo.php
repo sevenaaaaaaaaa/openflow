@@ -81,7 +81,7 @@ $totalCount = count($allImages);
 $withAltCount = count(array_filter($allImages, fn($img) => $img['has_alt']));
 $missingAltCount = $totalCount - $withAltCount;
 
-admin_header('图片 SEO 管理');
+if (!defined('OF_EMBED')) admin_header('图片 SEO 管理');
 ?>
 <style>
 .img-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:.15s}
@@ -95,9 +95,11 @@ admin_header('图片 SEO 管理');
 .img-status.ok{background:#dcfce7;color:#166534}
 .img-status.missing{background:#fee2e2;color:#991b1b}
 </style>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('media'); ?>
   <div class="main">
+<?php endif; ?>
     <div class="flex items-center gap-4 mb-2">
       <h1 style="margin-bottom:0"> 图片 SEO</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
@@ -197,6 +199,7 @@ admin_header('图片 SEO 管理');
         </div>
       </div>
     </div>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>

@@ -33,6 +33,15 @@ RewriteRule ^growth/(.*)$ $1 [L,QSA]
 
 # 后台管理 · 美化 URL
 RewriteRule ^login/?$ admin/login.php [L]
+# ── SEO 中心：旧的 7 个独立页 301 到统一入口对应 tab（B1）──
+RewriteRule ^xmp/seo/?$            /xmp/seo-center?tab=pages      [R=301,L,NE]
+RewriteRule ^xmp/seo-tools/?$      /xmp/seo-center?tab=tools      [R=301,L,NE]
+RewriteRule ^xmp/seo-batch/?$      /xmp/seo-center?tab=batch      [R=301,L,NE]
+RewriteRule ^xmp/seo-console/?$    /xmp/seo-center?tab=console    [R=301,L,NE]
+RewriteRule ^xmp/structured-data/?$ /xmp/seo-center?tab=structured [R=301,L,NE]
+RewriteRule ^xmp/image-seo/?$      /xmp/seo-center?tab=images     [R=301,L,NE]
+RewriteRule ^xmp/redirects/?$      /xmp/seo-center?tab=redirects  [R=301,L,NE]
+
 RewriteRule ^xmp/?$ admin/index.php [L]
 RewriteRule ^xmp/([a-z0-9-]+)/?$ admin/$1.php [L,QSA]
 RewriteRule ^xmp/(.+)$ admin/$1 [L,QSA]

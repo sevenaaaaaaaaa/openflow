@@ -41,11 +41,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-admin_header('结构化数据');
+if (!defined('OF_EMBED')) admin_header('结构化数据');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('structured'); ?>
   <div class="main">
+<?php endif; ?>
     <h1>结构化数据 (JSON-LD)</h1>
     <p class="sub">为每个页面/文章配置自定义 Schema.org 结构化数据，直接嵌入前端代码</p>
     <?php if ($message): ?><?=msg($message==='JSON 格式无效，请检查'?'error':'success', $message)?><?php endif; ?>
@@ -122,4 +124,4 @@ function formatJson() {
 }
 function loadTemplate() { insertTemplate('Organization'); }
 </script>
-<?php admin_footer(); ?>
+<?php if (!defined('OF_EMBED')) admin_footer(); ?>
