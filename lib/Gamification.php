@@ -24,12 +24,13 @@ function gamification_level_of(int $points): array {
 }
 
 // 给用户加分并返回新等级
+// $points 可为负（退款回收积分），此时总分不会被扣成负值，通知文案也会切换成「扣除」。
 function gamification_award(string $memberId, int $points, string $reason): ?array {
     $member = null;
     $members = json_read(DATA_DIR . '/members/index.json');
     foreach ($members as &$m) {
         if ($m['id'] === $memberId) {
-            $m['points'] = ($m['points'] ?? 0) + $points;
+            $m['points'] = max(0, (int)($m['points'] ?? 0) + $points);
             $m['level'] = gamification_level_of($m['points'])['key'];
             // 积分日志
             $m['points_log'] = $m['points_log'] ?? [];
@@ -42,7 +43,8 @@ function gamification_award(string $memberId, int $points, string $reason): ?arr
     unset($m);
     if ($member) {
         json_write(DATA_DIR . '/members/index.json', $members);
-        inbox_notify_event('points_awarded', ['member_id' => $memberId, 'points' => $points, 'reason' => $reason]);
+        inbox_notify_event($points >= 0 ? 'points_awarded' : 'points_deducted',
+            ['member_id' => $memberId, 'points' => abs($points), 'reason' => $reason]);
     }
     return $member;
 }
