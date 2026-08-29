@@ -92,11 +92,13 @@ if (isset($_GET['edit'])) {
 $mediaFiles = [];
 foreach (glob(UPLOAD_DIR . '/{podcasts,general}/*', GLOB_BRACE) as $f) if (is_file($f)) $mediaFiles[] = str_replace(UPLOAD_DIR . '/', 'uploads/', $f);
 
-admin_header('播客与视频');
+if (!defined('OF_EMBED')) admin_header('播客与视频');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('podcasts'); ?>
   <div class="main">
+<?php endif; ?>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>
 
@@ -207,6 +209,7 @@ admin_header('播客与视频');
       </div>
     </div>
     <?php endif; ?>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>
