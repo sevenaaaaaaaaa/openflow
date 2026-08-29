@@ -52,6 +52,7 @@ function flow_behavior_map(): array {
         'bookmark'        => ['tag' => '收藏',            'points' => 5,  'score' => 8],
         'share'           => ['tag' => '分享',            'points' => 10, 'score' => 15],
         'crm_stage_change'=> ['tag' => 'CRM 阶段变化',    'points' => 0,  'score' => 5],
+        'refund'          => ['tag' => '已退款',          'points' => 0,  'score' => -20],
     ];
 }
 
@@ -124,6 +125,7 @@ function flow_handle(string $event, array $ctx = []): array {
             'nps_submit' => 'form.submitted',
             'member_update' => 'member.updated',
             'crm_stage_change' => 'lead.stage_changed',
+            'refund' => 'order.refunded',
         ];
         if (isset($whMap[$event]) && class_exists('WebhookSystem')) {
             try { \WebhookSystem::trigger($whMap[$event], $triggerData); } catch (Exception $e) {}
