@@ -1524,6 +1524,7 @@ function admin_sidebar(string $current): void {
   <?php if (has_perm('shop-settings')): ?>
   <a href="/xmp/distribution" class="<?=$current==='distribution'?'active':''?>" style="padding-left:44px;font-size:13px">分销</a>
   <a href="/xmp/mall" class="<?=$current==='mall'?'active':''?>" style="padding-left:44px;font-size:13px">商城管理</a>
+  <a href="/xmp/orders" class="<?=$current==='orders'?'active':''?>" style="padding-left:44px;font-size:13px">订单与退款</a>
   <a href="/xmp/shop-settings" class="<?=$current==='shop-settings'?'active':''?>" style="padding-left:44px;font-size:13px">商城设置</a>
   <a href="/xmp/activation" class="<?=$current==='activation'?'active':''?>" style="padding-left:44px;font-size:13px">激活码管理</a>
   <?php endif; ?>

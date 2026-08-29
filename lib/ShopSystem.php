@@ -344,3 +344,140 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
     return true;
 }
 
+/**
+ * 订单退款 —— shop_mark_paid() 的对称回滚
+ *
+ * 支付时发生的每一笔权益/入账，退款时都要逆向撤销，否则会出现
+ * 「钱退了但课程还在、佣金还在」的漏洞。
+ *
+ * @param string $orderId 订单号
+ * @param string $reason  退款原因（记入订单与日志）
+ * @param float  $amount  退款金额，0 或超额时按订单全额
+ * @return array ['ok'=>bool, 'error'=>string, 'amount'=>float]
+ */
+function shop_refund_order(string $orderId, string $reason = '', float $amount = 0): array {
+    $order = shop_get_order($orderId);
+    $inJson = false;
+    if (!$order) {
+        $jsonFile = shop_orders_file();
+        if (is_file($jsonFile)) {
+            foreach (json_read($jsonFile) as $j) {
+                if (($j['id'] ?? '') === $orderId) { $order = $j; $inJson = true; break; }
+            }
+        }
+    }
+    if (!$order)                                  return ['ok'=>false,'error'=>'订单不存在','amount'=>0];
+    if (($order['status'] ?? '') === 'refunded')  return ['ok'=>false,'error'=>'该订单已退款','amount'=>0];
+    if (($order['status'] ?? '') !== 'paid')      return ['ok'=>false,'error'=>'只有已支付订单可退款','amount'=>0];
+
+    $paid = (float)($order['amount'] ?? 0);
+    $refund = ($amount > 0 && $amount < $paid) ? round($amount, 2) : $paid;
+    $isPartial = $refund < $paid;
+    $now = date('Y-m-d H:i:s');
+
+    // ── 1. 订单状态（双源，与 shop_mark_paid 一致）──
+    if ($inJson) {
+        $orders = json_read(shop_orders_file());
+        foreach ($orders as &$o) {
+            if (($o['id'] ?? '') === $orderId) {
+                $o['status'] = 'refunded';
+                $o['refunded_at'] = $now;
+                $o['refund_amount'] = $refund;
+                $o['refund_reason'] = $reason;
+                break;
+            }
+        }
+        unset($o);
+        json_write(shop_orders_file(), $orders);
+    } else {
+        Database::execute(
+            "UPDATE orders SET status = 'refunded', refunded_at = ?, refund_amount = ?, refund_reason = ? WHERE id = ?",
+            [$now, $refund, $reason, $orderId]
+        );
+    }
+
+    // ── 2. 分销佣金回收 ──
+    if (!empty($order['referrer_id']) && (float)($order['commission'] ?? 0) > 0) {
+        $back = $isPartial ? round((float)$order['commission'] * $refund / $paid, 2) : (float)$order['commission'];
+        try {
+            Database::execute("UPDATE members SET balance = balance - ? WHERE id = ?", [$back, $order['referrer_id']]);
+            Database::insert('point_logs', [
+                'member_id' => $order['referrer_id'], 'points' => 0, 'type' => 'commission_refund',
+                'description' => "订单 {$orderId} 退款，回收分销佣金 {$back}", 'created_at' => $now,
+            ]);
+        } catch (Exception $e) {}
+    }
+
+    // ── 3. 课程作者分成回收 ──
+    if (!empty($order['author']) && ($order['goods_type'] ?? '') === 'course') {
+        $authorAmount = round($paid - (float)($order['platform_fee'] ?? 0) - (float)($order['commission'] ?? 0), 2);
+        if ($authorAmount > 0) {
+            $back = $isPartial ? round($authorAmount * $refund / $paid, 2) : $authorAmount;
+            try {
+                Database::execute("UPDATE members SET balance = balance - ? WHERE id = ?", [$back, $order['author']]);
+                Database::insert('point_logs', [
+                    'member_id' => $order['author'], 'points' => 0, 'type' => 'course_author_refund',
+                    'description' => "订单 {$orderId} 退款，回收作者分成 ¥{$back}", 'created_at' => $now,
+                ]);
+            } catch (Exception $e) {}
+        }
+    }
+
+    // ── 4. 权益撤销（部分退款保留权益，只退钱）──
+    if (!$isPartial) {
+        // 订阅：置为已取消
+        if (!empty($order['plan_id']) && !empty($order['member_id']) && function_exists('sub_get_member')) {
+            try {
+                $s = sub_get_member($order['member_id']);
+                if ($s) {
+                    $s['status'] = 'cancelled';
+                    $s['updated_at'] = $now;
+                    sub_set_member($order['member_id'], $s);
+                }
+            } catch (Exception $e) {}
+        }
+        // 付费技能：撤销解锁
+        if (($order['goods_type'] ?? '') === 'skill' && !empty($order['goods_id']) && !empty($order['member_id'])) {
+            try {
+                $rows = Database::query("SELECT unlocked_skills FROM members WHERE id = ?", [$order['member_id']]);
+                $list = json_decode($rows[0]['unlocked_skills'] ?? '[]', true);
+                if (is_array($list)) {
+                    $list = array_values(array_filter($list, fn($x) => (string)$x !== (string)$order['goods_id']));
+                    Database::execute("UPDATE members SET unlocked_skills = ? WHERE id = ?",
+                        [json_encode($list, JSON_UNESCAPED_UNICODE), $order['member_id']]);
+                }
+            } catch (Exception $e) {}
+        }
+    }
+
+    // ── 5. 站内信通知 ──
+    if (!empty($order['member_id']) && function_exists('inbox_send')) {
+        try {
+            $tip = $isPartial ? "部分退款 ¥{$refund}" : "已全额退款 ¥{$refund}";
+            inbox_send($order['member_id'], '订单退款', "您的订单 {$orderId} {$tip}"
+                . ($reason !== '' ? "（原因：{$reason}）" : ''));
+        } catch (Exception $e) {}
+    }
+
+    // ── 6. 事件总线：CDP 打标 + MA/画布触发器 ──
+    try {
+        if (function_exists('flow_handle')) {
+            flow_handle('refund', [
+                'member_id' => $order['member_id'] ?? '',
+                'email'     => $order['email'] ?? '',
+                'amount'    => $refund,
+                'order_id'  => $orderId,
+                'label'     => ($order['course_title'] ?? '') ?: ('订单 ' . $orderId),
+                'props'     => ['reason' => $reason, 'partial' => $isPartial ? 1 : 0, 'paid_amount' => $paid],
+            ]);
+        }
+    } catch (Exception $e) {}
+
+    // ── 7. 插件钩子（旁路）──
+    if (class_exists('PluginSystem')) {
+        PluginSystem::do_action('payment_refund', $orderId, $order, $refund, $reason);
+    }
+
+    return ['ok'=>true, 'error'=>'', 'amount'=>$refund];
+}
+
