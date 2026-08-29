@@ -26,11 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tags = get_tags();
 }
 
-admin_header('标签管理');
+if (!defined('OF_EMBED')) admin_header('标签管理');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('tags'); ?>
   <div class="main">
+<?php endif; ?>
     <h1>标签管理</h1>
     <p class="sub">管理文章标签</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
@@ -61,6 +63,7 @@ admin_header('标签管理');
         <button type="submit" class="btn btn-primary">添加</button>
       </form>
     </div>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>

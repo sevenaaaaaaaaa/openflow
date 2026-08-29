@@ -33,6 +33,15 @@ RewriteRule ^growth/(.*)$ $1 [L,QSA]
 
 # 后台管理 · 美化 URL
 RewriteRule ^login/?$ admin/login.php [L]
+# ── 浅 CRUD 归并：旧页 301 到父页对应子 tab（B3）──
+RewriteRule ^xmp/page-categories/?$  /xmp/content-hub?tab=pages&sub=cats [R=301,L,NE]
+RewriteRule ^xmp/tags/?$             /xmp/content-hub?tab=pages&sub=tags [R=301,L,NE]
+RewriteRule ^xmp/payment-settings/?$ /xmp/shop-settings?sub=pay          [R=301,L,NE]
+RewriteRule ^xmp/mail-settings/?$    /xmp/email?sub=smtp                 [R=301,L,NE]
+RewriteRule ^xmp/footer-links/?$     /xmp/site-builder?sub=foot          [R=301,L,NE]
+RewriteRule ^xmp/storage/?$          /xmp/health-check?sub=stor          [R=301,L,NE]
+RewriteRule ^xmp/activity/?$         /xmp/audit-log?sub=act              [R=301,L,NE]
+
 # ── 内容中心：旧的 4 个独立页 301 到统一入口对应 tab（B2）──
 RewriteRule ^xmp/articles/?$   /xmp/content-hub?tab=articles  [R=301,L,NE]
 RewriteRule ^xmp/pages-list/?$ /xmp/content-hub?tab=pages      [R=301,L,NE]
