@@ -72,6 +72,13 @@ class CdpSystem {
             'session_id' => self::currentSessionId(),
         ];
 
+        // 事件入库前允许插件改写或丢弃（返回 null / false 即丢弃）
+        if (class_exists('PluginSystem')) {
+            $filtered = PluginSystem::apply_filters('cdp_event_received', $entry);
+            if ($filtered === null || $filtered === false) return false;
+            if (is_array($filtered)) $entry = $filtered;
+        }
+
         $events[] = $entry;
 
         // 保持文件大小（最多 10000 条）
@@ -83,6 +90,10 @@ class CdpSystem {
 
         // 更新用户画像
         self::updateProfile($visitorId, $memberId, $event, $data);
+
+        if (class_exists('PluginSystem')) {
+            PluginSystem::do_action('cdp_profile_updated', $visitorId, $memberId, $event, $data);
+        }
 
         return true;
     }
@@ -582,11 +593,13 @@ class CdpSystem {
                 try {
                     if (function_exists('flow_handle')) flow_handle('segment_enter', ['profile_id'=>$profile['visitor_id'] ?? '', 'segment_id'=>$segId, 'props'=>['segment_name'=>$seg['name'] ?? $segId]]);
                 } catch (Throwable $e) {}
+                if (class_exists('PluginSystem')) PluginSystem::do_action('cdp_segment_enter', $segId, $profile, $seg);
             } elseif (!$in && $wasIn) {
                 unset($memberships[$segId]);
                 try {
                     if (function_exists('flow_handle')) flow_handle('segment_exit', ['profile_id'=>$profile['visitor_id'] ?? '', 'segment_id'=>$segId, 'props'=>['segment_name'=>$seg['name'] ?? $segId]]);
                 } catch (Throwable $e) {}
+                if (class_exists('PluginSystem')) PluginSystem::do_action('cdp_segment_exit', $segId, $profile, $seg);
             }
         }
     }

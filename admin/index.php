@@ -126,6 +126,11 @@ admin_header('工作台');
       </div>
     </div>
 
+    <?php
+    // 插件可在此注入自定义小部件（C3 的数据看板插件用这个钩子）
+    if (class_exists('PluginSystem')) PluginSystem::do_action('admin_dashboard_render');
+    ?>
+
     <!-- 快速统计 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:8px">
       <?php if ($articleCount !== null): ?>

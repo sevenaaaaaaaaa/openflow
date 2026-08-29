@@ -99,6 +99,7 @@ switch ($action) {
         canvas_trigger('member_register', ['email' => $email, 'name' => $name, 'phone' => $phone]);
         // 数据流/价值流联动
         try { flow_handle('register', ['member_id' => $member['id'], 'email' => $email, 'uid' => $_COOKIE['fc_uid'] ?? '', 'props' => ['name' => $name]]); } catch (Exception $e) {}
+        if (class_exists('PluginSystem')) PluginSystem::do_action('user_registered', $member['id'], $email, $member);
         echo json_encode(['ok'=>true, 'message'=>'注册成功', 'member_id'=>$member['id']]);
         break;
 
@@ -120,6 +121,7 @@ switch ($action) {
             try { cdp_merge_on_login($m['id'], $m['email'] ?? '', $_COOKIE['fc_uid'] ?? ''); } catch (Exception $e) {}
             // 数据流/价值流联动
             try { flow_handle('login', ['member_id' => $m['id'], 'email' => $m['email'] ?? '', 'uid' => $_COOKIE['fc_uid'] ?? '']); } catch (Exception $e) {}
+            if (class_exists('PluginSystem')) PluginSystem::do_action('user_login', $m['id'], $m['email'] ?? '', $m);
             echo json_encode(['ok'=>true, 'message'=>'登录成功', 'member_id'=>$m['id']]);
         } else {
             member_log_attempt($account, false);
