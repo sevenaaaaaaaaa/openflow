@@ -51,6 +51,7 @@ function flow_behavior_map(): array {
         'video_play'      => ['tag' => '视频观看',        'points' => 3,  'score' => 5],
         'bookmark'        => ['tag' => '收藏',            'points' => 5,  'score' => 8],
         'share'           => ['tag' => '分享',            'points' => 10, 'score' => 15],
+        'crm_stage_change'=> ['tag' => 'CRM 阶段变化',    'points' => 0,  'score' => 5],
     ];
 }
 
@@ -122,6 +123,7 @@ function flow_handle(string $event, array $ctx = []): array {
             'course_enroll' => 'course.enrolled',
             'nps_submit' => 'form.submitted',
             'member_update' => 'member.updated',
+            'crm_stage_change' => 'lead.stage_changed',
         ];
         if (isset($whMap[$event]) && class_exists('WebhookSystem')) {
             try { \WebhookSystem::trigger($whMap[$event], $triggerData); } catch (Exception $e) {}
@@ -157,6 +159,45 @@ function flow_handle(string $event, array $ctx = []): array {
     }
 
     return $result;
+}
+
+// ── 数据流：CRM 线索阶段变化联动（CRM → CDP 标签 + MA/画布触发器）──
+//
+// 由 crm_update_lead() 在检测到 stage 变化后调用。整条链路为旁路：
+// 任何一步失败都不影响 CRM 本身的保存结果。
+//
+// @param string $email    线索邮箱（CDP 关联键）
+// @param string $oldStage 变化前阶段（可能为空，如新建后首次赋值）
+// @param string $newStage 变化后阶段，取值见 crm_stages()
+// @param array  $lead     变化后的完整线索记录
+function flow_crm_stage_change(string $email, string $oldStage, string $newStage, array $lead = []): array {
+    $stages = function_exists('crm_stages') ? crm_stages() : [];
+    $label  = $stages[$newStage] ?? $newStage;
+
+    // 阶段专属 CDP 标签（如 "CRM:已成交"），与通用行为标签并存
+    try {
+        $customer = cdp_find($email, '', '');
+        if ($customer) {
+            cdp_add_tag($customer['id'], 'CRM:' . $label);
+            // 成交/无效是终态，额外打一个结果标签便于分群
+            if ($newStage === 'won')  cdp_add_tag($customer['id'], '已成交客户');
+            if ($newStage === 'lost') cdp_add_tag($customer['id'], '流失线索');
+        }
+    } catch (Exception $e) {}
+
+    // 走统一入口，复用 automation/canvas/webhook/评分全套管线
+    return flow_handle('crm_stage_change', [
+        'email' => $email,
+        'label' => $label,
+        'props' => [
+            'old_stage'  => $oldStage,
+            'new_stage'  => $newStage,
+            'stage_label'=> $label,
+            'lead_name'  => $lead['name'] ?? '',
+            'lead_owner' => $lead['owner'] ?? '',
+            'lead_value' => (float)($lead['value'] ?? 0),
+        ],
+    ]);
 }
 
 // ── 内容流：内容发布联动（发布后自动推进分发/收录）──
