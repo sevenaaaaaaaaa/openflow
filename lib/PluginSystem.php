@@ -18,11 +18,23 @@ class PluginSystem {
         self::$actions[$hook][$priority][] = $callback;
     }
 
+    /**
+     * 触发动作钩子。
+     *
+     * 旁路契约：任何插件回调抛出的异常都在此被捕获并记录，绝不冒泡到调用方——
+     * 业务主流程不能因为某个插件写坏而中断。
+     *
+     * @param string $hook    钩子名
+     * @param mixed  ...$args 透传给回调的参数
+     */
     public static function do_action(string $hook, mixed ...$args): void {
         if (empty(self::$actions[$hook])) return;
         ksort(self::$actions[$hook]);
         foreach (self::$actions[$hook] as $callbacks) {
-            foreach ($callbacks as $cb) { call_user_func_array($cb, $args); }
+            foreach ($callbacks as $cb) {
+                try { call_user_func_array($cb, $args); }
+                catch (\Throwable $e) { self::hook_error($hook, $e); }
+            }
         }
     }
 
@@ -30,13 +42,36 @@ class PluginSystem {
         self::$filters[$hook][$priority][] = $callback;
     }
 
+    /**
+     * 应用过滤器钩子。
+     *
+     * 旁路契约：某个回调抛错时跳过该回调、保留上一轮的值继续，不中断主流程。
+     *
+     * @param string $hook    钩子名
+     * @param mixed  $value   待过滤的值
+     * @param mixed  ...$args 附加上下文
+     * @return mixed 过滤后的值（全部回调失败时返回原值）
+     */
     public static function apply_filters(string $hook, mixed $value, mixed ...$args): mixed {
         if (empty(self::$filters[$hook])) return $value;
         ksort(self::$filters[$hook]);
         foreach (self::$filters[$hook] as $callbacks) {
-            foreach ($callbacks as $cb) { $value = call_user_func_array($cb, array_merge([$value], $args)); }
+            foreach ($callbacks as $cb) {
+                try { $value = call_user_func_array($cb, array_merge([$value], $args)); }
+                catch (\Throwable $e) { self::hook_error($hook, $e); }
+            }
         }
         return $value;
+    }
+
+    /** 钩子回调异常落盘（自身绝不抛出） */
+    private static function hook_error(string $hook, \Throwable $e): void {
+        try {
+            $dir = defined('DATA_DIR') ? DATA_DIR : (__DIR__ . '/../data');
+            $line = date('Y-m-d H:i:s') . " [hook:{$hook}] " . $e->getMessage()
+                  . ' @ ' . $e->getFile() . ':' . $e->getLine() . PHP_EOL;
+            @file_put_contents($dir . '/plugin-errors.log', $line, FILE_APPEND | LOCK_EX);
+        } catch (\Throwable $ignore) {}
     }
 
     // ─── Plugin Loading ───
