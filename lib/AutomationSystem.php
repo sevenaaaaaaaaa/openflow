@@ -47,7 +47,13 @@ function automation_trigger(string $trigger, array $context): void {
         if (($flow['trigger'] ?? '') !== $trigger) continue;
         // 触发器匹配（按类型 + 条件）
         if (!automation_match_trigger($flow, $trigger, $context)) continue;
+        if (class_exists('PluginSystem')) {
+            PluginSystem::do_action('ma_flow_triggered', $flow['id'] ?? '', $trigger, $context, $flow);
+        }
         automation_execute_flow($flow, $context);
+        if (class_exists('PluginSystem')) {
+            PluginSystem::do_action('ma_flow_completed', $flow['id'] ?? '', $trigger, $context, $flow);
+        }
     }
 }
 
@@ -230,6 +236,7 @@ function automation_send_email(array $step, array $context, string $flowId): voi
         if ($res && isset($res['contact']['id'])) {
             $mautic->sendEmail((int)$step['mautic_email_id'], $res['contact']['id']);
             automation_log($flowId, "Mautic 邮件已发送给 {$email}");
+            if (class_exists('PluginSystem')) PluginSystem::do_action('ma_email_sent', $email, $subject, $content, $flowId, 'mautic');
             return;
         }
     }
@@ -237,6 +244,7 @@ function automation_send_email(array $step, array $context, string $flowId): voi
     if ($bm) {
         $bm->send($email, $subject, $content);
         automation_log($flowId, "BillionMail 邮件已发送给 {$email}");
+        if (class_exists('PluginSystem')) PluginSystem::do_action('ma_email_sent', $email, $subject, $content, $flowId, 'billionmail');
         return;
     }
     automation_log($flowId, '无可用邮件服务，发送失败', 'error');
