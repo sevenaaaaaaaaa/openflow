@@ -28,11 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $channels = payment_channels();
 $defs = payment_channel_defs();
 
-admin_header('支付设置');
+if (!defined('OF_EMBED')) admin_header('支付设置');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('payment-settings'); ?>
   <div class="main">
+<?php endif; ?>
     <div class="v-head">
       <div><h1>支付设置</h1><p class="v-sub">配置支付渠道。虎皮椒已完整接入；其余渠道已预留配置入口，接入 SDK 后即插即用。</p></div>
       <div class="v-actions"></div>
@@ -81,6 +83,7 @@ admin_header('支付设置');
 
       <button type="submit" class="btn btn-p">保存支付设置</button>
     </form>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>

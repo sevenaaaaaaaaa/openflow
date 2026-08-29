@@ -82,6 +82,49 @@ foreach ($HUBS as $label => [$hubFile, $tabFn, $slug]) {
     check('中心页语法通过', $rc === 0);
 }
 
+echo "\n══ B3：浅 CRUD 归并父页子 tab ══\n";
+/** 子页 => [父页, 子tab key, 301 目标片段] */
+$B3 = [
+    'page-categories.php'  => ['pages-list.php',   'cats', 'tab=pages&sub=cats'],
+    'tags.php'             => ['pages-list.php',   'tags', 'tab=pages&sub=tags'],
+    'payment-settings.php' => ['shop-settings.php','pay',  'shop-settings?sub=pay'],
+    'mail-settings.php'    => ['email.php',        'smtp', 'email?sub=smtp'],
+    'footer-links.php'     => ['site-builder.php', 'foot', 'site-builder?sub=foot'],
+    'storage.php'          => ['health-check.php', 'stor', 'health-check?sub=stor'],
+    'activity.php'         => ['audit-log.php',    'act',  'audit-log?sub=act'],
+];
+check('_subtabs.php 助手存在', is_file("{$root}/admin/_subtabs.php"));
+foreach ($B3 as $child => [$parent, $key, $redir]) {
+    $cs = @file_get_contents("{$root}/admin/{$child}");
+    $ps = @file_get_contents("{$root}/admin/{$parent}");
+    $cslug = basename($child, '.php');
+
+    check("{$child} 有 OF_EMBED 守卫", $cs !== false && strpos($cs, 'OF_EMBED') !== false);
+    check("{$child} 独立访问外壳保留",
+          $cs !== false && strpos($cs, '<div class="admin-layout">') !== false
+          && strpos($cs, 'admin_footer(') !== false);
+    check("{$parent} 装了子 tab", $ps !== false && strpos($ps, 'of_subtab_begin') !== false);
+    check("{$parent} 收录了 {$child}", $ps !== false && strpos($ps, "'{$child}'") !== false);
+    check("{$parent} 有 self tab", $ps !== false && strpos($ps, "'self' =>") !== false);
+    check("{$parent} if/else/endif 配平",
+          $ps !== false && substr_count($ps, "if (\$__sub === 'self'):") === 1
+          && substr_count($ps, 'else: of_subtab_include') === 1);
+    check("旧 URL /xmp/{$cslug} 有 301", strpos($ht, $redir) !== false);
+    check("侧栏已无 /xmp/{$cslug}", strpos($cfg, 'href="/xmp/' . $cslug . '"') === false);
+    foreach ([$child, $parent] as $f) {
+        exec('php -l ' . escapeshellarg("{$root}/admin/{$f}") . ' 2>&1', $o, $rc); $o = [];
+        check("{$f} 语法通过", $rc === 0);
+    }
+}
+
+echo "\n══ 嵌套嵌入：pages-list 既被中心引入，自身又引入子页 ══\n";
+$pl = file_get_contents("{$root}/admin/pages-list.php");
+check('pages-list 同时具备两种角色',
+      strpos($pl, "if (!defined('OF_EMBED'))") !== false && strpos($pl, 'of_subtab_begin') !== false);
+$sub = file_get_contents("{$root}/admin/_subtabs.php");
+check('of_subtab_include 重复 define 前有守卫',
+      strpos($sub, "if (!defined('OF_EMBED')) define('OF_EMBED', 1);") !== false);
+
 echo "\n══ 跨中心：不能有子页被两个中心同时收录 ══\n";
 $claimed = [];
 $dup = [];

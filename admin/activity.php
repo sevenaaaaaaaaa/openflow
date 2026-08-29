@@ -25,11 +25,13 @@ $users = array_unique(array_map(fn($l) => $l['user'], json_read($logFile)));
 $actions = array_unique(array_map(fn($l) => $l['action'], json_read($logFile)));
 $targets = array_unique(array_map(fn($l) => $l['target_type'], json_read($logFile)));
 
-admin_header('操作日志');
+if (!defined('OF_EMBED')) admin_header('操作日志');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('activity'); ?>
   <div class="main">
+<?php endif; ?>
     <h1>操作日志</h1>
     <p class="sub">记录所有内容变更操作 · 最近 500 条</p>
 
@@ -68,6 +70,7 @@ admin_header('操作日志');
       </table>
       <?=pagination_html($pag, 'activity.php?action=' . urlencode($actionFilter) . '&user=' . urlencode($userFilter) . '&target=' . urlencode($targetFilter))?>
     </div>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>
