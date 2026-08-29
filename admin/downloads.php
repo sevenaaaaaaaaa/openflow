@@ -10,7 +10,7 @@ if (isset($_GET['delete'])) {
     $downloads = array_values(array_filter($downloads, fn($d) => $d['id'] !== $_GET['delete']));
     json_write($downloadsFile, $downloads);
     flash('success', '资料已删除');
-    header('Location: /xmp/downloads');
+    header('Location: /xmp/content-hub?tab=downloads');
     exit;
 }
 

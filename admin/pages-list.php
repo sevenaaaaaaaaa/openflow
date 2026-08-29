@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['seo_save'])) {
     ];
     json_write(DATA_DIR . '/seo.json', $seo);
     flash('success', 'SEO 已更新');
-    header('Location: /xmp/pages-list');
+    header('Location: /xmp/content-hub?tab=pages');
     exit;
 }
 
@@ -108,9 +108,9 @@ if ($__sub === 'self'):
         <input type="search" name="q" value="<?=htmlspecialchars($q)?>" placeholder="搜索页面标题 / URL…" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
         <button class="btn btn-s btn-sm">搜索</button>
       </form>
-      <a href="/xmp/pages-list" class="btn btn-s btn-sm <?=$type===''?'on':''?>" style="<?=$type===''?'border-color:var(--accent);color:var(--accent)':''?>">全部 (<?=count($all)?>)</a>
+      <a href="<?=of_hub_url()?>" class="btn btn-s btn-sm <?=$type===''?'on':''?>" style="<?=$type===''?'border-color:var(--accent);color:var(--accent)':''?>">全部 (<?=count($all)?>)</a>
       <?php foreach ($typeCount as $t => $n): ?>
-      <a href="?type=<?=urlencode($t)?>" class="btn btn-s btn-sm <?=$type===$t?'on':''?>" style="<?=$type===$t?'border-color:var(--accent);color:var(--accent)':''?>"><?=htmlspecialchars($t)?> (<?=$n?>)</a>
+      <a href="<?=of_hub_url(['type'=>$t])?>" class="btn btn-s btn-sm <?=$type===$t?'on':''?>" style="<?=$type===$t?'border-color:var(--accent);color:var(--accent)':''?>"><?=htmlspecialchars($t)?> (<?=$n?>)</a>
       <?php endforeach; ?>
     </div>
 

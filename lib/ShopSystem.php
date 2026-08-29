@@ -450,6 +450,16 @@ function shop_refund_order(string $orderId, string $reason = '', float $amount =
         }
     }
 
+    // ── 4b. 购物积分回收（shop_mark_paid 按 1元=10积分 发放，这里等比收回）──
+    // 不收回的话，「下单拿积分 → 申请退款 → 积分留下」就是一个白嫖闭环。
+    if (!empty($order['member_id']) && function_exists('gamification_award')) {
+        $backPoints = (int)round($refund * 10);
+        if ($backPoints > 0) {
+            try { gamification_award($order['member_id'], -$backPoints, 'purchase_refund'); }
+            catch (Exception $e) {}
+        }
+    }
+
     // ── 5. 站内信通知 ──
     if (!empty($order['member_id']) && function_exists('inbox_send')) {
         try {

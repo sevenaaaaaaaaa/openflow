@@ -110,7 +110,7 @@ if (!defined('OF_EMBED')) admin_header('SEO 站长工具');
 
         <div style="margin-top:16px">
           <button type="submit" name="save" class="btn btn-primary">保存配置</button>
-          <a href="?pull=1" class="btn btn-ghost">⚡ 立即拉取数据</a>
+          <a href="<?=of_hub_url(['pull'=>1])?>" class="btn btn-ghost">⚡ 立即拉取数据</a>
         </div>
       </div>
     </form>
