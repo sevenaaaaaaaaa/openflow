@@ -217,8 +217,26 @@ function canvas_render_node(array $n, int $i, array $forms): void {
             echo '<textarea name="node_content[]" rows="3" placeholder="内容 {name} {email}">' . htmlspecialchars($n['content']??'') . '</textarea>';
             break;
         case 'condition':
-            echo '<select name="node_field[]"><option value="email" ' . (($n['field']??'')==='email'?'selected':'') . '>email</option><option value="form_type" ' . (($n['field']??'')==='form_type'?'selected':'') . '>form_type</option><option value="score" ' . (($n['field']??'')==='score'?'selected':'') . '>score</option></select>';
-            echo '<select name="node_op[]"><option value="eq" ' . (($n['op']??'')==='eq'?'selected':'') . '>等于</option><option value="neq" ' . (($n['op']??'')==='neq'?'selected':'') . '>不等于</option><option value="gt" ' . (($n['op']??'')==='gt'?'selected':'') . '>大于</option><option value="lt" ' . (($n['op']??'')==='lt'?'selected':'') . '>小于</option><option value="contains" ' . (($n['op']??'')==='contains'?'selected':'') . '>包含</option><option value="empty" ' . (($n['op']??'')==='empty'?'selected':'') . '>为空</option></select>';
+            // 字段下拉：分组渲染，数据源为 canvas_condition_fields()（加字段只改那一处）
+            $curField = $n['field'] ?? '';
+            echo '<select name="node_field[]">';
+            foreach (canvas_condition_fields() as $group => $fields) {
+                echo '<optgroup label="' . htmlspecialchars($group) . '">';
+                foreach ($fields as $fk => $flabel) {
+                    echo '<option value="' . htmlspecialchars($fk) . '"' . ($curField === $fk ? ' selected' : '') . '>'
+                       . htmlspecialchars($flabel) . '</option>';
+                }
+                echo '</optgroup>';
+            }
+            echo '</select>';
+            $curOp = $n['op'] ?? '';
+            $ops = ['eq'=>'等于','neq'=>'不等于','gt'=>'大于','gte'=>'大于等于','lt'=>'小于','lte'=>'小于等于',
+                    'contains'=>'包含','in'=>'属于（逗号分隔）','empty'=>'为空','not_empty'=>'不为空'];
+            echo '<select name="node_op[]">';
+            foreach ($ops as $ok => $olabel) {
+                echo '<option value="' . $ok . '"' . ($curOp === $ok ? ' selected' : '') . '>' . $olabel . '</option>';
+            }
+            echo '</select>';
             echo '<input type="text" name="node_value[]" value="' . htmlspecialchars($n['value']??'') . '" placeholder="条件值">';
             echo '<div style="display:flex;gap:6px;align-items:center;margin-top:6px;font-size:11px;color:var(--text-3)">条件为真 → 跳第 <input type="number" name="node_true_next[]" value="' . htmlspecialchars(($n['true_next'] ?? '') !== null ? $n['true_next'] : '') . '" placeholder="空=下一步" style="width:52px;padding:4px;border:1px solid var(--border);border-radius:6px"> 步 / 为假 → 跳第 <input type="number" name="node_false_next[]" value="' . htmlspecialchars(($n['false_next'] ?? '') !== null ? $n['false_next'] : '') . '" placeholder="空=不执行" style="width:52px;padding:4px;border:1px solid var(--border);border-radius:6px"> 步（节点从 0 数）</div>';
             break;

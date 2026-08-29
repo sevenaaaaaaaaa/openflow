@@ -70,19 +70,97 @@ function canvas_walk(string $nodeId, array $byId, array $edges, array $context, 
     }
 }
 
-// 条件评估（简化：基于上下文字段）
+/**
+ * 条件节点可选字段清单（画布 UI 的下拉数据源，单一出处）
+ *
+ * 键为存进 node['field'] 的值，值为中文显示名。
+ * crm.* 前缀的字段在评估时实时回查 CRM，而不是读事件上下文。
+ */
+function canvas_condition_fields(): array {
+    return [
+        '事件上下文' => [
+            'email'      => '邮箱',
+            'form_type'  => '表单类型',
+            'score'      => '事件评分',
+            'label'      => '事件标签',
+            'page'       => '页面路径',
+        ],
+        'CRM 线索' => [
+            'crm.stage'           => '线索阶段',
+            'crm.score'           => '线索评分',
+            'crm.owner'           => '负责销售',
+            'crm.value'           => '预计金额',
+            'crm.source'          => '线索来源',
+            'crm.followup_count'  => '跟进次数',
+            'crm.days_since_followup' => '距上次跟进天数',
+            'crm.tags'            => '线索标签',
+            'crm.exists'          => '是否已是线索',
+        ],
+    ];
+}
+
+/**
+ * 解析条件字段的实际值。
+ *
+ * crm.* 走 CRM 实时数据（按 context['email'] 关联），其余读事件上下文。
+ * CRM 不可用或线索不存在时统一返回 ''，让条件走「为空」分支而不是报错。
+ *
+ * @return string|int|float
+ */
+function canvas_resolve_field(string $field, array $context) {
+    if (strpos($field, 'crm.') !== 0) {
+        return $context[$field] ?? '';
+    }
+    $email = trim((string)($context['email'] ?? ''));
+    if ($email === '' || !function_exists('crm_get')) return '';
+
+    $lead = null;
+    try {
+        $data = crm_get();
+        $lead = $data['leads'][mb_strtolower($email)] ?? null;
+    } catch (\Throwable $e) { return ''; }
+
+    $key = substr($field, 4);
+    if ($key === 'exists') return $lead ? '1' : '';
+    if (!$lead) return '';
+
+    switch ($key) {
+        case 'stage':  return (string)($lead['stage'] ?? '');
+        case 'score':  return (int)($lead['score'] ?? 0);
+        case 'owner':  return (string)($lead['owner'] ?? '');
+        case 'value':  return (float)($lead['value'] ?? 0);
+        case 'source': return (string)($lead['source'] ?? '');
+        case 'tags':   return implode(',', (array)($lead['tags'] ?? []));
+        case 'followup_count': return count((array)($lead['follow_ups'] ?? []));
+        case 'days_since_followup':
+            $ups = (array)($lead['follow_ups'] ?? []);
+            if (!$ups) return '';                       // 从未跟进 → 空，走「为空」分支
+            $last = end($ups);
+            $t = strtotime((string)($last['time'] ?? ''));
+            return $t ? (int)floor((time() - $t) / 86400) : '';
+        default: return (string)($lead[$key] ?? '');
+    }
+}
+
+// 条件评估（事件上下文 + CRM 实时字段）
 function canvas_eval_condition(array $node, array $context): bool {
     $field = $node['field'] ?? '';
     $op = $node['op'] ?? 'eq';
     $value = $node['value'] ?? '';
-    $actual = $context[$field] ?? '';
+    $actual = canvas_resolve_field($field, $context);
     switch ($op) {
         case 'eq': return $actual == $value;
         case 'neq': return $actual != $value;
-        case 'gt': return (int)$actual > (int)$value;
-        case 'lt': return (int)$actual < (int)$value;
-        case 'contains': return strpos($actual, $value) !== false;
-        case 'empty': return empty($actual);
+        case 'gt': return (float)$actual > (float)$value;
+        case 'gte': return (float)$actual >= (float)$value;
+        case 'lt': return (float)$actual < (float)$value;
+        case 'lte': return (float)$actual <= (float)$value;
+        case 'contains': return $value !== '' && strpos((string)$actual, (string)$value) !== false;
+        case 'in':
+            $list = array_map('trim', explode(',', (string)$value));
+            return in_array((string)$actual, $list, true);
+        case 'empty': return $actual === '' || $actual === null;
+        case 'not_empty': return !($actual === '' || $actual === null);
         default: return true;
     }
 }
