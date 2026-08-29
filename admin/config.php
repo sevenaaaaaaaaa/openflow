@@ -572,20 +572,53 @@ function get_article(string $id): ?array {
 function save_article(string $id, array $data): bool {
     $all = json_read(ARTICLES_DIR . '/index.json');
     $found = false;
+    $before = null;      // 合并前的旧记录，用于判断是否「刚发布」
+    $after  = null;
     foreach ($all as &$a) {
-        if ($a['id'] === $id) { $a = array_merge($a, $data); $found = true; break; }
+        if ($a['id'] === $id) {
+            $before = $a;
+            $a = array_merge($a, $data);
+            $after = $a;
+            $found = true;
+            break;
+        }
     }
+    unset($a);
     if (!$found) {
         $data['id'] = $id;
         $all[] = $data;
+        $after = $data;
     }
-    return json_write(ARTICLES_DIR . '/index.json', $all);
+    $ok = json_write(ARTICLES_DIR . '/index.json', $all);
+    if (!$ok) return false;
+
+    // ── 内容联动（旁路：失败不影响保存结果）──
+    $wasPublished = ($before['status'] ?? '') === 'published';
+    $isPublished  = ($after['status'] ?? '')  === 'published';
+    $justPublished = $isPublished && !$wasPublished;
+
+    if (class_exists('PluginSystem')) {
+        PluginSystem::do_action('content_updated', 'article', $id, $after, $before);
+        if ($justPublished) PluginSystem::do_action('content_published', 'article', $id, $after);
+    }
+    // 事件总线：此前只有 admin/article-edit.php 一条路径会触发，
+    // 批量导入/API 写入都绕过了；下沉到这里后所有写入路径统一生效。
+    if ($justPublished && function_exists('flow_content_published')) {
+        try { flow_content_published($after); } catch (\Throwable $e) {}
+    }
+    return true;
 }
 
 function delete_article(string $id): bool {
     $all = json_read(ARTICLES_DIR . '/index.json');
+    $removed = null;
+    foreach ($all as $a) { if (($a['id'] ?? '') === $id) { $removed = $a; break; } }
     $all = array_values(array_filter($all, fn($a) => $a['id'] !== $id));
-    return json_write(ARTICLES_DIR . '/index.json', $all);
+    $ok = json_write(ARTICLES_DIR . '/index.json', $all);
+    if ($ok && $removed && class_exists('PluginSystem')) {
+        PluginSystem::do_action('content_deleted', 'article', $id, $removed);
+    }
+    return $ok;
 }
 
 function article_slug_exists(string $slug, ?string $excludeId = null): bool {
