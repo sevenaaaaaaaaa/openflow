@@ -18,11 +18,13 @@ $cats = get_categories('download');
 $catMap = [];
 foreach ($cats as $c) $catMap[$c['key']] = $c['name'];
 
-admin_header('资料下载');
+if (!defined('OF_EMBED')) admin_header('资料下载');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('downloads'); ?>
   <div class="main">
+<?php endif; ?>
     <div class="flex items-center gap-4 mb-4">
       <h1 style="margin-bottom:0">资料下载</h1>
       <a href="download-edit.php" class="btn btn-primary ml-auto">新增资料</a>
@@ -53,6 +55,7 @@ admin_header('资料下载');
       </table>
       <?php endif; ?>
     </div>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>
