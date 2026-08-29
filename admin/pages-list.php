@@ -79,11 +79,13 @@ if ($type) $all = array_values(array_filter($all, fn($p) => $p['type'] === $type
 $typeCount = [];
 foreach ($all as $p) $typeCount[$p['type']] = ($typeCount[$p['type']] ?? 0) + 1;
 
-admin_header('页面列表');
+if (!defined('OF_EMBED')) admin_header('页面列表');
 ?>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('pages-list'); ?>
   <div class="main">
+<?php endif; ?>
     <div class="v-head">
       <div><h1>页面列表</h1><p class="v-sub">统一管理所有页面：基础页（SEO/状态）· 模块化页（区块编辑）· 落地页（聚合编辑）</p></div>
       <div class="v-actions">
@@ -150,6 +152,7 @@ admin_header('页面列表');
         </tbody>
       </table>
     </div>
+<?php if (!defined('OF_EMBED')): ?>
   </div>
 </div>
-<?php admin_footer(); ?>
+<?php admin_footer(); endif; ?>

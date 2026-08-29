@@ -138,7 +138,7 @@ if ($search) $articles = array_values(array_filter($articles, fn($a) => mb_strpo
 if ($catFilter) $articles = array_values(array_filter($articles, fn($a) => ($a['category']??'') === $catFilter));
 if ($statusFilter) $articles = array_values(array_filter($articles, fn($a) => ($a['status']??'') === $statusFilter));
 
-admin_header('文章管理');
+if (!defined('OF_EMBED')) admin_header('文章管理');
 ?>
 <style>
 .inline-edit{padding:4px 6px;border:1px solid transparent;border-radius:4px;cursor:text;transition:all .1s;display:inline-block;min-width:30px}
@@ -153,9 +153,11 @@ td.actions{white-space:nowrap;width:1%}
 .cover-uploader{display:inline-block;position:relative}
 .cover-uploader input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
 </style>
+<?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('articles'); ?>
   <div class="main">
+<?php endif; ?>
     <div class="flex items-center gap-4 mb-4">
       <h1 style="margin-bottom:0">文章管理</h1>
       <div class="flex gap-2 ml-auto">
@@ -525,4 +527,4 @@ function closeExport() {
   document.getElementById('exportTargets').style.display = '';
 }
 </script>
-<?php admin_footer(); ?>
+<?php if (!defined('OF_EMBED')) admin_footer(); ?>
