@@ -1,6 +1,6 @@
 # OpenFlow 插件钩子参考
 
-> 33 个钩子，覆盖 CDP / CRM / 营销自动化 / 内容 / 支付 / 社区 / 系统。
+> 34 个钩子，覆盖 CDP / CRM / 营销自动化 / 内容 / 支付 / 社区 / 系统。
 >
 > **旁路契约**：所有钩子回调的异常都会被 `PluginSystem` 捕获并写入
 > `data/plugin-errors.log`，绝不冒泡到业务代码。插件写坏不会让主流程挂掉。
@@ -31,6 +31,13 @@ PluginSystem::add_filter('cdp_event_received', function ($event) {
 | `crm_deal_won` | action | 阶段变为 `won` | `$email, $lead` |
 | `crm_deal_lost` | action | 阶段变为 `lost` | `$email, $lead` |
 | `crm_followup_added` | action | 添加跟进记录 | `$email, $entry, $lead` |
+| `crm_leads_bulk_imported` | action | 批量导入线索落盘后，整批发一次 | `$stat, $opts` |
+
+批量导入（`crm_bulk_create_leads()` / `crm_leads_from_segment()`）会为**每条新线索**
+照常发 `crm_lead_created`，再额外发一次 `crm_leads_bulk_imported` 汇总。
+`$stat` 形如 `['created'=>10,'updated'=>2,'skipped'=>5,'no_email'=>1,'segment'=>'高价值用户']`。
+批量导入默认**不**逐条触发出站 webhook——那是同步 HTTP，几千条会把请求拖死；
+需要时传 `['fire_webhooks' => true]` 显式打开。
 
 阶段取值见 `crm_stages()`：`new / contacted / qualified / opportunity / won / lost`。
 
@@ -121,6 +128,21 @@ php tests/cdp_ma_hooks_test.php          # 12 项：filter 改写/丢弃/异常�
 php tests/canvas_crm_condition_test.php  # 27 项：画布条件节点读 CRM
 php tests/refund_test.php                # 36 项：退款金额/积分对称回滚
 php tests/hub_merge_test.php             # 167 项：后台合并契约
+php tests/bulk_leads_test.php            # 42 项：分群→CRM 批量建线索
+php tests/plugin_sdk_test.php            # 52 项：PluginSDK + 三个官方示例插件
 php tests/render_smoke_test.php          # 24 个页面：中心页与各 tab 真实渲染
 php tests/qa_full.php                    # 全仓质检（跑上面全部 + 结构性检查）
+php tests/events_index_bench.php         # events 索引实测（不进必跑集，见 PERFORMANCE.md）
+```
+
+## 插件开发
+
+新插件建议用 `lib/PluginSDK.php`，它把配置读写、日志、侧栏入口、出站 HTTP
+和配置页表单都收成了一个对象。三个官方示例分别示范 filter 改写、
+多动作监听、以及唯一能丢数据的 `cdp_event_received` 该怎么用得安全：
+
+```
+plugins/seo-enhancer/     filter 补全 SEO 字段 + action 推送收录
+plugins/deal-notifier/    成交/支付/退款/批量导入播报到群
+plugins/event-firewall/   埋点入库前拦爬虫与噪音（fail-open 示范）
 ```
