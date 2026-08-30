@@ -47,6 +47,23 @@ if ($action === 'notify') {
 }
 
 header('Content-Type: application/json; charset=utf-8');
+
+// ─── 收款链接支付（公开，凭 token，无需登录）───
+// 客户不一定是注册会员，所以这条必须在下面的登录闸之前。
+if ($action === 'pay_quote') {
+    require_once __DIR__ . '/../lib/QuoteSystem.php';
+    $order = quote_get_by_token(trim($_POST['token'] ?? ($_GET['token'] ?? '')));
+    if (!$order)                                   { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'收款单不存在']); exit; }
+    if (($order['status'] ?? '') === 'paid')       { echo json_encode(['ok'=>false,'error'=>'该收款单已支付']); exit; }
+    if (($order['status'] ?? '') === 'refunded')   { echo json_encode(['ok'=>false,'error'=>'该收款单已退款']); exit; }
+    if (quote_is_expired($order))                  { echo json_encode(['ok'=>false,'error'=>'该收款链接已过期']); exit; }
+    $channel = trim($_POST['channel'] ?? 'xfpay');
+    $pay = payment_channel_create($channel, $order);
+    if (empty($pay['ok'])) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>$pay['error'] ?? '发起支付失败']); exit; }
+    echo json_encode(['ok'=>true, 'order'=>['id'=>$order['id'],'amount'=>$order['amount'],'title'=>$order['goods_title'] ?? '收款'], 'payment'=>$pay]);
+    exit;
+}
+
 $member = member_current();
 if (!$member) { http_response_code(401); echo json_encode(['ok'=>false,'error'=>'请先登录']); exit; }
 

@@ -341,6 +341,22 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
         }
     } catch (Exception $e) {}
 
+    // 收款链接（quote）付款成功 → 把对应 CRM 线索推进为「已成交」，金额进管道。
+    // crm_update_lead 内部会发 crm_deal_won + flow 事件，整条销售链随之联动。
+    try {
+        if (($order['goods_type'] ?? '') === 'quote' && !empty($order['crm_email'])) {
+            require_once __DIR__ . '/CrmSystem.php';
+            if (function_exists('crm_update_lead')) {
+                crm_ensure_lead((string)$order['crm_email'], (string)($order['customer'] ?? ''));
+                crm_update_lead((string)$order['crm_email'], [
+                    'stage' => 'won',
+                    'value' => (float)($order['amount'] ?? 0),
+                ]);
+                crm_add_followup((string)$order['crm_email'], '通过收款链接成交：¥' . number_format((float)($order['amount'] ?? 0), 2) . '（订单 ' . $orderId . '）', 'system');
+            }
+        }
+    } catch (\Throwable $e) {}
+
     return true;
 }
 
