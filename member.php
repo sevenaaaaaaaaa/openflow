@@ -774,6 +774,17 @@ function include_member_developer($member): void {
         </div>
         <?php endforeach; ?>
       </div>
+      <!-- 描述即造（BACKLOG T1-15）：把开发降到"描述"，三道护栏后存草稿 -->
+      <div style="padding:16px;border-radius:14px;background:var(--bg);border:1px solid var(--border);margin-bottom:18px">
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px">🛠 描述即造 —— 不用会写代码</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">用一句话说你想要什么工具，AI 帮你生成。生成物会先过安全审查，通过后存为草稿，由你确认再发布。</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="bsDesc" placeholder="例如：帮我把文章标题改写得更吸引点击" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid var(--border);border-radius:8px">
+          <button type="button" class="btn" id="bsGo" style="background:var(--accent);color:var(--on-accent);border:0;padding:9px 18px;border-radius:8px;cursor:pointer">生成</button>
+        </div>
+        <div id="bsOut" style="margin-top:10px;font-size:13px"></div>
+      </div>
+
       <?php if ($bp): ?>
       <div style="padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);margin-bottom:20px">
         <div style="font-size:13px;margin-bottom:6px">📦 我的贡献：
@@ -958,6 +969,30 @@ function include_member_developer($member): void {
       <?php endif; ?>
     </div>
     <script>
+    // 描述即造（T1-15）：生成 → 显示审查结论 → 通过才允许存草稿
+    (function () {
+      var go = document.getElementById('bsGo');
+      if (!go) return;
+      go.addEventListener('click', function () {
+        var d = (document.getElementById('bsDesc') || {}).value || '';
+        var out = document.getElementById('bsOut');
+        if (d.trim().length < 5) { out.textContent = '描述太短，说清你想要什么。'; return; }
+        out.textContent = '生成中…';
+        var fd = new FormData(); fd.append('description', d); fd.append('save', '1');
+        fetch('/api/build-skill.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            if (!j.ok) { out.innerHTML = '<span style="color:#dc2626">✋ ' + (j.error || '生成失败') + '</span>'; return; }
+            var s = j.skill || {};
+            var perms = (s.permissions || []).length ? ('　需要权限：' + s.permissions.join('、')) : '';
+            var tag = j.verdict === 'safe' ? '<span style="color:#16a34a">✅ 通过安全审查</span>'
+                                           : '<span style="color:#d97706">⚠️ 需人工确认</span>';
+            out.innerHTML = tag + '　已存为草稿：<strong>' + (s.title || '') + '</strong>' + perms
+                          + '<div style="color:var(--muted);font-size:12px;margin-top:4px">' + (s.description || '') + '</div>';
+          })
+          .catch(function () { out.textContent = '网络错误，稍后再试。'; });
+      });
+    })();
     function applyDev(e) {
       e.preventDefault();
       var f = e.target, msg = document.getElementById('applyDevMsg');
