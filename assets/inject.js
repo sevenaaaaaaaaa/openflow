@@ -266,6 +266,94 @@
     } catch (e) {}
   }
 
+  // ═══ 统一站内营销投放（多条、可定向）═══
+  function promoHit(id, kind) {
+    try {
+      var b = new URLSearchParams({ action: 'hit', id: id, kind: kind });
+      if (navigator.sendBeacon) navigator.sendBeacon('/api/promo.php', b);
+      else fetch('/api/promo.php', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: b, keepalive: true });
+    } catch (e) {}
+  }
+  // 每条投放按频次判断是否还能展示（session/daily/once/always）
+  function promoAllowed(p) {
+    var key = 'ofpromo_' + p.id;
+    try {
+      if (p.frequency === 'always') return true;
+      if (p.frequency === 'session') { if (sessionStorage.getItem(key)) return false; sessionStorage.setItem(key, '1'); return true; }
+      if (p.frequency === 'once') { if (localStorage.getItem(key)) return false; localStorage.setItem(key, '1'); return true; }
+      if (p.frequency === 'daily') { var d = new Date().toDateString(); if (localStorage.getItem(key) === d) return false; localStorage.setItem(key, d); return true; }
+    } catch (e) { return true; }
+    return true;
+  }
+  function renderPromoBar(p) {
+    if (!promoAllowed(p)) return;
+    var bar = document.createElement('div');
+    bar.setAttribute('data-promo', p.id);
+    var atBottom = p.position === 'bottom';
+    bar.style.cssText = 'position:fixed;' + (atBottom ? 'bottom:0' : 'top:0') + ';left:0;right:0;z-index:99998;padding:9px 42px 9px 16px;text-align:center;font-size:13.5px;font-weight:600;background:' + (p.color || '#1e1e1e') + ';color:#fff';
+    var a = document.createElement('a');
+    a.href = p.cta_link || '#'; a.style.cssText = 'color:inherit;text-decoration:none';
+    a.textContent = (p.title || '') + (p.cta_text ? '  ' + p.cta_text + ' →' : '');
+    a.addEventListener('click', function(){ promoHit(p.id, 'click'); });
+    bar.appendChild(a);
+    if (p.dismissible) {
+      var x = document.createElement('span');
+      x.textContent = '✕'; x.style.cssText = 'position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:.7';
+      x.addEventListener('click', function(e){ e.preventDefault(); bar.remove(); promoHit(p.id, 'dismiss'); });
+      bar.appendChild(x);
+    }
+    document.body.appendChild(bar);
+    promoHit(p.id, 'impression');
+  }
+  function showPromoPopup(p) {
+    if (!promoAllowed(p)) return;
+    var ov = document.createElement('div');
+    ov.setAttribute('data-promo', p.id);
+    var corner = p.position === 'corner';
+    ov.style.cssText = corner
+      ? 'position:fixed;right:20px;bottom:20px;z-index:99999;max-width:340px'
+      : 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:16px;padding:24px;width:' + (corner ? '100%' : '90%') + ';max-width:460px;position:relative;color:#1e1e1e;box-shadow:0 20px 60px rgba(0,0,0,.25)';
+    var close = document.createElement('button');
+    close.textContent = '✕'; close.style.cssText = 'position:absolute;right:12px;top:10px;border:none;background:none;font-size:18px;cursor:pointer;opacity:.6';
+    close.addEventListener('click', function(){ ov.remove(); promoHit(p.id, 'dismiss'); });
+    box.appendChild(close);
+    if (p.image) box.insertAdjacentHTML('beforeend', '<img src="' + esc(p.image) + '" style="width:100%;border-radius:12px;margin-bottom:12px">');
+    if (p.title) box.insertAdjacentHTML('beforeend', '<h3 style="font-size:19px;font-weight:800;margin-bottom:8px">' + esc(p.title) + '</h3>');
+    if (p.body) box.insertAdjacentHTML('beforeend', '<div style="font-size:14px;line-height:1.7;color:#444">' + esc(p.body).replace(/\n/g,'<br>') + '</div>');
+    if (p.cta_text && p.cta_link) {
+      var w = document.createElement('div'); w.style.cssText = 'text-align:center;margin-top:16px';
+      var a = document.createElement('a');
+      a.href = p.cta_link; a.textContent = p.cta_text;
+      a.style.cssText = 'display:inline-block;background:#2563eb;color:#fff;padding:11px 28px;border-radius:10px;text-decoration:none;font-weight:600';
+      a.addEventListener('click', function(){ promoHit(p.id, 'click'); });
+      w.appendChild(a); box.appendChild(w);
+    }
+    ov.appendChild(box);
+    if (!corner) ov.addEventListener('click', function(e){ if (e.target === ov) { ov.remove(); promoHit(p.id, 'dismiss'); } });
+    document.body.appendChild(ov);
+    promoHit(p.id, 'impression');
+  }
+  function loadPromos() {
+    try {
+      var q = new URLSearchParams({ path: location.pathname, type: (document.body.getAttribute('data-page-type') || ''), utm: (location.search.match(/utm_source=([^&]+)/) ? decodeURIComponent(location.search.match(/utm_source=([^&]+)/)[1]) : '') });
+      fetch('/api/promo.php?' + q.toString(), { cache: 'no-store' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (!d || !d.ok) return;
+          (d.bars || []).forEach(renderPromoBar);
+          (d.popups || []).forEach(function(p){
+            var trg = p.trigger || 'immediate';
+            if (trg === 'immediate') showPromoPopup(p);
+            else if (trg === 'delay') setTimeout(function(){ showPromoPopup(p); }, Math.max(0, (p.trigger_delay || 5) * 1000));
+            else if (trg === 'scroll') { var f = false; window.addEventListener('scroll', function(){ if (f) return; if (window.innerHeight + window.scrollY > document.body.scrollHeight * ((p.scroll_pct || 50) / 100)) { f = true; showPromoPopup(p); } }, { passive: true }); }
+            else if (trg === 'exit') { var fired = false; document.addEventListener('mouseleave', function(e){ if (!fired && e.clientY < 10) { fired = true; showPromoPopup(p); } }); }
+          });
+        }).catch(function(){});
+    } catch (e) {}
+  }
+
   // ═══ 页面 SEO 注入（完整：关键词/Canonical/OG/结构化数据/favicon）═══
   function loadPageSeo() {
     var pageMap = {
@@ -450,6 +538,7 @@
         .catch(function () {});
     } catch (e) {}
     loadConversion();
+    loadPromos();
     loadPageSeo();
     loadSiteStructure();
   }
