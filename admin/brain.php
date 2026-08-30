@@ -14,6 +14,7 @@ require_once __DIR__ . '/../lib/GrowthAction.php';
 require_once __DIR__ . '/../lib/GrowthBrain.php';
 require_once __DIR__ . '/../lib/SalesPlaybook.php';
 require_once __DIR__ . '/../lib/GrowthMemory.php';
+require_once __DIR__ . '/../lib/AutonomyGuard.php';
 require_login();
 require_perm('brain');
 
@@ -46,6 +47,13 @@ if ($act === 'adopt') {
         'goal_metric'   => $_POST['goal_metric'] ?? '',
     ]);
     header('Location: /xmp/brain?adopted=1#inbox'); exit;
+}
+if ($act === 'save_autonomy') {
+    csrf_verify();
+    require_once __DIR__ . '/../lib/AutonomyGuard.php';
+    autonomy_save($_POST);
+    audit('更新自治级别 ' . ($_POST['level'] ?? ''), 'settings');
+    header('Location: /xmp/brain?autonomy=1'); exit;
 }
 if ($act === 'complete_action') { csrf_verify(); growth_action_complete((string)($_POST['id'] ?? '')); header('Location: /xmp/brain?done=1#inbox'); exit; }
 if ($act === 'dismiss_action')  { csrf_verify(); growth_action_dismiss((string)($_POST['id'] ?? '')); header('Location: /xmp/brain#inbox'); exit; }
@@ -160,6 +168,31 @@ admin_header('增长大脑');
         <?php endforeach; ?>
       </div>
     <?php endif; ?>
+  </div>
+
+  <!-- 渐进自治护栏（BACKLOG T2-4）：分级放权，高风险永远留人 -->
+  <?php $au = autonomy_settings(); $auUsage = autonomy_usage(); $loop = autonomy_loop_report($progress, $auUsage); ?>
+  <div class="card" style="padding:16px;margin:16px 0">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+      <div>
+        <strong>🎚 自治级别</strong>
+        <span style="font-size:12px;color:var(--faint)">今日自动 <?=$auUsage['actions']?> 次 · 花费 ¥<?=number_format($auUsage['spend'],2)?></span>
+      </div>
+      <span style="font-size:12px;color:var(--faint)">发钱 / 群发 / 改价等高风险动作，任何级别都必须你确认</span>
+    </div>
+    <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <?= csrf_field() ?><input type="hidden" name="action" value="save_autonomy">
+      <select name="level" style="min-width:230px">
+        <?php foreach (autonomy_levels() as $lv => $lb): ?>
+        <option value="<?=$lv?>" <?=$au['level']===$lv?'selected':''?>><?=htmlspecialchars($lb)?></option>
+        <?php endforeach; ?>
+      </select>
+      <label style="font-size:12px;color:var(--faint)">日预算 ¥<input name="daily_budget" type="number" min="0" step="1" value="<?=(int)$au['daily_budget']?>" style="width:80px"></label>
+      <label style="font-size:12px;color:var(--faint)">日动作上限 <input name="daily_action_cap" type="number" min="0" step="1" value="<?=(int)$au['daily_action_cap']?>" style="width:70px"></label>
+      <label style="font-size:12px;color:var(--faint)">静默 <input name="quiet_days" type="number" min="0" step="1" value="<?=(int)$au['quiet_days']?>" style="width:60px"> 天</label>
+      <button class="btn btn-sm">保存</button>
+    </form>
+    <div style="font-size:12.5px;color:var(--text-soft,#475569);margin-top:8px">💡 <?=htmlspecialchars($loop['advice'] ?? '')?></div>
   </div>
 
   <!-- 采纳箱：已采纳待处理的动作（判断→行动的闭环）-->
