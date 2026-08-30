@@ -174,6 +174,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Throwable $e) {}
         }
 
+        // 内部知识回流（AUDIT-07 P1-4）：发布 → 站内知识库（喂站点 Agent / MCP）；
+        // 草稿/下架 → 从知识库撤下。幂等、旁路，失败不影响文章保存。
+        try {
+            require_once __DIR__ . '/../lib/KnowledgeSystem.php';
+            knowledge_ingest_article($article);
+        } catch (Throwable $e) {}
+
         // 审核命中：记录待审核 + 通知管理员/市场总监
         if ($needReview) {
             $review = review_apply('article', $article['id'], $reviewResult, [
