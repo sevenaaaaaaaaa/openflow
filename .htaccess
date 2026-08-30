@@ -112,6 +112,7 @@ RewriteRule ^search$ search.php [L,QSA]
 RewriteRule ^thank-you/?$ thank-you.php [L,QSA]
 RewriteRule ^activate/?$ activate.php [L,QSA]
 RewriteRule ^shop/?$ shop.php [L,QSA]
+RewriteRule ^pay/?$ pay.php [L,QSA]
 
 # Landing 聚合页（单段 slug）
 RewriteRule ^([a-z0-9][a-z0-9-]*)/?$ landing.php?slug=$1 [L,QSA]
