@@ -30,7 +30,7 @@ $related = array_values(array_filter($sites, fn($s) => $s['id'] !== $siteId && (
 <title><?=htmlspecialchars($site['name'])?>  | <?=site_config_get("site_name")?> 增长导航</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" defer></script>
+<script src="/assets/inject.js?v=20260830a" defer></script>
 <style>
   body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
 </style>

@@ -22,7 +22,7 @@ foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>商城 | <?=site_config_get('site_name')?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" defer></script>
+<script src="/assets/inject.js?v=20260830a" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .pcard{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;transition:.2s}
