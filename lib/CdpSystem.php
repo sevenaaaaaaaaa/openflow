@@ -196,41 +196,44 @@ class CdpSystem {
 
     // ─── 用户画像 ──────────────────────────────────
 
+    // 存储：画像已迁到 SQLite 表 cdp_profiles（一画像一行 + member_id 索引），
+    // 读写按行，updateProfile 不再整存整取。历史 profiles.json 首次访问一次性导入
+    // （保留原文件作回滚备份）。落库细节见 lib/CdpProfileStore.php。
+
     /**
-     * 获取用户画像
+     * 获取用户画像（按行读）
      */
     public static function getProfile(string $visitorId): ?array {
-        $profiles = self::allProfiles();
-        return $profiles[$visitorId] ?? null;
+        require_once __DIR__ . '/CdpProfileStore.php';
+        return cdp_profile_get($visitorId);
     }
 
     /**
-     * 获取所有画像
+     * 获取所有画像（{visitor_id => profile}，与原 JSON 同形）
      */
     public static function allProfiles(): array {
-        return json_read(self::$profilesFile);
+        require_once __DIR__ . '/CdpProfileStore.php';
+        return cdp_profile_all();
     }
 
     /**
-     * 保存全量画像（供身份解析合并后回写）
+     * 保存全量画像（供身份解析合并后回写）——表精确等于给定集合。
      */
     public static function saveProfiles(array $profiles): void {
-        json_write(self::$profilesFile, $profiles);
+        require_once __DIR__ . '/CdpProfileStore.php';
+        cdp_profile_save_all($profiles);
     }
 
     /**
-     * 更新用户画像
+     * 更新用户画像（读一条 → 改 → 写一条，无写放大）
      */
     private static function updateProfile(string $visitorId, string $memberId, string $event, array $data): void {
-        $profiles = self::allProfiles();
+        require_once __DIR__ . '/CdpProfileStore.php';
+        $profile = cdp_profile_get($visitorId) ?? self::blankProfile($visitorId, $memberId);
+        if (!isset($profile['properties']) || !is_array($profile['properties'])) $profile['properties'] = [];
 
-        if (!isset($profiles[$visitorId])) {
-            $profiles[$visitorId] = self::blankProfile($visitorId, $memberId);
-        }
-
-        $profile = &$profiles[$visitorId];
         $profile['last_seen'] = date('Y-m-d H:i:s');
-        $profile['events_count']++;
+        $profile['events_count'] = (int)($profile['events_count'] ?? 0) + 1;
 
         if ($memberId && empty($profile['member_id'])) {
             $profile['member_id'] = $memberId;
@@ -251,7 +254,7 @@ class CdpSystem {
         // 增量分群评估（进出群触发 MA）
         self::evaluateUserSegments($profile);
 
-        json_write(self::$profilesFile, $profiles);
+        cdp_profile_put($visitorId, $profile);
     }
 
     // 空白画像（8 层结构）

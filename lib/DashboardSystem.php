@@ -285,7 +285,8 @@ function dash_preferences(): array {
     $out = ['devices'=>[], 'languages'=>[], 'content'=>[]];
     try {
         // 设备/语言：从 CDP 画像 properties 聚合
-        $profiles = json_read(DATA_DIR . '/cdp/profiles.json');
+        require_once __DIR__ . '/CdpProfileStore.php';
+        $profiles = cdp_profile_all();
         $osCount = []; $langCount = []; $contentCount = [];
         $contentMap = ['academy'=>'学院', 'docs'=>'文档', 'courses'=>'课程', 'product'=>'产品', 'capability'=>'能力', 'blog'=>'博客', 'tools'=>'工具', 'community'=>'社区'];
         foreach ((array)$profiles as $p) {

@@ -449,7 +449,8 @@ function crm_rows_from_profiles(array $profiles): array {
  * @return array crm_bulk_create_leads() 的统计，外加 'segment' 与 'matched'
  */
 function crm_leads_from_segment(string $segmentId, array $opts = []): array {
-    $profiles = json_read(DATA_DIR . '/cdp/profiles.json');
+    require_once __DIR__ . '/CdpProfileStore.php';
+    $profiles = cdp_profile_all();
     if (!is_array($profiles)) $profiles = [];
     $segment = null; $matched = [];
 
