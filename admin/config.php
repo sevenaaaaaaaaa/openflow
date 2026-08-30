@@ -133,6 +133,7 @@ require_once __DIR__ . '/review-lib.php';
 // ─── 框架库（纯类 + 全局函数型，全部加载以保证函数/类可用） ───
 // 说明：函数型库提供全局函数，无法走 autoload，必须显式 require。opcache 下函数定义开销极小。
 require_once __DIR__ . '/../lib/PluginSystem.php';
+require_once __DIR__ . '/../lib/AuditLog.php';   // 审计：全后台自动留痕依赖它
 require_once __DIR__ . '/../lib/CommandPalette.php';
 require_once __DIR__ . '/../lib/BookmarkSystem.php';
 require_once __DIR__ . '/../lib/FollowSystem.php';
@@ -303,6 +304,55 @@ function require_login(): void {
     // 整类「某个 POST 处理器忘了校验」的漏洞就结构性消失了，而不是逐页去补。
     // 公开页 / API 不调用 require_login()，所以不受影响（它们有各自的鉴权）。
     csrf_guard_auto();
+    // 同一个闸口顺带把「谁在什么时候改了什么」记下来——审计从此是结构性覆盖，
+    // 而不是指望每个处理器记得手写。具体处理器仍可再补更详细的 audit()。
+    audit_auto();
+}
+
+/**
+ * 统一审计入口：包一层 try/catch，记日志绝不能反过来搞挂业务。
+ * 用它而不是直接 AuditLog::log()，这样即使审计类不在也安全降级。
+ */
+function audit(string $action, string $category = 'admin', array $details = []): void {
+    try {
+        if (class_exists('AuditLog')) AuditLog::log($action, $category, $details);
+    } catch (\Throwable $e) { /* 审计失败静默 */ }
+}
+
+/**
+ * 对每个「改状态」的后台请求自动留痕（在 CSRF 校验通过之后）。
+ * 只记路径、方法、脱敏后的参数键值——密码/token/卡号等敏感字段一律抹掉。
+ */
+function audit_auto(): void {
+    if (defined('OF_NO_AUTO_AUDIT')) return;
+    $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    $isWrite = in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true);
+    $destructiveGet = '';
+    if (!$isWrite) {
+        foreach (['delete','del','remove','uninstall','toggle','purge','clear','reset','drop','destroy','revoke'] as $k) {
+            if (isset($_GET[$k]) && $_GET[$k] !== '') { $destructiveGet = $k; break; }
+        }
+    }
+    if (!$isWrite && $destructiveGet === '') return;
+
+    // 脱敏：抹掉敏感键，长值截断
+    $redact = static function (array $src): array {
+        $out = [];
+        foreach ($src as $k => $v) {
+            if (preg_match('/pass|pwd|token|secret|csrf|cvv|card|api[_-]?key|private/i', (string)$k)) {
+                $out[$k] = '***'; continue;
+            }
+            if (is_array($v)) { $out[$k] = '[array]'; continue; }
+            $s = (string)$v;
+            $out[$k] = mb_strlen($s) > 120 ? mb_substr($s, 0, 120) . '…' : $s;
+        }
+        return $out;
+    };
+    $params = $redact($method === 'GET' ? $_GET : $_POST);
+    // 从路径推断模块名，作为分类
+    $page = basename(strtok((string)($_SERVER['REQUEST_URI'] ?? ''), '?'), '.php') ?: 'admin';
+    $verb = $destructiveGet !== '' ? $destructiveGet : strtolower($method);
+    audit("{$verb} {$page}", 'admin', ['params' => $params]);
 }
 
 /**
