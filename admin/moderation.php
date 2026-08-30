@@ -13,6 +13,7 @@ $message = '';
 
 // 审核队列操作
 if (isset($_POST['queue_action'])) {
+    csrf_verify();
     $idx = (int)($_POST['idx'] ?? -1);
     $targetType = $_POST['target_type'] ?? '';
     $targetId = $_POST['target_id'] ?? '';
@@ -47,12 +48,14 @@ if (isset($_POST['queue_action'])) {
 }
 // 一键扫描
 if (isset($_POST['scan'])) {
+    csrf_verify();
     $result = mod_scan_all();
     $message = "扫描完成：{$result['scanned']} 条 · 拦截 {$result['blocked']} · 标记 {$result['flagged']}";
     $queue = mod_queue();
 }
 // AI 审核队列
 if (isset($_POST['ai_audit'])) {
+    csrf_verify();
     $n = 0;
     foreach ($queue as $i => $item) {
         if ($n >= 10) break;
@@ -80,6 +83,7 @@ if (isset($_POST['ai_audit'])) {
 }
 // 保存规则
 if (isset($_POST['save_rules'])) {
+    csrf_verify();
     $rules['banned_words'] = array_filter(array_map('trim', explode("\n", $_POST['banned_words'] ?? '')));
     $rules['sensitive_words'] = array_filter(array_map('trim', explode("\n", $_POST['sensitive_words'] ?? '')));
     $rules['spam_chars'] = array_filter(array_map('trim', explode("\n", $_POST['spam_chars'] ?? '')));

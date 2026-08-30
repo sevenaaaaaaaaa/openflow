@@ -15,6 +15,7 @@ $atRisk = analytics_at_risk();
 // 发送挽回邮件
 $winbackMsg = '';
 if (isset($_POST['winback'])) {
+    csrf_verify();
     $res = analytics_send_winback($_POST['winback']);
     $winbackMsg = $res['ok'] ? '✅ 挽回邮件已发送' : '❌ ' . ($res['error'] ?? '发送失败');
 }
