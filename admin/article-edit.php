@@ -188,6 +188,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             search_index_rebuild();
         } catch (Throwable $e) {}
 
+        // 保存完成即释放编辑锁（BACKLOG T2-2）
+        try {
+            require_once __DIR__ . '/../lib/EditLock.php';
+            editlock_release('article:' . $article['id'], (string)($_SESSION['admin_user'] ?? 'admin'));
+        } catch (Throwable $e) {}
+
         // 审核命中：记录待审核 + 通知管理员/市场总监
         if ($needReview) {
             $review = review_apply('article', $article['id'], $reviewResult, [
@@ -227,8 +233,25 @@ $files = glob(UPLOAD_DIR . '/articles/*');
 $files = array_filter($files, 'is_file');
 usort($files, fn($a, $b) => filemtime($b) - filemtime($a));
 
+// 轻量编辑锁（BACKLOG T2-2）：防两处同时编辑互相覆盖。仅提示，不阻断保存。
+$lockWarn = null;
+if (!$isNew && !empty($article['id'])) {
+    try {
+        require_once __DIR__ . '/../lib/EditLock.php';
+        $me = (string)($_SESSION['admin_user'] ?? 'admin');
+        $lr = editlock_acquire('article:' . $article['id'], $me, $me);
+        if (empty($lr['ok'])) $lockWarn = $lr;
+    } catch (Throwable $e) {}
+}
+
 admin_header($isNew ? '写新文章' : '编辑文章');
 ?>
+<?php if ($lockWarn): ?>
+<div style="max-width:1100px;margin:0 auto 12px;padding:10px 14px;border-radius:10px;background:#fef3c7;color:#92400e;font-size:13px">
+  ⚠️ <strong><?=htmlspecialchars($lockWarn['holder'] ?? '另一个人')?></strong> 正在编辑这篇（约 <?=ceil(((int)($lockWarn['remaining'] ?? 0))/60)?> 分钟内）。
+  你仍可编辑，但保存会覆盖对方的改动——建议先确认。
+</div>
+<?php endif; ?>
 <style>
 .editor-toolbar{display:flex;gap:6px;padding:8px 12px;background:var(--surface-2);border-radius:8px 8px 0 0;border:1px solid var(--border);border-bottom:0;flex-wrap:wrap}
 .editor-toolbar button{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:13px;font-weight:500;cursor:pointer;transition:all .1s;color:var(--text)}
