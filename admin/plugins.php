@@ -10,8 +10,9 @@ $message = '';
 $registeredPlugins = PluginSystem::get_plugins();
 $registry = json_read(DATA_DIR . '/plugins.json');
 
-// Install
+// Install —— 安装即执行第三方代码，必须校验 CSRF
 if (isset($_POST['install'])) {
+    csrf_verify();
     $source = trim($_POST['source'] ?? '');
     if ($source) {
         $result = PluginSystem::install_plugin($source);
@@ -19,8 +20,9 @@ if (isset($_POST['install'])) {
     }
 }
 
-// Uninstall
+// Uninstall —— 原为裸 GET，一个 <img src> 就能触发卸载，强制校验 token
 if (isset($_GET['uninstall'])) {
+    csrf_verify();
     if (PluginSystem::uninstall_plugin($_GET['uninstall'])) {
         $message = '插件已卸载';
     }
@@ -28,8 +30,9 @@ if (isset($_GET['uninstall'])) {
     exit;
 }
 
-// Toggle
+// Toggle —— 同上，启用/禁用插件是敏感操作，必须带 token
 if (isset($_GET['toggle'])) {
+    csrf_verify();
     $enabled = !($registry['enabled'][$_GET['toggle']] ?? false);
     PluginSystem::toggle_plugin($_GET['toggle'], $enabled);
     $message = $enabled ? '插件已启用' : '插件已禁用';
@@ -106,8 +109,8 @@ admin_header('插件管理');
             <td class="text-sm text-muted"><?=htmlspecialchars($p['installed_at'] ?? '')?></td>
             <td><span class="badge <?=($registry['enabled'][$pid] ?? false)?'badge-green':'badge-gray'?>"><?=($registry['enabled'][$pid] ?? false)?'已启用':'已禁用'?></span></td>
             <td>
-              <a href="?toggle=<?=urlencode($pid)?>" class="btn btn-ghost btn-sm"><?=($registry['enabled'][$pid] ?? false)?'禁用':'启用'?></a>
-              <a href="?uninstall=<?=urlencode($pid)?>" class="btn btn-danger btn-sm" onclick="return confirm('确认卸载?')">卸载</a>
+              <a href="?toggle=<?=urlencode($pid)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-ghost btn-sm"><?=($registry['enabled'][$pid] ?? false)?'禁用':'启用'?></a>
+              <a href="?uninstall=<?=urlencode($pid)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-danger btn-sm" onclick="return confirm('确认卸载?')">卸载</a>
             </td>
           </tr>
           <?php endforeach; ?>
