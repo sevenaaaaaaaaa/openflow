@@ -50,7 +50,7 @@ foreach ((array)$landingPages as $p) {
         'type' => '落地页',
         'template' => 'landing',
         'status' => $p['status'] ?? 'published',
-        'desc' => '聚合：' . ($p['aggregate_tags'] ?? '') . ' · 布局 ' . ($p['layout'] ?? ''),
+        'desc' => '聚合：' . (is_array($p['aggregate_tags'] ?? null) ? implode(', ', $p['aggregate_tags']) : ($p['aggregate_tags'] ?? '')) . ' · 布局 ' . ($p['layout'] ?? ''),
         'edit' => 'landing-pages.php?edit=' . urlencode($p['id'] ?? ''),
         'preview' => '/lp/' . ($p['slug'] ?? ''),
     ];
