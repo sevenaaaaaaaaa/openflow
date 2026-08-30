@@ -186,19 +186,19 @@ class Personalizer {
     public static function personalizedCta(array $pref): array {
         $conversion = json_read(DATA_DIR . '/conversion.json');
         $inlines = $conversion['inline_cta'] ?? [];
-        // 高价值/会员用户 → 高级转化
+        // 规则先定 base（含 action 机制）——AI 只改写文案
         if (($pref['total_spent'] ?? 0) >= 1000 || ($pref['member_level'] ?? '') === 'vip') {
-            return ['title' => '解锁高级内容', 'desc' => '成为会员，获得专属深度内容', 'action' => 'upgrade'];
+            $base = ['title' => '解锁高级内容', 'desc' => '成为会员，获得专属深度内容', 'action' => 'upgrade'];
+        } elseif (($pref['tags']['已购'] ?? 0) > 0) {
+            $base = ['title' => '继续学习', 'desc' => '查看你的课程进度', 'action' => 'continue'];
+        } elseif (!empty($inlines['enabled'])) {
+            $base = ['title' => $inlines['default_title'] ?? '预约增长诊断', 'desc' => $inlines['default_description'] ?? '', 'action' => 'form'];
+        } else {
+            $base = ['title' => '预约增长诊断', 'desc' => '30 分钟了解你的增长机会', 'action' => 'form'];
         }
-        // 有消费意向
-        if (($pref['tags']['已购'] ?? 0) > 0) {
-            return ['title' => '继续学习', 'desc' => '查看你的课程进度', 'action' => 'continue'];
-        }
-        // 默认 CTA
-        if (!empty($inlines['enabled'])) {
-            return ['title' => $inlines['default_title'] ?? '预约增长诊断', 'desc' => $inlines['default_description'] ?? '', 'action' => 'form'];
-        }
-        return ['title' => '预约增长诊断', 'desc' => '30 分钟了解你的增长机会', 'action' => 'form'];
+        // AI 个性化（默认关闭；开启且配置 AI 时按画像现写文案，带缓存，失败回落 base）
+        require_once __DIR__ . '/AiPersonalize.php';
+        return ai_personalize_cta($base, $pref);
     }
 
     /**
