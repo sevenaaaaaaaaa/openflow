@@ -96,6 +96,27 @@ $tools = [
         'description' => '按兴趣标签推荐社区贡献物（平台分发：把对的东西送到对的人面前）',
         'inputSchema' => ['type'=>'object','properties'=>['interests'=>['type'=>'array','items'=>['type'=>'string']],'limit'=>['type'=>'integer']]],
     ],
+    // ── 增长 OS 对外（BACKLOG T2-13）：整台增长引擎成为可被外部 Agent 调用的工具 ──
+    [
+        'name' => 'growth_next_best_action',
+        'description' => '增长大脑：给出"现在最该动的人 + 下一最佳动作 + 理由"（读画像与成交真相，只提议不执行）',
+        'inputSchema' => ['type'=>'object','properties'=>['limit'=>['type'=>'integer']]],
+    ],
+    [
+        'name' => 'growth_goal_status',
+        'description' => '当前增长目标与进度（指标/目标值/已完成/领先或落后）',
+        'inputSchema' => ['type'=>'object','properties'=>[]],
+    ],
+    [
+        'name' => 'growth_conversion_truth',
+        'description' => '成交真相：哪个来源/分群真的转化成收入（按收入排，不是访问量）',
+        'inputSchema' => ['type'=>'object','properties'=>[]],
+    ],
+    [
+        'name' => 'growth_ask_data',
+        'description' => '用一句自然语言问站点数据，基于已算好的真实指标作答（不编造）',
+        'inputSchema' => ['type'=>'object','properties'=>['question'=>['type'=>'string']],'required'=>['question']],
+    ],
 ];
 
 // ─── 工具执行 ───
@@ -172,6 +193,43 @@ function mcp_call(string $name, array $args): array {
             require_once __DIR__ . '/lib/ContributionPipeline.php';
             $out = contrib_recommend((array)($args['interests'] ?? []), (int)($args['limit'] ?? 5));
             return ['content'=>[['type'=>'text','text'=>json_encode($out, JSON_UNESCAPED_UNICODE)]]];
+
+        // ── 增长 OS 对外（BACKLOG T2-13）──
+        case 'growth_next_best_action': {
+            require_once __DIR__ . '/lib/CdpSync.php';
+            require_once __DIR__ . '/lib/GrowthSignal.php';
+            require_once __DIR__ . '/lib/GrowthGoal.php';
+            require_once __DIR__ . '/lib/GrowthBrain.php';
+            $rows = [];
+            try { cdp_ensure_table(); $rows = Database::query("SELECT * FROM cdp_customers ORDER BY score DESC LIMIT 200"); }
+            catch (\Throwable $e) { $rows = []; }
+            $digest = growth_brain_digest(is_array($rows) ? $rows : [], growth_conversion_truth(),
+                                          max(1, (int)($args['limit'] ?? 5)), growth_goal_current());
+            $out = array_map(fn($r) => [
+                'who' => $r['profile']['name'] ?? '', 'action' => $r['best']['action'] ?? '',
+                'module' => $r['best']['module'] ?? '', 'reason' => $r['best']['reason'] ?? '',
+                'priority' => $r['best']['priority'] ?? 0,
+            ], $digest);
+            return ['content'=>[['type'=>'text','text'=>json_encode($out, JSON_UNESCAPED_UNICODE)]]];
+        }
+
+        case 'growth_goal_status':
+            require_once __DIR__ . '/lib/GrowthSignal.php';
+            require_once __DIR__ . '/lib/GrowthGoal.php';
+            return ['content'=>[['type'=>'text','text'=>json_encode(growth_goal_progress(), JSON_UNESCAPED_UNICODE)]]];
+
+        case 'growth_conversion_truth':
+            require_once __DIR__ . '/lib/GrowthSignal.php';
+            return ['content'=>[['type'=>'text','text'=>json_encode(growth_conversion_truth(), JSON_UNESCAPED_UNICODE)]]];
+
+        case 'growth_ask_data': {
+            require_once __DIR__ . '/lib/CdpInsight.php';
+            require_once __DIR__ . '/lib/GrowthSignal.php';
+            require_once __DIR__ . '/lib/AskData.php';
+            $r = askdata_answer((string)($args['question'] ?? ''));
+            return ['content'=>[['type'=>'text','text'=>json_encode(
+                ['ok'=>$r['ok'] ?? false, 'answer'=>$r['answer'] ?? ($r['error'] ?? '')], JSON_UNESCAPED_UNICODE)]]];
+        }
     }
     return ['content'=>[['type'=>'text','text'=>json_encode(['error'=>'unknown tool'])]]];
 }
