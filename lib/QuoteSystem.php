@@ -106,3 +106,110 @@ function quote_all(): array {
     usort($out, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
     return array_values($out);
 }
+
+// ─── 交付阶段 + 待办（Sales 交付跟踪）──────────────────
+//
+// 收款状态（pending/paid/refunded）之外，再挂一条独立的「交付阶段」，
+// 两条轴一交叉就能自动回答一人公司最关心的两件事：
+//   · 钱到了活没完 = 已付 × 未交付   → 赶紧干活
+//   · 活完钱没清   = 已交付 × 未付清 → 该收钱 / 催尾款
+// 再加每单的待办清单，管细节提醒。
+
+/** 交付阶段：key => 中文名 */
+function quote_stages(): array {
+    return ['not_started'=>'待启动','in_progress'=>'进行中','review'=>'待验收','delivered'=>'已交付'];
+}
+
+/** 在 orders.json 里定位一张收款单（返回 [下标, 订单] 或 null）。 */
+function quote_locate(string $id): ?array {
+    $orders = json_read(shop_orders_file());
+    foreach ($orders as $i => $o) {
+        if (($o['id'] ?? '') === $id && ($o['goods_type'] ?? '') === 'quote') return [$i, $o];
+    }
+    return null;
+}
+
+/** 读改写一张收款单。$changes 直接合并进订单。 */
+function quote_update(string $id, array $changes): bool {
+    $orders = json_read(shop_orders_file());
+    $hit = false;
+    foreach ($orders as &$o) {
+        if (($o['id'] ?? '') === $id && ($o['goods_type'] ?? '') === 'quote') {
+            $o = array_merge($o, $changes);
+            $o['updated_at'] = date('Y-m-d H:i:s');
+            $hit = true;
+            break;
+        }
+    }
+    unset($o);
+    return $hit ? json_write(shop_orders_file(), $orders) : false;
+}
+
+/** 设置交付阶段。 */
+function quote_set_stage(string $id, string $stage): bool {
+    if (!isset(quote_stages()[$stage])) return false;
+    return quote_update($id, ['delivery_stage' => $stage]);
+}
+
+/** 加一条待办。 */
+function quote_add_todo(string $id, string $text, string $due = ''): bool {
+    $text = trim($text);
+    if ($text === '') return false;
+    $loc = quote_locate($id);
+    if (!$loc) return false;
+    $todos = (array)($loc[1]['todos'] ?? []);
+    $todos[] = ['text' => $text, 'due' => trim($due), 'done' => false, 'created_at' => date('Y-m-d H:i:s')];
+    return quote_update($id, ['todos' => $todos]);
+}
+
+/** 勾选/取消一条待办。 */
+function quote_toggle_todo(string $id, int $idx): bool {
+    $loc = quote_locate($id);
+    if (!$loc) return false;
+    $todos = (array)($loc[1]['todos'] ?? []);
+    if (!isset($todos[$idx])) return false;
+    $todos[$idx]['done'] = empty($todos[$idx]['done']);
+    return quote_update($id, ['todos' => $todos]);
+}
+
+/** 删除一条待办。 */
+function quote_remove_todo(string $id, int $idx): bool {
+    $loc = quote_locate($id);
+    if (!$loc) return false;
+    $todos = (array)($loc[1]['todos'] ?? []);
+    if (!isset($todos[$idx])) return false;
+    array_splice($todos, $idx, 1);
+    return quote_update($id, ['todos' => array_values($todos)]);
+}
+
+/** 一张单的交付阶段（缺省视为待启动）。 */
+function quote_stage_of(array $q): string {
+    $s = (string)($q['delivery_stage'] ?? 'not_started');
+    return isset(quote_stages()[$s]) ? $s : 'not_started';
+}
+
+/**
+ * 需要盯的三桶——首页顶部用它把该动手的单挑出来。
+ *   paid_undelivered 已付但没交付：赶紧干活
+ *   delivered_unpaid 已交付但没付清：该收钱 / 催尾款
+ *   todo_due        有到期未完成的待办
+ */
+function quote_attention(): array {
+    $today = date('Y-m-d');
+    $out = ['paid_undelivered'=>[], 'delivered_unpaid'=>[], 'todo_due'=>[]];
+    foreach (quote_all() as $q) {
+        $status = $q['status'] ?? 'pending';
+        $stage  = quote_stage_of($q);
+        if ($status === 'paid' && $stage !== 'delivered') $out['paid_undelivered'][] = $q;
+        if ($stage === 'delivered' && !in_array($status, ['paid','refunded'], true)) $out['delivered_unpaid'][] = $q;
+        foreach ((array)($q['todos'] ?? []) as $t) {
+            if (empty($t['done']) && !empty($t['due']) && $t['due'] <= $today) { $out['todo_due'][] = $q + ['_todo'=>$t]; break; }
+        }
+    }
+    return $out;
+}
+
+/** 一张单里未完成待办数。 */
+function quote_open_todos(array $q): int {
+    return count(array_filter((array)($q['todos'] ?? []), fn($t) => empty($t['done'])));
+}
