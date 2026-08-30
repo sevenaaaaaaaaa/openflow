@@ -45,6 +45,7 @@ $urls = [
     ['ask-data',     ''],
     ['click-tracking', ''],
     ['consent',      ''],
+    ['inbox',        ''],
     ['commission',   ''],
     ['destinations', ''],
 ];
