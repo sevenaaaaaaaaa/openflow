@@ -249,5 +249,17 @@ if (time() - $lastEventsCleanup > 24 * 3600) {
     } catch (Throwable $e) {}
 }
 
+// 数据保留策略（BACKLOG T1-5）：按后台配置的合规保留期清理过期事件与画像。
+// 与上面 90 天兜底并存；retention_days=0 时跳过（默认不启用，行为不变）。
+$consentPurge = ['skipped' => true];
+try {
+    require_once __DIR__ . '/../lib/ConsentSystem.php';
+    $lastPurge = (int)(json_read(DATA_DIR . '/consent-purge.json')['ts'] ?? 0);
+    if (time() - $lastPurge > 24 * 3600) {
+        $consentPurge = consent_purge_expired();
+        json_write(DATA_DIR . '/consent-purge.json', ['ts' => time(), 'result' => $consentPurge]);
+    }
+} catch (Throwable $e) {}
+
 header('Content-Type: application/json; charset=utf-8');
-echo json_encode(['ok' => true, 'published' => $published, 'time' => date('Y-m-d H:i:s')]);
+echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge, 'time' => date('Y-m-d H:i:s')]);
