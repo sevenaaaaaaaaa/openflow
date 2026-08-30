@@ -51,7 +51,7 @@ if (!function_exists('growth_brain_propose')) {
      * 返回：['best'=>提议|null, 'all'=>[提议...]]，每条提议 =
      *   ['module','action','reason','priority','cta']
      */
-    function growth_brain_propose(array $p, ?array $truth = null): array {
+    function growth_brain_propose(array $p, ?array $truth = null, ?array $goal = null): array {
         $p = isset($p['days_idle']) && isset($p['won_count']) ? $p : growth_brain_normalize($p);
         $props = [];
 
@@ -118,6 +118,18 @@ if (!function_exists('growth_brain_propose')) {
             ];
         }
 
+        // ── 目标加权：让离当前增长目标最近的动作浮上来（AUDIT-07 P1-5）──
+        if ($goal && function_exists('growth_goal_boost_modules')) {
+            $boost = growth_goal_boost_modules((string)($goal['metric'] ?? ''));
+            if ($boost) foreach ($props as &$pr) {
+                if (isset($boost[$pr['module']])) {
+                    $pr['priority'] = min(100, $pr['priority'] + $boost[$pr['module']]);
+                    $pr['goal_boosted'] = true;
+                }
+            }
+            unset($pr);
+        }
+
         usort($props, fn($a, $b) => $b['priority'] <=> $a['priority']);
         return ['best' => $props[0] ?? null, 'all' => $props];
     }
@@ -129,11 +141,11 @@ if (!function_exists('growth_brain_digest')) {
      * 这是"销售/增长驾驶舱"的种子——一眼看到"现在最该动的人和动作"。
      * $profiles: 归一前的行数组（cdp_customers 行或画像）。
      */
-    function growth_brain_digest(array $profiles, ?array $truth = null, int $limit = 20): array {
+    function growth_brain_digest(array $profiles, ?array $truth = null, int $limit = 20, ?array $goal = null): array {
         $rows = [];
         foreach ($profiles as $row) {
             $prof = growth_brain_normalize($row);
-            $prop = growth_brain_propose($prof, $truth);
+            $prop = growth_brain_propose($prof, $truth, $goal);
             if (!$prop['best']) continue;                 // 没有强信号的人不占版面
             $rows[] = ['profile' => $prof, 'best' => $prop['best'], 'alts' => array_slice($prop['all'], 1, 2)];
         }
