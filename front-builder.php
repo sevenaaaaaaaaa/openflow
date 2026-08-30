@@ -13,6 +13,11 @@ foreach ((array)$pages as $p) if (($p['slug'] ?? '') === $slug && ($p['status'] 
 if (!$page) { http_response_code(404); echo '<h1 style="padding:80px;text-align:center;font-family:sans-serif">页面不存在</h1>'; exit; }
 
 $blocks = $page['blocks'] ?? [];
+// 区块级人群定向（BACKLOG T1-8）：按访客画像过滤区块；无定向的区块照常显示。
+try {
+    require_once __DIR__ . '/lib/BlockTargeting.php';
+    $blocks = blocktarget_filter($blocks);
+} catch (Throwable $e) {}
 $siteName = site_config_get('site_name');
 
 // 区块渲染器
