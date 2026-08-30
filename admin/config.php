@@ -1540,6 +1540,7 @@ function admin_sidebar(string $current): void {
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
     行为追踪
   </a>
+  <a href="/xmp/click-tracking" class="<?=$current==='click-tracking'?'active':''?>" style="padding-left:44px;font-size:13px">🎯 圈选埋点</a>
   <?php endif; ?>
   <?php if (has_perm('scripts')): ?>
   <a href="/xmp/scripts" class="<?=$current==='scripts'?'active':''?>" style="padding-left:44px;font-size:13px">脚本 & 埋点</a>

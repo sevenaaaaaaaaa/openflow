@@ -59,7 +59,7 @@ p,li{font-size:14px;color:#555;line-height:1.7;margin-bottom:6px}
 .preview-foot{text-align:center;padding:20px;color:var(--faint);font-size:12px}
 .pill{display:inline-block;padding:3px 12px;border-radius:999px;background:#ebe9e1;font-size:12px;font-weight:500;margin:3px}
 </style>
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
 <body>
 

@@ -541,6 +541,35 @@
     loadPromos();
     loadPageSeo();
     loadSiteStructure();
+    loadClickTracks();
+  }
+
+  // 圈选埋点（BACKLOG T1-4）：拉取本页启用的定义，用事件委托绑 click，命中即上报。
+  function loadClickTracks() {
+    try {
+      fetch('/api/click-tracks.php?path=' + encodeURIComponent(location.pathname), { credentials: 'omit' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d || !d.ok || !d.tracks || !d.tracks.length) return;
+          var defs = d.tracks;
+          document.addEventListener('click', function (e) {
+            for (var i = 0; i < defs.length; i++) {
+              var def = defs[i];
+              try {
+                var el = e.target.closest(def.selector);
+                if (el) {
+                  fcTrack(def.event, {
+                    label: (def.name || ''),
+                    text: (el.textContent || '').trim().slice(0, 60),
+                    path: location.pathname
+                  });
+                }
+              } catch (err) { /* 选择器非法则跳过该条 */ }
+            }
+          }, true);
+        })
+        .catch(function () {});
+    } catch (e) {}
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);

@@ -15,7 +15,7 @@ if (!$landing) {
     http_response_code(404);
     ?><!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 | OpenFlow</title>
     <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
     <body style="background:var(--bg);color:var(--fg)"><div class="mx-auto px-5 py-[180px] text-center" style="max-width:var(--container)">
@@ -105,7 +105,7 @@ $jsonLd = [
 <meta property="og:locale" content="zh_CN">
 <script type="application/ld+json"><?=json_encode($jsonLd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)?></script>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20260830b" data-cfasync="false" data-site-inject></script>
 <link rel="stylesheet" href="/assets/tokens.css?v=20260816">
 <link rel="stylesheet" href="/assets/modules.css?v=20260816">
 <style>
