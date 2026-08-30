@@ -115,6 +115,10 @@ RewriteRule ^activate/?$ activate.php [L,QSA]
 RewriteRule ^shop/?$ shop.php [L,QSA]
 RewriteRule ^pay/?$ pay.php [L,QSA]
 
+# 自定义内容类型（CPT）前台：归档 /c/{type}，单条 /c/{type}/{slug}
+RewriteRule ^c/([a-z0-9-]+)/(.+)$ cpt-view.php?type=$1&slug=$2 [L,QSA,B]
+RewriteRule ^c/([a-z0-9-]+)/?$ cpt-archive.php?type=$1 [L,QSA]
+
 # Landing 聚合页（单段 slug）
 RewriteRule ^([a-z0-9][a-z0-9-]*)/?$ landing.php?slug=$1 [L,QSA]
 </IfModule>
