@@ -52,6 +52,20 @@ foreach (get_articles() as $a) {
 // 处理自动化延迟队列
 automation_process_queue();
 
+// CRM 未跟进提醒（每天最多跑一次；线索超过 N 天没跟进就提醒负责人）
+try {
+    require_once __DIR__ . '/../lib/CrmSystem.php';
+    require_once __DIR__ . '/../lib/NotifyChannels.php';
+    $rmFile = DATA_DIR . '/crm_reminder_run.json';
+    $lastRun = json_read($rmFile)['date'] ?? '';
+    if ($lastRun !== date('Y-m-d')) {
+        $crmCfg = json_read(DATA_DIR . '/crm_settings.json');
+        $days = max(1, (int)($crmCfg['followup_days'] ?? 7));   // 阈值可配，默认 7 天
+        $res = crm_send_followup_reminders($days);
+        json_write($rmFile, ['date' => date('Y-m-d'), 'result' => $res]);
+    }
+} catch (Exception $e) {}
+
 // 外部数据连接器定时同步（REST API / CSV 拉取）
 try {
     require_once __DIR__ . '/../lib/DataSync.php';

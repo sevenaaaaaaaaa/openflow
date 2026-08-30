@@ -484,3 +484,89 @@ function crm_leads_from_segment(string $segmentId, array $opts = []): array {
     $stat['matched'] = count($matched);
     return $stat;
 }
+
+// ─── 未跟进自动提醒（Sales）────────────────────────────
+//
+// 复用画布已有的 days_since_followup 口径：以最后一条跟进的时间为准，
+// 从未跟进则以创建时间为准。won/lost 已闭环，不提醒。
+//
+// 这是 cron 触发的旁路任务：定时扫一遍，把"躺太久没人管"的线索
+// 拎出来提醒，避免线索静默流失——一人公司 / 小团队最容易漏的就是这个。
+
+/** 一条线索距上次活动的天数（跟进 > 创建）。 */
+function crm_days_since_activity(array $lead): int {
+    $ups = (array)($lead['follow_ups'] ?? []);
+    if ($ups) {
+        $last = end($ups);
+        $ts = strtotime((string)($last['time'] ?? ''));
+    } else {
+        $ts = strtotime((string)($lead['created_at'] ?? ''));
+    }
+    return $ts ? (int)floor((time() - $ts) / 86400) : 0;
+}
+
+/** 开放阶段里，距上次活动 ≥ $days 天的线索。 */
+function crm_stale_leads(int $days): array {
+    $open = ['new', 'contacted', 'qualified', 'opportunity'];
+    $out = [];
+    foreach ((crm_get()['leads'] ?? []) as $key => $lead) {
+        if (!in_array($lead['stage'] ?? '', $open, true)) continue;
+        if (crm_days_since_activity($lead) >= $days) $out[$key] = $lead;
+    }
+    return $out;
+}
+
+/**
+ * 发未跟进提醒。cron 调用。
+ *
+ * 冷却：同一条线索提醒后 $days 天内不重复提醒（在 lead.last_reminder 上打戳），
+ * 否则每天 cron 都会重复轰炸。仍未跟进的话，下一个周期会再次提醒。
+ *
+ * @return array ['reminded'=>int, 'owners'=>int]
+ */
+function crm_send_followup_reminders(int $days = 7): array {
+    $stale = crm_stale_leads($days);
+    if (!$stale) return ['reminded' => 0, 'owners' => 0];
+
+    $data = crm_get();
+    $now = date('Y-m-d H:i:s');
+    $byOwner = [];
+    foreach ($stale as $key => $lead) {
+        $last = strtotime((string)($lead['last_reminder'] ?? ''));
+        if ($last && (time() - $last) < $days * 86400) continue;   // 冷却中
+        $owner = trim((string)($lead['owner'] ?? '')) ?: '未分配';
+        $byOwner[$owner][] = $lead;
+        $data['leads'][$key]['last_reminder'] = $now;
+    }
+    $count = array_sum(array_map('count', $byOwner));
+    if ($count === 0) return ['reminded' => 0, 'owners' => 0];
+
+    crm_save($data);
+
+    // 组一条按负责人分组的摘要，发到已配置的通知渠道（未配置则安全空转）
+    if (function_exists('notify_channels_send')) {
+        $lines = [];
+        foreach ($byOwner as $owner => $leads) {
+            $lines[] = "【{$owner}】" . count($leads) . " 条：";
+            foreach (array_slice($leads, 0, 8) as $l) {
+                $d = crm_days_since_activity($l);
+                $who = $l['name'] ?: ($l['email'] ?? '匿名');
+                $lines[] = "  · {$who}（{$l['stage']}，已 {$d} 天没跟进）";
+            }
+            if (count($leads) > 8) $lines[] = '  · …等共 ' . count($leads) . ' 条';
+        }
+        try {
+            notify_channels_send(
+                "有 {$count} 条线索超过 {$days} 天没跟进",
+                implode("\n", $lines),
+                '/xmp/crm'
+            );
+        } catch (\Throwable $e) {}
+    }
+
+    if (class_exists('PluginSystem')) {
+        try { PluginSystem::do_action('crm_followup_reminders_sent', $byOwner, $days); } catch (\Throwable $e) {}
+    }
+
+    return ['reminded' => $count, 'owners' => count($byOwner)];
+}
