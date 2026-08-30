@@ -103,6 +103,19 @@ if (!function_exists('growth_action_adopt')) {
         $list[] = $row;
         growth_action_save_all($list);
 
+        // 可解释轨道（BACKLOG T2-5）：把"为什么建议这件事"留痕，可看可纠可审计
+        try {
+            require_once __DIR__ . '/DecisionTrace.php';
+            dtrace_record([
+                'subject'  => $row['profile_email'] ?: ($row['profile_id'] ?: $row['profile_name']),
+                'decision' => $row['action'],
+                'module'   => $row['module'],
+                'trigger'  => '大脑在驾驶舱排到这个人，且人点了采纳',
+                'evidence' => array_filter([$row['reason'], $row['goal_metric'] ? ('当前目标指标：' . $row['goal_metric']) : '']),
+                'guard'    => '人工采纳，未走自动执行',
+            ]);
+        } catch (\Throwable $e) {}
+
         // 共享记忆（BACKLOG T1-17）：记住"对这个人做过什么"，下次判断不再从零开始
         try {
             require_once __DIR__ . '/GrowthMemory.php';
