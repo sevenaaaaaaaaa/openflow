@@ -60,6 +60,10 @@ function canvas_walk(string $nodeId, array $byId, array $edges, array $context, 
         case 'notify':
             notify('画布流程', $node['title'] ?? '流程通知', $context['email'] ?? '', $node['link'] ?? '');
             break;
+        case 'tag':      canvas_action_tag($node, $context); break;
+        case 'score':    canvas_action_score($node, $context); break;
+        case 'stage':    canvas_action_stage($node, $context); break;
+        case 'webhook':  canvas_action_webhook($node, $context); break;
     }
 
     // 找下一个节点（普通顺序）
@@ -68,6 +72,84 @@ function canvas_walk(string $nodeId, array $byId, array $edges, array $context, 
             canvas_walk($e['to'], $byId, $edges, $context, $visited, $depth + 1);
         }
     }
+}
+
+/**
+ * 画布动作类型清单（UI 下拉/按钮的单一出处）。BACKLOG T1-2。
+ * 这也是"大脑可调用的动作库"：每个 key 是 Agent 将来能直接调的一个动作。
+ */
+function canvas_action_types(): array {
+    return [
+        'send_email' => ['icon' => '📧', 'label' => '发送邮件'],
+        'tag'        => ['icon' => '🏷', 'label' => '打标签'],
+        'score'      => ['icon' => '⭐', 'label' => '加分'],
+        'stage'      => ['icon' => '📊', 'label' => '改 CRM 阶段'],
+        'webhook'    => ['icon' => '🔗', 'label' => 'Webhook'],
+        'notify'     => ['icon' => '📢', 'label' => '通知'],
+        'delay'      => ['icon' => '⏱', 'label' => '延迟'],
+        'condition'  => ['icon' => '🔀', 'label' => '条件分支'],
+    ];
+}
+
+/** 从上下文解析 CDP 客户 id（email/member/uid）。 */
+function canvas_ctx_customer_id(array $context): string {
+    if (!function_exists('cdp_find')) return '';
+    $c = cdp_find((string)($context['email'] ?? ''), (string)($context['member_id'] ?? ''), (string)($context['uid'] ?? ''));
+    return $c['id'] ?? '';
+}
+
+/** 动作：打标签（CDP + 尽力同步 CRM 线索）。 */
+function canvas_action_tag(array $node, array $context): void {
+    $tag = trim((string)($node['tag'] ?? $node['value'] ?? ''));
+    if ($tag === '') return;
+    try {
+        $cid = canvas_ctx_customer_id($context);
+        if ($cid && function_exists('cdp_add_tag')) cdp_add_tag($cid, $tag);
+        $email = (string)($context['email'] ?? '');
+        if ($email !== '' && function_exists('crm_update_lead') && function_exists('crm_ensure_lead')) {
+            $lead = crm_ensure_lead($email);
+            $tags = array_values(array_unique(array_merge((array)($lead['tags'] ?? []), [$tag])));
+            crm_update_lead($email, ['tags' => $tags]);
+        }
+    } catch (\Throwable $e) {}
+}
+
+/** 动作：加分（CDP score 累加）。 */
+function canvas_action_score(array $node, array $context): void {
+    $delta = (int)($node['score'] ?? $node['value'] ?? 0);
+    if ($delta === 0) return;
+    try {
+        $cid = canvas_ctx_customer_id($context);
+        if ($cid && function_exists('cdp_get_by_id') && function_exists('cdp_set_score')) {
+            $cur = (int)((cdp_get_by_id($cid)['score'] ?? 0));
+            cdp_set_score($cid, $cur + $delta);
+        }
+    } catch (\Throwable $e) {}
+}
+
+/** 动作：改 CRM 阶段。 */
+function canvas_action_stage(array $node, array $context): void {
+    $stage = trim((string)($node['stage'] ?? $node['value'] ?? ''));
+    $email = (string)($context['email'] ?? '');
+    if ($stage === '' || $email === '') return;
+    try {
+        if (function_exists('crm_ensure_lead') && function_exists('crm_update_lead')) {
+            crm_ensure_lead($email);
+            crm_update_lead($email, ['stage' => $stage]);
+        }
+    } catch (\Throwable $e) {}
+}
+
+/** 动作：Webhook（把上下文 POST 出去）。 */
+function canvas_action_webhook(array $node, array $context): void {
+    $url = trim((string)($node['url'] ?? $node['value'] ?? ''));
+    if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) return;
+    try {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => json_encode($context, JSON_UNESCAPED_UNICODE),
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8]);
+        curl_exec($ch); curl_close($ch);
+    } catch (\Throwable $e) {}
 }
 
 /**
