@@ -61,7 +61,7 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-b
 .body th{background:var(--bg);font-weight:600}
 .not-found{padding:80px 24px;text-align:center;color:#999}
 </style>
-<script src="/assets/inject.js?v=20260813ad" defer></script>
+<script src="/assets/inject.js?v=20260830a" defer></script>
 </head><body>
 <div class="bar"><span class="tag"><?=htmlspecialchars($type)?></span><span><?=htmlspecialchars($title)?></span><span style="margin-left:auto;color:#999">预览模式</span></div>
 <div class="main">

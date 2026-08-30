@@ -28,7 +28,7 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
 <meta name="description" content="<?=htmlspecialchars($siteSlogan)?> 的线上直播与线下活动，报名参加获得一手增长打法。">
 <link rel="stylesheet" href="/assets/site.css">
 <link rel="stylesheet" href="/assets/tailwind-build.css">
-<script src="/assets/inject.js?v=20260813ad" defer></script>
+<script src="/assets/inject.js?v=20260830a" defer></script>
 <script src="/assets/site-shell.js?v=20260826b" defer></script>
 <style>
   body{background:var(--bg);color:var(--fg)}

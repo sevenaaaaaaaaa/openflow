@@ -55,7 +55,7 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
 <title><?=htmlspecialchars($pageTitle)?></title>
 <meta name="description" content="<?=htmlspecialchars($authorName)?> 在 <?=site_config_get('site_name')?> 发布的文章、课程与技能">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" defer></script>
+<script src="/assets/inject.js?v=20260830a" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .acard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;transition:.15s;display:block;text-decoration:none;color:inherit}
