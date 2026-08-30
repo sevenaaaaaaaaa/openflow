@@ -86,6 +86,16 @@ $tools = [
         'description' => '执行一个技能（Skill）：prompt 返回提示词，tool 返回数据',
         'inputSchema' => ['type'=>'object','properties'=>['id'=>['type'=>'string'],'params'=>['type'=>'object']],'required'=>['id']],
     ],
+    [
+        'name' => 'contributions_list',
+        'description' => '列出社区参与者贡献的、已开放为可调用能力的内容与工具（OIA 贡献三通）',
+        'inputSchema' => ['type'=>'object','properties'=>['limit'=>['type'=>'integer']]],
+    ],
+    [
+        'name' => 'contributions_recommend',
+        'description' => '按兴趣标签推荐社区贡献物（平台分发：把对的东西送到对的人面前）',
+        'inputSchema' => ['type'=>'object','properties'=>['interests'=>['type'=>'array','items'=>['type'=>'string']],'limit'=>['type'=>'integer']]],
+    ],
 ];
 
 // ─── 工具执行 ───
@@ -151,6 +161,17 @@ function mcp_call(string $name, array $args): array {
         case 'skill_execute':
             $r = skill_execute($args['id'] ?? '', $args['params'] ?? []);
             return ['content'=>[['type'=>'text','text'=>json_encode($r, JSON_UNESCAPED_UNICODE)]]];
+
+        // 贡献三通第②腿：社区贡献物对外可被 Agent 调用（BACKLOG T1-16）
+        case 'contributions_list':
+            require_once __DIR__ . '/lib/ContributionPipeline.php';
+            $out = contrib_mcp_list((int)($args['limit'] ?? 50));
+            return ['content'=>[['type'=>'text','text'=>json_encode($out, JSON_UNESCAPED_UNICODE)]]];
+
+        case 'contributions_recommend':
+            require_once __DIR__ . '/lib/ContributionPipeline.php';
+            $out = contrib_recommend((array)($args['interests'] ?? []), (int)($args['limit'] ?? 5));
+            return ['content'=>[['type'=>'text','text'=>json_encode($out, JSON_UNESCAPED_UNICODE)]]];
     }
     return ['content'=>[['type'=>'text','text'=>json_encode(['error'=>'unknown tool'])]]];
 }
