@@ -116,6 +116,12 @@ function skill_execute(string $id, array $params = []): array {
     if (!$s) return ['ok' => false, 'error' => 'Skill 不存在'];
     if (($s['status'] ?? '') !== 'published') return ['ok' => false, 'error' => 'Skill 未发布'];
 
+    // 贡献复利飞轮（BACKLOG T2-10）：每次被调用记一笔复用，功劳算给贡献者。旁路。
+    try {
+        require_once __DIR__ . '/ContributionFlywheel.php';
+        flywheel_record('skill:' . $id, (string)($params['_caller'] ?? 'agent'), 'call');
+    } catch (\Throwable $e) {}
+
     switch ($s['type']) {
         case 'prompt':
             // 替换 {param} 占位符
