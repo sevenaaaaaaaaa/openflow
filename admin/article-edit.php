@@ -108,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $article['author'] = $_POST['author'] ?? $_SESSION['admin_name'] ?? '';
     $article['status'] = $_POST['status'] ?? 'draft';
     $article['member_only'] = isset($_POST['member_only']) ? true : false;
+    $article['required_tier'] = trim((string)($_POST['required_tier'] ?? ''));   // 分层付费门禁 T1-6
     $article['seo_title'] = $_POST['seo_title'] ?? '';
     $article['seo_desc'] = $_POST['seo_desc'] ?? '';
     $article['seo_keywords'] = $_POST['seo_keywords'] ?? '';
@@ -310,6 +311,14 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
           <div class="field"><label>URL Slug <span class="hint">· 自动生成，可手动修改</span></label><input type="text" name="slug" id="slug" value="<?=htmlspecialchars($article['slug'])?>" placeholder="article-url-slug"></div>
           <div class="field"><label>状态</label><select name="status"><option value="draft" <?=$article['status']==='draft'?'selected':''?>>草稿</option><option value="published" <?=$article['status']==='published'?'selected':''?>>已发布</option><option value="scheduled" <?=$article['status']==='scheduled'?'selected':''?>>定时发布</option></select></div>
           <div class="field"><label style="display:flex;align-items:center;gap:8px;margin-top:26px;white-space:nowrap"><input type="checkbox" name="member_only" value="1" <?=!empty($article['member_only'])?'checked':''?> style="width:16px;height:16px"> 💎 会员专享 <span class="hint">· 仅会员可读</span></label></div>
+          <?php require_once __DIR__ . '/../lib/PaidContent.php'; $__tier = $article['required_tier'] ?? ''; ?>
+          <div class="field" style="min-width:170px"><label>🔒 付费门槛 <span class="hint">· 未达门槛显示预览+升级</span></label>
+            <select name="required_tier">
+              <?php foreach (paid_tier_options() as $tv => $tl): ?>
+              <option value="<?=htmlspecialchars($tv)?>" <?=$__tier===$tv?'selected':''?>><?=htmlspecialchars($tl)?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
         </div>
         <div class="field-row">
           <div class="field"><label>定时发布 <span class="hint">· 留空则立即发布</span></label><input type="datetime-local" name="publish_at" value="<?=htmlspecialchars($article['publish_at'] ?? '')?>"></div>
