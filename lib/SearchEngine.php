@@ -15,17 +15,28 @@ class SearchEngine {
         $q = trim($q);
         if (mb_strlen($q) < 1) return $result;
 
-        // 文章
-        foreach (json_read(ARTICLES_DIR . '/index.json') as $a) {
-            if (($a['status'] ?? 'draft') !== 'published') continue;
-            $hay = ($a['title'] ?? '') . ' ' . ($a['seo_desc'] ?? '') . ' ' . ($a['excerpt'] ?? '') . ' ' . implode(' ', $a['tags'] ?? []);
-            if (mb_stripos($hay, $q) !== false) {
+        // 文章：优先 FTS5 索引（trigram，中文子串 + bm25 + 高亮）；FTS5 不可用才回落线性扫描
+        require_once __DIR__ . '/SearchIndex.php';
+        if (search_index_available()) {
+            foreach (search_index_query($q, 12) as $r) {
                 $result['articles'][] = [
-                    'title' => $a['title'] ?? '', 'slug' => $a['slug'] ?? '',
-                    'cover' => $a['cover'] ?? '', 'category' => $a['category'] ?? '',
-                    'date' => $a['created_at'] ?? '',
+                    'title' => $r['title'] ?? '', 'slug' => $r['slug'] ?? '',
+                    'cover' => $r['cover'] ?? '', 'category' => $r['category'] ?? '',
+                    'date' => $r['date'] ?? '', 'snippet' => $r['snippet'] ?? '',
                 ];
-                if (count($result['articles']) >= 12) break;
+            }
+        } else {
+            foreach (json_read(ARTICLES_DIR . '/index.json') as $a) {
+                if (($a['status'] ?? 'draft') !== 'published') continue;
+                $hay = ($a['title'] ?? '') . ' ' . ($a['seo_desc'] ?? '') . ' ' . ($a['excerpt'] ?? '') . ' ' . implode(' ', $a['tags'] ?? []);
+                if (mb_stripos($hay, $q) !== false) {
+                    $result['articles'][] = [
+                        'title' => $a['title'] ?? '', 'slug' => $a['slug'] ?? '',
+                        'cover' => $a['cover'] ?? '', 'category' => $a['category'] ?? '',
+                        'date' => $a['created_at'] ?? '',
+                    ];
+                    if (count($result['articles']) >= 12) break;
+                }
             }
         }
 
