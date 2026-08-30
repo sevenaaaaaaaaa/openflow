@@ -6,6 +6,7 @@ require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/SubscriptionSystem.php';
 require_once __DIR__ . '/FlowSystem.php';
+require_once __DIR__ . '/CommissionPolicy.php';
 
 function shop_orders_file(): string { return DATA_DIR . '/shop/orders.json'; }
 function shop_settings_file(): string { return DATA_DIR . '/shop/settings.json'; }
@@ -140,7 +141,7 @@ function shop_create_order(string $memberId, string $courseId, string $ref = '')
 
     // 课程作者（讲师体系）：platform 课程无 author_id，讲师课程作者分成为主
     $authorId = $course['author_id'] ?? '';
-    $platformFee = round($price * 0.1, 2); // 平台抽 10% 覆盖支付手续费
+    $platformFee = commission_platform_fee($price); // 平台费（统一策略层，默认 10%）
     
     $order = [
         'id' => $orderId,
