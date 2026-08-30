@@ -74,7 +74,7 @@ admin_header('电商报表');
         <div class="p-head"><h3>GMV 趋势</h3><span class="p-sub mono">按天</span></div>
         <div class="p-body">
           <div style="display:flex;gap:3px;align-items:flex-end;height:120px">
-            <?php $maxG = max($dailyGmv) ?: 1; foreach ($dailyGmv as $d => $v): ?>
+            <?php $maxG = $dailyGmv ? (max($dailyGmv) ?: 1) : 1; foreach ($dailyGmv as $d => $v): ?>
             <div style="flex:1;text-align:center" title="<?=$d?> · ¥<?=number_format($v,0)?>">
               <div style="background:var(--accent);opacity:<?=max(0.2,$v/$maxG)?>;border-radius:3px 3px 0 0;height:<?=$v>0?max(4,round($v/$maxG*100)):2?>px"></div>
             </div>
