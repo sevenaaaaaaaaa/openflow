@@ -14,6 +14,7 @@ $members = member_get_all();
 
 // 发送
 if (isset($_POST['send'])) {
+    csrf_verify();
     $to = $_POST['to'] ?? 'all';
     $title = trim($_POST['title'] ?? '');
     $content = trim($_POST['content'] ?? '');

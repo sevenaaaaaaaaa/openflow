@@ -196,6 +196,36 @@ foreach (array_unique($sm[1]) as $slug) {
 }
 t('侧栏每个入口都有对应文件', empty($dead), '死链：' . implode(', ', $dead));
 
+// 后台改状态的入口必须校验 CSRF。判定：一个文件里但凡出现
+// 「写数据的 POST 分支」或「破坏性 GET（delete/uninstall/toggle）」，
+// 就必须至少出现一次 csrf_verify()。这道闸此前是漏的，10 个后台页
+// （含 GET 卸载插件 = 可被 <img> 触发的 RCE）都没校验。
+$csrfMissing = [];
+foreach (glob("{$root}/admin/*.php") as $f) {
+    $s = file_get_contents($f);
+    $mutates = preg_match("/isset\\(\\\$_POST\\['/", $s)
+            || preg_match("/REQUEST_METHOD'\\] === 'POST'/", $s)
+            || preg_match("/isset\\(\\\$_GET\\['(delete|remove|uninstall|toggle|reset|purge|clear)'\\]/", $s);
+    // 纯展示型 / 被 include 的库文件不算（没有自己的鉴权外壳）
+    $isPage = strpos($s, 'require_login()') !== false;
+    if ($mutates && $isPage && strpos($s, 'csrf_verify') === false) {
+        $csrfMissing[] = basename($f);
+    }
+}
+t('后台改状态入口都校验 CSRF', empty($csrfMissing), implode(', ', $csrfMissing));
+
+// 用 $_GET 参数拼文件路径再 unlink/写入的，必须先 basename（防目录穿越）
+$traversal = [];
+foreach (glob("{$root}/admin/*.php") as $f) {
+    foreach (explode("\n", file_get_contents($f)) as $i => $line) {
+        if (preg_match("/(unlink|file_put_contents|fopen|readfile)\\([^)]*\\.\\s*\\\$_(GET|POST|REQUEST)\\[/", $line)
+            && strpos($line, 'basename') === false) {
+            $traversal[] = basename($f) . ':' . ($i + 1);
+        }
+    }
+}
+t('文件路径不直接拼 GET/POST（防穿越）', empty($traversal), implode(' ', $traversal));
+
 // ─────────────────────────────────────────────
 echo "[7/8] 数据安全\n";
 // 本轮所有改动不得触碰 data/ 下的业务数据文件
