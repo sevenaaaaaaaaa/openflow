@@ -65,7 +65,7 @@ function builder_render_block(array $b): string {
 <title><?=htmlspecialchars($page['seo_title'] ?: ($page['title'] . ' | ' . $siteName))?></title>
 <meta name="description" content="<?=htmlspecialchars($page['seo_desc'] ?? '')?>">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <style>
 :root{--accent:oklch(52% .17 258);--fg:oklch(22% .02 70);--muted:oklch(46% .016 70);--bg:oklch(96.5% .016 85)}
 body{font-family:"Space Grotesk","PingFang SC",sans-serif;background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:clip}

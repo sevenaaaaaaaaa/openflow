@@ -43,7 +43,7 @@ if ($currentTopic) {
 <link rel="stylesheet" href="/assets/tokens.css?v=20260826b">
 <link rel="stylesheet" href="/assets/modules.css?v=20260826b">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .topic-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;transition:.15s;display:block;text-decoration:none;color:inherit}

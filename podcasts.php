@@ -65,7 +65,7 @@ $featured = array_values(array_filter($items, fn($p) => !empty($p['featured'])))
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>播客与视频 | <?=site_config_get("site_name")?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .pod-item{display:flex;gap:14px;align-items:center;padding:14px;border-radius:12px;cursor:pointer;transition:.12s;border:1px solid transparent}

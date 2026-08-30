@@ -76,7 +76,7 @@ body{font-family:-apple-system,'Inter','PingFang SC','Noto Sans SC',system-ui,sa
 .controls .close:hover{background:rgba(255,255,255,.2)}
 @media(max-width:600px){.card{width:100%;border-radius:16px}.card-inner{padding:32px 24px}.title{font-size:28px}}
 </style>
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
 <body>
 

@@ -53,7 +53,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 <title>增长导航 | 优秀网站增长·SEO·AI 运营工具</title>
 <meta name="description" content="收录国内外优秀的网站增长、SEO、AI 运营工具与学习资源，一站直达高质量增长资源。">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <style>
   body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
   .site-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;transition:.15s;text-decoration:none;color:inherit;display:block}
