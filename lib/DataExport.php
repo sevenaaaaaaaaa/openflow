@@ -77,7 +77,8 @@ class DataExport {
      * 导出 CDP 用户画像为 CSV
      */
     public static function exportCdpProfiles(string $format = 'csv'): string {
-        $profiles = json_read(DATA_DIR . '/cdp/profiles.json');
+        require_once __DIR__ . '/CdpProfileStore.php';
+        $profiles = cdp_profile_all();
         if ($format === 'json') return json_encode($profiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
         $rows = [];
@@ -108,7 +109,7 @@ class DataExport {
             'settings' => json_read(DATA_DIR . '/settings.json'),
             'categories' => json_read(DATA_DIR . '/categories.json'),
             'tags' => json_read(DATA_DIR . '/tags.json'),
-            'cdp_profiles' => json_read(DATA_DIR . '/cdp/profiles.json'),
+            'cdp_profiles' => (function(){ require_once __DIR__ . '/CdpProfileStore.php'; return cdp_profile_all(); })(),
             'cdp_events' => json_read(DATA_DIR . '/cdp/events.json'),
             'exported_at' => date('Y-m-d H:i:s'),
         ];
