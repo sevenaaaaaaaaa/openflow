@@ -143,6 +143,19 @@ if (!function_exists('growth_signal_conversion')) {
             @mkdir(dirname($f), 0777, true);
             @file_put_contents($f, json_encode($ledger, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
+            // 6) 写入共享记忆（BACKLOG T1-17）：成交是最该被记住的事实
+            try {
+                require_once __DIR__ . '/GrowthMemory.php';
+                $subj = (string)($ctx['email'] ?? '') ?: (string)($ctx['member_id'] ?? '') ?: (string)($ctx['uid'] ?? '');
+                if ($subj !== '') {
+                    gmem_remember($subj, '成交 ¥' . number_format($amount, 2) . ($source !== '' ? "（来源：{$source}）" : ''), [
+                        'kind' => 'outcome', 'source' => 'conversion',
+                        'detail' => ['amount' => $amount, 'source' => $source, 'segment' => $segment],
+                        'dedupe_key' => 'conv:' . md5($subj . '|' . $amount . '|' . date('Y-m-d H:i')),
+                    ]);
+                }
+            } catch (\Throwable $e) {}
+
             return ['ok' => true, 'source' => $source, 'segment' => $segment, 'amount' => $amount];
         } catch (\Throwable $e) {
             return ['ok' => false, 'error' => $e->getMessage()];

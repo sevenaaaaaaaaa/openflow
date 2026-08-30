@@ -13,6 +13,7 @@ require_once __DIR__ . '/../lib/GrowthGoal.php';
 require_once __DIR__ . '/../lib/GrowthAction.php';
 require_once __DIR__ . '/../lib/GrowthBrain.php';
 require_once __DIR__ . '/../lib/SalesPlaybook.php';
+require_once __DIR__ . '/../lib/GrowthMemory.php';
 require_login();
 require_perm('brain');
 
@@ -209,6 +210,16 @@ admin_header('增长大脑');
           <div style="font-size:13px;color:var(--text-soft,#475569)"><?=htmlspecialchars($b['reason'])?></div>
           <?php if (!empty($r['alts'])): ?>
           <div style="font-size:12px;color:var(--faint);margin-top:4px">备选：<?php $al=array_map(fn($x)=>htmlspecialchars($x['action']),$r['alts']); echo implode(' · ',$al); ?></div>
+          <?php endif; ?>
+          <?php
+            $mem = '';
+            try { $subj = $p['email'] ?: ($p['id'] ?: $p['name']); if ($subj) $mem = gmem_brief($subj, 4); } catch (\Throwable $e) {}
+          ?>
+          <?php if ($mem !== ''): ?>
+          <details style="margin-top:6px">
+            <summary style="cursor:pointer;font-size:12px;color:var(--faint)">🧠 关于他的记忆</summary>
+            <pre style="font-size:11.5px;line-height:1.7;color:var(--text-soft,#475569);margin:6px 0 0;white-space:pre-wrap;font-family:inherit"><?=htmlspecialchars($mem)?></pre>
+          </details>
           <?php endif; ?>
           <?php $pb = playbook_for_proposal($b, $p); ?>
           <details style="margin-top:6px">
