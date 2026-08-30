@@ -25,7 +25,7 @@ $typeColors = ['system' => '#2b5f7e', 'order' => 'var(--ok)', 'consultation' => 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>站内信 | OpenFlow</title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <style>
   body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
   .msg-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;transition:.15s}

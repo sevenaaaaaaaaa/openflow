@@ -43,6 +43,7 @@ $urls = [
     ['cpt',          ''],
     ['content-i18n', ''],
     ['ask-data',     ''],
+    ['click-tracking', ''],
     ['commission',   ''],
     ['destinations', ''],
 ];
