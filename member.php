@@ -33,7 +33,7 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?=$pageTitle?> | <?=site_config_get("site_name")?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <style>
 /* ── 设计语言统一：token 语义工具类（终版契约） ── */
   .text-fg{color:var(--fg)}.text-muted{color:var(--muted)}.text-faint{color:var(--faint)}
