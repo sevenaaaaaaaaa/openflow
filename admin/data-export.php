@@ -44,7 +44,7 @@ $articleCount = count(json_read(ARTICLES_DIR . '/index.json'));
 $memberCount = count(json_read(DATA_DIR . '/members.json'));
 $courseCount = count(json_read(DATA_DIR . '/courses.json'));
 $leadCount = count(json_read(DATA_DIR . '/leads.csv'));
-$profileCount = count(json_read(DATA_DIR . '/cdp/profiles.json'));
+$profileCount = (function(){ require_once __DIR__ . '/../lib/CdpProfileStore.php'; return count(cdp_profile_all()); })();
 
 admin_header('数据导入/导出');
 ?>

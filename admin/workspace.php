@@ -41,7 +41,8 @@ try {
 // CDP 画像数
 $cdpCount = 0;
 try {
-    $profiles = json_read(DATA_DIR . '/cdp/profiles.json');
+    require_once __DIR__ . '/../lib/CdpProfileStore.php';
+    $profiles = cdp_profile_all();
     $cdpCount = is_array($profiles) ? count($profiles) : 0;
 } catch (Exception $e) {}
 
