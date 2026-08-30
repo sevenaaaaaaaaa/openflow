@@ -14,6 +14,7 @@ $stats = mkt_stats();
 
 // 保存 skill
 if (isset($_POST['save_skill'])) {
+    csrf_verify();
     $id = trim($_POST['skill_id'] ?? '');
     $data = [
         'id' => $id,
@@ -66,10 +67,12 @@ if (isset($_GET['reject'])) {
 }
 // 远程市场设置/同步
 if (isset($_POST['save_remote'])) {
+    csrf_verify();
     mkt_save_remote_settings(['remote_url' => trim($_POST['remote_url'] ?? '')]);
     $message = '远程市场配置已保存';
 }
 if (isset($_POST['sync_remote'])) {
+    csrf_verify();
     $r = mkt_sync_remote();
     $message = $r['ok'] ? "远程同步完成：导入 {$r['imported']} 个技能" : '❌ ' . ($r['error'] ?? '同步失败');
     $skills = skills_all();
