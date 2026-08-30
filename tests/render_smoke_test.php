@@ -46,6 +46,7 @@ $urls = [
     ['click-tracking', ''],
     ['consent',      ''],
     ['inbox',        ''],
+    ['platform-ops', ''],
     ['commission',   ''],
     ['destinations', ''],
 ];
