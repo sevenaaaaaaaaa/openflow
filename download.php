@@ -31,7 +31,7 @@ $catName = $catNames[$dl['category'] ?? ''] ?? $dl['category'] ?? '资料';
 <title><?=htmlspecialchars($dl['title'])?> | <?=site_config_get('site_name')?></title>
 <meta name="description" content="<?=htmlspecialchars(mb_substr($dl['description'] ?? '', 0, 120))?>">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body);color:var(--fg)}
   .dl-detail{border:1px solid var(--border);background:var(--surface);border-radius:24px}

@@ -41,7 +41,7 @@ if ($profile) {
 <title>我的调研结果 | 芭乐派 · OpenFlow</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 <style>
   /* ── 设计语言统一：token 语义工具类 ── */

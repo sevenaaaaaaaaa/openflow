@@ -37,7 +37,7 @@ $slotOptions = con_slot_options();
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?=htmlspecialchars($settings['page_title'] ?? '1v1 咨询')?>  | <?=site_config_get("site_name")?></title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .mentor-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;transition:.18s;display:flex;flex-direction:column;gap:12px}

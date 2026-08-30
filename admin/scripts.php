@@ -86,7 +86,7 @@ admin_header('脚本与埋点');
     <div class="card">
       <h2>🔌 如何接入</h2>
       <p class="text-sm text-muted mb-4">所有前端页面只需在 <code>&lt;head&gt;</code> 引入一行（已加到各页面）：</p>
-      <pre style="background:#1e1e1e;color:#fff;padding:12px;border-radius:8px;font-size:13px">&lt;script src="/assets/inject.js?v=20260813ad" data-site-inject&gt;&lt;/script&gt;</pre>
+      <pre style="background:#1e1e1e;color:#fff;padding:12px;border-radius:8px;font-size:13px">&lt;script src="/assets/inject.js?v=20260830b" data-site-inject&gt;&lt;/script&gt;</pre>
       <p class="text-sm text-muted mt-4">之后在此页面添加的脚本会自动注入到启用它的页面，无需再改前端代码。</p>
     </div>
   </div>

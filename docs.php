@@ -142,7 +142,7 @@ if ($inlineCta['enabled'] ?? false) {
 <title>文档中心 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="产品文档 · 模板库 · 开放 API，快速上手 OpenFlow">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830a" defer></script>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .doc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;transition:.15s}
