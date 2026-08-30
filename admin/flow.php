@@ -18,7 +18,10 @@ foreach ($events as $e) $eventMap[$e['event']] = (int)$e['c'];
 $totalEvents = array_sum($eventMap);
 $identifyCount = 0; // 已识别（member_id 关联）
 try { $identifyCount = (int)Database::query("SELECT COUNT(*) c FROM events WHERE member_id != ''")[0]['c']; } catch (Exception $e) {}
-$cdpCustomers = (int)Database::query("SELECT COUNT(*) c FROM cdp_customers")[0]['c'];
+$cdpCustomers = 0;
+// cdp_customers 由 CdpSync 建，未同步过时表可能不存在——与下面两行一致地兜底，
+// 否则空库首次打开「流程」页直接 fatal。
+try { $cdpCustomers = (int)Database::query("SELECT COUNT(*) c FROM cdp_customers")[0]['c']; } catch (Exception $e) {}
 $cdpKnown = 0;
 try { $cdpKnown = (int)Database::query("SELECT COUNT(*) c FROM cdp_customers WHERE member_id != ''")[0]['c']; } catch (Exception $e) {}
 
