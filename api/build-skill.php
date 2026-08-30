@@ -25,6 +25,19 @@ if (!builder_can_contribute($member)) {
 $desc = trim((string)($_POST['description'] ?? ''));
 $r = skillguard_build($desc, (string)($member['id'] ?? ''));
 
+// 判为"需人工确认"的，进审核队列（BACKLOG T2-9），由管理员批准后再发布
+if (!empty($r['ok']) && ($r['verdict'] ?? '') === 'review') {
+    try {
+        require_once __DIR__ . '/../lib/ArtifactSandbox.php';
+        $q = sandbox_enqueue(
+            array_merge($r['skill'], ['id' => $r['skill']['id'] ?? ($r['skill']['title'] ?? '')]),
+            ['verdict' => $r['verdict'], 'risks' => $r['risks'] ?? [], 'notes' => $r['notes'] ?? []],
+            (string)($member['id'] ?? '')
+        );
+        $r['queued'] = !empty($q['ok']);
+    } catch (\Throwable $e) {}
+}
+
 // 通过审查且用户选择保存 → 存为草稿（仍需人工发布）
 if (!empty($r['ok']) && ($_POST['save'] ?? '') === '1' && function_exists('skill_publish')) {
     try {
