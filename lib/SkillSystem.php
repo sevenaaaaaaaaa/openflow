@@ -61,6 +61,24 @@ function skill_publish(array $s): void {
         'updated_at' => date('Y-m-d H:i:s'),
     ], $s);
     skills_save($list);
+
+    // 贡献三通（BACKLOG T1-16）：已发布的技能自动 进知识库 / 可被 Agent 调用 / 纳入平台分发。
+    // 旁路：失败不影响发布本身；草稿不进池。
+    try {
+        if (($s['status'] ?? 'published') === 'published') {
+            require_once __DIR__ . '/ContributionPipeline.php';
+            require_once __DIR__ . '/KnowledgeSystem.php';
+            contrib_publish([
+                'kind' => 'skill', 'id' => (string)($s['id'] ?? ''),
+                'title' => (string)($s['title'] ?? ''),
+                'summary' => (string)($s['description'] ?? ''),
+                'author' => (string)($s['submitter'] ?? ($s['author'] ?? '')),
+                'tags' => (array)($s['tags'] ?? []),
+                'url' => '/marketplace?skill=' . rawurlencode((string)($s['id'] ?? '')),
+                'channels' => (array)($s['channels'] ?? []),
+            ]);
+        }
+    } catch (\Throwable $e) {}
 }
 
 // 按作者（开发者）查产品
