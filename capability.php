@@ -169,7 +169,7 @@ button:disabled{opacity:.45; cursor:default}
   html{scroll-behavior:auto}
 }
 </style>
-<script src="/assets/seo-inject.js?v=20260813ad" defer></script>
+<script src="/assets/seo-inject.js?v=20260830a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('capability'); ?>

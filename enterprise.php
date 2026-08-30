@@ -20,7 +20,7 @@ $siteName = site_config_get('site_name');
 <title>商业发行版 | 芭乐派 · OpenFlow</title>
 <meta name="description" content="OpenFlow 商业发行版：SaaS 订阅、私有化部署、定制开发。一个 all-in-one 平台，缺什么用插件和技能自己改造。">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" defer></script>
+<script src="/assets/inject.js?v=20260830a" defer></script>
 <style>
 :root{
   --bg:oklch(96.5% .016 85);--bg-soft:oklch(94% .02 85);

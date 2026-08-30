@@ -54,7 +54,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>门派社区 | <?=site_config_get('site_name')?> · 讨论</title>
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260813ad" defer></script>
+<script src="/assets/inject.js?v=20260830a" defer></script>
 <style>
   body{background:var(--bg);font-family:var(--font-body)}
   .topic-btn{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--r-sm);font-size:14px;color:var(--muted);cursor:pointer;transition:.12s;text-decoration:none}
