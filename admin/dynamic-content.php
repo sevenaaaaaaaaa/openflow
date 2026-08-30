@@ -37,8 +37,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         DynamicContent::toggle($id);
         header('Location: /xmp/dynamic-content');
         exit;
+    } elseif ($action === 'ai_cta_toggle') {
+        // AI 个性化文案开关（BACKLOG T1-1）
+        $s = json_read(DATA_DIR . '/settings.json');
+        $s['personalize']['ai_cta'] = isset($_POST['ai_cta']);
+        json_write(DATA_DIR . '/settings.json', $s);
+        flash('success', '已' . (isset($_POST['ai_cta']) ? '开启' : '关闭') . ' AI 个性化文案');
+        header('Location: /xmp/dynamic-content');
+        exit;
     }
 }
+$__aiCta = !empty(json_read(DATA_DIR . '/settings.json')['personalize']['ai_cta']);
+$__aiReady = class_exists('AiCenter') && AiCenter::isConfigured();
 
 // 查看详情
 $viewId = $_GET['view'] ?? null;
@@ -83,6 +93,18 @@ admin_header('Dynamic Content 动态内容');
       </div>
     </div>
     <p class="sub">根据 URL 参数（UTM、自定义参数）动态显示不同内容 · 支持卡片显隐与文字替换</p>
+
+    <!-- AI 个性化文案（BACKLOG T1-1）：把 CTA 文案从规则升级为 AI 按画像现写 -->
+    <div class="card" style="padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <strong>✨ AI 个性化文案</strong>
+        <span style="font-size:12px;color:var(--faint)">开启后，个性化 CTA 的标题/副文案由 AI 按访客画像现写（带缓存），关闭则用规则文案。</span>
+        <?php if (!$__aiReady): ?><span style="font-size:12px;color:#b45309"> · 需先在「AI 配置」里配置模型</span><?php endif; ?>
+      </div>
+      <form method="post" style="margin:0"><?= csrf_field() ?><input type="hidden" name="action" value="ai_cta_toggle">
+        <label style="font-size:13px;cursor:pointer"><input type="checkbox" name="ai_cta" <?=$__aiCta?'checked':''?> onchange="this.form.submit()"> 启用</label>
+      </form>
+    </div>
 
     <?php if ($viewRule): ?>
     <!-- ═══ 规则详情 + 数据分析 ═══ -->
