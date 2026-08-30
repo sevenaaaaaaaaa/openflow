@@ -10,13 +10,14 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/CdpSync.php';
 require_once __DIR__ . '/../lib/GrowthSignal.php';
 require_once __DIR__ . '/../lib/GrowthGoal.php';
+require_once __DIR__ . '/../lib/GrowthAction.php';
 require_once __DIR__ . '/../lib/GrowthBrain.php';
 require_login();
 require_perm('brain');
 
-// ── 设/清目标（唯一写操作：配置大脑要冲的目标，非客户侧动作）──
-$goalMsg = '';
-if (($_POST['action'] ?? '') === 'set_goal') {
+// ── 写操作（都非客户侧执行：配置目标 / 建待办 / 改待办状态）──
+$act = $_POST['action'] ?? '';
+if ($act === 'set_goal') {
     csrf_verify();
     growth_goal_set([
         'title'       => $_POST['title'] ?? '',
@@ -26,10 +27,26 @@ if (($_POST['action'] ?? '') === 'set_goal') {
     ]);
     header('Location: /xmp/brain?goal=set'); exit;
 }
-if (($_POST['action'] ?? '') === 'clear_goal') {
+if ($act === 'clear_goal') {
     csrf_verify(); growth_goal_clear();
     header('Location: /xmp/brain?goal=cleared'); exit;
 }
+if ($act === 'adopt') {
+    csrf_verify();
+    growth_action_adopt([
+        'profile_id'    => $_POST['profile_id'] ?? '',
+        'profile_name'  => $_POST['profile_name'] ?? '',
+        'profile_email' => $_POST['profile_email'] ?? '',
+        'module'        => $_POST['module'] ?? '',
+        'action'        => $_POST['nba_action'] ?? '',
+        'reason'        => $_POST['reason'] ?? '',
+        'cta'           => $_POST['cta'] ?? '',
+        'goal_metric'   => $_POST['goal_metric'] ?? '',
+    ]);
+    header('Location: /xmp/brain?adopted=1#inbox'); exit;
+}
+if ($act === 'complete_action') { csrf_verify(); growth_action_complete((string)($_POST['id'] ?? '')); header('Location: /xmp/brain?done=1#inbox'); exit; }
+if ($act === 'dismiss_action')  { csrf_verify(); growth_action_dismiss((string)($_POST['id'] ?? '')); header('Location: /xmp/brain#inbox'); exit; }
 
 // ── 取数（只读、有界）──
 $rows = [];
@@ -41,7 +58,17 @@ try {
 $truth    = growth_conversion_truth();
 $goal     = growth_goal_current();
 $progress = growth_goal_progress($goal);
-$digest   = growth_brain_digest(is_array($rows) ? $rows : [], $truth, 25, $goal);
+$digest   = growth_brain_digest(is_array($rows) ? $rows : [], $truth, 40, $goal);
+
+// 已采纳（pending）的提议不再重复冒到建议里
+$openKeys = growth_action_open_keys();
+$digest = array_values(array_filter($digest, function ($r) use ($openKeys) {
+    $p = $r['profile']; $who = $p['id'] ?: ($p['email'] ?: $p['name']);
+    return !isset($openKeys[growth_action_key($who, $r['best']['action'] ?? '')]);
+}));
+$digest  = array_slice($digest, 0, 25);
+$pending = growth_action_pending();
+$stats   = growth_action_stats();
 
 // 动作 → 对应模块入口（只读建议：仅快捷跳转，不代执行）
 function brain_cta_link(array $best): string {
@@ -133,8 +160,34 @@ admin_header('增长大脑');
     <?php endif; ?>
   </div>
 
+  <!-- 采纳箱：已采纳待处理的动作（判断→行动的闭环）-->
+  <div id="inbox" style="display:flex;align-items:center;gap:10px;margin:22px 0 10px">
+    <span style="font-weight:700">📥 采纳箱 · 待处理（<?=count($pending)?>）</span>
+    <span style="font-size:12px;color:var(--faint)">已完成 <?=$stats['done']?> · 忽略 <?=$stats['dismissed']?></span>
+  </div>
+  <?php if (!$pending): ?>
+    <div class="card" style="padding:16px;text-align:center;color:var(--faint);font-size:13px">
+      还没采纳任何动作。在下面的建议里点「采纳」，它会进这里成为待办，并带上下文指向对应模块。
+    </div>
+  <?php else: ?>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <?php foreach ($pending as $a): ?>
+      <div class="card" style="padding:12px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-left:3px solid var(--accent,#4f46e5)">
+        <div style="flex:1;min-width:220px">
+          <div style="font-weight:700;font-size:14px"><?=brain_badge($a['module'] ?: '—')?> <?=htmlspecialchars($a['action'])?>
+            <span style="font-size:12px;font-weight:600;color:var(--faint)">· <?=htmlspecialchars($a['profile_name'] ?: ($a['profile_email'] ?: '匿名'))?></span></div>
+          <div style="font-size:12px;color:var(--faint)"><?=htmlspecialchars($a['reason'])?></div>
+        </div>
+        <a href="<?=htmlspecialchars($a['link'])?>" class="btn btn-sm btn-primary"><?=htmlspecialchars($a['cta'] ?: '去处理')?> →</a>
+        <form method="post" style="margin:0"><?= csrf_field() ?><input type="hidden" name="action" value="complete_action"><input type="hidden" name="id" value="<?=htmlspecialchars($a['id'])?>"><button class="btn btn-sm btn-ghost">完成</button></form>
+        <form method="post" style="margin:0" onsubmit="return confirm('忽略这条建议?')"><?= csrf_field() ?><input type="hidden" name="action" value="dismiss_action"><input type="hidden" name="id" value="<?=htmlspecialchars($a['id'])?>"><button class="btn btn-sm btn-ghost" style="color:var(--faint)">忽略</button></form>
+      </div>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
+
   <!-- 驾驶舱：现在最该动的人 -->
-  <div style="font-weight:700;margin:20px 0 10px">现在最该动的人 · 下一最佳动作（<?=count($digest)?>）</div>
+  <div style="font-weight:700;margin:22px 0 10px">现在最该动的人 · 下一最佳动作（<?=count($digest)?>）</div>
   <?php if (!$digest): ?>
     <div class="card" style="padding:30px;text-align:center;color:var(--faint)">
       还没有可提议的画像。<br>等 CDP 里积累了行为与成交信号（互动分 / 成交 / 沉默天数），大脑就会在这里排出"该找谁、做什么"。
@@ -157,15 +210,27 @@ admin_header('增长大脑');
           <div style="font-size:12px;color:var(--faint);margin-top:4px">备选：<?php $al=array_map(fn($x)=>htmlspecialchars($x['action']),$r['alts']); echo implode(' · ',$al); ?></div>
           <?php endif; ?>
         </div>
-        <a href="<?=brain_cta_link($b)?>" class="btn btn-sm"><?=htmlspecialchars($b['cta'] ?? '去处理')?> →</a>
+        <form method="post" style="margin:0">
+          <?= csrf_field() ?><input type="hidden" name="action" value="adopt">
+          <input type="hidden" name="profile_id" value="<?=htmlspecialchars($p['id'])?>">
+          <input type="hidden" name="profile_name" value="<?=htmlspecialchars($p['name'])?>">
+          <input type="hidden" name="profile_email" value="<?=htmlspecialchars($p['email'])?>">
+          <input type="hidden" name="module" value="<?=htmlspecialchars($b['module'])?>">
+          <input type="hidden" name="nba_action" value="<?=htmlspecialchars($b['action'])?>">
+          <input type="hidden" name="reason" value="<?=htmlspecialchars($b['reason'])?>">
+          <input type="hidden" name="cta" value="<?=htmlspecialchars($b['cta'] ?? '去处理')?>">
+          <input type="hidden" name="goal_metric" value="<?=htmlspecialchars($goal['metric'] ?? '')?>">
+          <button class="btn btn-sm btn-primary">采纳 →</button>
+        </form>
       </div>
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
 
   <p style="font-size:12px;color:var(--faint);margin-top:18px">
-    这是"增长大脑"的第一形态：规则驱动、可解释、只读建议。下一步是给它接上共享目标与记忆、
-    让"采纳"一键落到对应模块的动作里（AUDIT-07 P1）。
+    "增长大脑"胚胎：规则驱动、可解释。判断→行动的闭环已接上——采纳一条提议即进上方
+    采纳箱，并带这个人的上下文去对应模块（报价单自动预填）；本页不代执行客户侧动作，
+    发出由模块自己的确认步把关。下一步给它接上跨模块的共享记忆（AUDIT-07 P1）。
   </p>
 </div>
 <?php admin_footer(); ?>
