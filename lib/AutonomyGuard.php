@@ -30,7 +30,7 @@ if (!function_exists('autonomy_settings')) {
 
     function autonomy_save(array $d): array {
         $s = function_exists('json_read') ? json_read(DATA_DIR . '/settings.json') : [];
-        $lvl = in_array(($d['level'] ?? 'propose'), ['propose','guarded','goal'], true) ? $d['level'] : 'propose';
+        $lvl = in_array(($d['level'] ?? 'propose'), ['propose','guarded','goal'], true) ? ($d['level'] ?? 'propose') : 'propose';
         $s['autonomy'] = [
             'level' => $lvl,
             'daily_budget' => max(0, (float)($d['daily_budget'] ?? 0)),
