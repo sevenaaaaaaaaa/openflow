@@ -1491,6 +1491,7 @@ function admin_sidebar(string $current): void {
     <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-6.13a4 4 0 11-8 0 4 4 0 018 0zm12 6a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
     用户分群
   </a>
+  <a href="/xmp/destinations" class="<?=$current==='destinations'?'active':''?>" style="padding-left:44px;font-size:13px">📡 人群激活</a>
   <?php endif; ?>
   <?php if (has_perm('profiling')): ?>
   <a href="/xmp/profiling" class="<?=$current==='profiling'?'active':''?>" style="padding-left:44px;font-size:13px">用户画像</a>
