@@ -284,3 +284,203 @@ function crm_arr(): array {
         'churned_count' => count($churned),
     ];
 }
+
+// ─── 批量建线索（A3：CDP 分群 → CRM）────────────────────────
+//
+// 为什么不循环调 crm_ensure_lead()：它每建一条就 crm_get() + crm_save()
+// 一次，等于把整个 crm.json 读写 N 遍。5000 人的分群就是 5000 次全量
+// 读写，O(n²)，必然超时，中途失败还会留下写坏的文件。
+// 这里全程只读一次、只写一次，钩子等旁路动作留到落盘之后再发。
+
+/**
+ * 批量创建/更新线索。
+ *
+ * @param array $rows 每行 ['email'=>, 'name'=>, 'phone'=>, 'company'=>,
+ *                          'source'=>, 'tags'=>[], 'owner'=>, 'stage'=>, 'value'=>]
+ * @param array $opts
+ *        - update_existing bool 已存在的线索是否补齐空字段（默认 false，只跳过）
+ *        - source          string 统一来源，行内 source 优先
+ *        - owner           string 统一负责人，行内 owner 优先
+ *        - stage           string 新线索初始阶段（默认 new）
+ *        - tags            array  统一追加的标签
+ *        - fire_hooks      bool   是否发 crm_lead_created（默认 true）
+ *        - fire_webhooks   bool   是否逐条发出站 webhook（默认 false，见下）
+ *        - dry_run         bool   只统计不落盘
+ * @return array ['created','updated','skipped','no_email','total','emails'=>新建的邮箱]
+ *
+ * fire_webhooks 默认关闭：出站 webhook 是同步 HTTP，批量导入逐条发会把
+ * 一次请求拖成几十分钟。批量结束后会发一次 crm_leads_bulk_imported 汇总钩子。
+ */
+function crm_bulk_create_leads(array $rows, array $opts = []): array {
+    $updateExisting = (bool)($opts['update_existing'] ?? false);
+    $defSource      = (string)($opts['source'] ?? '');
+    $defOwner       = (string)($opts['owner'] ?? '');
+    $defStage       = (string)($opts['stage'] ?? 'new');
+    $defTags        = array_values(array_filter((array)($opts['tags'] ?? [])));
+    $fireHooks      = (bool)($opts['fire_hooks'] ?? true);
+    $fireWebhooks   = (bool)($opts['fire_webhooks'] ?? false);
+    $dryRun         = (bool)($opts['dry_run'] ?? false);
+
+    $stat = ['created'=>0, 'updated'=>0, 'skipped'=>0, 'no_email'=>0,
+             'total'=>count($rows), 'emails'=>[]];
+
+    $data = crm_get();
+    if (!isset($data['leads']) || !is_array($data['leads'])) $data['leads'] = [];
+    $now = date('Y-m-d H:i:s');
+    $newLeads = [];   // 落盘后再发钩子
+
+    foreach ($rows as $row) {
+        $email = mb_strtolower(trim((string)($row['email'] ?? '')));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) { $stat['no_email']++; continue; }
+
+        $tags = array_values(array_unique(array_merge($defTags, (array)($row['tags'] ?? []))));
+
+        if (isset($data['leads'][$email])) {
+            if (!$updateExisting) { $stat['skipped']++; continue; }
+            // 只补空字段，绝不覆盖销售已经填过的内容
+            $lead = $data['leads'][$email];
+            $changed = false;
+            foreach (['name','phone','company','source'] as $f) {
+                $v = trim((string)($row[$f] ?? ''));
+                if ($v !== '' && ($lead[$f] ?? '') === '') { $lead[$f] = $v; $changed = true; }
+            }
+            if ($tags) {
+                $merged = array_values(array_unique(array_merge((array)($lead['tags'] ?? []), $tags)));
+                if ($merged !== ($lead['tags'] ?? [])) { $lead['tags'] = $merged; $changed = true; }
+            }
+            if ($changed) {
+                $lead['updated_at'] = $now;
+                $data['leads'][$email] = $lead;
+                $stat['updated']++;
+            } else {
+                $stat['skipped']++;
+            }
+            continue;
+        }
+
+        $lead = [
+            'email'   => $email,
+            'name'    => trim((string)($row['name'] ?? '')),
+            'phone'   => trim((string)($row['phone'] ?? '')),
+            'company' => trim((string)($row['company'] ?? '')),
+            'stage'   => (string)($row['stage'] ?? $defStage),
+            'score'   => (int)($row['score'] ?? 0),
+            'owner'   => (string)($row['owner'] ?? $defOwner),
+            'value'   => (float)($row['value'] ?? 0),
+            'expected_close' => '',
+            'source'  => (string)($row['source'] ?? $defSource),
+            'tags'    => $tags,
+            'follow_ups' => [],
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
+        $data['leads'][$email] = $lead;
+        $stat['created']++;
+        $stat['emails'][] = $email;
+        $newLeads[$email] = $lead;
+    }
+
+    if ($dryRun) return $stat;
+    if ($stat['created'] === 0 && $stat['updated'] === 0) return $stat;
+
+    crm_save($data);
+
+    // ── 以下全部是旁路：失败不影响已经落盘的线索 ──
+    if ($fireHooks && class_exists('PluginSystem')) {
+        foreach ($newLeads as $email => $lead) {
+            PluginSystem::do_action('crm_lead_created', $email, $lead);
+        }
+        PluginSystem::do_action('crm_leads_bulk_imported', $stat, $opts);
+    }
+    if ($fireWebhooks && class_exists('WebhookSystem')) {
+        foreach ($newLeads as $email => $lead) {
+            try { \WebhookSystem::trigger('lead.created', ['email' => $email, 'name' => $lead['name'], 'phone' => $lead['phone']]); }
+            catch (Exception $e) {}
+        }
+    }
+
+    return $stat;
+}
+
+/**
+ * 从 CDP 画像里提取可入库的线索行。
+ *
+ * 邮箱来源按可靠性排序：画像属性 → 画像顶层字段 → member_id 反查会员表。
+ * 拿不到邮箱的画像会被计入 no_email，不会造出一条没法联系的空线索。
+ */
+function crm_rows_from_profiles(array $profiles): array {
+    // member_id → 会员，只读一次
+    $membersById = [];
+    $members = json_read(DATA_DIR . '/members/index.json');
+    foreach (is_array($members) ? $members : [] as $m) {
+        if (!empty($m['id'])) $membersById[(string)$m['id']] = $m;
+    }
+
+    $rows = [];
+    foreach ($profiles as $p) {
+        $props  = is_array($p['properties'] ?? null) ? $p['properties'] : [];
+        $member = $membersById[(string)($p['member_id'] ?? '')] ?? [];
+
+        $pick = function (string $key) use ($props, $p, $member) {
+            foreach ([$props[$key] ?? null, $p[$key] ?? null, $member[$key] ?? null] as $v) {
+                if (is_string($v) && trim($v) !== '') return trim($v);
+            }
+            return '';
+        };
+
+        $rows[] = [
+            'email'   => $pick('email'),
+            'name'    => $pick('name') ?: $pick('nickname') ?: ($member['username'] ?? ''),
+            'phone'   => $pick('phone'),
+            'company' => $pick('company'),
+            'source'  => $pick('source') ?: $pick('utm_source'),
+            'tags'    => array_values(array_filter((array)($p['tags'] ?? []), 'is_string')),
+        ];
+    }
+    return $rows;
+}
+
+/**
+ * 把一个分群里的人批量灌进 CRM。
+ *
+ * 分群有两套引擎（SegmentEngine 面向运营配置，CdpSystem 面向行为规则），
+ * 但两者评估的都是同一份 cdp/profiles.json，这里按 id 依次尝试。
+ *
+ * @return array crm_bulk_create_leads() 的统计，外加 'segment' 与 'matched'
+ */
+function crm_leads_from_segment(string $segmentId, array $opts = []): array {
+    $profiles = json_read(DATA_DIR . '/cdp/profiles.json');
+    if (!is_array($profiles)) $profiles = [];
+    $segment = null; $matched = [];
+
+    if (class_exists('SegmentEngine')) {
+        foreach (\SegmentEngine::getSegments() as $s) {
+            if (($s['id'] ?? '') === $segmentId) { $segment = $s; break; }
+        }
+        if ($segment) {
+            foreach ($profiles as $p) {
+                if (\SegmentEngine::matchSegment($segment, $p)) $matched[] = $p;
+            }
+        }
+    }
+    if (!$segment && class_exists('CdpSystem')) {
+        foreach (\CdpSystem::allSegments() as $s) {
+            if (($s['id'] ?? '') === $segmentId) { $segment = $s; break; }
+        }
+        if ($segment) $matched = \CdpSystem::getSegmentUsers($segment['rules'] ?? [], PHP_INT_MAX);
+    }
+
+    if (!$segment) {
+        return ['created'=>0,'updated'=>0,'skipped'=>0,'no_email'=>0,'total'=>0,
+                'emails'=>[], 'segment'=>'', 'matched'=>0, 'error'=>'分群不存在'];
+    }
+
+    $opts['tags']   = array_values(array_unique(array_merge(
+        (array)($opts['tags'] ?? []), ['分群:' . ($segment['name'] ?? $segmentId)])));
+    $opts['source'] = $opts['source'] ?? ('CDP 分群 · ' . ($segment['name'] ?? $segmentId));
+
+    $stat = crm_bulk_create_leads(crm_rows_from_profiles($matched), $opts);
+    $stat['segment'] = (string)($segment['name'] ?? $segmentId);
+    $stat['matched'] = count($matched);
+    return $stat;
+}
