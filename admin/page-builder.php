@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../lib/BlockTargeting.php';
 require_login();
 require_perm('pages');
 
@@ -31,6 +32,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         foreach (['title','subtitle','content','image','bg_color','button_text','button_url','video_url','icon','columns','count','items','form_slug','layout'] as $fk) {
             if (isset($_POST['block_' . $fk][$bi])) $block[$fk] = $_POST['block_' . $fk][$bi];
         }
+        // 区块级人群定向（BACKLOG T1-8）：全为不限/空则不写 audience，保持默认全员可见
+        $aud = [
+            'login'   => (string)($_POST['block_aud_login'][$bi] ?? 'any'),
+            'visitor' => (string)($_POST['block_aud_visitor'][$bi] ?? 'any'),
+            'segment' => trim((string)($_POST['block_aud_segment'][$bi] ?? '')),
+            'utm'     => trim((string)($_POST['block_aud_utm'][$bi] ?? '')),
+        ];
+        $hasAud = ($aud['login'] !== 'any') || ($aud['visitor'] !== 'any') || $aud['segment'] !== '' || $aud['utm'] !== '';
+        if ($hasAud) $block['audience'] = $aud;
         $data['blocks'][] = $block;
     }
 
@@ -200,6 +210,16 @@ admin_header('落地页构建器');
                   <input type="text" name="block_button_text[]" value="<?=htmlspecialchars($blk['button_text']??'')?>" placeholder="按钮文字">
                   <input type="text" name="block_button_url[]" value="<?=htmlspecialchars($blk['button_url']??'')?>" placeholder="按钮链接">
                 </div>
+                <?php $ba = $blk['audience'] ?? []; $bopts = blocktarget_options(); ?>
+                <details <?=blocktarget_has_rules($blk)?'open':''?> style="border:1px dashed var(--border);border-radius:6px;padding:8px 10px">
+                  <summary style="cursor:pointer;font-size:12px;color:var(--faint)">🎯 只给特定人群看<?=blocktarget_has_rules($blk)?'（已定向）':'（默认所有人）'?></summary>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;margin-top:8px">
+                    <select name="block_aud_login[]"><?php foreach ($bopts['login'] as $k=>$v): ?><option value="<?=$k?>" <?=($ba['login']??'any')===$k?'selected':''?>>登录：<?=$v?></option><?php endforeach; ?></select>
+                    <select name="block_aud_visitor[]"><?php foreach ($bopts['visitor'] as $k=>$v): ?><option value="<?=$k?>" <?=($ba['visitor']??'any')===$k?'selected':''?>>访客：<?=$v?></option><?php endforeach; ?></select>
+                    <input type="text" name="block_aud_segment[]" value="<?=htmlspecialchars($ba['segment']??'')?>" placeholder="CDP 分群 id">
+                    <input type="text" name="block_aud_utm[]" value="<?=htmlspecialchars($ba['utm']??'')?>" placeholder="UTM 来源">
+                  </div>
+                </details>
               </div>
             </div>
             <?php endforeach; ?>
@@ -267,6 +287,16 @@ function addBlock(type, label) {
         '<input type="text" name="block_button_text[]" placeholder="按钮文字">' +
         '<input type="text" name="block_button_url[]" placeholder="按钮链接">' +
       '</div>' +
+      // 区块级人群定向（T1-8）：与 PHP 渲染保持同样的 4 个字段，确保并行数组下标对齐
+      '<details style="border:1px dashed var(--border);border-radius:6px;padding:8px 10px">' +
+        '<summary style="cursor:pointer;font-size:12px;color:var(--faint)">🎯 只给特定人群看（默认所有人）</summary>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;margin-top:8px">' +
+          '<select name="block_aud_login[]"><option value="any">登录：不限</option><option value="in">登录：已登录</option><option value="out">登录：未登录</option></select>' +
+          '<select name="block_aud_visitor[]"><option value="any">访客：不限</option><option value="new">访客：新访客</option><option value="return">访客：回访客</option></select>' +
+          '<input type="text" name="block_aud_segment[]" placeholder="CDP 分群 id">' +
+          '<input type="text" name="block_aud_utm[]" placeholder="UTM 来源">' +
+        '</div>' +
+      '</details>' +
     '</div>';
   document.getElementById('blocksList').appendChild(div);
 }
