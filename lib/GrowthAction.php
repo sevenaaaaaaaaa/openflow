@@ -102,6 +102,20 @@ if (!function_exists('growth_action_adopt')) {
         ];
         $list[] = $row;
         growth_action_save_all($list);
+
+        // 共享记忆（BACKLOG T1-17）：记住"对这个人做过什么"，下次判断不再从零开始
+        try {
+            require_once __DIR__ . '/GrowthMemory.php';
+            $subj = $row['profile_email'] ?: ($row['profile_id'] ?: $row['profile_name']);
+            if ($subj !== '') {
+                gmem_remember($subj, '采纳动作：' . $row['action'], [
+                    'kind' => 'interaction', 'source' => 'brain',
+                    'detail' => ['module' => $row['module'], 'reason' => $row['reason']],
+                    'dedupe_key' => 'act:' . $row['id'],
+                ]);
+            }
+        } catch (\Throwable $e) {}
+
         return ['ok' => true, 'dup' => false, 'action' => $row];
     }
 }
