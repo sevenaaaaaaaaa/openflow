@@ -15,6 +15,7 @@ $message = '';
 
 // 授予/变更会员等级
 if (isset($_POST['grant'])) {
+    csrf_verify();
     $mid = $_POST['member_id'] ?? '';
     $tier = $_POST['tier'] ?? '';
     if (in_array($tier, ['free', 'member', 'vip'])) {
@@ -27,6 +28,7 @@ if (isset($_POST['grant'])) {
 
 // 保存计划
 if (isset($_POST['save_plans'])) {
+    csrf_verify();
     $plans = [];
     foreach (($_POST['plan_id'] ?? []) as $i => $pid) {
         if (empty($pid)) continue;

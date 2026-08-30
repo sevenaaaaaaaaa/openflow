@@ -47,8 +47,11 @@ if (isset($_GET['dl'])) {
 }
 
 // ─── Delete backup ───
-if (isset($_POST['delete_backup'])) {
-    $f = basename($_POST['delete_backup']);
+// 原来读 $_POST 但删除按钮是 GET 链接，两者对不上 —— 删除一直是失效的。
+// 修正为读 GET 并强制校验 CSRF token（删除文件是破坏性操作）。
+if (isset($_GET['delete_backup'])) {
+    csrf_verify();
+    $f = basename($_GET['delete_backup']);
     $fp = DATA_DIR . '/backups/' . $f;
     if (file_exists($fp)) unlink($fp);
     $message = '已删除备份：' . $f;
@@ -152,7 +155,7 @@ admin_header('运维工具');
             <td><?=round(filesize($bp)/1048576,2)?> MB</td>
             <td class="text-sm text-muted"><?=date('Y-m-d H:i', filemtime($bp))?></td>
             <td><a href="?dl=<?=urlencode($bn)?>" class="btn btn-ghost btn-sm">下载</a>
-              <a href="?delete_backup=<?=urlencode($bn)?>" class="btn btn-danger btn-sm" onclick="return confirm('删除?')">删除</a></td>
+              <a href="?delete_backup=<?=urlencode($bn)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-danger btn-sm" onclick="return confirm('删除?')">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

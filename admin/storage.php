@@ -10,6 +10,7 @@ require_perm('settings');
 $message = '';
 // 执行清理
 if (isset($_POST['maintain'])) {
+    csrf_verify();
     $cleaned = storage_maintain();
     $message = '维护完成：' . implode('；', $cleaned);
 }
