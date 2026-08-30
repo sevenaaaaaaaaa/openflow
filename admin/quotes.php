@@ -39,6 +39,26 @@ if (($_POST['action'] ?? '') === 'create') {
     }
 }
 
+// 交付阶段
+if (($_POST['action'] ?? '') === 'set_stage') {
+    if (quote_set_stage(trim($_POST['id'] ?? ''), trim($_POST['stage'] ?? ''))) $message = '交付阶段已更新。';
+}
+// 待办：增 / 勾 / 删
+if (($_POST['action'] ?? '') === 'add_todo') {
+    if (quote_add_todo(trim($_POST['id'] ?? ''), $_POST['text'] ?? '', $_POST['due'] ?? '')) $message = '待办已添加。';
+    else $error = '待办内容不能为空。';
+}
+if (($_POST['action'] ?? '') === 'toggle_todo') {
+    quote_toggle_todo(trim($_POST['id'] ?? ''), (int)($_POST['idx'] ?? -1));
+}
+if (($_POST['action'] ?? '') === 'del_todo') {
+    quote_remove_todo(trim($_POST['id'] ?? ''), (int)($_POST['idx'] ?? -1));
+}
+
+// 详情视图（?id=）用于管待办
+$detailId = trim($_GET['id'] ?? '');
+$detail = $detailId !== '' ? (quote_locate($detailId)[1] ?? null) : null;
+
 $quotes = quote_all();
 $statusLabel = ['pending'=>'待支付','paid'=>'已支付','refunded'=>'已退款','cancelled'=>'已取消'];
 $sumPaid = array_sum(array_map(fn($q) => ($q['status'] ?? '') === 'paid' ? (float)($q['amount'] ?? 0) : 0, $quotes));
@@ -62,6 +82,81 @@ admin_header('收款链接');
           <input id="newlink" type="text" readonly value="<?=htmlspecialchars($newLink)?>" style="flex:1;font-family:monospace;font-size:13px" onclick="this.select()">
           <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('newlink').value).then(()=>fcToast&&fcToast('已复制','success'))">复制</button>
         </div>
+      </div>
+    <?php endif; ?>
+
+    <?php
+      $att = quote_attention();
+      $stages = quote_stages();
+      // 需要盯的：只在有内容时显示
+      $buckets = [
+        ['已付钱·活没完', $att['paid_undelivered'], 'var(--danger)', '收了钱，赶紧交付'],
+        ['已交付·钱没清', $att['delivered_unpaid'], 'var(--warn)',  '活干完了，该收钱 / 催尾款'],
+        ['待办到期',       $att['todo_due'],         'var(--accent)','有到期没做的事'],
+      ];
+      $hasAtt = $att['paid_undelivered'] || $att['delivered_unpaid'] || $att['todo_due'];
+    ?>
+    <?php if ($hasAtt): ?>
+      <h2 style="margin:18px 0 10px">需要盯的</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:8px">
+        <?php foreach ($buckets as [$label, $list, $color, $hint]): if (!$list) continue; ?>
+          <div class="card" style="margin:0;border-left:3px solid <?=$color?>">
+            <div style="display:flex;align-items:baseline;justify-content:space-between">
+              <b><?=$label?></b><span style="font-size:22px;font-weight:800;color:<?=$color?>"><?=count($list)?></span>
+            </div>
+            <div class="sub" style="margin:2px 0 8px"><?=$hint?></div>
+            <?php foreach (array_slice($list, 0, 4) as $q): ?>
+              <a href="?id=<?=urlencode($q['id'])?>" style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:3px 0;color:var(--text-2);text-decoration:none">
+                <span><?=htmlspecialchars(($q['customer'] ?: ($q['crm_email'] ?? '')) ?: '客户')?> · <?=htmlspecialchars(mb_substr($q['goods_title'] ?? '收款', 0, 12))?></span>
+                <span class="mono">¥<?=number_format((float)($q['amount'] ?? 0), 0)?></span>
+              </a>
+            <?php endforeach; ?>
+            <?php if (count($list) > 4): ?><div class="sub" style="font-size:12px;margin-top:4px">…共 <?=count($list)?> 单</div><?php endif; ?>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+
+    <?php if ($detail): $d = $detail; $dStage = quote_stage_of($d); ?>
+      <div class="card" style="border:1px solid var(--accent)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div>
+            <h2 style="margin:0 0 2px;font-size:16px"><?=htmlspecialchars($d['goods_title'] ?? '收款')?></h2>
+            <div class="sub"><?=htmlspecialchars($d['customer'] ?: ($d['crm_email'] ?? '—'))?> · ¥<?=number_format((float)($d['amount'] ?? 0), 2)?> · <span class="badge <?= ($d['status']??'')==='paid'?'ok':(($d['status']??'')==='refunded'?'danger':'') ?>"><?=htmlspecialchars($statusLabel[$d['status'] ?? 'pending'] ?? '')?></span></div>
+          </div>
+          <a href="/xmp/quotes" class="btn btn-ghost btn-sm">收起</a>
+        </div>
+
+        <div style="margin:14px 0">
+          <div class="sub" style="margin-bottom:6px">交付阶段</div>
+          <form method="post" style="display:flex;gap:6px;flex-wrap:wrap">
+            <?= csrf_field() ?><input type="hidden" name="action" value="set_stage"><input type="hidden" name="id" value="<?=htmlspecialchars($d['id'])?>">
+            <?php foreach ($stages as $k => $lbl): ?>
+              <button name="stage" value="<?=$k?>" class="btn btn-sm <?=$dStage===$k?'btn-primary':'btn-ghost'?>"><?=$lbl?></button>
+            <?php endforeach; ?>
+          </form>
+        </div>
+
+        <div class="sub" style="margin-bottom:6px">待办</div>
+        <?php foreach ((array)($d['todos'] ?? []) as $i => $t): ?>
+          <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+            <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="action" value="toggle_todo"><input type="hidden" name="id" value="<?=htmlspecialchars($d['id'])?>"><input type="hidden" name="idx" value="<?=$i?>">
+              <button style="background:none;border:none;cursor:pointer;font-size:16px"><?=!empty($t['done'])?'✅':'⬜'?></button></form>
+            <span style="flex:1;<?=!empty($t['done'])?'text-decoration:line-through;color:var(--text-3)':''?>"><?=htmlspecialchars($t['text'] ?? '')?>
+              <?php if (!empty($t['due'])): $overdue = empty($t['done']) && $t['due'] <= date('Y-m-d'); ?>
+                <span style="font-size:12px;color:<?=$overdue?'var(--danger)':'var(--text-3)'?>">· <?=htmlspecialchars($t['due'])?><?=$overdue?' 已到期':''?></span>
+              <?php endif; ?></span>
+            <form method="post" style="display:inline" onsubmit="return confirm('删除这条待办?')"><?= csrf_field() ?><input type="hidden" name="action" value="del_todo"><input type="hidden" name="id" value="<?=htmlspecialchars($d['id'])?>"><input type="hidden" name="idx" value="<?=$i?>">
+              <button class="btn btn-ghost btn-sm" style="color:var(--text-3)">×</button></form>
+          </div>
+        <?php endforeach; ?>
+        <?php if (empty($d['todos'])): ?><div class="sub" style="font-size:13px">还没有待办。</div><?php endif; ?>
+        <form method="post" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <?= csrf_field() ?><input type="hidden" name="action" value="add_todo"><input type="hidden" name="id" value="<?=htmlspecialchars($d['id'])?>">
+          <input type="text" name="text" placeholder="加一条待办，如：交初稿 / 催尾款 ¥3000" style="flex:2;min-width:200px" required>
+          <input type="date" name="due" style="width:150px" title="截止日期（选填）">
+          <button class="btn btn-primary btn-sm">添加</button>
+        </form>
       </div>
     <?php endif; ?>
 
@@ -99,21 +194,26 @@ admin_header('收款链接');
 
     <div class="card" style="padding:0;overflow-x:auto">
       <table class="table">
-        <thead><tr><th>事由</th><th>客户</th><th>金额</th><th>状态</th><th>创建</th><th style="width:1%">操作</th></tr></thead>
+        <thead><tr><th>事由</th><th>客户</th><th>金额</th><th>收款</th><th>交付</th><th>待办</th><th style="width:1%">操作</th></tr></thead>
         <tbody>
-          <?php if (!$quotes): ?><tr><td colspan="6" class="empty">还没有收款单</td></tr><?php endif; ?>
-          <?php foreach ($quotes as $q): $st = $q['status'] ?? 'pending'; ?>
+          <?php if (!$quotes): ?><tr><td colspan="7" class="empty">还没有收款单</td></tr><?php endif; ?>
+          <?php foreach ($quotes as $q): $st = $q['status'] ?? 'pending'; $stg = quote_stage_of($q); $open = quote_open_todos($q); ?>
             <tr>
-              <td><?=htmlspecialchars($q['goods_title'] ?? '收款')?></td>
+              <td><a href="?id=<?=urlencode($q['id'])?>" style="color:var(--accent);text-decoration:none"><?=htmlspecialchars($q['goods_title'] ?? '收款')?></a></td>
               <td style="font-size:12px"><?=htmlspecialchars($q['customer'] ?: ($q['crm_email'] ?? '—'))?></td>
               <td class="mono">¥<?=number_format((float)($q['amount'] ?? 0), 2)?></td>
               <td><span class="badge <?= $st==='paid'?'ok':($st==='refunded'?'danger':'') ?>"><?=htmlspecialchars($statusLabel[$st] ?? $st)?></span></td>
-              <td style="font-size:12px;color:var(--text-3)"><?=htmlspecialchars(substr($q['created_at'] ?? '', 0, 16))?></td>
               <td>
+                <?php $delivered = $stg === 'delivered'; ?>
+                <span class="badge <?=$delivered?'ok':''?>" style="<?=$delivered?'':'background:var(--surface-2)'?>"><?=htmlspecialchars($stages[$stg])?></span>
+                <?php if ($st === 'paid' && !$delivered): ?><span title="收了钱还没交付" style="color:var(--danger)">●</span><?php endif; ?>
+                <?php if ($delivered && !in_array($st, ['paid','refunded'], true)): ?><span title="交付了还没收款" style="color:var(--warn)">●</span><?php endif; ?>
+              </td>
+              <td><?php if ($open): ?><a href="?id=<?=urlencode($q['id'])?>" style="text-decoration:none"><?=$open?> 待办</a><?php else: ?><span class="sub" style="font-size:12px">—</span><?php endif; ?></td>
+              <td style="white-space:nowrap">
+                <a href="?id=<?=urlencode($q['id'])?>" class="btn btn-ghost btn-sm">管理</a>
                 <?php if ($st === 'pending'): ?>
                   <button class="btn btn-ghost btn-sm" onclick="copyLink('<?=htmlspecialchars(quote_pay_url($q), ENT_QUOTES)?>')">复制链接</button>
-                <?php else: ?>
-                  <span class="sub" style="font-size:12px">—</span>
                 <?php endif; ?>
               </td>
             </tr>
