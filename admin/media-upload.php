@@ -165,5 +165,16 @@ if ($ext === 'svg') {
     file_put_contents($dest, $svgContent);
 }
 
+// 响应式多尺寸 WebP（BACKLOG T1-7）：一次上传产出 480/960/1920 三档，供前台 srcset。
+// 旁路：失败不影响上传结果。
+$variants = []; $srcset = '';
+if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+    try {
+        require_once __DIR__ . '/../lib/ImageVariants.php';
+        $r = imgvar_generate($dest, SITE_URL . '/uploads/' . $dir);
+        if (!empty($r['ok'])) { $variants = $r['variants']; $srcset = $r['srcset']; }
+    } catch (Throwable $e) {}
+}
+
 $url = SITE_URL . '/uploads/' . $dir . '/' . $name;
-echo json_encode(['ok' => true, 'url' => $url, 'name' => $name, 'path' => 'uploads/' . $dir . '/' . $name, 'compressed' => $compressed, 'size' => @filesize($dest)]);
+echo json_encode(['ok' => true, 'url' => $url, 'name' => $name, 'path' => 'uploads/' . $dir . '/' . $name, 'compressed' => $compressed, 'size' => @filesize($dest), 'variants' => $variants, 'srcset' => $srcset]);
