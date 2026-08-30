@@ -1,0 +1,8 @@
+{
+  "id": "seo-enhancer",
+  "name": "SEO 增强",
+  "version": "1.0.0",
+  "description": "文章发布前自动补全 SEO 描述与关键词，并把新发布的文章推给搜索引擎收录。示例：filter 改写数据 + action 触发副作用。",
+  "author": "OpenFlow",
+  "enabled_by_default": false
+}

@@ -1,0 +1,8 @@
+{
+  "id": "deal-notifier",
+  "name": "成交播报",
+  "version": "1.0.0",
+  "description": "CRM 成交、订单支付、退款时往企业微信/飞书群里播报一条。示例：监听多个业务动作 + 出站 HTTP + 配置页。",
+  "author": "OpenFlow",
+  "enabled_by_default": false
+}

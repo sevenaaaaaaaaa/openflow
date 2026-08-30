@@ -227,13 +227,47 @@ $done = [
 ];
 foreach ($done as $k => $v) t("已完成：{$k}", $v);
 
-// 未做的要显式列出，不能装作做完了
-$notDone = [
-    'A3 CDP 分群→CRM 批量操作' => strpos(@file_get_contents("{$root}/lib/CrmSystem.php") ?: '', 'bulk_create_leads') !== false,
-    'C2 PluginSDK'             => is_file("{$root}/lib/PluginSDK.php"),
-    'C3 官方示例插件'          => is_dir("{$root}/plugins/seo-enhancer"),
-    'D1 CDP 分层缓存'          => false,
-];
+$crmSrc = @file_get_contents("{$root}/lib/CrmSystem.php") ?: '';
+$dbSrc  = @file_get_contents("{$root}/lib/Database.php") ?: '';
+$done['A3 分群→CRM 批量建线索'] = strpos($crmSrc, 'crm_bulk_create_leads') !== false;
+$done['C2 PluginSDK']          = is_file("{$root}/lib/PluginSDK.php");
+$done['C3 官方示例插件（3 个）'] = is_dir("{$root}/plugins/seo-enhancer")
+                                && is_dir("{$root}/plugins/deal-notifier")
+                                && is_dir("{$root}/plugins/event-firewall");
+$done['D1 events 索引（替代 Redis 方案）'] = strpos($dbSrc, 'idx_events_event_created') !== false
+                                          && is_file("{$root}/docs/PERFORMANCE.md");
+foreach (['A3 分群→CRM 批量建线索', 'C2 PluginSDK', 'C3 官方示例插件（3 个）',
+          'D1 events 索引（替代 Redis 方案）'] as $k) t("已完成：{$k}", $done[$k]);
+
+$notDone = [];
+
+// ── 批量建线索不能退化成逐条读写（O(n²)，5000 人的分群必然超时）──
+// 这里只做「函数体内 crm_get/crm_save 各恰好一次」的静态断言；
+// 真正的行为证明在 tests/bulk_leads_test.php（它数了实际读写次数）。
+$bulkBody = '';
+if (preg_match('/function crm_bulk_create_leads.*?\n\}/s', $crmSrc, $bm)) $bulkBody = $bm[0];
+t('批量建线索函数体内只读一次 crm.json', substr_count($bulkBody, 'crm_get()') === 1,
+  '实际 ' . substr_count($bulkBody, 'crm_get()') . ' 次');
+t('批量建线索函数体内只写一次 crm.json', substr_count($bulkBody, 'crm_save(') === 1,
+  '实际 ' . substr_count($bulkBody, 'crm_save(') . ' 次');
+
+// ── 示例插件是活文档，必须是能被 PluginSystem 认出来的完整插件 ──
+$badPlugin = [];
+foreach (['seo-enhancer', 'deal-notifier', 'event-firewall'] as $pid) {
+    $dir = "{$root}/plugins/{$pid}";
+    if (!is_file("{$dir}/plugin.json")) { $badPlugin[] = "{$pid} 缺 plugin.json"; continue; }
+    if (!is_file("{$dir}/plugin.php"))  { $badPlugin[] = "{$pid} 缺 plugin.php"; continue; }
+    $meta = json_decode((string)file_get_contents("{$dir}/plugin.json"), true);
+    if (($meta['id'] ?? '') !== $pid) $badPlugin[] = "{$pid} 的 plugin.json id 对不上";
+    if (strpos((string)file_get_contents("{$dir}/plugin.php"), 'PluginSDK.php') === false) {
+        $badPlugin[] = "{$pid} 没用 SDK（示例应当示范 SDK 用法）";
+    }
+}
+t('三个示例插件结构完整', empty($badPlugin), implode('；', $badPlugin));
+
+// ── 拿数据的钩子必须 fail-open：埋点防火墙自己坏了不能把全站事件丢光 ──
+$fw = @file_get_contents("{$root}/plugins/event-firewall/plugin.php") ?: '';
+t('埋点防火墙 fail-open', strpos($fw, 'catch') !== false && preg_match('/catch[^}]*return \$entry/s', $fw));
 
 // ─────────────────────────────────────────────
 echo "\n" . str_repeat('=', 52) . "\n";
