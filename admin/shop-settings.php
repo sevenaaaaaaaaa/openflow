@@ -106,9 +106,9 @@ if ($__sub === 'self'):
               <td>
                 <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
                   <input type="number" name="course_promo_price[<?=htmlspecialchars($c['id'])?>]" value="<?=htmlspecialchars($cp['price'] ?? '')?>" placeholder="促销价" step="0.01" min="0" style="width:80px;padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
-                  <input type="datetime-local" name="course_promo_start[<?=htmlspecialchars($c['id'])?>]" value="<?=$cp['start']?str_replace(' ','T',substr($cp['start'],0,16)):''?>" style="padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
+                  <input type="datetime-local" name="course_promo_start[<?=htmlspecialchars($c['id'])?>]" value="<?=(!empty($cp['start']))?str_replace(' ','T',substr($cp['start'],0,16)):''?>" style="padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
                   <span style="font-size:11px;color:var(--faint)">至</span>
-                  <input type="datetime-local" name="course_promo_end[<?=htmlspecialchars($c['id'])?>]" value="<?=$cp['end']?str_replace(' ','T',substr($cp['end'],0,16)):''?>" style="padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
+                  <input type="datetime-local" name="course_promo_end[<?=htmlspecialchars($c['id'])?>]" value="<?=(!empty($cp['end']))?str_replace(' ','T',substr($cp['end'],0,16)):''?>" style="padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
                 </div>
               </td>
             </tr>
