@@ -23,6 +23,7 @@ $aiGuide = null;
 
 // AI 体检：分析上传数据，生成导入指南
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ai_analyze'])) {
+    csrf_verify();
     $mig = $_SESSION['migrate'] ?? null;
     if ($mig) {
         require_once __DIR__ . '/../lib/AiCenter.php';
@@ -72,6 +73,7 @@ if (isset($_GET['download_template'])) {
 
 // 步骤1：选择类型 + 上传
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload'])) {
+    csrf_verify();
     $type = $_POST['type'] ?? 'articles';
     if (empty($_FILES['file']['tmp_name'])) { flash('error', '请选择文件'); header('Location: /xmp/migrate'); exit; }
     [$header, $rows] = migrate_parse_file($_FILES['file']['tmp_name']);
@@ -84,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload'])) {
 
 // 步骤2：映射 + 导入
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import'])) {
+    csrf_verify();
     $mig = $_SESSION['migrate'] ?? null;
     if (!$mig) { header('Location: /xmp/migrate'); exit; }
     $map = $_POST['map'] ?? [];  // new_field => old_column
@@ -133,6 +136,7 @@ admin_header('数据迁移');
 
     <?php if ($step === 'select'): ?>
     <form method="post" enctype="multipart/form-data">
+        <?= csrf_field() ?>
       <input type="hidden" name="upload" value="1">
       <h3 style="font-size:15px;font-weight:700;margin-bottom:12px">① 选择要迁移的数据类型</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:20px" id="typeGrid">
@@ -176,6 +180,7 @@ admin_header('数据迁移');
           <div style="font-size:12px;color:var(--muted)">让 AI 分析你的数据，自动给出字段映射建议和质量问题，指导你正确导入。</div>
         </div>
         <form method="post">
+        <?= csrf_field() ?>
           <input type="hidden" name="ai_analyze" value="1">
           <button class="btn btn-p btn-sm">🤖 开始 AI 体检</button>
         </form>
@@ -196,6 +201,7 @@ admin_header('数据迁移');
     </div>
 
     <form method="post">
+        <?= csrf_field() ?>
       <input type="hidden" name="import" value="1">
       <h3 style="font-size:15px;font-weight:700;margin-bottom:8px">字段映射 — <?=htmlspecialchars($types[$mig['type']]['label'])?></h3>
       <p style="font-size:13px;color:var(--muted);margin-bottom:16px">文件「<?=htmlspecialchars($mig['filename'])?>」共 <b><?=$mig['total']?></b> 行，检测到列：<b><?=htmlspecialchars(implode(' / ', $mig['header']))?></b>。把左侧目标字段对应到文件里的列：</p>

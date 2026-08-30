@@ -6,6 +6,7 @@ require_login();
 // ─── 我的常用：添加/移除（AJAX）───
 $fcFavAction = $_GET['fc_fav'] ?? '';
 if ($fcFavAction !== '') {
+    csrf_verify();
     header('Content-Type: application/json; charset=utf-8');
     $favUser = $_SESSION['admin_user'] ?? 'admin';
     $favFile = DATA_DIR . '/user-favorites/' . preg_replace('/[^a-zA-Z0-9_-]/', '', $favUser) . '.json';
@@ -232,6 +233,7 @@ admin_header('工作台');
 </div>
 <style>@media(max-width:980px){.wb-grid{grid-template-columns:1fr!important}}</style>
 <script>
+var OF_CSRF = <?=json_encode(csrf_token())?>;
 var FC_ALL_CMDS = <?=json_encode($allCmds, JSON_UNESCAPED_UNICODE)?>;
 var FC_MY_FAVS = <?=json_encode($myFavs, JSON_UNESCAPED_UNICODE)?>;
 function fcFavPicker() {
@@ -253,6 +255,7 @@ function fcFavPicker() {
   }
   var body = new FormData();
   body.append('url', found[0].url);
+  body.append('_csrf_token', OF_CSRF);
   fetch('index.php?fc_fav=add', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){ if (d.ok) location.reload(); else alert(d.error || '添加失败'); });
@@ -260,6 +263,7 @@ function fcFavPicker() {
 function fcFavRemove(url, el) {
   var body = new FormData();
   body.append('url', url);
+  body.append('_csrf_token', OF_CSRF);
   fetch('index.php?fc_fav=remove', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){ if (d.ok) location.reload(); });

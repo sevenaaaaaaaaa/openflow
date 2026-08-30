@@ -36,9 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
 
 // 删除
 if (isset($_GET['delete'])) {
-    $projects = array_values(array_filter($projects, fn($p) => $p['id'] !== $_GET['delete']));
+    csrf_verify();
+    // basename 收口，防止 ?delete=../../x 目录穿越删掉任意 .json
+    $delId = basename((string)$_GET['delete']);
+    $projects = array_values(array_filter($projects, fn($p) => $p['id'] !== $delId));
     nps_save_projects($projects);
-    @unlink(nps_responses_dir() . '/' . $_GET['delete'] . '.json');
+    @unlink(nps_responses_dir() . '/' . $delId . '.json');
     flash('success', 'NPS 项目已删除');
     header('Location: /xmp/nps');
     exit;

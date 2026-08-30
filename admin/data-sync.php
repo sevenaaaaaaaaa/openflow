@@ -58,8 +58,11 @@ if (isset($_GET['sync'])) {
 
 // 删除
 if (isset($_GET['delete'])) {
-    @unlink(datasync_dir() . '/' . $_GET['delete'] . '.csv');
-    $conns = array_values(array_filter($conns, fn($c) => ($c['id'] ?? '') !== $_GET['delete']));
+    csrf_verify();
+    // basename 收口，防止 ?delete=../../x 目录穿越删掉任意 .csv
+    $delId = basename((string)$_GET['delete']);
+    @unlink(datasync_dir() . '/' . $delId . '.csv');
+    $conns = array_values(array_filter($conns, fn($c) => ($c['id'] ?? '') !== $delId));
     datasync_save($conns);
     header('Location: /xmp/data-sync');
     exit;
@@ -148,7 +151,7 @@ admin_header('外部连接器');
             <td class="text-sm text-muted"><?=htmlspecialchars($c['source'] ?? '—')?></td>
             <td class="text-sm text-muted"><?=htmlspecialchars(substr($c['last_sync'] ?? '', 5, 11)) ?: '—'?></td>
             <td><span class="badge <?=!empty($c['enabled'])?'badge-green':'badge-gray'?>"><?=!empty($c['enabled'])?'启用':'停用'?></span><?php if (!empty($c['last_count'])): ?><span style="font-size:11px;color:var(--faint);margin-left:4px"><?=$c['last_count']?>行</span><?php endif; ?></td>
-            <td style="white-space:nowrap"><a href="?sync=<?=urlencode($c['id'])?>" class="btn btn-s btn-sm" onclick="return confirm('立即同步该连接器?')">▶ 同步</a><a href="?edit=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('删除?')">删除</a></td>
+            <td style="white-space:nowrap"><a href="?sync=<?=urlencode($c['id'])?>" class="btn btn-s btn-sm" onclick="return confirm('立即同步该连接器?')">▶ 同步</a><a href="?edit=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="?delete=<?=urlencode($c['id'])?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-danger btn-sm" onclick="return confirm('删除?')">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>
