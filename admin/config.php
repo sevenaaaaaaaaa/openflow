@@ -299,6 +299,34 @@ function require_login(): void {
         header('Location: /xmp/login');
         exit;
     }
+    // 结构性 CSRF 收口：每个后台页都在顶部调用 require_login()，把校验放这里，
+    // 整类「某个 POST 处理器忘了校验」的漏洞就结构性消失了，而不是逐页去补。
+    // 公开页 / API 不调用 require_login()，所以不受影响（它们有各自的鉴权）。
+    csrf_guard_auto();
+}
+
+/**
+ * 对「会改状态」的请求自动校验 CSRF。
+ *
+ * - 所有非幂等方法（POST/PUT/PATCH/DELETE）一律校验。
+ * - 破坏性 GET（?delete= / ?uninstall= / ?toggle= 等）也校验——历史遗留
+ *   用 GET 触发删除的地方不少，一个 <img src> 就能打，必须堵。
+ * - 页面若确有特殊理由自行处理，可在 require_login() 前 define('OF_NO_AUTO_CSRF', 1)
+ *   显式退出（目前无页面需要，留作逃生舱）。
+ */
+function csrf_guard_auto(): void {
+    if (defined('OF_NO_AUTO_CSRF')) return;
+    $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    $unsafe = in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true);
+    if (!$unsafe) {
+        // 破坏性 GET 动作参数
+        static $destructive = ['delete', 'del', 'remove', 'uninstall', 'toggle',
+                               'purge', 'clear', 'reset', 'drop', 'destroy', 'revoke'];
+        foreach ($destructive as $k) {
+            if (isset($_GET[$k]) && $_GET[$k] !== '') { $unsafe = true; break; }
+        }
+    }
+    if ($unsafe) csrf_verify();
 }
 
 // ─── CSRF Token ─────────────────────────────────────
@@ -1930,6 +1958,74 @@ window.fcToast = function(msg, type) {
     setTimeout(function() { el.remove(); }, 300);
   }, 3500);
 };
+
+// ─── CSRF 前端兜底 ───
+// 服务端已在 require_login() 里对所有改状态请求强制校验 token。这里是第二层：
+// 就算某个表单/fetch 忘了带 token，也自动补上，避免"忘了带"变成"功能坏了"。
+// 三处覆盖：POST 表单补隐藏域、破坏性 <a> 链接补 query、fetch/XHR 补请求头。
+(function () {
+  var CSRF = <?=json_encode(csrf_token())?>;
+  window.OF_CSRF = CSRF;
+  var DESTRUCT = /[?&](delete|del|remove|uninstall|toggle|purge|clear|reset|drop|destroy|revoke)=/;
+
+  // 1) 给所有 POST 表单补隐藏域
+  function patchForms(root) {
+    (root || document).querySelectorAll('form').forEach(function (f) {
+      var m = (f.getAttribute('method') || 'get').toLowerCase();
+      if (m !== 'post') return;
+      if (f.querySelector('input[name="_csrf_token"]')) return;
+      var i = document.createElement('input');
+      i.type = 'hidden'; i.name = '_csrf_token'; i.value = CSRF;
+      f.appendChild(i);
+    });
+  }
+  // 2) 给破坏性 GET 链接补 token
+  function patchLinks(root) {
+    (root || document).querySelectorAll('a[href]').forEach(function (a) {
+      var h = a.getAttribute('href');
+      if (!h || h.indexOf('?') < 0) return;
+      if (!DESTRUCT.test(h)) return;
+      if (h.indexOf('csrf_token=') >= 0 || h.indexOf('_csrf_token=') >= 0) return;
+      a.setAttribute('href', h + '&csrf_token=' + encodeURIComponent(CSRF));
+    });
+  }
+  function run() { patchForms(); patchLinks(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+  // 动态插入的节点也覆盖
+  new MutationObserver(function (muts) {
+    muts.forEach(function (mu) {
+      mu.addedNodes.forEach(function (n) {
+        if (n.nodeType === 1) { patchForms(n); patchLinks(n); }
+      });
+    });
+  }).observe(document.documentElement, { childList: true, subtree: true });
+
+  // 3) fetch / XHR 自动带上 X-CSRF-Token（仅同源）
+  var of = window.fetch;
+  if (of) {
+    window.fetch = function (input, init) {
+      init = init || {};
+      var url = (typeof input === 'string') ? input : (input && input.url) || '';
+      var same = !/^https?:\/\//i.test(url) || url.indexOf(location.origin) === 0;
+      if (same) {
+        var h = new Headers(init.headers || (typeof input !== 'string' && input.headers) || {});
+        if (!h.has('X-CSRF-Token')) h.set('X-CSRF-Token', CSRF);
+        init.headers = h;
+      }
+      return of.call(this, input, init);
+    };
+  }
+  var xo = window.XMLHttpRequest && XMLHttpRequest.prototype.open;
+  if (xo) {
+    XMLHttpRequest.prototype.open = function (m, url) {
+      var same = !/^https?:\/\//i.test(url) || String(url).indexOf(location.origin) === 0;
+      var r = xo.apply(this, arguments);
+      if (same) { try { this.setRequestHeader('X-CSRF-Token', CSRF); } catch (e) {} }
+      return r;
+    };
+  }
+})();
 <?php if ($flashType && $flashText): ?>
 window.fcToast(<?=json_encode($flashText, JSON_UNESCAPED_UNICODE)?>, <?=json_encode($flashType, JSON_UNESCAPED_UNICODE)?>);
 <?php endif; ?>

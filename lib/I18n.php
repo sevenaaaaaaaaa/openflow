@@ -73,6 +73,20 @@ function i18n_switch_url(string $targetLocale): string {
 }
 
 // 输出语言切换器 HTML
+// 语言代码 → 原生名称。languages.php 与切换器共用一张表，避免各写一份。
+function i18n_native(string $locale): string {
+    static $labels = [
+        'zh-CN' => '简体中文', 'zh-TW' => '繁體中文', 'zh-HK' => '繁體中文（香港）',
+        'en' => 'English', 'en-US' => 'English (US)', 'en-GB' => 'English (UK)',
+        'ja' => '日本語', 'ko' => '한국어', 'ru' => 'Русский',
+        'es' => 'Español', 'pt' => 'Português', 'pt-BR' => 'Português (Brasil)',
+        'ar' => 'العربية', 'fr' => 'Français', 'de' => 'Deutsch',
+        'it' => 'Italiano', 'nl' => 'Nederlands', 'tr' => 'Türkçe',
+        'vi' => 'Tiếng Việt', 'th' => 'ไทย', 'id' => 'Bahasa Indonesia', 'hi' => 'हिन्दी',
+    ];
+    return $labels[$locale] ?? $locale;
+}
+
 function i18n_switcher(): string {
     if (!i18n_enabled()) return '';
     $supported = i18n_supported();
