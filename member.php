@@ -743,18 +743,49 @@ function include_member_developer($member): void {
     $devStatus = $member['developer_status'] ?? 'none';
     $types = skill_types();
     $mine = skill_by_author($member['id']);
+    // 参与者工作台（BACKLOG T1-14 · OIA）：一次加入即拥有三种能力
+    $bw = ['profile' => null, 'caps' => []];
+    try {
+        require_once __DIR__ . '/lib/BuilderWorkspace.php';
+        $bw['caps'] = builder_capabilities($member);
+        $bw['profile'] = builder_profile($member);
+    } catch (Throwable $e) {}
     ?>
     <div class="card p-8">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px">
         <div style="width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:20px">🧑‍💻</div>
         <div>
-          <h2 class="text-xl font-bold">开发者中心</h2>
-          <div style="font-size:12px;color:var(--muted)">把技能 / 主题做成产品，上架 OpenFlow 市场，被更多人使用</div>
+          <h2 class="text-xl font-bold">参与者工作台</h2>
+          <div style="font-size:12px;color:var(--muted)">One is All — 你同时是作者、开发者、创作者。写内容 / 做工具 / 上架卖，一处全给。</div>
         </div>
         <span class="tag <?=$devStatus==='approved'?'green':($devStatus==='pending'?'orange':'gray')?>" style="margin-left:auto">
           <?=['none'=>'未申请','pending'=>'审核中','approved'=>'已认证开发者','rejected'=>'申请被拒'][$devStatus] ?? '未申请'?>
         </span>
       </div>
+
+      <?php if (!empty($bw['caps'])): $bp = $bw['profile']; ?>
+      <!-- OIA 三能力：不再需要"先申请开发者" -->
+      <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:18px">
+        <?php foreach ($bw['caps'] as $ck => $cap): ?>
+        <div style="padding:14px 16px;border-radius:14px;background:var(--bg);border:1px solid var(--border)">
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px"><?=['write'=>'✍️','build'=>'🛠','sell'=>'💰'][$ck] ?? '•'?> <?=htmlspecialchars($cap['label'])?>
+            <span style="font-size:11px;font-weight:600;color:<?=$cap['enabled']?'#16a34a':'#9ca3af'?>"><?=$cap['enabled']?'已开通':'暂不可用'?></span></div>
+          <div style="font-size:12px;color:var(--muted)"><?=htmlspecialchars($cap['desc'])?></div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <?php if ($bp): ?>
+      <div style="padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);margin-bottom:20px">
+        <div style="font-size:13px;margin-bottom:6px">📦 我的贡献：
+          文章 <strong><?=$bp['counts']['article']?></strong> ·
+          技能 <strong><?=$bp['counts']['skill']?></strong> ·
+          商品 <strong><?=$bp['counts']['product']?></strong>
+          <span style="color:var(--muted)">（已上线 <?=$bp['published']?>）</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--accent)">👉 <?=htmlspecialchars($bp['next_step'])?></div>
+      </div>
+      <?php endif; ?>
+      <?php endif; ?>
 
       <?php if ($devStatus === 'approved'):
         // 作者收益看板：余额 + 累计销售分成
