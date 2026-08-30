@@ -7,27 +7,40 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 require_once __DIR__ . '/lib/MemberSystem.php';
 
+require_once __DIR__ . '/lib/AuthorSystem.php';
+
+// 支持 /authors/{slug} 或 ?name= / ?slug=；优先按已建档作者解析
+$slug = trim(urldecode($_GET['slug'] ?? ''));
 $authorName = trim(urldecode($_GET['name'] ?? ''));
+$entity = null;
+if ($slug !== '')            $entity = author_by_slug($slug);
+if (!$entity && $authorName !== '') $entity = author_by_name($authorName);
+if ($entity) $authorName = $entity['name'];   // 归一到规范名，别名也能进来
 if (!$authorName) {
     header('Location: /');
     exit;
 }
 
-// 聚合该作者的内容
-$articles = array_values(array_filter(get_articles(), fn($a) =>
-    ($a['status'] ?? 'draft') === 'published' && ($a['author'] ?? '') === $authorName
-));
-$skills = array_values(array_filter(json_read(DATA_DIR . '/skills/index.json'), fn($s) => ($s['author'] ?? '') === $authorName));
-$courses = array_values(array_filter(json_read(DATA_DIR . '/courses/index.json'), fn($c) => ($c['author'] ?? '') === $authorName));
-$plugins = array_values(array_filter(json_read(DATA_DIR . '/plugins.json'), fn($p) => ($p['author'] ?? '') === $authorName));
+// 该作者名下所有可署名（含别名）
+$names = $entity ? array_merge([$entity['name']], (array)($entity['aliases'] ?? [])) : [$authorName];
+$byAuthor = fn($x) => in_array(trim((string)($x['author'] ?? '')), $names, true);
 
-// 会员资料（若该名称对应某会员）
+// 聚合该作者的内容
+$articles = array_values(array_filter(get_articles(), fn($a) => ($a['status'] ?? 'draft') === 'published' && $byAuthor($a)));
+$skills = array_values(array_filter(json_read(DATA_DIR . '/skills/index.json'), $byAuthor));
+$courses = array_values(array_filter(json_read(DATA_DIR . '/courses/index.json'), $byAuthor));
+$plugins = array_values(array_filter(json_read(DATA_DIR . '/plugins.json'), $byAuthor));
+
+// 档案优先：已建档就用档案；否则退回"碰巧同名的会员"
 $authorProfile = null;
 foreach (json_read(DATA_DIR . '/members/index.json') as $m) {
     if (($m['name'] ?? '') === $authorName || ($m['nickname'] ?? '') === $authorName) { $authorProfile = $m; break; }
+    if ($entity && !empty($entity['member_id']) && ($m['id'] ?? '') === $entity['member_id']) { $authorProfile = $m; break; }
 }
-$avatar = $authorProfile['avatar'] ?? '';
-$bio = $authorProfile['bio'] ?? '';
+$avatar = ($entity['avatar'] ?? '') ?: ($authorProfile['avatar'] ?? '');
+$bio    = ($entity['bio'] ?? '') ?: ($authorProfile['bio'] ?? '');
+$authorTitle = $entity['title'] ?? '';
+$authorLinks = (array)($entity['links'] ?? []);
 
 $catNames = [];
 foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
@@ -62,9 +75,17 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
       <?php endif; ?>
       <div class="flex-1 min-w-[240px]">
         <h1 class="text-3xl font-extrabold text-gray-900"><?=htmlspecialchars($authorName)?></h1>
+        <?php if (!empty($authorTitle)): ?><div class="text-sm font-medium mt-1" style="color:var(--accent)"><?=htmlspecialchars($authorTitle)?></div><?php endif; ?>
         <p class="text-gray-600 mt-2 leading-relaxed max-w-xl">
           <?=$bio ? htmlspecialchars($bio) : ('专注内容创作与分享，在 ' . site_config_get('site_name') . ' 发布 ' . count($articles) . ' 篇文章、' . count($skills) . ' 个技能。')?>
         </p>
+        <?php if (!empty($authorLinks)): ?>
+        <div class="flex gap-3 mt-3 flex-wrap">
+          <?php foreach ($authorLinks as $l): if (empty($l['url'])) continue; ?>
+            <a href="<?=htmlspecialchars($l['url'])?>" target="_blank" rel="nofollow noopener" class="text-sm px-3 py-1 rounded-full" style="background:var(--surface);border:1px solid var(--border);color:var(--accent);text-decoration:none"><?=htmlspecialchars($l['label'] ?? '链接')?> ↗</a>
+          <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
         <div class="flex gap-6 mt-4 text-sm text-[#2b5f7e]">
           <span><strong><?=count($articles)?></strong> 篇文章</span>
           <span><strong><?=count($courses)?></strong> 门课程</span>

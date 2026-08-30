@@ -98,6 +98,7 @@ RewriteRule ^(feed|rss)(\.xml)?$ feed.php [L]
 # 前台内容
 RewriteRule ^articles/(.+)$ article.php?slug=$1 [L,QSA,B]
 RewriteRule ^article/(.+)$ article.php?slug=$1 [L,QSA,B]
+RewriteRule ^authors/(.+)$ author.php?slug=$1 [L,QSA,B]
 RewriteRule ^author/(.+)$ author.php?name=$1 [L,QSA,B]
 RewriteRule ^topic/(.+)$ topics.php?slug=$1 [L,QSA,B]
 RewriteRule ^navigation/?$ navigation.php [L,QSA]

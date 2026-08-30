@@ -317,7 +317,17 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
         </div>
         <div class="field-row">
           <div class="field"><label>分类</label><select name="category"><option value="">未分类</option><?php foreach ($cats as $c): ?><option value="<?=htmlspecialchars($c['key'])?>" <?=$article['category']===$c['key']?'selected':''?>><?=htmlspecialchars($c['name'])?></option><?php endforeach; ?></select></div>
-          <div class="field"><label>作者</label><input type="text" name="author" value="<?=htmlspecialchars($article['author'])?>"></div>
+          <div class="field"><label>作者</label>
+            <input type="text" name="author" value="<?=htmlspecialchars($article['author'])?>" list="author-list" autocomplete="off">
+            <?php
+              // 已建档作者做成下拉建议，减少"同一个人多种写法"
+              $authorNames = [];
+              if (is_file(DATA_DIR . '/authors.json')) {
+                  foreach ((json_read(DATA_DIR . '/authors.json') ?: []) as $__a) { if (!empty($__a['name'])) $authorNames[] = $__a['name']; }
+              }
+            ?>
+            <?php if ($authorNames): ?><datalist id="author-list"><?php foreach ($authorNames as $__n): ?><option value="<?=htmlspecialchars($__n)?>"><?php endforeach; ?></datalist><?php endif; ?>
+          </div>
         </div>
         <div class="field">
           <label>标签 <span class="hint">· 逗号分隔</span></label>
