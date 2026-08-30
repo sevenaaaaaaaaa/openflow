@@ -97,6 +97,30 @@ class Database {
         }
         // 事件去重唯一索引（message_id）
         try { $db->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_events_message ON events(message_id) WHERE message_id != ''"); } catch (Exception $e) {}
+
+        // ─── events 查询索引（D1）───────────────────────────
+        // events 是全库最大的表（生产约 52 万行），此前只有上面那条
+        // message_id 部分唯一索引，所有分析查询一律全表扫描。
+        // 下面五条按 tests/events_index_bench.php 实测的查询形状来定，
+        // 不是拍脑袋：12 条真实查询里 9 条明显变快，工作台首屏
+        // 从 ~500ms 降到 ~80ms。代价是磁盘 +76%、写入 +0.01ms/条。
+        // 首次部署时这几条索引要建几秒（一次性，之后 IF NOT EXISTS 只查目录）。
+        foreach ([
+            // 绝大多数查询的谓词是 event=? [AND created_at>=?]；
+            // 最左前缀让只按 event 过滤的查询也能用上
+            'idx_events_event_created' => 'events(event, created_at)',
+            // DAU/WAU/MAU 与留存清理只按时间过滤
+            'idx_events_created'       => 'events(created_at)',
+            // 画像按访客取事件流，且要按 id 倒序
+            'idx_events_uid'           => 'events(uid, id)',
+            // 热门页面是 event=? GROUP BY page，靠索引顺序省掉临时 B 树
+            'idx_events_event_page'    => 'events(event, page)',
+            // member_id != '' 是不等值，普通索引用不上；
+            // 部分索引只收非空行，体积约为整表的 1/9
+            'idx_events_member'        => "events(member_id) WHERE member_id != ''",
+        ] as $name => $def) {
+            try { $db->exec("CREATE INDEX IF NOT EXISTS {$name} ON {$def}"); } catch (Exception $e) {}
+        }
         // 舆情监测结果
         $db->exec("CREATE TABLE IF NOT EXISTS sentiment_results (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
