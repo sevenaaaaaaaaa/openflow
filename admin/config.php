@@ -1478,6 +1478,7 @@ function admin_sidebar(string $current): void {
   <?php endif; ?>
   <?php if (has_perm('insights')): ?>
   <a href="/xmp/insights" class="<?=$current==='insights'?'active':''?>" style="padding-left:44px;font-size:13px">营销洞察</a>
+  <a href="/xmp/ask-data" class="<?=$current==='ask-data'?'active':''?>" style="padding-left:44px;font-size:13px">💬 问数据</a>
   <?php endif; ?>
   <?php if (has_perm('analytics')): ?>
   <a href="/xmp/share-kols" class="<?=$current==='share-kols'?'active':''?>" style="padding-left:44px;font-size:13px">分享传播</a>
