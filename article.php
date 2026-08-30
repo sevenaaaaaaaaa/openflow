@@ -25,6 +25,9 @@ if (!$article) {
 } else {
     $notFound = false;
     $article = PluginSystem::apply_filters('article_output_before', $article, $slug);
+    // 内容多语言：按当前 locale 解析译文（覆盖 title/content/seo，其余保持 base）
+    require_once __DIR__ . '/lib/ContentI18n.php';
+    $article = ci18n_resolve($article);
     // 记录阅读数
     if (function_exists('art_stats_add')) {
         @art_stats_add($article['slug'], 'view');
@@ -226,6 +229,9 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 <title><?=htmlspecialchars($pageTitle)?></title>
 <meta name="description" content="<?=htmlspecialchars($pageDesc)?>">
 <link rel="canonical" href="<?=htmlspecialchars($articleUrl)?>">
+<?php if (!$notFound && function_exists('ci18n_hreflang') && count(ci18n_locales($article)) > 1):
+    $__o = parse_url($articleUrl ?? ''); $__origin = (!empty($__o['scheme']) && !empty($__o['host'])) ? $__o['scheme'] . '://' . $__o['host'] : '';
+    if ($__origin) echo ci18n_hreflang($article, $__origin) . "\n"; endif; ?>
 <meta property="og:title" content="<?=htmlspecialchars($article['title'] ?? '')?>">
 <meta property="og:description" content="<?=htmlspecialchars($pageDesc)?>">
 <meta property="og:image" content="<?=htmlspecialchars($coverUrl)?>">
