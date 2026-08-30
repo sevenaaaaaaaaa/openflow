@@ -203,23 +203,24 @@ foreach (array_unique($sm[1]) as $slug) {
 }
 t('侧栏每个入口都有对应文件', empty($dead), '死链：' . implode(', ', $dead));
 
-// 后台改状态的入口必须校验 CSRF。判定：一个文件里但凡出现
-// 「写数据的 POST 分支」或「破坏性 GET（delete/uninstall/toggle）」，
-// 就必须至少出现一次 csrf_verify()。这道闸此前是漏的，10 个后台页
-// （含 GET 卸载插件 = 可被 <img> 触发的 RCE）都没校验。
+// 后台改状态的入口必须受 CSRF 保护。收口之后，保护有两种合法形态：
+//   a) 页面调用 require_login() —— 里面的 csrf_guard_auto() 自动校验（首选）；
+//   b) 页面自己显式 csrf_verify()（历史写法，仍算数）。
+// 二者都没有才算漏。只要 require_login 里挂着自动校验，绝大多数页天然安全。
+$autoGuard = strpos($cfg, 'function require_login') !== false
+          && preg_match('/function require_login.*?csrf_guard_auto\(\)/s', $cfg);
 $csrfMissing = [];
 foreach (glob("{$root}/admin/*.php") as $f) {
     $s = file_get_contents($f);
     $mutates = preg_match("/isset\\(\\\$_POST\\['/", $s)
             || preg_match("/REQUEST_METHOD'\\] === 'POST'/", $s)
             || preg_match("/isset\\(\\\$_GET\\['(delete|remove|uninstall|toggle|reset|purge|clear)'\\]/", $s);
-    // 纯展示型 / 被 include 的库文件不算（没有自己的鉴权外壳）
-    $isPage = strpos($s, 'require_login()') !== false;
-    if ($mutates && $isPage && strpos($s, 'csrf_verify') === false) {
-        $csrfMissing[] = basename($f);
-    }
+    if (!$mutates) continue;
+    $protectedByLogin = $autoGuard && strpos($s, 'require_login()') !== false;
+    $protectedExplicit = strpos($s, 'csrf_verify') !== false;
+    if (!$protectedByLogin && !$protectedExplicit) $csrfMissing[] = basename($f);
 }
-t('后台改状态入口都校验 CSRF', empty($csrfMissing), implode(', ', $csrfMissing));
+t('后台改状态入口都受 CSRF 保护（自动闸或显式校验）', empty($csrfMissing), implode(', ', $csrfMissing));
 
 // 用 $_GET 参数拼文件路径再 unlink/写入的，必须先 basename（防目录穿越）
 $traversal = [];
