@@ -12,6 +12,7 @@ require_once __DIR__ . '/../lib/GrowthSignal.php';
 require_once __DIR__ . '/../lib/GrowthGoal.php';
 require_once __DIR__ . '/../lib/GrowthAction.php';
 require_once __DIR__ . '/../lib/GrowthBrain.php';
+require_once __DIR__ . '/../lib/SalesPlaybook.php';
 require_login();
 require_perm('brain');
 
@@ -209,6 +210,14 @@ admin_header('增长大脑');
           <?php if (!empty($r['alts'])): ?>
           <div style="font-size:12px;color:var(--faint);margin-top:4px">备选：<?php $al=array_map(fn($x)=>htmlspecialchars($x['action']),$r['alts']); echo implode(' · ',$al); ?></div>
           <?php endif; ?>
+          <?php $pb = playbook_for_proposal($b, $p); ?>
+          <details style="margin-top:6px">
+            <summary style="cursor:pointer;font-size:12px;color:var(--accent,#4f46e5)">📝 拿来即用的<?=htmlspecialchars($pb['title'])?></summary>
+            <textarea readonly onclick="this.select()" style="width:100%;margin-top:6px;font-size:12px;line-height:1.7;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface,#fafafa)" rows="7"><?=htmlspecialchars($pb['body'])?></textarea>
+            <?php if (!empty($pb['tips'])): ?>
+            <div style="font-size:11px;color:var(--faint);margin-top:4px">提示：<?=htmlspecialchars(implode('；', $pb['tips']))?></div>
+            <?php endif; ?>
+          </details>
         </div>
         <form method="post" style="margin:0">
           <?= csrf_field() ?><input type="hidden" name="action" value="adopt">
