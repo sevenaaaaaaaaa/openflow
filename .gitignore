@@ -8,6 +8,7 @@
 
 # ─── 密钥与敏感配置 ───
 data/*
+/docs/DEPLOY-SECRETS.md
 !data/.gitkeep
 *.secret.json
 cron_secret.json
