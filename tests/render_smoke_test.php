@@ -39,6 +39,7 @@ $urls = [
     ['audit-log',    'sub=act'],
     ['orders',       ''],
     ['orders',       'status=paid'],
+    ['brain',        ''],
 ];
 
 // ─────────────────────────────────────────────
