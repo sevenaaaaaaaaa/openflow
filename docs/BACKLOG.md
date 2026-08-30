@@ -39,6 +39,9 @@ Sales 线索提醒/收款链接/交付阶段待办 · 作者管理 · 统一站�
 
 ## T0 — 地基硬伤 / 架构债（不补，上量就撞墙）先做
 
+> ✅ **T0 六条全部落地（2026-08-30）**：画像迁 SQLite、CPT、多语言、FTS5 搜索、
+> 统一分成、人群激活。地基债清零，攻(创新)可以往上建了。
+
 | # | 事项 | 来源 | 类 | 一句话 |
 |---|---|---|---|---|
 | ~~T0-1~~ ✅ | **画像迁 SQLite** | CDP(P0架构) | 🔴 | 已做（commit 815a6dc）：`cdp_profiles` 表一画像一行+member索引，updateProfile 改按行 upsert 消除写放大；老 profiles.json 一次性导入并保留作备份。 |
@@ -46,7 +49,7 @@ Sales 线索提醒/收款链接/交付阶段待办 · 作者管理 · 统一站�
 | ~~T0-3~~ ✅ | **多语言内容** | 内容(P0) | 🔴 | 已做（commit 1e92b39）：ContentI18n 文章语言版本(关联组)+hreflang+AI 一键初译，admin/content-i18n.php 复核发布，article.php 按 locale 切换。 |
 | ~~T0-4~~ ✅ | **站内搜索 FTS5** | 内容(P0) | 🔴 | 已做（commit a6f98f9）：SearchIndex FTS5 trigram(中文子串)+bm25+高亮，SearchEngine 走索引、写入侧重建，回落兼容。 |
 | ~~T0-5~~ ✅ | **统一分成/结算政策层** | 电商(P1·地基) | 🔴 | 已做（commit 01aa605）：CommissionPolicy 一处可配(平台费/分销/提现)+统一分账，三套系统引用，admin/commission.php 设置；默认沿用现状。 |
-| T0-6 | **人群激活 / destinations** | CDP(P0战略) | 🔴🟢 | 轻量 destinations 框架：人群→映射→定时/实时推到外部(邮件/广告/webhook)；补"圈了推不出去"的最后一公里。 |
+| ~~T0-6~~ ✅ | **人群激活 / destinations** | CDP(P0战略) | 🔴🟢 | 已做（commit 07c017c）：DestinationSystem 人群→字段映射→webhook/capi，进群实时+手动全量同步，admin/destinations.php。 |
 
 ## T1 — 高价值攻/守（筹码现成，近可落地）
 
