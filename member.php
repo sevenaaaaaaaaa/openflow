@@ -772,8 +772,38 @@ function include_member_developer($member): void {
         <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--accent)">¥<?=number_format($devSales,0)?></div><div style="font-size:12px;color:var(--muted)">累计销售额</div></div>
         <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--warn)"><?=round(($member['distributor_rate'] ?? 0))?>%</div><div style="font-size:12px;color:var(--muted)">默认佣金比例</div></div>
       </div>
+      <?php
+        // 我的买家画像 + 本周增长动作（BACKLOG T1-11）：把"收银台"升级为"增长伙伴"
+        $cg = ['stats' => [], 'actions' => []];
+        try { require_once __DIR__ . '/lib/CreatorGrowth.php'; $cg = creator_dashboard($member['id'], $devOrders ?: []); } catch (Throwable $e) {}
+        $cs = $cg['stats'];
+      ?>
+      <?php if (!empty($cs)): ?>
+      <div style="margin-bottom:22px">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">📊 我的买家</h3>
+        <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-bottom:16px">
+          <div style="padding:14px;border-radius:14px;background:var(--bg)"><div style="font-size:20px;font-weight:800"><?=(int)($cs['buyers']??0)?></div><div style="font-size:12px;color:var(--muted)">买家数</div></div>
+          <div style="padding:14px;border-radius:14px;background:var(--bg)"><div style="font-size:20px;font-weight:800"><?=(int)($cs['repeat_rate']??0)?>%</div><div style="font-size:12px;color:var(--muted)">复购率</div></div>
+          <div style="padding:14px;border-radius:14px;background:var(--bg)"><div style="font-size:20px;font-weight:800">¥<?=number_format((float)($cs['avg_order']??0),0)?></div><div style="font-size:12px;color:var(--muted)">客单价</div></div>
+          <div style="padding:14px;border-radius:14px;background:var(--bg)"><div style="font-size:20px;font-weight:800"><?=($cs['last_sale_days']??9999)>=9999?'—':(int)$cs['last_sale_days']?></div><div style="font-size:12px;color:var(--muted)">天前最近成交</div></div>
+        </div>
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:8px">🚀 本周该做的三件事</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <?php foreach (($cg['actions'] ?? []) as $ai => $act): ?>
+          <div style="padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border)">
+            <div style="font-weight:700;font-size:14px;margin-bottom:4px"><?=($ai+1)?>. <?=htmlspecialchars($act['title'])?></div>
+            <div style="font-size:12.5px;color:var(--muted)"><?=htmlspecialchars($act['why'])?></div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <?php endif; ?>
       <div style="padding:14px 16px;border:1px dashed var(--border-strong);border-radius:14px;background:var(--surface);margin-bottom:22px;font-size:12.5px;color:var(--muted)">
-        收益规则：平台抽 10% 覆盖支付手续费，分销者按产品佣金比例分成，剩余归你（作者）。余额可在 <a href="member.php?view=distribution" style="color:var(--accent)">分销中心</a> 提现。
+        <?php
+          $__rate = 10;
+          try { require_once __DIR__ . '/lib/CommissionPolicy.php'; $__rate = round(commission_platform_rate() * 100); } catch (Throwable $e) {}
+        ?>
+        收益规则：平台抽 <?=$__rate?>% 覆盖支付手续费，分销者按产品佣金比例分成，剩余归你（作者）。余额可在 <a href="member.php?view=distribution" style="color:var(--accent)">分销中心</a> 提现。
       </div>
       <?php endif; ?>
 
