@@ -48,6 +48,7 @@ $urls = [
     ['inbox',        ''],
     ['platform-ops', ''],
     ['catalog',      ''],
+    ['decision-trace', ''],
     ['commission',   ''],
     ['destinations', ''],
 ];
