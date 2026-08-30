@@ -146,6 +146,11 @@ class SegmentEngine {
             $seg['member_count'] = $count;
             $seg['last_evaluated'] = date('Y-m-d H:i:s');
             $results[$seg['id']] = $count;
+            // 规模趋势快照（BACKLOG T2-3）：同日覆盖，旁路
+            try {
+                require_once __DIR__ . '/SegmentEstimate.php';
+                segest_snapshot((string)$seg['id'], $count);
+            } catch (\Throwable $e) {}
         }
 
         json_write(self::$segmentsFile, $segments);
