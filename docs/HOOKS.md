@@ -1,6 +1,6 @@
 # OpenFlow 插件钩子参考
 
-> 34 个钩子，覆盖 CDP / CRM / 营销自动化 / 内容 / 支付 / 社区 / 系统。
+> 35 个钩子，覆盖 CDP / CRM / 营销自动化 / 内容 / 支付 / 社区 / 系统。
 >
 > **旁路契约**：所有钩子回调的异常都会被 `PluginSystem` 捕获并写入
 > `data/plugin-errors.log`，绝不冒泡到业务代码。插件写坏不会让主流程挂掉。
@@ -32,6 +32,7 @@ PluginSystem::add_filter('cdp_event_received', function ($event) {
 | `crm_deal_lost` | action | 阶段变为 `lost` | `$email, $lead` |
 | `crm_followup_added` | action | 添加跟进记录 | `$email, $entry, $lead` |
 | `crm_leads_bulk_imported` | action | 批量导入线索落盘后，整批发一次 | `$stat, $opts` |
+| `crm_followup_reminders_sent` | action | 未跟进提醒发出后（cron 每日） | `$byOwner, $days` |
 
 批量导入（`crm_bulk_create_leads()` / `crm_leads_from_segment()`）会为**每条新线索**
 照常发 `crm_lead_created`，再额外发一次 `crm_leads_bulk_imported` 汇总。
@@ -130,6 +131,10 @@ php tests/refund_test.php                # 36 项：退款金额/积分对称回
 php tests/hub_merge_test.php             # 167 项：后台合并契约
 php tests/bulk_leads_test.php            # 42 项：分群→CRM 批量建线索
 php tests/plugin_sdk_test.php            # 52 项：PluginSDK + 三个官方示例插件
+php tests/crm_reminder_test.php          # 18 项：未跟进提醒
+php tests/totp_test.php                  # 26 项：两步验证
+php tests/roles_test.php                 # 15 项：自定义角色
+php tests/csrf_guard_test.php            # 9 项：CSRF 结构闸
 php tests/render_smoke_test.php          # 24 个页面：中心页与各 tab 真实渲染
 php tests/qa_full.php                    # 全仓质检（跑上面全部 + 结构性检查）
 php tests/events_index_bench.php         # events 索引实测（不进必跑集，见 PERFORMANCE.md）
