@@ -29,7 +29,7 @@ if (!function_exists('consent_settings')) {
 
     function consent_save(array $data): array {
         $s = function_exists('json_read') ? json_read(DATA_DIR . '/settings.json') : [];
-        $mode = in_array(($data['mode'] ?? 'off'), ['off', 'implied', 'explicit'], true) ? $data['mode'] : 'off';
+        $mode = in_array(($data['mode'] ?? 'off'), ['off', 'implied', 'explicit'], true) ? ($data['mode'] ?? 'off') : 'off';
         $s['consent'] = [
             'mode' => $mode,
             'retention_days' => max(0, (int)($data['retention_days'] ?? 0)),
