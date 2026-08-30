@@ -112,7 +112,7 @@ admin_header('权限管理');
         <input type="hidden" name="username" id="edit_username">
         <div class="field-row">
           <div class="field"><label>显示名称</label><input type="text" name="name" id="edit_name" required></div>
-          <div class="field"><label>角色</label><select name="role" id="edit_role"><option value="admin">超级管理员</option><option value="marketing">市场总监</option><option value="sales">销售总监</option></select></div>
+          <div class="field"><label>角色</label><select name="role" id="edit_role"><?php foreach (array_keys(role_perms()) as $r): ?><option value="<?=htmlspecialchars($r)?>"><?=htmlspecialchars(role_label($r))?></option><?php endforeach; ?></select></div>
         </div>
         <div class="field"><label>新密码 <span class="hint">留空则不修改</span></label><input type="password" name="password" placeholder="输入新密码"></div>
         <button type="submit" class="btn btn-primary">保存</button>
@@ -131,7 +131,7 @@ admin_header('权限管理');
         </div>
         <div class="field-row">
           <div class="field"><label>密码 <span class="hint">留空则自动生成</span></label><input type="text" name="new_password" placeholder="留空自动生成随机密码"></div>
-          <div class="field"><label>角色</label><select name="new_role"><option value="marketing">市场总监</option><option value="sales">销售总监</option><option value="admin">超级管理员</option></select></div>
+          <div class="field"><label>角色</label><select name="new_role"><?php foreach (array_keys(role_perms()) as $r): ?><option value="<?=htmlspecialchars($r)?>"<?=$r==='marketing'?' selected':''?>><?=htmlspecialchars(role_label($r))?></option><?php endforeach; ?></select></div>
         </div>
         <button type="submit" class="btn btn-primary">添加用户</button>
       </form>
