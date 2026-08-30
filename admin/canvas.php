@@ -43,6 +43,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
             case 'notify':
                 $node['title'] = $_POST['node_title'][$i] ?? '';
                 break;
+            case 'tag':
+                $node['tag'] = $_POST['node_tag'][$i] ?? '';
+                break;
+            case 'score':
+                $node['score'] = (int)($_POST['node_score'][$i] ?? 0);
+                break;
+            case 'stage':
+                $node['stage'] = $_POST['node_stage'][$i] ?? '';
+                break;
+            case 'webhook':
+                $node['url'] = $_POST['node_url'][$i] ?? '';
+                break;
         }
         $nodes[] = $node;
     }
@@ -157,6 +169,10 @@ admin_header('画布编辑器');
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('condition')">🔀 条件分支</button>
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('delay')">⏱ 延迟</button>
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('notify')">🔔 通知</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('tag')">🏷 打标签</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('score')">⭐ 加分</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('stage')">📊 改阶段</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('webhook')">🔗 Webhook</button>
         </div>
         <div class="canvas-flow" id="canvasFlow">
           <?php $editNodes = $edit['nodes'] ?? []; foreach ($editNodes as $ni => $n): ?>
@@ -197,8 +213,8 @@ admin_header('画布编辑器');
 // 节点渲染函数
 function canvas_render_node(array $n, int $i, array $forms): void {
     $type = $n['type'] ?? 'trigger';
-    $icons = ['trigger'=>'🔔','send_email'=>'📧','condition'=>'🔀','delay'=>'⏱','notify'=>'📢'];
-    $labels = ['trigger'=>'触发器','send_email'=>'发送邮件','condition'=>'条件分支','delay'=>'延迟','notify'=>'通知'];
+    $icons = ['trigger'=>'🔔','send_email'=>'📧','condition'=>'🔀','delay'=>'⏱','notify'=>'📢','tag'=>'🏷','score'=>'⭐','stage'=>'📊','webhook'=>'🔗'];
+    $labels = ['trigger'=>'触发器','send_email'=>'发送邮件','condition'=>'条件分支','delay'=>'延迟','notify'=>'通知','tag'=>'打标签','score'=>'加分','stage'=>'改CRM阶段','webhook'=>'Webhook'];
     echo '<div class="canvas-node ' . $type . '" draggable="true" ondragstart="nodeDragStart(event)" ondragover="event.preventDefault()" ondrop="nodeDrop(event)">';
     echo '<button type="button" class="del" onclick="this.closest(\'.canvas-node\').remove()">✕</button>';
     echo '<div class="node-head">' . $icons[$type] . ' ' . $labels[$type] . '</div>';
@@ -246,6 +262,22 @@ function canvas_render_node(array $n, int $i, array $forms): void {
         case 'notify':
             echo '<input type="text" name="node_title[]" value="' . htmlspecialchars($n['title']??'') . '" placeholder="通知标题">';
             break;
+        case 'tag':
+            echo '<input type="text" name="node_tag[]" value="' . htmlspecialchars($n['tag']??'') . '" placeholder="标签，如 高意向">';
+            break;
+        case 'score':
+            echo '<label style="font-size:11px;color:var(--text-3)">加分（可负）</label><input type="number" name="node_score[]" value="' . htmlspecialchars((string)($n['score']??10)) . '">';
+            break;
+        case 'stage':
+            echo '<input type="text" name="node_stage[]" value="' . htmlspecialchars($n['stage']??'') . '" placeholder="CRM 阶段，如 won / contacted">';
+            break;
+        case 'webhook':
+            echo '<input type="url" name="node_url[]" value="' . htmlspecialchars($n['url']??'') . '" placeholder="https://... 接收 URL">';
+            break;
+    }
+    // 与 JS addNode 对齐：为非当前类型的动作字段补隐藏占位，保证各 node_xxx[] 与 node_type[] 下标一致
+    foreach (['tag'=>'node_tag','score'=>'node_score','stage'=>'node_stage','webhook'=>'node_url'] as $t => $fname) {
+        if ($t !== $type) echo '<input type="hidden" name="' . $fname . '[]" value="">';
     }
     echo '</div></div>';
 }
@@ -260,8 +292,8 @@ function addNode(type) {
   d.className = 'canvas-node ' + type;
   d.setAttribute('draggable', 'true');
   d.ondragstart = nodeDragStart; d.ondragover = function(e){e.preventDefault();}; d.ondrop = nodeDrop;
-  var icons = {trigger:'🔔',send_email:'📧',condition:'🔀',delay:'⏱',notify:'📢'};
-  var labels = {trigger:'触发器',send_email:'发送邮件',condition:'条件分支',delay:'延迟',notify:'通知'};
+  var icons = {trigger:'🔔',send_email:'📧',condition:'🔀',delay:'⏱',notify:'📢',tag:'🏷',score:'⭐',stage:'📊',webhook:'🔗'};
+  var labels = {trigger:'触发器',send_email:'发送邮件',condition:'条件分支',delay:'延迟',notify:'通知',tag:'打标签',score:'加分',stage:'改CRM阶段',webhook:'Webhook'};
   var body = '<input type="hidden" name="node_type[]" value="' + type + '">';
   if (type === 'trigger') {
     body += '<select name="node_trigger[]"><option value="form_submit">表单提交</option><option value="member_register">用户注册</option><option value="nps_submit">NPS评分</option></select>';
@@ -276,7 +308,17 @@ function addNode(type) {
     body += '<label style="font-size:11px;color:var(--text-3)">延迟分钟</label><input type="number" name="node_delay[]" value="60">';
   } else if (type === 'notify') {
     body += '<input type="text" name="node_title[]" placeholder="通知标题">';
+  } else if (type === 'tag') {
+    body += '<input type="text" name="node_tag[]" placeholder="标签，如 高意向">';
+  } else if (type === 'score') {
+    body += '<label style="font-size:11px;color:var(--text-3)">加分（可负）</label><input type="number" name="node_score[]" value="10">';
+  } else if (type === 'stage') {
+    body += '<input type="text" name="node_stage[]" placeholder="CRM 阶段，如 won / contacted">';
+  } else if (type === 'webhook') {
+    body += '<input type="url" name="node_url[]" placeholder="https://... 接收 URL">';
   }
+  // 为非当前类型的动作补隐藏占位，保证 node_type[] 与各 node_xxx[] 下标对齐
+  ['tag','score','stage','webhook'].forEach(function(t){ if(t!==type){ var f={tag:'node_tag',score:'node_score',stage:'node_stage',webhook:'node_url'}[t]; body += '<input type="hidden" name="'+f+'[]" value="">'; }});
   d.innerHTML = '<button type="button" class="del" onclick="this.closest(\'.canvas-node\').remove()">✕</button><div class="node-head">' + icons[type] + ' ' + labels[type] + '</div><div class="node-body">' + body + '</div>';
   // 加箭头
   var arrow = document.createElement('div');
