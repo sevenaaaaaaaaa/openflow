@@ -68,9 +68,9 @@ Sales 的话术同理。后续每个模块审计，都在这套坐标系里找�
 ## 模块规划索引
 
 - `AUDIT-01-CONTENT.md` — 内容 / CMS（已出）
-- `AUDIT-02-CDP.md` — 用户数据 / CDP
-- `AUDIT-03-MA.md` — 营销自动化 / 画布
-- `AUDIT-04-SALES.md` — 销售（CRM + 在线成交 + 客服）
-- `AUDIT-05-COMMERCE.md` — 电商 / 交易
-- `AUDIT-06-ECOSYSTEM.md` — 开发者 / 创作者生态
-- 全部完成后：一份跨模块的「还能整合/补充什么」总合。
+- `AUDIT-02-CDP.md` — 用户数据 / CDP（已出）
+- `AUDIT-03-MA.md` — 营销自动化 / 画布（已出）
+- `AUDIT-04-SALES.md` — 销售（CRM + 在线成交 + 客服）（已出）
+- `AUDIT-05-COMMERCE.md` — 电商 → 平台运营与商业化（已出）
+- `AUDIT-06-ECOSYSTEM.md` — 开发者 / 创作者生态 → OIA（已出）
+- 全部完成后：一份跨模块的「还能整合/补充什么」总合（下一步）。
