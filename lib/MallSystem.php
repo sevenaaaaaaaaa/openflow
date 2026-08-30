@@ -8,6 +8,8 @@
  *   data/shop/redemptions.json       积分兑换记录
  */
 
+require_once __DIR__ . '/CommissionPolicy.php';
+
 if (!function_exists('mall_products_file')) {
 
 function mall_products_file(): string { return DATA_DIR . '/shop/products.json'; }
@@ -61,7 +63,7 @@ function mall_order_product(string $memberId, string $productId, int $qty = 1, a
     foreach (json_read(DATA_DIR . '/members/index.json') as $m) if ($m['id'] === $memberId) { $member = $m; break; }
     if ($member && !empty($member['referred_by'])) {
         $order['referrer_id'] = $member['referred_by'];
-        $order['commission'] = round($amount * ($settings['commission_rate'] ?? 20) / 100, 2);
+        $order['commission'] = round($amount * ($settings['commission_rate'] ?? commission_distribution_rate()) / 100, 2);
     }
     $orders[] = $order;
     json_write(shop_orders_file(), $orders);
