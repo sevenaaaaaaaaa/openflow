@@ -542,6 +542,43 @@
     loadPageSeo();
     loadSiteStructure();
     loadClickTracks();
+    loadConsentBanner();
+  }
+
+  // 同意横幅（BACKLOG T1-5）：仅在后台启用同意门且访客未表态时出现。
+  function loadConsentBanner() {
+    try {
+      if (document.cookie.indexOf('of_consent=') !== -1) return;
+      fetch('/api/consent.php', { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d || !d.ok || !d.need) return;
+          var bar = document.createElement('div');
+          bar.setAttribute('role', 'dialog');
+          bar.setAttribute('aria-label', '数据使用同意');
+          bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99998;background:#111827;color:#f3f4f6;padding:14px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font:14px/1.6 system-ui,sans-serif;box-shadow:0 -2px 12px rgba(0,0,0,.2)';
+          var txt = document.createElement('span');
+          txt.textContent = d.text || '我们使用 Cookie 与行为数据来改进内容与体验。';
+          txt.style.cssText = 'flex:1;min-width:200px';
+          var ok = document.createElement('button');
+          ok.textContent = '同意';
+          ok.style.cssText = 'background:#4f46e5;color:#fff;border:0;border-radius:8px;padding:8px 18px;cursor:pointer;font-size:14px';
+          var no = document.createElement('button');
+          no.textContent = '拒绝';
+          no.style.cssText = 'background:transparent;color:#d1d5db;border:1px solid #4b5563;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:14px';
+          function choose(c) {
+            var fd = new FormData(); fd.append('action', 'set'); fd.append('choice', c);
+            fetch('/api/consent.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+              .then(function () { bar.remove(); })
+              .catch(function () { bar.remove(); });
+          }
+          ok.addEventListener('click', function () { choose('granted'); });
+          no.addEventListener('click', function () { choose('denied'); });
+          bar.appendChild(txt); bar.appendChild(no); bar.appendChild(ok);
+          document.body.appendChild(bar);
+        })
+        .catch(function () {});
+    } catch (e) {}
   }
 
   // 圈选埋点（BACKLOG T1-4）：拉取本页启用的定义，用事件委托绑 click，命中即上报。

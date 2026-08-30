@@ -44,6 +44,7 @@ $urls = [
     ['content-i18n', ''],
     ['ask-data',     ''],
     ['click-tracking', ''],
+    ['consent',      ''],
     ['commission',   ''],
     ['destinations', ''],
 ];
