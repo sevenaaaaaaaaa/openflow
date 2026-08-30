@@ -50,6 +50,16 @@ $member = member_current();
 if (!$notFound && !empty($article['member_only']) && !member_can($member, 'articles_member')) {
     $memberGate = true;
 }
+// 分层付费门禁（BACKLOG T1-6）：required_tier 指定"某套餐及以上"才能看全文
+$paidTier = trim((string)($article['required_tier'] ?? ''));
+$paidGate = false; $paidHint = '';
+if (!$notFound && $paidTier !== '') {
+    require_once __DIR__ . '/lib/PaidContent.php';
+    if (!paid_can_view($member, $paidTier)) {
+        $paidGate = true;
+        $paidHint = paid_upgrade_hint($paidTier);
+    }
+}
 
 // ─── 兜底：文章不存在时 $article 为空数组，避免后续所有 null 访问 ───
 if (!$article) {
@@ -408,6 +418,17 @@ main{padding-top:96px; padding-bottom:70px; position:relative; z-index:10; max-w
         <h2 style="font-size:22px;font-weight:800;margin-bottom:10px">这是一篇会员专享文章</h2>
         <p style="color:var(--muted);font-size:14px;margin-bottom:20px">开通会员即可阅读全文</p>
         <a href="member.php?view=subscribe" class="act-btn" style="background:var(--accent);color:var(--on-accent);border:0;padding:12px 28px">开通会员 →</a>
+      </div>
+    <?php elseif ($paidGate): ?>
+      <?php $pv = paid_preview($content); ?>
+      <?=article_render($pv['preview'])?>
+      <div style="position:relative;margin-top:-40px;padding-top:60px;background:linear-gradient(180deg,transparent,var(--surface-strong) 55%)">
+        <div style="padding:32px;text-align:center;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface-strong)">
+          <div style="font-size:38px;margin-bottom:12px">🔒</div>
+          <h2 style="font-size:20px;font-weight:800;margin-bottom:8px">继续阅读全文</h2>
+          <p style="color:var(--muted);font-size:14px;margin-bottom:18px"><?=htmlspecialchars($paidHint)?></p>
+          <a href="member.php?view=subscribe" class="act-btn" style="background:var(--accent);color:var(--on-accent);border:0;padding:12px 28px">立即升级 →</a>
+        </div>
       </div>
     <?php else: ?>
       <?=article_render($content)?>
