@@ -9,6 +9,7 @@ require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/ShopSystem.php';
 require_once __DIR__ . '/ApiKeyAuth.php';
 require_once __DIR__ . '/SkillSystem.php';
+require_once __DIR__ . '/CommissionPolicy.php';
 
 class CommerceSystem {
     private static string $productsFile = DATA_DIR . '/products.json';
@@ -218,7 +219,7 @@ class CommerceSystem {
             'author' => $product['author'] ?? '',
             'commission_rate' => (float)($product['commission_rate'] ?? 0.9),
             'distributor_rate' => $distRate,
-            'platform_fee' => round($price * 0.1, 2),
+            'platform_fee' => commission_platform_fee($price),
         ];
         // 库存扣减（有库存的商品）：不足则拒绝下单（防超卖）
         if (!commerce_stock_decrement($productId, $_POST['sku_id'] ?? '', 1)) {
@@ -271,7 +272,7 @@ class CommerceSystem {
         // 作者分成 + 分销者佣金（一级分销）
         // 佣金结构：平台抽 10%（覆盖支付手续费），分销者拿 distributor_rate%，作者拿剩余
         $paid = (float)($order['amount'] ?? 0);
-        $platformFee = round($paid * 0.1, 2);
+        $platformFee = commission_platform_fee($paid);
         $distAmount = (float)($order['commission'] ?? 0); // 已在 purchase 计算
         $authorAmount = round($paid - $platformFee - $distAmount, 2);
         $authorId = self::resolveAuthor($product, $memberId);
@@ -593,7 +594,7 @@ function commerce_leaderboard(string $selfId = '', int $days = 30, int $limit = 
 }
 
 // 平台费率（10%，覆盖支付手续费）
-function commerce_platform_fee_rate(): float { return 0.1; }
+function commerce_platform_fee_rate(): float { require_once __DIR__ . '/CommissionPolicy.php'; return commission_platform_rate(); }
 
 // 分销者看板：带来的订单 + 佣金统计
 function commerce_distributor_stats(string $memberId): array {
