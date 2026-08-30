@@ -30,6 +30,12 @@ class CdpSystem {
         }
         if (class_exists('EventDictionary') && !EventDictionary::isEnabled($event)) return false;
 
+        // 同意门（BACKLOG T1-5）：未同意则不采集、不建画像。默认 mode=off 行为不变。
+        try {
+            require_once __DIR__ . '/ConsentSystem.php';
+            if (!consent_granted()) return false;
+        } catch (\Throwable $e) {}
+
         // heartbeat 服务端限流（防前端bug/爬虫高频刷事件表）：同一访客 90 秒内只记 1 次
         if ($event === 'heartbeat') {
             $visitorId = $visitorId ?: self::getVisitorId();
