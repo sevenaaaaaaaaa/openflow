@@ -173,10 +173,10 @@ admin_header('收款链接');
         <input type="hidden" name="action" value="create">
         <div style="display:flex;gap:12px;flex-wrap:wrap">
           <div class="field" style="flex:2;min-width:200px"><label>收款事由</label><input type="text" name="title" placeholder="如：品牌官网设计 · 首款" required></div>
-          <div class="field" style="flex:1;min-width:120px"><label>客户称呼 <span class="hint">选填</span></label><input type="text" name="customer" placeholder="张先生 / 某某公司"></div>
+          <div class="field" style="flex:1;min-width:120px"><label>客户称呼 <span class="hint">选填</span></label><input type="text" name="customer" placeholder="张先生 / 某某公司" value="<?=htmlspecialchars($_GET['prefill_customer'] ?? '')?>"></div>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <div class="field" style="flex:1;min-width:160px"><label>客户邮箱 <span class="hint">填了会自动关联 CRM 线索</span></label><input type="email" name="email" placeholder="client@example.com"></div>
+          <div class="field" style="flex:1;min-width:160px"><label>客户邮箱 <span class="hint">填了会自动关联 CRM 线索</span></label><input type="email" name="email" placeholder="client@example.com" value="<?=htmlspecialchars($_GET['prefill_email'] ?? '')?>"></div>
           <div class="field" style="flex:1;min-width:120px"><label>链接有效期 <span class="hint">选填</span></label><input type="date" name="expires_at"></div>
         </div>
 
