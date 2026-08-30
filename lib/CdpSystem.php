@@ -645,6 +645,8 @@ class CdpSystem {
                     if (function_exists('flow_handle')) flow_handle('segment_enter', ['profile_id'=>$profile['visitor_id'] ?? '', 'segment_id'=>$segId, 'props'=>['segment_name'=>$seg['name'] ?? $segId]]);
                 } catch (Throwable $e) {}
                 if (class_exists('PluginSystem')) PluginSystem::do_action('cdp_segment_enter', $segId, $profile, $seg);
+                // 人群激活（BACKLOG T0-6）：进群实时推给该人群的 realtime 目的地。旁路。
+                try { require_once __DIR__ . '/DestinationSystem.php'; dest_on_segment_enter($segId, $profile); } catch (Throwable $e) {}
             } elseif (!$in && $wasIn) {
                 unset($memberships[$segId]);
                 try {
