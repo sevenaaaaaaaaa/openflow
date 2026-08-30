@@ -132,6 +132,22 @@ if (!function_exists('cdp_add_ltv')) {
     }
 }
 
+if (!function_exists('cdp_set_prop')) {
+    /**
+     * 在客户 props(JSON) 上写/覆盖一个键。用于结构化画像信号（如成交来源/金额）。
+     * 逐键合并，不影响其它已有 props。
+     */
+    function cdp_set_prop(string $id, string $key, $value): void {
+        cdp_ensure_table();
+        $c = cdp_get_by_id($id);
+        if (!$c) return;
+        $props = json_decode($c['props'] ?? '{}', true);
+        if (!is_array($props)) $props = [];
+        $props[$key] = $value;
+        Database::execute("UPDATE cdp_customers SET props = ? WHERE id = ?", [json_encode($props, JSON_UNESCAPED_UNICODE), $id]);
+    }
+}
+
 if (!function_exists('cdp_touch')) {
     function cdp_touch(string $uid, array $ctx = []): void {
         cdp_ensure_table();
