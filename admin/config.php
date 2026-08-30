@@ -259,13 +259,45 @@ if (empty($users)) {
     save_users($users);
 }
 
-// Role permission map
-function role_perms(): array {
+// 全量权限清单（唯一真源）。admin 永远等于它——新增权限自动归 admin，
+// 也就不会因为"忘了给 admin 加"而把自己关在门外。角色编辑器也按它出复选框。
+function of_perm_registry(): array {
+    return ['pages', 'articles', 'ingest', 'categories', 'tags', 'topics', 'landing', 'events', 'courses', 'downloads', 'community-config', 'tasks', 'survey', 'nps', 'campaigns', 'ai-config', 'knowledge', 'sms', 'forms', 'submissions', 'channels', 'wechat-mp', 'social', 'conversion', 'seo', 'seo-tools', 'seo-batch', 'redirects', 'structured', 'geo', 'sentiment', 'seo-console', 'profiling', 'notify-channels', 'cdp', 'themes', 'plugins', 'activity', 'media', 'dam', 'qr', 'utm-builder', 'scripts', 'abtests', 'ma-sync', 'reviews', 'approvals', 'shop-settings', 'commerce', 'navigation', 'site-builder', 'podcasts', 'community-mod', 'automation', 'insights', 'subscription', 'consultation', 'live', 'membership', 'messages', 'storage', 'moderation', 'marketplace', 'flow', 'tracking', 'canvas', 'analytics', 'dashboard', 'crm', 'leads', 'export', 'settings', 'evolution', 'devops', 'users', 'email', 'bookmarks', 'follows', 'featured', 'version-diff', 'segments', 'security'];
+}
+
+// 内置角色。admin 恒为全量；marketing/sales 是可被 data/roles.json 覆盖的默认值。
+function of_builtin_roles(): array {
     return [
-        'admin'     => ['pages', 'articles', 'ingest', 'categories', 'tags', 'topics', 'landing', 'events', 'courses', 'downloads', 'community-config', 'tasks', 'survey', 'nps', 'campaigns', 'ai-config', 'knowledge', 'sms', 'forms', 'submissions', 'channels', 'wechat-mp', 'social', 'conversion', 'seo', 'seo-tools', 'seo-batch', 'redirects', 'structured', 'geo', 'sentiment', 'seo-console', 'profiling', 'notify-channels', 'cdp', 'themes', 'plugins', 'activity', 'media', 'dam', 'qr', 'utm-builder', 'scripts', 'abtests', 'ma-sync', 'reviews', 'approvals', 'shop-settings', 'commerce', 'navigation', 'site-builder', 'podcasts', 'community-mod', 'automation', 'insights', 'subscription', 'consultation', 'live', 'membership', 'messages', 'storage', 'moderation', 'marketplace', 'flow', 'tracking', 'canvas', 'analytics', 'dashboard', 'crm', 'leads', 'export', 'settings', 'evolution', 'devops', 'users', 'email', 'bookmarks', 'follows', 'featured', 'version-diff', 'segments'],
-        'marketing' => ['pages', 'articles', 'ingest', 'categories', 'tags', 'topics', 'landing', 'events', 'courses', 'downloads', 'community-config', 'tasks', 'survey', 'nps', 'campaigns', 'ai-config', 'knowledge', 'sms', 'forms', 'submissions', 'channels', 'wechat-mp', 'social', 'conversion', 'seo', 'seo-tools', 'seo-batch', 'redirects', 'structured', 'geo', 'sentiment', 'seo-console', 'profiling', 'notify-channels', 'cdp', 'themes', 'plugins', 'activity', 'media', 'dam', 'qr', 'utm-builder', 'reviews', 'approvals', 'shop-settings', 'commerce', 'navigation', 'site-builder', 'podcasts', 'community-mod', 'automation', 'insights', 'subscription', 'consultation', 'live', 'membership', 'messages', 'storage', 'moderation', 'marketplace', 'flow', 'tracking', 'canvas', 'analytics', 'dashboard', 'crm', 'email', 'bookmarks', 'follows', 'featured', 'version-diff', 'segments'],
-        'sales'     => ['leads'],
+        'admin'     => of_perm_registry(),
+        'marketing' => ['pages', 'articles', 'ingest', 'categories', 'tags', 'topics', 'landing', 'events', 'courses', 'downloads', 'community-config', 'tasks', 'survey', 'nps', 'campaigns', 'ai-config', 'knowledge', 'sms', 'forms', 'submissions', 'channels', 'wechat-mp', 'social', 'conversion', 'seo', 'seo-tools', 'seo-batch', 'redirects', 'structured', 'geo', 'sentiment', 'seo-console', 'profiling', 'notify-channels', 'cdp', 'themes', 'plugins', 'activity', 'media', 'dam', 'qr', 'utm-builder', 'reviews', 'approvals', 'shop-settings', 'commerce', 'navigation', 'site-builder', 'podcasts', 'community-mod', 'automation', 'insights', 'subscription', 'consultation', 'live', 'membership', 'messages', 'storage', 'moderation', 'marketplace', 'flow', 'tracking', 'canvas', 'analytics', 'dashboard', 'crm', 'email', 'bookmarks', 'follows', 'featured', 'version-diff', 'segments', 'security'],
+        'sales'     => ['dashboard', 'crm', 'leads', 'segments', 'consultation', 'insights', 'security'],
     ];
+}
+
+// 自定义角色（data/roles.json）。结构：{"角色名": {"label": "...", "perms": [...]}}。
+function of_custom_roles(): array {
+    $raw = json_read(DATA_DIR . '/roles.json');
+    return is_array($raw) ? $raw : [];
+}
+
+// Role permission map：内置 + 自定义合并。admin 永不被覆盖（防自锁）。
+function role_perms(): array {
+    $roles = of_builtin_roles();
+    foreach (of_custom_roles() as $name => $def) {
+        if ($name === 'admin') continue;                 // admin 恒为全量，不许削弱
+        $perms = is_array($def['perms'] ?? null) ? $def['perms'] : (is_array($def) ? $def : []);
+        // 只接受注册表里存在的权限，挡掉脏数据
+        $roles[$name] = array_values(array_intersect(of_perm_registry(), $perms));
+    }
+    return $roles;
+}
+
+// 角色的中文名（内置固定，自定义读 label）
+function role_label(string $role): string {
+    $builtin = ['admin' => '超级管理员', 'marketing' => '市场运营', 'sales' => '销售'];
+    if (isset($builtin[$role])) return $builtin[$role];
+    $c = of_custom_roles()[$role] ?? [];
+    return $c['label'] ?? $role;
 }
 
 function has_perm(string $perm): bool {
@@ -1724,6 +1756,7 @@ function admin_sidebar(string $current): void {
   <?php endif; ?>
   <?php if (has_perm('users')): ?>
   <a href="/xmp/users" class="<?=$current==='users'?'active':''?>" style="padding-left:44px;font-size:13px">权限管理</a>
+  <a href="/xmp/roles" class="<?=$current==='roles'?'active':''?>" style="padding-left:44px;font-size:13px">角色与权限</a>
   <?php endif; ?>
   <a href="/xmp/security" class="<?=$current==='security'?'active':''?>" style="padding-left:44px;font-size:13px">账号安全（2FA）</a>
   <?php if (has_perm('activity')): ?>
@@ -1799,7 +1832,7 @@ var MS_MAP = {
   'cdp':'Insight','analytics':'Insight','path-analysis':'Insight','attribution':'Insight','attribution-model':'Insight','insights':'Insight','share-kols':'Insight','segments':'Insight','profiling':'Insight',  'data-connector':'Insight','inbound':'Insight','data-sync':'Insight','event-dictionary':'Insight','heatmap':'Insight','funnel-guard':'Insight','frequency-cap':'Insight','session-replay':'Insight','report-subscribe':'Insight','abtests':'Insight','abtests-stats':'Insight','tracking':'Insight','scripts':'Insight','realtime':'Insight','survey':'Insight','survey-stats':'Insight','survey-org':'Insight','survey-agent':'Insight','nps':'Insight','seo':'Insight','seo-tools':'Insight','seo-batch':'Insight','redirects':'Insight','structured-data':'Insight','geo':'Insight','sentiment':'Insight','seo-console':'Insight',
   'campaigns':'Personalize','conversion':'Personalize','dynamic-content':'Personalize','automation':'Personalize','canvas':'Personalize','ma-sync':'Personalize','sms':'Personalize','email':'Personalize','channels':'Personalize','forms':'Personalize','submissions':'Personalize','qr':'Personalize','utm-builder':'Personalize',
   'crm':'Sales','leads':'Sales','wechat-mp':'Sales','wechat-send':'Sales','wechat-tags':'Sales','wecom':'Sales','wechat-messages':'Sales','social':'Sales','marketplace':'Sales','commerce':'Sales','distribution':'Sales','activation':'Sales','mall':'Sales','shop-settings':'Sales','orders':'Sales','membership':'Sales','subscription':'Sales','consultation':'Sales','live':'Sales',
-  'settings':'Settings','devops':'Settings','plugins':'Settings','themes':'Settings','ai-config':'Settings','knowledge':'Settings','users':'Settings','security':'Settings','activity':'Settings','export':'Settings','notify-channels':'Settings','messages':'Settings','storage':'Settings','reviews':'Settings','review-settings':'Settings','approvals':'Settings','onboarding':'Settings','health-check':'Settings','cloudflare':'Settings','sdk-versions':'Settings','api-keys':'Settings','webhooks':'Settings','api-docs':'Settings','api-affiliate':'Settings','backup':'Settings','audit-log':'Settings','data-export':'Settings','footer-links':'Settings','ads':'Settings','ad-campaigns':'Settings'
+  'settings':'Settings','devops':'Settings','plugins':'Settings','themes':'Settings','ai-config':'Settings','knowledge':'Settings','users':'Settings','roles':'Settings','security':'Settings','activity':'Settings','export':'Settings','notify-channels':'Settings','messages':'Settings','storage':'Settings','reviews':'Settings','review-settings':'Settings','approvals':'Settings','onboarding':'Settings','health-check':'Settings','cloudflare':'Settings','sdk-versions':'Settings','api-keys':'Settings','webhooks':'Settings','api-docs':'Settings','api-affiliate':'Settings','backup':'Settings','audit-log':'Settings','data-export':'Settings','footer-links':'Settings','ads':'Settings','ad-campaigns':'Settings'
 };
 document.addEventListener('DOMContentLoaded', function() {
   var secs = document.querySelectorAll('.sidebar .section[data-sec]');
