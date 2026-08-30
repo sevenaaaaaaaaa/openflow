@@ -43,7 +43,7 @@ Sales 线索提醒/收款链接/交付阶段待办 · 作者管理 · 统一站�
 |---|---|---|---|---|
 | ~~T0-1~~ ✅ | **画像迁 SQLite** | CDP(P0架构) | 🔴 | 已做（commit 815a6dc）：`cdp_profiles` 表一画像一行+member索引，updateProfile 改按行 upsert 消除写放大；老 profiles.json 一次性导入并保留作备份。 |
 | ~~T0-2~~ ✅ | **自定义内容类型 CPT（轻量）** | 内容(P0) | 🔴 | 已做（commit 9159823）：CptSystem 类型+条目 CRUD/9 种字段/校验，admin/cpt.php 定义与管理，前台 /c/{type}(/{slug})。 |
-| T0-3 | **多语言内容** | 内容(P0) | 🔴 | 同一内容 zh/en 关联组 + hreflang 输出；和对外宣称的出海/GEO 定位直接挂钩，可 AI 一键初译。 |
+| ~~T0-3~~ ✅ | **多语言内容** | 内容(P0) | 🔴 | 已做（commit 1e92b39）：ContentI18n 文章语言版本(关联组)+hreflang+AI 一键初译，admin/content-i18n.php 复核发布，article.php 按 locale 切换。 |
 | T0-4 | **站内搜索 FTS5** | 内容(P0) | 🔴 | 升级 SQLite FTS5(虚拟表+MATCH+rank+高亮)，零外部依赖；数据一多就废的硬伤。 |
 | T0-5 | **统一分成/结算政策层** | 电商(P1·地基) | 🔴 | 三处硬编码抽成(Mall20%/Commerce10%/分销20%)收成一处可配策略+统一账本；平台成立的地基。 |
 | T0-6 | **人群激活 / destinations** | CDP(P0战略) | 🔴🟢 | 轻量 destinations 框架：人群→映射→定时/实时推到外部(邮件/广告/webhook)；补"圈了推不出去"的最后一公里。 |
