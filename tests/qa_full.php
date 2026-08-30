@@ -187,6 +187,13 @@ t('无跳向已合并旧地址的重定向', empty($staleRedirect), implode(' ',
 
 t('of_hub_url() 已提供', strpos($cfg, 'function of_hub_url') !== false);
 
+// 安全收口必须在统一入口，不能退回逐页手写
+t('CSRF 在 require_login 统一收口', strpos($cfg, 'csrf_guard_auto()') !== false
+  && preg_match('/function require_login.*?csrf_guard_auto\(\)/s', $cfg));
+t('审计在统一入口自动留痕', strpos($cfg, 'audit_auto()') !== false
+  && strpos($cfg, 'function audit(') !== false);
+t('审计脱敏（不记密码/token）', preg_match('/pass\|pwd\|token\|secret/', $cfg) === 1);
+
 // ─────────────────────────────────────────────
 echo "[6/8] 侧栏链接有效性（全量）\n";
 preg_match_all('#href="/xmp/([a-z0-9-]+)"#', $cfg, $sm);
