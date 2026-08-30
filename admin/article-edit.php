@@ -181,6 +181,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             knowledge_ingest_article($article);
         } catch (Throwable $e) {}
 
+        // 搜索索引重建（BACKLOG T0-4）：写入侧重建 FTS5 索引，成本离开搜索热路径。旁路。
+        try {
+            require_once __DIR__ . '/../lib/SearchIndex.php';
+            search_index_rebuild();
+        } catch (Throwable $e) {}
+
         // 审核命中：记录待审核 + 通知管理员/市场总监
         if ($needReview) {
             $review = review_apply('article', $article['id'], $reviewResult, [
