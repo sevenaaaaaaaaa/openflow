@@ -45,7 +45,7 @@ Sales 线索提醒/收款链接/交付阶段待办 · 作者管理 · 统一站�
 | ~~T0-2~~ ✅ | **自定义内容类型 CPT（轻量）** | 内容(P0) | 🔴 | 已做（commit 9159823）：CptSystem 类型+条目 CRUD/9 种字段/校验，admin/cpt.php 定义与管理，前台 /c/{type}(/{slug})。 |
 | ~~T0-3~~ ✅ | **多语言内容** | 内容(P0) | 🔴 | 已做（commit 1e92b39）：ContentI18n 文章语言版本(关联组)+hreflang+AI 一键初译，admin/content-i18n.php 复核发布，article.php 按 locale 切换。 |
 | ~~T0-4~~ ✅ | **站内搜索 FTS5** | 内容(P0) | 🔴 | 已做（commit a6f98f9）：SearchIndex FTS5 trigram(中文子串)+bm25+高亮，SearchEngine 走索引、写入侧重建，回落兼容。 |
-| T0-5 | **统一分成/结算政策层** | 电商(P1·地基) | 🔴 | 三处硬编码抽成(Mall20%/Commerce10%/分销20%)收成一处可配策略+统一账本；平台成立的地基。 |
+| ~~T0-5~~ ✅ | **统一分成/结算政策层** | 电商(P1·地基) | 🔴 | 已做（commit 01aa605）：CommissionPolicy 一处可配(平台费/分销/提现)+统一分账，三套系统引用，admin/commission.php 设置；默认沿用现状。 |
 | T0-6 | **人群激活 / destinations** | CDP(P0战略) | 🔴🟢 | 轻量 destinations 框架：人群→映射→定时/实时推到外部(邮件/广告/webhook)；补"圈了推不出去"的最后一公里。 |
 
 ## T1 — 高价值攻/守（筹码现成，近可落地）
