@@ -47,6 +47,7 @@ $urls = [
     ['consent',      ''],
     ['inbox',        ''],
     ['platform-ops', ''],
+    ['catalog',      ''],
     ['commission',   ''],
     ['destinations', ''],
 ];
