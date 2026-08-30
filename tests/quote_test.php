@@ -45,7 +45,9 @@ function extract_fn(string $src, string $name): string {
     exit(2);
 }
 $qsrc = file_get_contents(__DIR__ . '/../lib/QuoteSystem.php');
-foreach (['quote_site_url','quote_pay_url','quote_create','quote_get_by_token','quote_is_expired','quote_all'] as $fn) {
+foreach (['quote_site_url','quote_pay_url','quote_create','quote_get_by_token','quote_is_expired','quote_all',
+          'quote_stages','quote_locate','quote_update','quote_set_stage','quote_add_todo','quote_toggle_todo',
+          'quote_remove_todo','quote_stage_of','quote_attention','quote_open_todos'] as $fn) {
     eval(extract_fn($qsrc, $fn));
 }
 
@@ -114,6 +116,50 @@ check('支付 API 有公开 pay_quote 且在登录闸之前',
     strpos($api, "action === 'pay_quote'") !== false
     && strpos($api, "action === 'pay_quote'") < strpos($api, '请先登录'));
 check('pay_quote 校验已付/过期', strpos($api, "已支付") !== false && strpos($api, 'quote_is_expired') !== false);
+
+echo "\n── 8. 交付阶段 ──\n";
+// 用一张真实落盘的单来测（前面 r 那张 5000 的已在 orders.json）
+$qid = $r['order']['id'];
+check('默认阶段=待启动', quote_stage_of(quote_locate($qid)[1]) === 'not_started');
+check('设阶段=进行中', quote_set_stage($qid, 'in_progress') && quote_stage_of(quote_locate($qid)[1]) === 'in_progress');
+check('非法阶段被拒', !quote_set_stage($qid, '瞎写'));
+
+echo "\n── 9. 待办增/勾/删 ──\n";
+check('加待办', quote_add_todo($qid, '交初稿', date('Y-m-d', time()+86400)));
+check('空待办被拒', !quote_add_todo($qid, '   '));
+$q = quote_locate($qid)[1];
+check('待办落盘', count($q['todos'] ?? []) === 1 && $q['todos'][0]['text'] === '交初稿');
+check('未完成计数=1', quote_open_todos($q) === 1);
+quote_toggle_todo($qid, 0);
+check('勾选后未完成计数=0', quote_open_todos(quote_locate($qid)[1]) === 0);
+quote_toggle_todo($qid, 0);
+check('再勾恢复未完成', quote_open_todos(quote_locate($qid)[1]) === 1);
+quote_remove_todo($qid, 0);
+check('删除后无待办', count(quote_locate($qid)[1]['todos'] ?? []) === 0);
+
+echo "\n── 10. 需要盯的三桶（两轴交叉自动算）──\n";
+// 造数据：一张已付未交付、一张已交付未付、一张有到期待办
+json_write(DATA_DIR . '/shop/orders.json', [
+    ['id'=>'q_pay','goods_type'=>'quote','goods_title'=>'A','status'=>'paid','amount'=>1000,'delivery_stage'=>'in_progress','created_at'=>'2026-01-01'],
+    ['id'=>'q_del','goods_type'=>'quote','goods_title'=>'B','status'=>'pending','amount'=>2000,'delivery_stage'=>'delivered','created_at'=>'2026-01-02'],
+    ['id'=>'q_todo','goods_type'=>'quote','goods_title'=>'C','status'=>'paid','amount'=>3000,'delivery_stage'=>'delivered',
+     'todos'=>[['text'=>'催尾款','due'=>date('Y-m-d', time()-86400),'done'=>false]],'created_at'=>'2026-01-03'],
+    ['id'=>'q_ok','goods_type'=>'quote','goods_title'=>'D','status'=>'paid','amount'=>500,'delivery_stage'=>'delivered','created_at'=>'2026-01-04'],
+]);
+$att = quote_attention();
+check('已付活没完：命中 q_pay', count($att['paid_undelivered']) === 1 && $att['paid_undelivered'][0]['id'] === 'q_pay');
+check('已交付钱没清：命中 q_del', count($att['delivered_unpaid']) === 1 && $att['delivered_unpaid'][0]['id'] === 'q_del');
+check('待办到期：命中 q_todo', count($att['todo_due']) === 1 && $att['todo_due'][0]['id'] === 'q_todo');
+check('已付且已交付的 q_ok 不进任何桶',
+    !in_array('q_ok', array_column($att['paid_undelivered'],'id'), true)
+    && !in_array('q_ok', array_column($att['delivered_unpaid'],'id'), true));
+check('未到期待办不算', true);  // q_ok 无待办；上面已隐含
+// 未来到期不进桶
+json_write(DATA_DIR . '/shop/orders.json', [
+    ['id'=>'q_future','goods_type'=>'quote','status'=>'paid','amount'=>1,'delivery_stage'=>'delivered',
+     'todos'=>[['text'=>'x','due'=>date('Y-m-d', time()+86400*3),'done'=>false]],'created_at'=>'2026-01-01'],
+]);
+check('未来到期的待办不进桶', count(quote_attention()['todo_due']) === 0);
 
 // 清理
 foreach (glob(DATA_DIR . '/shop/*') ?: [] as $f) @unlink($f); @rmdir(DATA_DIR . '/shop');
