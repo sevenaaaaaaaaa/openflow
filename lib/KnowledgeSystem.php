@@ -22,6 +22,83 @@ function knowledge_add(array $doc): void {
     knowledge_save($docs);
 }
 
+/**
+ * 幂等 upsert：按 (source, source_id) 去重。已存在则原地更新（保留 id/created_at），
+ * 否则新增。用于"内容发布→知识库"这类会反复触发的回流，避免重复堆积。
+ * 返回文档 id。
+ */
+function knowledge_upsert(array $doc): string {
+    $source   = (string)($doc['source'] ?? '');
+    $sourceId = (string)($doc['source_id'] ?? '');
+    $docs = knowledge_get();
+    if ($source !== '' && $sourceId !== '') {
+        foreach ($docs as $i => $d) {
+            if (($d['source'] ?? '') === $source && (string)($d['source_id'] ?? '') === $sourceId) {
+                $docs[$i] = array_merge($d, $doc, [
+                    'id'         => $d['id'],
+                    'created_at' => $d['created_at'] ?? date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+                knowledge_save($docs);
+                return (string)$d['id'];
+            }
+        }
+    }
+    $id = 'k_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6);
+    $docs[] = array_merge([
+        'id' => $id, 'title' => '', 'content' => '', 'category' => 'general',
+        'tags' => [], 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'),
+    ], $doc);
+    knowledge_save($docs);
+    return $id;
+}
+
+/** 按来源移除文档（如文章下架/删除时把它从知识库撤下）。返回移除条数。 */
+function knowledge_remove_source(string $source, string $sourceId): int {
+    $docs = knowledge_get();
+    $before = count($docs);
+    $docs = array_values(array_filter($docs, fn($d) =>
+        !(($d['source'] ?? '') === $source && (string)($d['source_id'] ?? '') === (string)$sourceId)));
+    if (count($docs) !== $before) knowledge_save($docs);
+    return $before - count($docs);
+}
+
+/**
+ * 内部知识回流：把一篇文章同步进站内知识库（喂站点 Agent / MCP）。
+ * 已发布 → upsert；非发布（草稿/下架/回收站）→ 从知识库撤下。
+ * 幂等、可反复调用；纯读写本地 JSON，无外部依赖。
+ */
+function knowledge_ingest_article(array $article): array {
+    $id = (string)($article['id'] ?? '');
+    if ($id === '') return ['ok' => false, 'reason' => 'no_id'];
+    $status = (string)($article['status'] ?? '');
+    $trashed = !empty($article['trashed']) || !empty($article['deleted_at']);
+
+    if ($status !== 'published' || $trashed) {
+        $n = knowledge_remove_source('article', $id);
+        return ['ok' => true, 'action' => 'removed', 'removed' => $n];
+    }
+
+    // HTML → 纯文本：标签换成空格（保留段落边界、避免相邻块的词粘连），再压空白、限长
+    $text = (string)($article['content'] ?? '');
+    $text = trim(preg_replace('/\s+/u', ' ', preg_replace('/<[^>]+>/', ' ', $text)));
+    if (function_exists('mb_substr') && mb_strlen($text) > 4000) $text = mb_substr($text, 0, 4000);
+
+    $tags = $article['tags'] ?? [];
+    if (is_string($tags)) $tags = array_values(array_filter(array_map('trim', explode(',', $tags))));
+
+    $kid = knowledge_upsert([
+        'source'    => 'article',
+        'source_id' => $id,
+        'title'     => (string)($article['title'] ?? ''),
+        'content'   => $text,
+        'category'  => (string)($article['category'] ?? 'article'),
+        'tags'      => array_values((array)$tags),
+        'url'       => '/' . ltrim((string)($article['slug'] ?? ('article/' . $id)), '/'),
+    ]);
+    return ['ok' => true, 'action' => 'upserted', 'knowledge_id' => $kid];
+}
+
 // 检索相关知识（简单关键词匹配，按命中数排序）
 function knowledge_search(string $query, int $limit = 5): array {
     $docs = knowledge_get();
