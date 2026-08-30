@@ -1,0 +1,8 @@
+{
+  "id": "event-firewall",
+  "name": "埋点防火墙",
+  "version": "1.0.0",
+  "description": "在 CDP 事件入库前拦掉爬虫、内部 IP 与噪音事件，按规则丢弃或改写。示例：全站唯一能丢数据的 filter，以及怎么用得安全。",
+  "author": "OpenFlow",
+  "enabled_by_default": false
+}

@@ -278,12 +278,60 @@ class CdpSystem {
         ];
     }
 
+    /**
+     * 内置属性字典。
+     *
+     * applyProperties() 对不在字典里的 key 一律 continue，而全仓没有任何代码
+     * 往 data/cdp/properties.json 写过东西——文件不存在时字典为空，等于
+     * 采集到的属性全部被丢弃，画像里的 properties 永远是空的。
+     * 这里给出一份内置默认字典兜底；data/cdp/properties.json 若存在则以它为准
+     * （逐 key 覆盖），管理员仍可自定义。
+     *
+     * update 语义：set 覆盖 / set_once 首次写入 / increment 累加 / append 追加去重
+     */
+    private static function defaultPropDict(): array {
+        $set  = fn(string $label) => ['label' => $label, 'update' => 'set'];
+        $once = fn(string $label) => ['label' => $label, 'update' => 'set_once'];
+        return [
+            // 身份
+            'email'        => $set('邮箱'),
+            'phone'        => $set('手机号'),
+            'name'         => $set('姓名'),
+            'nickname'     => $set('昵称'),
+            'company'      => $set('公司'),
+            'job_title'    => $set('职位'),
+            'industry'     => $set('行业'),
+            'city'         => $set('城市'),
+            'country'      => $set('国家'),
+            // 归因（首次触点应当锁死，不被后续访问覆盖）
+            'source'       => $once('来源'),
+            'referrer'     => $once('引荐页'),
+            'landing_page' => $once('落地页'),
+            'utm_source'   => $once('UTM Source'),
+            'utm_medium'   => $once('UTM Medium'),
+            'utm_campaign' => $once('UTM Campaign'),
+            'utm_content'  => $once('UTM Content'),
+            'utm_term'     => $once('UTM Term'),
+            // 环境
+            'device'       => $set('设备'),
+            'browser'      => $set('浏览器'),
+            'os'           => $set('操作系统'),
+            'channel'      => $set('渠道'),
+            // 累计与集合
+            'total_spent'  => ['label' => '累计消费', 'update' => 'increment'],
+            'interests'    => ['label' => '兴趣标签', 'update' => 'append'],
+            'viewed_categories' => ['label' => '浏览过的分类', 'update' => 'append'],
+        ];
+    }
+
     // 属性字典读取（内存缓存）
     private static $propDictCache = null;
     private static function propDict(): array {
         if (self::$propDictCache === null) {
-            self::$propDictCache = json_read(DATA_DIR . '/cdp/properties.json');
-            if (!is_array(self::$propDictCache)) self::$propDictCache = [];
+            $file = json_read(DATA_DIR . '/cdp/properties.json');
+            if (!is_array($file)) $file = [];
+            // 文件里定义过的 key 以文件为准，其余用内置默认
+            self::$propDictCache = array_merge(self::defaultPropDict(), $file);
         }
         return self::$propDictCache;
     }
