@@ -1793,6 +1793,7 @@ function admin_sidebar(string $current): void {
   <?php endif; ?>
   <?php if (has_perm('ai-config')): ?>
   <a href="/xmp/ai-config" class="<?=$current==='ai-config'?'active':''?>" style="padding-left:44px;font-size:13px">AI Agent</a>
+  <a href="/xmp/ai-usage" class="<?=$current==='ai-usage'?'active':''?>" style="padding-left:44px;font-size:13px">AI 用量与预算</a>
   <?php endif; ?>
   <?php if (has_perm('knowledge')): ?>
   <a href="/xmp/knowledge" class="<?=$current==='knowledge'?'active':''?>" style="padding-left:44px;font-size:13px">知识库</a>

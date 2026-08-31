@@ -149,7 +149,7 @@ class GrowthFlywheel {
             $resp = AiCenter::json(
                 '你是一个增长分析专家，请总结以下行业热点，输出每条：主题、核心观点、机会点',
                 json_encode($topics, JSON_UNESCAPED_UNICODE),
-                ['max_tokens' => 800]
+                ['max_tokens' => 800, 'feature' => 'flywheel_topics', 'tier' => 'batch']
             );
             return ['status' => 'ok', 'detail' => '已生成 ' . count($topics) . ' 个主题的热点洞察', 'data' => $resp, 'ts' => time()];
         } catch (\Throwable $e) {
@@ -171,7 +171,7 @@ class GrowthFlywheel {
                 . '输出 JSON（不要多余文字），字段：'
                 . '{"title":"吸引点击的标题(20字内,含关键词)","slug":"英文URL后缀(纯小写字母数字连字符,3-6个词)","summary":"核心洞察(80字内)","seo_title":"SEO标题(30字内,含主关键词)","seo_desc":"SEO描述(80字内)","seo_keywords":"3-5个关键词,逗号分隔","category":"insight|seo|product|growth 之一","tags":["2-4个标签"],"content":"800-1200字HTML正文,含<h2>小标题x3、有序/无序列表、<strong>重点、结尾行动号召CTA"}',
                 '热点主题：' . $topic,
-                ['max_tokens' => 2500]
+                ['max_tokens' => 2500, 'feature' => 'flywheel_article', 'tier' => 'batch']
             );
             if (empty($resp['ok']) || empty($resp['data'])) {
                 return ['status' => 'error', 'detail' => 'AI 生成失败：' . ($resp['error'] ?? '解析失败'), 'ts' => time()];
