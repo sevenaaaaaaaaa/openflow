@@ -90,44 +90,36 @@ function mod_check_text(string $text): array {
 }
 
 // ─── AI Agent 审核（调用配置的 AI 供应商）───
+/**
+ * AI 内容安全复审。
+ *
+ * 统一走 AiCenter（记账 + 额度闸门 + 分档超时）；原来自建 curl，
+ * 既绕过电表也漏了各家差异。行为保持不变：**AI 不可用一律按"未知风险"放行**——
+ * 这是本地规则之后的第二道软检查，不能因为 AI 挂了就把正常内容全拦下。
+ */
 function mod_ai_review(string $text): array {
-    $ai = json_read(DATA_DIR . '/ai-config.json');
-    $provider = null;
-    foreach (($ai['providers'] ?? []) as $p) {
-        if (!empty($p['enabled']) && !empty($p['api_key'])) { $provider = $p; break; }
+    require_once __DIR__ . '/AiCenter.php';
+    if (!AiCenter::isConfigured()) {
+        return ['ok' => true, 'risk' => 'unknown', 'reason' => 'AI 未配置', 'score' => 0];
     }
-    if (!$provider) return ['ok' => true, 'risk' => 'unknown', 'reason' => 'AI 未配置', 'score' => 0];
-
-    $model = $provider['model'] ?? 'gpt-4o';
-    $apiUrl = rtrim($provider['api_url'], '/');
-    $prompt = "你是内容安全审核员。请判断以下内容的风险等级：高风险（违规/导流/诈骗/广告）、中风险（疑似营销或引战）、低风险（正常）。只输出 JSON：{\"risk\":\"low|mid|high\",\"reason\":\"简短原因\"}\n内容：\n" . mb_substr($text, 0, 800);
-
-    $payload = json_encode([
-        'model' => $model,
-        'messages' => [['role' => 'user', 'content' => $prompt]],
-        'temperature' => 0,
-        'max_tokens' => 200,
-    ]);
-    if ($provider['id'] === 'claude') {
-        $headers = ['x-api-key: ' . $provider['api_key'], 'anthropic-version: 2023-06-01', 'Content-Type: application/json'];
-        $payload = json_encode(['model' => $model, 'max_tokens' => 200, 'messages' => [['role' => 'user', 'content' => $prompt]]]);
-        $endpoint = $apiUrl . '/messages';
-    } else {
-        $headers = ['Authorization: Bearer ' . $provider['api_key'], 'Content-Type: application/json'];
-        $endpoint = $apiUrl . ($provider['id'] === 'minimax' ? '/text/chatcompletion_v2' : '/chat/completions');
+    $r = AiCenter::chat(
+        '你是内容安全审核员。请判断以下内容的风险等级：高风险（违规/导流/诈骗/广告）、'
+        . '中风险（疑似营销或引战）、低风险（正常）。'
+        . '只输出 JSON：{"risk":"low|mid|high","reason":"简短原因"}',
+        mb_substr($text, 0, 800),
+        ['max_tokens' => 200, 'temperature' => 0, 'feature' => 'moderation', 'tier' => 'admin']
+    );
+    if (empty($r['ok'])) {
+        // 没审成 ≠ 没问题：标 unknown 并说明原因，交给上层按规则处理
+        return ['ok' => true, 'risk' => 'unknown',
+                'reason' => 'AI 复审未完成：' . mb_substr((string)($r['error'] ?? ''), 0, 60), 'score' => 0];
     }
-    $ch = curl_init($endpoint);
-    curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $payload, CURLOPT_HTTPHEADER => $headers, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30]);
-    $resp = curl_exec($ch);
-    if (!$resp) return ['ok' => true, 'risk' => 'unknown', 'reason' => 'AI 请求失败', 'score' => 0];
-
-    $data = json_decode($resp, true);
-    $content = $data['content'][0]['text'] ?? $data['choices'][0]['message']['content'] ?? $data['output_text'] ?? '';
+    $content = (string)($r['text'] ?? '');
     preg_match('/"risk"\s*:\s*"(low|mid|high)"/', $content, $m);
-    preg_match('/"reason"\s*:\s*"([^"]*)"/', $content, $r);
+    preg_match('/"reason"\s*:\s*"([^"]*)"/', $content, $rr);
     $risk = $m[1] ?? 'low';
     $score = ['low' => 0, 'mid' => 40, 'high' => 90][$risk] ?? 0;
-    return ['ok' => $risk !== 'high', 'risk' => $risk, 'reason' => $r[1] ?? '', 'score' => $score];
+    return ['ok' => $risk !== 'high', 'risk' => $risk, 'reason' => $rr[1] ?? '', 'score' => $score];
 }
 
 // ─── 主入口：内容提交时调用 ───

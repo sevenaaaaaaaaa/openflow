@@ -57,7 +57,8 @@ class AiCenter {
      * @param string $user 用户内容
      * @param array $opts ['model'=>, 'json'=>bool(期望JSON), 'temperature'=>,
      *                     'feature'=>调用方标识(记账用), 'tier'=>public|admin|batch,
-     *                     'timeout'=>显式覆盖分档超时]
+     *                     'timeout'=>显式覆盖分档超时,
+     *                     'history'=>[['role'=>'user|assistant','content'=>...], ...] 多轮上文]
      * @return array ['ok'=>bool, 'text'=>string, 'json'=>?array, 'error'=>string,
      *                'budget_exceeded'=>bool(额度用尽时为 true，调用方据此降级)]
      */
@@ -89,6 +90,18 @@ class AiCenter {
             $system .= "\n\n请严格按照以下要求：只输出合法的 JSON，不要输出任何其他文字或 markdown 代码块。";
         }
 
+        // 多轮上文：只接受 user/assistant 两种 role，内容强制转字符串。
+        // 上文来自会话历史（可能是用户输入），所以在这里就清洗干净，
+        // 不让脏数据带着 system role 混进 messages。
+        $history = [];
+        foreach ((array)($opts['history'] ?? []) as $h) {
+            if (!is_array($h)) continue;
+            $role = ($h['role'] ?? '') === 'assistant' ? 'assistant' : 'user';
+            $content = (string)($h['content'] ?? '');
+            if ($content === '') continue;
+            $history[] = ['role' => $role, 'content' => $content];
+        }
+
         // 构建 payload
         if ($providerId === 'claude') {
             // Anthropic Messages API 的 system 是**顶层参数**，messages 里只接受
@@ -99,27 +112,29 @@ class AiCenter {
                 'max_tokens' => $opts['max_tokens'] ?? 4096,
                 'system' => $system !== '' ? $system : null,
                 'temperature' => $temperature,
-                'messages' => [
+                'messages' => array_merge($history, [
                     ['role' => 'user', 'content' => $user !== '' ? $user : $system],
-                ],
+                ]),
             ], fn($v) => $v !== null), JSON_UNESCAPED_UNICODE);
             $headers = ['x-api-key: ' . $provider['api_key'], 'anthropic-version: 2023-06-01', 'Content-Type: application/json'];
             $endpoint = $apiUrl . '/messages';
         } elseif ($providerId === 'minimax') {
             $payload = json_encode([
                 'model' => $model,
-                'messages' => [
-                    ['role' => 'system', 'content' => $system],
-                    ['role' => 'user', 'content' => $user],
-                ],
+                'messages' => array_merge(
+                    [['role' => 'system', 'content' => $system]],
+                    $history,
+                    [['role' => 'user', 'content' => $user]]
+                ),
                 'temperature' => $temperature,
-                'max_tokens' => 4096,
+                'max_tokens' => $opts['max_tokens'] ?? 4096,
             ], JSON_UNESCAPED_UNICODE);
             $headers = ['Authorization: Bearer ' . $provider['api_key'], 'Content-Type: application/json'];
             $endpoint = $apiUrl . '/text/chatcompletion_v2';
         } else {
             // OpenAI 兼容（OpenAI/DeepSeek/Kimi/GLM/Qwen/Doubao/元宝/OpenRouter）
             $messages = [['role' => 'system', 'content' => $system]];
+            foreach ($history as $h) $messages[] = $h;
             if ($user) $messages[] = ['role' => 'user', 'content' => $user];
             $payload = json_encode([
                 'model' => $model,
