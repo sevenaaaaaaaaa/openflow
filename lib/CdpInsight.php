@@ -80,7 +80,7 @@ class CdpInsight {
                 "  \"actions\": [{\"title\":\"行动建议\",\"detail\":\"具体做法\",\"priority\":\"high|medium|low\"}]\n" .
                 "}";
 
-            $r = AiCenter::json($system, $user, ['temperature' => 0.3]);
+            $r = AiCenter::json($system, $user, ['temperature' => 0.3, 'feature' => 'cdp_insight', 'tier' => 'admin']);
             if ($r['ok']) {
                 $data = $r['data'];
                 $result = [

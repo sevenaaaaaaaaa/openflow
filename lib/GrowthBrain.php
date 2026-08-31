@@ -165,7 +165,7 @@ if (!function_exists('growth_brain_polish')) {
             $r = \AiCenter::chat(
                 '你是增长运营教练。把下面这条"下一最佳动作的理由"改写得更简洁、更有说服力，一句话，不超过40字，不要加引号。',
                 $reason,
-                ['max_tokens' => 120]
+                ['max_tokens' => 120, 'feature' => 'growth_brain', 'tier' => 'batch']
             );
             $t = trim((string)($r['text'] ?? $r['content'] ?? ''));
             return $t !== '' ? $t : $reason;

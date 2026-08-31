@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ai_analyze'])) {
             $sample = array_slice($mig['rows'], 0, 8);
             $system = "你是数据迁移专家，帮助用户把老系统的历史数据导入 OpenFlow 增长系统。分析上传的数据，给出：1) 字段识别（哪些列对应什么含义）2) 数据质量问题 3) 字段映射建议（老列→OpenFlow 目标字段）4) 导入指南（分步骤建议、注意事项）。目标字段如下：" . json_encode(array_values($fields), JSON_UNESCAPED_UNICODE);
             $user = "数据类型：{$types[$mig['type']]['label']}\n检测到的列：{$mig['header']}\n数据预览（前8行）：\n" . json_encode($sample, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            $resp = AiCenter::chat($system, $user, ['temperature' => 0.3]);
+            $resp = AiCenter::chat($system, $user, ['temperature' => 0.3, 'feature' => 'migrate_guide', 'tier' => 'admin']);
             $aiGuide = ['ok' => $resp['ok'] ?? false, 'text' => $resp['text'] ?? ($resp['error'] ?? 'AI 分析失败')];
         }
     }

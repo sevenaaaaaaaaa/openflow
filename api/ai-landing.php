@@ -21,10 +21,17 @@ if (!AiCenter::isConfigured()) {
 $system = "你是资深落地页设计师。根据用户需求，返回一个落地页区块数组（JSON），每个区块含 type 和内容字段。可用 type：hero(标题/副标题/CTA)、features(功能亮点，items数组)、testimonial(用户评价，items数组)、cta(行动号召)、pricing(价格表，items数组)、faq(常见问题，items数组)、form(表单，form_slug)。只输出 JSON 数组，不要解释。";
 $user = "需求：{$desc}\n返回 JSON 数组格式：[{\"type\":\"hero\",\"title\":\"...\",\"subtitle\":\"...\",\"button_text\":\"...\"},...]";
 
-$r = AiCenter::chat($system, $user, ['max_tokens' => 2500]);
-if (empty($r['content'])) { http_response_code(500); echo json_encode(['ok'=>false,'error'=>$r['error'] ?? 'AI 生成失败']); exit; }
+$r = AiCenter::chat($system, $user, ['max_tokens' => 2500, 'feature' => 'ai_landing', 'tier' => 'admin']);
+// AiCenter::chat() 返回的键是 text，没有 content——原来读 $r['content'] 永远为空，
+// 也就是说这个接口一直只会返回「AI 生成失败」，从没成功过。
+$aiText = (string)($r['text'] ?? '');
+if (empty($r['ok']) || $aiText === '') {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => $r['error'] ?? 'AI 生成失败'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
-$blocks = AiCenter::extractJson($r['content']);
+$blocks = AiCenter::extractJson($aiText);
 if (!is_array($blocks) || empty($blocks)) { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'AI 返回无法解析的区块']); exit; }
 
 // 规范化 blocks
