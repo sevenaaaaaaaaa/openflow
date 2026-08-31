@@ -76,7 +76,19 @@ class AiCenter {
             }
         } catch (\Throwable $e) {}
 
-        $provider = self::defaultProvider();
+        // 允许指定供应商（连通性自检要测"选中的那一个"，不能测默认的那个——
+        // 否则默认供应商是好的时候，坏的供应商也会报"连接成功"）。
+        $provider = [];
+        if (!empty($opts['provider_id'])) {
+            foreach (self::providers() as $p) {
+                if (($p['id'] ?? '') === $opts['provider_id']) { $provider = $p; break; }
+            }
+            if (empty($provider)) {
+                return ['ok' => false, 'error' => '指定的 AI 供应商不存在', 'text' => ''];
+            }
+        } else {
+            $provider = self::defaultProvider();
+        }
         if (empty($provider) || empty($provider['api_key'])) {
             return ['ok' => false, 'error' => 'AI 供应商未配置，请在 AI Agent 配置中设置', 'text' => ''];
         }
