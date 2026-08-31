@@ -41,7 +41,7 @@ if ($action === 'test_provider') {
     foreach ($providers as $p) if ($p['id'] === $providerId) { $provider = $p; break; }
     if (!$provider) { http_response_code(404); echo json_encode(['ok' => false, 'error' => '供应商不存在']); exit; }
     // 用临时 provider 测试（AiCenter 只支持默认，这里直接构造测试）
-    $r = AiCenter::chat('你是一个连接测试助手，请只回复：连接成功', '测试', ['model' => $provider['model'] ?? '']);
+    $r = AiCenter::chat('你是一个连接测试助手，请只回复：连接成功', '测试', ['model' => $provider['model'] ?? '', 'feature' => 'provider_test', 'tier' => 'admin', 'timeout' => 20]);
     echo json_encode(['ok' => $r['ok'], 'error' => $r['error'] ?? '', 'text' => $r['text'] ?? ''], JSON_UNESCAPED_UNICODE);
     exit;
 }
