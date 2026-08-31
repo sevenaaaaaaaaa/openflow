@@ -113,6 +113,9 @@ class Database {
             'idx_events_created'       => 'events(created_at)',
             // 画像按访客取事件流，且要按 id 倒序
             'idx_events_uid'           => 'events(uid, id)',
+            // 分群规则「某访客某事件发生过几次」——每次埋点后的分群评估都要算，
+            // 是仅次于写入的第二热路径。见 CdpSystem::countUserEvents()
+            'idx_events_uid_event'     => 'events(uid, event, created_at)',
             // 热门页面是 event=? GROUP BY page，靠索引顺序省掉临时 B 树
             'idx_events_event_page'    => 'events(event, page)',
             // member_id != '' 是不等值，普通索引用不上；
