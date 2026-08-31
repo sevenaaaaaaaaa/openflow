@@ -67,7 +67,7 @@ if (!function_exists('ai_personalize_enabled')) {
                 $r = \AiCenter::json(
                     '你是转化文案专家。根据这个访客的画像，为一条站内 CTA 写更打动他的文案。'
                     . '保持与 goal_action 一致的意图，中文，输出 JSON：{"title":"标题(<14字)","desc":"副文案(<30字)"}，不要多余文字。',
-                    $ctx, ['max_tokens' => 200]
+                    $ctx, ['max_tokens' => 200, 'feature' => 'ai_personalize', 'tier' => 'public']
                 );
                 $ai = (!empty($r['ok']) && is_array($r['data'] ?? null)) ? $r['data'] : null;
             }

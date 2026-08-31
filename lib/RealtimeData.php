@@ -143,7 +143,7 @@ class RealtimeData {
             $items[] = "- {$r['title']} ({$r['url']})";
         }
         $user = "关于「{$sentiment['topic']}」的最新舆情信息：\n" . implode("\n", $items) . "\n\n请输出 JSON：{\"summary\":\"150字内总体概括\",\"tone\":\"正面|中性|负面\",\"hot_points\":[\"热点1\",\"热点2\"]}";
-        $r = AiCenter::json('你是舆情分析师。基于给定信息输出简洁的舆情摘要。', $user, ['temperature' => 0.3]);
+        $r = AiCenter::json('你是舆情分析师。基于给定信息输出简洁的舆情摘要。', $user, ['temperature' => 0.3, 'feature' => 'sentiment', 'tier' => 'batch']);
         if ($r['ok']) return ['summary' => $r['data']['summary'] ?? '', 'tone' => $r['data']['tone'] ?? '中性', 'hot_points' => $r['data']['hot_points'] ?? [], 'ai' => true];
         return ['summary' => 'AI 分析暂不可用', 'ai' => false];
     }

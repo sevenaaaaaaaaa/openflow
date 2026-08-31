@@ -125,25 +125,28 @@ function geo_ai_generate_article(array $topic, string $category = 'insight'): ?a
     ];
 }
 
-// AI 调用（复用 OpenAI 兼容格式）
+/**
+ * AI 调用 —— 统一走 AiCenter::chat()。
+ *
+ * 【为什么改】这里原来自建了一份 curl：自己的 payload、自己的 90 秒超时、自己的解析。
+ * 后果是它**绕过了 AI 电表**——GEO 自动写文是全站最耗 token 的功能
+ * （每篇 4000 max_tokens），却一条记账都没有，"这个月 AI 花在哪"永远算不准。
+ * 顺带它还漏了 Claude 供应商分支（只认 OpenAI 兼容和 minimax）。
+ * 统一走 AiCenter 之后，记账、额度闸门、分档超时、多供应商全都自动生效。
+ *
+ * $provider 保留在签名里是为了不动调用方；用哪个供应商由 AiCenter 统一决定，
+ * 这里只把模型名透传过去。
+ */
 function geo_ai_call(array $provider, string $prompt): string {
-    $apiUrl = rtrim($provider['api_url'], '/');
-    $model = $provider['model'] ?? 'gpt-4o';
-    $payload = json_encode([
-        'model' => $model,
-        'messages' => [
-            ['role'=>'system','content'=>'你是 OpenFlow 的专业内容作者，擅长网站增长与 AI 运营写作。'],
-            ['role'=>'user','content'=>$prompt],
-        ],
-        'max_tokens' => 4000,
-    ]);
-    $endpoint = $provider['id'] === 'minimax' ? $apiUrl . '/text/chatcompletion_v2' : $apiUrl . '/chat/completions';
-    $headers = ['Authorization: Bearer ' . $provider['api_key'], 'Content-Type: application/json'];
-    $ch = curl_init($endpoint);
-    curl_setopt_array($ch, [CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>$payload, CURLOPT_HTTPHEADER=>$headers, CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>90]);
-    $resp = curl_exec($ch);
-    $data = json_decode($resp, true);
-    return $data['choices'][0]['message']['content'] ?? ($data['output_text'] ?? ($data['data'][0]['output_text'] ?? ''));
+    require_once __DIR__ . '/AiCenter.php';
+    $opts = ['max_tokens' => 4000, 'feature' => 'geo_writer', 'tier' => 'batch'];
+    if (!empty($provider['model'])) $opts['model'] = $provider['model'];
+    $r = AiCenter::chat(
+        '你是 OpenFlow 的专业内容作者，擅长网站增长与 AI 运营写作。',
+        $prompt,
+        $opts
+    );
+    return !empty($r['ok']) ? (string)($r['text'] ?? '') : '';
 }
 
 // ─── 话题库 ───

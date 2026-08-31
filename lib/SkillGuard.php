@@ -136,7 +136,7 @@ if (!function_exists('skillguard_permissions')) {
                 $r = \AiCenter::chat(
                     '你是代码安全审查员。判断这个生成物的实际内容是否与它声称的用途相符，'
                     . '有没有隐藏的越权/外带数据行为。只回一个词：ok 或 suspicious。',
-                    $payload, ['max_tokens' => 20]
+                    $payload, ['max_tokens' => 20, 'feature' => 'skill_guard', 'tier' => 'admin']
                 );
                 $verdictText = trim((string)($r['text'] ?? ''));
             }

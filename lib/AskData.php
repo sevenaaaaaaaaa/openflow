@@ -54,7 +54,7 @@ if (!function_exists('askdata_gather')) {
                 . '严格只用这份数据回答用户的问题，用中文、简洁、给出具体数字；'
                 . '如果数据里没有相关指标，直说"当前快照没有这项数据"，绝不编造数字。',
                 "问题：{$question}\n\n数据快照：\n{$ctx}",
-                ['max_tokens' => 600]
+                ['max_tokens' => 600, 'feature' => 'ask_data', 'tier' => 'admin']
             );
             if (empty($r['ok'])) return ['ok' => false, 'error' => $r['error'] ?? 'AI 请求失败', 'data' => $snap];
             $text = trim((string)($r['text'] ?? $r['content'] ?? ''));

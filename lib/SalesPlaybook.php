@@ -121,7 +121,7 @@ if (!function_exists('playbook_kinds')) {
             $r = \AiCenter::chat(
                 '你是资深销售教练。把给定的销售话术草稿，按这个客户的画像改写得更贴合、更自然，'
                 . '保持中文、保持同样的结构与意图，不要加客套废话，不要编造事实。只输出改写后的正文。',
-                $ctx, ['max_tokens' => 700]
+                $ctx, ['max_tokens' => 700, 'feature' => 'sales_playbook', 'tier' => 'admin']
             );
             $t = trim((string)($r['text'] ?? $r['content'] ?? ''));
             if (!empty($r['ok']) && $t !== '') { $draft['body'] = $t; $draft['ai'] = true; }
