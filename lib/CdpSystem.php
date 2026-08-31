@@ -48,8 +48,6 @@ class CdpSystem {
             } catch (\Throwable $e) {}
         }
 
-        $events = self::allEvents();
-
         $visitorId = $visitorId ?: self::getVisitorId();
         $memberId = $_COOKIE['member_id'] ?? '';
 
@@ -85,14 +83,7 @@ class CdpSystem {
             if (is_array($filtered)) $entry = $filtered;
         }
 
-        $events[] = $entry;
-
-        // 保持文件大小（最多 10000 条）
-        if (count($events) > 10000) {
-            $events = array_slice($events, -10000);
-        }
-
-        self::saveEvents($events);
+        self::appendEvent($entry);
 
         // 更新用户画像
         self::updateProfile($visitorId, $memberId, $event, $data);
@@ -108,12 +99,27 @@ class CdpSystem {
      * 批量记录事件
      */
     public static function trackBatch(array $events): int {
+        // 逐条仍走 track()——同意门、事件字典、身份合并、插件过滤、画像更新
+        // 这些每条事件的语义一条都不能省。这里只做一件事：把整批包进一个事务，
+        // 让 N 条事件只落一次盘（否则前端一次上报 20 条就是 20 次 fsync）。
+        $conn = null; $own = false;
+        try {
+            $conn = Database::conn();
+            if (!$conn->inTransaction()) { $conn->beginTransaction(); $own = true; }
+        } catch (Exception $e) { $conn = null; }
+
         $count = 0;
-        foreach ($events as $e) {
-            if (self::track($e['event'], $e['properties'] ?? [], $e['visitor_id'] ?? '')) {
-                $count++;
+        try {
+            foreach ($events as $e) {
+                if (self::track($e['event'], $e['properties'] ?? [], $e['visitor_id'] ?? '')) {
+                    $count++;
+                }
             }
+        } catch (Exception $e) {
+            if ($own && $conn && $conn->inTransaction()) { try { $conn->rollBack(); } catch (Exception $e2) {} }
+            throw $e;
         }
+        if ($own && $conn && $conn->inTransaction()) { try { $conn->commit(); } catch (Exception $e) {} }
         return $count;
     }
 
@@ -155,18 +161,40 @@ class CdpSystem {
         return self::$eventsCache[$limit] = array_slice(json_read(self::$eventsFile), -$limit);
     }
 
-    private static function saveEvents(array $events): void {
+    /**
+     * 追加事件 —— 写路径的唯一入口。
+     *
+     * 【为什么长这样】这里是全系统最热的一条路径（每个访客的每次行为都走一遍），
+     * 所以它只能做一件事：**往表里加行**。
+     * 旧实现是「先把最近一万条读进内存 → 追加一条 → 再把末尾 200 条重写一遍」，
+     * 实测单条 134 ms / 26 MB，其中 99.4% 是无用功（见 docs/ROADMAP.md、
+     * tests/events_writepath_bench.php）。换存储治不了这个，只能换写法。
+     *
+     * SQLite 不可用时才回退到 JSON——回退路径不得不整批读写，但那是异常分支。
+     */
+    private static function appendEvent(array $entry): void {
         self::$eventsCache = [];
-        // 批量写 SQLite（message_id 去重）
+        if (self::insertEventRows([$entry]) === 0) self::appendEventsJson([$entry]);
+    }
+
+    /**
+     * 批量写入 events 表；返回成功写入的行数，失败（表/连接不可用）返回 0。
+     * 已在事务中则复用外层事务，避免 trackBatch 每条一次 fsync。
+     */
+    private static function insertEventRows(array $entries): int {
+        if (empty($entries)) return 0;
         try {
             $conn = Database::conn();
-            $conn->beginTransaction();
+            $own = !$conn->inTransaction();
+            if ($own) $conn->beginTransaction();
             $stmt = $conn->prepare("INSERT OR IGNORE INTO events (event, label, variant, page, uid, member_id, member_email, props, ip, created_at, session_id, message_id, ts, event_category) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            foreach (array_slice($events, -200) as $e) {
+            $n = 0;
+            foreach ($entries as $e) {
                 $props = $e['properties'] ?? [];
                 $category = '';
-                if (is_array($props)) {
-                    if (isset($props['event_category'])) { $category = $props['event_category']; unset($props['event_category']); }
+                if (is_array($props) && isset($props['event_category'])) {
+                    $category = $props['event_category'];
+                    unset($props['event_category']);
                 }
                 $messageId = $e['message_id'] ?? ('evt_' . md5(($e['visitor_id'] ?? '') . ($e['event'] ?? '') . ($e['timestamp'] ?? '') . ($e['id'] ?? uniqid())));
                 $ts = (int)($e['ts'] ?? (strtotime($e['timestamp'] ?? '') ?: time()) * 1000);
@@ -177,12 +205,22 @@ class CdpSystem {
                     $e['ip'] ?? '', $e['timestamp'] ?? date('Y-m-d H:i:s'),
                     $e['session_id'] ?? '', $messageId, $ts, $category,
                 ]);
+                $n++;
             }
-            $conn->commit();
-        } catch (Exception $e) {
-            // 回退：写 JSON
-            json_write(self::$eventsFile, array_slice($events, -10000));
+            if ($own) $conn->commit();
+            return $n;
+        } catch (Exception $ex) {
+            try { if (isset($conn) && isset($own) && $own && $conn->inTransaction()) $conn->rollBack(); } catch (Exception $e2) {}
+            return 0;
         }
+    }
+
+    /** 回退分支：SQLite 写不进时追加到 JSON（保留一万条上限）。 */
+    private static function appendEventsJson(array $entries): void {
+        if (!function_exists('json_read') || !function_exists('json_write')) return;
+        $events = json_read(self::$eventsFile);
+        foreach ($entries as $e) $events[] = $e;
+        json_write(self::$eventsFile, array_slice($events, -10000));
     }
 
     // 当前会话 ID（30 分钟滚动，会话 ID = 会话开始时间戳，对标 Amplitude）
@@ -618,12 +656,28 @@ class CdpSystem {
         }
     }
 
+    /**
+     * 某访客某事件的发生次数（分群规则用）。
+     *
+     * 【为什么走 SQL】这个方法在每次埋点后的分群评估里被调用，是第二条热路径。
+     * 旧实现是把最近一万条事件读进 PHP 再逐条比对——等于每条事件多扫一万行。
+     * 改成带索引的 COUNT(*)（idx_events_uid_event），交给 SQLite 做它擅长的事。
+     * SQLite 不可用时回退到原来的内存扫描，语义完全一致。
+     */
     private static function countUserEvents(string $visitorId, string $event, int $windowDays = 0): int {
-        $events = self::allEvents();
-        $count = 0;
         $cutoff = $windowDays > 0 ? date('Y-m-d H:i:s', time() - $windowDays * 86400) : '';
-        foreach ($events as $e) {
-            if ($e['visitor_id'] === $visitorId && $e['event'] === $event) {
+        try {
+            $sql = "SELECT COUNT(*) AS n FROM events WHERE uid = ? AND event = ?";
+            $args = [$visitorId, $event];
+            if ($cutoff !== '') { $sql .= " AND created_at >= ?"; $args[] = $cutoff; }
+            $rows = Database::query($sql, $args);
+            if (isset($rows[0]['n'])) return (int)$rows[0]['n'];
+        } catch (Exception $e) {}
+
+        // 回退：内存扫描（仅在 SQLite 不可用时）
+        $count = 0;
+        foreach (self::allEvents() as $e) {
+            if (($e['visitor_id'] ?? '') === $visitorId && ($e['event'] ?? '') === $event) {
                 if ($cutoff !== '' && ($e['timestamp'] ?? '') < $cutoff) continue;
                 $count++;
             }
