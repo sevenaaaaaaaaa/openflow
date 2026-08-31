@@ -36,18 +36,26 @@ function member_save(array $member): bool {
 function member_sync_db(string $memberId): void {
     $m = member_get($memberId);
     if (!$m) return;
-    Database::execute(
-        "INSERT INTO members (id, email, phone, password_hash, nickname, level, points, balance, referred_by, membership_plan, membership_expires, created_at, unlocked_skills, api_plans)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-         ON CONFLICT(id) DO UPDATE SET email=excluded.email, phone=excluded.phone, password_hash=excluded.password_hash, nickname=excluded.nickname, level=excluded.level, points=excluded.points, balance=excluded.balance, referred_by=excluded.referred_by, membership_plan=excluded.membership_plan, membership_expires=excluded.membership_expires, created_at=excluded.created_at, unlocked_skills=excluded.unlocked_skills, api_plans=excluded.api_plans",
-        [
-            $m['id'], $m['email'] ?? '', $m['phone'] ?? '', $m['password_hash'] ?? '',
-            $m['name'] ?? '', $m['role'] ?? 'user', (int)($m['points'] ?? 0), (float)($m['balance'] ?? 0),
-            $m['referred_by'] ?? '', $m['membership_plan'] ?? '', $m['membership_expires'] ?? '',
-            $m['created_at'] ?? date('Y-m-d H:i:s'),
-            $m['unlocked_skills'] ?? '[]', $m['api_plans'] ?? '[]',
-        ]
-    );
+    $vals = [
+        $m['id'], $m['email'] ?? '', $m['phone'] ?? '', $m['password_hash'] ?? '',
+        $m['name'] ?? '', $m['role'] ?? 'user', (int)($m['points'] ?? 0), (float)($m['balance'] ?? 0),
+        $m['referred_by'] ?? '', $m['membership_plan'] ?? '', $m['membership_expires'] ?? '',
+        $m['created_at'] ?? date('Y-m-d H:i:s'),
+        $m['unlocked_skills'] ?? '[]', $m['api_plans'] ?? '[]',
+    ];
+    $exists = Database::query("SELECT id FROM members WHERE id = ? LIMIT 1", [$m['id']]);
+    if ($exists) {
+        Database::execute(
+            "UPDATE members SET email=?, phone=?, password_hash=?, nickname=?, level=?, points=?, balance=?, referred_by=?, membership_plan=?, membership_expires=?, created_at=?, unlocked_skills=?, api_plans=? WHERE id=?",
+            array_merge(array_slice($vals, 1), [$m['id']])
+        );
+    } else {
+        Database::execute(
+            "INSERT INTO members (id, email, phone, password_hash, nickname, level, points, balance, referred_by, membership_plan, membership_expires, created_at, unlocked_skills, api_plans)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            $vals
+        );
+    }
 }
 
 // 按邮箱/手机找用户
