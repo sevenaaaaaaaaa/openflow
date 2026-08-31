@@ -24,6 +24,20 @@ if (!function_exists('siteagent_answer')) {
     }
 
     /**
+     * 出口脱敏：模型的输出是**直接回给匿名访客**的，不能原样放行。
+     *
+     * 【为什么需要】知识库里可能夹着客户邮箱、内部联系方式；模型也可能自己"补"一个。
+     * 提示词里已经要求不要输出，但提示词是建议不是保证——面向公网的出口必须有硬过滤。
+     * 只遮蔽标识信息，不改动其余文字（客服回答的可读性要保住）。
+     */
+    function siteagent_scrub(string $text): string {
+        if ($text === '') return '';
+        $text = preg_replace('/[\w.+-]+@[\w-]+\.[\w.]+/', '[已隐藏]', $text);
+        $text = preg_replace('/\b1[3-9]\d{9}\b/', '[已隐藏]', $text);
+        return (string)$text;
+    }
+
+    /**
      * 回答一个访客问题。
      * 返回 ['ok','answer','sources'=>[{title,url}],'handoff'=>bool,'cta'=>?]
      *  - handoff=true 表示建议转人工（知识不足或 AI 不可用）
@@ -56,16 +70,17 @@ if (!function_exists('siteagent_answer')) {
         // AI 现答（可注入）
         try {
             if (isset($GLOBALS['SITEAGENT_AI_FN']) && is_callable($GLOBALS['SITEAGENT_AI_FN'])) {
-                $t = trim((string)call_user_func($GLOBALS['SITEAGENT_AI_FN'], $question, $kb));
+                $t = siteagent_scrub(trim((string)call_user_func($GLOBALS['SITEAGENT_AI_FN'], $question, $kb)));
                 if ($t !== '') return ['ok' => true, 'handoff' => false, 'answer' => $t, 'sources' => $sources, 'cta' => siteagent_cta($ctx)];
             } elseif (class_exists('AiCenter') && \AiCenter::isConfigured()) {
                 $r = \AiCenter::chat(
                     '你是这个网站的客服助手。**只能**根据下面提供的站内资料回答，'
-                    . '资料里没有的就说"这个我不确定，帮你转人工"，绝不编造。中文、简洁、直接给结论。',
+                    . '资料里没有的就说"这个我不确定，帮你转人工"，绝不编造。中文、简洁、直接给结论。'
+                    . '不要在回答里出现任何邮箱地址或手机号。',
                     "访客问题：{$question}\n\n站内资料：\n{$kb}",
                     ['max_tokens' => 600, 'feature' => 'site_agent', 'tier' => 'public']
                 );
-                $t = trim((string)($r['text'] ?? $r['content'] ?? ''));
+                $t = siteagent_scrub(trim((string)($r['text'] ?? $r['content'] ?? '')));
                 if (!empty($r['ok']) && $t !== '') {
                     $handoff = (mb_strpos($t, '转人工') !== false || mb_strpos($t, '不确定') !== false);
                     return ['ok' => true, 'handoff' => $handoff, 'answer' => $t, 'sources' => $sources, 'cta' => siteagent_cta($ctx)];
