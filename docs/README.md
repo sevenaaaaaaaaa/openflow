@@ -53,6 +53,7 @@
 | `BACKLOG.md` | **施工图**——七份审计所有未做项的唯一优先级清单（T0 硬伤/T1 高价值/T2 后续） |
 | `TASKS.md` | 开发任务清单与进度（含已补齐的 A3/C2/C3/D1 等） |
 | `GAP-ANALYSIS.md` | 功能缺口分析（用户体验 + 竞品对照） |
+| `SECURITY-API.md` | API 权限矩阵：四档划分、默认取值与调整方式（后台 `/xmp/api-permissions`）|
 | `HOOKS.md` | 插件系统钩子清单（已实现的插入点；「尚无插入点」以下为规划） |
 | `PERFORMANCE.md` | 性能基线与优化记录（含 events 索引） |
 | `EVOLUTION.md` | 三档规模演进路线——已按实测修订：轴定为「细胞式」、第六章 DataStore 暂缓、第八章触发器重标 |

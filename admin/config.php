@@ -1822,6 +1822,7 @@ function admin_sidebar(string $current): void {
   <a href="/xmp/roles" class="<?=$current==='roles'?'active':''?>" style="padding-left:44px;font-size:13px">角色与权限</a>
   <?php endif; ?>
   <a href="/xmp/security" class="<?=$current==='security'?'active':''?>" style="padding-left:44px;font-size:13px">账号安全（2FA）</a>
+  <a href="/xmp/api-permissions" class="<?=$current==='api-permissions'?'active':''?>" style="padding-left:44px;font-size:13px">API 权限矩阵</a>
   <?php if (has_perm('settings')): ?>
   <a href="/xmp/consent" class="<?=$current==='consent'?'active':''?>" style="padding-left:44px;font-size:13px">🛡 同意与数据保留</a>
   <?php endif; ?>
@@ -2725,4 +2726,24 @@ function log_activity(string $action, string $target_type, string $target_id, st
     ];
     if (count($log) > 500) $log = array_slice($log, -500);
     json_write($logFile, $log);
+}
+
+// ─── API 权限矩阵：统一入口执行（docs/ROADMAP.md 阶段三）───────────────
+//
+// 【为什么放在这里】92 个 api/*.php 的第一行都是 require_once 本文件，
+// 这是一道现成的统一关卡。在关卡里按脚本名查表，**92 个文件一个都不用动**，
+// 也就不会有"漏改了一个"这种事——和当初 CSRF 收口到 require_login 是同一个套路。
+//
+// 【默认不改变现有行为】策略表里只有明确是后台工具的端点才是 admin（逐个核过
+// 调用方，确认只有 admin/ 在调）；没列到的一律 public，也就是跟今天一模一样。
+// 具体档位可在后台「API 权限矩阵」页逐个调整，不用改代码。
+//
+// 放在文件末尾是必需的：它依赖上面定义的 has_perm()，也需要 session 已开启。
+if (PHP_SAPI !== 'cli') {
+    $__ofScript = $_SERVER['SCRIPT_FILENAME'] ?? '';
+    if ($__ofScript !== '' && basename(dirname((string)$__ofScript)) === 'api') {
+        require_once __DIR__ . '/../lib/ApiPolicy.php';
+        api_policy_guard((string)$__ofScript);
+    }
+    unset($__ofScript);
 }
