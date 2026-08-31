@@ -73,7 +73,7 @@
 | 事件量 | < 100 万 | 100 万 - 1 亿 | 10 亿+ |
 | 活跃用户 | < 1 万 | 1 万 - 100 万 | 100 万+ |
 | 部署形态 | 宝塔一键 / 单机 | 单机增强 / 多站点 | 分布式 / 多租户 SaaS |
-| 存储 | JSON + SQLite | SQLite/DuckDB 为主 | PostgreSQL + ClickHouse |
+| 存储 | JSON + SQLite | SQLite/MySQL/DuckDB 为主（事件已切 MySQL） | PostgreSQL + ClickHouse |
 | 运行 | Apache + PHP-FPM + cron | + Redis + CF Workers | 服务拆分 + 高可用 |
 | 团队协作 | 单管理员 | 多用户角色 | 租户隔离 |
 
@@ -107,14 +107,14 @@
 
 | 升级点 | 方案 | 现状准备 |
 |---|---|---|
-| 存储分层 | 热(7天)→Redis；温→SQLite；冷→DuckDB 分区 | events 索引已完成；分层缓存已有规划 |
-| CDP 分析 | SQLite → **DuckDB**（嵌入式列式，单文件，零运维） | 事件写入走统一抽象后可直接替代 |
+| 存储分层 | 热(7天)→Redis；温→SQLite/MySQL；冷→DuckDB 分区 | ✅ **事件已切 MySQL**（`EventStore` 双驱动）；热层/冷层待 Redis/DuckDB |
+| CDP 分析 | SQLite/MySQL → **DuckDB**（嵌入式列式，单文件，零运维） | 事件写入已走统一 EventStore，DuckDB 可直接作为冷层接入 |
 | 队列/调度 | cron → **Redis/Valkey**（延迟队列、去重、限流） | `Cache.php` 已原生支持 Redis（自动探测）|
 | 实时触达 | 无 → **Cloudflare Workers**（WebSocket/SSE 网关） | 站点已在 CF 后面，加 Worker 即得实时层 |
 | 团队协作 | 单管理员 → 多用户角色（roles.json 已支持） | 角色/权限矩阵已就位 |
 | 多站点 | 单站 → 多域名/子域名 | `.htaccess` 已支持多域 |
 
-**中型公司核心形态**：仍是单机部署（宝塔 + 8GB 内存即可），但存储从"全 JSON"演进为"SQLite/DuckDB 为主 + JSON 保留配置"。全部仍是零外部服务依赖。
+**中型公司核心形态**：仍是单机部署（宝塔 + 8GB 内存即可），但存储从"全 JSON"演进为"SQLite/MySQL/DuckDB 为主 + JSON 保留配置"。事件表已可跑 MySQL（Tier 1.5），分析冷层接 DuckDB 即可到 Tier 2。
 
 ---
 
@@ -245,7 +245,11 @@ DataStore  ←→  现有 Database.php（SQLite，已有）
 
 ---
 
-## 七、地基二：EventSink 事件写入层（设计先行文档）
+## 七、地基二：EventSink 事件写入层（✅ 已落地为 EventStore）
+
+> **2026-08-31：本设计已落地，实现为 `lib/EventStore.php`。**
+> 事件写入/读取已统一到 EventStore，且支持 MySQL 切换（分层存储第一步）。
+> 下面的设计作为契约参考，实际实现见 `lib/EventStore.php`。
 
 > 目的：埋点写入是全系统第一个会撞墙的瓶颈，需要统一的写入插槽。
 
@@ -290,8 +294,42 @@ class EventSink {
 | 档位 | 实现 | 说明 |
 |---|---|---|
 | Tier1 | 写 SQLite events 表（复用现有 Database.php） | 已有索引，查询 1-7ms |
+| Tier1.5 | **写 MySQL events 表（✅ 已落地）** | `EventStore` 双驱动：settings.json 配 `mysql_*` 则写 MySQL，否则 SQLite |
 | Tier2 | 热层 Redis + 温层 SQLite + 冷层 DuckDB | 冷数据定期归档 |
 | Tier3 | CF Worker 批量聚合 → ClickHouse | 亿级秒级聚合 |
+
+### ✅ 落地记录：EventStore（2026-08-31）
+
+**做了什么**：events 表从"固定 SQLite"升级为"SQLite/MySQL 双驱动可切换"。
+
+**文件**：
+- `lib/EventStore.php`（新增）：事件统一读写层
+- `lib/Database.php`（改）：`query()/execute()` 自动路由 events 表 SQL 到 EventStore
+- `lib/CdpSystem.php`（改）：事件写入/读取走 EventStore
+
+**配置**（`data/settings.json`，不写死代码）：
+```json
+{
+  "mysql_enabled": true,
+  "mysql_host": "localhost",
+  "mysql_port": 3306,
+  "mysql_dbname": "openflow",
+  "mysql_user": "openflow",
+  "mysql_pass": "****"
+}
+```
+
+**MySQL 侧**：
+- 库：`openflow`（utf8mb4）；用户 `openflow`（仅 localhost）
+- events 表：`message_id` 唯一索引（`uk_message`）用于去重；`event/created_at/uid/page/member_id` 分析索引
+- 索引前缀策略：MySQL 5.7 不支持部分索引 → 用 `UNIQUE KEY uk_message(message_id)` 替代 SQLite 的部分唯一索引
+
+**关键经验**：
+1. **`INSERT OR IGNORE`（SQLite）↔ `ON DUPLICATE KEY UPDATE`（MySQL）**：两条 SQL 按驱动分支，不能共用
+2. **MySQL 严格模式**：`GROUP BY` 需符合 `ONLY_FULL_GROUP_BY`；SQLite 宽松行为不兼容（如 `SELECT substr()...GROUP BY d` 需改写）
+3. **SQLite 3.7 部分索引降级**：`CREATE UNIQUE INDEX ... WHERE` 在 SQLite<3.8 失败 → 降级时**不要**建普通唯一索引（空 message_id 会冲突），去重由代码层生成唯一 message_id 保证
+4. **CLI 调试坑**：`CdpSystem.php` require `admin/config.php`，后者在 CLI 下输出错误页 → 调试事件读写应直接用 `lib/EventStore.php` 或模拟 Web 环境
+5. **历史数据**：生产 63 万行事件（多为 heartbeat/scroll 无意义数据）已全部清空，MySQL 从零开始；画像（cdp_profiles 419 条）保留在 SQLite 未动
 
 ---
 
