@@ -160,6 +160,44 @@ $gated = count(array_filter(api_policy_all(), fn($c) => in_array($c['tier'] ?? '
 printf("    共 %d 个端点，其中 %d 个需要身份（改之前是 1 个）\n", $total, $gated);
 check('需要身份的端点数明显多于改之前的 1 个', $gated >= 15, (string)$gated);
 
+echo "\n── 10b. API 层自动留痕（后台早就是结构性的，API 一直是盲区）──\n";
+// 后台的留痕挂在 require_login() 里，而 require_login 的注释明写着"API 不调用它"——
+// 所以「谁通过接口改了什么」一直查不到。这和权限是同一个形状的洞，用同一道关卡补。
+$cfgSrc = file_get_contents($root . '/admin/config.php');
+$apiSrc = file_get_contents($root . '/lib/ApiPolicy.php');
+check('后台留痕仍挂在统一入口', preg_match('/function require_login.*?audit_auto\(\)/s', $cfgSrc) === 1);
+check('脱敏逻辑抽成共用（后台与 API 同一份）', strpos($cfgSrc, 'function audit_redact(') !== false);
+check('写操作判定抽成共用', strpos($cfgSrc, 'function audit_write_verb(') !== false);
+check('API 侧会留痕', strpos($apiSrc, 'function api_policy_audit(') !== false);
+check('放行时也留痕（不是只记被拦的）', strpos($apiSrc, 'api_policy_audit($slug, $tier); return;') !== false);
+check('token 档也留痕（webhook/cron 改的数据也要查得到）',
+      preg_match("/tier === 'token'.*?api_policy_audit/s", $apiSrc) === 1);
+check('public 档不记（埋点太高频，且本来就无名可查）',
+      preg_match("/function api_policy_audit.*?tier === 'public'\) return;/s", $apiSrc) === 1);
+check('只读请求不记', preg_match("/function api_policy_audit.*?audit_write_verb\(\)/s", $apiSrc) === 1);
+
+// 真跑一次：模拟一个 admin 档的写请求，看有没有留下痕迹
+$_SERVER['REQUEST_METHOD'] = 'POST';
+$_POST = ['title' => '改了个标题', 'api_key' => 'sk-should-be-redacted'];
+api_policy_audit('templates', 'admin');
+$alog = json_read($tmp . '/audit_log.json');
+$hit = null;
+foreach ($alog as $l) if (strpos((string)($l['action'] ?? ''), 'api/templates') !== false) $hit = $l;
+check('留痕真的写进去了', $hit !== null, json_encode(array_slice($alog, -1), JSON_UNESCAPED_UNICODE));
+check('记了是哪个接口', ($hit['action'] ?? '') === 'post api/templates', (string)($hit['action'] ?? ''));
+check('参数里的密钥被脱敏', ($hit['details']['params']['api_key'] ?? '') === '***',
+      json_encode($hit['details']['params'] ?? [], JSON_UNESCAPED_UNICODE));
+check('普通参数保留', ($hit['details']['params']['title'] ?? '') === '改了个标题');
+$_SERVER['REQUEST_METHOD'] = 'GET'; $_POST = [];
+
+echo "\n── 10c. 根目录不许再有 config.php 影子文件 ──\n";
+// 曾经有一份 admin/config.php 的旧副本躺在仓库根目录：无人 include、require 的文件
+// 只存在于 admin/ 下（include 即 fatal），却带着一套**没有 CSRF 收口、没有留痕**的
+// 旧权限代码。这种文件最危险的地方是"看起来是活的"，有人会照着它改。
+check('根目录没有 config.php', !is_file($root . '/config.php'),
+      '若确需恢复：git show HEAD~1:config.php');
+check('admin/config.php 才是唯一入口', is_file($root . '/admin/config.php'));
+
 echo "\n── 11. 端到端：真的发 HTTP 请求（前面测的都是纯函数，这里测接线）──\n";
 // 纯函数对不代表守卫真的挂上了：SCRIPT_FILENAME 的识别、session、exit 时机，
 // 这些只有真发一次请求才知道。起一个 php -S，匿名打几个端点看返回码。

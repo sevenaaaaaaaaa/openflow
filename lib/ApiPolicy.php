@@ -172,6 +172,28 @@ if (!function_exists('api_policy_defaults')) {
     }
 
     /**
+     * API 侧的自动留痕。
+     *
+     * 【为什么这里要单写一份】后台的留痕是结构性的——`audit_auto()` 挂在
+     * `require_login()` 里，每个改状态的后台请求都会自动记，还带参数脱敏。
+     * 但 `require_login()` 的注释里明写着"API 不调用它"，所以
+     * **API 层一直是留痕的盲区**：谁通过接口改了什么，查不到。
+     * 这和权限是同一个形状的洞，也就用同一道关卡补上。
+     *
+     * 只记非 public 档的写操作：public 档多是埋点/订阅这类高频匿名请求，
+     * 全记下来只会把日志冲垮，而且本来也没有"谁"可查。
+     */
+    function api_policy_audit(string $slug, string $tier): void {
+        if ($tier === 'public') return;
+        if (!function_exists('audit_write_verb') || !function_exists('audit')) return;
+        $verb = audit_write_verb();
+        if ($verb === '') return;                       // 只读请求不记
+        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        $params = audit_redact($method === 'GET' ? $_GET : $_POST);
+        audit("{$verb} api/{$slug}", 'api', ['params' => $params, 'tier' => $tier]);
+    }
+
+    /**
      * 在统一入口执行。由 admin/config.php 末尾调用——**不要在各端点里单独调**，
      * 那样又会退回"逐个文件打补丁、总会漏一个"的老路。
      */
@@ -183,7 +205,11 @@ if (!function_exists('api_policy_defaults')) {
         $slug = basename($scriptPath, '.php');
         $policy = api_policy_for($slug);
         $tier = (string)($policy['tier'] ?? 'public');
-        if ($tier === 'public' || $tier === 'token') return;
+
+        // token 档不做权限判定（端点自带密钥/签名），但**要留痕**——
+        // webhook / cron / 数仓导出都是会改数据的，机器改的也得查得到。
+        if ($tier === 'public') return;
+        if ($tier === 'token') { api_policy_audit($slug, $tier); return; }
 
         $isAdmin = !empty($_SESSION['admin_login']) || !empty($_SESSION['admin_user']);
         $hasPerm = ($policy['perm'] ?? '') === ''
@@ -194,7 +220,7 @@ if (!function_exists('api_policy_defaults')) {
         }
 
         $r = api_policy_check($policy, ['admin' => $isAdmin, 'perm' => $hasPerm, 'member' => $isMember]);
-        if (!empty($r['allowed'])) return;
+        if (!empty($r['allowed'])) { api_policy_audit($slug, $tier); return; }
 
         api_policy_log($slug, $tier, $r['reason'], $mode === 'enforce');
         if ($mode === 'observe') return;                       // 只记录，不拦
