@@ -145,21 +145,18 @@ function sent_sentiment(string $text): array {
     return ['label'=>'中性','score'=>0];
 }
 
-// AI 调用（复用 OpenAI 兼容格式）
+/**
+ * AI 调用 —— 统一走 AiCenter（记账 + 额度闸门 + 分档超时）。
+ * 原来自建 curl：绕过电表、漏掉 Claude 分支、固定 60 秒超时。
+ * 返回空串表示不可用，调用方据此回落到本地关键词情感判断。
+ */
 function sent_ai_call(string $prompt): string {
-    $ai = json_read(DATA_DIR . '/ai-config.json');
-    $provider = null;
-    foreach (($ai['providers'] ?? []) as $p) if (($p['enabled'] ?? false) && !empty($p['api_key'])) { $provider = $p; break; }
-    if (!$provider) return '';
-    $apiUrl = rtrim($provider['api_url'], '/');
-    $model = $provider['model'] ?? 'gpt-4o';
-    $payload = json_encode(['model'=>$model, 'messages'=>[['role'=>'system','content'=>'你是专业的舆情分析师。'],['role'=>'user','content'=>$prompt]], 'max_tokens'=>2000]);
-    $endpoint = $provider['id'] === 'minimax' ? $apiUrl.'/text/chatcompletion_v2' : $apiUrl.'/chat/completions';
-    $ch = curl_init($endpoint);
-    curl_setopt_array($ch, [CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>$payload, CURLOPT_HTTPHEADER=>['Authorization: Bearer '.$provider['api_key'],'Content-Type: application/json'], CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>60]);
-    $resp = curl_exec($ch);
-    $data = json_decode($resp, true);
-    return $data['choices'][0]['message']['content'] ?? ($data['output_text'] ?? ($data['data'][0]['output_text'] ?? ''));
+    require_once __DIR__ . '/AiCenter.php';
+    if (!AiCenter::isConfigured()) return '';
+    $r = AiCenter::chat('你是专业的舆情分析师。', $prompt, [
+        'max_tokens' => 2000, 'feature' => 'sentiment_scan', 'tier' => 'batch',
+    ]);
+    return !empty($r['ok']) ? (string)($r['text'] ?? '') : '';
 }
 
 // ─── 设置 ───
