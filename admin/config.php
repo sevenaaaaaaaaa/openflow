@@ -391,35 +391,42 @@ function audit(string $action, string $category = 'admin', array $details = []):
  * 对每个「改状态」的后台请求自动留痕（在 CSRF 校验通过之后）。
  * 只记路径、方法、脱敏后的参数键值——密码/token/卡号等敏感字段一律抹掉。
  */
+/** 参数脱敏：密码/token/卡号一类的键一律抹掉，长值截断。后台与 API 共用一份。 */
+function audit_redact(array $src): array {
+    $out = [];
+    foreach ($src as $k => $v) {
+        if (preg_match('/pass|pwd|token|secret|csrf|cvv|card|api[_-]?key|private/i', (string)$k)) {
+            $out[$k] = '***'; continue;
+        }
+        if (is_array($v)) { $out[$k] = '[array]'; continue; }
+        $s = (string)$v;
+        $out[$k] = mb_strlen($s) > 120 ? mb_substr($s, 0, 120) . '…' : $s;
+    }
+    return $out;
+}
+
+/**
+ * 判断这次请求是不是「会改状态」。后台与 API 共用同一套判定，
+ * 免得两边对"什么算写操作"理解不一致。
+ * @return string '' 表示只读；否则返回动作词（post/delete/…）
+ */
+function audit_write_verb(): string {
+    $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    if (in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) return strtolower($method);
+    foreach (['delete','del','remove','uninstall','toggle','purge','clear','reset','drop','destroy','revoke'] as $k) {
+        if (isset($_GET[$k]) && $_GET[$k] !== '') return $k;
+    }
+    return '';
+}
+
 function audit_auto(): void {
     if (defined('OF_NO_AUTO_AUDIT')) return;
+    $verb = audit_write_verb();
+    if ($verb === '') return;
     $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-    $isWrite = in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true);
-    $destructiveGet = '';
-    if (!$isWrite) {
-        foreach (['delete','del','remove','uninstall','toggle','purge','clear','reset','drop','destroy','revoke'] as $k) {
-            if (isset($_GET[$k]) && $_GET[$k] !== '') { $destructiveGet = $k; break; }
-        }
-    }
-    if (!$isWrite && $destructiveGet === '') return;
-
-    // 脱敏：抹掉敏感键，长值截断
-    $redact = static function (array $src): array {
-        $out = [];
-        foreach ($src as $k => $v) {
-            if (preg_match('/pass|pwd|token|secret|csrf|cvv|card|api[_-]?key|private/i', (string)$k)) {
-                $out[$k] = '***'; continue;
-            }
-            if (is_array($v)) { $out[$k] = '[array]'; continue; }
-            $s = (string)$v;
-            $out[$k] = mb_strlen($s) > 120 ? mb_substr($s, 0, 120) . '…' : $s;
-        }
-        return $out;
-    };
-    $params = $redact($method === 'GET' ? $_GET : $_POST);
+    $params = audit_redact($method === 'GET' ? $_GET : $_POST);
     // 从路径推断模块名，作为分类
     $page = basename(strtok((string)($_SERVER['REQUEST_URI'] ?? ''), '?'), '.php') ?: 'admin';
-    $verb = $destructiveGet !== '' ? $destructiveGet : strtolower($method);
     audit("{$verb} {$page}", 'admin', ['params' => $params]);
 }
 
