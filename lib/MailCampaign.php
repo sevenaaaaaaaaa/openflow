@@ -57,12 +57,100 @@ function mailc_wrap_link(string $url, string $campaign, string $email): string {
 function mailc_pixel_id(string $email): string {
     return substr(hash('sha256', strtolower(trim($email))), 0, 16);
 }
+/**
+ * 打开/点击统计的存储层（docs/ROADMAP.md 阶段一）
+ *
+ * 【为什么从 JSON 改成 SQLite】mailc_track() 挂在 api/mail-track.php 这个公开的
+ * 追踪像素端点上：**每一次邮件打开、每一次链接点击都会调它一次**，而且是在群发之后
+ * 集中涌进来的。老实现每次都要「读两万条 → 改一条 → 整个写回」，这有两个后果：
+ *   ① 慢：一次打开就是两万条 JSON 的解析加序列化；
+ *   ② **丢数据**：并发的读-改-写会互相覆盖，打开数天然偏低（这是正确性问题，不只是性能）。
+ * 改成一行 UPSERT 之后，计数由 SQLite 原子累加，并发不再丢。
+ *
+ * 老 mail-stats.json 首次访问时一次性导入，原文件保留作回滚备份；
+ * SQLite 不可用时回退到原 JSON 实现。
+ */
+function mailc_stats_ensure(): bool {
+    static $ready = null;
+    if ($ready !== null) return $ready;
+    try {
+        require_once __DIR__ . '/Database.php';
+        Database::execute("CREATE TABLE IF NOT EXISTS mail_stats (
+            campaign    TEXT NOT NULL,
+            email_id    TEXT NOT NULL,
+            open_count  INTEGER DEFAULT 0,
+            click_count INTEGER DEFAULT 0,
+            first_open  TEXT DEFAULT '', last_open  TEXT DEFAULT '',
+            first_click TEXT DEFAULT '', last_click TEXT DEFAULT '',
+            PRIMARY KEY (campaign, email_id)
+        )");
+        Database::execute("CREATE INDEX IF NOT EXISTS idx_mail_stats_campaign ON mail_stats(campaign)");
+
+        $marker = DATA_DIR . '/.mail_stats_migrated';
+        if (!is_file($marker)) {
+            $legacy = json_read(mailc_stats_file());
+            if (is_array($legacy) && $legacy) {
+                $conn = Database::conn();
+                $own = !$conn->inTransaction();
+                if ($own) $conn->beginTransaction();
+                try {
+                    $st = $conn->prepare("INSERT OR REPLACE INTO mail_stats
+                        (campaign, email_id, open_count, click_count, first_open, last_open, first_click, last_click)
+                        VALUES (?,?,?,?,?,?,?,?)");
+                    foreach ($legacy as $key => $v) {
+                        if (!is_array($v)) continue;
+                        $c = (string)($v['campaign'] ?? '');
+                        $e = (string)($v['email_id'] ?? '');
+                        if ($c === '' && strpos((string)$key, ':') !== false) {
+                            [$c, $e] = array_pad(explode(':', (string)$key, 2), 2, '');
+                        }
+                        if ($c === '' || $e === '') continue;
+                        $st->execute([$c, $e, (int)($v['open_count'] ?? 0), (int)($v['click_count'] ?? 0),
+                            (string)($v['first_open'] ?? ''), (string)($v['last_open'] ?? ''),
+                            (string)($v['first_click'] ?? ''), (string)($v['last_click'] ?? '')]);
+                    }
+                    if ($own) $conn->commit();
+                } catch (\Throwable $ex) {
+                    if ($own && $conn->inTransaction()) $conn->rollBack();
+                    $ready = true;
+                    return $ready;
+                }
+            }
+            @mkdir(dirname($marker), 0755, true);
+            @file_put_contents($marker, date('c'));
+        }
+        $ready = true;
+    } catch (\Throwable $e) {
+        $ready = false;
+    }
+    return $ready;
+}
+
 // 记录打开/点击
 function mailc_track(string $campaign, string $emailId, string $type): void {
+    $type = $type === 'click' ? 'click' : 'open';
+    $now = date('Y-m-d H:i:s');
+
+    if (mailc_stats_ensure()) {
+        try {
+            // 原子累加：并发的打开不会互相覆盖（旧的读-改-写会丢）
+            Database::execute(
+                "INSERT INTO mail_stats (campaign, email_id, {$type}_count, first_{$type}, last_{$type})
+                 VALUES (?,?,1,?,?)
+                 ON CONFLICT(campaign, email_id) DO UPDATE SET
+                    {$type}_count = {$type}_count + 1,
+                    first_{$type} = CASE WHEN first_{$type} = '' THEN excluded.first_{$type} ELSE first_{$type} END,
+                    last_{$type}  = excluded.last_{$type}",
+                [$campaign, $emailId, $now, $now]
+            );
+            return;
+        } catch (\Throwable $e) {}
+    }
+
+    // 回退：JSON（与旧实现一致）
     $stats = json_read(mailc_stats_file());
     $key = $campaign . ':' . $emailId;
     $old = $stats[$key] ?? [];
-    $now = date('Y-m-d H:i:s');
     $stats[$key] = array_merge($old, [
         'campaign' => $campaign, 'email_id' => $emailId,
         $type . '_count' => (int)($old[$type . '_count'] ?? 0) + 1,
@@ -71,15 +159,35 @@ function mailc_track(string $campaign, string $emailId, string $type): void {
     ]);
     json_write(mailc_stats_file(), array_slice($stats, -20000));
 }
+
 // 统计汇总（打开率/点击率）
 function mailc_campaign_stats(string $campaign, int $sentCount = 0): array {
-    $stats = json_read(mailc_stats_file());
     $opens = 0; $clicks = 0;
-    foreach ($stats as $k => $v) {
-        if (strpos($k, $campaign . ':') !== 0) continue;
-        if (!empty($v['open_count'])) $opens++;
-        if (!empty($v['click_count'])) $clicks++;
+    $done = false;
+
+    if (mailc_stats_ensure()) {
+        try {
+            // 「多少人打开过」——按人去重，不是按次数累加（与旧实现语义一致）
+            $rows = Database::query(
+                "SELECT SUM(CASE WHEN open_count  > 0 THEN 1 ELSE 0 END) AS opens,
+                        SUM(CASE WHEN click_count > 0 THEN 1 ELSE 0 END) AS clicks
+                 FROM mail_stats WHERE campaign = ?", [$campaign]);
+            if (isset($rows[0])) {
+                $opens = (int)($rows[0]['opens'] ?? 0);
+                $clicks = (int)($rows[0]['clicks'] ?? 0);
+                $done = true;
+            }
+        } catch (\Throwable $e) {}
     }
+
+    if (!$done) {
+        foreach (json_read(mailc_stats_file()) as $k => $v) {
+            if (strpos($k, $campaign . ':') !== 0) continue;
+            if (!empty($v['open_count'])) $opens++;
+            if (!empty($v['click_count'])) $clicks++;
+        }
+    }
+
     return [
         'sent' => $sentCount, 'opens' => $opens, 'clicks' => $clicks,
         'open_rate' => $sentCount > 0 ? round($opens / $sentCount * 100, 1) : 0,
