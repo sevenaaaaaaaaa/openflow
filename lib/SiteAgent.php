@@ -63,7 +63,7 @@ if (!function_exists('siteagent_answer')) {
                     '你是这个网站的客服助手。**只能**根据下面提供的站内资料回答，'
                     . '资料里没有的就说"这个我不确定，帮你转人工"，绝不编造。中文、简洁、直接给结论。',
                     "访客问题：{$question}\n\n站内资料：\n{$kb}",
-                    ['max_tokens' => 600]
+                    ['max_tokens' => 600, 'feature' => 'site_agent', 'tier' => 'public']
                 );
                 $t = trim((string)($r['text'] ?? $r['content'] ?? ''));
                 if (!empty($r['ok']) && $t !== '') {
