@@ -126,7 +126,7 @@ if (!function_exists('ci18n_base_locale')) {
                 . "保留 HTML 结构与标签不动，只译文字；输出同结构 JSON："
                 . '{"title":"","seo_title":"","seo_desc":"","content":""}，不要多余文字。',
                 $payload,
-                ['max_tokens' => 4000]
+                ['max_tokens' => 4000, 'feature' => 'content_i18n', 'tier' => 'batch']
             );
             if (empty($r['ok'])) return ['ok' => false, 'error' => $r['error'] ?? 'AI 翻译失败'];
             $data = is_array($r['data'] ?? null) ? $r['data'] : [];

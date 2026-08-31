@@ -20,7 +20,7 @@ class AIBusiness {
         $content = mb_substr($article['content'] ?? '', 0, 4000);
         $system = '你是一位资深内容编辑与 SEO 专家。根据文章内容输出结构化 JSON。';
         $user = "文章标题：{$article['title']}\n\n文章内容：\n{$content}\n\n请输出 JSON（不要其他文字）：{\"title\":\"优化后的标题(≤30字)\",\"excerpt\":\"120字内的摘要\",\"tags\":[\"3-5个标签\"],\"category\":\"最合适的分类key(英文)\"}";
-        $r = AiCenter::json($system, $user, ['temperature' => 0.4]);
+        $r = AiCenter::json($system, $user, ['temperature' => 0.4, 'feature' => 'ai_business', 'tier' => 'admin']);
         if ($r['ok']) {
             $d = $r['data'];
             return [
@@ -69,7 +69,7 @@ class AIBusiness {
         if (AiCenter::isConfigured()) {
             $system = '你是 B2B 销售线索分析师。基于线索信息给出跟进建议。';
             $user = "线索信息：\n" . json_encode($lead, JSON_UNESCAPED_UNICODE) . "\n\n请输出 JSON：{\"advice\":\"2-3句跟进建议\",\"priority\":\"high|medium|low\"}";
-            $r = AiCenter::json($system, $user, ['temperature' => 0.3]);
+            $r = AiCenter::json($system, $user, ['temperature' => 0.3, 'feature' => 'ai_business_advice', 'tier' => 'admin']);
             if ($r['ok']) {
                 $advice = $r['data']['advice'] ?? '';
                 $priority = $r['data']['priority'] ?? 'medium';
@@ -100,7 +100,7 @@ class AIBusiness {
         $items = [];
         foreach (array_slice($results, 0, 15) as $r) $items[] = "- {$r['title']} ({$r['url']})";
         $user = "关于「{$topic}」的舆情信息：\n" . implode("\n", $items) . "\n\n输出 JSON：{\"summary\":\"150字内概括\",\"tone\":\"正面|中性|负面\",\"hot_points\":[\"热点\"]}";
-        $r = AiCenter::json('你是舆情分析师，输出简洁专业分析。', $user, ['temperature' => 0.3]);
+        $r = AiCenter::json('你是舆情分析师，输出简洁专业分析。', $user, ['temperature' => 0.3, 'feature' => 'sentiment', 'tier' => 'batch']);
         if ($r['ok']) {
             return ['summary' => $r['data']['summary'] ?? '', 'tone' => $r['data']['tone'] ?? '中性', 'hot_points' => $r['data']['hot_points'] ?? [], 'ai' => true];
         }
