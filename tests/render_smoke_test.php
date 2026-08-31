@@ -53,6 +53,7 @@ $urls = [
     ['commission',   ''],
     ['destinations', ''],
     ['ai-usage',     ''],
+    ['api-permissions', ''],
 ];
 
 // ─────────────────────────────────────────────
