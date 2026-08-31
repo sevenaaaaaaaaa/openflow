@@ -131,9 +131,11 @@ class CdpSystem {
         // fetchAll 数十万行并耗尽 PHP 内存。需要更小窗口的调用方可显式传入。
         $limit = max(1, min(100000, $limit));
         if (isset(self::$eventsCache[$limit])) return self::$eventsCache[$limit];
-        // 优先读 SQLite events 表（主存储），空则回退 JSON（兼容旧数据）
+        // 优先读事件表（EventStore 统一存储，MySQL/SQLite），空则回退 JSON（兼容旧数据）
         try {
-            $rows = Database::query("SELECT id, event, uid, member_id, props, page, ip, created_at, session_id, message_id, ts, event_category FROM events ORDER BY id DESC LIMIT {$limit}");
+            require_once __DIR__ . '/EventStore.php';
+            EventStore::ensureTable();
+            $rows = EventStore::query("SELECT id, event, uid, member_id, props, page, ip, created_at, session_id, message_id, ts, event_category FROM events ORDER BY id DESC LIMIT {$limit}");
             if (!empty($rows)) {
                 $out = [];
                 foreach ($rows as $r) {
@@ -183,34 +185,13 @@ class CdpSystem {
      */
     private static function insertEventRows(array $entries): int {
         if (empty($entries)) return 0;
+        // 事件存储走统一 EventStore 层：配置了 MySQL 写 MySQL，否则写 SQLite。
+        // SQLite 与 MySQL 都不行时返回 0，上层回退 JSON（保留一万条上限）。
+        require_once __DIR__ . '/EventStore.php';
         try {
-            $conn = Database::conn();
-            $own = !$conn->inTransaction();
-            if ($own) $conn->beginTransaction();
-            $stmt = $conn->prepare("INSERT OR IGNORE INTO events (event, label, variant, page, uid, member_id, member_email, props, ip, created_at, session_id, message_id, ts, event_category) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            $n = 0;
-            foreach ($entries as $e) {
-                $props = $e['properties'] ?? [];
-                $category = '';
-                if (is_array($props) && isset($props['event_category'])) {
-                    $category = $props['event_category'];
-                    unset($props['event_category']);
-                }
-                $messageId = $e['message_id'] ?? ('evt_' . md5(($e['visitor_id'] ?? '') . ($e['event'] ?? '') . ($e['timestamp'] ?? '') . ($e['id'] ?? uniqid())));
-                $ts = (int)($e['ts'] ?? (strtotime($e['timestamp'] ?? '') ?: time()) * 1000);
-                $stmt->execute([
-                    $e['event'] ?? '', '', '',
-                    $e['url'] ?? $e['page'] ?? '', $e['visitor_id'] ?? '',
-                    $e['member_id'] ?? '', $e['member_email'] ?? '', json_encode($props, JSON_UNESCAPED_UNICODE),
-                    $e['ip'] ?? '', $e['timestamp'] ?? date('Y-m-d H:i:s'),
-                    $e['session_id'] ?? '', $messageId, $ts, $category,
-                ]);
-                $n++;
-            }
-            if ($own) $conn->commit();
-            return $n;
-        } catch (Exception $ex) {
-            try { if (isset($conn) && isset($own) && $own && $conn->inTransaction()) $conn->rollBack(); } catch (Exception $e2) {}
+            EventStore::ensureTable();
+            return EventStore::recordBatch($entries);
+        } catch (Exception $e) {
             return 0;
         }
     }
