@@ -39,9 +39,17 @@ if ($action === 'test_provider') {
     $providers = AiCenter::providers();
     $provider = null;
     foreach ($providers as $p) if ($p['id'] === $providerId) { $provider = $p; break; }
-    if (!$provider) { http_response_code(404); echo json_encode(['ok' => false, 'error' => '供应商不存在']); exit; }
-    // 用临时 provider 测试（AiCenter 只支持默认，这里直接构造测试）
-    $r = AiCenter::chat('你是一个连接测试助手，请只回复：连接成功', '测试', ['model' => $provider['model'] ?? '', 'feature' => 'provider_test', 'tier' => 'admin', 'timeout' => 20]);
+    if (!$provider) { http_response_code(404); echo json_encode(['ok' => false, 'error' => '供应商不存在'], JSON_UNESCAPED_UNICODE); exit; }
+    // 测的必须是**选中的那个**供应商。原来这里只传了 model，供应商仍取默认——
+    // 结果是：默认供应商正常时，一个坏掉的供应商也会报「连接成功」，
+    // 自检等于没检。现在用 provider_id 明确指定。
+    $r = AiCenter::chat('你是一个连接测试助手，请只回复：连接成功', '测试', [
+        'provider_id' => $providerId,
+        'model'   => $provider['model'] ?? '',
+        'feature' => 'provider_test',
+        'tier'    => 'admin',
+        'timeout' => 20,
+    ]);
     echo json_encode(['ok' => $r['ok'], 'error' => $r['error'] ?? '', 'text' => $r['text'] ?? ''], JSON_UNESCAPED_UNICODE);
     exit;
 }

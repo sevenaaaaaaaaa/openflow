@@ -90,6 +90,18 @@ foreach (['lib', 'admin', 'api'] as $dir) {
 }
 check('没有漏标的调用点', empty($untagged), implode(' ', $untagged));
 
+echo "\n── 8b. 连通性自检必须测「选中的那个」供应商 ──\n";
+// 原来 api/ai-business.php 的 test_provider 只把 model 传下去，供应商仍取默认——
+// 默认供应商正常时，一个坏掉的供应商也会报「连接成功」，自检等于没检。
+check('AiCenter 支持指定供应商', strpos($ai, "\$opts['provider_id']") !== false);
+check('指定了不存在的供应商会明确报错', strpos($ai, '指定的 AI 供应商不存在') !== false);
+$aib = file_get_contents(__DIR__ . '/../api/ai-business.php');
+check('自检传了 provider_id', strpos($aib, "'provider_id' => \$providerId") !== false);
+check('不再只靠 model 蒙混', preg_match("/test_provider.*?provider_id/s", $aib) === 1);
+$r = AiCenter::chat('x', 'y', ['provider_id' => '根本不存在的供应商', 'feature' => 't']);
+check('运行时确实拒绝未知供应商', empty($r['ok']) && strpos((string)$r['error'], '不存在') !== false,
+      json_encode($r, JSON_UNESCAPED_UNICODE));
+
 echo "\n── 9. 公开接口有限流 ──\n";
 $sa = file_get_contents(__DIR__ . '/../api/site-agent.php');
 check('site-agent 引入了限流器', strpos($sa, 'RateLimiter.php') !== false);
