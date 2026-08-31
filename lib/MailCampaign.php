@@ -133,18 +133,46 @@ function mailc_track(string $campaign, string $emailId, string $type): void {
 
     if (mailc_stats_ensure()) {
         try {
-            // 原子累加：并发的打开不会互相覆盖（旧的读-改-写会丢）
-            Database::execute(
-                "INSERT INTO mail_stats (campaign, email_id, {$type}_count, first_{$type}, last_{$type})
-                 VALUES (?,?,1,?,?)
-                 ON CONFLICT(campaign, email_id) DO UPDATE SET
-                    {$type}_count = {$type}_count + 1,
-                    first_{$type} = CASE WHEN first_{$type} = '' THEN excluded.first_{$type} ELSE first_{$type} END,
-                    last_{$type}  = excluded.last_{$type}",
-                [$campaign, $emailId, $now, $now]
-            );
+            // 原子累加：并发的打开不会互相覆盖（旧的读-改-写会丢）。
+            // 主键是 (campaign, email_id)，直接用复合键先查再插/更新；
+            // SQLite≥3.24 也可用 UPSERT，这里用兼容写法统一。
+            $hit = Database::query("SELECT first_{$type} FROM mail_stats WHERE campaign=? AND email_id=? LIMIT 1", [$campaign, $emailId]);
+            if ($hit) {
+                Database::execute(
+                    "UPDATE mail_stats SET {$type}_count = {$type}_count + 1,
+                        first_{$type} = CASE WHEN first_{$type} = '' THEN ? ELSE first_{$type} END,
+                        last_{$type}  = ? WHERE campaign = ? AND email_id = ?",
+                    [$now, $now, $campaign, $emailId]
+                );
+            } else {
+                Database::execute(
+                    "INSERT INTO mail_stats (campaign, email_id, {$type}_count, first_{$type}, last_{$type})
+                     VALUES (?,?,1,?,?)",
+                    [$campaign, $emailId, $now, $now]
+                );
+            }
             return;
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            // 高版本 SQLite 若走 UPSERT 路径失败时，回退到先查再插/更新
+            try {
+                $r = Database::query("SELECT first_{$type} FROM mail_stats WHERE campaign=? AND email_id=? LIMIT 1", [$campaign, $emailId]);
+                if ($r) {
+                    Database::execute(
+                        "UPDATE mail_stats SET {$type}_count = {$type}_count + 1,
+                            first_{$type} = CASE WHEN first_{$type} = '' THEN ? ELSE first_{$type} END,
+                            last_{$type}  = ? WHERE campaign = ? AND email_id = ?",
+                        [$now, $now, $campaign, $emailId]
+                    );
+                } else {
+                    Database::execute(
+                        "INSERT INTO mail_stats (campaign, email_id, {$type}_count, first_{$type}, last_{$type})
+                         VALUES (?,?,1,?,?)",
+                        [$campaign, $emailId, $now, $now]
+                    );
+                }
+                return;
+            } catch (\Throwable $e2) {}
+        }
     }
 
     // 回退：JSON（与旧实现一致）
