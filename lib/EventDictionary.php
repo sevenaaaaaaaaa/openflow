@@ -88,13 +88,25 @@ class EventDictionary {
             $cfg[$name] = ['enabled' => $enabled];
         }
         json_write(self::$configFile, $cfg);
+        self::$switchCache = null;   // 配置变了，作废本请求的缓存
     }
+
+    /** 本请求内的开关缓存（见 isEnabled 的说明）。 */
+    private static ?array $switchCache = null;
 
     /**
      * 是否启用某事件（供采集侧过滤）
+     *
+     * 这是 CdpSystem::track() 的第一道检查，**每条事件都会走一次**。
+     * 原来每次都 json_read 一遍开关文件——一次上报 20 条事件就是 20 次
+     * 文件读 + JSON 解析，纯属重复劳动。开关在单次请求内不会变，缓存住即可。
      */
     public static function isEnabled(string $event): bool {
-        $cfg = json_read(self::$configFile);
+        if (self::$switchCache === null) {
+            $cfg = json_read(self::$configFile);
+            self::$switchCache = is_array($cfg) ? $cfg : [];
+        }
+        $cfg = self::$switchCache;
         if (isset($cfg[$event])) return !empty($cfg[$event]['enabled']);
         return true; // 未配置默认启用
     }
