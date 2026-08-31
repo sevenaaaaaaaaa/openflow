@@ -28,40 +28,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_msg'])) {
     $userMsg = trim($_POST['msg'] ?? '');
     if (!empty($userMsg)) {
         $agent['conversations'][] = ['role' => 'user', 'content' => $userMsg, 'time' => date('Y-m-d H:i:s')];
-        // 调用 AI 供应商（复用 ai-generate 逻辑，简化为直接调用）
-        $ai = json_read(DATA_DIR . '/ai-config.json');
-        $provider = null;
-        $defaultId = $ai['default_provider'] ?? '';
-        foreach (($ai['providers'] ?? []) as $p) if ($p['id'] === $defaultId && $p['enabled'] && !empty($p['api_key'])) { $provider = $p; break; }
-        if (!$provider) foreach (($ai['providers'] ?? []) as $p) if ($p['enabled'] && !empty($p['api_key'])) { $provider = $p; break; }
-
+        // 统一走 AiCenter：记账 + 额度闸门 + 分档超时。
+        // 原来这里又自建了一份 curl（60 秒超时、零记账、漏 Claude 分支）。
+        require_once __DIR__ . '/../lib/AiCenter.php';
         $systemPrompt = "你是 OpenFlow 的官方网站增长顾问 Agent，负责解读调研数据并给出增长建议。请专业、结构化地回答问题，涉及数据时提醒用户参考后台统计。";
 
-        if ($provider) {
-            $apiUrl = rtrim($provider['api_url'], '/');
-            $model = $provider['model'] ?? 'gpt-4o';
-            $payload = json_encode([
-                'model' => $model,
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $userMsg],
-                ],
-                'max_tokens' => 1500,
-            ]);
-            if ($provider['id'] === 'minimax') {
-                $endpoint = $apiUrl . '/text/chatcompletion_v2';
-                $headers = ['Authorization: Bearer ' . $provider['api_key'], 'Content-Type: application/json'];
-            } else {
-                $endpoint = $apiUrl . '/chat/completions';
-                $headers = ['Authorization: Bearer ' . $provider['api_key'], 'Content-Type: application/json'];
-            }
-            $ch = curl_init($endpoint);
-            curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $payload, CURLOPT_HTTPHEADER => $headers, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 60]);
-            $resp = curl_exec($ch);
-            $data = json_decode($resp, true);
-            $reply = $data['choices'][0]['message']['content'] ?? ($data['output_text'] ?? ($data['data'][0]['output_text'] ?? '抱歉，暂时无法获取回复，请稍后再试。'));
-        } else {
+        if (!AiCenter::isConfigured()) {
             $reply = '检测到尚未配置 AI 供应商。请先在「系统 → AI Agent」中启用一个供应商并填写 API Key。';
+        } else {
+            $r = AiCenter::chat($systemPrompt, $userMsg, [
+                'max_tokens' => 1500, 'feature' => 'survey_agent', 'tier' => 'admin',
+            ]);
+            $reply = !empty($r['ok']) && ($r['text'] ?? '') !== ''
+                ? (string)$r['text']
+                : ('抱歉，暂时无法获取回复：' . mb_substr((string)($r['error'] ?? '未知原因'), 0, 80));
         }
 
         $agent['conversations'][] = ['role' => 'assistant', 'content' => $reply, 'time' => date('Y-m-d H:i:s')];

@@ -151,7 +151,20 @@ class GrowthFlywheel {
                 json_encode($topics, JSON_UNESCAPED_UNICODE),
                 ['max_tokens' => 800, 'feature' => 'flywheel_topics', 'tier' => 'batch']
             );
-            return ['status' => 'ok', 'detail' => '已生成 ' . count($topics) . ' 个主题的热点洞察', 'data' => $resp, 'ts' => time()];
+            // AI 调用失败时不能报 ok——原来无论成败都返回 'status'=>'ok' 并说"已生成
+            // N 个主题的热点洞察"，把一个失败对象当 data 传给下游，飞轮看板显示一切正常。
+            if (empty($resp['ok'])) {
+                $budget = !empty($resp['budget_exceeded']);
+                return [
+                    'status' => 'degraded', 'needs_ai' => true,
+                    'detail' => ($budget ? 'AI 额度已用尽，本轮跳过总结' : 'AI 总结未成功：')
+                              . ($budget ? '' : mb_substr((string)($resp['error'] ?? '未知原因'), 0, 120)),
+                    'suggestion' => $budget ? '前往 AI 用量与预算 调整上限' : '稍后重试，或检查 AI 供应商配置',
+                    'ts' => time(),
+                ];
+            }
+            return ['status' => 'ok', 'detail' => '已生成 ' . count($topics) . ' 个主题的热点洞察',
+                    'data' => $resp['data'] ?? [], 'ts' => time()];
         } catch (\Throwable $e) {
             return ['status' => 'error', 'detail' => '总结失败：' . $e->getMessage(), 'ts' => time()];
         }

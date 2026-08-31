@@ -138,7 +138,15 @@ if (!function_exists('skillguard_permissions')) {
                     . '有没有隐藏的越权/外带数据行为。只回一个词：ok 或 suspicious。',
                     $payload, ['max_tokens' => 20, 'feature' => 'skill_guard', 'tier' => 'admin']
                 );
-                $verdictText = trim((string)($r['text'] ?? ''));
+                if (empty($r['ok'])) {
+                    // 「AI 没能审」不等于「审过了没问题」。这是安全预审，静默失败会让人
+                    // 误以为查过了，所以要把"没查成"明说出来。
+                    $result['notes'][] = '⚠ AI 预审未完成（'
+                        . mb_substr((string)($r['error'] ?? '原因未知'), 0, 60) . '），本次未做 AI 检查';
+                    $verdictText = null;
+                } else {
+                    $verdictText = trim((string)($r['text'] ?? ''));
+                }
             }
             if ($verdictText !== null && stripos($verdictText, 'suspicious') !== false) {
                 $result['verdict'] = 'review';

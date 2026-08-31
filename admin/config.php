@@ -81,9 +81,45 @@ if (!defined('OF_DATA_DIR')) {
     }
     $dataDir = getenv('OF_DATA_DIR') ?: __DIR__ . '/../data';
     $uploadDir = getenv('OF_UPLOAD_DIR') ?: __DIR__ . '/../uploads';
+
+    // ─── 多租户地基（docs/ROADMAP.md 阶段二）───────────────────────
+    //
+    // 【为什么这一行值钱】全仓有 861 处在用 DATA_DIR，但它们全都读这一个常量，
+    // 而常量只在这里定义一次。所以"一个客户一个独立数据目录"这件通常要翻遍
+    // 全仓的改造，在这里只需要改这一个解析步骤——861 处自动跟着走。
+    //
+    // 【默认什么都不变】OF_MULTI_TENANT 不开启时，走的还是原来那两行，
+    // 单站部署的行为与之前逐字节一致。这是"大型分支的门票"，不是大型分支本身。
+    //
+    // 【开启方式】.env 里写：
+    //     OF_MULTI_TENANT=1
+    //     OF_TENANT_ROOT=/var/www/tenants      # 可选，默认 <data>/tenants
+    //   然后 a.example.com 的数据落在 <root>/a.example.com/，
+    //        b.example.com 落在 <root>/b.example.com/，天然隔离、可单独备份导出。
+    if (getenv('OF_MULTI_TENANT')) {
+        $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+        $host = preg_replace('/:\d+$/', '', $host);              // 去端口
+        // 只允许域名字符，杜绝 ../ 之类的目录穿越——这里是拿外部输入拼路径，
+        // 是整个多租户方案唯一的安全要害。
+        $host = preg_replace('/[^a-z0-9.\-]/', '', (string)$host);
+        $host = trim($host, '.-');
+        if ($host !== '' && strpos($host, '..') === false) {
+            $tenantRoot = getenv('OF_TENANT_ROOT') ?: ($dataDir . '/tenants');
+            $dataDir    = rtrim($tenantRoot, '/') . '/' . $host;
+            $uploadDir  = getenv('OF_TENANT_UPLOAD_ROOT')
+                ? rtrim(getenv('OF_TENANT_UPLOAD_ROOT'), '/') . '/' . $host
+                : $dataDir . '/uploads';
+            if (!is_dir($dataDir)) @mkdir($dataDir, 0755, true);
+            if (!is_dir($uploadDir)) @mkdir($uploadDir, 0755, true);
+            define('OF_TENANT', $host);
+        }
+    }
+
     define('DATA_DIR', rtrim($dataDir, '/'));
     define('UPLOAD_DIR', rtrim($uploadDir, '/'));
 }
+// 当前租户标识（单站部署恒为空字符串）
+if (!defined('OF_TENANT')) define('OF_TENANT', '');
 define('PAGES_DIR', DATA_DIR . '/pages');
 define('ARTICLES_DIR', DATA_DIR . '/articles');
 define('LEADS_CSV', DATA_DIR . '/leads.csv');
