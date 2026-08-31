@@ -22,15 +22,49 @@ class Database {
     }
 
     public static function query(string $sql, array $params = []): array {
+        // 事件表查询自动路由到 EventStore（配置 MySQL 时用 MySQL，否则 SQLite）
+        if (self::isEventsSql($sql)) {
+            require_once __DIR__ . '/EventStore.php';
+            return EventStore::query($sql, $params);
+        }
         $stmt = self::conn()->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public static function execute(string $sql, array $params = []): int {
+        // 事件表写操作自动路由到 EventStore
+        if (self::isEventsSql($sql)) {
+            require_once __DIR__ . '/EventStore.php';
+            return self::eventsExecute($sql, $params);
+        }
         $stmt = self::conn()->prepare($sql);
         $stmt->execute($params);
         return $stmt->rowCount();
+    }
+
+    /**
+     * 判断 SQL 是否操作 events 表
+     */
+    private static function isEventsSql(string $sql): bool {
+        $s = strtolower(trim(preg_replace('/\s+/', ' ', $sql)));
+        // 匹配 FROM/JOIN/INTO/UPDATE events 表（排除 events 开头的其他表如 events_calendar）
+        return (bool)preg_match('/(?:from|join|into|update|delete\s+from)\s+events\b/', $s);
+    }
+
+    /**
+     * 执行 events 表写操作（兼容 SQLite/MySQL）
+     */
+    private static function eventsExecute(string $sql, array $params = []): int {
+        try {
+            EventStore::ensureTable();
+            $conn = EventStore::conn();
+            $stmt = $conn->prepare(EventStore::translateWrite($sql));
+            $stmt->execute($params);
+            return $stmt->rowCount();
+        } catch (Exception $e) {
+            return 0;
+        }
     }
 
     public static function insert(string $table, array $data): int {
