@@ -4,29 +4,35 @@
  * POST /api/survey-ai.php
  * Body: { "topic": "网站满意度调研", "question_count": 10, "include_rating": true }
  * 返回：生成的题目数组
+ *
+ * 【鉴权】这是一个**每次调用都要花钱**的 AI 接口，而且它是给后台作者用的创作工具，
+ * 不是访客功能。原来完全没有身份校验：任何人 POST 一个主题就能让站长掏钱，
+ * 而且它自建 curl 绕过了 AI 电表和额度闸门，烧了也看不见。
+ * 现在：登录 + survey 权限 + 单账号限流，并统一走 AiCenter。
  */
 require_once __DIR__ . '/../admin/config.php';
+require_once __DIR__ . '/../lib/AiCenter.php';
+require_once __DIR__ . '/../lib/RateLimiter.php';
 
 header('Content-Type: application/json; charset=utf-8');
+
+require_login();
+require_perm('survey');
+try {
+    RateLimiter::throttle('surveyai:' . md5((string)($_SESSION['admin_user'] ?? 'anon')), 30, 600);
+} catch (\Throwable $e) {}
 
 $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
 $topic = trim($input['topic'] ?? '');
 if (empty($topic)) {
     http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => '请描述调研主题']);
+    echo json_encode(['ok' => false, 'error' => '请描述调研主题'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 $qCount = max(3, min(20, (int)($input['question_count'] ?? 10)));
 $includeRating = !empty($input['include_rating']);
 
-// 读取 AI 供应商配置
-$ai = json_read(DATA_DIR . '/ai-config.json');
-$provider = null;
-$defaultId = $ai['default_provider'] ?? '';
-foreach (($ai['providers'] ?? []) as $p) if ($p['id'] === $defaultId && $p['enabled'] && !empty($p['api_key'])) { $provider = $p; break; }
-if (!$provider) foreach (($ai['providers'] ?? []) as $p) if ($p['enabled'] && !empty($p['api_key'])) { $provider = $p; break; }
-
-if (!$provider) {
+if (!AiCenter::isConfigured()) {
     http_response_code(400);
     echo json_encode(['ok' => false, 'error' => '请先在「AI Agent 配置」中启用一个供应商并填写 API Key'], JSON_UNESCAPED_UNICODE);
     exit;
@@ -50,65 +56,25 @@ $userPrompt = <<<PROMPT
 - 题目要专业、贴合组织调研场景
 PROMPT;
 
-$model = $provider['model'] ?? 'gpt-4o';
-$apiUrl = rtrim($provider['api_url'], '/');
-
-$payload = json_encode([
-    'model' => $model,
-    'messages' => [
-        ['role' => 'system', 'content' => $systemPrompt],
-        ['role' => 'user', 'content' => $userPrompt],
-    ],
-    'temperature' => 0.7,
+// 统一走 AiCenter：记账 + 额度闸门 + 分档超时（后台交互档）
+$r = AiCenter::chat($systemPrompt, $userPrompt, [
     'max_tokens' => 4000,
+    'temperature' => 0.7,
+    'feature' => 'survey_ai',
+    'tier' => 'admin',
 ]);
-
-if ($provider['id'] === 'minimax') {
-    $endpoint = $apiUrl . '/text/chatcompletion_v2';
-    $headers = ['Authorization: Bearer ' . $provider['api_key'], 'Content-Type: application/json'];
-} else {
-    $endpoint = $apiUrl . '/chat/completions';
-    $headers = ['Authorization: Bearer ' . $provider['api_key'], 'Content-Type: application/json'];
-}
-
-$ch = curl_init($endpoint);
-curl_setopt_array($ch, [
-    CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => $payload,
-    CURLOPT_HTTPHEADER => $headers,
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 90,
-]);
-$resp = curl_exec($ch);
-$http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$error = curl_error($ch);
-
-if ($error) {
-    echo json_encode(['ok' => false, 'error' => '请求失败: ' . $error]);
+if (empty($r['ok'])) {
+    echo json_encode(['ok' => false, 'error' => $r['error'] ?? 'AI 生成失败'], JSON_UNESCAPED_UNICODE);
     exit;
 }
-if ($http !== 200) {
-    echo json_encode(['ok' => false, 'error' => "AI 服务返回异常 (HTTP $http): " . mb_substr($resp, 0, 200)], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$data = json_decode($resp, true);
-$text = '';
-if (isset($data['choices'][0]['message']['content'])) $text = $data['choices'][0]['message']['content'];
-elseif (isset($data['output_text'])) $text = $data['output_text'];
-elseif (isset($data['data'][0]['output_text'])) $text = $data['data'][0]['output_text'];
+$text = (string)($r['text'] ?? '');
 
 if (empty($text)) {
     echo json_encode(['ok' => false, 'error' => 'AI 未返回有效内容'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-// 提取 JSON（兼容 AI 输出带 markdown 代码块）
-$json = $text;
-if (preg_match('/```(?:json)?\s*(\[.*?\])\s*```/s', $text, $m)) $json = $m[1];
-elseif (preg_match('/\[.*\]/s', $text, $m)) $json = $m[0];
-
-$questions = json_decode($json, true);
+$questions = AiCenter::extractJson($text);
 if (!is_array($questions)) {
     echo json_encode(['ok' => false, 'error' => 'AI 返回内容无法解析为问卷', 'raw' => mb_substr($text, 0, 300)], JSON_UNESCAPED_UNICODE);
     exit;
@@ -117,14 +83,15 @@ if (!is_array($questions)) {
 // 清洗：过滤无效，限制数量，补默认
 $clean = [];
 foreach ($questions as $q) {
+    if (!is_array($q)) continue;
     $title = trim($q['title'] ?? '');
     if (empty($title)) continue;
     $clean[] = [
         'title' => $title,
         'type' => in_array($q['type'] ?? '', ['single', 'multi', 'rating', 'text']) ? $q['type'] : 'text',
-        'options' => array_values(array_filter(array_map('trim', $q['options'] ?? []))),
+        'options' => array_values(array_filter(array_map('trim', (array)($q['options'] ?? [])))),
         'required' => !empty($q['required']),
-        'scale' => ($q['type'] ?? '') === 'rating' ? 5 : 5,
+        'scale' => 5,
     ];
 }
 $clean = array_slice($clean, 0, $qCount);
@@ -134,4 +101,4 @@ if (empty($clean)) {
     exit;
 }
 
-echo json_encode(['ok' => true, 'questions' => $clean, 'count' => count($clean), 'provider' => $provider['id']], JSON_UNESCAPED_UNICODE);
+echo json_encode(['ok' => true, 'questions' => $clean, 'count' => count($clean)], JSON_UNESCAPED_UNICODE);

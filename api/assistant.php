@@ -1,16 +1,28 @@
 <?php
 /**
- * 全局 AI 小助手 API — 多轮对话
+ * 全局 AI 小助手 API — 多轮对话（后台专用）
  * POST /api/assistant.php
  * Body: { "message": "用户消息", "session": "可选会话ID" }
  *
- * 通过 ai-config.json 配置的默认供应商调用；支持系统指令注入后台使用说明。
+ * 【鉴权】这个端点原来完全没有身份校验，而它做三件只有后台该做的事：
+ *   ① 调 AI（每次都花站长的钱）
+ *   ② 把**公司知识库**内容注入上下文再回答——等于对匿名访客开放内部资料
+ *   ③ 识别意图后**真的创建自动化流程**（copilot_create_flow）
+ * 也就是说，匿名请求既能烧钱、又能读内部知识库、还能往站点里写流程。
+ * 现在：必须登录后台；并统一走 AiCenter（记账 + 额度闸门 + 分档超时）。
  */
 require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/../lib/KnowledgeSystem.php';
 require_once __DIR__ . '/../lib/SkillSystem.php';
+require_once __DIR__ . '/../lib/AiCenter.php';
+require_once __DIR__ . '/../lib/RateLimiter.php';
 
 header('Content-Type: application/json; charset=utf-8');
+
+require_login();
+try {
+    RateLimiter::throttle('assistant:' . md5((string)($_SESSION['admin_user'] ?? 'anon')), 60, 600);
+} catch (\Throwable $e) {}
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input) $input = $_POST;
@@ -33,28 +45,12 @@ if (empty($message)) {
 }
 
 $ai = json_read(DATA_DIR . '/ai-config.json');
-
-// 找到启用中的默认供应商
-$provider = null;
-$defaultId = $ai['default_provider'] ?? '';
-foreach (($ai['providers'] ?? []) as $p) {
-    if ($p['id'] === $defaultId && $p['enabled'] && !empty($p['api_key'])) { $provider = $p; break; }
-}
-// 若默认未启用，用第一个启用且带 key 的
-if (!$provider) {
-    foreach (($ai['providers'] ?? []) as $p) {
-        if ($p['enabled'] && !empty($p['api_key'])) { $provider = $p; break; }
-    }
-}
-if (!$provider) {
+if (!AiCenter::isConfigured()) {
     http_response_code(400);
     echo json_encode(['ok' => false, 'error' => '请先在「AI Agent 配置」中启用一个供应商并填写 API Key'], JSON_UNESCAPED_UNICODE);
     exit;
 }
-
-$model = $provider['model'] ?? 'gpt-4o';
 $temperature = $ai['temperature'] ?? 0.7;
-$apiUrl = rtrim($provider['api_url'], '/');
 $sessionKey = 'assistant_' . ($_SESSION['admin_user'] ?? session_id());
 
 // 读取会话历史（最近 8 轮）
@@ -116,77 +112,21 @@ if ($kbCited['context']) {
     $systemPrompt .= "\n\n【公司知识库参考】\n" . $kbCited['context'];
 }
 
-$messages = [['role' => 'system', 'content' => $systemPrompt]];
-foreach ($conv as $c) $messages[] = $c;
-
-// 构建请求（兼容 OpenAI 格式与各供应商）
-$payload = json_encode([
-    'model' => $model,
-    'messages' => $messages,
+// 统一走 AiCenter：记账 + 额度闸门 + 分档超时（后台交互档）。
+// 多轮上文用 history 传，最后一条 user 消息单独给。
+$hist = array_slice($conv, 0, -1);
+$r = AiCenter::chat($systemPrompt, mb_substr($message, 0, 4000), [
+    'max_tokens'  => 2000,
     'temperature' => $temperature,
-    'max_tokens' => 2000,
+    'history'     => $hist,
+    'feature'     => 'assistant',
+    'tier'        => 'admin',
 ]);
-
-if ($provider['id'] === 'claude') {
-    $headers = [
-        'x-api-key: ' . $provider['api_key'],
-        'anthropic-version: 2023-06-01',
-        'Content-Type: application/json',
-    ];
-    $endpoint = $apiUrl . '/messages';
-    // Claude 格式不同：system 单独传
-    $payload = json_encode([
-        'model' => $model,
-        'max_tokens' => 2000,
-        'system' => $systemPrompt,
-        'messages' => array_slice($conv, -10),
-    ]);
-} else {
-    $headers = [
-        'Authorization: Bearer ' . $provider['api_key'],
-        'Content-Type: application/json',
-    ];
-    if ($provider['id'] === 'minimax') {
-        $endpoint = $apiUrl . '/text/chatcompletion_v2';
-    } else {
-        $endpoint = $apiUrl . '/chat/completions';
-    }
-}
-
-$ch = curl_init($endpoint);
-curl_setopt_array($ch, [
-    CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => $payload,
-    CURLOPT_HTTPHEADER => $headers,
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 60,
-]);
-$resp = curl_exec($ch);
-$http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$error = curl_error($ch);
-
-if ($error) {
-    echo json_encode(['ok' => false, 'error' => '请求失败: ' . $error]);
+if (empty($r['ok'])) {
+    echo json_encode(['ok' => false, 'error' => $r['error'] ?? 'AI 请求失败'], JSON_UNESCAPED_UNICODE);
     exit;
 }
-
-$data = json_decode($resp, true);
-if (!$data) {
-    echo json_encode(['ok' => false, 'error' => '响应解析失败', 'raw' => mb_substr($resp, 0, 300)]);
-    exit;
-}
-
-// 提取回复文本
-$reply = '';
-if ($provider['id'] === 'claude') {
-    $reply = $data['content'][0]['text'] ?? '';
-} elseif (isset($data['choices'][0]['message']['content'])) {
-    $reply = $data['choices'][0]['message']['content'];
-} elseif (isset($data['output_text'])) {
-    $reply = $data['output_text'];
-} elseif (isset($data['data'][0]['output_text'])) {
-    $reply = $data['data'][0]['output_text'];
-}
+$reply = (string)($r['text'] ?? '');
 
 if ($reply !== '') {
     $conv[] = ['role' => 'assistant', 'content' => mb_substr($reply, 0, 4000)];
@@ -248,4 +188,4 @@ foreach ($want as $kw => $act) {
 $actions = array_slice(array_unique(array_map('json_encode', $actions), SORT_STRING), 0, 3);
 $actions = array_map('json_decode', $actions);
 
-echo json_encode(['ok' => true, 'reply' => $reply, 'actions' => $actions, 'sources' => $kbCited['sources'] ?? [], 'skill' => $skillExecuted, 'provider' => $provider['id'], 'model' => $model], JSON_UNESCAPED_UNICODE);
+echo json_encode(['ok' => true, 'reply' => $reply, 'actions' => $actions, 'sources' => $kbCited['sources'] ?? [], 'skill' => $skillExecuted], JSON_UNESCAPED_UNICODE);
