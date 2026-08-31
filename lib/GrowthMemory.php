@@ -33,7 +33,14 @@ if (!function_exists('gmem_ensure')) {
             created_at TEXT DEFAULT ''
         )");
         Database::execute("CREATE INDEX IF NOT EXISTS idx_gmem_subject ON growth_memory(subject, created_at)");
-        Database::execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_gmem_dedupe ON growth_memory(dedupe_key) WHERE dedupe_key <> ''");
+        // 部分唯一索引（需 SQLite ≥3.8）：去重键非空时数据库层兜底防重复；
+        // 旧版 SQLite（<3.8）不支持部分索引，退化为普通索引，
+        // 去重逻辑由 gmem_remember() 的「先查再插」保证，功能等价。
+        try {
+            Database::execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_gmem_dedupe ON growth_memory(dedupe_key) WHERE dedupe_key <> ''");
+        } catch (Exception $e) {
+            Database::execute("CREATE INDEX IF NOT EXISTS idx_gmem_dedupe ON growth_memory(dedupe_key)");
+        }
         $ready = true;
     }
 
