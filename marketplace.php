@@ -154,7 +154,7 @@ $typeNames = mkt_categories();
       <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);align-items:center">
         <div style="display:flex;flex-direction:column;gap:14px">
           <span class="kicker" style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--accent);text-transform:uppercase">OPEN ECO · 生态市场</span>
-          <h1 style="font-size:clamp(30px,4.5vw,46px);font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--fg)">把增长能力<span style="font-family:var(--font-display);font-style:italic">即装即用</span></h1>
+          <h1 style="font-size:clamp(30px,4.5vw,46px);font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--fg)">别人做好的增长能力，<span style="font-family:var(--font-display);font-style:italic">装上就能用</span></h1>
           <p style="color:var(--muted);font-size:15px;line-height:1.8;max-width:540px">Skill · 插件 · 主题，一站式扩展你的 <?=site_config_get("site_name")?>。开发者可发布，用户可安装，构建共创生态。</p>
           <form method="get" style="display:flex;gap:8px;max-width:460px;margin-top:4px">
             <input type="text" name="q" value="<?=htmlspecialchars($q)?>" placeholder="搜索插件、技能、主题…" style="flex:1;padding:12px 18px;border-radius:999px;font-size:14px;outline:none;border:1.5px solid var(--border);background:var(--surface)">
@@ -249,7 +249,7 @@ $typeNames = mkt_categories();
     <!-- 发布入口 -->
     <div class="rounded-3xl p-6 mt-10 text-center" style="background:var(--surface);border:1px solid var(--border)">
       <div class="font-bold text-lg">想发布你的插件 / 技能？</div>
-      <p class="text-sm text-muted mt-2 mb-4">用 AI 生成插件骨架，或直接发布一个可复用的 Skill，分享给整个社区。</p>
+      <p class="text-sm text-muted mt-2 mb-4">你一旦参与，就同时是开发者、创作者、作者。不用先申请资质、不用先会写代码——用 AI 生成插件骨架，或直接发布一个可复用的 Skill，分享给整个社区。</p>
       <a href="/account?view=login" class="mkt-btn" style="background:var(--accent);color:var(--on-accent)">开始创作 →</a>
     </div>
     <?php endif; ?>
