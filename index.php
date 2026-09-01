@@ -31,7 +31,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>芭乐派 · OpenFlow 增长操作系统</title>
-<meta name="description" content="芭乐派帮一人公司设计 Agent 能跑的增长系统。OpenFlow 是其开源底座：TIPS 框架（触达/洞察/个性化/销售）四力合一，自生长 AI Engine 主动爬取、洞察、优化、转化。">
+<meta name="description" content="芭乐派给一人公司的增长系统。OpenFlow 是其开源底座：它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。">
 <?php if (function_exists('seo_head')): seo_head(['title' => '芭乐派 · OpenFlow 增长操作系统', 'canonical' => site_config_get('site_url') . '/']); endif; ?>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='2' y1='16' x2='30' y2='16' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='oklch(52%25 .17 258)'/%3E%3Cstop offset='1' stop-color='oklch(58%25 .16 285)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='16' fill='oklch(16%25 0 0)'/%3E%3Cpath d='M16 6.5a9.5 9.5 0 1 1-9.5 9.5' stroke='url(%23g)' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M11.5 10.5v12M11.5 14h7.6M11.5 18.5h7.6' stroke='oklch(96%25 0 0)' stroke-width='2.2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
@@ -528,14 +528,14 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
   <!-- ══ Hero ══ -->
   <section id="top" class="reveal in" data-od-anchor data-od-id="hero">
     <div class="hero-center">
-      <span class="kicker">芭乐派 · 帮一人公司设计 Agent 能跑的增长系统</span>
-      <h1>设计你的<i class="si">增长系统</i>，<br>让 Agent 替你 <span class="hr-word" id="hr-word" role="button" tabindex="0" aria-label="点击切换关键词">跑流程</span></h1>
-      <p class="lead">你不缺怎么做，你缺该做什么。OpenFlow 是芭乐派增长操作系统的开源底座：自动爬取行业信号、生成内容草稿、主动触达转化——让 Agent 跑流程，你只做判断。</p>
+      <span class="kicker">芭乐派 · 给一人公司的增长系统</span>
+      <h1>你不缺<i class="si">怎么做</i>，<br>你缺 <span class="hr-word" id="hr-word" role="button" tabindex="0" aria-label="点击切换关键词">该做什么</span></h1>
+      <p class="lead">市面上的增长工具都默认你有一支团队。芭乐派做的是另一套：它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。</p>
       <div class="cta-row">
-        <a class="btn primary" href="/courses" data-od-id="home-cta-start">免费开始</a>
-        <a class="btn ghost" href="/product" data-od-id="home-cta-demo">查看平台演示</a>
+        <a class="btn primary" href="/courses" data-od-id="home-cta-start">免费开始（开源）</a>
+        <a class="btn ghost" href="/product" data-od-id="home-cta-demo">先看它一天干什么</a>
       </div>
-      <div class="trust"><span class="dot"></span>Seven · 十年增长操盘 · 核心能力永久开源 · 自生长 AI Engine</div>
+      <div class="trust"><span class="dot"></span>Seven · 十年增长操盘 · 核心能力永久开源 · 数据在你自己的服务器</div>
       <div class="arena">
         <div class="arena-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">openflow.pspi.run/growth-loop</div></div>
         <div class="arena-canvas" id="arena-stage">
@@ -614,22 +614,22 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
   <section id="pain" class="sec reveal" data-od-anchor data-od-id="pain">
     <div class="sec-head center">
       <span class="kicker">你可能正在经历</span>
-      <h2>同一个屏幕上，两个完全相反的世界</h2>
+      <h2>同一年里，有人在裁员，有人在一个人开公司</h2>
     </div>
     <div class="worlds">
       <div class="w-col">
         <span class="w-tag">一边</span>
-        <h3>裁员、缩编、降本增效</h3>
+        <h3>一边在收缩</h3>
         <p class="w-q">「做企业的跟我说，账上现金撑不过六个月的，比例比疫情那两年还高。」投一百份简历，面试三个，一个 offer 都没有。</p>
       </div>
       <div class="w-col w-gap">
         <span class="w-tag">中间的鸿沟</span>
-        <h3>增长失速，卡在「该让 Agent 做什么」</h3>
-        <p class="w-q">年营收 100-1000 万的一人公司，卡在同一个地方：知道 AI 重要，但不知道业务里哪里该让 Agent 做。</p>
+        <h3>而你卡在中间</h3>
+        <p class="w-q">年营收 100–1000 万的一人公司，卡在同一个地方：知道 AI 重要，但不知道自己业务里哪一段该交出去。试了几个工具，最后都变成"还得我自己来"。</p>
       </div>
       <div class="w-col">
         <span class="w-tag">另一边</span>
-        <h3>OPC 社区正在爆发</h3>
+        <h3>另一边在长出来</h3>
         <p class="w-q">2026 年开年，全国 26 个城市冒出 39 个 OPC 社区。一人公司、超级个体正在把「一个人就是一支队伍」变成现实。</p>
       </div>
     </div>
@@ -639,7 +639,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
   <section id="touch" class="sec reveal" data-od-anchor data-od-id="touch">
     <div class="sec-head center">
       <span class="kicker">TIPS 框架 · 增长能力</span>
-      <h2>四力合一，Agent 替你跑完增长全流程</h2>
+      <h2>这四件事，从今天起不用你做了</h2>
       <p class="lead">触达把变化送进来，洞察把判断递到你面前，个性化让内容贴着你的声线，销售把线索跑成成交。</p>
     </div>
     <div class="deck auto" id="tips-auto" data-auto="on" data-interval="4500">
@@ -655,7 +655,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
           <div class="sp-txt">
             <span class="kicker">触达 Touch · 信号自动进来</span>
             <h3>你不用再每天刷十几个后台</h3>
-            <p class="lead">舆情、搜索热点、RSS 自动爬取——Agent 24 小时盯住市场变化，把变化送进来，你只做判断。</p>
+            <p class="lead">舆情、搜索热点、RSS 自动爬取。它不会替你决定，但会保证该看到的都送到你面前。</p>
             <ul class="sp-list">
               <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>舆情、搜索热点、RSS 自动爬取</div></li>
               <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>新信号实时汇入，按热度排序</div></li>
@@ -678,7 +678,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
           <div class="sp-txt">
             <span class="kicker">洞察 Insight · AI 提炼该做什么</span>
             <h3>只把「值得你判断的」递到面前</h3>
-            <p class="lead">热点总结、选题建议自动生成——Agent 负责跑流程，你只做决策，不做事。</p>
+            <p class="lead">热点总结、选题建议自动生成。不是给你 37 条线索，是告诉你今天该联系哪 3 个。</p>
             <ul class="sp-list">
               <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>热点总结与选题建议</div></li>
               <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>情绪与热度标注，决策项待你确认</div></li>
@@ -704,7 +704,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
           <div class="sp-txt">
             <span class="kicker">个性化 Personality · 内容贴合声线</span>
             <h3>草稿不是模板，是贴着你的品牌声线生成的</h3>
-            <p class="lead">文章草稿、语气模板、定稿发布——不用从零写起，也不会千篇一律。</p>
+            <p class="lead">文章草稿、语气模板、定稿发布——你改的是稿子，不是从空白页开始。</p>
             <ul class="sp-list">
               <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>文章草稿 · 语气模板 · 品牌声线</div></li>
               <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>定稿发布 · 排期自动</div></li>
@@ -728,11 +728,11 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
         <div class="deck-p" id="tips-p4" role="tabpanel" aria-labelledby="tips-t4">
           <div class="sp-txt">
             <span class="kicker">销售 Sales · 主动触达与转化</span>
-            <h3>从内容到成交，Agent 替你跑完转化</h3>
+            <h3>内容带来的人，别停在"看过"</h3>
             <p class="lead">MA 流程、线索跟进、sales loop——触达不是群发，是按节奏推进的每一次跟进。</p>
             <ul class="sp-list">
               <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>MA 流程 · 线索培育与跟进</div></li>
-              <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>转化数据回传，闭环自生长</div></li>
+              <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>转化数据回传，反哺每一环</div></li>
             </ul>
           </div>
           <div class="sp-vis">
@@ -757,12 +757,12 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
   <section id="loop" class="sec reveal" data-od-anchor data-od-id="loop">
     <div class="sec-head center">
       <span class="kicker">从 flow 到 loop</span>
-      <h2>三步，跑出你的增长闭环</h2>
+      <h2>三步，把它接进你现在的活法</h2>
     </div>
     <div class="wf">
-      <div class="wf-step"><span class="wf-n">01</span><h3>连接增长信号</h3><p>接入舆情、搜索热点、CDP 事件——OpenFlow 自动爬取行业信号，替你盯住市场变化。</p><span class="wf-driver"><span class="pill hl">Webhook · RSS 接入</span></span></div>
-      <div class="wf-step"><span class="wf-n">02</span><h3>设计你的系统</h3><p>把增长漏斗拆成 Agent 可执行的任务图：选题、撰写、触达、转化，四引擎协同推进。</p><span class="wf-driver"><span class="pill hl">Task Graph 编排</span></span></div>
-      <div class="wf-step"><span class="wf-n">03</span><h3>主动驱动增长</h3><p>自生长 AI Engine 每 6 小时推一轮：洞察→优化→转化→反馈，从 Marketing 到 Sales 全闭环。</p><span class="wf-driver"><span class="pill hl">AI Engine · 每 6h</span></span></div>
+      <div class="wf-step"><span class="wf-n">01</span><h3>告诉它盯什么</h3><p>接入舆情、搜索热点、你自己的客户行为。配一次，之后它自己盯。</p><span class="wf-driver"><span class="pill hl">Webhook · RSS 接入</span></span></div>
+      <div class="wf-step"><span class="wf-n">02</span><h3>告诉它什么该自动、什么等你点头</h3><p>选题、撰写、触达、转化，每一段你都能决定是它直接做，还是出草稿等你确认。</p><span class="wf-driver"><span class="pill hl">Task Graph 编排</span></span></div>
+      <div class="wf-step"><span class="wf-n">03</span><h3>然后你就可以去干别的了</h3><p>按你设的周期自己跑一轮：洞察 → 优化 → 转化 → 反馈。你回来看结果，不用盯过程。</p><span class="wf-driver"><span class="pill hl">AI Engine · 周期你定</span></span></div>
     </div>
   </section>
 
@@ -787,7 +787,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
           <div class="tp-txt">
             <span class="kicker">最典型场景</span>
             <h3>一人公司冷启动</h3>
-            <p>从 0 到 1，没有团队帮你盯市场。OpenFlow 自动爬取行业信号、生成内容草稿、触达潜在客户，你只需要做判断。</p>
+            <p>刚开始做，最怕的是不知道写什么。它替你盯住行业在聊什么，把选题和草稿备好——你从"改"开始，不从"想"开始。</p>
             <div class="tags"><span>内容获客</span><span>线索转化</span></div>
             <div class="cta-row"><a class="btn subtle" href="#loop" data-od-id="scene-featured-cta">看完整场景 →</a></div>
           </div>
@@ -801,7 +801,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
           <div class="tp-txt">
             <span class="kicker">利润公式 · 数据驱动</span>
             <h3>超级个体精算增长</h3>
-            <p>用利润公式拆解销转率，把获客、培育、转化的每一环都标出来——该 Agent 做还是人做，一目了然。</p>
+            <p>你已经有流量了，卡在转化。把获客、培育、转化每一环的数拆开摆出来，哪一环漏得最多、哪一环最值得交给 Agent，一眼看得见。</p>
             <div class="tags"><span>数据洞察</span><span>四引擎</span></div>
             <div class="cta-row"><a class="btn subtle" href="#loop" data-od-id="scene-cta-profit">看利润公式怎么拆 →</a></div>
           </div>
@@ -815,7 +815,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
           <div class="tp-txt">
             <span class="kicker">工作流 · 流程自动化</span>
             <h3>小团队自动化运营</h3>
-            <p>把周报、监控、跨群通知交给工作流自动跑，人只做 Agent 做不到的五件事——判断、拍板、关系、创造与复盘。</p>
+            <p>三五个人，一半精力耗在重复运营上。周报、监控、跨群通知这些活交出去，把人留给真正需要判断的事。</p>
             <div class="tags"><span>自动化</span><span>MA 流程</span></div>
             <div class="cta-row"><a class="btn subtle" href="#loop" data-od-id="scene-cta-workflow">看工作流怎么配 →</a></div>
           </div>
@@ -829,7 +829,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
           <div class="tp-txt">
             <span class="kicker">开源底座 · 私有化</span>
             <h3>开发者搭建增长中台</h3>
-            <p>私有化部署、API 集成、Skill 生态——OpenFlow 是开源底座，随你改造，不被任何一家平台绑定。</p>
+            <p>你不想被别人的 SaaS 绑住。MIT 开源、32 个插件钩子、18 个 MCP 工具——拿去当底座，改成你自己的。</p>
             <div class="tags"><span>私有化</span><span>API</span></div>
             <div class="cta-row"><a class="btn subtle" href="#compare" data-od-id="scene-cta-dev">看底座怎么扩展 →</a></div>
           </div>
@@ -850,7 +850,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
     <div class="sec-head center">
       <span class="kicker">为什么不是一个「五合一」按钮</span>
       <h2>OpenFlow 底座 vs 单点工具</h2>
-      <p class="lead">分开买 = 五个账号、五套数据、五次打通。OpenFlow 是组合式开源底座——内容、营销、数据、搜索、线索在同一套数据上原生跑通。</p>
+      <p class="lead">分开买 = 五个账号、五套数据、五次打通，还有五份等着人来喂的活。芭乐派把这五块放在同一套数据上——不是集成，是本来就是一个。</p>
     </div>
     <div class="cmp-wrap">
       <table class="cmp">
@@ -858,11 +858,11 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
           <tr><th scope="col">能力维度</th><th scope="col">内容引擎 CMS</th><th scope="col">营销自动化 MA</th><th scope="col">客户数据 CDP</th><th scope="col">线索 CRM</th><th scope="col">SEO · GEO 引擎</th><th scope="col" class="ol">OpenFlow 底座</th></tr>
         </thead>
         <tbody>
-          <tr><th scope="row">内容发布与管理</th><td class="y" data-l="内容引擎 CMS">原生</td><td class="na" data-l="营销自动化 MA">—</td><td class="na" data-l="客户数据 CDP">—</td><td class="na" data-l="线索 CRM">—</td><td class="na" data-l="SEO · GEO 引擎">—</td><td class="ol y" data-l="OpenFlow 底座">原生 · 全模块共用</td></tr>
-          <tr><th scope="row">营销自动化</th><td class="na" data-l="内容引擎 CMS">—</td><td class="y" data-l="营销自动化 MA">原生</td><td class="na" data-l="客户数据 CDP">—</td><td class="na" data-l="线索 CRM">—</td><td class="na" data-l="SEO · GEO 引擎">—</td><td class="ol y" data-l="OpenFlow 底座">原生 · 可视化工作流</td></tr>
-          <tr><th scope="row">客户数据与分群</th><td class="na" data-l="内容引擎 CMS">—</td><td class="na" data-l="营销自动化 MA">—</td><td class="y" data-l="客户数据 CDP">原生</td><td class="na" data-l="线索 CRM">—</td><td class="na" data-l="SEO · GEO 引擎">—</td><td class="ol y" data-l="OpenFlow 底座">原生 · 画像 / 分群 / 洞察</td></tr>
-          <tr><th scope="row">搜索与 AI 优化</th><td class="na" data-l="内容引擎 CMS">—</td><td class="na" data-l="营销自动化 MA">—</td><td class="na" data-l="客户数据 CDP">—</td><td class="na" data-l="线索 CRM">—</td><td class="y" data-l="SEO · GEO 引擎">原生</td><td class="ol y" data-l="OpenFlow 底座">原生 · 内容即优化</td></tr>
-          <tr><th scope="row">线索与转化</th><td class="na" data-l="内容引擎 CMS">—</td><td class="na" data-l="营销自动化 MA">—</td><td class="na" data-l="客户数据 CDP">—</td><td class="y" data-l="线索 CRM">原生</td><td class="na" data-l="SEO · GEO 引擎">—</td><td class="ol y" data-l="OpenFlow 底座">原生 · 线索池与转化</td></tr>
+          <tr><th scope="row">内容发布与管理</th><td class="y" data-l="内容引擎 CMS">原生</td><td class="na" data-l="营销自动化 MA">—</td><td class="na" data-l="客户数据 CDP">—</td><td class="na" data-l="线索 CRM">—</td><td class="na" data-l="SEO · GEO 引擎">—</td><td class="ol y" data-l="OpenFlow 底座">写完即被其余四块共用</td></tr>
+          <tr><th scope="row">营销自动化</th><td class="na" data-l="内容引擎 CMS">—</td><td class="y" data-l="营销自动化 MA">原生</td><td class="na" data-l="客户数据 CDP">—</td><td class="na" data-l="线索 CRM">—</td><td class="na" data-l="SEO · GEO 引擎">—</td><td class="ol y" data-l="OpenFlow 底座">拖出流程，直接读得到画像</td></tr>
+          <tr><th scope="row">客户数据与分群</th><td class="na" data-l="内容引擎 CMS">—</td><td class="na" data-l="营销自动化 MA">—</td><td class="y" data-l="客户数据 CDP">原生</td><td class="na" data-l="线索 CRM">—</td><td class="na" data-l="SEO · GEO 引擎">—</td><td class="ol y" data-l="OpenFlow 底座">匿名到成交是同一个人</td></tr>
+          <tr><th scope="row">搜索与 AI 优化</th><td class="na" data-l="内容引擎 CMS">—</td><td class="na" data-l="营销自动化 MA">—</td><td class="na" data-l="客户数据 CDP">—</td><td class="na" data-l="线索 CRM">—</td><td class="y" data-l="SEO · GEO 引擎">原生</td><td class="ol y" data-l="OpenFlow 底座">发布时就已经优化好</td></tr>
+          <tr><th scope="row">线索与转化</th><td class="na" data-l="内容引擎 CMS">—</td><td class="na" data-l="营销自动化 MA">—</td><td class="na" data-l="客户数据 CDP">—</td><td class="y" data-l="线索 CRM">原生</td><td class="na" data-l="SEO · GEO 引擎">—</td><td class="ol y" data-l="OpenFlow 底座">成交结果反哺前面四块</td></tr>
           <tr><th scope="row">跨模块数据打通</th><td class="na" data-l="内容引擎 CMS">需集成</td><td class="na" data-l="营销自动化 MA">需集成</td><td class="na" data-l="客户数据 CDP">需集成</td><td class="na" data-l="线索 CRM">需集成</td><td class="na" data-l="SEO · GEO 引擎">需集成</td><td class="ol y" data-l="OpenFlow 底座">一套数据 · 原生打通</td></tr>
         </tbody>
       </table>
@@ -881,6 +881,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
       <div class="q-i"><div class="av">知</div><blockquote>「知道增长该做什么，但哪些交给 Agent、哪些必须自己来，一直没想清楚。」</blockquote><div class="who"><div><b>知识付费操盘手</b><span>想跑通销转，缺一套系统</span></div></div></div>
       <div class="q-i"><div class="av">团</div><blockquote>「4 人小团队，周报、监控、跨群通知全靠人肉，运维就吃掉一半精力。」</blockquote><div class="who"><div><b>SaaS 服务团队</b><span>被重复运营拖住</span></div></div></div>
     </div>
+    <p class="cmp-note" style="text-align:center;margin-top:16px">不适合谁也说清楚：已经有成熟市场团队和数据团队的公司，用我们是重复建设。</p>
   </section>
 
   <!-- ══ 增长洞察（原 JS 注入 → SSR） ══ -->
@@ -899,8 +900,8 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
     <div class="contact-wrap">
       <div class="ct-pitch">
         <span class="kicker">O.L.B 增长诊断</span>
-        <h2>30 分钟，摸清你的增长瓶颈</h2>
-        <p class="lead">用芭乐派 O.L.B 评分卡摸清你的增长瓶颈，看哪些环节 Agent 化收益最高。</p>
+        <h2>30 分钟，告诉你哪一段最该交给 Agent</h2>
+        <p class="lead">用 O.L.B 评分卡把你的增长链拆开，指出漏得最多的那一环，和最该先交出去的那一段。</p>
         <ul class="ct-list">
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span>O.L.B 评分卡：三分钟自查增长健康度</li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span>标出 Agent 化收益最高的环节</li>
@@ -933,7 +934,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
   <footer class="foot" data-od-id="site-footer">
     <div class="fb">
       <div class="brand"><span class="ic"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-f" x1="2" y1="16" x2="30" y2="16" gradientUnits="userSpaceOnUse"><stop stop-color="var(--accent)"/><stop offset="1" stop-color="oklch(58% .16 285)"/></linearGradient></defs><path d="M16 6.5a9.5 9.5 0 1 1-9.5 9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M11.5 10v13M11.5 13.5h8.2M11.5 18.5h8.2" stroke="url(#ofg-f)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M19.7 18.5c2.3 0 4.4-.7 6.1-2M25 14.3l1.6 2.2-2.9 1" stroke="url(#ofg-f)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>芭乐派 · OpenFlow</div>
-      <p class="f-about">芭乐派增长操作系统的开源底座。TIPS 框架（触达/洞察/个性化/销售）四力合一，自生长 AI Engine 主动驱动增长。</p>
+      <p class="f-about">芭乐派给一人公司的增长系统。它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。核心能力永久开源。</p>
       <p class="note">核心能力永久开源 · 鱼与渔相结合</p>
       <div class="f-social" aria-label="社交媒体">
         <div class="soc-group">
@@ -961,7 +962,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
       <h4>联系</h4>
       <a href="mailto:hello@openflow.dev" data-od-id="f-mail">hello@openflow.dev</a><a href="#contact" data-od-id="f-biz">商务合作</a><a href="#contact" data-od-id="f-team">加入团队</a><a href="#reviews" data-od-id="f-community-2">门派社区</a>
     </div>
-    <div class="f-bottom"><span>© 2026 芭乐派 · OpenFlow 增长操作系统</span><?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><?=i18n_switcher()?><?php endif; ?><span>帮一人公司设计 Agent 能跑的增长系统</span></div>
+    <div class="f-bottom"><span>© 2026 芭乐派 · OpenFlow 增长操作系统</span><?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><?=i18n_switcher()?><?php endif; ?><span>给一人公司的增长系统</span></div>
   </footer>
 </main>
 
@@ -1075,7 +1076,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
   /* ── 首屏交互标题（旋转关键词 · 自动轮换 + 点击切换） ── */
   var hrWord=$('#hr-word');
   if(hrWord){
-    var WORDS=['跑流程','盯信号','写内容','做触达','追转化'],wi=0;
+    var WORDS=['该做什么','盯什么信号','改哪篇稿子','联系哪个人','先做哪一步'],wi=0;
     function setWord(i){wi=(i+WORDS.length)%WORDS.length;hrWord.textContent=WORDS[wi];}
     hrWord.addEventListener('click',function(){setWord(wi+1);});
     hrWord.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();setWord(wi+1);}});
