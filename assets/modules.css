@@ -612,6 +612,9 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 /* 通用双栏：左文右图（首页 tab-panel.on 的同款网格，去掉 tab 语义），≤1080px 折为单列 */
 .split{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(24px,3vw,48px);align-items:center}
 .split.rev .sp-txt{order:2}
+.split+.split{margin-top:clamp(36px,5vw,72px)}
+.tab-bar.dense .tab-p{padding:9px 16px;font-size:13.5px}
+.hero-center h1,.cta-band h2{text-wrap:balance}
 .tl-y{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.06em}
 /* 收尾 CTA 面板：取代旧页的紫色渐变横幅（调色板外）。玻璃卡 + 一抹 accent-soft，与 .scn-f 同源 */
 .cta-band{display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;padding:clamp(36px,5vw,64px) clamp(24px,4vw,56px);border-radius:var(--r-lg);border:1px solid var(--border);background:linear-gradient(165deg,var(--accent-soft),transparent 60%),var(--surface);backdrop-filter:blur(16px) saturate(150%);box-shadow:var(--shadow-sm)}
@@ -634,4 +637,37 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 @media (max-width:640px){
   .wf.n4{grid-template-columns:1fr}
   .cta-band{padding:30px 20px}
+}
+
+/* ── 通用 hairline 列（.stats/.qr 的同款分隔，装任意内容：图标 + 标题 + 说明） ── */
+.cols{display:grid;grid-template-columns:repeat(3,1fr)}
+.cols.n4{grid-template-columns:repeat(4,1fr)}
+.cols>*{padding:8px 28px 8px 0;display:flex;flex-direction:column;gap:12px;min-width:0}
+.cols>*+*{border-left:1px solid var(--border-soft);padding-left:28px}
+.cols .ic{width:38px;height:38px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:0 0 auto}
+.cols .ic svg{width:18px;height:18px}
+.cols .ic.danger{background:var(--danger-soft);color:var(--danger)}
+.cols .ltr{width:44px;height:44px;border-radius:14px;background:var(--surface-strong);border:2px solid var(--accent);color:var(--accent-strong);display:grid;place-items:center;font-family:var(--font-mono);font-size:15px;font-weight:700;box-shadow:0 0 0 6px var(--accent-soft)}
+.cols h3{font-size:16.5px;font-weight:700;letter-spacing:-.01em;line-height:1.4;margin-top:4px}
+.cols p{font-size:14px;color:var(--muted);line-height:1.8}
+/* ── FAQ 手风琴（hairline 列表，不做卡片） ── */
+.faq{display:flex;flex-direction:column;border-top:1px solid var(--border-soft)}
+.fq{border-bottom:1px solid var(--border-soft)}
+.fq-q{width:100%;display:flex;align-items:center;gap:14px;padding:20px 4px;text-align:left;font-size:16px;font-weight:700;letter-spacing:-.01em;transition:color .2s}
+.fq-q:hover{color:var(--accent-strong)}
+.fq-q .fx{margin-left:auto;width:28px;height:28px;flex:0 0 28px;border-radius:9px;background:var(--hover);display:grid;place-items:center;color:var(--muted);transition:transform .35s var(--ease-spring),background .2s,color .2s}
+.fq-q .fx svg{width:13px;height:13px}
+.fq.open .fq-q .fx{transform:rotate(45deg);background:var(--accent-soft);color:var(--accent)}
+.fq-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--ease-out)}
+.fq.open .fq-a{grid-template-rows:1fr}
+.fq-a>div{overflow:hidden}
+.fq-a p{padding:0 48px 22px 4px;color:var(--muted);font-size:15px;line-height:1.85;max-width:760px}
+@media (max-width:1080px){
+  .cols.n4{grid-template-columns:repeat(2,1fr);row-gap:22px}
+  .cols.n4>*:nth-child(odd){border-left:none;padding-left:0}
+}
+@media (max-width:860px){
+  .cols,.cols.n4{grid-template-columns:1fr}
+  .cols>*+*{border-left:none;padding-left:0;border-top:1px solid var(--border-soft);padding-top:22px;margin-top:6px}
+  .fq-a p{padding-right:4px}
 }
