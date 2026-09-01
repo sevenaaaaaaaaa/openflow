@@ -1,0 +1,364 @@
+<title>芭乐派介绍</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* ── 配色取自芭乐本身：青皮、粉肉、籽 ── */
+:root{
+  --paper:#FAF6F3;
+  --card:#FFFFFF;
+  --ink:#1E1917;
+  --ink-2:#5C534E;
+  --ink-3:#8E837D;
+  --rule:#E4DAD4;
+  --flesh:#C4553F;      /* 粉肉：唯一强调色 */
+  --flesh-soft:#F6E7E2;
+  --skin:#3E6B4A;       /* 青皮：仅用于"已核实/证据" */
+  --skin-soft:#E2EBE3;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#17130F; --card:#211C18;
+    --ink:#F2EBE6; --ink-2:#B3A79F; --ink-3:#7E736C;
+    --rule:#332B26;
+    --flesh:#E58A72; --flesh-soft:#33211C;
+    --skin:#84B891; --skin-soft:#1C2A20;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#17130F; --card:#211C18;
+  --ink:#F2EBE6; --ink-2:#B3A79F; --ink-3:#7E736C;
+  --rule:#332B26;
+  --flesh:#E58A72; --flesh-soft:#33211C;
+  --skin:#84B891; --skin-soft:#1C2A20;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,system-ui,sans-serif;
+  margin:0; overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+.serif{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+.mono{font-family:"IBM Plex Mono",Menlo,monospace;font-variant-numeric:tabular-nums}
+
+/* ── 舞台 ── */
+#stage{position:relative;width:100vw;height:100vh;height:100dvh}
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(2rem,6vw,6.5rem);
+  opacity:0;pointer-events:none;transform:translateY(14px);
+  transition:opacity .45s ease,transform .45s ease;
+  overflow-y:auto;
+}
+.slide.on{opacity:1;pointer-events:auto;transform:none}
+@media (prefers-reduced-motion:reduce){.slide{transition:none;transform:none}}
+.inner{width:100%;max-width:66rem;margin:0 auto}
+
+/* ── 排版 ── */
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--flesh);margin-bottom:1.6rem;font-weight:500;
+}
+h1{font-size:clamp(2.4rem,7vw,5rem);line-height:1.1;margin:0;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+h2{font-size:clamp(1.7rem,4.4vw,3rem);line-height:1.25;margin:0 0 1.4rem;font-weight:600;letter-spacing:-.015em;text-wrap:balance}
+h3{font-size:clamp(1rem,2vw,1.2rem);margin:0 0 .5rem;font-weight:600}
+p{font-size:clamp(1rem,1.7vw,1.3rem);line-height:1.75;color:var(--ink-2);margin:.9rem 0;max-width:44em}
+.lead{font-size:clamp(1.1rem,2.1vw,1.5rem);color:var(--ink-2)}
+strong{color:var(--ink);font-weight:600}
+.flesh{color:var(--flesh)}
+.rule{height:1px;background:var(--rule);margin:2rem 0;border:0}
+
+/* ── 表 ── */
+.grid{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin:1.8rem 0}
+.grid.c2{grid-template-columns:1fr 1fr}
+.grid.c3{grid-template-columns:repeat(3,1fr)}
+.grid.c4{grid-template-columns:repeat(auto-fit,minmax(9rem,1fr))}
+@media(max-width:760px){.grid.c2,.grid.c3{grid-template-columns:1fr}}
+.cell{background:var(--card);padding:clamp(.9rem,2vw,1.4rem)}
+.cell .k{font-family:"IBM Plex Mono",monospace;font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:.5rem}
+.cell .v{font-size:clamp(1.4rem,3vw,2.1rem);font-weight:600;line-height:1.1;display:block;letter-spacing:-.02em}
+.cell .s{font-size:.85rem;color:var(--ink-3);display:block;margin-top:.4rem;line-height:1.6}
+.cell p{font-size:.95rem;margin:.3rem 0 0}
+
+/* ── 对照行 ── */
+.rows{margin:1.6rem 0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:minmax(7rem,1fr) 1.4fr;gap:1.4rem;padding:.9rem .2rem;border-bottom:1px solid var(--rule);align-items:baseline}
+@media(max-width:640px){.row{grid-template-columns:1fr;gap:.2rem}}
+.row .a{font-weight:600;font-size:clamp(.95rem,1.6vw,1.1rem)}
+.row .b{color:var(--ink-2);font-size:clamp(.9rem,1.5vw,1.02rem);line-height:1.65}
+
+/* ── 时间轴 ── */
+.tl{margin:1.6rem 0;border-left:2px solid var(--rule);padding-left:1.4rem}
+.tl-item{margin-bottom:1.3rem;position:relative}
+.tl-item::before{content:"";position:absolute;left:calc(-1.4rem - 5px);top:.55rem;width:8px;height:8px;border-radius:50%;background:var(--flesh)}
+.tl-t{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);display:block}
+.tl-b{font-size:clamp(.98rem,1.7vw,1.15rem);margin-top:.2rem;line-height:1.6}
+
+/* ── 引语 ── */
+.pull{
+  border-left:3px solid var(--flesh);padding:1.2rem 0 1.2rem 1.6rem;margin:2rem 0;
+  font-size:clamp(1.2rem,2.6vw,1.9rem);line-height:1.5;font-weight:600;letter-spacing:-.01em;
+  color:var(--ink);max-width:38em;
+}
+
+/* ── 标签 ── */
+.tag{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.08em;
+     padding:.2em .55em;border-radius:2px;font-weight:500;white-space:nowrap}
+.t-ok{background:var(--skin-soft);color:var(--skin)}
+.t-no{background:var(--flesh-soft);color:var(--flesh)}
+
+ul{margin:1rem 0;padding-left:1.1rem;max-width:44em}
+li{margin:.5rem 0;line-height:1.7;font-size:clamp(.98rem,1.6vw,1.15rem);color:var(--ink-2)}
+li::marker{color:var(--flesh)}
+li strong{color:var(--ink)}
+
+/* ── 导航 ── */
+#bar{position:fixed;left:0;right:0;bottom:0;height:2px;background:var(--rule);z-index:20}
+#fill{height:100%;width:0;background:var(--flesh);transition:width .4s ease}
+#nav{position:fixed;bottom:1.1rem;right:1.3rem;display:flex;gap:.4rem;align-items:center;z-index:21}
+#nav button{
+  border:1px solid var(--rule);background:var(--card);color:var(--ink-2);
+  width:2rem;height:2rem;border-radius:3px;cursor:pointer;font-size:.9rem;line-height:1;
+}
+#nav button:hover{border-color:var(--flesh);color:var(--flesh)}
+#nav button:focus-visible{outline:2px solid var(--flesh);outline-offset:2px}
+#count{font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--ink-3);margin-right:.4rem}
+#brand{position:fixed;top:1.2rem;left:clamp(2rem,6vw,6.5rem);font-family:"IBM Plex Mono",monospace;
+       font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);z-index:21}
+#hint{position:fixed;bottom:1.3rem;left:clamp(2rem,6vw,6.5rem);font-size:.72rem;color:var(--ink-3);z-index:21}
+@media(max-width:700px){#hint{display:none}}
+</style>
+
+<div id="brand">芭乐派 · OpenFlow</div>
+<div id="stage">
+
+<!-- 1 封面 -->
+<section class="slide on"><div class="inner">
+  <div class="eyebrow">Growth OS for Solo Companies</div>
+  <h1>别人的增长工具，<br>默认你有一支团队。</h1>
+  <p class="lead" style="margin-top:2rem">
+    芭乐派做的，是给<strong>没有团队的人</strong>的那一套。<br>
+    内容、访客数据、自动触达、在线成交——一个系统，一个人跑得完。
+  </p>
+  <p class="mono" style="font-size:.8rem;color:var(--ink-3);margin-top:2.4rem">
+    MIT 开源 · 纯 PHP，不用装数据库 · 数据 100% 在你自己的服务器
+  </p>
+</div></section>
+
+<!-- 2 问题 -->
+<section class="slide"><div class="inner">
+  <div class="eyebrow">01 · 问题</div>
+  <h2>一个人的公司，把工具买齐会怎样</h2>
+  <div class="rows">
+    <div class="row"><div class="a">营销自动化</div><div class="b">假设你有市场团队 → 流程图画完了，没人去连</div></div>
+    <div class="row"><div class="a">CRM</div><div class="b">假设你有销售团队 → 变成一个更贵的通讯录</div></div>
+    <div class="row"><div class="a">数据分析</div><div class="b">假设你有分析师 → 报表很漂亮，没人看得出该干什么</div></div>
+    <div class="row"><div class="a">建站工具</div><div class="b">假设你有开发和设计 → 页面做好了，然后就没有然后了</div></div>
+    <div class="row"><div class="a">数据打通工具</div><div class="b">假设你有人把上面这些接起来 → 接不起来</div></div>
+  </div>
+  <p class="lead"><strong>五个工具，五份等着人来喂的工作。</strong>而你只有一个人。</p>
+</div></section>
+
+<!-- 3 洞察 -->
+<section class="slide"><div class="inner">
+  <div class="eyebrow">02 · 洞察</div>
+  <div class="pull">现有的增长工具本质是<span class="flesh">协作工具</span>——<br>它们解决的是"多个人怎么配合"。</div>
+  <h2 style="margin-top:2rem">而一人公司缺的，从来不是工具。</h2>
+  <p class="lead">是人。</p>
+</div></section>
+
+<!-- 4 时机 -->
+<section class="slide"><div class="inner">
+  <div class="eyebrow">03 · 为什么是现在</div>
+  <h2>AI 让「没有人」<br>第一次不等于「做不了」</h2>
+  <p>过去十年，一人公司只能在工具里做减法——买不起团队，就只能少做事。</p>
+  <p>现在第一次有了另一条路：<strong>不是让工具更好用，是让工具自己干活。</strong></p>
+  <div class="pull" style="border-color:var(--skin)">
+    芭乐派不做第六个等你来喂的系统。
+  </div>
+</div></section>
+
+<!-- 5 它干什么 -->
+<section class="slide"><div class="inner">
+  <div class="eyebrow">04 · 它一天替你干什么</div>
+  <h2>你睡觉的时候，它在干活</h2>
+  <div class="tl">
+    <div class="tl-item"><span class="tl-t">你还没起床</span>
+      <div class="tl-b">爬完行业热点，选题按优先级排好</div></div>
+    <div class="tl-item"><span class="tl-t">你打开电脑</span>
+      <div class="tl-b">三篇草稿等你改；昨天<strong>该跟进的 3 个人</strong>已经列好</div></div>
+    <div class="tl-item"><span class="tl-t">你在忙交付</span>
+      <div class="tl-b">认出老访客、给他看更相关的内容；表单留资自动进 CRM</div></div>
+    <div class="tl-item"><span class="tl-t">你下班之后</span>
+      <div class="tl-b">巡检全站：哪页报错、哪页慢、哪块内容是空的</div></div>
+    <div class="tl-item"><span class="tl-t">每周</span>
+      <div class="tl-b">把「哪个来源<strong>真的带来成交</strong>」算给你</div></div>
+  </div>
+  <p style="font-size:.9rem;color:var(--ink-3)">注：周期由你自己配的 cron 决定；AI 未配置时其余环节照常运行。</p>
+</div></section>
+
+<!-- 6 三个承诺 -->
+<section class="slide"><div class="inner">
+  <div class="eyebrow">05 · 凭什么做得到</div>
+  <h2>三样别人没有同时具备的东西</h2>
+  <div class="grid c3">
+    <div class="cell">
+      <h3>认得出人</h3>
+      <p>你的网站认得出每一个访客是谁、来过几次、在看什么。匿名、登录、换设备，自动合并成同一个人。</p>
+    </div>
+    <div class="cell">
+      <h3>自己干活</h3>
+      <p>不是"加了个 AI 按钮"，是一个按周期自己跑的增长引擎：选题、成文、巡检、优化。</p>
+    </div>
+    <div class="cell">
+      <h3>能被 AI 调用</h3>
+      <p>18 个 MCP 工具，整个网站的内容与能力可以被 Claude 这类 Agent 直接查询和调用。</p>
+    </div>
+  </div>
+  <p>WordPress、Segment、神策、HubSpot 各强一块——<strong>但没有谁三样都有，
+  更没有谁把它们和「一个人就能跑完」焊在一起。</strong></p>
+</div></section>
+
+<!-- 7 可验证 -->
+<section class="slide"><div class="inner">
+  <div class="eyebrow">06 · 证据</div>
+  <h2>不用信我们，去看代码</h2>
+  <div class="grid c4">
+    <div class="cell"><span class="k">开源协议</span><span class="v">MIT</span><span class="s">可商用 · 可改 · 可私有部署</span></div>
+    <div class="cell"><span class="k">功能模块</span><span class="v mono">151</span><span class="s">后台 192 页 · API 92 个</span></div>
+    <div class="cell"><span class="k">自动化测试</span><span class="v mono">67</span><span class="s">套件全部开源可查</span></div>
+    <div class="cell"><span class="k">外部服务依赖</span><span class="v mono">0</span><span class="s">不用 MySQL / Redis / Node</span></div>
+  </div>
+  <div class="rows">
+    <div class="row"><div class="a"><span class="tag t-ok">已核实</span> 数据是你的</div><div class="b">全部在你自己的服务器上，随时一键导出，无云端回传</div></div>
+    <div class="row"><div class="a"><span class="tag t-ok">已核实</span> AI 挂了也能用</div><div class="b">没配 AI 照样跑，只是不自动写稿——不会白屏</div></div>
+    <div class="row"><div class="a"><span class="tag t-ok">已核实</span> 11 种语言</div><div class="b">界面与内容多语言，含 hreflang</div></div>
+  </div>
+</div></section>
+
+<!-- 8 边界 -->
+<section class="slide"><div class="inner">
+  <div class="eyebrow">07 · 边界</div>
+  <h2>说清楚不适合谁</h2>
+  <div class="grid c2">
+    <div class="cell">
+      <h3 style="color:var(--skin)">✅ 适合</h3>
+      <ul style="margin-top:.6rem">
+        <li>一个人（或两三个人）在做的公司、品牌、工作室</li>
+        <li>内容驱动获客：写文章、做课程、接咨询、卖数字产品</li>
+        <li>在意数据自主权，不想把客户名单交给别人的云</li>
+      </ul>
+    </div>
+    <div class="cell">
+      <h3 style="color:var(--flesh)">❌ 不适合</h3>
+      <ul style="margin-top:.6rem">
+        <li>已有成熟市场团队 + 数据团队的中大型公司——<strong>对你们我们是重复建设</strong></li>
+        <li>需要复杂多人审批流的组织</li>
+        <li>想要像素级自由设计的品牌官网</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pull">主动说出不适合谁，<br>是可信度最高的一句话。</div>
+</div></section>
+
+<!-- 9 商业模式 -->
+<section class="slide"><div class="inner">
+  <div class="eyebrow">08 · 商业模式</div>
+  <h2>开源不是免费试用</h2>
+  <div class="grid c3">
+    <div class="cell">
+      <span class="k">开源版</span><span class="v">¥0</span>
+      <span class="s">永久免费 · MIT<br>全部核心能力<br>装在你自己的服务器</span>
+    </div>
+    <div class="cell">
+      <span class="k">托管版</span><span class="v">订阅制</span>
+      <span class="s">不想碰服务器的人<br>我们替你部署维护<br>自动更新与备份</span>
+    </div>
+    <div class="cell">
+      <span class="k">私有化 / 定制</span><span class="v">面议</span>
+      <span class="s">有合规要求的组织<br>部署到你的环境<br>数据不出域</span>
+    </div>
+  </div>
+  <div class="pull" style="border-color:var(--skin)">
+    付费买的是<span class="flesh">省下你的时间</span>，<br>不是解锁功能。
+  </div>
+</div></section>
+
+<!-- 10 生态 -->
+<section class="slide"><div class="inner">
+  <div class="eyebrow">09 · 生态</div>
+  <h2>一次参与，处处可用</h2>
+  <p class="lead">生态规则叫 <strong>OIA（One is All）</strong>：<br>
+  你一旦参与，就同时是开发者、创作者、作者。</p>
+  <div class="rows">
+    <div class="row"><div class="a">一段提示词 / 一套打法</div><div class="b">提交成一个 Skill，别人可以直接装</div></div>
+    <div class="row"><div class="a">一个小工具</div><div class="b">用「描述即造」——说清楚要什么，系统给你出草稿</div></div>
+    <div class="row"><div class="a">一篇方法论</div><div class="b">提交到学院，成为社区共同资产</div></div>
+    <div class="row"><div class="a">一个插件</div><div class="b">32 个钩子，开发文档齐全</div></div>
+  </div>
+  <p><strong>不需要先申请开发者资质，不需要先过审，不需要先会写代码。</strong></p>
+</div></section>
+
+<!-- 11 结尾 -->
+<section class="slide"><div class="inner">
+  <div class="eyebrow">下一步</div>
+  <h1 style="font-size:clamp(2rem,5.5vw,3.8rem)">30 分钟，<br>让你的网站开始自己干活。</h1>
+  <div class="rule"></div>
+  <div class="grid c3">
+    <div class="cell"><span class="k">开发者</span><p style="margin-top:.2rem">在 GitHub 上开始，自己部署</p></div>
+    <div class="cell"><span class="k">不想碰服务器</span><p style="margin-top:.2rem">托管版免费试用</p></div>
+    <div class="cell"><span class="k">有合规要求</span><p style="margin-top:.2rem">申请私有化方案</p></div>
+  </div>
+  <p class="mono" style="font-size:.78rem;color:var(--ink-3);margin-top:2rem">
+    芭乐派 · 增长方法论与门派社区　|　OpenFlow · 开源底座，MIT
+  </p>
+</div></section>
+
+</div>
+
+<div id="hint">← → 或空格翻页</div>
+<div id="nav">
+  <span id="count" class="mono">1 / 11</span>
+  <button id="prev" aria-label="上一页">‹</button>
+  <button id="next" aria-label="下一页">›</button>
+</div>
+<div id="bar"><div id="fill"></div></div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var i = 0;
+  var count = document.getElementById('count');
+  var fill = document.getElementById('fill');
+
+  function show(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    count.textContent = (i + 1) + ' / ' + slides.length;
+    fill.style.width = ((i + 1) / slides.length * 100) + '%';
+    try { location.hash = String(i + 1); } catch(e){}
+  }
+  document.getElementById('next').onclick = function(){ show(i + 1); };
+  document.getElementById('prev').onclick = function(){ show(i - 1); };
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
+    if (e.key === 'ArrowLeft'  || e.key === 'PageUp')                   { e.preventDefault(); show(i - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End')  show(slides.length - 1);
+  });
+  // 触屏左右滑
+  var x0 = null;
+  document.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 55) show(i + (dx < 0 ? 1 : -1));
+    x0 = null;
+  }, {passive:true});
+
+  var start = parseInt((location.hash || '').replace('#',''), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>

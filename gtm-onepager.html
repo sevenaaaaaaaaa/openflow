@@ -1,0 +1,174 @@
+<title>芭乐派一页纸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#FAF6F3; --card:#FFFFFF; --ink:#1E1917; --ink-2:#5C534E; --ink-3:#8E837D;
+  --rule:#E4DAD4; --flesh:#C4553F; --flesh-soft:#F6E7E2; --skin:#3E6B4A; --skin-soft:#E2EBE3;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#17130F; --card:#211C18; --ink:#F2EBE6; --ink-2:#B3A79F; --ink-3:#7E736C;
+    --rule:#332B26; --flesh:#E58A72; --flesh-soft:#33211C; --skin:#84B891; --skin-soft:#1C2A20;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#17130F; --card:#211C18; --ink:#F2EBE6; --ink-2:#B3A79F; --ink-3:#7E736C;
+  --rule:#332B26; --flesh:#E58A72; --flesh-soft:#33211C; --skin:#84B891; --skin-soft:#1C2A20;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--paper);color:var(--ink);margin:0;
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,system-ui,sans-serif;
+  font-size:14px;line-height:1.7;-webkit-font-smoothing:antialiased;
+}
+.sheet{max-width:52rem;margin:0 auto;padding:clamp(1.6rem,4vw,3rem) clamp(1.2rem,4vw,3rem) 3rem}
+.mono{font-family:"IBM Plex Mono",Menlo,monospace;font-variant-numeric:tabular-nums}
+
+/* 页眉 */
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;
+      padding-bottom:1rem;border-bottom:2px solid var(--ink)}
+.brand{font-size:1.35rem;font-weight:600;letter-spacing:-.01em}
+.brand span{color:var(--ink-3);font-weight:400;font-size:.85rem;display:block;margin-top:.15rem;
+            font-family:"IBM Plex Mono",monospace;letter-spacing:.12em}
+.badge{font-family:"IBM Plex Mono",monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+       color:var(--flesh);border:1px solid var(--flesh);padding:.25em .6em;border-radius:2px;white-space:nowrap}
+
+h1{font-size:clamp(1.5rem,4vw,2.15rem);line-height:1.25;margin:1.5rem 0 .5rem;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+.sub{font-size:clamp(.95rem,1.8vw,1.05rem);color:var(--ink-2);margin:0 0 .4rem;max-width:42em}
+h2{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
+   color:var(--flesh);margin:1.9rem 0 .7rem;font-weight:500}
+p{margin:.55rem 0;color:var(--ink-2);max-width:44em}
+strong{color:var(--ink);font-weight:600}
+
+table{width:100%;border-collapse:collapse;margin:.6rem 0;font-size:.9rem}
+th{text-align:left;font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.12em;
+   text-transform:uppercase;color:var(--ink-3);font-weight:500;padding:.45rem .6rem .45rem 0;
+   border-bottom:1px solid var(--rule)}
+td{padding:.5rem .6rem .5rem 0;border-bottom:1px solid var(--rule);vertical-align:top;color:var(--ink-2);line-height:1.6}
+td:first-child{color:var(--ink);font-weight:600;width:34%}
+td strong{color:var(--ink)}
+
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(7rem,1fr));gap:1px;
+      background:var(--rule);border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin:.8rem 0}
+.n{background:var(--card);padding:.75rem .9rem}
+.n b{display:block;font-family:"IBM Plex Mono",monospace;font-size:1.5rem;font-weight:600;line-height:1;letter-spacing:-.02em}
+.n span{display:block;font-size:.7rem;color:var(--ink-3);margin-top:.3rem;line-height:1.5}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin:.7rem 0}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+.box{border:1px solid var(--rule);border-radius:3px;padding:.9rem 1rem;background:var(--card)}
+.box h3{margin:0 0 .5rem;font-size:.92rem;font-weight:600}
+.box ul{margin:0;padding-left:1rem}
+.box li{font-size:.86rem;color:var(--ink-2);margin:.32rem 0;line-height:1.6}
+.box li::marker{color:var(--ink-3)}
+.ok h3{color:var(--skin)} .no h3{color:var(--flesh)}
+
+.pull{border-left:3px solid var(--flesh);padding:.55rem 0 .55rem 1rem;margin:1.1rem 0;
+      font-size:clamp(1rem,2vw,1.2rem);font-weight:600;line-height:1.5;color:var(--ink);max-width:38em}
+
+.foot{margin-top:2.2rem;padding-top:.9rem;border-top:1px solid var(--rule);
+      display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+      font-family:"IBM Plex Mono",monospace;font-size:.66rem;color:var(--ink-3);letter-spacing:.04em}
+
+@media print{
+  body{background:#fff;font-size:10.5px}
+  .sheet{max-width:none;padding:10mm 12mm}
+  h2{margin:1rem 0 .4rem}
+  h1{margin:.8rem 0 .3rem}
+  .box,.n,.nums{break-inside:avoid}
+  .foot{margin-top:1rem}
+}
+</style>
+
+<div class="sheet">
+
+  <div class="head">
+    <div class="brand">芭乐派<span>OPENFLOW · MIT OPEN SOURCE</span></div>
+    <div class="badge">一页纸介绍</div>
+  </div>
+
+  <h1>别人的增长工具，默认你有一支团队。</h1>
+  <p class="sub"><strong>芭乐派做的，是给没有团队的人的那一套。</strong>
+  内容、访客数据、自动触达、在线成交——一个系统，一个人跑得完。开源、免费、装在你自己的服务器上。</p>
+
+  <h2>问题</h2>
+  <table>
+    <tr><th>一个人的公司买了</th><th>这些工具隐含的前提</th></tr>
+    <tr><td>营销自动化</td><td>你有市场团队 → 流程图画完了，没人去连</td></tr>
+    <tr><td>CRM</td><td>你有销售团队 → 变成一个更贵的通讯录</td></tr>
+    <tr><td>数据分析</td><td>你有分析师 → 报表很漂亮，看不出该干什么</td></tr>
+    <tr><td>建站工具</td><td>你有开发和设计 → 页面做好了，然后没有然后了</td></tr>
+  </table>
+  <div class="pull">五个工具，五份等着人来喂的工作。<br>而一人公司缺的从来不是工具，是人。</div>
+
+  <h2>为什么是现在</h2>
+  <p><strong>AI 让「没有人」第一次不等于「做不了」。</strong>
+  芭乐派不做第六个等你来喂的系统——它自己干活：按你设的周期爬热点、出草稿、认访客、
+  提醒该跟进谁、巡检全站、算清哪个来源真的带来成交。</p>
+
+  <h2>它一天替你干什么</h2>
+  <table>
+    <tr><td>你还没起床</td><td>爬完行业热点，选题按优先级排好</td></tr>
+    <tr><td>你打开电脑</td><td>三篇草稿等你改；昨天<strong>该跟进的 3 个人</strong>已经列好</td></tr>
+    <tr><td>你在忙交付</td><td>认出老访客给他看更相关的内容；表单留资自动进 CRM</td></tr>
+    <tr><td>你下班之后</td><td>巡检全站：哪页报错、哪页慢、哪块内容是空的</td></tr>
+    <tr><td>每周</td><td>把「哪个来源真的带来成交」算给你</td></tr>
+  </table>
+
+  <h2>凭什么做得到 · 三样别人没有同时具备的东西</h2>
+  <table>
+    <tr><td>认得出人</td><td>访客是谁、来过几次、在看什么。匿名 / 登录 / 换设备自动合并成同一个人</td></tr>
+    <tr><td>自己干活</td><td>不是"加了个 AI 按钮"，是一个按周期自跑的增长引擎：选题 → 成文 → 巡检 → 优化</td></tr>
+    <tr><td>能被 AI 调用</td><td>18 个 MCP 工具，整站内容与能力可被 Claude 这类 Agent 直接查询调用</td></tr>
+  </table>
+  <p style="font-size:.85rem">WordPress、Segment、神策、HubSpot 各强一块，<strong>但没有谁三样都有，
+  更没有谁把它们和「一个人就能跑完」焊在一起</strong>。</p>
+
+  <h2>证据 · 不用信我们，去看代码</h2>
+  <div class="nums">
+    <div class="n"><b>MIT</b><span>开源协议<br>可商用 / 可改 / 可私有部署</span></div>
+    <div class="n"><b>151</b><span>功能模块<br>后台 192 页 · API 92 个</span></div>
+    <div class="n"><b>67</b><span>自动化测试套件<br>全部开源可查</span></div>
+    <div class="n"><b>0</b><span>外部服务依赖<br>不用 MySQL / Redis / Node</span></div>
+    <div class="n"><b>11</b><span>界面语言<br>含 hreflang</span></div>
+  </div>
+  <p style="font-size:.85rem">数据 100% 在你自己的服务器，随时一键导出，无云端回传。
+  <strong>AI 没配置也照样跑</strong>，只是不自动写稿——不会白屏。</p>
+
+  <h2>边界 · 说清楚不适合谁</h2>
+  <div class="two">
+    <div class="box ok"><h3>✅ 适合</h3><ul>
+      <li>一个人（或两三个人）在做的公司、品牌、工作室</li>
+      <li>内容驱动获客：写文章、做课程、接咨询、卖数字产品</li>
+      <li>在意数据自主权，不想把客户名单交给别人的云</li>
+    </ul></div>
+    <div class="box no"><h3>❌ 不适合</h3><ul>
+      <li>已有成熟市场团队 + 数据团队的中大型公司——<strong>对你们我们是重复建设</strong></li>
+      <li>需要复杂多人审批流的组织</li>
+      <li>想要像素级自由设计的品牌官网</li>
+    </ul></div>
+  </div>
+
+  <h2>怎么收费</h2>
+  <table>
+    <tr><th>版本</th><th>适合谁 / 包含什么</th></tr>
+    <tr><td>开源版 · ¥0 永久免费</td><td>全部核心能力，MIT 协议，装在你自己的服务器。<strong>不是试用版，也不是阉割版</strong></td></tr>
+    <tr><td>托管版 · 订阅制</td><td>不想碰服务器的人。我们替你部署维护，自动更新与备份</td></tr>
+    <tr><td>私有化 / 定制 · 面议</td><td>有合规要求的组织。部署到你的环境，数据不出域</td></tr>
+  </table>
+  <p style="font-size:.85rem"><strong>付费买的是省下你的时间，不是解锁功能。</strong></p>
+
+  <h2>生态 · OIA（One is All）</h2>
+  <p style="font-size:.88rem">你一旦参与，就<strong>同时是开发者、创作者、作者</strong>。
+  一段提示词可以提交成 Skill；一个小工具可以用「描述即造」出草稿；一篇方法论可以进学院；
+  一个插件有 32 个钩子可挂。<strong>不需要先申请资质、不需要先过审、不需要先会写代码。</strong></p>
+
+  <div class="foot">
+    <span>芭乐派 · 增长方法论与门派社区</span>
+    <span>OpenFlow · 开源底座 MIT</span>
+    <span>{官网} · {GitHub} · {联系方式}</span>
+  </div>
+
+</div>
