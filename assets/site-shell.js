@@ -696,6 +696,23 @@
     } else {
       all('.reveal').forEach(function (el) { el.classList.add('in'); });
     }
+    /* 通用 tab（opt-in：tablist 带 data-tabs）。首页自己的 tab 脚本不受影响。 */
+    all('[role="tablist"][data-tabs]').forEach(function (bar) {
+      var tabs = Array.prototype.slice.call(bar.querySelectorAll('[role="tab"]'));
+      if (!tabs.length) return;
+      function panelOf(t) { return document.getElementById(t.getAttribute('aria-controls')); }
+      function sel(t) {
+        tabs.forEach(function (x) { var on = x === t; x.setAttribute('aria-selected', on ? 'true' : 'false'); x.tabIndex = on ? 0 : -1; var p = panelOf(x); if (p) p.classList.toggle('on', on); });
+      }
+      tabs.forEach(function (t, i) {
+        t.tabIndex = t.getAttribute('aria-selected') === 'true' ? 0 : -1;
+        t.addEventListener('click', function () { sel(t); });
+        t.addEventListener('keydown', function (e) {
+          var n; if (e.key === 'ArrowRight') n = (i + 1) % tabs.length; else if (e.key === 'ArrowLeft') n = (i - 1 + tabs.length) % tabs.length; else return;
+          e.preventDefault(); sel(tabs[n]); tabs[n].focus();
+        });
+      });
+    });
     var bt = document.getElementById('backtop');
     if (bt) {
       var RM = false; try { RM = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
