@@ -184,7 +184,7 @@ button:disabled{opacity:.45; cursor:default}
   <div class="pg">
     <div class="pg-h">
       <span class="kicker">芭乐派 · R.B.E 训练营</span>
-      <h1>用 OpenFlow，<i class="si">设计 Agent 能跑的增长系统</i></h1>
+      <h1>学完，你手上会有<i class="si">一套在跑的增长系统</i></h1>
       <p class="lead">学完 New-1~4，你会知道业务里哪里该让 Agent 做；走完 R.B.E 训练营，你会画出自己专属的 Task Graph。理论（芭乐派方法论）→ 工具（OpenFlow）→ 落地（Agent 增长引擎），边学边用。</p>
       <div class="cta-row"><button class="btn primary" data-act="start">免费开始学习</button><a class="btn ghost" href="/community">进入门派</a></div>
     </div>
@@ -196,7 +196,7 @@ button:disabled{opacity:.45; cursor:default}
     <div class="chips" id="courseChips" style="margin-bottom:18px"></div>
     <div class="course-grid" id="courseGrid"></div>
 
-    <div class="sec-head"><span class="kicker">免费资源</span><h2>正式课程之外，先从这里开始</h2></div>
+    <div class="sec-head"><span class="kicker">免费资源</span><h2>不确定要不要报？先从这里开始</h2></div>
     <div class="res-grid">
       <div class="card hov eco"><div class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l4 4v14H7V3Z"/><path d="M17 3v4h4"/></svg></div><div class="et">New-1~4 基石课</div><div class="ed">一人公司冷启动 / 增长模型 / 精算体系 / Agent 知识管理。</div></div>
       <div class="card hov eco"><div class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 9h18M9 3v18"/></svg></div><div class="et">利润公式计算器</div><div class="ed">把销转率杠杆算明白，看哪些环节 Agent 化收益最高。</div></div>

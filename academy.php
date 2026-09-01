@@ -109,7 +109,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
     <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);align-items:center">
       <div style="display:flex;flex-direction:column;gap:16px">
         <span class="kicker" style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--accent);text-transform:uppercase">CONTENT · ACADEMY</span>
-        <h1 style="font-size:clamp(32px,4.5vw,48px);font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--fg)">门派的知识库<br><span style="font-family:var(--font-display);font-style:italic">随时可学、随时可用</span></h1>
+        <h1 style="font-size:clamp(32px,4.5vw,48px);font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--fg)">一人公司的增长打法，<br><span style="font-family:var(--font-display);font-style:italic">都在这里</span></h1>
         <p style="color:var(--muted);font-size:15px;line-height:1.8;max-width:560px">文章 · 资料 · 播客 · 视频，芭乐派增长方法论的完整内容库。从利润公式到 Agent 系统，把增长讲清楚、用起来。</p>
         <form action="/search" method="get" style="display:flex;gap:8px;max-width:480px;margin-top:6px">
           <input type="search" name="q" placeholder="搜索文章、课程、资料…" style="flex:1;padding:12px 18px;border-radius:999px;font-size:14px;outline:none;border:1.5px solid var(--border);background:var(--surface)">
@@ -395,7 +395,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
   <!-- CTA band -->
   <div style="background:linear-gradient(135deg,var(--accent),oklch(58% .16 295));border-radius:var(--r-lg);padding:clamp(28px,4vw,48px);color:#fff;margin-top:40px;text-align:center">
     <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;opacity:.75">芭乐派 · 学院</div>
-    <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.02em;margin:10px 0 8px">读到这里，不如直接开始设计你的增长系统</h2>
+    <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.02em;margin:10px 0 8px">读到这儿了，不如直接装一个试试</h2>
     <p style="opacity:.85;font-size:14.5px;line-height:1.7;max-width:560px;margin:0 auto 22px">方法论在学院，工具在 OpenFlow，落地在 R.B.E 训练营——三条路，最后都通向同一个地方。</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
       <a href="/courses" style="padding:12px 26px;border-radius:999px;font-weight:700;font-size:14px;background:#fff;color:var(--accent);text-decoration:none">浏览课程</a>

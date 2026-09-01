@@ -79,7 +79,7 @@ select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50
     <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);margin-top:56px;align-items:start">
       <div>
         <span class="kicker">为什么选商业版</span>
-        <h2 style="font-size:26px;font-weight:800;letter-spacing:-.02em;margin:12px 0 18px">一个底座，替你跑完整个增长系统</h2>
+        <h2 style="font-size:26px;font-weight:800;letter-spacing:-.02em;margin:12px 0 18px">数据不出域，能力不打折</h2>
         <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:14px">
           <li style="display:flex;gap:12px"><span style="color:var(--ok);font-weight:800">✓</span><div><b>内容引擎 + 增长自动化</b><div style="color:var(--muted);font-size:13.5px">爬信号、出草稿、发内容、盯转化，Agent 跑流程，你只做判断</div></div></li>
           <li style="display:flex;gap:12px"><span style="color:var(--ok);font-weight:800">✓</span><div><b>CRM + 商城 + 订阅</b><div style="color:var(--muted);font-size:13.5px">线索、订单、会员、订阅一条链路打通，不收"平台税"</div></div></li>

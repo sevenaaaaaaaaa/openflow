@@ -40,7 +40,7 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
 <body>
 <main class="mx-auto px-5 py-12" style="max-width:1080px">
   <div class="mb-10 text-center">
-    <h1 class="text-3xl font-extrabold">🎪 活动</h1>
+    <h1 class="text-3xl font-extrabold">和同类人碰个面</h1>
     <p class="text-muted mt-2">线上直播 / 线下聚会 · 报名即获增长打法</p>
     <div class="flex justify-center gap-2 mt-5" style="flex-wrap:wrap">
       <?php $tabs = [''=>'全部','upcoming'=>'即将开始','online'=>'线上','offline'=>'线下','past'=>'往期']; foreach ($tabs as $k=>$v): ?>

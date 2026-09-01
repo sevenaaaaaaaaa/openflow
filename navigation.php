@@ -73,7 +73,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
     <!-- 首屏：搜索 + 热搜 -->
     <div class="text-center py-8" style="background:linear-gradient(160deg,var(--accent-strong),var(--accent));border-radius:20px;color:var(--surface);margin-bottom:24px">
       <div style="font-size:40px">🧭</div>
-      <h1 class="text-3xl font-bold mt-3">优秀增长工具导航</h1>
+      <h1 class="text-3xl font-bold mt-3">一人公司真正在用的工具</h1>
       <p class="text-[#cbd5e1] mt-2">收录国内外网站增长、SEO、AI 运营工具 · 共 <?=count($sites)?> 个优质资源</p>
       <form class="mt-6 mx-auto flex max-w-lg gap-2" style="max-width:480px" onsubmit="return navSearch(event)">
         <input type="text" id="navQ" value="<?=htmlspecialchars($q)?>" placeholder="搜索网站、关键词…" style="flex:1;padding:12px 18px;border-radius:999px;border:none;font-size:15px;outline:none">
