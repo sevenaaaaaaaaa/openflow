@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>一个人做公司，怎么把增长跑起来 · 芭乐派</title>
+<meta name="description" content="别人的增长工具默认你有一支团队。给没有团队的人的那一套：内容、访客数据、自动跟进、在线成交，一个人跑得完。开源免费。">
+<meta property="og:title" content="一个人做公司，怎么把增长跑起来">
+<meta property="og:description" content="领取《一人公司增长手册》——不讲概念，只讲一个人怎么把这条链跑完。">
+<style>
+/* ── 芭乐派配色：青皮、粉肉 ── */
+:root{
+  --paper:#FAF6F3; --card:#FFF; --ink:#1E1917; --ink-2:#5C534E; --ink-3:#8E837D;
+  --rule:#E9DFD9; --flesh:#C4553F; --flesh-d:#A8452F; --flesh-soft:#F7E9E4;
+  --skin:#3E6B4A; --skin-soft:#E4EDE5;
+  --shadow:0 1px 2px rgba(30,25,23,.05),0 10px 30px -18px rgba(30,25,23,.3);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,system-ui,sans-serif;
+  font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;
+  padding-bottom:calc(80px + env(safe-area-inset-bottom));
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 20px}
+.mono{font-variant-numeric:tabular-nums}
+
+/* ── 首屏：3 秒内说清给谁、拿什么 ── */
+.hero{padding:34px 0 26px}
+.kicker{
+  display:inline-block;font-size:12px;letter-spacing:.1em;color:var(--flesh);
+  border:1px solid var(--flesh);border-radius:100px;padding:4px 12px;margin-bottom:18px;
+}
+h1{font-size:29px;line-height:1.3;margin:0 0 14px;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--flesh)}
+.sub{font-size:16px;color:var(--ink-2);margin:0 0 22px}
+
+/* ── 资料卡：把"能拿到什么"具体化 ── */
+.gift{
+  background:var(--card);border:1px solid var(--rule);border-radius:12px;
+  padding:18px 18px 16px;box-shadow:var(--shadow);margin-bottom:8px;
+}
+.gift-t{font-size:13px;color:var(--flesh);font-weight:600;margin-bottom:8px;letter-spacing:.02em}
+.gift-n{font-size:19px;font-weight:700;margin:0 0 12px;line-height:1.4}
+.gift ul{margin:0;padding-left:18px}
+.gift li{font-size:14.5px;color:var(--ink-2);margin:6px 0;line-height:1.6}
+.gift li::marker{color:var(--flesh)}
+
+/* ── 表单 ── */
+.form{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:18px;box-shadow:var(--shadow);margin:22px 0}
+.form h2{font-size:17px;margin:0 0 4px;font-weight:700}
+.form .hint{font-size:13px;color:var(--ink-3);margin:0 0 14px}
+label{display:block;font-size:13px;color:var(--ink-2);margin:12px 0 6px;font-weight:600}
+input{
+  width:100%;font-size:16px;padding:13px 14px;border:1px solid var(--rule);border-radius:8px;
+  background:var(--paper);color:var(--ink);font-family:inherit;
+}
+input:focus{outline:none;border-color:var(--flesh);box-shadow:0 0 0 3px var(--flesh-soft)}
+input::placeholder{color:var(--ink-3)}
+.btn{
+  width:100%;margin-top:16px;padding:15px;border:0;border-radius:8px;
+  background:var(--flesh);color:#fff;font-size:17px;font-weight:700;font-family:inherit;
+  cursor:pointer;letter-spacing:.02em;
+}
+.btn:active{background:var(--flesh-d)}
+.btn:disabled{opacity:.55}
+.privacy{font-size:12px;color:var(--ink-3);margin:10px 0 0;line-height:1.6}
+.err{color:var(--flesh);font-size:13px;margin-top:8px;display:none}
+.err.on{display:block}
+
+/* ── 成功态 ── */
+.done{display:none;text-align:center;padding:26px 18px}
+.done.on{display:block}
+.done .tick{width:52px;height:52px;border-radius:50%;background:var(--skin-soft);color:var(--skin);
+  display:grid;place-items:center;font-size:26px;margin:0 auto 14px}
+.done h2{font-size:20px;margin:0 0 8px}
+.done p{font-size:15px;color:var(--ink-2);margin:6px 0}
+
+/* ── 内容区 ── */
+h2.sec{font-size:21px;margin:34px 0 6px;font-weight:700;line-height:1.35;letter-spacing:-.01em}
+p.sec{font-size:15.5px;color:var(--ink-2);margin:8px 0}
+.pain{background:var(--card);border:1px solid var(--rule);border-radius:12px;overflow:hidden;margin:16px 0}
+.pain-row{display:flex;gap:12px;padding:13px 16px;border-bottom:1px solid var(--rule);align-items:baseline}
+.pain-row:last-child{border-bottom:0}
+.pain-row b{flex:0 0 84px;font-size:14px;font-weight:600}
+.pain-row span{font-size:14px;color:var(--ink-2);line-height:1.6}
+.pull{
+  border-left:3px solid var(--flesh);padding:10px 0 10px 15px;margin:20px 0;
+  font-size:18px;font-weight:700;line-height:1.5;
+}
+.facts{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule);
+       border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin:16px 0}
+.fact{background:var(--card);padding:13px 14px}
+.fact b{display:block;font-size:21px;font-weight:700;line-height:1.1;letter-spacing:-.02em}
+.fact span{display:block;font-size:12px;color:var(--ink-3);margin-top:4px;line-height:1.5}
+.fit{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:16px;margin:16px 0}
+.fit h3{font-size:15px;margin:0 0 8px;font-weight:700}
+.fit.ok h3{color:var(--skin)} .fit.no h3{color:var(--flesh)}
+.fit ul{margin:0;padding-left:18px}
+.fit li{font-size:14px;color:var(--ink-2);margin:5px 0;line-height:1.6}
+
+/* ── 吸底 ── */
+.bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:rgba(250,246,243,.94);backdrop-filter:blur(10px);
+  border-top:1px solid var(--rule);
+  padding:10px 20px calc(10px + env(safe-area-inset-bottom));
+}
+.bar .inner{max-width:520px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.bar .t{flex:1;font-size:13px;color:var(--ink-2);line-height:1.4}
+.bar .t b{display:block;color:var(--ink);font-size:14px}
+.bar button{
+  flex:0 0 auto;padding:12px 20px;border:0;border-radius:8px;background:var(--flesh);
+  color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;
+}
+.bar button:active{background:var(--flesh-d)}
+.bar.hide{display:none}
+
+footer{margin:30px 0 10px;font-size:12px;color:var(--ink-3);line-height:1.8;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero">
+    <span class="kicker">给一个人做公司的人</span>
+    <h1>别人的增长工具，<br>默认你<em>有一支团队</em>。</h1>
+    <p class="sub">可你没有。<br>营销自动化、CRM、数据分析、建站——买齐了，只是多了五份等你去喂的活。</p>
+  </div>
+
+  <div class="gift">
+    <div class="gift-t">📘 免费领取</div>
+    <div class="gift-n">《一人公司增长手册》</div>
+    <ul>
+      <li>一个人怎么把「内容 → 获客 → 跟进 → 成交」这条链跑完</li>
+      <li>哪些环节可以交给 AI，哪些必须你自己盯</li>
+      <li>不用团队的工具组合，以及为什么大部分工具你用不上</li>
+      <li>附：可直接抄的每周增长动作清单</li>
+    </ul>
+  </div>
+
+  <!-- 表单 -->
+  <form class="form" id="lead">
+    <h2>留个联系方式，手册发给你</h2>
+    <p class="hint">填完即可领取，不需要注册。</p>
+
+    <label for="ph">手机号</label>
+    <input id="ph" name="phone" type="tel" inputmode="numeric" maxlength="11"
+           placeholder="用于发送手册领取链接" autocomplete="tel" required>
+
+    <label for="wx">微信号 <span style="color:var(--ink-3);font-weight:400">（选填，方便直接发你）</span></label>
+    <input id="wx" name="wechat" type="text" placeholder="选填" autocomplete="off">
+
+    <button class="btn" type="submit" id="go">免费领取手册</button>
+    <div class="err" id="err"></div>
+    <p class="privacy">我们只用它给你发这份手册和后续的增长方法。<b>不会电话骚扰，随时可退订。</b></p>
+  </form>
+
+  <!-- 成功 -->
+  <div class="form done" id="done">
+    <div class="tick">✓</div>
+    <h2>收到了</h2>
+    <p>手册的领取链接稍后发到你手机上。</p>
+    <p style="color:var(--ink-3);font-size:13px;margin-top:12px">如果 10 分钟内没收到，检查一下短信拦截。</p>
+  </div>
+
+  <!-- 痛点 -->
+  <h2 class="sec">你不是缺工具，你是缺人</h2>
+  <div class="pain">
+    <div class="pain-row"><b>营销自动化</b><span>假设你有市场团队 → 流程图画完了，没人去连</span></div>
+    <div class="pain-row"><b>CRM</b><span>假设你有销售团队 → 变成一个更贵的通讯录</span></div>
+    <div class="pain-row"><b>数据分析</b><span>假设你有分析师 → 报表很漂亮，看不出该干什么</span></div>
+    <div class="pain-row"><b>建站工具</b><span>假设你有开发和设计 → 页面做好了，然后就没有然后了</span></div>
+  </div>
+  <div class="pull">五个工具，<br>五份等着人来喂的工作。</div>
+
+  <!-- 转折 -->
+  <h2 class="sec">AI 让「没有人」<br>第一次不等于「做不了」</h2>
+  <p class="sec">我们做了一套给没有团队的人的增长系统——它不等你喂，它自己干活：</p>
+  <div class="pain">
+    <div class="pain-row"><b>你没起床</b><span>爬完行业热点，选题排好序</span></div>
+    <div class="pain-row"><b>你开电脑</b><span>草稿等你改；昨天该跟进的 3 个人已经列好</span></div>
+    <div class="pain-row"><b>你在忙</b><span>认出老访客，给他看更相关的内容；留资自动进 CRM</span></div>
+    <div class="pain-row"><b>你下班后</b><span>巡检全站：哪页报错、哪页慢、哪块内容是空的</span></div>
+  </div>
+
+  <!-- 证据 -->
+  <h2 class="sec">而且它是开源的</h2>
+  <div class="facts">
+    <div class="fact"><b>MIT</b><span>开源协议，可商用可改</span></div>
+    <div class="fact"><b>¥0</b><span>核心能力永久免费</span></div>
+    <div class="fact"><b>100%</b><span>数据在你自己的服务器</span></div>
+    <div class="fact"><b>0</b><span>不用装 MySQL / Redis</span></div>
+  </div>
+  <p class="sec" style="font-size:14px;color:var(--ink-3)">不用信我们，代码在 GitHub 上，自己翻。</p>
+
+  <!-- 边界 -->
+  <h2 class="sec">先说清楚不适合谁</h2>
+  <div class="fit ok"><h3>✅ 适合</h3><ul>
+    <li>一个人（或两三个人）在做的公司、品牌、工作室</li>
+    <li>靠内容获客：写文章、做课程、接咨询、卖数字产品</li>
+    <li>在意数据自主，不想把客户名单交给别人的云</li>
+  </ul></div>
+  <div class="fit no"><h3>❌ 不适合</h3><ul>
+    <li>已有成熟市场团队和数据团队的公司——对你们我们是重复建设</li>
+    <li>需要复杂多人审批流的组织</li>
+  </ul></div>
+
+  <footer>
+    芭乐派 · 一人公司的增长方法论<br>
+    OpenFlow 开源底座 · MIT
+  </footer>
+</div>
+
+<!-- 吸底 CTA -->
+<div class="bar" id="bar">
+  <div class="inner">
+    <div class="t"><b>《一人公司增长手册》</b>免费领取</div>
+    <button type="button" id="jump">领取</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ── 配置：部署前只需改这两行 ─────────────────────────
+     FORM_SLUG 必须先在后台「表单管理」里建一个同名 slug 的表单并**发布**，
+     否则 /api/form-submit.php 会返回「表单不存在」。
+     建表单时至少加 phone、wechat 两个字段，它会自动落 CRM 线索并触发自动化。 */
+  var FORM_SLUG = 'solo-growth-handbook';
+  var API = '/api/form-submit.php';
+  var TRACK = '/api/track.php';
+  /* ──────────────────────────────────────────────── */
+
+  var form = document.getElementById('lead');
+  var done = document.getElementById('done');
+  var err  = document.getElementById('err');
+  var btn  = document.getElementById('go');
+  var bar  = document.getElementById('bar');
+
+  /* 采集投放来源，随留资一起提交，方便回算渠道 ROI */
+  function utm(){
+    var q = new URLSearchParams(location.search), o = {};
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','channel','aid','cid'].forEach(function(k){
+      var v = q.get(k); if (v) o[k] = v.slice(0, 80);
+    });
+    return o;
+  }
+  var UTM = utm();
+
+  /* 埋点：失败静默，绝不能因为埋点挂了影响留资 */
+  function track(ev, props){
+    try{
+      var body = JSON.stringify({ event: ev, properties: Object.assign({ lp: 'solo-growth' }, UTM, props || {}) });
+      if (navigator.sendBeacon) navigator.sendBeacon(TRACK, new Blob([body], {type:'application/json'}));
+      else fetch(TRACK, {method:'POST', headers:{'Content-Type':'application/json'}, body:body, keepalive:true});
+    }catch(e){}
+  }
+
+  track('lp_view');
+
+  /* 漏斗：看到表单 / 开始填 / 提交 / 成功，四段都埋，才知道卡在哪 */
+  var seen = false;
+  try{
+    new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting && !seen){ seen = true; track('lp_form_view'); } });
+    }, {threshold:.4}).observe(form);
+  }catch(e){}
+
+  var started = false;
+  form.addEventListener('input', function(){
+    if (!started){ started = true; track('lp_form_start'); }
+  });
+
+  document.getElementById('jump').addEventListener('click', function(){
+    track('lp_cta_click');
+    form.scrollIntoView({behavior:'smooth', block:'center'});
+    setTimeout(function(){ document.getElementById('ph').focus(); }, 400);
+  });
+
+  /* 滚到表单以下时收起吸底条，免得挡住提交按钮 */
+  window.addEventListener('scroll', function(){
+    var r = form.getBoundingClientRect();
+    bar.classList.toggle('hide', r.top < window.innerHeight && r.bottom > 0);
+  }, {passive:true});
+
+  function fail(msg){
+    err.textContent = msg; err.classList.add('on');
+    btn.disabled = false; btn.textContent = '免费领取手册';
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    err.classList.remove('on');
+
+    var phone = document.getElementById('ph').value.replace(/\D/g, '');
+    if (!/^1[3-9]\d{9}$/.test(phone)) return fail('手机号看起来不太对，检查一下');
+
+    btn.disabled = true; btn.textContent = '提交中…';
+    track('lp_submit');
+
+    var payload = {
+      slug: FORM_SLUG,
+      data: Object.assign({
+        phone: phone,
+        wechat: document.getElementById('wx').value.trim(),
+        source: 'lp-solo-growth'
+      }, UTM)
+    };
+
+    fetch(API, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    })
+    .then(function(r){ return r.json().catch(function(){ return {ok:false, message:'服务器返回异常'}; }); })
+    .then(function(j){
+      if (j && j.ok){
+        form.style.display = 'none';
+        done.classList.add('on');
+        done.scrollIntoView({behavior:'smooth', block:'center'});
+        track('lp_success');
+      } else {
+        fail((j && j.message) || '提交失败，请稍后再试');
+        track('lp_fail', {reason: (j && j.message) || 'unknown'});
+      }
+    })
+    .catch(function(){
+      fail('网络不太稳，再试一次');
+      track('lp_fail', {reason:'network'});
+    });
+  });
+})();
+</script>
+</body>
+</html>
