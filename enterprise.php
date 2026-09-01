@@ -1,6 +1,10 @@
 <?php
 /**
  * 商业发行版申请页 — ToB（SaaS 订阅 / 私有化部署 / 定制开发）
+ *
+ * v7（2026-09-01）：从 tailwind + 自带 token 副本迁到共享 archetype。
+ * 方案卡 → cols 三栏可选；权益 + 表单 → 首页「预约诊断」同款 contact-wrap（ct-pitch + form-card）。
+ * 表单字段名 / id / 提交逻辑 / 蜜罐原样保留。文案逐字相同。
  * 游客可提交申请：自动创建 C 端账户 + 邮件设置密码，关联 C/B。
  */
 require_once __DIR__ . '/admin/config.php';
@@ -12,123 +16,146 @@ $member = member_current();
 $plans = org_plans();
 $siteName = site_config_get('site_name');
 ?>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>商业发行版 | 芭乐派 · OpenFlow</title>
 <meta name="description" content="OpenFlow 商业发行版：SaaS 订阅、私有化部署、定制开发。一个 all-in-one 平台，缺什么用插件和技能自己改造。">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
 <style>
-:root{
-  --bg:oklch(96.5% .016 85);--bg-soft:oklch(94% .02 85);
-  --surface:oklch(100% 0 0 / .62);--surface-strong:oklch(100% 0 0 / .88);
-  --fg:oklch(22% .02 70);--muted:oklch(46% .016 70);--faint:oklch(51% .014 75);
-  --border:oklch(86% .014 80);--border-strong:oklch(76% .02 80);
-  --hover:oklch(22% .02 70 / .055);
-  --accent:oklch(52% .17 258);--accent-strong:oklch(46% .17 258);--accent-soft:oklch(52% .17 258/.12);--on-accent:oklch(100% 0 0);
-  --ok:oklch(58% .17 152);--ok-soft:oklch(58% .17 152/.12);
-  --warn:oklch(66% .15 75);--warn-soft:oklch(66% .15 75/.14);
-  --danger:oklch(55% .2 25);--danger-soft:oklch(55% .2 25/.12);
-  --glass:oklch(100% 0 0 / .5);
-  --shadow:0 24px 60px -24px oklch(30% .04 80 / .3);--shadow-sm:0 10px 28px -14px oklch(30% .04 80 / .24);
-  --r-lg:26px;--r-md:18px;--r-sm:12px;
-  --grad:linear-gradient(135deg,oklch(52% .17 258),oklch(58% .16 285));
-  --font-body:"Space Grotesk",-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","MiSans","Segoe UI",system-ui,sans-serif;
-  --font-display:"Space Grotesk","PingFang SC","HarmonyOS Sans SC","MiSans","Segoe UI",system-ui,sans-serif;
-  --font-mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
-  color-scheme:light;
-}
-body{font-family:var(--font-body);background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:clip}
-.kicker{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
-.plan-card{border:1px solid var(--border);border-radius:var(--r-lg);padding:26px;background:var(--surface);cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .2s}
+/* 企业页独有：可选方案卡。其余全部来自 modules.css。 */
+.plan-card{cursor:pointer;border-radius:var(--r-md);padding:22px 24px;border:1px solid var(--border);background:var(--surface);transition:border-color .2s,box-shadow .2s,transform .25s var(--ease-spring)}
 .plan-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm)}
 .plan-card.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.fld{margin-bottom:16px}
-.fld label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px}
-.inp{width:100%;height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface-strong);color:var(--fg);font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
-.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-textarea.inp{height:auto;padding:12px 14px;resize:vertical;line-height:1.6}
-select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 19px,calc(100% - 13px) 19px;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+.plan-card .pc-tag{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
+.plan-card h3{font-size:18px;font-weight:800;margin-top:10px}
+.plan-card p{font-size:13.5px;color:var(--muted);line-height:1.7;margin-top:6px;min-height:44px}
+.plan-card .pc-note{font-size:12.5px;color:var(--faint);margin-top:12px;font-family:var(--font-mono)}
+.form-grid .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--faint) 50%),linear-gradient(135deg,var(--faint) 50%,transparent 50%);background-position:calc(100% - 20px) 55%,calc(100% - 15px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:36px}
+@media (max-width:860px){.form-grid .g2{grid-template-columns:1fr}}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('product'); ?>
 
-<section style="padding:clamp(30px,5vw,64px) 0">
-  <div class="mx-auto px-5" style="max-width:1080px">
-    <div style="text-align:center;max-width:720px;margin:0 auto">
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
+  <!-- ══ 首屏 ══ -->
+  <section id="top" class="reveal in" data-od-anchor data-od-id="enterprise-hero">
+    <div class="hero-center" style="padding-bottom:0">
       <span class="kicker">OPENFLOW BUSINESS</span>
-      <h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:14px 0 12px">一个平台，撑起你公司的整条增长链</h1>
-      <p style="color:var(--muted);font-size:16px;line-height:1.9">不是一套套买工具的堆砌。OpenFlow 给你一个 all-in-one 的增长平台，缺什么用插件、技能自己改造——不用再走"加系统"的老路。</p>
+      <h1>一个平台，<br>撑起你公司的<i class="si">整条增长链</i></h1>
+      <p class="lead">不是一套套买工具的堆砌。OpenFlow 给你一个 all-in-one 的增长平台，缺什么用插件、技能自己改造——不用再走"加系统"的老路。</p>
+      <div class="cta-row">
+        <a class="btn primary" href="#apply">申请方案</a>
+        <a class="btn ghost" href="/capability">先看能力</a>
+      </div>
     </div>
+  </section>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:40px">
-      <?php $order = ['saas','private','custom']; $icons = ['saas'=>'⬢','private'=>'⬡','custom'=>'◇']; foreach ($order as $key): $p = $plans[$key]; ?>
-      <div class="plan-card <?=$key==='saas'?'sel':''?>" data-plan="<?=$key?>" onclick="pickPlan('<?=$key?>',this)">
-        <div style="font-size:26px"><?=$icons[$key]?></div>
-        <h3 style="font-size:19px;font-weight:700;margin:12px 0 4px"><?=htmlspecialchars($p['label'])?></h3>
-        <p style="color:var(--muted);font-size:13.5px;min-height:42px"><?=htmlspecialchars($p['desc'])?></p>
-        <div style="margin-top:14px;font-size:12.5px;color:var(--faint)"><?=in_array($key,['saas','private'])?'报价后详谈':'按项目评估'?></div>
+  <!-- ══ 三种方案 ══ -->
+  <section id="plans" class="sec reveal" data-od-anchor data-od-id="enterprise-plans">
+    <div class="sec-head center">
+      <span class="kicker">三种拿法</span>
+      <h2>托管、私有化、定制——选一个开始</h2>
+    </div>
+    <div class="grid g3" role="radiogroup" aria-label="需求类型" style="gap:16px">
+      <?php $order = ['saas','private','custom']; $tags = ['saas'=>'SAAS','private'=>'PRIVATE','custom'=>'CUSTOM']; foreach ($order as $key): $p = $plans[$key]; ?>
+      <div class="plan-card <?=$key==='saas'?'sel':''?>" data-plan="<?=$key?>" role="radio" aria-checked="<?=$key==='saas'?'true':'false'?>" tabindex="0" onclick="pickPlan('<?=$key?>',this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pickPlan('<?=$key?>',this)}">
+        <span class="pc-tag"><?=$tags[$key]?></span>
+        <h3><?=htmlspecialchars($p['label'])?></h3>
+        <p><?=htmlspecialchars($p['desc'])?></p>
+        <div class="pc-note"><?=in_array($key,['saas','private'])?'报价后详谈':'按项目评估'?></div>
       </div>
       <?php endforeach; ?>
     </div>
+  </section>
 
-    <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);margin-top:56px;align-items:start">
-      <div>
+  <!-- ══ 权益 + 申请表（首页预约诊断同款） ══ -->
+  <section id="apply" class="reveal" data-od-anchor data-od-id="enterprise-apply">
+    <div class="contact-wrap">
+      <div class="ct-pitch">
         <span class="kicker">为什么选商业版</span>
-        <h2 style="font-size:26px;font-weight:800;letter-spacing:-.02em;margin:12px 0 18px">数据不出域，能力不打折</h2>
-        <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:14px">
-          <li style="display:flex;gap:12px"><span style="color:var(--ok);font-weight:800">✓</span><div><b>内容引擎 + 增长自动化</b><div style="color:var(--muted);font-size:13.5px">爬信号、出草稿、发内容、盯转化，Agent 跑流程，你只做判断</div></div></li>
-          <li style="display:flex;gap:12px"><span style="color:var(--ok);font-weight:800">✓</span><div><b>CRM + 商城 + 订阅</b><div style="color:var(--muted);font-size:13.5px">线索、订单、会员、订阅一条链路打通，不收"平台税"</div></div></li>
-          <li style="display:flex;gap:12px"><span style="color:var(--ok);font-weight:800">✓</span><div><b>插件 / Skill 生态</b><div style="color:var(--muted);font-size:13.5px">缺什么装什么，不够就用 Skill 自己造，不被任何一家绑定</div></div></li>
-          <li style="display:flex;gap:12px"><span style="color:var(--ok);font-weight:800">✓</span><div><b>私有化 · 数据自主</b><div style="color:var(--muted);font-size:13.5px">可部署到你的环境，数据不出域，随你二次开发</div></div></li>
+        <h2>数据不出域，能力不打折</h2>
+        <ul class="ct-list">
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><span><b>内容引擎 + 增长自动化</b><br>爬信号、出草稿、发内容、盯转化，Agent 跑流程，你只做判断</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><span><b>CRM + 商城 + 订阅</b><br>线索、订单、会员、订阅一条链路打通，不收"平台税"</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><span><b>插件 / Skill 生态</b><br>缺什么装什么，不够就用 Skill 自己造，不被任何一家绑定</span></li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><span><b>私有化 · 数据自主</b><br>可部署到你的环境，数据不出域，随你二次开发</span></li>
         </ul>
       </div>
-
-      <div class="card" style="border:1px solid var(--border);border-radius:var(--r-lg);padding:28px;background:var(--surface)">
-        <h3 style="font-size:19px;font-weight:800">申请商业发行版</h3>
-        <p style="color:var(--muted);font-size:13px;margin:6px 0 18px">留下企业信息，商务顾问将在 1 个工作日内联系。提交后我们会为你创建账户，邮件告知设置密码。</p>
-        <form id="tobForm" onsubmit="return submitTob(event)">
-          <input type="text" name="website" class="hp" style="position:absolute;left:-9999px;height:0;width:0;opacity:0" tabindex="-1" autocomplete="off">
-          <div class="fld"><label>企业名称 *</label><input class="inp" name="company" required placeholder="公司 / 组织名称"></div>
-          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
-            <div class="fld"><label>行业</label><input class="inp" name="industry" placeholder="如 教育 / SaaS / 电商"></div>
-            <div class="fld"><label>团队规模</label>
-              <select class="inp" name="size"><option value="">选择规模</option><option>1-10 人</option><option>11-50 人</option><option>51-200 人</option><option>200+ 人</option></select>
-            </div>
+      <div class="form-card">
+        <div class="sec-head" style="gap:8px;margin-bottom:22px">
+          <h3 class="h3" style="font-size:22px">申请商业发行版</h3>
+          <p class="lead" style="font-size:14px;line-height:1.75">留下企业信息，商务顾问将在 1 个工作日内联系。提交后我们会为你创建账户，邮件告知设置密码。</p>
+        </div>
+        <form id="tobForm" class="form-grid" onsubmit="return submitTob(event)">
+          <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off">
+          <div class="field"><label for="tob-company">企业名称 *</label><input class="inp" id="tob-company" name="company" required placeholder="公司 / 组织名称"></div>
+          <div class="g2">
+            <div class="field"><label for="tob-industry">行业</label><input class="inp" id="tob-industry" name="industry" placeholder="如 教育 / SaaS / 电商"></div>
+            <div class="field"><label for="tob-size">团队规模</label><select class="inp" id="tob-size" name="size"><option value="">选择规模</option><option>1-10 人</option><option>11-50 人</option><option>51-200 人</option><option>200+ 人</option></select></div>
           </div>
-          <div class="fld"><label>需求类型</label>
+          <div class="field"><label for="planType">需求类型</label>
             <select class="inp" name="plan_type" id="planType">
               <?php foreach ($plans as $k => $p): ?><option value="<?=$k?>"><?=htmlspecialchars($p['label'])?> — <?=htmlspecialchars($p['desc'])?></option><?php endforeach; ?>
             </select>
           </div>
-          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
-            <div class="fld"><label>联系人 *</label><input class="inp" name="contact_name" required placeholder="怎么称呼您"></div>
-            <div class="fld"><label>预算区间</label>
-              <select class="inp" name="budget"><option value="">选择预算</option><option>5 万以内</option><option>5-20 万</option><option>20-50 万</option><option>50 万以上</option><option>先了解，暂未定</option></select>
-            </div>
+          <div class="g2">
+            <div class="field"><label for="tob-contact">联系人 *</label><input class="inp" id="tob-contact" name="contact_name" required placeholder="怎么称呼您"></div>
+            <div class="field"><label for="tob-budget">预算区间</label><select class="inp" id="tob-budget" name="budget"><option value="">选择预算</option><option>5 万以内</option><option>5-20 万</option><option>20-50 万</option><option>50 万以上</option><option>待定</option></select></div>
           </div>
-          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
-            <div class="fld"><label>邮箱 *</label><input class="inp" type="email" name="email" required placeholder="you@company.com"></div>
-            <div class="fld"><label>手机</label><input class="inp" type="tel" name="phone" placeholder="选填"></div>
+          <div class="g2">
+            <div class="field"><label for="tob-email">邮箱 *</label><input class="inp" id="tob-email" type="email" name="email" required placeholder="you@company.com"></div>
+            <div class="field"><label for="tob-phone">手机</label><input class="inp" id="tob-phone" type="tel" name="phone" placeholder="选填"></div>
           </div>
-          <div class="fld"><label>想解决的问题</label><textarea class="inp" name="note" rows="3" placeholder="简单描述你现在的增长瓶颈、想部署/改造的方向"></textarea></div>
-          <div id="tobMsg" style="font-size:13px;margin-bottom:10px;min-height:20px"></div>
-          <button type="submit" class="btn" style="width:100%;padding:14px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:15px;border:none;cursor:pointer">提交申请 →</button>
-          <p style="text-align:center;color:var(--faint);font-size:11.5px;margin-top:10px">提交即代表同意我们为跟进需求与您联系</p>
+          <div class="field"><label for="tob-note">想解决的问题</label><textarea class="inp" id="tob-note" name="note" rows="3" placeholder="简单描述你现在的增长瓶颈、想部署/改造的方向"></textarea></div>
+          <div id="tobMsg" class="f-note" style="min-height:20px"></div>
+          <div class="f-row">
+            <button type="submit" class="btn primary" style="width:100%">提交申请 →</button>
+          </div>
+          <p class="f-note" style="text-align:center">提交即代表同意我们为跟进需求与您联系</p>
         </form>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
+  <!-- ══ footer（共享 .foot） ══ -->
+  <footer class="foot" data-od-id="site-footer">
+    <div class="fb">
+      <div class="brand"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>芭乐派 · OpenFlow</div>
+      <p class="f-about">芭乐派增长操作系统的开源底座。TIPS 框架（触达/洞察/个性化/销售）四力合一，自生长 AI Engine 主动驱动增长。</p>
+      <p class="note">核心能力永久开源 · 鱼与渔相结合</p>
+    </div>
+    <div class="fb">
+      <h4>站点导航</h4>
+      <a href="/product">产品</a><a href="/capability">能力</a><a href="/courses">课程</a><a href="/academy">学院</a><a href="/community">论坛</a><a href="/about">关于我们</a>
+    </div>
+    <div class="fb">
+      <h4>资源</h4>
+      <a href="/courses">芭乐派课程</a><a href="/docs">文档中心</a><a href="/docs#templates">模板库</a><a href="/docs#api">开放 API</a>
+    </div>
+    <div class="fb">
+      <h4>联系</h4>
+      <a href="mailto:hello@openflow.dev">hello@openflow.dev</a><a href="#apply">商务合作</a><a href="/community">门派社区</a>
+    </div>
+    <div class="f-bottom"><span>© 2026 芭乐派 · OpenFlow 增长操作系统</span><?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><?=i18n_switcher()?><?php endif; ?><span>帮一人公司设计 Agent 能跑的增长系统</span></div>
+  </footer>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
 function pickPlan(key, el) {
   document.querySelectorAll('.plan-card').forEach(function(c){ c.classList.remove('sel'); });
   el.classList.add('sel');
+  document.querySelectorAll('.plan-card').forEach(function(c){ c.setAttribute('aria-checked', c===el?'true':'false'); });
   var sel = document.getElementById('planType');
   if (sel) sel.value = key;
 }

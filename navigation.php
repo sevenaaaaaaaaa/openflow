@@ -1,6 +1,9 @@
 <?php
 /**
- * 导航站门户 — 左侧导航 + 首屏搜索 + 热搜 + Banner + 楼层
+ * 导航站门户 — 首屏搜索 + 热搜 + 编辑首推 + 分类侧栏 + 楼层
+ *
+ * v7（2026-09-01）：从 tailwind + 行内样式（含 #2b5f7e/#b45309 等调色板外硬编码色）迁到共享 archetype。
+ * 数据与筛选逻辑原样保留。站点分类图标来自数据（emoji），保留；界面自身的装饰性 emoji 去掉。
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
@@ -45,126 +48,140 @@ foreach ($sites as $s) if (($banner['site_id'] ?? '') === $s['id']) { $bannerSit
 // 热搜：点击跳转到搜索
 $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '');
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>增长导航 | 优秀网站增长·SEO·AI 运营工具</title>
 <meta name="description" content="收录国内外优秀的网站增长、SEO、AI 运营工具与学习资源，一站直达高质量增长资源。">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
 <style>
-  body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
-  .site-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;transition:.15s;text-decoration:none;color:inherit;display:block}
-  .site-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(30,30,30,.08);border-color:var(--accent)}
-  .cat-nav-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;font-size:14px;color:var(--muted);cursor:pointer;transition:.12s;text-decoration:none}
-  .cat-nav-item:hover{background:var(--surface);color:var(--fg)}
-  .cat-nav-item.active{background:var(--accent);color:var(--on-accent);font-weight:600}
-  .hot-tag{display:inline-block;padding:4px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12px;color:#2b5f7e;cursor:pointer;transition:.12s}
-  .hot-tag:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
-  .site-meta{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--faint);margin-top:6px}
+/* 导航站独有：搜索框、热搜、分类侧栏项、站点卡评分。其余全部来自 modules.css。 */
+.search{display:flex;gap:10px;width:min(560px,100%);margin:0 auto}
+.search .inp{border-radius:999px;padding-left:22px}
+.search .btn{border-radius:999px;flex:0 0 auto}
+.hots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.hots .lbl{font-family:var(--font-mono);font-size:12px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase;margin-right:4px}
+.cat-nav{display:flex;flex-direction:column;gap:2px}
+.cat-nav a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;font-size:14px;color:var(--muted);transition:background .15s,color .15s}
+.cat-nav a:hover{background:var(--hover);color:var(--fg)}
+.cat-nav a.active{background:var(--accent-soft);color:var(--accent-strong);font-weight:600}
+.cat-nav .em{width:20px;text-align:center;flex:0 0 auto}
+.g-main-aside.aside-left{grid-template-columns:minmax(0,220px) minmax(0,1fr)}
+.g-main-aside.aside-left>aside{position:sticky;top:calc(var(--chrome-h) + 24px)}
+.site-card{display:flex;flex-direction:column;gap:8px;padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);backdrop-filter:blur(16px) saturate(150%);transition:transform .3s var(--ease-spring),box-shadow .3s,border-color .3s}
+.site-card:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:var(--shadow)}
+.site-card .hd{display:flex;align-items:center;gap:10px}
+.site-card .em{width:38px;height:38px;border-radius:11px;background:var(--accent-soft);display:grid;place-items:center;font-size:18px;flex:0 0 auto}
+.site-card .hd b{font-size:15px;font-weight:700}
+.site-card .hd .badge{margin-left:auto}
+.site-card p{font-size:13.5px;color:var(--muted);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.site-card .rating{font-size:12.5px;display:flex;align-items:center;gap:6px}
+.site-card .rating .stars{color:var(--warn);letter-spacing:.1em}
+.site-card .rating b{color:var(--warn)}
+.site-card .meta{margin-top:auto;font-size:11.5px;color:var(--faint);font-family:var(--font-mono);display:flex;gap:6px;min-width:0}
+.site-card .meta span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.floor+.floor{margin-top:clamp(36px,5vw,56px)}
+.site-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+@media (max-width:1080px){.g-main-aside.aside-left{grid-template-columns:1fr}.g-main-aside.aside-left>aside{position:static}.cat-nav{flex-direction:row;flex-wrap:wrap}}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('navigation'); ?>
 
-  <div class="mx-auto px-5 py-6" style="max-width:1200px">
-    <!-- 首屏：搜索 + 热搜 -->
-    <div class="text-center py-8" style="background:linear-gradient(160deg,var(--accent-strong),var(--accent));border-radius:20px;color:var(--surface);margin-bottom:24px">
-      <div style="font-size:40px">🧭</div>
-      <h1 class="text-3xl font-bold mt-3">一人公司真正在用的工具</h1>
-      <p class="text-[#cbd5e1] mt-2">收录国内外网站增长、SEO、AI 运营工具 · 共 <?=count($sites)?> 个优质资源</p>
-      <form class="mt-6 mx-auto flex max-w-lg gap-2" style="max-width:480px" onsubmit="return navSearch(event)">
-        <input type="text" id="navQ" value="<?=htmlspecialchars($q)?>" placeholder="搜索网站、关键词…" style="flex:1;padding:12px 18px;border-radius:999px;border:none;font-size:15px;outline:none">
-        <button class="rounded-full px-6 py-2.5 font-bold" style="background:var(--accent-soft);color:var(--accent);border:none">搜索</button>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
+  <!-- ══ 首屏：搜索 + 热搜 ══ -->
+  <section id="top" class="reveal in" data-od-anchor data-od-id="nav-hero">
+    <div class="hero-center" style="padding-bottom:0">
+      <span class="kicker">增长导航</span>
+      <h1>一人公司<i class="si">真正在用</i>的工具</h1>
+      <p class="lead">收录国内外网站增长、SEO、AI 运营工具 · 共 <?=count($sites)?> 个优质资源</p>
+      <form class="search" onsubmit="return navSearch(event)" role="search">
+        <input class="inp" type="text" id="navQ" value="<?=htmlspecialchars($q)?>" placeholder="搜索网站、关键词…" aria-label="搜索网站">
+        <button class="btn primary" type="submit">搜索</button>
       </form>
       <?php if ($hotSearches): ?>
-      <div class="mt-4 flex gap-2 justify-center flex-wrap">
-        <span class="text-sm text-[#94a3b8] mr-1">🔥 热搜：</span>
+      <div class="hots">
+        <span class="lbl">热搜</span>
         <?php foreach (array_slice($hotSearches, 0, 6) as $h): ?>
-        <span class="hot-tag" onclick="navHot('<?=htmlspecialchars($h)?>')"><?=htmlspecialchars($h)?></span>
+        <button type="button" class="pill neutral" onclick="navHot('<?=htmlspecialchars($h)?>')"><?=htmlspecialchars($h)?></button>
         <?php endforeach; ?>
       </div>
       <?php endif; ?>
     </div>
+  </section>
 
-    <!-- Banner 首推 -->
-    <?php if ($bannerSite || $featured): $bs = $bannerSite ?: ($featured[0] ?? null); if ($bs): ?>
-    <a href="/navigation/<?=urlencode($bs['id'])?>" class="site-card" style="display:flex;gap:16px;align-items:center;margin-bottom:24px;padding:20px;background:linear-gradient(135deg,var(--surface),#fdfce9);border:2px solid var(--accent)">
-      <div style="font-size:36px"><?=$catIcons[$bs['category'] ?? ''] ?? '🌐'?></div>
-      <div style="flex:1">
-        <div class="text-xs font-bold" style="color:#5b7a00"><?=htmlspecialchars($banner['title'] ?? '🏆 编辑首推')?></div>
-        <div class="font-bold text-lg mt-1"><?=htmlspecialchars($bs['name'])?></div>
-        <div class="text-sm text-gray-600"><?=htmlspecialchars($bs['description'] ?? '')?></div>
-      </div>
-      <span class="rounded-full px-5 py-2 font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">立即访问 →</span>
+  <!-- ══ 编辑首推 ══ -->
+  <?php if ($bannerSite || $featured): $bs = $bannerSite ?: ($featured[0] ?? null); if ($bs): ?>
+  <section id="banner" class="sec reveal" data-od-anchor data-od-id="nav-banner">
+    <a class="strip" href="/navigation/<?=urlencode($bs['id'])?>">
+      <span class="ic" style="font-size:20px"><?=$catIcons[$bs['category'] ?? ''] ?? '🌐'?></span>
+      <div class="tx"><span class="kicker" style="font-size:11px"><?=htmlspecialchars($banner['title'] ?? '编辑首推')?></span><b><?=htmlspecialchars($bs['name'])?></b><span><?=htmlspecialchars($bs['description'] ?? '')?></span></div>
+      <span class="btn primary">立即访问 →</span>
     </a>
-    <?php endif; endif; ?>
+  </section>
+  <?php endif; endif; ?>
 
-    <div style="display:grid;grid-template-columns:200px 1fr;gap:24px" class="nav-grid">
-      <!-- 左侧导航 -->
-      <aside style="position:sticky;top:20px;align-self:start" class="hidden sm:block">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px">
-          <div class="px-2 py-1 font-bold text-sm mb-1">🏷️ 全部分类</div>
-          <a class="cat-nav-item <?=!$cat?'active':''?>" href="/navigation?region=<?=$region?>">🌐 全部</a>
-          <?php foreach ($categories as $c): ?>
-          <a class="cat-nav-item <?=$cat===$c['id']?'active':''?>" href="?cat=<?=urlencode($c['id'])?>&region=<?=$region?>"><?=$catIcons[$c['id']]??'🌐'?> <?=htmlspecialchars($c['name'])?></a>
-          <?php endforeach; ?>
-          <div style="border-top:1px solid var(--bg);margin:8px 0;padding-top:8px">
-            <div class="px-2 py-1 font-bold text-sm">🌍 地区</div>
-            <a class="cat-nav-item <?=$region==='all'?'active':''?>" href="?region=all">🌐 全部</a>
-            <a class="cat-nav-item <?=$region==='cn'?'active':''?>" href="?region=cn">🇨🇳 国内</a>
-            <a class="cat-nav-item <?=$region==='intl'?'active':''?>" href="?region=intl">🌍 海外</a>
-          </div>
+  <!-- ══ 分类侧栏 + 楼层 ══ -->
+  <section id="sites" class="sec reveal" data-od-anchor data-od-id="nav-sites">
+    <div class="g-main-aside aside-left">
+      <aside>
+        <div class="aside-box">
+          <h3>全部分类</h3>
+          <nav class="cat-nav" aria-label="分类">
+            <a class="<?=!$cat?'active':''?>" href="/navigation?region=<?=$region?>"><span class="em">🌐</span>全部</a>
+            <?php foreach ($categories as $c): ?>
+            <a class="<?=$cat===$c['id']?'active':''?>" href="?cat=<?=urlencode($c['id'])?>&region=<?=$region?>"><span class="em"><?=$catIcons[$c['id']]??'🌐'?></span><?=htmlspecialchars($c['name'])?></a>
+            <?php endforeach; ?>
+          </nav>
+        </div>
+        <div class="aside-box">
+          <h3>地区</h3>
+          <nav class="cat-nav" aria-label="地区">
+            <a class="<?=$region==='all'?'active':''?>" href="?region=all"><span class="em">🌐</span>全部</a>
+            <a class="<?=$region==='cn'?'active':''?>" href="?region=cn"><span class="em">🇨🇳</span>国内</a>
+            <a class="<?=$region==='intl'?'active':''?>" href="?region=intl"><span class="em">🌍</span>海外</a>
+          </nav>
         </div>
       </aside>
-
-      <!-- 楼层内容 -->
-      <main>
+      <div>
         <?php if ($q): ?>
-        <div class="mb-4 text-sm text-gray-600">搜索「<strong><?=htmlspecialchars($q)?></strong>」找到 <?=count($filtered)?> 个结果 <a href="/navigation" class="text-[#2b5f7e]">清除</a></div>
+        <p class="note">搜索「<strong><?=htmlspecialchars($q)?></strong>」找到 <?=count($filtered)?> 个结果 · <a href="/navigation" style="color:var(--accent)">清除</a></p>
         <?php endif; ?>
-
         <?php if (empty($byCat)): ?>
-        <div class="text-center py-16 text-gray-600">该分类下暂无站点</div>
+        <div class="empty">该分类下暂无站点</div>
         <?php else: foreach ($byCat as $cid => $list): ?>
-        <div class="mb-8">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-            <span style="font-size:22px"><?=$catIcons[$cid] ?? '🌐'?></span>
-            <h2 class="font-bold text-xl"><?=htmlspecialchars($catNames[$cid] ?? '未分类')?></h2>
-            <span class="text-sm text-gray-400"><?=count($list)?> 个</span>
-            <?php if ($cid): ?><a href="?cat=<?=urlencode($cid)?>" class="ml-auto text-sm text-[#2b5f7e]">查看全部 →</a><?php endif; ?>
+        <div class="floor">
+          <div class="sec-head row">
+            <div><span class="kicker"><?=count($list)?> 个</span><h2><span class="em" style="margin-right:6px"><?=$catIcons[$cid] ?? '🌐'?></span><?=htmlspecialchars($catNames[$cid] ?? '未分类')?></h2></div>
+            <?php if ($cid): ?><a class="more" href="?cat=<?=urlencode($cid)?>">查看全部 →</a><?php endif; ?>
           </div>
-          <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
-            <?php foreach ($list as $s): ?>
+          <div class="site-grid" style="margin-top:18px">
+            <?php foreach ($list as $s): $rm = $ratingMap[$s['id']] ?? ['avg' => 0, 'count' => 0]; ?>
             <a href="/navigation/<?=urlencode($s['id'])?>" class="site-card">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-                <div style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg)"><?=$s['region']==='cn'?'🇨🇳':'🌍'?></div>
-                <div class="font-bold"><?=htmlspecialchars($s['name'])?><?php if (!empty($s['featured'])): ?> <span style="font-size:10px;color:#b45309">⭐</span><?php endif; ?></div>
-              </div>
-              <div class="text-sm text-gray-600 line-clamp-2"><?=htmlspecialchars($s['description'] ?? '')?></div>
-              <?php $rm = $ratingMap[$s['id']] ?? ['avg' => 0, 'count' => 0]; if (!empty($rm['count'])): ?>
-              <div style="margin-top:6px;font-size:12px">
-                <span style="color:var(--warn);letter-spacing:1px"><?=str_repeat('★', max(0, min(5, (int)round($rm['avg']))))?><?=str_repeat('☆', max(0, 5 - (int)round($rm['avg'])))?></span>
-                <span style="color:#b45309;font-weight:600"> <?=number_format($rm['avg'], 1)?></span>
-                <span style="color:var(--faint)"> · <?=$rm['count']?> 条点评</span>
-              </div>
+              <div class="hd"><span class="em"><?=$s['region']==='cn'?'🇨🇳':'🌍'?></span><b><?=htmlspecialchars($s['name'])?></b><?php if (!empty($s['featured'])): ?><span class="badge warn">推荐</span><?php endif; ?></div>
+              <p><?=htmlspecialchars($s['description'] ?? '')?></p>
+              <?php if (!empty($rm['count'])): ?>
+              <div class="rating"><span class="stars"><?=str_repeat('★', max(0, min(5, (int)round($rm['avg']))))?><?=str_repeat('☆', max(0, 5 - (int)round($rm['avg'])))?></span><b><?=number_format($rm['avg'], 1)?></b><span class="note"><?=$rm['count']?> 条点评</span></div>
               <?php endif; ?>
-              <div class="site-meta">
-                <span><?=htmlspecialchars($catNames[$s['category'] ?? ''] ?? '')?></span>
-                <span>·</span>
-                <span class="truncate"><?=htmlspecialchars($s['url'] ?? '')?></span>
-              </div>
+              <div class="meta"><span><?=htmlspecialchars($catNames[$s['category'] ?? ''] ?? '')?></span><span>·</span><span><?=htmlspecialchars($s['url'] ?? '')?></span></div>
             </a>
             <?php endforeach; ?>
           </div>
         </div>
         <?php endforeach; endif; ?>
-      </main>
+      </div>
     </div>
-  </div>
-
+  </section>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
 function navSearch(e) {
   e.preventDefault();

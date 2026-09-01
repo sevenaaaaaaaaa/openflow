@@ -2,6 +2,9 @@
 /**
  * 活动列表页 /events
  * 展示线上/线下活动，可报名，含筛选
+ *
+ * v7（2026-09-01）：从 tailwind 80 行空壳迁到共享 archetype（方案 A：日期块 + 杂志行）。
+ * 数据与筛选逻辑原样保留；空状态给出去向（社区 / 课程），不再只是一句「敬请期待」。
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
@@ -19,62 +22,114 @@ if ($typeFilter === 'offline') $events = array_values(array_filter($events, fn($
 $siteName = site_config_get('site_name', 'OpenFlow');
 $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统');
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>活动 · <?=htmlspecialchars($siteName)?></title>
-<meta name="description" content="<?=htmlspecialchars($siteSlogan)?> 的线上直播与线下活动，报名参加获得一手增长打法。">
-<link rel="stylesheet" href="/assets/site.css">
-<link rel="stylesheet" href="/assets/tailwind-build.css">
-<script src="/assets/inject.js?v=20260830b" defer></script>
-<script src="/assets/site-shell.js?v=20260826b" defer></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>活动 · 线上直播 / 线下聚会 | <?=htmlspecialchars($siteName)?></title>
+<meta name="description" content="芭乐派活动：线上直播、线下聚会。和同类人碰个面，报名即获增长打法。">
+<script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
 <style>
-  body{background:var(--bg);color:var(--fg)}
-  .ev-card{display:flex;gap:18px;padding:22px;border-radius:18px;border:1px solid var(--border);background:var(--surface);transition:.15s}
-  .ev-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm)}
-  .ev-date{min-width:76px;text-align:center;padding:12px;border-radius:14px;background:var(--accent-soft);color:var(--accent)}
+/* 活动页独有：活动行（日期块 + 标题 + 元信息）。其余全部来自 modules.css。 */
+.ev-list{display:flex;flex-direction:column;border-top:1px solid var(--border-soft)}
+.ev{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:clamp(16px,3vw,32px);align-items:center;padding:24px 8px;border-bottom:1px solid var(--border-soft);transition:background .2s;border-radius:12px}
+.ev:hover{background:var(--hover)}
+.ev-date{text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 0;border-radius:var(--r-sm);background:var(--accent-soft);color:var(--accent-strong)}
+.ev-date b{font-family:var(--font-display);font-size:30px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.ev-date span{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.ev.past .ev-date{background:var(--hover);color:var(--faint)}
+.ev-body{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ev-body .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ev-body h3{font-size:18px;font-weight:700;letter-spacing:-.01em;line-height:1.4;transition:color .2s}
+.ev:hover .ev-body h3{color:var(--accent)}
+.ev-body p{font-size:14px;color:var(--muted);line-height:1.75}
+.ev-meta{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--font-mono);font-size:12px;color:var(--faint)}
+.ev-meta span{display:inline-flex;align-items:center;gap:5px}
+.ev-meta svg{width:13px;height:13px}
+.ev-go{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--accent);white-space:nowrap}
+.ev-go svg{width:15px;height:15px}
+@media (max-width:860px){.ev{grid-template-columns:72px 1fr}.ev-go{grid-column:2;justify-self:start}.ev-date b{font-size:24px}}
 </style>
 </head>
-<body>
-<main class="mx-auto px-5 py-12" style="max-width:1080px">
-  <div class="mb-10 text-center">
-    <h1 class="text-3xl font-extrabold">和同类人碰个面</h1>
-    <p class="text-muted mt-2">线上直播 / 线下聚会 · 报名即获增长打法</p>
-    <div class="flex justify-center gap-2 mt-5" style="flex-wrap:wrap">
-      <?php $tabs = [''=>'全部','upcoming'=>'即将开始','online'=>'线上','offline'=>'线下','past'=>'往期']; foreach ($tabs as $k=>$v): ?>
-      <a href="?type=<?=$k?>" style="padding:7px 18px;border-radius:999px;font-size:13px;border:1.5px solid var(--border);<?=$typeFilter===$k?'background:var(--accent);color:var(--on-accent);border-color:var(--accent)':''?>"><?=$v?></a>
+<body data-of-main>
+<?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('events'); ?>
+
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
+  <!-- ══ 首屏 ══ -->
+  <section id="top" class="reveal in" data-od-anchor data-od-id="events-hero">
+    <div class="hero-center" style="padding-bottom:0">
+      <span class="kicker">芭乐派 · 活动</span>
+      <h1>和<i class="si">同类人</i>碰个面</h1>
+      <p class="lead">线上直播 / 线下聚会 · 报名即获增长打法</p>
+      <div class="tab-bar" role="navigation" aria-label="活动筛选">
+        <?php $tabs = [''=>'全部','upcoming'=>'即将开始','online'=>'线上','offline'=>'线下','past'=>'往期']; foreach ($tabs as $k=>$v): ?>
+        <a class="tab-p" href="?type=<?=$k?>" aria-selected="<?=$typeFilter===$k?'true':'false'?>"><?=$v?></a>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 活动列表 ══ -->
+  <section id="list" class="sec reveal" data-od-anchor data-od-id="events-list">
+    <?php if (empty($events)): ?>
+    <div class="cta-band">
+      <span class="kicker">暂无活动</span>
+      <h2>暂无活动，敬请期待</h2>
+      <p class="lead">下一场活动开放报名时，门派社区会第一时间通知。在此之前，先把地基打好。</p>
+      <div class="cta-row"><a class="btn primary" href="/community">进入门派社区</a><a class="btn ghost" href="/courses">先看课程</a></div>
+    </div>
+    <?php else: ?>
+    <div class="ev-list">
+      <?php foreach ($events as $e): $sd = strtotime($e['start_date'] ?? ''); $ed = strtotime($e['end_date'] ?? ''); $past = $ed && $ed < $now; $online = ($e['event_type']??'')==='online'; ?>
+      <a href="/events/<?=urlencode($e['slug'])?>" class="ev<?=$past?' past':''?>">
+        <div class="ev-date"><b><?=$sd ? date('d', $sd) : '--'?></b><span><?=$sd ? date('M', $sd) : ''?></span></div>
+        <div class="ev-body">
+          <div class="row">
+            <span class="badge <?=$online?'ok':'warn'?>"><?=$online?'线上':'线下'?></span>
+            <?php if ($past): ?><span class="badge" style="background:var(--hover);color:var(--faint)">已结束</span><?php elseif ($sd && $sd <= $now): ?><span class="badge ok"><span class="dot"></span>进行中</span><?php endif; ?>
+          </div>
+          <h3><?=htmlspecialchars($e['title'])?></h3>
+          <p><?=htmlspecialchars(mb_substr($e['description'] ?? '', 0, 120))?></p>
+          <div class="ev-meta">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><?=htmlspecialchars(substr($e['start_date'] ?? '', 0, 16))?></span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5a7 7 0 1 0-14 0C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg><?=htmlspecialchars($e['location'] ?? '')?></span>
+          </div>
+        </div>
+        <span class="ev-go"><?=$past?'看回顾':'查看并报名'?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+      </a>
       <?php endforeach; ?>
     </div>
-  </div>
+    <?php endif; ?>
+  </section>
 
-  <?php if (empty($events)): ?><div class="text-center py-20 text-muted">暂无活动，敬请期待</div><?php endif; ?>
-  <div class="grid gap-5">
-    <?php foreach ($events as $e): $sd = strtotime($e['start_date'] ?? ''); $ed = strtotime($e['end_date'] ?? ''); ?>
-    <a href="/events/<?=urlencode($e['slug'])?>" class="ev-card">
-      <div class="ev-date">
-        <div style="font-size:24px;font-weight:800"><?=$sd ? date('d', $sd) : '--'?></div>
-        <div style="font-size:11px"><?=$sd ? date('M', $sd) : ''?></div>
-      </div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <h2 style="font-size:17px;font-weight:700;margin:0"><?=htmlspecialchars($e['title'])?></h2>
-          <span style="font-size:11px;padding:2px 8px;border-radius:999px;<?=($e['event_type']??'')==='online'?'background:var(--accent-soft);color:var(--accent)':'background:var(--ok-soft);color:var(--ok)'?>"><?=($e['event_type']??'')==='online'?'线上直播':'线下活动'?></span>
-          <?php if ($ed < $now): ?><span style="font-size:11px;color:var(--faint)">已结束</span><?php elseif ($sd <= $now): ?><span style="font-size:11px;color:var(--ok)">进行中</span><?php endif; ?>
-        </div>
-        <p class="text-muted text-sm mt-2" style="margin:6px 0 0"><?=htmlspecialchars(mb_substr($e['description'] ?? '', 0, 120))?></p>
-        <div style="font-size:12px;color:var(--faint);margin-top:10px">🕒 <?=htmlspecialchars(substr($e['start_date'] ?? '', 0, 16))?> · 📍 <?=htmlspecialchars($e['location'] ?? '')?></div>
-      </div>
-    </a>
-    <?php endforeach; ?>
-  </div>
+  <!-- ══ footer（共享 .foot） ══ -->
+  <footer class="foot" data-od-id="site-footer">
+    <div class="fb">
+      <div class="brand"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>芭乐派 · OpenFlow</div>
+      <p class="f-about">芭乐派增长操作系统的开源底座。TIPS 框架（触达/洞察/个性化/销售）四力合一，自生长 AI Engine 主动驱动增长。</p>
+      <p class="note"><?=htmlspecialchars($siteSlogan)?></p>
+    </div>
+    <div class="fb">
+      <h4>站点导航</h4>
+      <a href="/product">产品</a><a href="/capability">能力</a><a href="/courses">课程</a><a href="/academy">学院</a><a href="/community">论坛</a><a href="/about">关于我们</a>
+    </div>
+    <div class="fb">
+      <h4>资源</h4>
+      <a href="/courses">芭乐派课程</a><a href="/docs">文档中心</a><a href="/downloads">资料下载</a><a href="/podcasts">播客</a>
+    </div>
+    <div class="fb">
+      <h4>联系</h4>
+      <a href="mailto:hello@openflow.dev">hello@openflow.dev</a><a href="/community">门派社区</a>
+    </div>
+    <div class="f-bottom"><span><?=site_copyright()?></span><?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><?=i18n_switcher()?><?php endif; ?><span><?=htmlspecialchars($siteSlogan)?></span></div>
+  </footer>
 </main>
-<footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-  <div class="mx-auto px-5 text-center text-sm" style="max-width:1100px">
-    <div class="mb-2"><?=htmlspecialchars($siteName)?> · <?=htmlspecialchars($siteSlogan)?></div>
-    <div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div>
-  </div>
-</footer>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>
