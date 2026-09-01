@@ -673,21 +673,6 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
   }
 
 
-  /* ── 滚动显现动画（.reveal 进入视口 → 加 .in） ── */
-  if ('IntersectionObserver' in window) {
-    var rvIO = new IntersectionObserver(function(entries){
-      entries.forEach(function(en){
-        if (en.isIntersecting) { en.target.classList.add('in'); rvIO.unobserve(en.target); }
-      });
-    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-    $$('.reveal').forEach(function(el){ rvIO.observe(el); });
-    // 兜底：2.5 秒后仍未显现的模块直接显示（防止 IntersectionObserver 异常导致白屏）
-    setTimeout(function(){
-      $$('.reveal:not(.in)').forEach(function(el){ el.classList.add('in'); });
-    }, 2500);
-  } else {
-    $$('.reveal').forEach(function(el){ el.classList.add('in'); });
-  }
 
 })();
 </script>
