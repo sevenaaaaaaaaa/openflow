@@ -684,6 +684,29 @@
     })();
   }
 
+  /* ── 滚动显现（.reveal → .in）+ 回到顶部：原本只在 index.php 内联，收进外壳让所有页可用 ── */
+  function mountMotion() {
+    var all = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+    if ('IntersectionObserver' in window) {
+      var rvIO = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); rvIO.unobserve(en.target); } });
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+      all('.reveal').forEach(function (el) { rvIO.observe(el); });
+      setTimeout(function () { all('.reveal:not(.in)').forEach(function (el) { el.classList.add('in'); }); }, 2500);
+    } else {
+      all('.reveal').forEach(function (el) { el.classList.add('in'); });
+    }
+    var bt = document.getElementById('backtop');
+    if (bt) {
+      var RM = false; try { RM = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      var upd = function () { bt.classList.toggle('show', window.scrollY > 480); };
+      window.addEventListener('scroll', upd, { passive: true }); upd();
+      bt.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' }); });
+    }
+  }
+
   if (document.body) mount();
   else document.addEventListener('DOMContentLoaded', mount);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountMotion);
+  else mountMotion();
 })();

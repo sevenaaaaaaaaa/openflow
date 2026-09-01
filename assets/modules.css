@@ -427,6 +427,8 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7}
 .link-it .lt span{display:block;font-size:12.5px;color:var(--faint);margin-top:2px}
 .link-it .go{margin-left:auto;color:var(--accent);opacity:0;transform:translateX(-4px);transition:opacity .2s,transform .2s;flex:0 0 auto}
 .link-it .go svg{width:15px;height:15px}
+.link-it.top{align-items:flex-start}
+.link-it.top .ic,.link-it.top .go{margin-top:2px}
 .link-it:hover{background:var(--hover)}
 .link-it:hover .go,.link-it:focus-visible .go{opacity:1;transform:none}
 
@@ -553,7 +555,11 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
   .hero-center h1{font-size:clamp(34px,8.2vw,44px)}
   .wf{grid-template-columns:1fr}
   .wf::before{left:21px;top:0;bottom:0;right:auto;width:2px;height:auto;background:repeating-linear-gradient(180deg,var(--border-strong) 0 10px,transparent 10px 18px)}
-  .wf-step{flex-direction:row;text-align:left;align-items:center;gap:18px;padding:16px 0 16px 0}
+  /* 窄屏：节点在左、标题与说明在右上下叠放。原来是 flex-row 把 h3 和 p 并排，
+     标题被挤成一字一行（首页「三步」一节在手机上就是这样）。 */
+  .wf-step{display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:18px;row-gap:6px;text-align:left;align-items:start;padding:16px 0}
+  .wf-step .wf-n{grid-row:1/span 3}
+  .wf-step h3,.wf-step p,.wf-step .wf-driver{grid-column:2}
   .wf-step p{max-width:none}
 }
 /* ── 响应式（archetype 降档） ── */
@@ -595,4 +601,37 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 }
 @media (max-width:640px){
   .foot{grid-template-columns:1fr}
+}
+
+/* ── v7 补充：archetype 的 4 列变体 · 收尾 CTA 面板 · 回到顶部 ──
+   4 列变体：主张/历程这类恰好 4 条的内容；≤1080px 与 3 列同一套降档 */
+.wf.n4{grid-template-columns:repeat(4,1fr)}
+.wf.n4 .wf-step{padding:0 18px}
+.wf.n4 .wf-step p{font-size:13px;line-height:1.75}
+.tl.n4{grid-template-columns:repeat(4,1fr)}
+/* 通用双栏：左文右图（首页 tab-panel.on 的同款网格，去掉 tab 语义），≤1080px 折为单列 */
+.split{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(24px,3vw,48px);align-items:center}
+.split.rev .sp-txt{order:2}
+.tl-y{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.06em}
+/* 收尾 CTA 面板：取代旧页的紫色渐变横幅（调色板外）。玻璃卡 + 一抹 accent-soft，与 .scn-f 同源 */
+.cta-band{display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;padding:clamp(36px,5vw,64px) clamp(24px,4vw,56px);border-radius:var(--r-lg);border:1px solid var(--border);background:linear-gradient(165deg,var(--accent-soft),transparent 60%),var(--surface);backdrop-filter:blur(16px) saturate(150%);box-shadow:var(--shadow-sm)}
+.cta-band h2{font-size:clamp(24px,3vw,34px);font-weight:800;letter-spacing:-.02em;line-height:1.2;max-width:720px}
+.cta-band .lead{color:var(--muted);font-size:16px;line-height:1.85;max-width:600px}
+.cta-band .cta-row{justify-content:center;margin-top:4px}
+/* 列表项：带勾的要点（.sp-list 的独立复用版，供任何文字栏用） */
+/* 回到顶部（4 个子页各自定义过一份，收编；site-shell.js 负责显隐） */
+#backtop{position:fixed;right:20px;bottom:22px;z-index:70;width:44px;height:44px;border-radius:14px;background:var(--surface-strong);border:1px solid var(--border);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:var(--muted);opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .3s,transform .3s var(--ease-spring),background .2s,color .2s}
+#backtop.show{opacity:1;pointer-events:auto;transform:none}
+#backtop:hover{background:var(--hover);color:var(--fg)}
+#backtop svg{width:16px;height:16px}
+@media (max-width:1080px){
+  .split{grid-template-columns:1fr}
+  .split.rev .sp-txt{order:0}
+  .wf.n4{grid-template-columns:repeat(2,1fr);row-gap:28px}
+  .wf.n4::before{display:none}
+  .tl.n4{grid-template-columns:1fr;gap:0}
+}
+@media (max-width:640px){
+  .wf.n4{grid-template-columns:1fr}
+  .cta-band{padding:30px 20px}
 }
