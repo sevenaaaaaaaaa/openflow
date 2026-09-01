@@ -79,7 +79,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
     <div class="mx-auto px-5" style="max-width:1120px">
       <div style="display:flex;flex-direction:column;gap:12px">
         <span class="kicker" style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--accent);text-transform:uppercase">COMMUNITY · 门派</span>
-        <h1 style="font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--fg)">一人公司增长门派<br><span style="font-family:var(--font-display);font-style:italic">在这里切磋、打卡、长本事</span></h1>
+        <h1 style="font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--fg)">一个人做公司，<br><span style="font-family:var(--font-display);font-style:italic">不该一个人扛</span></h1>
         <p style="color:var(--muted);font-size:15px;line-height:1.8;max-width:560px">提问、分享、讨论。学完课程的同学在这里交作业、晒增长数据、互相诊断——把增长系统这门功夫，练到身上。</p>
         <div style="display:flex;gap:18px;margin-top:4px;color:var(--faint);font-size:12.5px;flex-wrap:wrap">
           <span><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span> <b style="color:var(--fg)"><?=count($posts)?></b> 个帖子</span>

@@ -182,7 +182,7 @@ button:disabled{opacity:.45; cursor:default}
   <div class="pg">
     <div class="pg-h">
       <span class="kicker">能力 · TIPS 框架</span>
-      <h1>一套平台，<i class="si">四种增长力</i></h1>
+      <h1>四种增长力，<i class="si">覆盖你从选题到收款的每一段</i></h1>
       <p class="lead">触达、洞察、个性化、销售——四力合一，覆盖一人公司从获客到成交的每一步。不是功能堆砌，是让 Agent 替你把每个环节跑起来。</p>
       <div class="cta-row"><button class="btn primary" data-act="start">免费开始</button><a class="btn ghost" href="/product">了解产品原理</a></div>
     </div>
@@ -190,10 +190,10 @@ button:disabled{opacity:.45; cursor:default}
     <div class="cap-grid" id="capGrid"></div>
     <div class="cap-detail" id="capDetail"><div><div class="inner" id="capInner"></div></div></div>
 
-    <div class="sec-head"><span class="kicker">集成生态</span><h2>连接你已经在用的工具</h2><p class="note">连接器清单为演示占位，正式版将展示完整列表。</p></div>
+    <div class="sec-head"><span class="kicker">集成生态</span><h2>不用推翻你现在在用的东西</h2><p class="note">连接器清单为演示占位，正式版将展示完整列表。</p></div>
     <div class="card" style="padding:20px"><div class="conn-chips" id="connChips2"></div></div>
 
-    <div class="sec-head"><span class="kicker">部署方式</span><h2>从云端到私有化，按需选择</h2></div>
+    <div class="sec-head"><span class="kicker">部署方式</span><h2>托管还是自己装，你说了算</h2></div>
     <div class="deploy-grid">
       <div class="card deploy"><div class="tag">SAAS</div><div class="dt"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 8v8l9 5 9-5V8"/></svg></span>云端 SaaS</div><p style="font-size:13px;color:var(--muted);line-height:1.8">最快上手，自动更新，无需运维。适合希望一周内跑起来的一人公司。</p><ul><li>开箱即用，免费起步</li><li>功能随版本自动更新</li><li>免运维，专注增长</li></ul></div>
       <div class="card deploy"><div class="tag">PRIVATE</div><div class="dt"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>私有化部署</div><p style="font-size:13px;color:var(--muted);line-height:1.8">数据不出域，核心能力永久开源。适合重视自主可控的团队。</p><ul><li>数据完全留在内网</li><li>核心能力开源自托管</li><li>专属技术支持</li></ul></div>
@@ -208,7 +208,7 @@ button:disabled{opacity:.45; cursor:default}
       <div class="card eco"><div class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4m0 12v4M2 12h4m12 0h4M5 5l3 3m8 8 3 3M19 5l-3 3M8 16l-3 3"/><circle cx="12" cy="12" r="3.5"/></svg></div><div class="et">永久开源</div><div class="ed">核心能力开源，鱼与渔相结合，策略随工具迭代。</div></div>
     </div>
 
-    <div class="sec-head"><span class="kicker">应用场景</span><h2>四力合起来，跑出这四类增长</h2></div>
+    <div class="sec-head"><span class="kicker">应用场景</span><h2>四力合起来能跑出什么</h2></div>
     <div class="deploy-grid">
       <div class="card deploy"><div class="dt"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.7 2.6 4 5.8 4 9s-1.3 6.4-4 9c-2.7-2.6-4-5.8-4-9s1.3-6.4 4-9Z"/></svg></span>内容获客</div><p style="font-size:13px;color:var(--muted);line-height:1.8">舆情爬取找选题 → AI 生成草稿 → 多平台分发。让内容这条线自己转起来。</p></div>
       <div class="card deploy"><div class="dt"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5m8-10 5 5-5 5M13 4l-2 16"/></svg></span>私域转化</div><p style="font-size:13px;color:var(--muted);line-height:1.8">线索池 + 分群 + 自动化触达。把加过来的人，一步步培育成客户。</p></div>
@@ -216,7 +216,7 @@ button:disabled{opacity:.45; cursor:default}
       <div class="card deploy"><div class="dt"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v5c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg></span>增长中台</div><p style="font-size:13px;color:var(--muted);line-height:1.8">把 Task Graph 变成自己的资产。Agent 跑流程，人只做 Agent 做不到的五件事。</p></div>
     </div>
 
-    <div class="sec-head"><span class="kicker">适合谁</span><h2>如果你正处在这三种状态，能力会更快产生价值</h2><p>不用先学会所有功能。先从最卡的一环开始，再把可复用的流程逐步接回增长链路。</p></div>
+    <div class="sec-head"><span class="kicker">适合谁</span><h2>这三种状态下，它见效最快</h2><p>不用先学会所有功能。先从最卡的一环开始，再把可复用的流程逐步接回增长链路。</p></div>
     <div class="deploy-grid" data-od-id="capability-fit">
       <div class="card deploy"><div class="tag">01 · OPC</div><div class="dt">一个人做增长</div><p style="font-size:13px;color:var(--muted);line-height:1.8">选题、内容、触达和复盘都由你负责，希望把重复动作交给 Agent，把时间留给判断。</p><a class="btn subtle" href="/product#demo">看完整增长闭环 →</a></div>
       <div class="card deploy"><div class="tag">02 · SMALL TEAM</div><div class="dt">小团队协同运转</div><p style="font-size:13px;color:var(--muted);line-height:1.8">已有内容或销售流程，但数据散在多个工具里，需要统一触发、权限和交接。</p><a class="btn subtle" href="#connChips2">查看连接与部署 →</a></div>

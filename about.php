@@ -167,7 +167,7 @@ button:disabled{opacity:.45; cursor:default}
   <div class="pg">
     <div class="pg-h">
       <span class="kicker">关于芭乐派</span>
-      <h1>帮一人公司，<i class="si">设计 Agent 能跑的增长系统</i></h1>
+      <h1>我们只服务一种人：<i class="si">一个人扛着一家公司的人</i></h1>
       <p class="lead">芭乐派是主品牌，OpenFlow 是它的开源平台。我们的信念很朴素：你不缺"怎么做"的工具，你缺的是"该做什么"的系统——设计你的系统，而不是操作你的系统。</p>
       <div class="cta-row"><button class="btn primary" data-act="join">加入门派</button><a class="btn ghost" href="/product">看看平台</a></div>
     </div>
@@ -209,7 +209,7 @@ button:disabled{opacity:.45; cursor:default}
     <div class="sec-head"><span class="kicker">主张</span><h2>我们相信的四件事</h2></div>
     <div class="prin-grid" id="prinGrid"></div>
 
-    <div class="sec-head"><span class="kicker">思想源流</span><h2>塑造芭乐派的底层逻辑</h2></div>
+    <div class="sec-head"><span class="kicker">思想源流</span><h2>为什么我们把核心永久开源</h2></div>
     <div class="prin-grid" id="thinkGrid"></div>
 
     <div class="sec-head"><span class="kicker">历程</span><h2>走到今天</h2></div>
