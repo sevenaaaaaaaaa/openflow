@@ -11,7 +11,13 @@ require_once __DIR__ . '/lib/SiteConfig.php';
 
 $now = time();
 $events = array_values(array_filter(json_read(DATA_DIR . '/events/index.json'), fn($e) => ($e['status'] ?? '') === 'published'));
-usort($events, fn($a, $b) => strcmp($a['start_date'] ?? '', $b['start_date'] ?? ''));
+// 排序：未结束的活动按开始时间升序排在前面（最近要开的最先），已结束的按时间倒序排在后面
+$evEnd = fn($e) => strtotime($e['end_date'] ?? $e['start_date'] ?? '2000-01-01');
+usort($events, function ($a, $b) use ($now, $evEnd) {
+    $ua = $evEnd($a) >= $now ? 0 : 1; $ub = $evEnd($b) >= $now ? 0 : 1;
+    if ($ua !== $ub) return $ua <=> $ub;
+    return $ua === 0 ? strcmp($a['start_date'] ?? '', $b['start_date'] ?? '') : strcmp($b['start_date'] ?? '', $a['start_date'] ?? '');
+});
 
 $typeFilter = $_GET['type'] ?? '';
 if ($typeFilter === 'upcoming') $events = array_values(array_filter($events, fn($e) => strtotime($e['end_date'] ?? $e['start_date'] ?? '2000-01-01') >= $now));
@@ -30,9 +36,9 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
 <title>活动 · 线上直播 / 线下聚会 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="芭乐派活动：线上直播、线下聚会。和同类人碰个面，报名即获增长打法。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
 <style>
 /* 活动页独有：活动行（日期块 + 标题 + 元信息）。其余全部来自 modules.css。 */
 .ev-list{display:flex;flex-direction:column;border-top:1px solid var(--border-soft)}
@@ -109,26 +115,7 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
   </section>
 
   <!-- ══ footer（共享 .foot） ══ -->
-  <footer class="foot" data-od-id="site-footer">
-    <div class="fb">
-      <div class="brand"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>芭乐派 · OpenFlow</div>
-      <p class="f-about">芭乐派增长操作系统的开源底座。TIPS 框架（触达/洞察/个性化/销售）四力合一，自生长 AI Engine 主动驱动增长。</p>
-      <p class="note"><?=htmlspecialchars($siteSlogan)?></p>
-    </div>
-    <div class="fb">
-      <h4>站点导航</h4>
-      <a href="/product">产品</a><a href="/capability">能力</a><a href="/courses">课程</a><a href="/academy">学院</a><a href="/community">论坛</a><a href="/about">关于我们</a>
-    </div>
-    <div class="fb">
-      <h4>资源</h4>
-      <a href="/courses">芭乐派课程</a><a href="/docs">文档中心</a><a href="/downloads">资料下载</a><a href="/podcasts">播客</a>
-    </div>
-    <div class="fb">
-      <h4>联系</h4>
-      <a href="mailto:hello@openflow.dev">hello@openflow.dev</a><a href="/community">门派社区</a>
-    </div>
-    <div class="f-bottom"><span><?=site_copyright()?></span><?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><?=i18n_switcher()?><?php endif; ?><span><?=htmlspecialchars($siteSlogan)?></span></div>
-  </footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
 <button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>

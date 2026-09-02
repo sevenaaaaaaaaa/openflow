@@ -12,9 +12,11 @@ $homeArticles = [];
 try {
     $all = get_articles();
     $pub = array_values(array_filter($all, fn($a) => ($a['status'] ?? '') === 'published'));
+    $catNames = [];
+    foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
     foreach (array_slice($pub, 0, 3) as $a) {
         $homeArticles[] = [
-            'cat' => $a['category'] ?? '洞察',
+            'cat' => $catNames[$a['category'] ?? ''] ?? ($a['category'] ?? '洞察'),
             't' => $a['title'] ?? '',
             'meta' => max(1, (int)round(mb_strlen(strip_tags($a['content'] ?? '')) / 400)) . ' 分钟',
             'date' => substr($a['created_at'] ?? '', 0, 10),
@@ -37,9 +39,9 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。
      id 与 site-shell.js 的注入判重一致，故 site-shell 不会重复插入。 -->
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
 <style>
 /* ══ 首页独有：arena 信号流画布（其余样式全部在 tokens.css / modules.css）══ */
 .arena{width:100%;max-width:1080px;margin-top:10px;border-radius:var(--r-lg);border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(22px) saturate(160%);box-shadow:var(--shadow);overflow:hidden}
@@ -468,8 +470,18 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
       <span class="kicker">增长洞察</span>
       <h2>关于增长系统与 Agent 的思考</h2>
     </div>
-    <div class="art-list">
-      <div id="homeArts"></div>
+    <div class="art-list" id="homeArts">
+      <?php
+      // 2026-09-02 修复：这一节原注释写着「JS 注入 → SSR」，但 SSR 从未落地，$homeArticlesJson 算完没人渲染，线上是空白一节。
+      // 现在服务端直出；没有已发布文章时用与旧版 JS 相同的三篇占位。
+      $arts = $homeArticles ?: [
+        ['cat'=>'方法论','t'=>'为什么你缺的不是工具，而是一套增长系统','meta'=>'8 分钟','date'=>'2026-08-10','d'=>'工具解决「怎么做」，系统解决「该做什么」。一人公司增长失速，往往是从 0 到 1 的系统没跑通。','link'=>'/academy'],
+        ['cat'=>'芭乐派','t'=>'利润公式拆解：销转率才是你的杠杆支点','meta'=>'6 分钟','date'=>'2026-08-02','d'=>'同样的线索，为什么别人转化率是你的两倍？用 Agent-Native 利润公式，算出你该先优化哪个环节。','link'=>'/courses'],
+        ['cat'=>'Agent 实践','t'=>'把增长漏斗画成 Task Graph：Agent 可执行的增长地图','meta'=>'10 分钟','date'=>'2026-07-26','d'=>'漏斗不是给人看的流程图，而是给 Agent 跑的任务图。五个判据，标出每一环该人做还是 Agent 做。','link'=>'/academy'],
+      ];
+      foreach (array_slice($arts, 0, 3) as $a): ?>
+      <a class="a-row" href="<?=htmlspecialchars($a['link'] ?: '/academy')?>" data-od-id="article-<?=htmlspecialchars(mb_substr($a['t'], 0, 4))?>"><span class="a-meta"><span class="pill neutral"><?=htmlspecialchars($a['cat'])?></span><span><?=htmlspecialchars($a['date'])?></span><span><?=htmlspecialchars($a['meta'])?></span></span><div class="a-body"><h3><?=htmlspecialchars($a['t'])?></h3><p><?=htmlspecialchars($a['d'])?></p></div><span class="a-go">阅读全文 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+      <?php endforeach; ?>
     </div>
   </section>
 
@@ -534,7 +546,8 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
     </div>
     <div class="fb">
       <h4>资源</h4>
-      <a href="#insights" data-od-id="f-r-courses">芭乐派课程</a><a href="#top" data-od-id="f-r-docs">文档中心</a><a href="#top" data-od-id="f-r-tpl">模板库</a><a href="#top" data-od-id="f-r-api">开放 API</a>
+      <a href="/courses" data-od-id="f-r-courses">芭乐派课程</a><a href="/docs" data-od-id="f-r-docs">文档中心</a><a href="/docs#templates" data-od-id="f-r-tpl">模板库</a><a href="/docs#api" data-od-id="f-r-api">开放 API</a>
+      <a href="/gtm-onepager.html" data-od-id="f-r-onepager">一页纸介绍</a><a href="/gtm-deck.html" data-od-id="f-r-deck">产品介绍幻灯片</a><a href="/lp/solo-growth.html" data-od-id="f-r-h5">一人公司增长手册（H5）</a>
     </div>
     <div class="fb">
       <h4>联系</h4>
