@@ -49,7 +49,7 @@ if (!defined('OF_EMBED')) admin_header('资料下载');
             <td><span class="badge badge-gray"><?=htmlspecialchars($catMap[$d['category'] ?? ''] ?? $d['category'] ?? '')?></span></td>
             <td class="text-sm text-muted"><?=(int)($d['download_count'] ?? 0)?></td>
             <td><span class="badge <?=($d['status']??'draft')==='published'?'badge-green':'badge-yellow'?>"><?=$d['status']??'draft'?></span></td>
-            <td><a href="download-edit.php?id=<?=urlencode($d['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=download&id=<?=urlencode($d['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="downloads.php?delete=<?=urlencode($d['id'])?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除?')">删除</a></td>
+            <td><a href="download-edit.php?id=<?=urlencode($d['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=download&id=<?=urlencode($d['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="downloads.php?delete=<?=urlencode($d['id'])?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-danger btn-sm" data-confirm="确认删除?">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

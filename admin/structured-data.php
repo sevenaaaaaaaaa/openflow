@@ -120,7 +120,7 @@ function insertTemplate(type) {
 function formatJson() {
   var ta = document.querySelector('textarea[name="jsonld"]');
   try { ta.value = JSON.stringify(JSON.parse(ta.value), null, 2); }
-  catch(e) { alert('JSON 格式无效'); }
+  catch(e) { ofAlert('JSON 格式无效'); }
 }
 function loadTemplate() { insertTemplate('Organization'); }
 </script>

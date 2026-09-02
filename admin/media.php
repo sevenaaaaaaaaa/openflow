@@ -149,7 +149,7 @@ admin_header('媒体管理');
         </div>
         <div class="actions">
           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();copyUrl('<?=htmlspecialchars($url)?>')">复制</button>
-          <a href="?dir=<?=$currentDir?>&delete=<?=urlencode($f['name'])?>" class="btn btn-danger btn-sm" onclick="event.stopPropagation();return confirm('确认删除?')">删除</a>
+          <a href="?dir=<?=$currentDir?>&delete=<?=urlencode($f['name'])?>" class="btn btn-danger btn-sm" onclick="event.stopPropagation()" data-confirm="确认删除?">删除</a>
         </div>
       </div>
       <?php endforeach; ?>
@@ -158,7 +158,7 @@ admin_header('媒体管理');
 </div>
 
 <script>
-function copyUrl(url){navigator.clipboard.writeText(url).then(()=>alert('已复制'))}
+function copyUrl(url){navigator.clipboard.writeText(url).then(()=>ofAlert('已复制'))}
 function pickImage(url){
   <?php if (isset($_GET['picker'])): ?>
   if(window.opener){window.opener.postMessage({action:'pickImage',url:url},'*');window.close();}
@@ -206,7 +206,7 @@ function confirmUpload() {
   fd.append('file', pendingFile);
   fetch('?dir=<?=$currentDir?>', { method: 'POST', body: fd })
     .then(function(r) { location.reload(); })
-    .catch(function(e) { alert('上传失败'); });
+    .catch(function(e) { ofAlert('上传失败'); });
 }
 </script>
 <?php admin_footer(); ?>

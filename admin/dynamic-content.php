@@ -196,7 +196,7 @@ admin_header('Dynamic Content 动态内容');
           <div class="rule-toggle <?=!empty($r['enabled'])?'on':''?>" onclick="toggleRule('<?=htmlspecialchars($r['id'])?>')"></div>
           <strong style="flex:1"><?=htmlspecialchars($r['name'])?></strong>
           <a href="?view=<?=urlencode($r['id'])?>" class="btn btn-ghost btn-sm">📊</a>
-          <form method="post" style="display:inline" onsubmit="return confirm('确认删除?')">
+          <form method="post" style="display:inline" data-confirm="确认删除?">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="delete">
             <input type="hidden" name="rule_id" value="<?=htmlspecialchars($r['id'])?>">

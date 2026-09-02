@@ -168,9 +168,9 @@ admin_header('课程管理');
             <td style="white-space:nowrap">
               <?php if (($c['status'] ?? '') === 'pending'): ?>
               <a href="courses.php?approve=<?=urlencode($c['id'])?>" class="btn btn-success btn-sm">通过上架</a>
-              <a href="courses.php?reject=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认拒绝该课程?')">拒绝</a>
+              <a href="courses.php?reject=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认拒绝该课程?">拒绝</a>
               <?php endif; ?>
-              <a href="course-edit.php?id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=course&id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="courses.php?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除?')">删除</a>
+              <a href="course-edit.php?id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=course&id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="courses.php?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除?">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>

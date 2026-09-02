@@ -181,8 +181,8 @@ admin_header('分销管理');
           <form method="post" style="display:inline-flex;gap:6px">
             <?= csrf_field() ?>
             <input type="hidden" name="withdraw_id" value="<?=htmlspecialchars($w['id'] ?? '')?>">
-            <button name="withdraw_action" value="approve" class="btn btn-sm" style="background:var(--ok);color:#fff" onclick="return confirm('确认打款 ¥<?=$w['amount']?>?')">通过</button>
-            <button name="withdraw_action" value="reject" class="btn btn-sm" style="background:#fee2e2;color:var(--danger)" onclick="return confirm('确认驳回并退回余额?')">驳回</button>
+            <button name="withdraw_action" value="approve" class="btn btn-sm" style="background:var(--ok);color:#fff" data-confirm="确认打款 ¥<?=$w['amount']?>？">通过</button>
+            <button name="withdraw_action" value="reject" class="btn btn-sm" style="background:#fee2e2;color:var(--danger)" data-confirm="确认驳回并退回余额?">驳回</button>
           </form>
           <?php else: ?><span class="text-sm text-muted">—</span><?php endif; ?>
         </td>

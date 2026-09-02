@@ -137,7 +137,7 @@ if (!defined('OF_EMBED')) admin_header('页面分类');
     <div class="card">
       <h2>📌 页面分配</h2>
       <p class="sub">把每个页面归到分类下（每页一个主分类）</p>
-      <form method="post" onsubmit="return confirm('保存页面分类分配？')">
+      <form method="post" data-confirm="保存页面分类分配？">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="assign">
         <div class="assign-grid">
@@ -171,8 +171,8 @@ function collect_cat_name(array $cats, string $key): string {
 ?>
 
 <script>
-function deleteCat(key) {
-  if (!confirm('确定删除分类？')) return;
+async function deleteCat(key) {
+  if (!await ofConfirm('确定删除分类？')) return;
   var fd = new FormData();
   fd.append('action', 'delete');
   fd.append('key', key);

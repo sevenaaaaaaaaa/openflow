@@ -95,7 +95,7 @@ admin_header('Campaign 管理');
             <td class="text-sm text-muted"><?=htmlspecialchars($c['page_scope'] ?? 'all')?></td>
             <td><span class="badge <?=$isActive?'badge-green':($c['status']==='active'?'badge-yellow':'badge-gray')?>"><?=$isActive?'运行中':$c['status']?></span></td>
             <td><a href="?edit=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-              <form method="post" style="display:inline" onsubmit="return confirm('确认删除?')">
+              <form method="post" style="display:inline" data-confirm="确认删除?">
                 <?= csrf_field() ?>
           </tr>
           <?php endforeach; ?>

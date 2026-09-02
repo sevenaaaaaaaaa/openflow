@@ -110,7 +110,7 @@ admin_header('主题管理');
           <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="theme_id" value="<?=htmlspecialchars($tid)?>"><button class="btn btn-primary btn-sm" name="activate" value="1">启用</button></form>
           <?php endif; ?>
           <?php if (!ThemeSystem::isPreset($tid)): ?>
-          <a href="?delete=<?=urlencode($tid)?>" class="btn btn-ghost btn-sm" onclick="return confirm('删除此自定义主题？')">删除</a>
+          <a href="?delete=<?=urlencode($tid)?>" class="btn btn-ghost btn-sm" data-confirm="删除此自定义主题？">删除</a>
           <?php endif; ?>
         </div>
       </div>

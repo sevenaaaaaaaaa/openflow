@@ -338,8 +338,8 @@ function addChapter() {
   if (empty) empty.style.display = 'none';
 }
 
-function removeChapter(btn) {
-  if (document.querySelectorAll('.chapter-box').length <= 1 && !confirm('删除后章节将不留任何内容，确认?')) return;
+async function removeChapter(btn) {
+  if (document.querySelectorAll('.chapter-box').length <= 1 && !await ofConfirm('删除后章节将不留任何内容，确认?')) return;
   btn.closest('.chapter-box').remove();
 }
 

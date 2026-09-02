@@ -80,7 +80,7 @@ function toggleFollow() {
     body: 'target_user_id=' + encodeURIComponent(targetUserId)
   }).then(r => r.json()).then(d => {
     if (d.ok) location.reload();
-    else alert(d.error || '操作失败');
+    else ofAlert(d.error || '操作失败');
   });
 }
 </script>

@@ -215,18 +215,18 @@ document.getElementById('addForm').onsubmit = function(e) {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'X-CSRF-Token': '<?=csrf_token()?>'},
     body: JSON.stringify(data)
-  }).then(r => r.json()).then(d => { if (d.ok) location.reload(); else alert(d.error || '创建失败'); });
+  }).then(r => r.json()).then(d => { if (d.ok) location.reload(); else ofAlert(d.error || '创建失败'); });
 };
 function createFromTemplate(tpl) {
   fetch('../api/segment-manage.php', {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'X-CSRF-Token': '<?=csrf_token()?>'},
     body: JSON.stringify({action: 'create', name: tpl.name, description: tpl.description, color: tpl.color, rules: tpl.rules, operator: tpl.operator, auto_update: true})
-  }).then(r => r.json()).then(d => { if (d.ok) location.reload(); else alert(d.error || '创建失败'); });
+  }).then(r => r.json()).then(d => { if (d.ok) location.reload(); else ofAlert(d.error || '创建失败'); });
 }
-function deleteSegment(id) {
-  if (!confirm('确定删除？')) return;
-  fetch('../api/segment-manage.php', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'action=delete&id=' + id + '&csrf_token=<?=csrf_token()?>'}).then(r => r.json()).then(d => { if (d.ok) location.reload(); else alert(d.error || '删除失败'); });
+async function deleteSegment(id) {
+  if (!await ofConfirm('确定删除？')) return;
+  fetch('../api/segment-manage.php', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'action=delete&id=' + id + '&csrf_token=<?=csrf_token()?>'}).then(r => r.json()).then(d => { if (d.ok) location.reload(); else ofAlert(d.error || '删除失败'); });
 }
 </script>
 <?php admin_footer(); ?>
