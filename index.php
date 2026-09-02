@@ -37,9 +37,9 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。
      id 与 site-shell.js 的注入判重一致，故 site-shell 不会重复插入。 -->
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260826b">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260826b">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260826b">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
 <style>
 /* ══ 首页独有：arena 信号流画布（其余样式全部在 tokens.css / modules.css）══ */
 .arena{width:100%;max-width:1080px;margin-top:10px;border-radius:var(--r-lg);border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(22px) saturate(160%);box-shadow:var(--shadow);overflow:hidden}
