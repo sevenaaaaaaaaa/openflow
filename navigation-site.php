@@ -1,6 +1,8 @@
 <?php
 /**
  * 导航站点详情页
+ *
+ * v7（2026-09-01）：迁到共享 archetype（reader 站点卡 + 评论部件 + link-grid 相关）。
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
@@ -22,59 +24,57 @@ foreach ($categories as $c) $catNames[$c['id']] = $c['name'];
 // 相关站点（同分类）
 $related = array_values(array_filter($sites, fn($s) => $s['id'] !== $siteId && ($s['category'] ?? '') === ($site['category'] ?? '')));
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($site['name'])?>  | <?=site_config_get("site_name")?> 增长导航</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
+/* 站点详情独有：站点头。其余全部来自 modules.css。 */
+.site-hd{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.site-hd .em{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-size:30px;background:var(--accent-soft);flex:0 0 auto}
+.site-hd>div{flex:1;min-width:220px;display:flex;flex-direction:column;gap:10px}
+.site-hd h1{font-size:clamp(24px,3.5vw,32px);font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.site-hd p{font-size:15px;color:var(--muted);line-height:1.8}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('navigation'); ?>
 
-  <div class="mx-auto px-5 py-8" style="max-width:900px">
-    <!-- 站点主卡 -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:24px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
-      <div style="width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-size:30px;background:var(--bg)"><?=($site['region']??'')==='cn'?'🇨🇳':'🌍'?></div>
-      <div style="flex:1;min-width:200px">
-        <h1 class="text-2xl font-bold"><?=htmlspecialchars($site['name'])?>
-          <?php if (!empty($site['featured'])): ?><span class="text-sm text-[#b45309]">⭐ 编辑推荐</span><?php endif; ?>
-        </h1>
-        <div class="text-sm text-gray-600 mt-2"><?=htmlspecialchars($catNames[$site['category'] ?? ''] ?? '未分类')?> · <?=($site['region']??'')==='cn'?'国内':'海外'?></div>
-        <p class="text-gray-600 mt-4 leading-relaxed"><?=htmlspecialchars($site['description'] ?? '')?></p>
-        <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
-          <a href="<?=htmlspecialchars($site['url'] ?? '#')?>" target="_blank" rel="noopener" class="rounded-full px-7 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">访问网站 →</a>
-          <button class="rounded-full px-7 py-3 font-bold border border-[var(--border)]" style="background:var(--surface);color:var(--fg)" onclick="copyURL()">复制链接</button>
-        </div>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
+  <section class="reader reveal in" data-od-id="site">
+    <nav class="art-meta" aria-label="面包屑" style="margin-bottom:18px"><a href="/navigation" style="color:var(--faint)">← 增长导航</a></nav>
+    <div class="card site-hd">
+      <span class="em"><?=($site['region']??'')==='cn'?'🇨🇳':'🌍'?></span>
+      <div>
+        <span class="kicker"><?=htmlspecialchars($catNames[$site['category'] ?? ''] ?? '未分类')?> · <?=($site['region']??'')==='cn'?'国内':'海外'?></span>
+        <h1><?=htmlspecialchars($site['name'])?><?php if (!empty($site['featured'])): ?><span class="badge warn">编辑推荐</span><?php endif; ?></h1>
+        <p><?=htmlspecialchars($site['description'] ?? '')?></p>
+        <div class="cta-row"><a href="<?=htmlspecialchars($site['url'] ?? '#')?>" target="_blank" rel="noopener" class="btn primary">访问网站 →</a><button class="btn ghost" onclick="copyURL()">复制链接</button></div>
       </div>
     </div>
-
-    <!-- 点评/评论（大众点评化） -->
-    <div style="margin-top:40px">
-      <?php fc_comment_widget('site', $site['id'], ['title' => '用户点评', 'rating' => true]); ?>
+  </section>
+  <section class="reader reveal" data-od-id="site-reviews"><?php fc_comment_widget('site', $site['id'], ['title' => '用户点评', 'rating' => true]); ?></section>
+  <?php if ($related): ?>
+  <section class="reader reveal" data-od-id="site-related">
+    <div class="sec-head row"><div><span class="kicker">相关推荐</span><h2>同类站点</h2></div></div>
+    <div class="link-grid" style="grid-template-columns:repeat(2,1fr);margin-top:12px">
+      <?php foreach (array_slice($related, 0, 4) as $r): ?>
+      <a class="link-it top" href="/navigation/<?=urlencode($r['id'])?>"><span class="lt"><b><?=htmlspecialchars($r['name'])?></b><span><?=htmlspecialchars(mb_substr($r['description'] ?? '',0,60))?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+      <?php endforeach; ?>
     </div>
+  </section>
+  <?php endif; ?>
 
-    <!-- 相关站点 -->
-    <?php if ($related): ?>
-    <div>
-      <h2 class="font-bold text-lg mb-4">🔗 相关推荐</h2>
-      <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
-        <?php foreach (array_slice($related, 0, 4) as $r): ?>
-        <a href="/navigation/<?=urlencode($r['id'])?>" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;text-decoration:none;color:inherit;transition:.15s">
-          <div class="font-bold"><?=htmlspecialchars($r['name'])?></div>
-          <div class="text-sm text-gray-600 mt-1 line-clamp-2"><?=htmlspecialchars($r['description'] ?? '')?></div>
-        </a>
-        <?php endforeach; ?>
-      </div>
-    </div>
-    <?php endif; ?>
-  </div>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
 function copyURL() {
   var url = <?=json_encode($site['url'] ?? '')?>;
