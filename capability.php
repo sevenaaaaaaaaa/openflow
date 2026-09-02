@@ -73,7 +73,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
   <section id="caps" class="sec reveal" data-od-anchor data-od-id="capability-caps">
     <div class="tab-bar dense" id="cap-tabs" role="tablist" aria-label="六项能力" data-tabs>
       <?php foreach ($CAPS as $i => $c): ?>
-      <button type="button" class="tab-p" role="tab" id="cap-t<?=$i?>" aria-selected="<?=$i===0?'true':'false'?>" aria-controls="cap-p<?=$i?>" data-od-id="cap-<?=$i?>"><span class="ic"><?=$I[$c[0]]?></span><?=htmlspecialchars($c[1])?></button>
+      <button type="button" class="tab-p" role="tab" id="cap-t<?=$i?>" data-hash="<?=['cap-touch','cap-insight','cap-personality','cap-sales','cap-engine','cap-open'][$i] ?? 'cap-'.$i?>" aria-selected="<?=$i===0?'true':'false'?>" aria-controls="cap-p<?=$i?>" data-od-id="cap-<?=$i?>"><span class="ic"><?=$I[$c[0]]?></span><?=htmlspecialchars($c[1])?></button>
       <?php endforeach; ?>
     </div>
     <div class="tab-panels">

@@ -138,9 +138,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
     $__uri = preg_replace('~^/(zh-CN|zh-TW|en|ja|ko|ru|es|pt|ar|fr|de)(/|$)~', '/', $__uri);
     $__path = trim($__uri, '/');
     $__seg = explode('/', $__path)[0] ?? '';
-    // 用首段做缓存 key（匹配页面 PageCache::begin 传入的 key，如 /academy→academy, /category/xxx→category）
+    // 缓存 key 与 PageCache::fullKey() 完全一致：首段 + sha1(路径 + 排序后的查询串 + 主题/语言 cookie)。
+    // 以前只用首段：/category/a 与 /category/b 共用缓存，匿名访客点导航任何一项都拿到同一页。
     if ($__seg !== '') {
-        $__cacheFile = DATA_DIR . '/cache/' . md5('page:' . $__seg) . '.cache';
+        $__q = $_GET; unset($__q['nocache'], $__q['utm_source'], $__q['utm_medium'], $__q['utm_campaign'], $__q['utm_term'], $__q['utm_content'], $__q['fbclid'], $__q['gclid']); ksort($__q);
+        $__full = $__seg . ':' . sha1($__uri . ($__q ? '?' . http_build_query($__q) : '') . '|' . ($_COOKIE['of_theme'] ?? '') . '|' . ($_COOKIE['of_lang'] ?? ''));
+        $__cacheFile = DATA_DIR . '/cache/' . md5('page:' . $__full) . '.cache';
         if (is_file($__cacheFile)) {
             $__data = json_decode(@file_get_contents($__cacheFile), true);
             if (is_array($__data) && ($__data['expires'] ?? 0) > time() && !empty($__data['value'])) {
