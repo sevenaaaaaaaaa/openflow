@@ -14,8 +14,8 @@ chdir($ROOT);
 $MIGRATED = ['index.php','about.php','product.php','capability.php','courses.php','academy.php','enterprise.php','navigation.php','events.php','community.php','marketplace.php',
              'articles.php','article.php','category.php','docs.php','downloads.php','podcasts.php','author.php','search.php','topics.php',
              'event.php','community-post.php','reviews.php','messages.php','activate.php','nps.php','download.php','navigation-site.php','survey-my.php','front-builder.php',
-             'shop.php','live.php','tools.php','consultation.php','survey.php','asset.php','course-player.php'];
-$PENDING  = ['member.php'];
+             'shop.php','live.php','tools.php','consultation.php','survey.php','asset.php','course-player.php','member.php','landing.php','thank-you.php','seo-board.php'];
+$PENDING  = []; // 2026-09-02：前台页面全部迁完；新页面先进这里，迁完挪到 MIGRATED
 // 对外独立页（问卷 / NPS 由外链打开，不接站点外壳、不带页脚）—— 只免 of_shell / .foot 两项，其余契约照常
 $STANDALONE = ['nps.php','survey-my.php','survey.php'];
 
@@ -78,6 +78,10 @@ echo "\n== 待迁页面（只报数）==\n";
 $still = 0;
 foreach ($PENDING as $f) { if (!is_file($f)) continue; if (strpos(file_get_contents($f), 'tailwind-build.css') !== false) $still++; }
 echo "  仍在 tailwind 上：$still / " . count(array_filter($PENDING, 'is_file')) . "\n";
+// 兜底：根目录任何前台 .php 都不该再引 tailwind（admin/ 与 api/ 不在此列）
+$stray = [];
+foreach (glob('*.php') as $f) { if (in_array($f, $MIGRATED, true) || in_array($f, $PENDING, true)) continue; if (strpos(file_get_contents($f), 'tailwind-build.css') !== false) $stray[] = $f; }
+check(empty($stray), '不在名单里却仍引 tailwind 的页面：' . implode(', ', $stray));
 
 echo "\n通过 $pass · 失败 $fail\n";
 exit($fail ? 1 : 0);

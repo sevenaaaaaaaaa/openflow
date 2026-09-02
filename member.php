@@ -1,6 +1,10 @@
 <?php
 /**
  * 前台用户中心 — 注册/登录/个人中心
+ *
+ * v7（2026-09-01）：从 tailwind + standalone.css + 自带顶栏 迁到 站点外壳 + tokens + modules。
+ * 布局 = g-main-aside.aside-left（左侧账户导航 + 右侧面板卡），表单 = form-grid / field / inp / btn，
+ * 状态 = badge / pill。业务逻辑、API 调用、各 tab 的数据准备原样保留。
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
@@ -20,147 +24,178 @@ if (!$member && $view === 'dashboard') {
     header('Location: member.php?view=login' . ($next ? '&next=' . urlencode($next) : ''));
     exit;
 }
+// 已登录还访问登录 / 注册页 → 直接进个人中心（原先会渲染成空面板）
+if ($member && in_array($view, ['login', 'register'], true)) {
+    header('Location: ' . ($next ?: 'member.php?view=dashboard'));
+    exit;
+}
 
 $orders = shop_all_orders();
 $myOrders = $member ? array_values(array_filter($orders, fn($o) => ($o['member_id'] ?? '') === $member['id'])) : [];
 
 $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个人中心', 'profile' => '个人资料', 'password' => '修改密码', 'reset-password' => '重置密码'][$view] ?? '用户中心';
-?>
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?=$pageTitle?> | <?=site_config_get("site_name")?></title>
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
-<style>
-/* ── 设计语言统一：token 语义工具类（终版契约） ── */
-  .text-fg{color:var(--fg)}.text-muted{color:var(--muted)}.text-faint{color:var(--faint)}
-  .text-accent{color:var(--accent)}.text-ok{color:var(--ok)}.text-danger{color:var(--danger)}
-  .text-on-accent{color:var(--on-accent)}
-  body{background:var(--bg);font-family:var(--font-body)}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 4px 16px rgba(30,30,30,.05)}
-  .field{margin-bottom:16px}
-  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--fg)}
-  .field input,.field select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;outline:none;box-sizing:border-box}
-  .field input:focus{border-color:var(--accent)}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;font-size:14px;color:var(--muted);cursor:pointer;transition:.12s;text-decoration:none}
-  .nav-item:hover{background:var(--bg)}
-  .nav-item.active{background:var(--accent);color:var(--on-accent);font-weight:600}
-  .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
-  .tag.green{background:var(--ok-soft);color:var(--ok)}
-  .tag.orange{background:var(--warn-soft);color:var(--warn)}
-  .tag.gray{background:var(--bg);color:var(--muted)}
-</style>
-<link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
-</head>
-<body class="min-h-screen">
-  <!-- 顶部导航 -->
-  <header class="border-b" style="background:var(--glass-bright);border-color:var(--border);backdrop-filter:blur(10px);position:sticky;top:0;z-index:40">
-    <div class="mx-auto max-w-site px-5 py-3 flex items-center justify-between" style="max-width:1100px">
-      <a href="/" class="font-bold text-lg text-fg"><?=site_config_get("site_name")?></a>
-      <nav class="flex items-center gap-4 text-sm">
-        <a href="/academy" class="text-muted">OpenFlow 社区</a>
-        <a href="/courses" class="text-muted hover:text-fg">课程</a>
-        <?php if ($member): ?>
-        <a href="member.php" class="font-semibold text-ok"><?=htmlspecialchars($member['name'])?></a>
-        <a href="javascript:memberLogout()" class="text-danger">退出</a>
-        <?php else: ?>
-        <a href="member.php?view=login" class="font-semibold text-ok">登录</a>
-        <a href="member.php?view=register" class="rounded-full bg-[var(--accent)] text-on-accent px-5 py-2 font-semibold">注册</a>
-        <?php endif; ?>
-      </nav>
-    </div>
-  </header>
 
-  <?php if (!$member && in_array($view, ['login','register','reset-password'])): ?>
-  <!-- 登录/注册/密码重置 -->
-  <div class="mx-auto px-5 py-14" style="max-width:440px">
+// 状态词 → 共享 badge / pill（颜色只来自 token）
+function acct_tag(string $kind): string {
+    return ['green' => 'badge ok', 'orange' => 'badge warn', 'red' => 'badge danger', 'gray' => 'pill neutral'][$kind] ?? 'pill neutral';
+}
+// 统计瓦片
+function acct_tile(string $n, string $label, string $tone = ''): string {
+    return '<div class="tile"><b' . ($tone ? ' class="' . $tone . '"' : '') . '>' . $n . '</b><span>' . htmlspecialchars($label) . '</span></div>';
+}
+?>
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><?=$pageTitle?> | <?=site_config_get("site_name")?></title>
+<meta name="robots" content="noindex">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
+<style>
+/* 用户中心独有：账户导航、面板头、统计瓦片、简表、计划卡、消息条。其余全部来自 modules.css。 */
+.acct.g-main-aside{grid-template-columns:240px minmax(0,1fr)}
+.acct>aside .card{padding:12px;position:sticky;top:20px}
+.who{padding:10px 12px 14px;border-bottom:1px solid var(--border-soft);margin-bottom:8px;display:flex;flex-direction:column;gap:4px}
+.who b{font-size:15px;font-weight:800}.who .em{font-size:12.5px;color:var(--muted);word-break:break-all}.who .lv{font-size:13px;font-weight:600;margin-top:4px}.who .bd{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.an{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;color:var(--muted);transition:background .12s,color .12s}
+.an .ic{width:16px;height:16px;flex:0 0 auto}.an .ic svg{width:16px;height:16px}.an:hover{background:var(--hover);color:var(--fg)}.an.on{background:var(--accent);color:var(--on-accent);font-weight:600}
+.an .cnt{margin-left:auto;background:var(--danger);color:var(--on-accent);border-radius:999px;padding:1px 7px;font-size:11px;font-weight:700}
+.an-sep{border-top:1px solid var(--border-soft);margin:8px 0}
+.panel{display:flex;flex-direction:column;gap:20px}
+.panel+.panel{margin-top:20px}
+.ph{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ph .ic{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:0 0 auto}.ph .ic svg{width:20px;height:20px}
+.ph h2{font-size:20px;font-weight:800;letter-spacing:-.01em}.ph p{font-size:13px;color:var(--muted);margin-top:2px}.ph .r{margin-left:auto}
+.panel h3{font-size:15px;font-weight:700}
+.panel h3 small{font-weight:400;font-size:12px;color:var(--muted)}
+.panel p.d{font-size:13.5px;color:var(--muted);line-height:1.75}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.tile{padding:16px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--border-soft);display:flex;flex-direction:column;gap:4px}
+.tile b{font-family:var(--font-display);font-size:24px;font-weight:700;letter-spacing:-.01em;line-height:1.1}.tile b.ok{color:var(--ok)}.tile b.ac{color:var(--accent)}.tile b.wn{color:var(--warn)}.tile span{font-size:12px;color:var(--muted)}
+.box{padding:18px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--border-soft);display:flex;flex-direction:column;gap:10px}
+.box.dash{background:var(--surface);border-style:dashed;border-color:var(--border-strong)}
+.box.ok{background:var(--ok-soft);border-color:transparent;color:var(--ok)}.box.warn{background:var(--warn-soft);border-color:transparent;color:var(--warn)}.box.danger{background:var(--danger-soft);border-color:transparent}
+.tbl{width:100%;font-size:13.5px;border-collapse:collapse}
+.tbl th{text-align:left;font-weight:600;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);font-size:12.5px}
+.tbl td{padding:10px;border-bottom:1px solid var(--border-soft);vertical-align:middle}
+.tbl .mu{color:var(--muted)}.tbl .ok{color:var(--ok);font-weight:600}.tbl .dn{color:var(--danger)}.tbl .wn{color:var(--warn)}
+.tbl-wrap{border:1px solid var(--border);border-radius:12px;overflow:auto}
+.tbl-wrap .tbl th{background:var(--bg-soft)}
+.plan{padding:20px;border-radius:14px;border:2px solid var(--border);display:flex;flex-direction:column;gap:6px;background:var(--surface)}
+.plan.cur{border-color:var(--accent);background:var(--accent-soft)}
+.plan .pn{font-size:16px;font-weight:800}.plan .pp{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--ok)}.plan .pp small{font-family:var(--font-body);font-size:12px;font-weight:400;color:var(--muted)}
+.plan ul{list-style:none;padding:0;font-size:12.5px;color:var(--muted);line-height:1.8}
+.plan .btn{margin-top:auto}
+.msg{padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600}
+.msg.ok{background:var(--ok-soft);color:var(--ok)}.msg.err{background:var(--danger-soft);color:var(--danger)}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px}
+.item .t{flex:1;min-width:0}.item .t b{display:block;font-size:14px}.item .t span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.bars{display:flex;gap:3px;align-items:flex-end;height:70px}.bars i{flex:1;background:var(--ok);border-radius:3px 3px 0 0;display:block}
+.inp.sm,select.inp.sm{min-height:42px;padding:9px 12px;font-size:13.5px}
+.btn.sm{height:40px;padding:0 18px;font-size:14px}
+.auth{width:min(440px,100%);margin:0 auto}
+@media (max-width:1080px){.acct.g-main-aside{grid-template-columns:1fr}.acct>aside .card{position:static;display:flex;flex-wrap:wrap;gap:4px;align-items:center}.acct .who{width:100%;border-bottom:0;margin:0 0 4px}.acct .an{padding:8px 12px;font-size:13px;border:1px solid var(--border-soft)}.acct .an .cnt{margin-left:4px}.acct .an-sep{display:none}}
+</style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
+</head>
+<body data-of-main>
+<?php of_shell('account'); ?>
+
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+<?php if (!$member && in_array($view, ['login','register','reset-password'])): ?>
+  <!-- 登录 / 注册 / 密码重置 -->
+  <section id="top" class="sec reveal in" data-od-anchor data-od-id="acct-auth">
+    <div class="auth">
     <?php if ($view === 'reset-password'): ?>
       <?php include_member_reset_password(); ?>
     <?php else: ?>
-    <div class="card p-8">
-      <h1 class="text-2xl font-bold text-center"><?=$view==='login'?'欢迎回来':'创建账号'?></h1>
-      <p class="text-center text-sm text-muted mt-2 mb-8"><?=$view==='login'?'登录你的 OpenFlow 账号':'注册后可购买课程、成为讲师'?></p>
-
-      <?php if ($view === 'login'): ?>
-      <form onsubmit="memberLogin(event)">
-        <div class="field"><label>邮箱或手机号</label><input type="text" name="account" id="l_account" required placeholder="you@example.com 或手机号"></div>
-        <div class="field"><label>密码</label><input type="password" name="password" id="l_password" required placeholder="••••••"></div>
-        <button type="submit" class="w-full rounded-full py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">登录</button>
-      </form>
-      <p class="text-center text-sm text-muted mt-6">还没有账号？<a href="member.php?view=register" class="text-accent font-semibold">立即注册</a></p>
-      <?php else: ?>
-      <form onsubmit="memberRegister(event)">
-        <div class="field"><label>姓名</label><input type="text" name="name" id="r_name" required placeholder="你的真实姓名"></div>
-        <div class="field"><label>手机号</label><div style="display:flex;gap:8px">
-          <input type="tel" name="phone" id="r_phone" required placeholder="11 位手机号" style="flex:1">
-          <button type="button" class="rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap" style="background:var(--bg);color:var(--accent)" onclick="memberSendCaptcha(document.getElementById('r_phone').value)">发验证码</button>
-        </div></div>
-        <div class="field"><label>邮箱</label><input type="email" name="email" id="r_email" required placeholder="you@example.com"></div>
-        <div class="field"><label>密码</label><input type="password" name="password" id="r_password" required minlength="6" placeholder="至少 6 位"></div>
-        <div class="field"><label>短信验证码</label><input type="text" name="captcha" id="r_captcha" required placeholder="6 位验证码"></div>
-        <?php if (!empty($_GET['ref'])): ?><input type="hidden" name="referral" value="<?=htmlspecialchars($_GET['ref'])?>"><?php endif; ?>
-        <button type="submit" class="w-full rounded-full py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">注册</button>
-      </form>
-      <p class="text-center text-sm text-muted mt-6">已有账号？<a href="member.php?view=login" class="text-accent font-semibold">直接登录</a></p>
-      <?php endif; ?>
-      <div id="memberMsg" style="margin-top:14px"></div>
-    </div>
-    <?php endif; ?>
-  </div>
-
-  <?php elseif ($member): ?>
-  <!-- 个人中心 -->
-  <div class="mx-auto px-5 py-10" style="max-width:1100px">
-    <div class="grid gap-6" style="grid-template-columns:240px 1fr">
-      <!-- 侧边栏 -->
-      <div class="card p-3 h-fit" style="position:sticky;top:20px">
-        <div class="px-3 py-4 border-b border-[var(--border)] mb-2">
-          <div class="font-bold text-fg"><?=htmlspecialchars($member['name'])?></div>
-          <div class="text-sm text-muted mt-1"><?=htmlspecialchars($member['email'])?></div>
-          <?php $mLevel = gamification_level_of($member['points'] ?? 0); ?>
-          <?php $mEnt = member_entitlements($member); ?>
-          <div class="mt-2 text-sm font-semibold"><?=$mLevel['icon']?> <?=htmlspecialchars($mLevel['name'])?> <span class="text-xs text-faint font-normal">· <?=$member['points']??0?> 积分</span></div>
-          <span class="tag green mt-1" style="display:inline-block"><?=$mEnt['icon']?> <?=htmlspecialchars($mEnt['tier_name'])?></span>
-          <?php if (sub_is_active($member['id'])): ?><span class="tag orange mt-1">⭐ 订阅</span><?php endif; ?>
-          <?php if (!empty($member['ambassador'])): ?><span class="tag green mt-1"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="m8.5 13-2 8 5.5-3 5.5 3-2-8"/></svg></span> 推荐大使</span><?php endif; ?>
-        </div>
-        <a class="nav-item <?=$view==='dashboard'?'active':''?>" href="member.php?view=dashboard"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span> 个人中心</a>
-        <a class="nav-item <?=$view==='membership'?'active':''?>" href="member.php?view=membership"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9l4-6Z"/><path d="M2 9h20M9 3 7 9l5 12M15 3l2 6-5 12"/></svg></span> 会员中心</a>
-        <a class="nav-item" href="member.php?view=level"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3M10 14h4v3h-4zM12 17v3M8 21h8"/></svg></span> 我的等级</a>
-        <a class="nav-item" href="member.php?view=subscribe"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 8 9-5 9 5-9 5-9-5Z"/><path d="M2 8v8l9 5 9-5V8M11 13v8"/></svg></span> 付费订阅</a>
-        <a class="nav-item" href="member.php?view=orders"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span> 我的订单</a>
-        <a class="nav-item" href="member.php?view=courses"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span> 我的课程</a>
-        <a class="nav-item" href="member.php?view=teacher"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/></svg></span> 成为讲师</a>
-        <a class="nav-item" href="member.php?view=submit"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span> 投稿文章</a>
-        <a class="nav-item" href="/consultation?view=my"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span> 我的1v1咨询</a>
-        <a class="nav-item <?=$view==='org'?'active':''?>" href="member.php?view=org"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/></svg></span> 企业控制台</a>
-        <a class="nav-item <?=$view==='developer'?'active':''?>" href="member.php?view=developer"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3M13 15h4"/><path d="M7 4h13a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg></span> 开发者中心</a>
-        <a class="nav-item <?=$view==='distribution'?'active':''?>" href="member.php?view=distribution"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span> 分销中心</a>
-        <a class="nav-item" href="/messages.php"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span> 站内信<?php $msgUnread = inbox_unread($member); if ($msgUnread): ?> <span style="background:var(--danger);color:var(--surface);border-radius:999px;padding:1px 7px;font-size:11px"><?=$msgUnread?></span><?php endif; ?></a>
-        <div style="border-top:1px solid var(--border);margin:8px 0"></div>
-        <a class="nav-item <?=$view==='profile'?'active':''?>" href="member.php?view=profile">👤 个人资料</a>
-        <a class="nav-item <?=$view==='password'?'active':''?>" href="member.php?view=password"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span> 修改密码</a>
-        <a class="nav-item <?=$view==='addresses'?'active':''?>" href="member.php?view=addresses"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></span> 收货地址</a>
-        <a class="nav-item <?=$view==='privacy'?'active':''?>" href="member.php?view=privacy"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></span> 隐私中心</a>
+      <div class="form-card panel">
+        <div class="sec-head center" style="gap:8px"><span class="kicker"><?=$view==='login'?'SIGN IN':'SIGN UP'?></span><h2 style="font-size:24px"><?=$view==='login'?'欢迎回来':'创建账号'?></h2><p class="lead" style="font-size:14px"><?=$view==='login'?'登录你的 OpenFlow 账号':'注册后可购买课程、成为讲师'?></p></div>
+        <?php if ($view === 'login'): ?>
+        <form onsubmit="memberLogin(event)" class="form-grid">
+          <div class="field"><label for="l_account">邮箱或手机号</label><input class="inp" type="text" name="account" id="l_account" required placeholder="you@example.com 或手机号"></div>
+          <div class="field"><label for="l_password">密码</label><input class="inp" type="password" name="password" id="l_password" required placeholder="••••••"></div>
+          <button type="submit" class="btn primary" style="width:100%">登录</button>
+          <p class="note" style="text-align:center;margin:0">还没有账号？<a href="member.php?view=register" style="color:var(--accent);font-weight:600">立即注册</a> · <a href="member.php?view=reset-password" style="color:var(--accent);font-weight:600">忘记密码</a></p>
+        </form>
+        <?php else: ?>
+        <form onsubmit="memberRegister(event)" class="form-grid">
+          <div class="field"><label for="r_name">姓名</label><input class="inp" type="text" name="name" id="r_name" required placeholder="你的真实姓名"></div>
+          <div class="field"><label for="r_phone">手机号</label><div style="display:flex;gap:8px"><input class="inp" type="tel" name="phone" id="r_phone" required placeholder="11 位手机号" style="flex:1"><button type="button" class="btn ghost" style="flex:0 0 auto" onclick="memberSendCaptcha(document.getElementById('r_phone').value)">发验证码</button></div></div>
+          <div class="field"><label for="r_email">邮箱</label><input class="inp" type="email" name="email" id="r_email" required placeholder="you@example.com"></div>
+          <div class="field"><label for="r_password">密码</label><input class="inp" type="password" name="password" id="r_password" required minlength="6" placeholder="至少 6 位"></div>
+          <div class="field"><label for="r_captcha">短信验证码</label><input class="inp" type="text" name="captcha" id="r_captcha" required placeholder="6 位验证码"></div>
+          <?php if (!empty($_GET['ref'])): ?><input type="hidden" name="referral" value="<?=htmlspecialchars($_GET['ref'])?>"><?php endif; ?>
+          <button type="submit" class="btn primary" style="width:100%">注册</button>
+          <p class="note" style="text-align:center;margin:0">已有账号？<a href="member.php?view=login" style="color:var(--accent);font-weight:600">直接登录</a></p>
+        </form>
+        <?php endif; ?>
+        <div id="memberMsg"></div>
       </div>
+    <?php endif; ?>
+    </div>
+  </section>
 
-      <!-- 内容区 -->
+<?php elseif ($member): ?>
+  <!-- 个人中心 -->
+  <section id="top" class="sec reveal in" data-od-anchor data-od-id="acct-main">
+    <div class="g-main-aside aside-left acct">
+      <aside>
+        <div class="card">
+          <div class="who">
+            <b><?=htmlspecialchars($member['name'])?></b>
+            <span class="em"><?=htmlspecialchars($member['email'])?></span>
+            <?php $mLevel = gamification_level_of($member['points'] ?? 0); $mEnt = member_entitlements($member); ?>
+            <span class="lv"><?=$mLevel['icon']?> <?=htmlspecialchars($mLevel['name'])?> <span class="note" style="margin:0;display:inline">· <?=$member['points']??0?> 积分</span></span>
+            <div class="bd">
+              <span class="badge ok"><?=$mEnt['icon']?> <?=htmlspecialchars($mEnt['tier_name'])?></span>
+              <?php if (sub_is_active($member['id'])): ?><span class="badge warn">⭐ 订阅</span><?php endif; ?>
+              <?php if (!empty($member['ambassador'])): ?><span class="badge ok">推荐大使</span><?php endif; ?>
+            </div>
+          </div>
+          <?php
+          $I = fn(string $p) => '<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' . $p . '</svg></span>';
+          $navItems = [
+            ['dashboard', 'member.php?view=dashboard', '个人中心', '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>'],
+            ['membership', 'member.php?view=membership', '会员中心', '<path d="M6 3h12l4 6-10 12L2 9l4-6Z"/><path d="M2 9h20M9 3 7 9l5 12M15 3l2 6-5 12"/>'],
+            ['level', 'member.php?view=level', '我的等级', '<path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3M10 14h4v3h-4zM12 17v3M8 21h8"/>'],
+            ['subscribe', 'member.php?view=subscribe', '付费订阅', '<path d="m2 8 9-5 9 5-9 5-9-5Z"/><path d="M2 8v8l9 5 9-5V8M11 13v8"/>'],
+            ['orders', 'member.php?view=orders', '我的订单', '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>'],
+            ['courses', 'member.php?view=courses', '我的课程', '<path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/>'],
+            ['teacher', 'member.php?view=teacher', '成为讲师', '<path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/>'],
+            ['submit', 'member.php?view=submit', '投稿文章', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/>'],
+            ['consult', '/consultation?view=my', '我的 1v1 咨询', '<path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/>'],
+            ['org', 'member.php?view=org', '企业控制台', '<path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/>'],
+            ['developer', 'member.php?view=developer', '开发者中心', '<path d="m8 9-3 3 3 3M13 15h4"/><path d="M7 4h13a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/>'],
+            ['distribution', 'member.php?view=distribution', '分销中心', '<path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'],
+          ];
+          foreach ($navItems as [$k, $href, $label, $path]): ?>
+          <a class="an<?=$view===$k?' on':''?>" href="<?=$href?>"><?=$I($path)?><?=$label?></a>
+          <?php endforeach; $msgUnread = inbox_unread($member); ?>
+          <a class="an" href="/messages.php"><?=$I('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/>')?>站内信<?php if ($msgUnread): ?><span class="cnt"><?=$msgUnread?></span><?php endif; ?></a>
+          <div class="an-sep"></div>
+          <a class="an<?=$view==='profile'?' on':''?>" href="member.php?view=profile"><?=$I('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>')?>个人资料</a>
+          <a class="an<?=$view==='password'?' on':''?>" href="member.php?view=password"><?=$I('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>')?>修改密码</a>
+          <a class="an<?=$view==='addresses'?' on':''?>" href="member.php?view=addresses"><?=$I('<path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/>')?>收货地址</a>
+          <a class="an<?=$view==='privacy'?' on':''?>" href="member.php?view=privacy"><?=$I('<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>')?>隐私中心</a>
+          <div class="an-sep"></div>
+          <a class="an" href="javascript:memberLogout()" style="color:var(--danger)"><?=$I('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>')?>退出登录</a>
+        </div>
+      </aside>
+
       <div>
         <?php $tab = $_GET['view'] ?? 'dashboard'; ?>
         <?php if ($tab === 'dashboard'): ?>
-        <div class="card p-8">
-          <h2 class="text-xl font-bold mb-6">个人中心</h2>
-          <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-            <div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold"><?=count(array_filter($myOrders, fn($o)=>$o['status']==='paid'))?></div><div class="text-sm text-muted">已购课程</div></div>
-            <div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold"><?=count($myOrders)?></div><div class="text-sm text-muted">全部订单</div></div>
-            <?php if (!empty($member['ambassador'])): ?>
-            <div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">¥<?=$member['balance']??0?></div><div class="text-sm text-muted">佣金余额</div></div>
-            <?php endif; ?>
+        <div class="card panel">
+          <div class="ph"><div><h2>个人中心</h2><p>你好，<?=htmlspecialchars($member['name'])?>。从「我的课程」开始你的学习之旅。</p></div></div>
+          <div class="tiles">
+            <?=acct_tile((string)count(array_filter($myOrders, fn($o)=>$o['status']==='paid')), '已购课程')?>
+            <?=acct_tile((string)count($myOrders), '全部订单')?>
+            <?php if (!empty($member['ambassador'])): ?><?=acct_tile('¥' . ($member['balance']??0), '佣金余额', 'ok')?><?php endif; ?>
           </div>
-          <p class="text-sm text-muted mt-6">从「我的课程」开始你的学习之旅。</p>
           <?php
           // 个性化推荐（基于 CDP 画像）
           try {
@@ -170,28 +205,21 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
               $recCourses = Personalizer::recommendCourses($pref, 3);
           } catch (Throwable $e) { $recProducts = []; $recCourses = []; }
           if (!empty($recProducts) || !empty($recCourses)): ?>
-          <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px">
-            <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">✨ 为你推荐</h3>
-            <p style="font-size:12px;color:var(--faint);margin-bottom:14px">根据你的行为画像智能推荐 · 进入分群/点击商品/浏览课程都会更新</p>
+          <div class="panel" style="border-top:1px solid var(--border-soft);padding-top:20px;gap:12px">
+            <h3>为你推荐 <small>根据你的行为画像智能推荐 · 进入分群 / 点击商品 / 浏览课程都会更新</small></h3>
             <?php if (!empty($recProducts)): ?>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">🎁 生态工具</div>
-            <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <span class="kicker" style="font-size:11px">生态工具</span>
+            <div class="grid g3" style="gap:10px">
               <?php foreach (array_keys($recProducts) as $rpid): $rp = CommerceSystem::getProduct($rpid); if (!$rp) continue; ?>
-              <a href="/skill/<?=urlencode($rpid)?>" style="flex:1;min-width:200px;max-width:260px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;color:var(--fg)">
-                <div style="font-size:13px;font-weight:600"><?=htmlspecialchars($rp['title'])?></div>
-                <div style="font-size:11px;color:var(--faint);margin-top:4px">¥<?=number_format((float)($rp['pricing']['price'] ?? 0),0)?> · 即买即用</div>
-              </a>
+              <a href="/skill/<?=urlencode($rpid)?>" class="item"><div class="t"><b><?=htmlspecialchars($rp['title'])?></b><span>¥<?=number_format((float)($rp['pricing']['price'] ?? 0),0)?> · 即买即用</span></div></a>
               <?php endforeach; ?>
             </div>
             <?php endif; ?>
             <?php if (!empty($recCourses)): ?>
-            <div style="font-size:12px;color:var(--muted);margin:14px 0 8px">🎓 相关课程</div>
-            <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <span class="kicker" style="font-size:11px">相关课程</span>
+            <div class="grid g3" style="gap:10px">
               <?php foreach (array_keys($recCourses) as $rcid): $rc = null; foreach (json_read(DATA_DIR . '/courses/index.json') as $cc) { if ($cc['id'] === $rcid) { $rc = $cc; break; } } if (!$rc) continue; ?>
-              <a href="/course/<?=urlencode($rcid)?>?id=<?=urlencode($rcid)?>" style="flex:1;min-width:200px;max-width:260px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;color:var(--fg)">
-                <div style="font-size:13px;font-weight:600"><?=htmlspecialchars($rc['title'])?></div>
-                <div style="font-size:11px;color:var(--faint);margin-top:4px"><?=htmlspecialchars($rc['type'] ?? '课程')?> · <?=count($rc['chapters'] ?? [])?> 章</div>
-              </a>
+              <a href="/course/<?=urlencode($rcid)?>?id=<?=urlencode($rcid)?>" class="item"><div class="t"><b><?=htmlspecialchars($rc['title'])?></b><span><?=htmlspecialchars($rc['type'] ?? '课程')?> · <?=count($rc['chapters'] ?? [])?> 章</span></div></a>
               <?php endforeach; ?>
             </div>
             <?php endif; ?>
@@ -216,12 +244,17 @@ $pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个�
         <?php endif; ?>
       </div>
     </div>
-  </div>
-  <?php endif; ?>
+  </section>
+<?php endif; ?>
+
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 
 <script>
+function msgHtml(html, ok) { return '<div class="msg ' + (ok ? 'ok' : 'err') + '">' + html + '</div>'; }
 function memberMsg(html, isErr) {
-  document.getElementById('memberMsg').innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;' + (isErr?'background:var(--danger-soft);color:var(--danger)':'background:var(--ok-soft);color:var(--ok)') + '">' + html + '</div>';
+  document.getElementById('memberMsg').innerHTML = msgHtml(html, !isErr);
 }
 function memberLogin(e) {
   e.preventDefault();
@@ -281,60 +314,46 @@ function include_member_membership($member): void {
     $plans = mem_plans();
     $current = $e['tier'];
     ?>
-    <div class="card p-8">
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-bottom:20px;border-bottom:1px solid var(--border)">
-        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--ok));display:grid;place-items:center;font-size:32px"><?=$e['icon']?></div>
-        <div style="flex:1">
-          <h2 class="text-xl font-bold"><?=htmlspecialchars($e['tier_name'])?></h2>
-          <div class="text-sm text-muted mt-1"><?=$e['points']?> 积分 · <?=htmlspecialchars($e['level']['name'] ?? '')?> 等级<?php if ($e['subscription']): ?> · ⭐ 订阅中<?php endif; ?></div>
-        </div>
-        <?php if ($current === 'free'): ?>
-        <a href="#shop-plans" class="px-6 py-3 rounded-full font-bold" style="background:var(--accent);color:var(--on-accent)">开通会员 →</a>
-        <?php endif; ?>
+    <div class="card panel">
+      <div class="ph">
+        <div class="ic" style="width:56px;height:56px;border-radius:50%;font-size:26px"><?=$e['icon']?></div>
+        <div><h2><?=htmlspecialchars($e['tier_name'])?></h2><p><?=$e['points']?> 积分 · <?=htmlspecialchars($e['level']['name'] ?? '')?> 等级<?php if ($e['subscription']): ?> · ⭐ 订阅中<?php endif; ?></p></div>
+        <?php if ($current === 'free'): ?><a href="#shop-plans" class="btn primary sm r">开通会员 →</a><?php endif; ?>
       </div>
 
       <!-- 权益总览 -->
       <?php foreach ($lists as $cat => $items): ?>
-      <div class="mt-6">
-        <h3 class="text-sm font-bold text-muted mb-3"><?=htmlspecialchars($cat)?></h3>
-        <div class="grid gap-2" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
-          <?php foreach ($items as $it): ?>
-          <div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg-soft)">
-            <div style="font-size:13px;font-weight:600"><?=htmlspecialchars($it['权益'])?></div>
-            <div style="font-size:12px;margin-top:3px;<?=strpos($it['状态'],'🔒')!==false?'color:var(--faint)':'color:var(--ok)'?>"><?=htmlspecialchars($it['状态'])?></div>
-          </div>
+      <div class="panel" style="gap:10px">
+        <h3><?=htmlspecialchars($cat)?></h3>
+        <div class="grid g3" style="gap:8px">
+          <?php foreach ($items as $it): $locked = strpos($it['状态'],'🔒')!==false; ?>
+          <div class="item" style="padding:10px 14px"><div class="t"><b style="font-size:13px"><?=htmlspecialchars($it['权益'])?></b><span style="color:<?=$locked?'var(--faint)':'var(--ok)'?>"><?=htmlspecialchars($it['状态'])?></span></div></div>
           <?php endforeach; ?>
         </div>
       </div>
       <?php endforeach; ?>
 
       <!-- 会员计划 -->
-      <div class="mt-8">
-        <h3 class="text-sm font-bold text-muted mb-3" id="shop-plans"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span> 商品会员计划</h3>
+      <div class="panel" style="gap:12px" id="shop-plans">
+        <h3>商品会员计划</h3>
         <?php $shopPlan = member_shop_plan($member); $quota = member_quota_usage($member); ?>
         <?php if ($shopPlan): ?>
-        <div style="padding:12px 16px;border-radius:12px;background:var(--ok-soft);margin-bottom:14px;font-size:13px;color:var(--ok)">
-          当前：<b><?=htmlspecialchars($shopPlan['name'])?></b> · 今日已用 <?=$quota['used']?>/<?=$quota['daily']?> 单 · 剩余 <b><?=$quota['left']?></b> 单免费
-          <?php if (($shopPlan['period'] ?? '') === 'year'): ?> · <?=date('Y-m-d', strtotime($member['membership_expires']))?> 到期<?php endif; ?>
-        </div>
+        <div class="box ok" style="font-size:13px">当前：<b><?=htmlspecialchars($shopPlan['name'])?></b> · 今日已用 <?=$quota['used']?>/<?=$quota['daily']?> 单 · 剩余 <b><?=$quota['left']?></b> 单免费<?php if (($shopPlan['period'] ?? '') === 'year'): ?> · <?=date('Y-m-d', strtotime($member['membership_expires']))?> 到期<?php endif; ?></div>
         <?php endif; ?>
-        <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+        <div class="grid g3" style="gap:14px">
           <?php foreach ($plans as $p): if (in_array($p['id'], ['annual','lifetime'])): $isCurrent = ($shopPlan['id'] ?? '') === $p['id']; ?>
-          <div style="padding:20px;border-radius:14px;border:2px solid <?=$isCurrent?'var(--accent)':'var(--border)'?>;<?=$isCurrent?'background:var(--warn-soft)':''?>">
-            <div class="text-2xl"><?=htmlspecialchars($p['icon'] ?? '')?></div>
-            <div class="font-bold mt-1" style="font-size:16px"><?=htmlspecialchars($p['name'] ?? '')?></div>
-            <div class="text-lg mt-1" style="color:var(--ok);font-weight:800">¥<?=$p['price']?><span style="font-size:12px;font-weight:400;color:var(--muted)"><?=$p['period']==='year'?' /年':' /永久'?></span></div>
-            <div class="text-xs mt-1" style="color:var(--accent);font-weight:600">每天免费 <?=$p['quota_per_day']?> 个任意商品</div>
-            <ul class="text-xs text-muted mt-2" style="line-height:1.8;list-style:none;padding:0">
-              <?php foreach ($p['benefits'] ?? [] as $b): ?><li>✓ <?=htmlspecialchars($b)?></li><?php endforeach; ?>
-            </ul>
-            <?php if ($isCurrent): ?><div class="text-xs mt-3 font-bold" style="color:var(--ok)">当前会员</div>
-            <?php else: ?><button onclick="buyMembership('<?=htmlspecialchars($p['id'])?>')" class="mt-3 w-full rounded-full py-2.5 font-bold" style="background:var(--accent);color:var(--on-accent)"><?=$p['price']>0?'立即开通':'免费'?> →</button>
-            <?php endif; ?>
+          <div class="plan<?=$isCurrent?' cur':''?>">
+            <div style="font-size:24px"><?=htmlspecialchars($p['icon'] ?? '')?></div>
+            <div class="pn"><?=htmlspecialchars($p['name'] ?? '')?></div>
+            <div class="pp">¥<?=$p['price']?><small><?=$p['period']==='year'?' /年':' /永久'?></small></div>
+            <span class="kicker" style="font-size:11px">每天免费 <?=$p['quota_per_day']?> 个任意商品</span>
+            <ul><?php foreach ($p['benefits'] ?? [] as $b): ?><li>✓ <?=htmlspecialchars($b)?></li><?php endforeach; ?></ul>
+            <?php if ($isCurrent): ?><span class="badge ok" style="align-self:flex-start">当前会员</span>
+            <?php else: ?><button type="button" onclick="buyMembership('<?=htmlspecialchars($p['id'])?>')" class="btn primary sm"><?=$p['price']>0?'立即开通':'免费'?> →</button><?php endif; ?>
           </div>
           <?php endif; endforeach; ?>
         </div>
-        <p style="font-size:11.5px;color:var(--faint);margin-top:12px;line-height:1.7">会员商品仅限本人账号使用：不得二次开发、转售或打包分发，擅自魔改/复用构成侵权。免费下单按自然日重置。</p>
+        <p class="note" style="margin:0;line-height:1.7">会员商品仅限本人账号使用：不得二次开发、转售或打包分发，擅自魔改/复用构成侵权。免费下单按自然日重置。</p>
       </div>
     </div>
     <script>
@@ -370,35 +389,35 @@ function include_member_level($member): void {
     // 下一级
     $next = null;
     foreach ($levels as $l) if ($l['min_points'] > $points) { $next = $l; break; }
-    echo '<div class="card p-8"><h2 class="text-xl font-bold mb-2">我的等级</h2>';
-    echo '<div class="mb-6" style="background:var(--bg);padding:20px;border-radius:14px">';
-    echo '<div class="text-3xl font-bold">' . $current['icon'] . ' ' . htmlspecialchars($current['name']) . '</div>';
-    echo '<div class="text-sm text-muted mt-1">当前积分：<strong>' . $points . '</strong></div>';
+    echo '<div class="card panel"><div class="ph"><div><h2>我的等级</h2></div></div>';
+    echo '<div class="box">';
+    echo '<div style="font-family:var(--font-display);font-size:28px;font-weight:700">' . $current['icon'] . ' ' . htmlspecialchars($current['name']) . '</div>';
+    echo '<div class="note" style="margin:0">当前积分：<strong>' . $points . '</strong></div>';
     if ($next) {
         $need = $next['min_points'] - $points;
-        echo '<div style="height:8px;background:var(--border);border-radius:99px;margin-top:12px;overflow:hidden"><div style="height:100%;width:' . min(100, round($points/$next['min_points']*100)) . '%;background:linear-gradient(90deg,var(--ok),var(--accent))"></div></div>';
-        echo '<div class="text-xs text-muted mt-2">距 ' . $next['icon'] . ' ' . htmlspecialchars($next['name']) . ' 还需 <strong>' . $need . '</strong> 积分</div>';
-    } else { echo '<div class="text-xs text-ok mt-2">已达最高等级 🎉</div>'; }
+        echo '<div style="height:8px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:' . min(100, round($points/$next['min_points']*100)) . '%;background:linear-gradient(90deg,var(--ok),var(--accent))"></div></div>';
+        echo '<div class="note" style="margin:0">距 ' . $next['icon'] . ' ' . htmlspecialchars($next['name']) . ' 还需 <strong>' . $need . '</strong> 积分</div>';
+    } else { echo '<div class="note" style="margin:0;color:var(--ok)">已达最高等级</div>'; }
     echo '</div>';
     // 等级权益
-    echo '<h3 class="font-bold text-sm mb-3">等级权益</h3><div style="display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">';
+    echo '<h3>等级权益</h3><div class="grid g4" style="gap:10px">';
     foreach ($levels as $l) {
         $isCur = $l['key'] === $current['key'];
-        echo '<div style="padding:14px;border-radius:12px;border:2px solid ' . ($isCur ? 'var(--accent)' : 'var(--bg)') . ';background:' . ($isCur ? 'var(--warn-soft)' : 'var(--surface)') . '">' .
-            '<div class="font-bold text-sm">' . $l['icon'] . ' ' . htmlspecialchars($l['name']) . '</div>' .
-            '<div class="text-xs text-muted mt-1">' . $l['min_points'] . ' 积分起</div>' .
-            '<div class="text-xs text-faint mt-1">' . implode('、', array_map(fn($p)=>['post'=>'发帖','comment'=>'评论','vote'=>'投票','no_review'=>'免审核','featured'=>'推荐位'][$p]??$p, $l['perms'])) . '</div>' .
+        echo '<div class="plan' . ($isCur ? ' cur' : '') . '" style="padding:14px;gap:2px">' .
+            '<div style="font-weight:700;font-size:14px">' . $l['icon'] . ' ' . htmlspecialchars($l['name']) . '</div>' .
+            '<div class="note" style="margin:0">' . $l['min_points'] . ' 积分起</div>' .
+            '<div class="note" style="margin:0">' . implode('、', array_map(fn($p)=>['post'=>'发帖','comment'=>'评论','vote'=>'投票','no_review'=>'免审核','featured'=>'推荐位'][$p]??$p, $l['perms'])) . '</div>' .
             '</div>';
     }
     echo '</div>';
     // 积分记录
-    echo '<h3 class="font-bold text-sm mb-3 mt-6">积分记录</h3>';
+    echo '<h3>积分记录</h3>';
     $log = $member['points_log'] ?? [];
-    if (empty($log)) echo '<p class="text-sm text-muted">暂无积分记录</p>';
+    if (empty($log)) echo '<div class="empty">暂无积分记录</div>';
     else {
-        echo '<table class="w-full text-sm"><thead><tr class="text-left text-muted border-b border-[var(--border)]"><th class="py-2">积分</th><th>原因</th><th>时间</th></tr></thead><tbody>';
+        echo '<table class="tbl"><thead><tr><th>积分</th><th>原因</th><th>时间</th></tr></thead><tbody>';
         foreach (array_slice(array_reverse($log),0,20) as $pl) {
-            echo '<tr class="border-b border-[var(--bg)]"><td class="py-2" style="color:' . ($pl['points']>=0?'var(--ok)':'var(--danger)') . '">' . ($pl['points']>=0?'+':'') . $pl['points'] . '</td><td>' . htmlspecialchars($pl['reason']) . '</td><td class="text-muted">' . htmlspecialchars(substr($pl['time']??'',0,16)) . '</td></tr>';
+            echo '<tr><td class="' . ($pl['points']>=0?'ok':'dn') . '">' . ($pl['points']>=0?'+':'') . $pl['points'] . '</td><td>' . htmlspecialchars($pl['reason']) . '</td><td class="mu mono">' . htmlspecialchars(substr($pl['time']??'',0,16)) . '</td></tr>';
         }
         echo '</tbody></table>';
     }
@@ -409,39 +428,39 @@ function include_member_subscribe($member): void {
     $plans = array_values(array_filter(sub_get_plans(), fn($p) => !empty($p['enabled'])));
     $mySub = sub_get_member($member['id']);
     $active = sub_is_active($member['id']);
-    echo '<div class="card p-8"><h2 class="text-xl font-bold mb-4">⭐ 付费订阅</h2>';
+    echo '<div class="card panel"><div class="ph"><div><h2>付费订阅</h2></div></div>';
     if ($active) {
-        echo '<div style="background:var(--ok-soft);padding:16px;border-radius:14px;color:var(--ok);margin-bottom:16px">🎉 你已是订阅会员，有效期至 <strong>' . htmlspecialchars($mySub['expires_at'] ?? '') . '</strong></div>';
+        echo '<div class="box ok">🎉 你已是订阅会员，有效期至 <strong>' . htmlspecialchars($mySub['expires_at'] ?? '') . '</strong></div>';
     }
     if (empty($settings['enabled'])) {
-        echo '<p class="text-sm text-muted">订阅暂未开放，敬请期待。</p>';
+        echo '<div class="empty">订阅暂未开放，敬请期待。</div>';
     } elseif (empty($plans)) {
-        echo '<p class="text-sm text-muted">暂无可订阅计划。</p>';
+        echo '<div class="empty">暂无可订阅计划。</div>';
     } else {
-        echo '<div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">';
+        echo '<div class="grid g3" style="gap:14px">';
         foreach ($plans as $p) {
             $period = ($p['period'] ?? 'month') === 'month' ? '/月' : '/年';
-            echo '<div style="border:2px solid var(--border);border-radius:14px;padding:20px;position:relative">' .
-                '<div class="font-bold text-lg">' . htmlspecialchars($p['name']) . '</div>' .
-                '<div class="text-2xl font-bold mt-2">¥' . number_format($p['price']??0,2) . '<span class="text-sm text-faint font-normal">' . $period . '</span></div>' .
-                '<div class="text-sm text-muted mt-2 min-h-10">' . htmlspecialchars($p['description'] ?? '') . '</div>' .
-                '<button onclick="subscribePlan(\'' . htmlspecialchars($p['id']) . '\')" class="mt-4 w-full rounded-full py-2.5 font-bold" style="background:var(--accent);color:var(--on-accent)">订阅</button>' .
+            echo '<div class="plan">' .
+                '<div class="pn">' . htmlspecialchars($p['name']) . '</div>' .
+                '<div class="pp" style="color:var(--fg)">¥' . number_format($p['price']??0,2) . '<small>' . $period . '</small></div>' .
+                '<p class="d" style="min-height:40px">' . htmlspecialchars($p['description'] ?? '') . '</p>' .
+                '<button type="button" onclick="subscribePlan(\'' . htmlspecialchars($p['id']) . '\')" class="btn primary sm">订阅</button>' .
                 '</div>';
         }
         echo '</div>';
-        echo '<p class="text-xs text-faint mt-4">海外用户：' . ($settings['ghost_enabled'] ? '<a href="' . htmlspecialchars($settings['ghost_api_url']) . '/#/portal" target="_blank" class="text-accent">通过 Ghost 订阅 →</a>' : '未开启 Ghost 海外订阅') . '</p>';
+        echo '<p class="note" style="margin:0">海外用户：' . ($settings['ghost_enabled'] ? '<a href="' . htmlspecialchars($settings['ghost_api_url']) . '/#/portal" target="_blank" rel="noopener" style="color:var(--accent)">通过 Ghost 订阅 →</a>' : '未开启 Ghost 海外订阅') . '</p>';
     }
     echo '</div>';
 }
 function include_member_orders(array $orders): void {
-    echo '<div class="card p-8"><h2 class="text-xl font-bold mb-6">我的订单</h2>';
-    if (empty($orders)) { echo '<p class="text-sm text-muted">暂无订单，去逛逛课程吧 → <a href="/courses" class="text-accent">浏览课程</a></p>'; }
+    echo '<div class="card panel"><div class="ph"><div><h2>我的订单</h2></div></div>';
+    if (empty($orders)) { echo '<div class="empty">暂无订单，去逛逛课程吧 → <a href="/courses" style="color:var(--accent);font-weight:600">浏览课程</a></div>'; }
     else {
-        echo '<table class="w-full text-sm"><thead><tr class="text-left text-muted border-b border-[var(--border)]"><th class="py-2">订单号</th><th>课程</th><th>金额</th><th>状态</th><th>时间</th></tr></thead><tbody>';
+        echo '<table class="tbl"><thead><tr><th>订单号</th><th>课程</th><th>金额</th><th>状态</th><th>时间</th></tr></thead><tbody>';
         foreach ($orders as $o) {
             $statusTag = ['paid'=>'已支付','pending'=>'待支付','cancelled'=>'已取消','refunded'=>'已退款'][$o['status']] ?? $o['status'];
             $tagCls = $o['status']==='paid'?'green':($o['status']==='pending'?'orange':'gray');
-            echo '<tr class="border-b border-[var(--bg)]"><td class="py-3 text-muted">' . htmlspecialchars(substr($o['id'],-10)) . '</td><td>' . htmlspecialchars($o['course_title']) . '</td><td>¥' . number_format($o['amount']??0,2) . '</td><td><span class="tag ' . $tagCls . '">' . $statusTag . '</span></td><td class="text-muted">' . htmlspecialchars(substr($o['created_at']??'',0,10)) . '</td></tr>';
+            echo '<tr><td class="mu mono">' . htmlspecialchars(substr($o['id'],-10)) . '</td><td>' . htmlspecialchars($o['course_title']) . '</td><td>¥' . number_format($o['amount']??0,2) . '</td><td><span class="' . acct_tag($tagCls) . '">' . $statusTag . '</span></td><td class="mu mono">' . htmlspecialchars(substr($o['created_at']??'',0,10)) . '</td></tr>';
         }
         echo '</tbody></table>';
     }
@@ -451,19 +470,19 @@ function include_member_courses($member): void {
     require_once __DIR__ . '/lib/ProgressSystem.php';
     $courseIds = shop_course_ids_for_member($member['id']);
     $courses = json_read(DATA_DIR . '/courses/index.json');
-    echo '<div class="card p-8"><h2 class="text-xl font-bold mb-6">我的课程</h2>';
-    if (empty($courseIds)) { echo '<p class="text-sm text-muted">你还没有购买课程，去逛逛 → <a href="/courses" class="text-accent">浏览课程</a></p>'; }
+    echo '<div class="card panel"><div class="ph"><div><h2>我的课程</h2></div></div>';
+    if (empty($courseIds)) { echo '<div class="empty">你还没有购买课程，去逛逛 → <a href="/courses" style="color:var(--accent);font-weight:600">浏览课程</a></div>'; }
     else {
-        echo '<div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">';
+        echo '<div class="grid g3" style="gap:14px">';
         foreach ($courses as $c) {
             if (!in_array($c['id'], $courseIds)) continue;
             $s = progress_summary($member['id'], $c['id'], $c);
-            echo '<a href="course-player.php?id=' . urlencode($c['id']) . '" class="card p-5 text-decoration-none" style="text-decoration:none;color:inherit">' .
-                '<div class="font-bold mb-1">' . htmlspecialchars($c['title']) . '</div>' .
+            echo '<a href="course-player.php?id=' . urlencode($c['id']) . '" class="plan" style="color:inherit">' .
+                '<div class="pn" style="font-size:15px">' . htmlspecialchars($c['title']) . '</div>' .
                 ($s['percent'] > 0 ?
-                    '<div class="mt-2" style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:' . $s['percent'] . '%;background:linear-gradient(90deg,var(--ok),var(--ok),var(--accent))"></div></div>' .
-                    '<div class="text-xs text-muted mt-1">已学 ' . $s['done'] . '/' . $s['total'] . ' 节 · ' . $s['percent'] . '%</div>'
-                    : '<div class="text-sm text-muted">' . count($c['chapters']??[]) . ' 章 · 点击开始学习 →</div>') .
+                    '<div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:6px"><div style="height:100%;width:' . $s['percent'] . '%;background:linear-gradient(90deg,var(--ok),var(--accent))"></div></div>' .
+                    '<div class="note" style="margin:0">已学 ' . $s['done'] . '/' . $s['total'] . ' 节 · ' . $s['percent'] . '%</div>'
+                    : '<div class="note" style="margin:0">' . count($c['chapters']??[]) . ' 章 · 点击开始学习 →</div>') .
                 '</a>';
         }
         echo '</div>';
@@ -472,88 +491,63 @@ function include_member_courses($member): void {
 }
 function include_member_ambassador($member): void {
     if (empty($member['ambassador'])) {
-        echo '<div class="card p-8 text-center"><div style="font-size:44px">🏅</div><h2 class="text-xl font-bold mt-4 mb-2">成为推荐大使</h2><p class="text-sm text-muted max-w-md mx-auto mb-6">分享你的专属链接，好友通过链接购买课程，你将获得佣金。</p><a href="api/ambassador.php?action=apply" class="inline-block rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">立即申请成为大使</a></div>';
+        echo '<div class="card panel"><div class="gate-box"><span class="kicker">AMBASSADOR</span><h2>成为推荐大使</h2><p>分享你的专属链接，好友通过链接购买课程，你将获得佣金。</p><a href="api/ambassador.php?action=apply" class="btn primary">立即申请成为大使</a></div></div>';
     } else {
         $base = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST']??'');
-        echo '<div class="card p-8"><h2 class="text-xl font-bold mb-4">我的推广</h2>' .
-            '<div class="mb-6"><div class="text-sm font-semibold mb-2">我的专属推广链接</div>' .
-            '<div class="flex gap-2"><input readonly value="' . $base . '/member.php?view=register&ref=' . htmlspecialchars($member['referral_code']) . '" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px"><button class="rounded-full px-4 py-2 text-sm font-semibold" style="background:var(--bg)" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(()=>alert(\'已复制\'))">复制</button></div></div>' .
-            '<div class="grid gap-4 mb-6" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">' .
-            '<div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">' . ($member['ambassador_stats']['clicks']??0) . '</div><div class="text-sm text-muted">点击</div></div>' .
-            '<div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">' . ($member['ambassador_stats']['orders']??0) . '</div><div class="text-sm text-muted">成交</div></div>' .
-            '<div class="p-5 rounded-xl" style="background:var(--bg)"><div class="text-2xl font-bold">¥' . number_format($member['balance']??0,2) . '</div><div class="text-sm text-muted">佣金余额</div></div></div>' .
-            '<p class="text-sm text-muted">佣金规则由管理员在后台「分销设置」中配置。可在后台查看提现记录。</p></div>';
+        echo '<div class="card panel"><div class="ph"><div><h2>我的推广</h2></div></div>' .
+            '<div class="field"><label>我的专属推广链接</label>' .
+            '<div style="display:flex;gap:8px"><input class="inp sm mono" readonly value="' . $base . '/member.php?view=register&ref=' . htmlspecialchars($member['referral_code']) . '" style="flex:1"><button type="button" class="btn ghost sm" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(()=>alert(\'已复制\'))">复制</button></div></div>' .
+            '<div class="tiles">' .
+            acct_tile((string)($member['ambassador_stats']['clicks']??0), '点击') .
+            acct_tile((string)($member['ambassador_stats']['orders']??0), '成交') .
+            acct_tile('¥' . number_format($member['balance']??0,2), '佣金余额', 'ok') . '</div>' .
+            '<p class="d">佣金规则由管理员在后台「分销设置」中配置。可在后台查看提现记录。</p></div>';
     }
 }
 function include_member_teacher($member): void {
     $status = $member['teacher_status'] ?? 'none';
-    $labels = ['none'=>'未申请','pending'=>'审核中','approved'=>'已通过','rejected'=>'未通过'];
-    $tagCls = ['none'=>'gray','pending'=>'orange','approved'=>'green','rejected'=>'gray'][$status];
-    echo '<div class="card p-8"><h2 class="text-xl font-bold mb-6">成为讲师</h2>';
-    if ($status === 'approved') echo '<p class="text-sm" style="background:var(--ok-soft);padding:12px 16px;border-radius:10px;color:var(--ok)">🎉 你已成为讲师，可以在「投稿文章」中发布内容了。</p>';
-    elseif ($status === 'pending') echo '<p class="text-sm" style="background:var(--warn-soft);padding:12px 16px;border-radius:10px;color:var(--warn)">申请审核中，请耐心等待。</p>';
+    echo '<div class="card panel"><div class="ph"><div><h2>成为讲师</h2></div></div>';
+    if ($status === 'approved') echo '<div class="box ok">🎉 你已成为讲师，可以在「投稿文章」中发布内容了。</div>';
+    elseif ($status === 'pending') echo '<div class="box warn">申请审核中，请耐心等待。</div>';
     else {
-        echo '<p class="text-sm text-muted mb-6">分享你的专业经验，成为 OpenFlow 认证讲师。提交申请后由管理员审核。</p>';
-        if ($status === 'rejected') echo '<p class="text-sm mb-4" style="background:var(--danger-soft);padding:10px 14px;border-radius:10px;color:var(--danger)">上次申请未通过，可重新提交。</p>';
-        echo '<form onsubmit="return false" id="teacherForm" class="grid gap-4" style="grid-template-columns:1fr 1fr">' .
-            '<div class="field"><label>讲师简介</label><textarea name="intro" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px" placeholder="介绍你的专业领域和经验"></textarea></div>' .
-            '<div class="field"><label>擅长方向</label><input name="expertise" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px" placeholder="如：SEO/GEO、内容策略、AI 运营"></div>' .
-            '<div style="grid-column:1/-1"><button class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)" onclick="submitTeacher()">提交申请</button></div></form>';
+        echo '<p class="d">分享你的专业经验，成为 OpenFlow 认证讲师。提交申请后由管理员审核。</p>';
+        if ($status === 'rejected') echo '<div class="box danger" style="color:var(--danger)">上次申请未通过，可重新提交。</div>';
+        echo '<form onsubmit="return false" id="teacherForm" class="form-grid">' .
+            '<div class="field"><label for="t_intro">讲师简介</label><textarea id="t_intro" class="inp" name="intro" rows="3" placeholder="介绍你的专业领域和经验"></textarea></div>' .
+            '<div class="field"><label for="t_exp">擅长方向</label><input id="t_exp" class="inp" name="expertise" placeholder="如：SEO/GEO、内容策略、AI 运营"></div>' .
+            '<div><button type="button" class="btn primary" onclick="submitTeacher()">提交申请</button></div></form>';
     }
     echo '</div>';
 }
 function include_member_submit($member): void {
-    echo '<div class="card p-8"><h2 class="text-xl font-bold mb-2">投稿文章</h2><p class="text-sm text-muted mb-6">提交后由管理员审核，审核通过后发布。</p>' .
-        '<form onsubmit="return false" id="submitForm" class="grid gap-4" style="grid-template-columns:1fr 1fr">' .
-        '<div style="grid-column:1/-1" class="field"><label>文章标题</label><input name="title" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px" placeholder="标题"></div>' .
-        '<div class="field"><label>分类</label><select name="category" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px"><option value="insight">增长洞察</option><option value="leadership">内容与 SEO</option><option value="ai_ops">AI 运营</option><option value="industry">行业实践</option></select></div>' .
-        '<div class="field"><label>摘要</label><input name="excerpt" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px" placeholder="一句话摘要"></div>' .
-        '<div style="grid-column:1/-1" class="field"><label>正文</label><textarea name="content" rows="8" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px" placeholder="文章正文"></textarea></div>' .
-        '<div style="grid-column:1/-1"><button class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)" onclick="submitArticle()">提交投稿</button></div></form>' .
-        '<div id="submitMsg" style="margin-top:14px"></div></div>';
+    echo '<div class="card panel"><div class="ph"><div><h2>投稿文章</h2><p>提交后由管理员审核，审核通过后发布。</p></div></div>' .
+        '<form onsubmit="return false" id="submitForm" class="form-grid">' .
+        '<div class="field"><label for="s_title">文章标题</label><input id="s_title" class="inp" name="title" placeholder="标题"></div>' .
+        '<div class="grid g2" style="gap:14px">' .
+        '<div class="field"><label for="s_cat">分类</label><select id="s_cat" class="inp" name="category"><option value="insight">增长洞察</option><option value="leadership">内容与 SEO</option><option value="ai_ops">AI 运营</option><option value="industry">行业实践</option></select></div>' .
+        '<div class="field"><label for="s_ex">摘要</label><input id="s_ex" class="inp" name="excerpt" placeholder="一句话摘要"></div></div>' .
+        '<div class="field"><label for="s_body">正文</label><textarea id="s_body" class="inp" name="content" rows="8" placeholder="文章正文"></textarea></div>' .
+        '<div><button type="button" class="btn primary" onclick="submitArticle()">提交投稿</button></div></form>' .
+        '<div id="submitMsg"></div></div>';
 }
 
 // ─── 个人资料编辑 ───
 function include_member_profile($member): void {
     ?>
-    <div class="card p-8">
-      <h2 class="text-xl font-bold mb-6">个人资料</h2>
-      <form onsubmit="return updateProfile(event)">
-        <div class="grid gap-4" style="grid-template-columns:1fr 1fr">
-          <div class="field">
-            <label>昵称</label>
-            <input type="text" name="nickname" value="<?=htmlspecialchars($member['nickname'] ?? '')?>" placeholder="你的昵称">
-          </div>
-          <div class="field">
-            <label>头像 URL</label>
-            <input type="url" name="avatar" value="<?=htmlspecialchars($member['avatar'] ?? '')?>" placeholder="https://example.com/avatar.jpg">
-          </div>
-          <div class="field">
-            <label>手机号</label>
-            <input type="tel" name="phone" value="<?=htmlspecialchars($member['phone'] ?? '')?>" placeholder="手机号码">
-          </div>
-          <div class="field">
-            <label>个人网站</label>
-            <input type="url" name="website" value="<?=htmlspecialchars($member['website'] ?? '')?>" placeholder="https://yoursite.com">
-          </div>
-          <div class="field">
-            <label>公司</label>
-            <input type="text" name="company" value="<?=htmlspecialchars($member['company'] ?? '')?>" placeholder="公司名称">
-          </div>
-          <div class="field">
-            <label>职位</label>
-            <input type="text" name="job_title" value="<?=htmlspecialchars($member['job_title'] ?? '')?>" placeholder="职位名称">
-          </div>
-          <div style="grid-column:1/-1" class="field">
-            <label>个人简介</label>
-            <textarea name="bio" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px" placeholder="介绍一下自己"><?=htmlspecialchars($member['bio'] ?? '')?></textarea>
-          </div>
+    <div class="card panel">
+      <div class="ph"><div><h2>个人资料</h2></div></div>
+      <form onsubmit="return updateProfile(event)" class="form-grid">
+        <div class="grid g2" style="gap:14px">
+          <div class="field"><label>昵称</label><input class="inp" type="text" name="nickname" value="<?=htmlspecialchars($member['nickname'] ?? '')?>" placeholder="你的昵称"></div>
+          <div class="field"><label>头像 URL</label><input class="inp" type="url" name="avatar" value="<?=htmlspecialchars($member['avatar'] ?? '')?>" placeholder="https://example.com/avatar.jpg"></div>
+          <div class="field"><label>手机号</label><input class="inp" type="tel" name="phone" value="<?=htmlspecialchars($member['phone'] ?? '')?>" placeholder="手机号码"></div>
+          <div class="field"><label>个人网站</label><input class="inp" type="url" name="website" value="<?=htmlspecialchars($member['website'] ?? '')?>" placeholder="https://yoursite.com"></div>
+          <div class="field"><label>公司</label><input class="inp" type="text" name="company" value="<?=htmlspecialchars($member['company'] ?? '')?>" placeholder="公司名称"></div>
+          <div class="field"><label>职位</label><input class="inp" type="text" name="job_title" value="<?=htmlspecialchars($member['job_title'] ?? '')?>" placeholder="职位名称"></div>
         </div>
-        <div style="margin-top:20px;display:flex;gap:12px">
-          <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">保存修改</button>
-          <a href="member.php?view=password" class="rounded-full px-8 py-3 font-bold border border-[var(--border)]" style="color:var(--muted)">修改密码</a>
-        </div>
-        <div id="profileMsg" style="margin-top:14px"></div>
+        <div class="field"><label>个人简介</label><textarea class="inp" name="bio" rows="3" placeholder="介绍一下自己"><?=htmlspecialchars($member['bio'] ?? '')?></textarea></div>
+        <div class="cta-row"><button type="submit" class="btn primary">保存修改</button><a href="member.php?view=password" class="btn ghost">修改密码</a></div>
+        <div id="profileMsg"></div>
       </form>
     </div>
     <?php
@@ -562,23 +556,14 @@ function include_member_profile($member): void {
 // ─── 修改密码 ───
 function include_member_password($member): void {
     ?>
-    <div class="card p-8">
-      <h2 class="text-xl font-bold mb-6">修改密码</h2>
-      <form onsubmit="return changePassword(event)">
-        <div class="field">
-          <label>当前密码</label>
-          <input type="password" name="old_password" required placeholder="输入当前密码">
-        </div>
-        <div class="field">
-          <label>新密码</label>
-          <input type="password" name="new_password" required placeholder="至少 8 位" minlength="8">
-        </div>
-        <div class="field">
-          <label>确认新密码</label>
-          <input type="password" name="confirm_password" required placeholder="再次输入新密码" minlength="8">
-        </div>
-        <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">修改密码</button>
-        <div id="passwordMsg" style="margin-top:14px"></div>
+    <div class="card panel">
+      <div class="ph"><div><h2>修改密码</h2></div></div>
+      <form onsubmit="return changePassword(event)" class="form-grid" style="max-width:480px">
+        <div class="field"><label>当前密码</label><input class="inp" type="password" name="old_password" required placeholder="输入当前密码"></div>
+        <div class="field"><label>新密码</label><input class="inp" type="password" name="new_password" required placeholder="至少 8 位" minlength="8"></div>
+        <div class="field"><label>确认新密码</label><input class="inp" type="password" name="confirm_password" required placeholder="再次输入新密码" minlength="8"></div>
+        <div><button type="submit" class="btn primary">修改密码</button></div>
+        <div id="passwordMsg"></div>
       </form>
     </div>
     <?php
@@ -589,40 +574,28 @@ function include_member_addresses($member): void {
     $addr = json_read(DATA_DIR . '/addresses.json');
     $mine = array_values(array_filter((array)$addr, fn($a) => ($a['member_id'] ?? '') === $member['id']));
     ?>
-    <div class="card p-8">
-      <h2 class="text-xl font-bold mb-6">收货地址</h2>
-      <div id="addrList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:20px">
-        <?php if (empty($mine)): ?><p style="grid-column:1/-1;color:var(--faint);font-size:13px">还没有收货地址，添加一个用于商品寄送。</p><?php endif; ?>
+    <div class="card panel">
+      <div class="ph"><div><h2>收货地址</h2></div></div>
+      <div id="addrList" class="grid g3" style="gap:12px">
+        <?php if (empty($mine)): ?><div class="empty" style="grid-column:1/-1">还没有收货地址，添加一个用于商品寄送。</div><?php endif; ?>
         <?php foreach ($mine as $a): ?>
-        <div style="padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--bg)">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <b style="font-size:14px"><?=htmlspecialchars($a['name'])?> <span style="color:var(--muted);font-weight:400"><?=htmlspecialchars($a['phone'])?></span></b>
-            <?php if (!empty($a['is_default'])): ?><span style="font-size:10px;background:var(--ok-soft);color:var(--ok);padding:1px 6px;border-radius:99px">默认</span><?php endif; ?>
-          </div>
-          <div style="font-size:12.5px;color:var(--muted);line-height:1.6"><?=htmlspecialchars(implode(' ', array_filter([$a['province']??'', $a['city']??'', $a['district']??'', $a['address']??''])))?></div>
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <button class="rounded-full px-4 py-1 text-xs" style="background:var(--hover)" onclick="delAddr('<?=htmlspecialchars($a['id'])?>')">删除</button>
-          </div>
+        <div class="plan" style="padding:14px;gap:6px">
+          <div class="row" style="justify-content:space-between"><b style="font-size:14px"><?=htmlspecialchars($a['name'])?> <span style="color:var(--muted);font-weight:400"><?=htmlspecialchars($a['phone'])?></span></b><?php if (!empty($a['is_default'])): ?><span class="badge ok">默认</span><?php endif; ?></div>
+          <div class="note" style="margin:0;line-height:1.6"><?=htmlspecialchars(implode(' ', array_filter([$a['province']??'', $a['city']??'', $a['district']??'', $a['address']??''])))?></div>
+          <div><button type="button" class="btn subtle" style="height:32px;padding:0 10px;font-size:12.5px;color:var(--danger)" onclick="delAddr('<?=htmlspecialchars($a['id'])?>')">删除</button></div>
         </div>
         <?php endforeach; ?>
       </div>
 
-      <div style="padding:18px;border:1px solid var(--border);border-radius:14px;background:var(--bg-soft)">
-        <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">新增地址</h3>
-        <form onsubmit="return saveAddr(event)" style="display:flex;flex-direction:column;gap:10px">
-          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
-            <input type="text" name="name" placeholder="收货人姓名" required style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
-            <input type="text" name="phone" placeholder="手机号" required style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
-          </div>
-          <div class="grid gap-3" style="grid-template-columns:1fr 1fr 1fr">
-            <input type="text" name="province" placeholder="省" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
-            <input type="text" name="city" placeholder="市" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
-            <input type="text" name="district" placeholder="区/县" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
-          </div>
-          <input type="text" name="address" placeholder="详细地址" required style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
-          <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)"><input type="checkbox" name="is_default" value="1" style="width:15px;height:15px"> 设为默认地址</label>
-          <button class="rounded-full py-2.5 font-bold" style="background:var(--accent);color:var(--on-accent);font-size:13px">保存地址</button>
-          <div id="addrMsg" style="font-size:12.5px"></div>
+      <div class="box">
+        <h3>新增地址</h3>
+        <form onsubmit="return saveAddr(event)" class="form-grid" style="gap:10px">
+          <div class="grid g2" style="gap:10px"><input class="inp sm" type="text" name="name" placeholder="收货人姓名" required><input class="inp sm" type="text" name="phone" placeholder="手机号" required></div>
+          <div class="grid g3" style="gap:10px"><input class="inp sm" type="text" name="province" placeholder="省"><input class="inp sm" type="text" name="city" placeholder="市"><input class="inp sm" type="text" name="district" placeholder="区/县"></div>
+          <input class="inp sm" type="text" name="address" placeholder="详细地址" required>
+          <label class="note" style="display:flex;align-items:center;gap:6px;margin:0;font-size:12.5px"><input type="checkbox" name="is_default" value="1" style="width:15px;height:15px;accent-color:var(--accent)"> 设为默认地址</label>
+          <div><button class="btn primary sm">保存地址</button></div>
+          <div id="addrMsg" class="note" style="margin:0"></div>
         </form>
       </div>
     </div>
@@ -669,23 +642,22 @@ function include_member_privacy($member): void {
         } else { $msg = '请输入 DELETE 确认注销'; }
     }
     ?>
-    <div class="card p-8">
-      <h2 class="text-xl font-bold mb-6">隐私中心</h2>
-      <p class="text-sm text-muted mb-6">依据《个人信息保护法》，你可随时导出自己的数据或申请删除账号。</p>
-      <?php if ($msg): ?><div class="text-sm" style="color:var(--danger);margin-bottom:14px"><?=htmlspecialchars($msg)?></div><?php endif; ?>
+    <div class="card panel">
+      <div class="ph"><div><h2>隐私中心</h2><p>依据《个人信息保护法》，你可随时导出自己的数据或申请删除账号。</p></div></div>
+      <?php if ($msg): ?><div class="msg err"><?=htmlspecialchars($msg)?></div><?php endif; ?>
 
-      <div style="padding:18px;border-radius:14px;background:var(--bg);margin-bottom:18px">
-        <div style="font-size:15px;font-weight:700;margin-bottom:6px">📤 导出我的数据</div>
-        <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">下载你的完整数据（个人资料、订单、消息、评论、学习进度），JSON 格式。</p>
-        <a href="?view=privacy&export=1" class="rounded-full px-6 py-2.5 font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">下载数据</a>
+      <div class="box">
+        <h3>导出我的数据</h3>
+        <p class="d">下载你的完整数据（个人资料、订单、消息、评论、学习进度），JSON 格式。</p>
+        <div><a href="?view=privacy&export=1" class="btn primary sm">下载数据</a></div>
       </div>
 
-      <div style="padding:18px;border-radius:14px;background:var(--danger-soft)">
-        <div style="font-size:15px;font-weight:700;color:var(--danger);margin-bottom:6px">🗑 注销账号</div>
-        <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">注销后你的个人资料将清除，不可恢复。输入 <b>DELETE</b> 确认。</p>
-        <form method="post">
-          <input type="text" name="confirm" placeholder="输入 DELETE" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;width:200px">
-          <button type="submit" name="delete_account" class="rounded-full px-6 py-2.5 font-bold text-sm ml-2" style="background:var(--danger);color:#fff;border:none;cursor:pointer">确认注销</button>
+      <div class="box danger">
+        <h3 style="color:var(--danger)">注销账号</h3>
+        <p class="d">注销后你的个人资料将清除，不可恢复。输入 <b>DELETE</b> 确认。</p>
+        <form method="post" class="row">
+          <input class="inp sm mono" type="text" name="confirm" placeholder="输入 DELETE" style="width:200px">
+          <button type="submit" name="delete_account" class="btn primary sm" style="background:var(--danger);box-shadow:none">确认注销</button>
         </form>
       </div>
     </div>
@@ -698,46 +670,43 @@ function include_member_org($member): void {
     $statuses = org_statuses();
     $plans = org_plans();
     ?>
-    <div class="card p-8">
-      <h2 class="text-xl font-bold mb-6">企业控制台</h2>
+    <div class="card panel">
       <?php if ($org): $status = $statuses[$org['status']]['label'] ?? $org['status']; ?>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
-          <div style="width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:20px">🏢</div>
-          <div>
-            <div style="font-size:17px;font-weight:800"><?=htmlspecialchars($org['name'])?></div>
-            <div style="font-size:12px;color:var(--muted)"><?=htmlspecialchars($org['industry'])?> / <?=htmlspecialchars($org['size'])?></div>
+        <div class="ph">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/></svg></div>
+          <div><h2><?=htmlspecialchars($org['name'])?></h2><p><?=htmlspecialchars($org['industry'])?> / <?=htmlspecialchars($org['size'])?></p></div>
+          <span class="<?=acct_tag($org['status']==='active'?'green':($org['status']==='lead'?'orange':'gray'))?> r"><?=htmlspecialchars($status)?></span>
+        </div>
+
+        <div class="tiles">
+          <?=acct_tile(org_plan_label($org['plan_type']), '合作方案')?>
+          <?=acct_tile((string)count((array)($org['members'] ?? [])), '团队成员')?>
+          <?=acct_tile(htmlspecialchars($org['budget'] ?: '—'), '预算区间')?>
+        </div>
+
+        <div class="panel" style="gap:0">
+          <h3 style="margin-bottom:6px">团队成员</h3>
+          <?php foreach ((array)($org['members'] ?? []) as $mid): $m = member_get($mid); ?>
+          <div class="row" style="padding:10px 0;border-bottom:1px solid var(--border-soft)">
+            <div style="width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent-strong);display:grid;place-items:center;font-weight:700;font-size:13px;flex:0 0 auto"><?=strtoupper(mb_substr(($m['name'] ?? ($m['email'] ?? '?')),0,1))?></div>
+            <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600"><?=htmlspecialchars($m['name'] ?? '')?></div><div class="note" style="margin:0"><?=htmlspecialchars($m['email'] ?? '')?></div></div>
+            <?php if (($org['admin_member_id'] ?? '') === $mid): ?><span class="badge ok">管理员</span><?php endif; ?>
           </div>
-          <span class="tag <?=$org['status']==='active'?'green':($org['status']==='lead'?'orange':'gray')?>" style="margin-left:auto"><?=htmlspecialchars($status)?></span>
+          <?php endforeach; ?>
         </div>
 
-        <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:22px">
-          <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:22px;font-weight:800"><?=org_plan_label($org['plan_type'])?></div><div style="font-size:12px;color:var(--muted)">合作方案</div></div>
-          <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:22px;font-weight:800"><?=count((array)($org['members'] ?? []))?></div><div style="font-size:12px;color:var(--muted)">团队成员</div></div>
-          <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:22px;font-weight:800"><?=htmlspecialchars($org['budget'] ?: '—')?></div><div style="font-size:12px;color:var(--muted)">预算区间</div></div>
-        </div>
-
-        <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">团队成员</h3>
-        <?php foreach ((array)($org['members'] ?? []) as $mid): $m = member_get($mid); ?>
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-soft)">
-          <div style="width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent-strong);display:grid;place-items:center;font-weight:700;font-size:13px"><?=strtoupper(mb_substr(($m['name'] ?? ($m['email'] ?? '?')),0,1))?></div>
-          <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600"><?=htmlspecialchars($m['name'] ?? '')?></div><div style="font-size:12px;color:var(--muted)"><?=htmlspecialchars($m['email'] ?? '')?></div></div>
-          <?php if (($org['admin_member_id'] ?? '') === $mid): ?><span class="tag green">管理员</span><?php endif; ?>
-        </div>
-        <?php endforeach; ?>
-
-        <p style="font-size:12.5px;color:var(--faint);margin-top:16px">更多成员由商务顾问在合作确认后邀请加入。企业专属支持与部署进度将在此展示。</p>
+        <p class="note" style="margin:0">更多成员由商务顾问在合作确认后邀请加入。企业专属支持与部署进度将在此展示。</p>
       <?php else: ?>
-        <div style="text-align:center;padding:30px 0">
-          <div style="font-size:40px;margin-bottom:10px">🏢</div>
-          <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">你的企业还没有商业版申请</h3>
-          <p style="font-size:13.5px;color:var(--muted);max-width:420px;margin:0 auto 18px">为团队申请 OpenFlow 商业发行版（SaaS 订阅 / 私有化部署 / 定制开发），一个平台撑起整条增长链。</p>
-          <a href="/enterprise" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">申请商业版 →</a>
+        <div class="gate-box">
+          <span class="ic" style="width:44px;height:44px;color:var(--accent)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/></svg></span>
+          <h2>你的企业还没有商业版申请</h2>
+          <p>为团队申请 OpenFlow 商业发行版（SaaS 订阅 / 私有化部署 / 定制开发），一个平台撑起整条增长链。</p>
+          <a href="/enterprise" class="btn primary">申请商业版 →</a>
         </div>
       <?php endif; ?>
     </div>
     <?php
 }
-
 // ─── 开发者中心（入驻/开发套件/我的产品/提交） ───
 function include_member_developer($member): void {
     $devStatus = $member['developer_status'] ?? 'none';
@@ -750,50 +719,40 @@ function include_member_developer($member): void {
         $bw['caps'] = builder_capabilities($member);
         $bw['profile'] = builder_profile($member);
     } catch (Throwable $e) {}
+    $devTag = ['none'=>'gray','pending'=>'orange','approved'=>'green','rejected'=>'red'][$devStatus] ?? 'gray';
     ?>
-    <div class="card p-8">
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px">
-        <div style="width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:20px">🧑‍💻</div>
-        <div>
-          <h2 class="text-xl font-bold">参与者工作台</h2>
-          <div style="font-size:12px;color:var(--muted)">One is All — 你同时是作者、开发者、创作者。写内容 / 做工具 / 上架卖，一处全给。</div>
-        </div>
-        <span class="tag <?=$devStatus==='approved'?'green':($devStatus==='pending'?'orange':'gray')?>" style="margin-left:auto">
-          <?=['none'=>'未申请','pending'=>'审核中','approved'=>'已认证开发者','rejected'=>'申请被拒'][$devStatus] ?? '未申请'?>
-        </span>
+    <div class="card panel">
+      <div class="ph">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3M13 15h4"/><path d="M7 4h13a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg></div>
+        <div><h2>参与者工作台</h2><p>One is All — 你同时是作者、开发者、创作者。写内容 / 做工具 / 上架卖，一处全给。</p></div>
+        <span class="<?=acct_tag($devTag)?> r"><?=['none'=>'未申请','pending'=>'审核中','approved'=>'已认证开发者','rejected'=>'申请被拒'][$devStatus] ?? '未申请'?></span>
       </div>
 
       <?php if (!empty($bw['caps'])): $bp = $bw['profile']; ?>
       <!-- OIA 三能力：不再需要"先申请开发者" -->
-      <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:18px">
+      <div class="grid g3" style="gap:12px">
         <?php foreach ($bw['caps'] as $ck => $cap): ?>
-        <div style="padding:14px 16px;border-radius:14px;background:var(--bg);border:1px solid var(--border)">
-          <div style="font-weight:700;font-size:14px;margin-bottom:4px"><?=['write'=>'✍️','build'=>'🛠','sell'=>'💰'][$ck] ?? '•'?> <?=htmlspecialchars($cap['label'])?>
-            <span style="font-size:11px;font-weight:600;color:<?=$cap['enabled']?'#16a34a':'#9ca3af'?>"><?=$cap['enabled']?'已开通':'暂不可用'?></span></div>
-          <div style="font-size:12px;color:var(--muted)"><?=htmlspecialchars($cap['desc'])?></div>
+        <div class="box" style="gap:4px">
+          <div class="row" style="gap:8px"><b style="font-size:14px"><?=htmlspecialchars($cap['label'])?></b><span class="<?=$cap['enabled']?'badge ok':'pill neutral'?>" style="height:22px;font-size:11px"><?=$cap['enabled']?'已开通':'暂不可用'?></span></div>
+          <p class="d" style="font-size:12.5px"><?=htmlspecialchars($cap['desc'])?></p>
         </div>
         <?php endforeach; ?>
       </div>
       <!-- 描述即造（BACKLOG T1-15）：把开发降到"描述"，三道护栏后存草稿 -->
-      <div style="padding:16px;border-radius:14px;background:var(--bg);border:1px solid var(--border);margin-bottom:18px">
-        <div style="font-weight:700;font-size:14px;margin-bottom:4px">🛠 描述即造 —— 不用会写代码</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">用一句话说你想要什么工具，AI 帮你生成。生成物会先过安全审查，通过后存为草稿，由你确认再发布。</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input id="bsDesc" placeholder="例如：帮我把文章标题改写得更吸引点击" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid var(--border);border-radius:8px">
-          <button type="button" class="btn" id="bsGo" style="background:var(--accent);color:var(--on-accent);border:0;padding:9px 18px;border-radius:8px;cursor:pointer">生成</button>
+      <div class="box">
+        <h3>描述即造 <small>不用会写代码</small></h3>
+        <p class="d" style="font-size:12.5px">用一句话说你想要什么工具，AI 帮你生成。生成物会先过安全审查，通过后存为草稿，由你确认再发布。</p>
+        <div class="row" style="gap:8px">
+          <input id="bsDesc" class="inp sm" placeholder="例如：帮我把文章标题改写得更吸引点击" style="flex:1;min-width:220px">
+          <button type="button" class="btn primary sm" id="bsGo">生成</button>
         </div>
-        <div id="bsOut" style="margin-top:10px;font-size:13px"></div>
+        <div id="bsOut" style="font-size:13px"></div>
       </div>
 
       <?php if ($bp): ?>
-      <div style="padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);margin-bottom:20px">
-        <div style="font-size:13px;margin-bottom:6px">📦 我的贡献：
-          文章 <strong><?=$bp['counts']['article']?></strong> ·
-          技能 <strong><?=$bp['counts']['skill']?></strong> ·
-          商品 <strong><?=$bp['counts']['product']?></strong>
-          <span style="color:var(--muted)">（已上线 <?=$bp['published']?>）</span>
-        </div>
-        <div style="font-size:12.5px;color:var(--accent)">👉 <?=htmlspecialchars($bp['next_step'])?></div>
+      <div class="box dash" style="gap:4px">
+        <div style="font-size:13px">我的贡献：文章 <strong><?=$bp['counts']['article']?></strong> · 技能 <strong><?=$bp['counts']['skill']?></strong> · 商品 <strong><?=$bp['counts']['product']?></strong> <span style="color:var(--muted)">（已上线 <?=$bp['published']?>）</span></div>
+        <div style="font-size:12.5px;color:var(--accent);font-weight:600">→ <?=htmlspecialchars($bp['next_step'])?></div>
       </div>
       <?php endif; ?>
       <?php endif; ?>
@@ -808,11 +767,11 @@ function include_member_developer($member): void {
             foreach ($devOrders as $do) { $devSales += (float)($do['amount'] ?? 0); }
         } catch (Exception $e) { $devOrders = []; }
         ?>
-      <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:22px">
-        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--ok)">¥<?=number_format($devBalance,2)?></div><div style="font-size:12px;color:var(--muted)">我的余额（可提现）</div></div>
-        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800"><?=count($devOrders)?></div><div style="font-size:12px;color:var(--muted)">卖出产品</div></div>
-        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--accent)">¥<?=number_format($devSales,0)?></div><div style="font-size:12px;color:var(--muted)">累计销售额</div></div>
-        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--warn)"><?=round(($member['distributor_rate'] ?? 0))?>%</div><div style="font-size:12px;color:var(--muted)">默认佣金比例</div></div>
+      <div class="tiles">
+        <?=acct_tile('¥' . number_format($devBalance,2), '我的余额（可提现）', 'ok')?>
+        <?=acct_tile((string)count($devOrders), '卖出产品')?>
+        <?=acct_tile('¥' . number_format($devSales,0), '累计销售额', 'ac')?>
+        <?=acct_tile(round(($member['distributor_rate'] ?? 0)) . '%', '默认佣金比例', 'wn')?>
       </div>
       <?php
         // 我的买家画像 + 本周增长动作（BACKLOG T1-11）：把"收银台"升级为"增长伙伴"
@@ -821,92 +780,79 @@ function include_member_developer($member): void {
         $cs = $cg['stats'];
       ?>
       <?php if (!empty($cs)): ?>
-      <div style="margin-bottom:22px">
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">📊 我的买家</h3>
-        <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-bottom:16px">
-          <div style="padding:14px;border-radius:14px;background:var(--bg)"><div style="font-size:20px;font-weight:800"><?=(int)($cs['buyers']??0)?></div><div style="font-size:12px;color:var(--muted)">买家数</div></div>
-          <div style="padding:14px;border-radius:14px;background:var(--bg)"><div style="font-size:20px;font-weight:800"><?=(int)($cs['repeat_rate']??0)?>%</div><div style="font-size:12px;color:var(--muted)">复购率</div></div>
-          <div style="padding:14px;border-radius:14px;background:var(--bg)"><div style="font-size:20px;font-weight:800">¥<?=number_format((float)($cs['avg_order']??0),0)?></div><div style="font-size:12px;color:var(--muted)">客单价</div></div>
-          <div style="padding:14px;border-radius:14px;background:var(--bg)"><div style="font-size:20px;font-weight:800"><?=($cs['last_sale_days']??9999)>=9999?'—':(int)$cs['last_sale_days']?></div><div style="font-size:12px;color:var(--muted)">天前最近成交</div></div>
+      <div class="panel" style="gap:12px">
+        <h3>我的买家</h3>
+        <div class="tiles">
+          <?=acct_tile((string)(int)($cs['buyers']??0), '买家数')?>
+          <?=acct_tile((int)($cs['repeat_rate']??0) . '%', '复购率')?>
+          <?=acct_tile('¥' . number_format((float)($cs['avg_order']??0),0), '客单价')?>
+          <?=acct_tile(($cs['last_sale_days']??9999)>=9999?'—':(string)(int)$cs['last_sale_days'], '天前最近成交')?>
         </div>
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:8px">🚀 本周该做的三件事</h3>
-        <div style="display:flex;flex-direction:column;gap:8px">
+        <h3>本周该做的三件事</h3>
+        <div class="panel" style="gap:8px">
           <?php foreach (($cg['actions'] ?? []) as $ai => $act): ?>
-          <div style="padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border)">
-            <div style="font-weight:700;font-size:14px;margin-bottom:4px"><?=($ai+1)?>. <?=htmlspecialchars($act['title'])?></div>
-            <div style="font-size:12.5px;color:var(--muted)"><?=htmlspecialchars($act['why'])?></div>
-          </div>
+          <div class="item"><div class="t"><b><?=($ai+1)?>. <?=htmlspecialchars($act['title'])?></b><span><?=htmlspecialchars($act['why'])?></span></div></div>
           <?php endforeach; ?>
         </div>
       </div>
       <?php endif; ?>
-      <div style="padding:14px 16px;border:1px dashed var(--border-strong);border-radius:14px;background:var(--surface);margin-bottom:22px;font-size:12.5px;color:var(--muted)">
+      <div class="box dash" style="font-size:12.5px;color:var(--muted)">
         <?php
           $__rate = 10;
           try { require_once __DIR__ . '/lib/CommissionPolicy.php'; $__rate = round(commission_platform_rate() * 100); } catch (Throwable $e) {}
         ?>
-        收益规则：平台抽 <?=$__rate?>% 覆盖支付手续费，分销者按产品佣金比例分成，剩余归你（作者）。余额可在 <a href="member.php?view=distribution" style="color:var(--accent)">分销中心</a> 提现。
+        收益规则：平台抽 <?=$__rate?>% 覆盖支付手续费，分销者按产品佣金比例分成，剩余归你（作者）。余额可在 <a href="member.php?view=distribution" style="color:var(--accent);font-weight:600">分销中心</a> 提现。
       </div>
       <?php endif; ?>
 
       <?php if ($devStatus === 'none'): ?>
       <!-- 申请成为开发者 -->
-      <div style="padding:20px;border-radius:14px;background:var(--bg);margin-bottom:20px">
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">成为开发者，上传你的第一个产品</h3>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">认证后即可提交 Skill（AI 指令 / 工具 / 工作流）和主题模板。审核通过后上架市场，供所有用户启用。</p>
-        <form onsubmit="return applyDev(event)">
-          <div class="field"><label>开发者简介 *（至少 10 字，介绍你会做什么）</label><textarea name="bio" rows="2" required placeholder="如：专注增长类 Skill，擅长小红书文案与 SEO"></textarea></div>
-          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
-            <div class="field"><label>擅长的技能方向</label><input type="text" name="skills" placeholder="SEO / 文案 / 自动化…"></div>
-            <div class="field"><label>个人/团队主页（选填）</label><input type="text" name="website" placeholder="https://…"></div>
+      <div class="box">
+        <h3>成为开发者，上传你的第一个产品</h3>
+        <p class="d">认证后即可提交 Skill（AI 指令 / 工具 / 工作流）和主题模板。审核通过后上架市场，供所有用户启用。</p>
+        <form onsubmit="return applyDev(event)" class="form-grid">
+          <div class="field"><label>开发者简介 *（至少 10 字，介绍你会做什么）</label><textarea class="inp" name="bio" rows="2" required placeholder="如：专注增长类 Skill，擅长小红书文案与 SEO"></textarea></div>
+          <div class="grid g2" style="gap:12px">
+            <div class="field"><label>擅长的技能方向</label><input class="inp" type="text" name="skills" placeholder="SEO / 文案 / 自动化…"></div>
+            <div class="field"><label>个人/团队主页（选填）</label><input class="inp" type="text" name="website" placeholder="https://…"></div>
           </div>
-          <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">提交申请</button>
-          <div id="applyDevMsg" style="margin-top:12px;font-size:13px"></div>
+          <div><button type="submit" class="btn primary">提交申请</button></div>
+          <div id="applyDevMsg" class="note" style="margin:0"></div>
         </form>
       </div>
       <?php elseif ($devStatus === 'pending'): ?>
-      <div style="padding:24px;border-radius:14px;background:var(--bg);text-align:center">
-        <div style="font-size:34px;margin-bottom:8px">⏳</div>
-        <h3 style="font-size:16px;font-weight:700">申请审核中</h3>
-        <p style="font-size:13px;color:var(--muted);margin-top:6px">管理员审核通过后，你就可以上传产品了。</p>
-      </div>
+      <div class="gate-box"><span class="kicker">PENDING</span><h2>申请审核中</h2><p>管理员审核通过后，你就可以上传产品了。</p></div>
       <?php elseif ($devStatus === 'rejected'): ?>
-      <div style="padding:20px;border-radius:14px;background:var(--danger-soft);margin-bottom:20px">
-        <h3 style="font-size:15px;font-weight:700;color:var(--danger);margin-bottom:6px">申请未通过</h3>
-        <p style="font-size:13px;color:var(--muted)">可完善简介后重新提交，或联系管理员。</p>
-      </div>
+      <div class="box danger"><h3 style="color:var(--danger)">申请未通过</h3><p class="d">可完善简介后重新提交，或联系管理员。</p></div>
       <?php elseif ($devStatus === 'approved'): ?>
       <!-- 发布课程 -->
-      <div style="padding:18px;border:1px solid var(--border);border-radius:14px;margin-bottom:20px">
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">🎓 发布课程（审核后上架，售出享分成）</h3>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:14px">收益：平台抽 10%，分销者按比例分成，剩余归你。提交后管理员审核。</p>
-        <form id="courseForm" onsubmit="return submitCourse(event)">
-          <div class="grid gap-3" style="grid-template-columns:2fr 1fr 1fr">
-            <div class="field"><label>课程标题 *</label><input type="text" name="title" required placeholder="如：AI 增长实操课"></div>
-            <div class="field"><label>分类</label><select name="category"><option>课程</option><option>专栏</option><option>认证课</option><option>系列课</option></select></div>
-            <div class="field"><label>封面图 URL</label><input type="text" name="cover" placeholder="https://…"></div>
+      <div class="box" style="background:var(--surface)">
+        <h3>发布课程 <small>审核后上架，售出享分成</small></h3>
+        <p class="d" style="font-size:12.5px">收益：平台抽 10%，分销者按比例分成，剩余归你。提交后管理员审核。</p>
+        <form id="courseForm" onsubmit="return submitCourse(event)" class="form-grid">
+          <div class="grid g3" style="gap:12px;grid-template-columns:2fr 1fr 1fr">
+            <div class="field"><label>课程标题 *</label><input class="inp sm" type="text" name="title" required placeholder="如：AI 增长实操课"></div>
+            <div class="field"><label>分类</label><select class="inp sm" name="category"><option>课程</option><option>专栏</option><option>认证课</option><option>系列课</option></select></div>
+            <div class="field"><label>封面图 URL</label><input class="inp sm" type="text" name="cover" placeholder="https://…"></div>
           </div>
-          <div class="field"><label>课程简介</label><textarea name="description" rows="2" placeholder="这门课讲什么、适合谁…"></textarea></div>
-          <div id="chaptersBox" style="margin-bottom:10px"></div>
-          <button type="button" onclick="addChapter()" style="padding:6px 14px;border:1.5px dashed var(--border-strong);border-radius:8px;background:none;font-size:12px;margin-bottom:14px">+ 添加章节</button>
-          <div style="display:flex;gap:10px;align-items:center">
-            <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">提交课程</button>
-            <span id="courseMsg" style="font-size:12.5px"></span>
-          </div>
+          <div class="field"><label>课程简介</label><textarea class="inp" name="description" rows="2" placeholder="这门课讲什么、适合谁…"></textarea></div>
+          <div id="chaptersBox" class="panel" style="gap:10px"></div>
+          <div><button type="button" class="btn ghost sm" style="border-style:dashed" onclick="addChapter()">+ 添加章节</button></div>
+          <div class="row"><button type="submit" class="btn primary">提交课程</button><span id="courseMsg" class="note" style="margin:0"></span></div>
         </form>
       </div>
       <!-- 我的产品 -->
-      <div style="margin-bottom:20px">
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">我的产品（<?=count($mine)?>）</h3>
-        <?php if (empty($mine)): ?><p style="font-size:13px;color:var(--faint)">还没有产品，用下面的表单提交第一个。</p>
+      <div class="panel" style="gap:10px">
+        <h3>我的产品（<?=count($mine)?>）</h3>
+        <?php if (empty($mine)): ?><div class="empty">还没有产品，用下面的表单提交第一个。</div>
         <?php else: ?>
-        <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="panel" style="gap:8px">
           <?php foreach ($mine as $s): $stMap = ['pending'=>'待审核','published'=>'已上架','rejected'=>'被拒','draft'=>'草稿']; $stCls = ['pending'=>'orange','published'=>'green','rejected'=>'red','draft'=>'gray']; ?>
-          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:12px">
-            <span style="font-size:20px"><?=htmlspecialchars($s['icon'] ?? '⚡')?></span>
-            <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600"><?=htmlspecialchars($s['title'])?></div><div style="font-size:11.5px;color:var(--muted)"><?=htmlspecialchars($types[$s['type']]['name'] ?? $s['type'])?> · 安装 <?=$s['installs']??0?> · 评分 <?=$s['rating']??0?></div></div>
-            <span class="tag <?=$stCls[$s['status']]??'gray'?>"><?=$stMap[$s['status']]??$s['status']?></span>
-            <?php if (($s['status'] ?? '') !== 'published'): ?><button class="text-sm" style="color:var(--danger);background:none;border:none;cursor:pointer" onclick="delProduct('<?=htmlspecialchars($s['id'])?>')">删除</button><?php endif; ?>
+          <div class="item">
+            <span class="ic" style="width:36px;height:36px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:18px"><?=htmlspecialchars($s['icon'] ?? '⚡')?></span>
+            <div class="t"><b><?=htmlspecialchars($s['title'])?></b><span><?=htmlspecialchars($types[$s['type']]['name'] ?? $s['type'])?> · 安装 <?=$s['installs']??0?> · 评分 <?=$s['rating']??0?></span></div>
+            <span class="<?=acct_tag($stCls[$s['status']]??'gray')?>"><?=$stMap[$s['status']]??$s['status']?></span>
+            <?php if (($s['status'] ?? '') !== 'published'): ?><button type="button" class="btn subtle" style="height:32px;padding:0 10px;font-size:12.5px;color:var(--danger)" onclick="delProduct('<?=htmlspecialchars($s['id'])?>')">删除</button><?php endif; ?>
           </div>
           <?php endforeach; ?>
         </div>
@@ -914,56 +860,56 @@ function include_member_developer($member): void {
       </div>
 
       <!-- 我的组合包 + 创建组合包 -->
-      <div style="margin-bottom:20px;padding:20px;border-radius:14px;background:var(--bg)">
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">组合包（Skills 包 / 主题包 / 大组合）</h3>
-        <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">把你的多个产品打包成一个套装售卖：多个 Skills、多个主题、或混合大组合（Skills + 主题 + 功能）。可嵌套组合包。</p>
+      <div class="box">
+        <h3>组合包 <small>Skills 包 / 主题包 / 大组合</small></h3>
+        <p class="d" style="font-size:12.5px">把你的多个产品打包成一个套装售卖：多个 Skills、多个主题、或混合大组合（Skills + 主题 + 功能）。可嵌套组合包。</p>
         <?php $publishedMine = array_values(array_filter($mine, fn($s) => ($s['status'] ?? '') === 'published')); ?>
         <?php if (empty($publishedMine)): ?>
-        <p style="font-size:13px;color:var(--faint)">需要至少 1 个已上架的产品才能创建组合包。提交的产品审核通过后即可打包。</p>
+        <p class="note" style="margin:0">需要至少 1 个已上架的产品才能创建组合包。提交的产品审核通过后即可打包。</p>
         <?php else: ?>
-        <form onsubmit="return createBundleForm(event)">
-          <div class="field"><label>组合包名称 *</label><input type="text" name="bundle_title" required placeholder="如：SEO 增长全家桶"></div>
+        <form onsubmit="return createBundleForm(event)" class="form-grid">
+          <div class="field"><label>组合包名称 *</label><input class="inp sm" type="text" name="bundle_title" required placeholder="如：SEO 增长全家桶"></div>
           <div class="field"><label>选择要打包的产品（可多选）</label>
-            <div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;padding:10px;border:1px solid var(--border);border-radius:10px">
+            <div class="panel" style="gap:6px;max-height:200px;overflow-y:auto;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
               <?php foreach ($publishedMine as $s): ?>
-              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" name="bundle_items[]" value="skill:<?=htmlspecialchars($s['id'])?>" style="width:15px;height:15px"> <?=htmlspecialchars($s['icon'] ?? '⚡')?> <?=htmlspecialchars($s['title'])?> <span style="color:var(--faint);font-size:11px">Skill</span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" name="bundle_items[]" value="skill:<?=htmlspecialchars($s['id'])?>" style="width:15px;height:15px;accent-color:var(--accent)"> <?=htmlspecialchars($s['icon'] ?? '⚡')?> <?=htmlspecialchars($s['title'])?> <span class="note" style="margin:0">Skill</span></label>
               <?php endforeach; ?>
             </div>
           </div>
-          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
-            <div class="field"><label>组合包售价 ¥</label><input type="number" name="bundle_price" min="1" step="1" value="99"></div>
-            <div class="field"><label>分销者佣金 %</label><input type="number" name="bundle_dist_rate" min="5" max="80" step="5" value="30"></div>
+          <div class="grid g2" style="gap:12px">
+            <div class="field"><label>组合包售价 ¥</label><input class="inp sm" type="number" name="bundle_price" min="1" step="1" value="99"></div>
+            <div class="field"><label>分销者佣金 %</label><input class="inp sm" type="number" name="bundle_dist_rate" min="5" max="80" step="5" value="30"></div>
           </div>
-          <div class="field"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="bundle_dist_enabled" value="1" checked style="width:16px;height:16px"> 允许分销</label></div>
-          <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">创建组合包</button>
-          <div id="bundleMsg" style="margin-top:10px;font-size:13px"></div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13.5px"><input type="checkbox" name="bundle_dist_enabled" value="1" checked style="width:16px;height:16px;accent-color:var(--accent)"> 允许分销</label>
+          <div><button type="submit" class="btn primary">创建组合包</button></div>
+          <div id="bundleMsg" class="note" style="margin:0"></div>
         </form>
         <?php endif; ?>
       </div>
 
       <!-- 提交新产品 -->
-      <div style="padding:20px;border-radius:14px;background:var(--bg)">
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">提交新产品</h3>
-        <p style="font-size:12.5px;color:var(--faint);margin-bottom:16px">填写表单，自动生成标准 Skill 产品。审核通过后上架市场。</p>
-        <form onsubmit="return submitSkill(event)">
-          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
-            <div class="field"><label>产品名称 *</label><input type="text" name="title" required placeholder="如：小红书爆款文案"></div>
-            <div class="field"><label>类型</label><select name="type" id="devSkillType">
+      <div class="box">
+        <h3>提交新产品</h3>
+        <p class="d" style="font-size:12.5px">填写表单，自动生成标准 Skill 产品。审核通过后上架市场。</p>
+        <form onsubmit="return submitSkill(event)" class="form-grid">
+          <div class="grid g2" style="gap:12px">
+            <div class="field"><label>产品名称 *</label><input class="inp sm" type="text" name="title" required placeholder="如：小红书爆款文案"></div>
+            <div class="field"><label>类型</label><select class="inp sm" name="type" id="devSkillType">
               <?php foreach ($types as $k => $t): ?><option value="<?=$k?>"><?=$t['icon']?> <?=$t['name']?> — <?=$t['desc']?></option><?php endforeach; ?>
             </select></div>
           </div>
-          <div class="field"><label>一句话描述</label><input type="text" name="description" placeholder="产品能做什么？"></div>
-          <div class="field"><label>标签（逗号分隔）</label><input type="text" name="tags" placeholder="SEO, 文案, 增长"></div>
-          <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
-            <div class="field"><label>售价 ¥（0 = 免费）</label><input type="number" name="price" min="0" step="1" value="0"></div>
-            <div class="field"><label>分销者佣金比例 %（5-80）</label><input type="number" name="distributor_rate" min="5" max="80" step="5" value="30"></div>
+          <div class="field"><label>一句话描述</label><input class="inp sm" type="text" name="description" placeholder="产品能做什么？"></div>
+          <div class="field"><label>标签（逗号分隔）</label><input class="inp sm" type="text" name="tags" placeholder="SEO, 文案, 增长"></div>
+          <div class="grid g2" style="gap:12px">
+            <div class="field"><label>售价 ¥（0 = 免费）</label><input class="inp sm" type="number" name="price" min="0" step="1" value="0"></div>
+            <div class="field"><label>分销者佣金比例 %（5-80）</label><input class="inp sm" type="number" name="distributor_rate" min="5" max="80" step="5" value="30"></div>
           </div>
-          <div class="field"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="distribution_enabled" value="1" checked style="width:16px;height:16px"> 允许分销：任何人可帮你卖，佣金归分销者</label></div>
-          <div style="font-size:12px;color:var(--faint);margin:-6px 0 12px">分成结构：平台抽 10%（覆盖支付手续费）→ 分销者拿上比例 → 你拿剩余（约 <?=100-10-30?>%）。一级分销，不设多级。</div>
-          <div class="field"><label>内容 / 指令模板 *（AI 指令 / 工具说明，用 {topic} 等占位符）</label><textarea name="content" rows="6" required placeholder="你是…请为「{topic}」…"></textarea></div>
-          <div id="devSkillTip" style="font-size:12px;color:var(--faint);margin-bottom:12px">💡 开发套件：参考市场里的官方 Skill 结构。AI 指令用 <code>{topic}</code> 等变量占位，工作流可多段描述。</div>
-          <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">提交审核</button>
-          <div id="submitSkillMsg" style="margin-top:12px;font-size:13px"></div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13.5px"><input type="checkbox" name="distribution_enabled" value="1" checked style="width:16px;height:16px;accent-color:var(--accent)"> 允许分销：任何人可帮你卖，佣金归分销者</label>
+          <p class="note" style="margin:0">分成结构：平台抽 10%（覆盖支付手续费）→ 分销者拿上比例 → 你拿剩余（约 <?=100-10-30?>%）。一级分销，不设多级。</p>
+          <div class="field"><label>内容 / 指令模板 *（AI 指令 / 工具说明，用 {topic} 等占位符）</label><textarea class="inp mono" name="content" rows="6" required placeholder="你是…请为「{topic}」…"></textarea></div>
+          <p id="devSkillTip" class="note" style="margin:0">开发套件：参考市场里的官方 Skill 结构。AI 指令用 <code class="mono">{topic}</code> 等变量占位，工作流可多段描述。</p>
+          <div><button type="submit" class="btn primary">提交审核</button></div>
+          <div id="submitSkillMsg" class="note" style="margin:0"></div>
         </form>
       </div>
       <?php endif; ?>
@@ -982,11 +928,11 @@ function include_member_developer($member): void {
         fetch('/api/build-skill.php', { method: 'POST', body: fd, credentials: 'same-origin' })
           .then(function (r) { return r.json(); })
           .then(function (j) {
-            if (!j.ok) { out.innerHTML = '<span style="color:#dc2626">✋ ' + (j.error || '生成失败') + '</span>'; return; }
+            if (!j.ok) { out.innerHTML = '<span style="color:var(--danger)">✋ ' + (j.error || '生成失败') + '</span>'; return; }
             var s = j.skill || {};
             var perms = (s.permissions || []).length ? ('　需要权限：' + s.permissions.join('、')) : '';
-            var tag = j.verdict === 'safe' ? '<span style="color:#16a34a">✅ 通过安全审查</span>'
-                                           : '<span style="color:#d97706">⚠️ 需人工确认</span>';
+            var tag = j.verdict === 'safe' ? '<span style="color:var(--ok)">✅ 通过安全审查</span>'
+                                           : '<span style="color:var(--warn)">⚠️ 需人工确认</span>';
             out.innerHTML = tag + '　已存为草稿：<strong>' + (s.title || '') + '</strong>' + perms
                           + '<div style="color:var(--muted);font-size:12px;margin-top:4px">' + (s.description || '') + '</div>';
           })
@@ -1022,19 +968,19 @@ function include_member_developer($member): void {
       var box = document.getElementById('chaptersBox');
       var ci = box.children.length;
       var ch = document.createElement('div');
-      ch.className = 'chapter-card';
-      ch.style.cssText = 'border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--surface)';
-      ch.innerHTML = '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><input type="text" placeholder="章节名称" class="ch-title" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><button type="button" onclick="addLesson(this)" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:none;font-size:12px">+课时</button><button type="button" onclick="this.closest(\'.chapter-card\').remove()" style="padding:4px 8px;border:none;background:none;color:var(--danger);font-size:12px">✕</button></div><div class="lessons-box" data-ci="' + ci + '"></div>';
+      ch.className = 'chapter-card box';
+      ch.style.cssText = 'gap:8px;background:var(--surface)';
+      ch.innerHTML = '<div class="row" style="gap:8px"><input type="text" placeholder="章节名称" class="ch-title inp sm" style="flex:1"><button type="button" class="btn ghost" style="height:36px;padding:0 12px;font-size:12.5px" onclick="addLesson(this)">+课时</button><button type="button" class="mx" aria-label="删除章节" onclick="this.closest(\'.chapter-card\').remove()">✕</button></div><div class="lessons-box panel" style="gap:6px" data-ci="' + ci + '"></div>';
       box.appendChild(ch);
     }
     function addLesson(btn) {
       var box = btn.closest('.chapter-card').querySelector('.lessons-box');
       var li = document.createElement('div');
-      li.style.cssText = 'display:grid;grid-template-columns:1fr 80px 1fr auto;gap:6px;margin-bottom:6px;align-items:center';
-      li.innerHTML = '<input type="text" placeholder="课时标题" class="l-title" style="padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px">' +
-        '<select class="l-type" style="padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px"><option value="video">视频</option><option value="text">图文</option><option value="quiz">测验</option></select>' +
-        '<input type="text" placeholder="视频URL/内容" class="l-video" style="padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px">' +
-        '<button type="button" onclick="this.parentElement.remove()" style="padding:4px 8px;border:none;background:none;color:var(--danger)">✕</button>';
+      li.style.cssText = 'display:grid;grid-template-columns:1fr 90px 1fr auto;gap:6px;align-items:center';
+      li.innerHTML = '<input type="text" placeholder="课时标题" class="l-title inp sm">' +
+        '<select class="l-type inp sm"><option value="video">视频</option><option value="text">图文</option><option value="quiz">测验</option></select>' +
+        '<input type="text" placeholder="视频URL/内容" class="l-video inp sm">' +
+        '<button type="button" class="mx" aria-label="删除课时" onclick="this.parentElement.remove()">✕</button>';
       box.appendChild(li);
     }
     function submitCourse(e) {
@@ -1085,7 +1031,6 @@ function include_member_developer($member): void {
     </script>
     <?php
 }
-
 // ─── 分销中心（一级分销） ───
 function include_member_distribution($member): void {
     $stats = commerce_distributor_stats($member['id']);
@@ -1122,44 +1067,38 @@ function include_member_distribution($member): void {
         }
     } catch (Exception $e) {}
     ?>
-    <div class="card p-8">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-        <div style="width:44px;height:44px;border-radius:12px;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;font-size:20px">💰</div>
-        <div>
-          <h2 class="text-xl font-bold">分销中心</h2>
-          <div style="font-size:12px;color:var(--muted)">帮你推广平台上的 Skill 产品，卖出即赚佣金（一级分销，平台抽 10% 覆盖支付手续费）</div>
-        </div>
+    <div class="card panel">
+      <div class="ph">
+        <div class="ic" style="background:var(--ok-soft);color:var(--ok)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div><h2>分销中心</h2><p>帮你推广平台上的 Skill 产品，卖出即赚佣金（一级分销，平台抽 10% 覆盖支付手续费）</p></div>
       </div>
 
-      <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:22px">
-        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--ok)">¥<?=number_format($stats['balance'],2)?></div><div style="font-size:12px;color:var(--muted)">账户余额（可提现）</div></div>
-        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--ok)">¥<?=number_format($stats['total_commission'],2)?></div><div style="font-size:12px;color:var(--muted)">累计佣金</div></div>
-        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800"><?=$stats['total_orders']?></div><div style="font-size:12px;color:var(--muted)">带来的订单</div></div>
-        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--warn)">¥<?=number_format($stats['pending_commission'],2)?></div><div style="font-size:12px;color:var(--muted)">待结算（未支付）</div></div>
-        <div style="padding:16px;border-radius:14px;background:var(--bg)"><div style="font-size:24px;font-weight:800;color:var(--accent)"><?=$refCode?></div><div style="font-size:12px;color:var(--muted)">我的分销码</div></div>
+      <div class="tiles">
+        <?=acct_tile('¥' . number_format($stats['balance'],2), '账户余额（可提现）', 'ok')?>
+        <?=acct_tile('¥' . number_format($stats['total_commission'],2), '累计佣金', 'ok')?>
+        <?=acct_tile((string)$stats['total_orders'], '带来的订单')?>
+        <?=acct_tile('¥' . number_format($stats['pending_commission'],2), '待结算（未支付）', 'wn')?>
+        <?=acct_tile('<span class="mono">' . htmlspecialchars($refCode) . '</span>', '我的分销码', 'ac')?>
       </div>
 
-      <div style="padding:14px 16px;border:1px dashed var(--border-strong);border-radius:14px;background:var(--surface);margin-bottom:22px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px">🔗 复制推广链接（分享给任何人，他购买你拿佣金）</div>
-        <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">平台抽 10% 覆盖支付手续费；分销者拿产品配置的佣金比例；作者拿剩余。</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <input type="text" id="refBase" value="<?=htmlspecialchars($siteUrl)?>/marketplace?ref=<?=htmlspecialchars($refCode)?>" readonly style="flex:1;min-width:220px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:12.5px">
-          <button type="button" class="rounded-full px-5 py-2 font-bold" style="background:var(--accent);color:var(--on-accent);font-size:13px" onclick="var i=document.getElementById('refBase');i.select();document.execCommand('copy');alert('已复制推广链接')">复制</button>
+      <div class="box dash">
+        <h3>复制推广链接 <small>分享给任何人，他购买你拿佣金</small></h3>
+        <p class="d" style="font-size:12.5px">平台抽 10% 覆盖支付手续费；分销者拿产品配置的佣金比例；作者拿剩余。</p>
+        <div class="row" style="gap:8px">
+          <input type="text" id="refBase" class="inp sm mono" value="<?=htmlspecialchars($siteUrl)?>/marketplace?ref=<?=htmlspecialchars($refCode)?>" readonly style="flex:1;min-width:220px">
+          <button type="button" class="btn primary sm" onclick="var i=document.getElementById('refBase');i.select();document.execCommand('copy');alert('已复制推广链接')">复制</button>
         </div>
       </div>
 
       <?php $board = commerce_leaderboard($member['id'], 30, 10); if (!empty($board['top'])): ?>
-      <div style="padding:18px;border-radius:14px;background:linear-gradient(135deg,var(--accent-soft),var(--surface));border:1px solid var(--border);margin-bottom:22px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-          <span style="font-size:18px">🏆</span><h3 style="font-size:15px;font-weight:700;margin:0">分销之星 · 近30天佣金 TOP<?=count($board['top'])?></h3>
-          <?php if ($board['self']): ?><span style="margin-left:auto;font-size:12px;color:var(--muted)">我的排名 <b style="color:var(--accent)">#<?=$board['self']['rank']?></b> / <?=$board['total']?></span><?php endif; ?>
-        </div>
+      <div class="box" style="background:linear-gradient(135deg,var(--accent-soft),var(--surface))">
+        <div class="row"><h3>分销之星 · 近30天佣金 TOP<?=count($board['top'])?></h3><?php if ($board['self']): ?><span class="note" style="margin:0 0 0 auto">我的排名 <b style="color:var(--accent)">#<?=$board['self']['rank']?></b> / <?=$board['total']?></span><?php endif; ?></div>
         <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
           <?php foreach ($board['top'] as $i => $b): $isSelf = $b['member_id'] === $member['id']; ?>
-          <div style="min-width:120px;flex:1;padding:14px;border-radius:12px;background:var(--surface);border:1px solid <?=$isSelf?'var(--accent)':'var(--border)'?>;text-align:center">
-            <div style="font-size:22px;font-weight:800;color:<?=match($i){0=>'var(--warn)',1=>'#9ca3af',2=>'var(--warn)',default=>'var(--muted)'}?>"><?=($i<3)?['🥇','🥈','🥉'][$i]:'#' . ($i+1)?></div>
-            <div style="font-size:13px;font-weight:600;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($b['name'])?><?=$isSelf?'（我）':''?></div>
-            <div style="font-size:11px;color:var(--faint)"><?=$b['orders']?>单</div>
+          <div class="plan<?=$isSelf?' cur':''?>" style="min-width:120px;flex:1;padding:14px;text-align:center;gap:2px;align-items:center">
+            <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:<?=$i<3?'var(--warn)':'var(--muted)'?>"><?=($i<3)?['🥇','🥈','🥉'][$i]:'#' . ($i+1)?></div>
+            <div style="font-size:13px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($b['name'])?><?=$isSelf?'（我）':''?></div>
+            <div class="note" style="margin:0"><?=$b['orders']?>单</div>
             <div style="font-size:14px;font-weight:700;color:var(--ok)">¥<?=number_format($b['commission'],1)?></div>
           </div>
           <?php endforeach; ?>
@@ -1167,107 +1106,105 @@ function include_member_distribution($member): void {
       </div>
       <?php endif; ?>
 
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">推广商品（每商品专属链接）</h3>
-      <?php if (empty($distProducts)): ?><p style="font-size:13px;color:var(--faint);margin-bottom:20px">暂无开放分销的商品。</p>
-      <?php else: ?>
-      <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px">
-        <table style="width:100%;font-size:13px">
-          <thead><tr style="background:var(--bg);text-align:left;color:var(--muted)"><th style="padding:10px 14px">商品</th><th style="padding:10px 14px">售价</th><th style="padding:10px 14px">佣金比例</th><th style="padding:10px 14px">我的链接</th></tr></thead>
-          <tbody>
-            <?php foreach ($distProducts as $dp): ?>
-            <tr style="border-top:1px solid var(--border-soft)">
-              <td style="padding:10px 14px"><b><?=htmlspecialchars($dp['title'])?></b><div style="font-size:11px;color:var(--faint)"><?=htmlspecialchars($dp['category'] ?? 'Skill')?></div></td>
-              <td style="padding:10px 14px">¥<?=number_format((float)($dp['pricing']['price'] ?? 0),0)?></td>
-              <td style="padding:10px 14px;color:var(--accent)"><?=round((float)($dp['distributor_rate'] ?? 30))?>%</td>
-              <td style="padding:10px 14px">
-                <div style="display:flex;gap:6px;align-items:center">
-                  <input type="text" value="<?=htmlspecialchars($siteUrl)?><?=!empty($dp['course'])?('/course/' . urlencode($dp['id']) . '?id=' . urlencode($dp['id']) . '&ref='):('/marketplace?ref=')?><?=htmlspecialchars($refCode)?>" readonly style="flex:1;min-width:170px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:11.5px">
-                  <button type="button" class="rounded-full px-3 py-1 font-bold" style="background:var(--accent);color:var(--on-accent);font-size:11px" onclick="var i=this.previousElementSibling;i.select();document.execCommand('copy');this.textContent='✓';setTimeout(function(){this.textContent='复制'}.bind(this),1200)">复制</button>
-                </div>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-      <?php endif; ?>
-
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">推广数据（近30天订单）</h3>
-      <?php if (empty($stats['daily_trend'] ?? [])): ?><p style="font-size:13px;color:var(--faint);margin-bottom:20px">暂无推广订单。</p>
-      <?php else: ?>
-      <div style="display:flex;gap:3px;align-items:flex-end;height:70px;margin-bottom:6px">
-        <?php $maxT = max($stats['daily_trend']) ?: 1; foreach ($stats['daily_trend'] as $d => $n): ?>
-        <div style="flex:1;text-align:center" title="<?=$d?> · <?=$n?>单">
-          <div style="background:var(--ok);opacity:<?=max(0.25,$n/$maxT)?>;border-radius:3px 3px 0 0;height:<?=$n>0?max(3,round($n/$maxT*70)):2?>px"></div>
+      <div class="panel" style="gap:10px">
+        <h3>推广商品 <small>每商品专属链接</small></h3>
+        <?php if (empty($distProducts)): ?><div class="empty">暂无开放分销的商品。</div>
+        <?php else: ?>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>商品</th><th>售价</th><th>佣金比例</th><th>我的链接</th></tr></thead>
+            <tbody>
+              <?php foreach ($distProducts as $dp): ?>
+              <tr>
+                <td><b><?=htmlspecialchars($dp['title'])?></b><div class="note" style="margin:0"><?=htmlspecialchars($dp['category'] ?? 'Skill')?></div></td>
+                <td>¥<?=number_format((float)($dp['pricing']['price'] ?? 0),0)?></td>
+                <td style="color:var(--accent);font-weight:600"><?=round((float)($dp['distributor_rate'] ?? 30))?>%</td>
+                <td>
+                  <div class="row" style="gap:6px;flex-wrap:nowrap">
+                    <input type="text" class="inp sm mono" value="<?=htmlspecialchars($siteUrl)?><?=!empty($dp['course'])?('/course/' . urlencode($dp['id']) . '?id=' . urlencode($dp['id']) . '&ref='):('/marketplace?ref=')?><?=htmlspecialchars($refCode)?>" readonly style="flex:1;min-width:170px;min-height:34px;padding:5px 8px;font-size:11.5px">
+                    <button type="button" class="btn ghost" style="height:34px;padding:0 12px;font-size:12px" onclick="var i=this.previousElementSibling;i.select();document.execCommand('copy');this.textContent='✓';setTimeout(function(){this.textContent='复制'}.bind(this),1200)">复制</button>
+                  </div>
+                </td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
         </div>
-        <?php endforeach; ?>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:var(--font-mono);margin-bottom:20px"><span><?=htmlspecialchars(array_key_first($stats['daily_trend'])?:'')?></span><span><?=htmlspecialchars(array_key_last($stats['daily_trend'])?:'')?></span></div>
-      <?php if (!empty($stats['product_stats'])): ?>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">商品业绩：<?php foreach ($stats['product_stats'] as $pt => $ps): ?><span style="margin-right:12px"><?=htmlspecialchars($pt)?> · <?=$ps['orders']?>单 · <b style="color:var(--ok)">¥<?=number_format($ps['commission'],1)?></b></span><?php endforeach; ?></div>
-      <?php endif; endif; ?>
-
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">佣金明细</h3>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <?php $fst = $_GET['dstatus'] ?? 'all'; foreach (['all'=>'全部','paid'=>'已结算','pending'=>'待支付'] as $fk => $fl): ?>
-        <a href="?view=distribution&dstatus=<?=$fk?>" style="padding:5px 14px;border-radius:999px;font-size:12px;border:1.5px solid var(--border);<?=$fst===$fk?'background:var(--accent);color:var(--on-accent);border-color:var(--accent)':''?>"><?=$fl?></a>
-        <?php endforeach; ?>
-        <?php if (!empty($details)): ?>
-        <a href="?view=distribution&dstatus=<?=$fst?>&export=1" style="margin-left:auto;padding:5px 14px;border-radius:999px;font-size:12px;border:1.5px solid var(--border-strong)">⬇ 导出 CSV</a>
         <?php endif; ?>
       </div>
-      <?php if (empty($details)): ?><p style="font-size:13px;color:var(--faint);margin-bottom:20px"><?= $fst==='all' ? '还没有佣金记录，分享推广链接后产生。' : '该状态下暂无佣金记录。' ?></p>
-      <?php else: ?>
-      <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px">
-        <table style="width:100%;font-size:13px">
-          <thead><tr style="background:var(--bg);text-align:left;color:var(--muted)"><th style="padding:10px 14px">商品</th><th style="padding:10px 14px">成交额</th><th style="padding:10px 14px">我的佣金</th><th style="padding:10px 14px">状态</th><th style="padding:10px 14px">时间</th></tr></thead>
-          <tbody>
-            <?php foreach (array_slice($details,0,50) as $d): ?>
-            <tr style="border-top:1px solid var(--border-soft)">
-              <td style="padding:10px 14px"><?=htmlspecialchars($d['title'])?></td>
-              <td style="padding:10px 14px">¥<?=number_format($d['amount'],2)?></td>
-              <td style="padding:10px 14px;color:var(--ok);font-weight:600">¥<?=number_format($d['commission'],2)?></td>
-              <td style="padding:10px 14px"><span style="color:<?=$d['status']==='paid'?'var(--ok)':'var(--warn)'?>"><?=$d['status']==='paid'?'已结算':'待支付'?></span></td>
-              <td style="padding:10px 14px;color:var(--faint);font-size:12px"><?=htmlspecialchars(substr($d['time']??'',0,16))?></td>
-            </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
+
+      <div class="panel" style="gap:10px">
+        <h3>推广数据 <small>近30天订单</small></h3>
+        <?php if (empty($stats['daily_trend'] ?? [])): ?><div class="empty">暂无推广订单。</div>
+        <?php else: ?>
+        <div class="bars">
+          <?php $maxT = max($stats['daily_trend']) ?: 1; foreach ($stats['daily_trend'] as $d => $n): ?>
+          <i title="<?=$d?> · <?=$n?>单" style="opacity:<?=max(0.25,$n/$maxT)?>;height:<?=$n>0?max(3,round($n/$maxT*70)):2?>px"></i>
+          <?php endforeach; ?>
+        </div>
+        <div class="note mono" style="display:flex;justify-content:space-between;margin:0;font-size:10.5px"><span><?=htmlspecialchars(array_key_first($stats['daily_trend'])?:'')?></span><span><?=htmlspecialchars(array_key_last($stats['daily_trend'])?:'')?></span></div>
+        <?php if (!empty($stats['product_stats'])): ?>
+        <div class="note" style="margin:0">商品业绩：<?php foreach ($stats['product_stats'] as $pt => $ps): ?><span style="margin-right:12px"><?=htmlspecialchars($pt)?> · <?=$ps['orders']?>单 · <b style="color:var(--ok)">¥<?=number_format($ps['commission'],1)?></b></span><?php endforeach; ?></div>
+        <?php endif; endif; ?>
       </div>
-      <?php endif; ?>
+
+      <div class="panel" style="gap:10px">
+        <h3>佣金明细</h3>
+        <div class="row" style="gap:8px">
+          <div class="tab-bar dense" style="border-bottom:0;padding-bottom:0;justify-content:flex-start;gap:6px">
+          <?php $fst = $_GET['dstatus'] ?? 'all'; foreach (['all'=>'全部','paid'=>'已结算','pending'=>'待支付'] as $fk => $fl): ?>
+          <a href="?view=distribution&dstatus=<?=$fk?>" class="tab-p" aria-selected="<?=$fst===$fk?'true':'false'?>"><?=$fl?></a>
+          <?php endforeach; ?>
+          </div>
+          <?php if (!empty($details)): ?><a href="?view=distribution&dstatus=<?=$fst?>&export=1" class="btn ghost" style="height:34px;padding:0 14px;font-size:12.5px;margin-left:auto">⬇ 导出 CSV</a><?php endif; ?>
+        </div>
+        <?php if (empty($details)): ?><div class="empty"><?= $fst==='all' ? '还没有佣金记录，分享推广链接后产生。' : '该状态下暂无佣金记录。' ?></div>
+        <?php else: ?>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>商品</th><th>成交额</th><th>我的佣金</th><th>状态</th><th>时间</th></tr></thead>
+            <tbody>
+              <?php foreach (array_slice($details,0,50) as $d): ?>
+              <tr>
+                <td><?=htmlspecialchars($d['title'])?></td>
+                <td>¥<?=number_format($d['amount'],2)?></td>
+                <td class="ok">¥<?=number_format($d['commission'],2)?></td>
+                <td><span class="<?=$d['status']==='paid'?'badge ok':'badge warn'?>"><?=$d['status']==='paid'?'已结算':'待支付'?></span></td>
+                <td class="mu mono" style="font-size:12px"><?=htmlspecialchars(substr($d['time']??'',0,16))?></td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+        <?php endif; ?>
+      </div>
 
       <!-- 提现 -->
-      <div style="padding:18px;border-radius:14px;background:var(--bg);margin-bottom:20px">
-        <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">提现</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px" class="wd-grid">
-          <div>
-            <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px">余额 <b style="color:var(--ok)">¥<?=number_format($stats['balance'],2)?></b> · 最低提现按后台配置（当前 <?=number_format((shop_settings()['min_withdraw'] ?? 100),0)?> 元）</div>
-            <form onsubmit="return submitWithdraw(event)" style="display:flex;flex-direction:column;gap:10px">
-              <input type="number" name="wd_amount" min="1" step="0.01" placeholder="提现金额 ¥" required style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
-              <select name="wd_method" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
-                <option value="wechat">微信收款</option>
-                <option value="alipay">支付宝</option>
-                <option value="bank">银行卡</option>
-              </select>
-              <input type="text" name="wd_account" placeholder="收款账户（微信号/支付宝/卡号）" required style="padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
-              <button class="rounded-full py-2.5 font-bold" style="background:var(--accent);color:var(--on-accent);font-size:13px">申请提现</button>
-              <div id="wdMsg" style="font-size:12.5px"></div>
+      <div class="box">
+        <h3>提现</h3>
+        <div class="grid g2" style="gap:18px">
+          <div class="panel" style="gap:10px">
+            <p class="note" style="margin:0">余额 <b style="color:var(--ok)">¥<?=number_format($stats['balance'],2)?></b> · 最低提现按后台配置（当前 <?=number_format((shop_settings()['min_withdraw'] ?? 100),0)?> 元）</p>
+            <form onsubmit="return submitWithdraw(event)" class="form-grid" style="gap:10px">
+              <input class="inp sm" type="number" name="wd_amount" min="1" step="0.01" placeholder="提现金额 ¥" required>
+              <select class="inp sm" name="wd_method"><option value="wechat">微信收款</option><option value="alipay">支付宝</option><option value="bank">银行卡</option></select>
+              <input class="inp sm" type="text" name="wd_account" placeholder="收款账户（微信号/支付宝/卡号）" required>
+              <div><button class="btn primary sm">申请提现</button></div>
+              <div id="wdMsg" class="note" style="margin:0"></div>
             </form>
           </div>
-          <div>
-            <div style="font-size:12.5px;font-weight:600;margin-bottom:8px">提现记录</div>
+          <div class="panel" style="gap:8px">
+            <b style="font-size:13px">提现记录</b>
             <?php
               $wdList = array_values(array_filter((array)json_read(DATA_DIR . '/shop/withdrawals.json'), fn($w) => ($w['member_id'] ?? '') === $member['id']));
               $wdMap = ['pending'=>'待审核','paid'=>'已打款','rejected'=>'已驳回'];
+              $wdTag = ['pending'=>'badge warn','paid'=>'badge ok','rejected'=>'badge danger'];
             ?>
-            <?php if (empty($wdList)): ?><p style="font-size:12.5px;color:var(--faint)">暂无提现记录</p>
+            <?php if (empty($wdList)): ?><div class="empty">暂无提现记录</div>
             <?php else: ?>
-            <div style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto">
+            <div class="panel" style="gap:6px;max-height:180px;overflow-y:auto">
               <?php foreach (array_slice(array_reverse($wdList),0,10) as $w): ?>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px">
-                <div><b style="color:var(--ok)">¥<?=number_format($w['amount'],2)?></b><div style="font-size:11px;color:var(--faint)"><?=substr($w['created_at']??'',0,16)?></div></div>
-                <span style="color:<?=['pending'=>'var(--warn)','paid'=>'var(--ok)','rejected'=>'var(--danger)'][$w['status']]??'var(--faint)'?>"><?=$wdMap[$w['status']]??$w['status']?></span>
-              </div>
+              <div class="item" style="padding:8px 10px;background:var(--surface)"><div class="t"><b style="color:var(--ok);font-size:13px">¥<?=number_format($w['amount'],2)?></b><span class="mono"><?=substr($w['created_at']??'',0,16)?></span></div><span class="<?=$wdTag[$w['status']]??'pill neutral'?>" style="height:22px;font-size:11px"><?=$wdMap[$w['status']]??$w['status']?></span></div>
               <?php endforeach; ?>
             </div>
             <?php endif; ?>
@@ -1275,29 +1212,26 @@ function include_member_distribution($member): void {
         </div>
       </div>
 
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:10px">可推广的产品（<?=count($distProducts)?>）</h3>
-      <?php if (empty($distProducts)): ?>
-      <div style="padding:16px;border-radius:12px;background:var(--bg);border:1px dashed var(--border-strong);margin-bottom:20px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:4px">当前暂无可推广的付费产品</div>
-        <div style="font-size:12.5px;color:var(--muted);line-height:1.7">官方 Skill 目前免费开放（无分销佣金）。开发者将付费产品上架并开启分销后，你就能推广赚钱了——先复制推广链接占位，产品上架即可用。</div>
-      </div>
-      <?php else: ?>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
-        <?php foreach (array_slice($distProducts, 0, 12) as $p): ?>
-        <div style="padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface)">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-            <span style="font-size:18px"><?=htmlspecialchars($p['title'] ?? '')?></span>
-          </div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:8px"><?=htmlspecialchars(mb_substr($p['description'] ?? '', 0, 50))?></div>
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <b style="color:var(--ok)">¥<?=number_format($p['pricing']['price'] ?? 0,0)?></b>
-            <span style="font-size:11px;color:var(--accent)">分销佣 <?=round((float)($p['distributor_rate'] ?? 30))?>%</span>
-          </div>
-          <button class="rounded-full px-4 py-1.5 font-bold mt-2" style="background:var(--hover);font-size:12px" onclick="copyDistLink('<?=htmlspecialchars($refCode)?>','<?=htmlspecialchars($p['id'])?>')">复制专属链接</button>
+      <div class="panel" style="gap:10px">
+        <h3>可推广的产品（<?=count($distProducts)?>）</h3>
+        <?php if (empty($distProducts)): ?>
+        <div class="box dash">
+          <b style="font-size:13px">当前暂无可推广的付费产品</b>
+          <p class="d" style="font-size:12.5px">官方 Skill 目前免费开放（无分销佣金）。开发者将付费产品上架并开启分销后，你就能推广赚钱了——先复制推广链接占位，产品上架即可用。</p>
         </div>
-        <?php endforeach; ?>
+        <?php else: ?>
+        <div class="grid g3" style="gap:12px">
+          <?php foreach (array_slice($distProducts, 0, 12) as $p): ?>
+          <div class="plan" style="padding:14px;gap:6px">
+            <b style="font-size:14px"><?=htmlspecialchars($p['title'] ?? '')?></b>
+            <p class="d" style="font-size:12px"><?=htmlspecialchars(mb_substr($p['description'] ?? '', 0, 50))?></p>
+            <div class="row" style="justify-content:space-between"><b style="color:var(--ok)">¥<?=number_format($p['pricing']['price'] ?? 0,0)?></b><span class="pill hl" style="height:22px;font-size:11px">分销佣 <?=round((float)($p['distributor_rate'] ?? 30))?>%</span></div>
+            <div><button type="button" class="btn ghost" style="height:34px;padding:0 12px;font-size:12.5px" onclick="copyDistLink('<?=htmlspecialchars($refCode)?>','<?=htmlspecialchars($p['id'])?>')">复制专属链接</button></div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
       </div>
-      <?php endif; ?>
     </div>
     <script>
     function copyDistLink(ref, productId) {
@@ -1326,47 +1260,33 @@ function include_member_distribution($member): void {
 function include_member_reset_password(): void {
     $step = $_GET['step'] ?? 'request';
     ?>
-    <div class="card p-8">
+    <div class="form-card panel">
       <?php if ($step === 'request'): ?>
-      <h2 class="text-xl font-bold mb-2">重置密码</h2>
-      <p class="text-sm text-muted mb-6">输入你的邮箱或手机号，我们将发送验证码</p>
-      <form onsubmit="return requestReset(event)">
-        <div class="field">
-          <label>邮箱或手机号</label>
-          <input type="text" name="account" required placeholder="you@example.com 或手机号">
-        </div>
-        <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">发送验证码</button>
-        <div id="resetMsg" style="margin-top:14px"></div>
+      <div class="sec-head center" style="gap:8px"><span class="kicker">RESET</span><h2 style="font-size:24px">重置密码</h2><p class="lead" style="font-size:14px">输入你的邮箱或手机号，我们将发送验证码</p></div>
+      <form onsubmit="return requestReset(event)" class="form-grid">
+        <div class="field"><label>邮箱或手机号</label><input class="inp" type="text" name="account" required placeholder="you@example.com 或手机号"></div>
+        <button type="submit" class="btn primary" style="width:100%">发送验证码</button>
+        <div id="resetMsg"></div>
       </form>
       <?php elseif ($step === 'verify'): ?>
-      <h2 class="text-xl font-bold mb-2">验证身份</h2>
-      <p class="text-sm text-muted mb-6">请输入收到的验证码</p>
-      <form onsubmit="return verifyReset(event)">
+      <div class="sec-head center" style="gap:8px"><span class="kicker">VERIFY</span><h2 style="font-size:24px">验证身份</h2><p class="lead" style="font-size:14px">请输入收到的验证码</p></div>
+      <form onsubmit="return verifyReset(event)" class="form-grid">
         <input type="hidden" name="token" value="<?=htmlspecialchars($_GET['token'] ?? '')?>">
-        <div class="field">
-          <label>验证码</label>
-          <input type="text" name="code" required placeholder="6 位验证码" maxlength="6">
-        </div>
-        <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">验证</button>
-        <div id="verifyMsg" style="margin-top:14px"></div>
+        <div class="field"><label>验证码</label><input class="inp mono" type="text" name="code" required placeholder="6 位验证码" maxlength="6"></div>
+        <button type="submit" class="btn primary" style="width:100%">验证</button>
+        <div id="verifyMsg"></div>
       </form>
       <?php elseif ($step === 'newpassword'): ?>
-      <h2 class="text-xl font-bold mb-2">设置新密码</h2>
-      <p class="text-sm text-muted mb-6">请输入你的新密码</p>
-      <form onsubmit="return resetPassword(event)">
+      <div class="sec-head center" style="gap:8px"><span class="kicker">NEW PASSWORD</span><h2 style="font-size:24px">设置新密码</h2><p class="lead" style="font-size:14px">请输入你的新密码</p></div>
+      <form onsubmit="return resetPassword(event)" class="form-grid">
         <input type="hidden" name="token" value="<?=htmlspecialchars($_GET['token'] ?? '')?>">
-        <div class="field">
-          <label>新密码</label>
-          <input type="password" name="new_password" required placeholder="至少 8 位" minlength="8">
-        </div>
-        <div class="field">
-          <label>确认新密码</label>
-          <input type="password" name="confirm_password" required placeholder="再次输入新密码" minlength="8">
-        </div>
-        <button type="submit" class="rounded-full px-8 py-3 font-bold" style="background:var(--accent);color:var(--on-accent)">重置密码</button>
-        <div id="newPasswordMsg" style="margin-top:14px"></div>
+        <div class="field"><label>新密码</label><input class="inp" type="password" name="new_password" required placeholder="至少 8 位" minlength="8"></div>
+        <div class="field"><label>确认新密码</label><input class="inp" type="password" name="confirm_password" required placeholder="再次输入新密码" minlength="8"></div>
+        <button type="submit" class="btn primary" style="width:100%">重置密码</button>
+        <div id="newPasswordMsg"></div>
       </form>
       <?php endif; ?>
+      <p class="note" style="text-align:center;margin:0"><a href="member.php?view=login" style="color:var(--accent);font-weight:600">← 返回登录</a></p>
     </div>
     <?php
 }
@@ -1390,10 +1310,7 @@ function submitArticle() {
   fd.append('content', f.querySelector('textarea').value);
   fetch('/api/member.php', {method:'POST', body:fd})
     .then(function(r){return r.json();})
-    .then(function(d){
-      var box = document.getElementById('submitMsg');
-      box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:' + (d.ok?'var(--ok-soft);color:var(--ok)':'var(--danger-soft);color:var(--danger)') + '">' + (d.message||d.error) + '</div>';
-    });
+    .then(function(d){ document.getElementById('submitMsg').innerHTML = msgHtml(d.message||d.error, d.ok); });
 }
 // 个人资料更新
 function updateProfile(e) {
@@ -1402,10 +1319,7 @@ function updateProfile(e) {
   var fd = new FormData(f); fd.append('action','update_profile');
   fetch('/api/member.php', {method:'POST', body:fd})
     .then(function(r){return r.json();})
-    .then(function(d){
-      var box = document.getElementById('profileMsg');
-      box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:' + (d.ok?'var(--ok-soft);color:var(--ok)':'var(--danger-soft);color:var(--danger)') + '">' + (d.message||'资料已更新') + '</div>';
-    });
+    .then(function(d){ document.getElementById('profileMsg').innerHTML = msgHtml(d.message||'资料已更新', d.ok); });
   return false;
 }
 // 修改密码
@@ -1415,15 +1329,14 @@ function changePassword(e) {
   var np = f.querySelector('input[name=new_password]').value;
   var cp = f.querySelector('input[name=confirm_password]').value;
   if (np !== cp) {
-    document.getElementById('passwordMsg').innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--danger-soft);color:var(--danger)">两次输入的密码不一致</div>';
+    document.getElementById('passwordMsg').innerHTML = msgHtml('两次输入的密码不一致', false);
     return false;
   }
   var fd = new FormData(f); fd.append('action','change_password');
   fetch('/api/member.php', {method:'POST', body:fd})
     .then(function(r){return r.json();})
     .then(function(d){
-      var box = document.getElementById('passwordMsg');
-      box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:' + (d.ok?'var(--ok-soft);color:var(--ok)':'var(--danger-soft);color:var(--danger)') + '">' + (d.message||'密码已修改') + '</div>';
+      document.getElementById('passwordMsg').innerHTML = msgHtml(d.message||'密码已修改', d.ok);
       if (d.ok) f.reset();
     });
   return false;
@@ -1437,10 +1350,10 @@ function requestReset(e) {
     .then(function(d){
       var box = document.getElementById('resetMsg');
       if (d.ok) {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--ok-soft);color:var(--ok)">验证码已发送，请查收</div>';
+        box.innerHTML = msgHtml('验证码已发送，请查收', true);
         setTimeout(function(){ location.href = '/member.php?view=reset-password&step=verify&token=' + d.token; }, 1500);
       } else {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--danger-soft);color:var(--danger)">' + d.error + '</div>';
+        box.innerHTML = msgHtml(d.error, false);
       }
     });
   return false;
@@ -1454,10 +1367,10 @@ function verifyReset(e) {
     .then(function(d){
       var box = document.getElementById('verifyMsg');
       if (d.ok) {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--ok-soft);color:var(--ok)">验证成功</div>';
+        box.innerHTML = msgHtml('验证成功', true);
         setTimeout(function(){ location.href = '/member.php?view=reset-password&step=newpassword&token=' + d.token; }, 1000);
       } else {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--danger-soft);color:var(--danger)">' + d.error + '</div>';
+        box.innerHTML = msgHtml(d.error, false);
       }
     });
   return false;
@@ -1469,7 +1382,7 @@ function resetPassword(e) {
   var np = f.querySelector('input[name=new_password]').value;
   var cp = f.querySelector('input[name=confirm_password]').value;
   if (np !== cp) {
-    document.getElementById('newPasswordMsg').innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--danger-soft);color:var(--danger)">两次输入的密码不一致</div>';
+    document.getElementById('newPasswordMsg').innerHTML = msgHtml('两次输入的密码不一致', false);
     return false;
   }
   var fd = new FormData(f); fd.append('action','reset_password');
@@ -1478,15 +1391,14 @@ function resetPassword(e) {
     .then(function(d){
       var box = document.getElementById('newPasswordMsg');
       if (d.ok) {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--ok-soft);color:var(--ok)">密码重置成功，正在跳转登录...</div>';
+        box.innerHTML = msgHtml('密码重置成功，正在跳转登录...', true);
         setTimeout(function(){ location.href = '/member.php?view=login'; }, 1500);
       } else {
-        box.innerHTML = '<div style="padding:10px 14px;border-radius:10px;font-size:13px;background:var(--danger-soft);color:var(--danger)">' + d.error + '</div>';
+        box.innerHTML = msgHtml(d.error, false);
       }
     });
   return false;
 }
 </script>
-<footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)"><div class="mx-auto px-5 text-center text-sm" style="max-width:1100px"><div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div><div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div></div></footer>
 </body>
 </html>

@@ -215,7 +215,7 @@
   /* 侧栏空间名用导航中文标签，而不是 data-page 的英文 id */
   var PAGE_LABEL = (function () {
     for (var i = 0; i < NAV.length; i++) if (NAV[i].id === PAGE) return NAV[i].label;
-    return PAGE === 'home' ? '首页' : PAGE;
+    return PAGE === 'home' ? '首页' : (PAGE === 'account' ? '个人中心' : PAGE);
   })();
 
   /* ── O+F brand logo（终版） ── */
