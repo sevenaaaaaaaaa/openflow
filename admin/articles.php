@@ -143,162 +143,175 @@ if ($statusFilter) $articles = array_values(array_filter($articles, fn($a) => ($
 if (!defined('OF_EMBED')) admin_header('文章管理');
 ?>
 <style>
-.inline-edit{padding:4px 6px;border:1px solid transparent;border-radius:4px;cursor:text;transition:all .1s;display:inline-block;min-width:30px}
-.inline-edit:hover{background:var(--surface-2)}
-.inline-edit.editing{border-color:#2b5f7e;background:var(--surface);outline:none;min-width:120px}
-.inline-tag{display:inline-flex;align-items:center;gap:3px;padding:1px 8px;border-radius:999px;background:var(--surface-2);font-size:12px;font-weight:500}
+.inline-edit{padding:2px 6px;margin:-2px -6px;border:1px solid transparent;border-radius:6px;cursor:text;transition:all .1s;display:inline-block;min-width:30px}
+.inline-edit:hover{background:var(--hover)}
+.inline-edit.editing{border-color:var(--accent);background:var(--surface);outline:none;min-width:160px}
+.inline-tag{display:inline-flex;align-items:center;gap:3px;padding:1px 8px;border-radius:999px;background:var(--hover);font-size:11.5px;font-weight:500;color:var(--muted)}
+.inline-tag.more{background:none;border:1px dashed var(--border-strong)}
 .inline-tag .remove{cursor:pointer;color:var(--text-3);font-size:14px;line-height:1}
 .inline-tag .remove:hover{color:var(--danger)}
-.inline-select{padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:13px;background:var(--surface)}
-td.actions{white-space:nowrap;width:1%}
-.cover-thumb{width:48px;height:36px;border-radius:4px;object-fit:cover;background:var(--surface-2);vertical-align:middle}
-.cover-uploader{display:inline-block;position:relative}
-.cover-uploader input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.inline-select{height:32px;padding:0 26px 0 10px;border:1px solid var(--border);border-radius:9px;font-size:12.5px;font-weight:600;background:var(--surface);color:var(--fg);max-width:150px}
+.inline-select.st-published{color:var(--ok);border-color:color-mix(in oklab,var(--ok) 35%,transparent)}
+.inline-select.st-scheduled{color:var(--warn);border-color:color-mix(in oklab,var(--warn) 45%,transparent)}
+.inline-select.st-draft{color:var(--muted)}
+.cover-thumb{width:56px;height:40px;border-radius:8px;object-fit:cover;background:var(--hover);display:block}
+.cover-empty{display:grid;place-items:center;color:var(--faint)}
+.cover-empty svg{width:18px;height:18px}
+.cover-uploader{position:relative;flex:0 0 auto}
+.cover-uploader input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.lst-actions .btn.on{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.lst-pin{display:inline-flex;color:var(--accent);flex:0 0 auto}
+.lst-pin svg{width:13px;height:13px}
+.lst-sync{font-size:11px;color:var(--ok)}
 </style>
 <?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('articles'); ?>
   <div class="main">
 <?php endif; ?>
-    <div class="flex items-center gap-4 mb-4">
+    <div class="flex items-center gap-4 mb-4 lst-head">
       <h1 style="margin-bottom:0">文章管理</h1>
-      <div class="flex gap-2 ml-auto">
-        <a href="article-edit.php" class="btn btn-primary">写新文章</a>
-        <a href="api-batch.php" class="btn btn-ghost">批量导入</a>
-        <a href="<?=of_hub_url(['trash'=>1])?>" class="btn btn-ghost <?=$showTrash?'btn-primary':''?>">🗑 回收站</a>
+      <div class="flex gap-2 ml-auto lst-actions">
         <?php if ($showTrash): ?><a href="<?=of_hub_url()?>" class="btn btn-ghost">← 返回文章列表</a><?php endif; ?>
+        <a href="api-batch.php" class="btn btn-ghost">批量导入</a>
+        <a href="<?=of_hub_url(['trash'=>1])?>" class="btn btn-ghost <?=$showTrash?'on':''?>">回收站</a>
+        <a href="article-edit.php" class="btn btn-primary">写新文章</a>
       </div>
     </div>
 
-    <div class="flex gap-3 mb-4" style="flex-wrap:wrap;align-items:center">
-      <form method="get" style="display:flex;gap:8px;flex:1;min-width:200px">
-        <div style="flex:1;display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:4px 4px 4px 14px">
-          <input type="search" name="search" placeholder="搜索标题…" value="<?=htmlspecialchars($search)?>" style="flex:1;border:none;outline:none;font-size:14px;padding:6px 0;background:transparent">
-          <button type="submit" style="padding:6px 16px;border:none;border-radius:6px;background:var(--accent);font-weight:600;cursor:pointer;font-size:13px">搜索</button>
-        </div>
+    <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
+
+    <!-- 筛选行：搜索 + 分类 + 状态 + 计数，一行 -->
+    <div class="lst-filter">
+      <form method="get" class="lst-search" role="search">
+        <?php if ($showTrash): ?><input type="hidden" name="trash" value="1"><?php endif; ?>
+        <?php if ($catFilter): ?><input type="hidden" name="category" value="<?=htmlspecialchars($catFilter)?>"><?php endif; ?>
+        <?php if ($statusFilter): ?><input type="hidden" name="status" value="<?=htmlspecialchars($statusFilter)?>"><?php endif; ?>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg>
+        <input type="search" name="search" placeholder="搜索标题、slug…" value="<?=htmlspecialchars($search)?>" aria-label="搜索文章">
       </form>
-      <select onchange="location.href='?search=<?=urlencode($search)?>&category='+this.value+'&status=<?=$statusFilter?>'" style="padding:6px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface)">
+      <select class="lst-sel" onchange="location.href='?search=<?=urlencode($search)?>&category='+this.value+'&status=<?=$statusFilter?>'" aria-label="分类">
         <option value="">全部分类</option>
         <?php foreach ($cats as $c): ?><option value="<?=htmlspecialchars($c['key'])?>" <?=$catFilter===$c['key']?'selected':''?>><?=htmlspecialchars($c['name'])?></option><?php endforeach; ?>
       </select>
-      <select onchange="location.href='?search=<?=urlencode($search)?>&category=<?=$catFilter?>&status='+this.value" style="padding:6px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface)">
+      <select class="lst-sel" onchange="location.href='?search=<?=urlencode($search)?>&category=<?=$catFilter?>&status='+this.value" aria-label="状态">
         <option value="">全部状态</option>
         <option value="published" <?=$statusFilter==='published'?'selected':''?>>已发布</option>
         <option value="scheduled" <?=$statusFilter==='scheduled'?'selected':''?>>定时</option>
         <option value="draft" <?=$statusFilter==='draft'?'selected':''?>>草稿</option>
       </select>
-      <span class="text-sm text-muted"><?=count($articles)?> 篇</span>
-      <?php if ($search||$catFilter||$statusFilter): ?><a href="articles.php" class="btn btn-ghost btn-sm">清除筛选</a><?php endif; ?>
+      <?php if ($search||$catFilter||$statusFilter): ?><a href="<?=of_hub_url($showTrash?['trash'=>1]:[])?>" class="btn btn-ghost btn-sm">清除筛选</a><?php endif; ?>
+      <span class="lst-count"><?=count($articles)?> 篇</span>
     </div>
-
-    <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
     <?php if (!$showTrash): ?>
     <form method="post" id="batchForm">
       <?= csrf_field() ?>
-    <div class="card" style="padding:12px 20px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface-2)">
-      <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="selectAll" style="width:16px;height:16px">全选</label>
-      <select name="batch_action" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
-        <option value="">— 批量操作 —</option>
-        <option value="publish">发布</option>
-        <option value="draft">转为草稿</option>
-        <option value="delete">移至回收站</option>
-        <option value="category">修改分类</option>
-      </select>
-      <select name="batch_category" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;display:none" id="batchCategorySelect">
-        <option value="">选择分类</option>
-        <?php foreach ($cats as $c): ?>
-        <option value="<?=htmlspecialchars($c['key'])?>"><?=htmlspecialchars($c['name'])?></option>
-        <?php endforeach; ?>
-      </select>
-      <button type="submit" class="btn btn-primary btn-sm" data-confirm="确认批量操作?">执行</button>
-    </div>
+      <!-- 勾选后才出现的批量操作条（固定在底部） -->
+      <div class="of-selbar" id="batchBar" aria-live="polite">
+        <span class="sel-n">已选 <b id="batchN">0</b> 篇</span>
+        <select name="batch_action" class="lst-sel">
+          <option value="">选择操作…</option>
+          <option value="publish">发布</option>
+          <option value="draft">转为草稿</option>
+          <option value="category">修改分类</option>
+          <option value="delete">移至回收站</option>
+        </select>
+        <select name="batch_category" class="lst-sel" style="display:none" id="batchCategorySelect">
+          <option value="">选择分类</option>
+          <?php foreach ($cats as $c): ?>
+          <option value="<?=htmlspecialchars($c['key'])?>"><?=htmlspecialchars($c['name'])?></option>
+          <?php endforeach; ?>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm" data-confirm="对已选文章执行批量操作？">执行</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="batchClear()">取消选择</button>
+      </div>
     <?php endif; ?>
 
-    <div class="card" style="padding:0;overflow:auto">
+    <div class="card lst-card">
       <?php if (empty($articles)): ?>
         <div class="empty"><?=$showTrash?'回收站为空':'暂无文章，点击「写新文章」开始'?></div>
       <?php else: ?>
-      <table id="articleTable">
+      <table id="articleTable" class="lst-table" data-static>
         <thead>
           <tr>
-            <?php if (!$showTrash): ?><th style="width:24px"><input type="checkbox" class="batch-check" style="width:16px;height:16px" onchange="toggleBatchCheckboxes(this)"></th><?php endif; ?>
-            <th style="width:32px">#</th>
-            <th style="width:32px"></th>
-            <th>标题 / Slug</th>
-            <th>分类</th>
-            <th>标签</th>
-            <th>置顶</th>
-            <th>状态</th>
-            <th>日期</th>
-            <th class="actions">操作</th>
+            <?php if (!$showTrash): ?><th class="c-check"><input type="checkbox" id="selectAll" aria-label="全选"></th><?php endif; ?>
+            <th class="c-title">文章</th>
+            <th class="c-cat">分类</th>
+            <th class="c-status">状态</th>
+            <th class="c-meta">作者 / 日期</th>
+            <th class="c-act">操作</th>
           </tr>
         </thead>
         <tbody>
-          <?php $n = 1; foreach ($articles as $a): ?>
+          <?php foreach ($articles as $a): $st = $a['status'] ?? 'draft'; ?>
           <tr data-id="<?=htmlspecialchars($a['id'])?>">
-            <?php if (!$showTrash): ?><td><input type="checkbox" name="selected[]" value="<?=htmlspecialchars($a['id'])?>" class="batch-check" style="width:16px;height:16px"></td><?php endif; ?>
-            <td class="text-sm text-muted" style="text-align:center"><?=$n++?></td>
-            <td>
-              <div class="cover-uploader">
-                <?php if (!empty($a['cover'])): $cu = substr($a['cover'],0,4)==='http'?$a['cover']:SITE_URL.'/'.$a['cover']; ?>
-                <img class="cover-thumb" src="<?=htmlspecialchars($cu)?>" alt="">
-                <?php else: ?>
-                <span class="cover-thumb" style="display:inline-grid;place-items:center;font-size:16px;background:var(--surface-2)">📄</span>
-                <?php endif; ?>
-                <input type="file" accept="image/*" onchange="uploadCover(this,'<?=htmlspecialchars($a['id'])?>')">
+            <?php if (!$showTrash): ?><td class="c-check"><input type="checkbox" name="selected[]" value="<?=htmlspecialchars($a['id'])?>" class="batch-check" aria-label="选择"></td><?php endif; ?>
+            <td class="c-title">
+              <div class="lst-item">
+                <div class="cover-uploader" title="点击更换封面">
+                  <?php if (!empty($a['cover'])): $cu = substr($a['cover'],0,4)==='http'?$a['cover']:SITE_URL.'/'.$a['cover']; ?>
+                  <img class="cover-thumb" src="<?=htmlspecialchars($cu)?>" alt="">
+                  <?php else: ?>
+                  <span class="cover-thumb cover-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.5"/></svg></span>
+                  <?php endif; ?>
+                  <input type="file" accept="image/*" onchange="uploadCover(this,'<?=htmlspecialchars($a['id'])?>')">
+                </div>
+                <div class="lst-body">
+                  <div class="lst-title">
+                    <?php if (!empty($a['is_pinned'])): ?><span class="lst-pin" title="已置顶"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 3h6l-1 7 4 3H6l4-3-1-7Z"/></svg></span><?php endif; ?>
+                    <span class="inline-edit" data-id="<?=htmlspecialchars($a['id'])?>" data-field="title" title="点击编辑标题"><?=htmlspecialchars($a['title']??'')?></span>
+                  </div>
+                  <div class="lst-sub">
+                    <code class="inline-edit lst-slug" data-id="<?=htmlspecialchars($a['id'])?>" data-field="slug" title="点击编辑 slug"><?=htmlspecialchars($a['slug']??'')?></code>
+                    <span class="tags-cell" data-id="<?=htmlspecialchars($a['id'])?>">
+                      <?php foreach (array_slice($a['tags']??[], 0, 3) as $t): ?><span class="inline-tag"><?=htmlspecialchars($t)?></span><?php endforeach; ?>
+                      <?php if (count($a['tags']??[]) > 3): ?><span class="inline-tag more">+<?=count($a['tags'])-3?></span><?php endif; ?>
+                    </span>
+                    <?php if (!empty($a['synced_to'])): $syncs = array_map(fn($p) => strtoupper($p), array_keys($a['synced_to'])); ?><span class="lst-sync">已同步 <?=htmlspecialchars(implode('/', $syncs))?></span><?php endif; ?>
+                  </div>
+                </div>
               </div>
             </td>
-            <td style="max-width:240px">
-              <div class="inline-edit" data-id="<?=htmlspecialchars($a['id'])?>" data-field="title" title="点击编辑标题"><?=htmlspecialchars(mb_substr($a['title']??'',0,40))?></div>
-              <br><code style="font-size:11px" class="inline-edit" data-id="<?=htmlspecialchars($a['id'])?>" data-field="slug"><?=htmlspecialchars($a['slug']??'')?></code>
-            </td>
-            <td>
-              <select class="inline-select" data-id="<?=htmlspecialchars($a['id'])?>" data-field="category" onchange="quickUpdate(this)">
+            <td class="c-cat">
+              <select class="inline-select" data-id="<?=htmlspecialchars($a['id'])?>" data-field="category" onchange="quickUpdate(this)" aria-label="分类">
                 <option value="">未分类</option>
                 <?php foreach ($cats as $c): ?>
                 <option value="<?=htmlspecialchars($c['key'])?>" <?=($a['category']??'')===$c['key']?'selected':''?>><?=htmlspecialchars($c['name'])?></option>
                 <?php endforeach; ?>
               </select>
             </td>
-            <td style="max-width:160px">
-              <div class="tags-cell" data-id="<?=htmlspecialchars($a['id'])?>">
-                <?php foreach (array_slice($a['tags']??[], 0, 3) as $t): ?>
-                <span class="inline-tag"><?=htmlspecialchars($t)?></span>
-                <?php endforeach; ?>
-                <?php if (count($a['tags']??[]) > 3): ?><span class="text-sm text-muted">+<?=count($a['tags'])-3?></span><?php endif; ?>
-                <?php if (empty($a['tags']??[])): ?><span class="text-sm text-muted">—</span><?php endif; ?>
-                <?php if (!empty($a['synced_to'])): $syncs = array_map(fn($p) => strtoupper($p), array_keys($a['synced_to'])); ?>
-                <span style="font-size:10px;color:var(--ok);margin-left:6px">🔄 已同步 <?=htmlspecialchars(implode('/', $syncs))?></span>
-                <?php endif; ?>
-              </div>
-            </td>
-            <td>
-              <select class="inline-select" data-id="<?=htmlspecialchars($a['id'])?>" data-field="status" onchange="quickUpdate(this)">
-                <option value="draft" <?=($a['status']??'')==='draft'?'selected':''?>>草稿</option>
-                <option value="published" <?=($a['status']??'')==='published'?'selected':''?>>已发布</option>
-                <option value="scheduled" <?=($a['status']??'')==='scheduled'?'selected':''?>>定时</option>
+            <td class="c-status">
+              <select class="inline-select st-<?=htmlspecialchars($st)?>" data-id="<?=htmlspecialchars($a['id'])?>" data-field="status" onchange="this.className='inline-select st-'+this.value;quickUpdate(this)" aria-label="状态">
+                <option value="draft" <?=$st==='draft'?'selected':''?>>草稿</option>
+                <option value="published" <?=$st==='published'?'selected':''?>>已发布</option>
+                <option value="scheduled" <?=$st==='scheduled'?'selected':''?>>定时</option>
               </select>
-              <?php if (($a['status']??'')==='scheduled' && !empty($a['publish_at'])): ?><div style="font-size:10px;color:var(--faint)">⏰ <?=htmlspecialchars(substr($a['publish_at'],0,16))?></div><?php endif; ?>
+              <?php if ($st==='scheduled' && !empty($a['publish_at'])): ?><div class="lst-when"><?=htmlspecialchars(substr($a['publish_at'],0,16))?></div><?php endif; ?>
             </td>
-            <td>
-              <label style="cursor:pointer;display:flex;align-items:center;gap:4px;font-size:12px" title="点击切换置顶">
-                <input type="checkbox" data-id="<?=htmlspecialchars($a['id'])?>" data-field="is_pinned" onchange="quickUpdate(this)" <?=($a['is_pinned']??false)?'checked':''?> style="width:16px;height:16px">
-                <?=($a['is_pinned']??false)?'📌':''?>
-              </label>
+            <td class="c-meta">
+              <div><?=htmlspecialchars($a['author']??'')?></div>
+              <div class="lst-when"><?=htmlspecialchars(substr($a['created_at']??'',0,10))?></div>
             </td>
-            <td class="text-sm text-muted"><?=htmlspecialchars($a['author']??'')?></td>
-            <td class="text-sm text-muted" style="white-space:nowrap"><?=htmlspecialchars(substr($a['created_at']??'',0,10))?></td>
-            <td class="actions">
+            <td class="c-act">
               <?php if ($showTrash): ?>
-              <a href="<?=of_hub_url(['trash'=>1,'restore'=>$a['id']])?>" class="btn btn-ghost btn-sm">♻️ 恢复</a>
-              <a href="<?=of_hub_url(['trash'=>1,'permanent_delete'=>$a['id']])?>" class="btn btn-danger btn-sm" data-confirm="永久删除?无法恢复!">🗑 永久删除</a>
+              <a href="<?=of_hub_url(['trash'=>1,'restore'=>$a['id']])?>" class="btn btn-ghost btn-sm">恢复</a>
+              <a href="<?=of_hub_url(['trash'=>1,'permanent_delete'=>$a['id']])?>" class="btn btn-danger btn-sm" data-confirm="永久删除「<?=htmlspecialchars($a['title']??'')?>」？无法恢复。">永久删除</a>
               <?php else: ?>
-              <a href="article-edit.php?id=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-              <a href="../content-preview.php?type=article&id=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a>
-              <button type="button" class="btn btn-ghost btn-sm" onclick="openExport('<?=urlencode($a['id'])?>','<?=htmlspecialchars($a['title'], ENT_QUOTES)?>')">📤 导出</button>
-              <a href="articles.php?copy=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm" title="快速复制">📋</a>
-              <a href="articles.php?delete=<?=urlencode($a['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认移至回收站?">🗑</a>
+              <div class="lst-acts">
+                <a href="article-edit.php?id=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
+                <a href="../content-preview.php?type=article&id=<?=urlencode($a['id'])?>" class="ib" target="_blank" title="预览"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                <label class="ib" title="<?=($a['is_pinned']??false)?'取消置顶':'置顶'?>"><input type="checkbox" class="pin-toggle" data-id="<?=htmlspecialchars($a['id'])?>" data-field="is_pinned" onchange="quickUpdate(this);this.closest('tr').querySelector('.lst-title').classList.toggle('pinned',this.checked)" <?=($a['is_pinned']??false)?'checked':''?>><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 3h6l-1 7 4 3H6l4-3-1-7Z"/></svg></label>
+                <details class="of-menu">
+                  <summary class="ib" title="更多"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></summary>
+                  <div class="of-menu-list">
+                    <button type="button" onclick="openExport('<?=urlencode($a['id'])?>','<?=htmlspecialchars($a['title'], ENT_QUOTES)?>')">导出 / 分享</button>
+                    <a href="articles.php?copy=<?=urlencode($a['id'])?>">复制一份</a>
+                    <a href="article-edit.php?id=<?=urlencode($a['id'])?>#seo">SEO 设置</a>
+                    <a href="articles.php?delete=<?=urlencode($a['id'])?>" class="danger" data-confirm="把「<?=htmlspecialchars($a['title']??'', ENT_QUOTES)?>」移至回收站？">移至回收站</a>
+                  </div>
+                </details>
+              </div>
               <?php endif; ?>
             </td>
           </tr>
@@ -448,12 +461,19 @@ function uploadCover(input, articleId) {
 }
 
 // ─── Batch operations ───
-document.getElementById('selectAll')?.addEventListener('change', function() {
-  document.querySelectorAll('.batch-check').forEach(function(cb) { cb.checked = this.checked; }, this);
-});
-function toggleBatchCheckboxes(el) {
-  document.querySelectorAll('.batch-check').forEach(function(cb) { cb.checked = el.checked; });
+function batchSync() {
+  var all = document.querySelectorAll('.batch-check'), n = document.querySelectorAll('.batch-check:checked').length;
+  var bar = document.getElementById('batchBar'); if (!bar) return;
+  bar.classList.toggle('show', n > 0); document.body.classList.toggle('has-selbar', n > 0);
+  document.getElementById('batchN').textContent = n;
+  var sa = document.getElementById('selectAll'); if (sa) { sa.checked = n > 0 && n === all.length; sa.indeterminate = n > 0 && n < all.length; }
+  all.forEach(function (cb) { cb.closest('tr').classList.toggle('sel', cb.checked); });
 }
+document.getElementById('selectAll')?.addEventListener('change', function() {
+  document.querySelectorAll('.batch-check').forEach(function(cb) { cb.checked = this.checked; }, this); batchSync();
+});
+document.addEventListener('change', function (e) { if (e.target.classList.contains('batch-check')) batchSync(); });
+function batchClear() { document.querySelectorAll('.batch-check').forEach(function (cb) { cb.checked = false; }); batchSync(); }
 document.querySelector('select[name="batch_action"]')?.addEventListener('change', function() {
   document.getElementById('batchCategorySelect').style.display = this.value === 'category' ? 'inline-block' : 'none';
 });
