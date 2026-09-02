@@ -121,18 +121,19 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
           <div class="field"><label for="l_account">邮箱或手机号</label><input class="inp" type="text" name="account" id="l_account" required placeholder="you@example.com 或手机号"></div>
           <div class="field"><label for="l_password">密码</label><input class="inp" type="password" name="password" id="l_password" required placeholder="••••••"></div>
           <button type="submit" class="btn primary" style="width:100%">登录</button>
-          <p class="note" style="text-align:center;margin:0">还没有账号？<a href="member.php?view=register" style="color:var(--accent);font-weight:600">立即注册</a> · <a href="member.php?view=reset-password" style="color:var(--accent);font-weight:600">忘记密码</a></p>
+          <p class="note" style="text-align:center;margin:0">还没有账号？<a href="member.php?view=register<?=$next?'&next='.urlencode($next):''?>" style="color:var(--accent);font-weight:600">立即注册</a> · <a href="member.php?view=reset-password" style="color:var(--accent);font-weight:600">忘记密码</a></p>
         </form>
         <?php else: ?>
         <form onsubmit="memberRegister(event)" class="form-grid">
           <div class="field"><label for="r_name">姓名</label><input class="inp" type="text" name="name" id="r_name" required placeholder="你的真实姓名"></div>
-          <div class="field"><label for="r_phone">手机号</label><div style="display:flex;gap:8px"><input class="inp" type="tel" name="phone" id="r_phone" required placeholder="11 位手机号" style="flex:1"><button type="button" class="btn ghost" style="flex:0 0 auto" onclick="memberSendCaptcha(document.getElementById('r_phone').value)">发验证码</button></div></div>
-          <div class="field"><label for="r_email">邮箱</label><input class="inp" type="email" name="email" id="r_email" required placeholder="you@example.com"></div>
+          <?php $__needCaptcha = member_captcha_required('probe@example.com'); // 验证码只经邮件送达；邮件未配置时不向用户索要收不到的验证码 ?>
+          <div class="field"><label for="r_email">邮箱</label><div style="display:flex;gap:8px"><input class="inp" type="email" name="email" id="r_email" required placeholder="you@example.com" style="flex:1"><?php if ($__needCaptcha): ?><button type="button" class="btn ghost" style="flex:0 0 auto" onclick="memberSendCaptcha(document.getElementById('r_email').value)">发验证码</button><?php endif; ?></div></div>
+          <?php if ($__needCaptcha): ?><div class="field"><label for="r_captcha">邮箱验证码</label><input class="inp" type="text" name="captcha" id="r_captcha" required inputmode="numeric" placeholder="6 位验证码"></div><?php endif; ?>
+          <div class="field"><label for="r_phone">手机号 <span class="hint">· 选填</span></label><input class="inp" type="tel" name="phone" id="r_phone" placeholder="11 位手机号"></div>
           <div class="field"><label for="r_password">密码</label><input class="inp" type="password" name="password" id="r_password" required minlength="6" placeholder="至少 6 位"></div>
-          <div class="field"><label for="r_captcha">短信验证码</label><input class="inp" type="text" name="captcha" id="r_captcha" required placeholder="6 位验证码"></div>
           <?php if (!empty($_GET['ref'])): ?><input type="hidden" name="referral" value="<?=htmlspecialchars($_GET['ref'])?>"><?php endif; ?>
           <button type="submit" class="btn primary" style="width:100%">注册</button>
-          <p class="note" style="text-align:center;margin:0">已有账号？<a href="member.php?view=login" style="color:var(--accent);font-weight:600">直接登录</a></p>
+          <p class="note" style="text-align:center;margin:0">已有账号？<a href="member.php?view=login<?=$next?'&next='.urlencode($next):''?>" style="color:var(--accent);font-weight:600">直接登录</a></p>
         </form>
         <?php endif; ?>
         <div id="memberMsg"></div>
@@ -213,7 +214,7 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
             <span class="kicker" style="font-size:11px">生态工具</span>
             <div class="grid g3" style="gap:10px">
               <?php foreach (array_keys($recProducts) as $rpid): $rp = CommerceSystem::getProduct($rpid); if (!$rp) continue; ?>
-              <a href="/skill/<?=urlencode($rpid)?>" class="item"><div class="t"><b><?=htmlspecialchars($rp['title'])?></b><span>¥<?=number_format((float)($rp['pricing']['price'] ?? 0),0)?> · 即买即用</span></div></a>
+              <a href="/<?=urlencode($rp['type'] ?? 'skill')?>/<?=urlencode($rp['asset_id'] ?? $rpid)?>" class="item"><div class="t"><b><?=htmlspecialchars($rp['title'])?></b><span>¥<?=number_format((float)($rp['pricing']['price'] ?? 0),0)?> · 即买即用</span></div></a>
               <?php endforeach; ?>
             </div>
             <?php endif; ?>
@@ -258,6 +259,9 @@ function msgHtml(html, ok) { return '<div class="msg ' + (ok ? 'ok' : 'err') + '
 function memberMsg(html, isErr) {
   document.getElementById('memberMsg').innerHTML = msgHtml(html, !isErr);
 }
+/* 登录 / 注册成功后回到来时的页面（?next=），以前一律落到个人中心，「登录后报名」这类流程走到一半就断了 */
+var MEMBER_NEXT = <?=json_encode((isset($next) && is_string($next) && preg_match('#^/(?!/)#', $next)) ? $next : '')?>;
+function memberAfterAuth() { location.href = MEMBER_NEXT || '/account'; }
 function memberLogin(e) {
   e.preventDefault();
   var fd = new FormData();
@@ -266,7 +270,7 @@ function memberLogin(e) {
   fd.append('password', document.getElementById('l_password').value);
   fetch('/api/member.php', { method:'POST', body: fd })
     .then(function(r){ return r.json(); })
-    .then(function(d){ if (d.ok) location.href = '/member.php'; else memberMsg(d.error, true); });
+    .then(function(d){ if (d.ok) memberAfterAuth(); else memberMsg(d.error, true); });
 }
 function memberRegister(e) {
   e.preventDefault();
@@ -274,10 +278,10 @@ function memberRegister(e) {
   fd.append('action','register');
   fetch('/api/member.php', { method:'POST', body: fd })
     .then(function(r){ return r.json(); })
-    .then(function(d){ if (d.ok) location.href = '/member.php'; else memberMsg(d.error, true); });
+    .then(function(d){ if (d.ok) memberAfterAuth(); else memberMsg(d.error, true); });
 }
 function memberSendCaptcha(target) {
-  if (!target) return alert('请先填手机号');
+  if (!target) { memberMsg('请先填写邮箱', true); return; }
   var fd = new FormData();
   fd.append('action','send_captcha');
   fd.append('target', target);

@@ -527,17 +527,29 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
       <p class="f-about">芭乐派给一人公司的增长系统。它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。核心能力永久开源。</p>
       <p class="note">核心能力永久开源 · 鱼与渔相结合</p>
       <div class="f-social" aria-label="社交媒体">
+        <?php
+        // 社交图标只渲染后台配置了链接的（系统设置 → 品牌设置 → 社交账号）
+        $__soc = [
+          'github' => ['GitHub 开源仓库', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.1.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.58 9.58 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85V21c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>'],
+          'x' => ['X 官方账号', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.3l-4.9-6.4L5.2 21H2.1l7.3-8.3L2 3h6.4l4.4 5.9L17.8 3Zm-1.1 16.1h1.7L7.6 4.8H5.8l10.9 14.3Z"/></svg>'],
+          'youtube' => ['YouTube 频道', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>'],
+          'wechat' => ['微信公众号', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.6 4.5C5.9 4.5 3 6.9 3 9.9c0 1.7 1 3.2 2.5 4.2l-.6 2.2 2.4-1.2c.7.2 1.5.3 2.3.3h.5a5.8 5.8 0 0 1-.4-2c0-3 2.9-5.4 6.5-5.4h.4C15.9 6.2 13 4.5 9.6 4.5Zm-2.4 3.4a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Zm4.8 0a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/><path d="M21 14.5c0-2.5-2.4-4.5-5.4-4.5s-5.4 2-5.4 4.5 2.4 4.5 5.4 4.5c.5 0 1-.1 1.4-.2l1.9 1-.5-1.7c1.5-.8 2.6-2.2 2.6-3.6Z"/></svg>'],
+          'bilibili' => ['B 站账号', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.2" y="7" width="17.6" height="12.5" rx="2.8"/><path d="M9.2 4 7.8 6.4M14.8 4l1.4 2.4M7.8 11v3.4M12 11v3.4"/></svg>'],
+          'zhihu' => ['知乎机构号', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5.5 4.5h13l-7.5 12.5h4.5v2.5H5.8l.8-2.4h2.6L12.6 9H5.5v-4.5Z"/></svg>'],
+        ];
+        $__gh = 'https://github.com/sevenaaaaaaaaa/openflow';
+        $__groups = [['github','x','youtube'], ['wechat','bilibili','zhihu']];
+        $__rendered = 0;
+        foreach ($__groups as $__g):
+          $__items = array_values(array_filter($__g, fn($k) => site_config_get('social_' . $k, $k === 'github' ? $__gh : '') !== ''));
+          if (!$__items) continue;
+          if ($__rendered++) echo '<span class="soc-div" aria-hidden="true"></span>'; ?>
         <div class="soc-group">
-          <a class="soc" href="https://github.com/balepai/openflow" target="_blank" rel="noopener" data-od-id="soc-github" aria-label="GitHub 开源仓库"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.1.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.58 9.58 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85V21c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg></a>
-          <a class="soc" href="#" data-od-id="soc-x" aria-label="X 官方账号"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.3l-4.9-6.4L5.2 21H2.1l7.3-8.3L2 3h6.4l4.4 5.9L17.8 3Zm-1.1 16.1h1.7L7.6 4.8H5.8l10.9 14.3Z"/></svg></a>
-          <a class="soc" href="#" data-od-id="soc-youtube" aria-label="YouTube 频道"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg></a>
+          <?php foreach ($__items as $k): [$__l, $__svg] = $__soc[$k]; $__u = site_config_get('social_' . $k, $k === 'github' ? $__gh : ''); ?>
+          <a class="soc" href="<?=htmlspecialchars($__u)?>" target="_blank" rel="noopener" data-od-id="soc-<?=$k?>" aria-label="<?=$__l?>"><?=$__svg?></a>
+          <?php endforeach; ?>
         </div>
-        <span class="soc-div" aria-hidden="true"></span>
-        <div class="soc-group">
-          <a class="soc" href="#" data-od-id="soc-wechat" aria-label="微信公众号"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.6 4.5C5.9 4.5 3 6.9 3 9.9c0 1.7 1 3.2 2.5 4.2l-.6 2.2 2.4-1.2c.7.2 1.5.3 2.3.3h.5a5.8 5.8 0 0 1-.4-2c0-3 2.9-5.4 6.5-5.4h.4C15.9 6.2 13 4.5 9.6 4.5Zm-2.4 3.4a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Zm4.8 0a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/><path d="M21 14.5c0-2.5-2.4-4.5-5.4-4.5s-5.4 2-5.4 4.5 2.4 4.5 5.4 4.5c.5 0 1-.1 1.4-.2l1.9 1-.5-1.7c1.5-.8 2.6-2.2 2.6-3.6Z"/></svg></a>
-          <a class="soc" href="#" data-od-id="soc-bilibili" aria-label="B 站账号"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.2" y="7" width="17.6" height="12.5" rx="2.8"/><path d="M9.2 4 7.8 6.4M14.8 4l1.4 2.4M7.8 11v3.4M12 11v3.4"/></svg></a>
-          <a class="soc" href="#" data-od-id="soc-zhihu" aria-label="知乎机构号"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5.5 4.5h13l-7.5 12.5h4.5v2.5H5.8l.8-2.4h2.6L12.6 9H5.5v-4.5Z"/></svg></a>
-        </div>
+        <?php endforeach; ?>
       </div>
     </div>
     <div class="fb">

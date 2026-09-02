@@ -20,12 +20,19 @@ switch ($action) {
     case 'send_captcha':
         $target = trim($_POST['target'] ?? '');
         if (empty($target)) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'请输入手机号或邮箱']); exit; }
-        if (member_send_captcha($target)) {
-            echo json_encode(['ok' => true, 'message' => '验证码已发送（演示环境请查看后台「用户验证码」日志）'], JSON_UNESCAPED_UNICODE);
+        $r = member_send_captcha_ex($target);
+        if ($r['ok']) {
+            echo json_encode(['ok' => true, 'channel' => $r['channel'], 'message' => '验证码已发到 ' . $target . '，10 分钟内有效'], JSON_UNESCAPED_UNICODE);
         } else {
-            http_response_code(429);
-            echo json_encode(['ok' => false, 'error' => '发送过于频繁，请稍后再试']);
+            http_response_code($r['channel'] === 'none' ? 400 : 429);
+            echo json_encode(['ok' => false, 'channel' => $r['channel'], 'error' => $r['error']], JSON_UNESCAPED_UNICODE);
         }
+        break;
+
+    // ─── 注册前探测：这个账号需不需要验证码（前台表单据此决定显示验证码栏）───
+    case 'captcha_required':
+        $target = trim($_POST['target'] ?? ($_GET['target'] ?? ''));
+        echo json_encode(['ok' => true, 'required' => member_captcha_required($target), 'channel' => member_captcha_channel($target)]);
         break;
 
     // ─── 注册 ───
@@ -55,11 +62,13 @@ switch ($action) {
         if (!empty($wl)) {
             http_response_code(403); echo json_encode(['ok'=>false,'error'=>implode('；', $wl)], JSON_UNESCAPED_UNICODE); exit;
         }
-        // 验证码校验
-        if (member_settings()['captcha_enabled']) {
-            $target = strpos($email, '@') !== false ? $email : $phone;
-            if (!member_verify_captcha($target, $captcha)) {
-                http_response_code(400); echo json_encode(['ok'=>false,'error'=>'验证码错误或已过期']); exit;
+        // 验证码校验：只在验证码真的能送达（邮件通道已配置）时要求；目标统一是邮箱
+        if (member_captcha_required($email)) {
+            if ($captcha === '') {
+                http_response_code(400); echo json_encode(['ok'=>false,'need_captcha'=>true,'error'=>'请填写发到邮箱的验证码'], JSON_UNESCAPED_UNICODE); exit;
+            }
+            if (!member_verify_captcha($email, $captcha)) {
+                http_response_code(400); echo json_encode(['ok'=>false,'need_captcha'=>true,'error'=>'验证码错误或已过期'], JSON_UNESCAPED_UNICODE); exit;
             }
         }
 

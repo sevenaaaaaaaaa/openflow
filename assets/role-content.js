@@ -60,7 +60,7 @@ window.OF_ROLES = {
       {href:'/docs', t:'开发者文档', d:'架构、扩展点、部署', icon:'book'},
       {href:'/docs', t:'路线图', d:'平台演进规划', icon:'bolt'},
       {href:'/community', t:'开发者社区', d:'提问、贡献、讨论', icon:'users'},
-      {href:'https://github.com/balepai/openflow', t:'GitHub', d:'开源仓库 · Star', icon:'info'}
+      {href:'https://github.com/sevenaaaaaaaaa/openflow', t:'GitHub', d:'开源仓库 · Star', icon:'info'}
     ],
     steps: [
       {h:'接入数据', p:'前端埋点、服务端事件、Webhook 回调，多通道接入你的数据。'},

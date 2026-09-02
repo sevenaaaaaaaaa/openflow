@@ -78,7 +78,7 @@ function mkt_assets(): array {
                 'version' => $t['version'] ?? '1.0.0',
                 'installs' => $t['installs'] ?? 0, 'rating' => $t['rating'] ?? 0, 'rating_count' => $t['rating_count'] ?? 0,
                 'installed' => $activeId === $tid,
-                'url' => '/admin/themes.php',
+                'url' => '/theme/' . urlencode((string)$tid), // 以前指向后台 /admin/themes.php：访客点主题卡进的是后台登录页
                 'tags' => ['主题', 'theme'],
                 'preset' => ThemeSystem::isPreset($tid),
             ];
