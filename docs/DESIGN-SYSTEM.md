@@ -21,7 +21,15 @@ assets/modules.css   外壳（顶栏 / 侧栏 / 命令面板 / 登录弹窗）+ 
 历史包袱（2026-09-01 前）：首页把 464 行 archetype 与「密度放宽」锁在自己的 `<style>` 里，
 其它页只能拿到 modules.css 里"小气"的默认值，于是各自复制粘贴出 139～191 行私有 CSS，
 越改越散。v7 把这些全部收进 modules.css（374 → 731 行），首页私有样式降到 40 行，
-只剩信号流画布 `.arena`。
+只剩信号流画布 `.arena`。2026-09-02 起前台 **全部 41 个 PHP 页面** 都在这三层上，
+`tailwind-build.css` 与 `standalone.css` 在前台不再被任何页面引用。
+
+两个共享 include 把 `<head>` 与页脚也收成一处：
+
+```
+includes/site-head.php    of_head_assets()  主题早绑定脚本 + fonts / tokens / modules 三条 <link>，版本号取 OF_SHELL_VER
+includes/site-footer.php  of_footer()       全站同一个 .foot（4 列 + 版权行）；改页脚文案只改这里
+```
 
 ---
 
@@ -37,7 +45,9 @@ assets/modules.css   外壳（顶栏 / 侧栏 / 命令面板 / 登录弹窗）+ 
 4. **所有动效走 `--ease-spring`**（Arc 原版弹簧 `cubic-bezier(.32,.72,0,1)`）。
 
 `data-page` 决定导航高亮，合法值：`home product capability courses articles marketplace community events navigation about`。
-学院及其子页（docs / tools / podcasts / downloads / category / topics / search / author）都归 `articles`。
+学院及其子页（docs / tools / podcasts / downloads / category / topics / search / author）都归 `articles`；
+`account`（用户中心）不高亮任何顶级项，侧栏空间名显示「个人中心」。功能页按归属借用：shop / asset → `marketplace`，
+live → `events`，consultation → `enterprise`，course-player → `courses`，landing → `articles`。
 
 外壳还统一提供：`.reveal → .in` 的滚动显现观察者、`#backtop` 回到顶部、
 以及 opt-in 的通用 tab（`[role=tablist][data-tabs]` + `aria-controls`）。页面不要再各写一份。
@@ -71,13 +81,19 @@ assets/modules.css   外壳（顶栏 / 侧栏 / 命令面板 / 登录弹窗）+ 
 | 预约 / 申请（文 + 表单卡） | `.contact-wrap` › `.ct-pitch`(`.ct-list`) + `.form-card`(`.form-grid` `.field` `.inp`) | 首页预约诊断、enterprise 申请 |
 | 收尾 CTA | `.cta-band` › `.kicker` `h2` `.lead` `.cta-row` | 所有营销页的最后一节。**取代旧页的紫色渐变横幅**（调色板外，已全部下线） |
 | 提示条 | `.strip` › `.ic` `.tx` `.btn` | academy 学习路径联动、navigation 编辑首推 |
-| 内容卡 | `.a-grid` › `.a-card`(`.cov` `.bd` `.cat` `h3` `.meta`) | academy 文章 / 视频 |
-| 主栏 + 侧栏 | `.g-main-aside`(`.aside-left`) › `div` + `aside`(`.aside-box` `.rank`) | academy、navigation、community |
+| 内容卡 | `.a-grid` › `.a-card`(`.cov` `.bd` `.cat` `h3` `.meta`) | academy 文章 / 视频、shop 商品、live 直播、landing 专题 |
+| 主栏 + 侧栏 | `.g-main-aside`(`.aside-left`) › `div` + `aside`(`.aside-box` `.rank`) | academy、navigation、community、asset、course-player、live 直播间、member（左导航） |
+| 正文阅读 | `.reader` › `.art-head` `.art-meta` `.art-cover` `.prose` `.actions`(`.act`) `.gate`(`.gate-box`) | article、community-post、event、asset 介绍 |
+| 弹层 | `.modal`(`.open`) › `.mbox` `.mhead`(`.mx`) `.mbody` | downloads 门禁表单、marketplace 安装 |
 | 空状态 | `.empty` | 所有列表页 |
 | 页脚 | `.foot` › `.fb`(`.brand` `.f-about` `.note` `h4` `a`) `.f-bottom` | 所有页 |
 
-原子件：`.btn`(`.primary` `.ghost` `.subtle`) `.card`(`.hov`) `.badge`(`.ok` `.warn` `.danger`) `.pill`
-`.kicker` `.note` `.mono` `.si`(渐变强调) `.tags` `.grid .g2/.g3/.g4` `.inp` `.field`。
+原子件：`.btn`(`.primary` `.ghost` `.subtle`) `.card`(`.hov`) `.badge`(`.ok` `.warn` `.danger`) `.pill`(`.hl` `.neutral`)
+`.kicker` `.note` `.mono` `.si`(渐变强调) `.tags` `.grid .g2/.g3/.g4` `.form-grid` `.field` `.inp`。
+
+功能页（表单 / 列表 / 控制台）的通用做法：面板 = `.card`，表单 = `.form-grid` › `.field` › `.inp`，
+状态词 = `.badge.ok/.warn/.danger` 或 `.pill.neutral/.hl`（颜色只从 token 来，lib 里遗留的 hex 状态色表只给后台用），
+结果消息 = 页面私有 `.msg.ok/.err`。member.php 是这套做法最完整的样本（16 个面板，私有 CSS 44 行）。
 
 ### 新增零件的规则
 
@@ -100,31 +116,31 @@ assets/modules.css   外壳（顶栏 / 侧栏 / 命令面板 / 登录弹窗）+ 
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>…</title>
-<script>/* 主题 & reduced-motion 早绑定，见任何已迁页面第 1 个 <script> */</script>
-<link rel="stylesheet" id="of-fonts-css"   href="/assets/fonts/fonts.css?v=…">
-<link rel="stylesheet" id="of-tokens-css"  href="/assets/tokens.css?v=…">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=…">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>/* 只放本页独有部件 */</style>
 </head>
 <body data-of-main>
-<?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('product'); ?>
+<?php of_shell('product'); ?>
 <a class="skip" href="#main">跳到主要内容</a>
 <main id="main">
   <section id="top" class="reveal in"> <div class="hero-center">…</div> </section>
   <section id="…" class="sec reveal" data-od-anchor> <div class="sec-head center">…</div> <!-- archetype --> </section>
   …
   <section class="reveal"> <div class="cta-band">…</div> </section>
-  <footer class="foot">…</footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
 <button id="backtop" aria-label="回到顶部">…</button>
 </body></html>
 ```
 
-硬规则（`tests/design_contract_test.php` 会检查前四条）：
+对外独立页（`survey.php` `survey-my.php` `nps.php`：由外链打开、不该带站点导航）不接 `of_shell()` 也没有页脚，
+其余契约照常；它们列在契约测试的 `$STANDALONE` 名单里。
+
+硬规则（`tests/design_contract_test.php` 会检查前四条；根目录任何新 .php 只要引了 tailwind 也会被兜底检查抓到）：
 
 | 规则 | 为什么 |
 |---|---|
-| 页面私有 `<style>` ≤ 60 行 | 超过就说明在重新发明零件。首页 40 行，其余页 3～36 行 |
+| 页面私有 `<style>` ≤ 60 行 | 超过就说明在重新发明零件。首页 40 行，其余页 0～44 行 |
 | 不引 `tailwind-build.css` | 两套体系并存就是"视觉不统一"的根源 |
 | 页面 CSS 里零 hex 色（`#xxxxxx`）、零 `rgb(`、零 `linear-gradient(…, #fff …)` | 调色板外的颜色一律来自它 |
 | 页面自己不定义 `.btn .card .sec-head .kicker .foot .stats .hero` 等共享类 | 页面覆盖共享类只能改值，不能重定义 |
@@ -153,10 +169,23 @@ python3 tests/visual/snap.py --diff /tmp/before /tmp/after
 方案比选：`tests/visual/mock/*.php` 是用真 tokens 渲染的备选方案（如 events-b / community-b），
 只用于截图对比，不是站点页面。
 
+会员页要带登录态拍：先 `curl -c jar -d 'action=login&account=…&password=…' /api/member.php`，
+再 `OF_COOKIE="PHPSESSID=…" python3 tests/visual/snap.py OUT "member.php?view=dashboard"`。
+带 query 的页面直接写 `page.php?a=b`，截图文件名保留 query。
+
 ---
 
-## 六、还没迁的页
+## 六、迁移状态（2026-09-02）
 
-`marketplace.php`（生态，三视图 + 安装 / 评分 / 评论部件）以及 shop / member / live /
-course-player / docs / search 等 **20 余个功能页** 仍在 tailwind 上，靠外壳注入维持顶栏侧栏一致。
-它们的内容区仍是旧样式。下一批按第四节的骨架迁，方法同上。
+前台 41 个页面全部在三层结构上，契约测试 `$PENDING` 为空、393 项全过。分三批完成：
+
+| 批次 | 页面 |
+|---|---|
+| v7 · 营销 10 页 | index about product capability courses academy enterprise navigation events community |
+| 内容页族 | marketplace article articles category docs downloads podcasts author search topics |
+| 功能页族 | event community-post reviews messages activate nps download navigation-site survey-my front-builder · shop live tools consultation · survey asset course-player · member · landing thank-you seo-board |
+
+新页面照第四节骨架写，写完把文件名加进 `tests/design_contract_test.php` 的 `$MIGRATED`（对外独立页另加 `$STANDALONE`）。
+不加也会被兜底检查抓到，但名单本身是进度表，请维护。
+
+`admin/` 与 `api/` 不在本设计系统范围内（后台仍是 tailwind）。
