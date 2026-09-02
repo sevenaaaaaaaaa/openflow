@@ -21,172 +21,173 @@ $roomId = $_GET['room'] ?? '';
 $room = $roomId ? live_room($roomId) : null;
 $shopSettings = shop_settings();
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=$room ? htmlspecialchars($room['title']) : htmlspecialchars($settings['page_title'])?> | <?=site_config_get("site_name")?></title>
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body)}
-  .chat-box{height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:14px;background:#faf9f4;border-radius:14px;border:1px solid var(--border)}
-  .chat-msg{font-size:13px;line-height:1.5}
-  .chat-msg .u{font-weight:700;font-size:12px;color:#2b5f7e}
-  .chat-msg .t{color:var(--muted)}
-  .live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc2626;animation:blink 1.2s infinite}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+/* 直播独有：播放器画布、弹幕盒、直播红点。其余全部来自 modules.css。 */
+.player{aspect-ratio:16/9;background:var(--fg);color:var(--on-accent);display:grid;place-items:center;text-align:center}
+.player video{width:100%;height:100%;display:block;background:var(--fg)}
+.player .ph{display:flex;flex-direction:column;align-items:center;gap:8px;font-weight:700;font-size:18px}
+.player .ph small{font-size:13px;font-weight:400;opacity:.65}
+.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--danger);animation:blink 1.2s infinite}
+.badge.live{background:var(--danger-soft);color:var(--danger)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.chat-box{height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:14px}
+.chat-msg{font-size:13px;line-height:1.5}
+.chat-msg .u{font-weight:700;font-size:12px;color:var(--accent)}
+.chat-msg .t{color:var(--muted)}
+.chat-in{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border-soft)}
+.chat-in .inp{min-height:42px;padding:9px 14px;font-size:14px}
+.room-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.room-head h1{font-size:clamp(22px,2.6vw,30px);font-weight:800;letter-spacing:-.02em}
+.a-card .cov .tag{position:absolute;top:12px;left:12px}
+.a-card .cov .tag.r{left:auto;right:12px;top:auto;bottom:12px}
+@media (max-width:860px){.chat-box{height:280px}}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('events'); ?>
 
-  <div class="mx-auto px-5 py-8" style="max-width:1100px">
-    <?php if ($room): ?>
-    <?php $st = live_status($room); $sellCourse = !empty($room['sell_course']) ? ($courseMap[$room['sell_course']] ?? null) : null; ?>
-    <!-- ═══ 直播间 ═══ -->
-    <a href="/live" class="text-sm text-[#2b5f7e]">← 返回直播列表</a>
-    <div class="mt-4 grid gap-6" style="grid-template-columns:1fr 320px">
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+<?php if ($room): ?>
+<?php $st = live_status($room); $sellCourse = !empty($room['sell_course']) ? ($courseMap[$room['sell_course']] ?? null) : null; ?>
+  <!-- ═══ 直播间 ═══ -->
+  <section id="top" class="sec reveal in" data-od-anchor data-od-id="live-room">
+    <div class="actions"><a href="/live" class="act">← 返回直播列表</a></div>
+    <div class="g-main-aside">
       <div>
-        <!-- 播放器 -->
-        <div style="background:#000;border-radius:16px;overflow:hidden;aspect-ratio:16/9;position:relative">
-          <?php if ($st === 'live' && !empty($room['hls_url'])): ?>
-          <video id="livePlayer" class="w-full h-full" controls autoplay muted playsinline src="<?=htmlspecialchars($room['hls_url'])?>"></video>
-          <?php elseif ($st === 'live' && empty($room['hls_url'])): ?>
-          <div class="w-full h-full flex flex-col items-center justify-center text-white" style="background:var(--fg)">
-            <div class="live-dot mb-3"></div><div class="text-lg font-bold">直播进行中</div><div class="text-sm text-white/60 mt-1">播放地址待配置</div>
-          </div>
-          <?php elseif ($st === 'replay' && !empty($room['replay_url'])): ?>
-          <video class="w-full h-full" controls playsinline src="<?=htmlspecialchars($room['replay_url'])?>"></video>
-          <?php else: ?>
-          <div class="w-full h-full flex flex-col items-center justify-center text-white" style="background:var(--fg)">
-            <?php if ($st === 'scheduled'): ?>
-            <div class="text-lg font-bold"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span> 直播预告</div>
-            <div class="text-sm text-white/60 mt-2"><?=htmlspecialchars(substr($room['start_at'] ?? '', 0, 16))?> 开播</div>
+        <div class="sp-win">
+          <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">live · <?=htmlspecialchars($room['id'])?></div></div>
+          <div class="player">
+            <?php if ($st === 'live' && !empty($room['hls_url'])): ?>
+            <video id="livePlayer" controls autoplay muted playsinline src="<?=htmlspecialchars($room['hls_url'])?>"></video>
+            <?php elseif ($st === 'live' && empty($room['hls_url'])): ?>
+            <div class="ph"><span class="live-dot"></span>直播进行中<small>播放地址待配置</small></div>
+            <?php elseif ($st === 'replay' && !empty($room['replay_url'])): ?>
+            <video controls playsinline src="<?=htmlspecialchars($room['replay_url'])?>"></video>
+            <?php elseif ($st === 'scheduled'): ?>
+            <div class="ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>直播预告<small><?=htmlspecialchars(substr($room['start_at'] ?? '', 0, 16))?> 开播</small></div>
             <?php else: ?>
-            <div class="text-lg font-bold">😴 暂未开播</div>
+            <div class="ph">暂未开播</div>
             <?php endif; ?>
           </div>
-          <?php endif; ?>
-        </div>
-        <!-- 标题信息 -->
-        <div class="mt-5">
-          <div class="flex items-center gap-3 flex-wrap">
-            <h1 class="text-2xl font-bold"><?=htmlspecialchars($room['title'])?></h1>
-            <?php if ($st === 'live'): ?><span class="text-xs px-3 py-1 rounded-full flex items-center gap-2" style="background:#fee2e2;color:#dc2626;font-weight:600"><span class="live-dot"></span> 直播中</span><?php else: ?><span class="text-xs px-3 py-1 rounded-full" style="background:var(--bg);color:var(--muted)"><?=live_status_label($st)?></span><?php endif; ?>
-          </div>
-          <p class="text-sm text-gray-600 mt-2"><?=nl2br(htmlspecialchars($room['desc'] ?? ''))?></p>
-          <?php if (!empty($room['start_at'])): ?><div class="text-xs text-gray-400 mt-2">🕐 <?=htmlspecialchars(substr($room['start_at'], 0, 16))?> — <?=htmlspecialchars(substr($room['end_at'] ?? '', 0, 16))?></div><?php endif; ?>
         </div>
 
-        <!-- 售卖课程 -->
+        <div class="room-head">
+          <h1><?=htmlspecialchars($room['title'])?></h1>
+          <?php if ($st === 'live'): ?><span class="badge live"><span class="live-dot"></span>直播中</span><?php else: ?><span class="pill neutral"><?=live_status_label($st)?></span><?php endif; ?>
+        </div>
+        <p class="lead" style="font-size:15px;line-height:1.85;color:var(--muted)"><?=nl2br(htmlspecialchars($room['desc'] ?? ''))?></p>
+        <?php if (!empty($room['start_at'])): ?><div class="note mono" style="margin-top:0"><?=htmlspecialchars(substr($room['start_at'], 0, 16))?> — <?=htmlspecialchars(substr($room['end_at'] ?? '', 0, 16))?></div><?php endif; ?>
+
         <?php if ($sellCourse): $price = $shopSettings['course_prices'][$sellCourse['id']] ?? 0; ?>
-        <div class="mt-5 bg-white rounded-2xl p-5 flex gap-4 flex-wrap" style="border:1px solid var(--border)">
-          <?php if (!empty($sellCourse['cover'])): ?><img src="<?=htmlspecialchars($sellCourse['cover'])?>" class="w-32 h-20 object-cover rounded-xl" onerror="this.style.display='none'"><?php endif; ?>
-          <div style="flex:1;min-width:200px">
-            <div class="text-xs font-bold" style="color:var(--ok)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span> 直播间同款课程</div>
-            <div class="font-bold mt-1"><?=htmlspecialchars($sellCourse['title'])?></div>
-            <div class="text-sm text-gray-600 mt-1 line-clamp-2"><?=htmlspecialchars($sellCourse['description'] ?? '')?></div>
-          </div>
-          <div class="text-right">
-            <div class="text-2xl font-extrabold" style="color:var(--ok)"><?=$price > 0 ? '¥' . number_format($price, 0) : '限时'?></div>
-            <a href="/courses/<?=urlencode($sellCourse['id'])?>" class="inline-block mt-2 px-6 py-2 rounded-full font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">查看课程 →</a>
-          </div>
+        <div class="strip">
+          <?php if (!empty($sellCourse['cover'])): ?><img src="<?=htmlspecialchars($sellCourse['cover'])?>" alt="" style="width:120px;aspect-ratio:16/10;object-fit:cover;border-radius:10px" onerror="this.style.display='none'"><?php else: ?><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span><?php endif; ?>
+          <div class="tx"><span class="kicker" style="font-size:11px">直播间同款课程</span><b><?=htmlspecialchars($sellCourse['title'])?></b><span><?=htmlspecialchars($sellCourse['description'] ?? '')?></span></div>
+          <div style="text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end"><b style="font-family:var(--font-display);font-size:24px;color:var(--ok)"><?=$price > 0 ? '¥' . number_format($price, 0) : '限时'?></b><a href="/courses/<?=urlencode($sellCourse['id'])?>" class="btn primary" style="height:40px;padding:0 18px;font-size:14px">查看课程 →</a></div>
         </div>
         <?php endif; ?>
       </div>
 
-      <!-- 聊天 -->
-      <div>
-        <div class="bg-white rounded-2xl" style="border:1px solid var(--border)">
-          <div class="px-5 py-3 border-b border-[var(--border)] font-bold text-sm"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span> 直播间弹幕</div>
+      <aside>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="win-bar"><span class="ic" style="width:16px;height:16px;color:var(--accent)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span><b style="font-size:13.5px">直播间弹幕</b></div>
           <div class="chat-box" id="chatBox"></div>
-          <div class="p-3 flex gap-2" style="border-top:1px solid var(--border)">
-            <input id="chatInput" class="flex-1 px-3 py-2 rounded-xl text-sm" style="border:1.5px solid var(--border)" placeholder="发条消息…">
-            <button id="chatBtn" class="px-4 rounded-xl font-bold text-sm" style="background:var(--accent);color:var(--on-accent)" onclick="sendChat()">发送</button>
+          <div class="chat-in">
+            <input id="chatInput" class="inp" placeholder="发条消息…">
+            <button id="chatBtn" type="button" class="btn primary" style="height:42px;padding:0 16px;font-size:14px" onclick="sendChat()">发送</button>
           </div>
         </div>
-      </div>
+      </aside>
     </div>
-    <script>
-      var ROOM_ID = <?=json_encode($room['id'])?>;
-      var LAST_COUNT = 0;
-      function loadChat() {
-        fetch('/api/live?action=chat&room_id=' + encodeURIComponent(ROOM_ID)).then(function(r){ return r.json(); }).then(function(d) {
-          if (!d.ok) return;
-          var box = document.getElementById('chatBox');
-          if (d.messages.length > LAST_COUNT) {
-            box.innerHTML = '';
-            d.messages.forEach(function(m) {
-              var el = document.createElement('div');
-              el.className = 'chat-msg';
-              el.innerHTML = '<span class="u">' + (m.user||'游客').replace(/[<>&"]/g, function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}) + '：</span><span class="t">' + (m.text||'').replace(/[<>&"]/g, function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}) + '</span>';
-              box.appendChild(el);
-            });
-            LAST_COUNT = d.messages.length;
-            box.scrollTop = box.scrollHeight;
-          }
+  </section>
+<script>
+  var ROOM_ID = <?=json_encode($room['id'])?>;
+  var LAST_COUNT = 0;
+  function loadChat() {
+    fetch('/api/live?action=chat&room_id=' + encodeURIComponent(ROOM_ID)).then(function(r){ return r.json(); }).then(function(d) {
+      if (!d.ok) return;
+      var box = document.getElementById('chatBox');
+      if (d.messages.length > LAST_COUNT) {
+        box.innerHTML = '';
+        d.messages.forEach(function(m) {
+          var el = document.createElement('div');
+          el.className = 'chat-msg';
+          el.innerHTML = '<span class="u">' + (m.user||'游客').replace(/[<>&"]/g, function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}) + '：</span><span class="t">' + (m.text||'').replace(/[<>&"]/g, function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}) + '</span>';
+          box.appendChild(el);
         });
+        LAST_COUNT = d.messages.length;
+        box.scrollTop = box.scrollHeight;
       }
-      function sendChat() {
-        var input = document.getElementById('chatInput');
-        var text = input.value.trim();
-        if (!text) return;
-        var body = new FormData();
-        body.append('room_id', ROOM_ID);
-        body.append('text', text);
-        fetch('/api/live?action=send', { method: 'POST', body: body })
-          .then(function(r){ return r.json(); }).then(function(d) {
-            if (d.ok) { input.value = ''; loadChat(); }
-            else alert(d.error || '发送失败');
-          });
-      }
-      document.getElementById('chatInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') sendChat(); });
-      loadChat();
-      setInterval(loadChat, 3000);
-    </script>
-
-    <?php else: ?>
-    <!-- ═══ 直播列表 ═══ -->
-    <div class="text-center py-6 mb-8">
-      <h1 class="text-3xl font-extrabold"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12a15 15 0 0 1 20 0M5 15a10 10 0 0 1 14 0M8.5 18a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1.2" fill="currentColor"/></svg></span> <?=htmlspecialchars($settings['page_title'] ?? '直播')?></h1>
-      <p class="text-gray-600 mt-3"><?=htmlspecialchars($settings['page_desc'] ?? '')?></p>
-    </div>
-
-    <?php
-    usort($rooms, function($a, $b) {
-      $pa = !empty($a['is_live']) ? 0 : 1; $pb = !empty($b['is_live']) ? 0 : 1;
-      return $pa <=> $pb ?: strcmp($b['start_at'] ?? '', $a['start_at'] ?? '');
     });
-    ?>
+  }
+  function sendChat() {
+    var input = document.getElementById('chatInput');
+    var text = input.value.trim();
+    if (!text) return;
+    var body = new FormData();
+    body.append('room_id', ROOM_ID);
+    body.append('text', text);
+    fetch('/api/live?action=send', { method: 'POST', body: body })
+      .then(function(r){ return r.json(); }).then(function(d) {
+        if (d.ok) { input.value = ''; loadChat(); }
+        else alert(d.error || '发送失败');
+      });
+  }
+  document.getElementById('chatInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') sendChat(); });
+  loadChat();
+  setInterval(loadChat, 3000);
+</script>
+
+<?php else: ?>
+  <!-- ═══ 直播列表 ═══ -->
+  <section id="top" class="reveal in" data-od-anchor data-od-id="live-hero">
+    <div class="hero-center">
+      <span class="kicker">LIVE · 直播</span>
+      <h1><?=htmlspecialchars($settings['page_title'] ?? '直播')?></h1>
+      <?php if (!empty($settings['page_desc'])): ?><p class="lead"><?=htmlspecialchars($settings['page_desc'])?></p><?php endif; ?>
+    </div>
+  </section>
+
+  <?php
+  usort($rooms, function($a, $b) {
+    $pa = !empty($a['is_live']) ? 0 : 1; $pb = !empty($b['is_live']) ? 0 : 1;
+    return $pa <=> $pb ?: strcmp($b['start_at'] ?? '', $a['start_at'] ?? '');
+  });
+  ?>
+  <section id="rooms" class="sec reveal" data-od-anchor data-od-id="live-list">
+    <div class="sec-head row"><div><span class="kicker">ROOMS</span><h2>全部直播</h2></div><span class="sub"><?=count($rooms)?> 场</span></div>
     <?php if (empty($rooms)): ?>
-    <div class="rounded-3xl p-12 text-center" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">暂无直播安排，敬请期待</div>
+    <div class="empty">暂无直播安排，敬请期待</div>
     <?php else: ?>
-    <div class="grid gap-5" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+    <div class="a-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
       <?php foreach ($rooms as $r): $st = live_status($r); ?>
-      <a href="/live?room=<?=urlencode($r['id'])?>" class="bg-white rounded-2xl overflow-hidden" style="border:1px solid var(--border);text-decoration:none;color:inherit;transition:.15s">
-        <div style="aspect-ratio:16/9;background:linear-gradient(135deg,var(--fg),#2b5f7e);display:grid;place-items:center;position:relative">
-          <?php if (!empty($r['cover'])): ?><img src="<?=htmlspecialchars($r['cover'])?>" class="w-full h-full object-cover"><?php else: ?><span style="font-size:38px"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12a15 15 0 0 1 20 0M5 15a10 10 0 0 1 14 0M8.5 18a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1.2" fill="currentColor"/></svg></span></span><?php endif; ?>
-          <span class="absolute top-3 left-3 text-xs px-3 py-1 rounded-full flex items-center gap-1.5" style="background:<?=$st==='live'?'#dc2626':'var(--accent)'?>;color:var(--surface);font-weight:600"><?=$st==='live'?'<span class="live-dot"></span>':'▶️'?> <?=live_status_label($st)?></span>
-          <?php if (!empty($r['sell_course'])): ?><span class="absolute bottom-3 right-3 text-xs px-3 py-1 rounded-full" style="background:var(--accent-soft);color:var(--accent);font-weight:600"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span> 课程</span><?php endif; ?>
+      <a href="/live?room=<?=urlencode($r['id'])?>" class="a-card">
+        <div class="cov">
+          <?php if (!empty($r['cover'])): ?><img src="<?=htmlspecialchars($r['cover'])?>" alt=""><?php else: ?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12a15 15 0 0 1 20 0M5 15a10 10 0 0 1 14 0M8.5 18a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1.2" fill="currentColor"/></svg><?php endif; ?>
+          <span class="tag <?=$st==='live'?'badge live':'pill hl'?>"><?php if ($st==='live'): ?><span class="live-dot"></span><?php endif; ?><?=live_status_label($st)?></span>
+          <?php if (!empty($r['sell_course'])): ?><span class="tag r pill neutral">课程</span><?php endif; ?>
         </div>
-        <div class="p-4">
-          <div class="font-bold"><?=htmlspecialchars($r['title'])?></div>
-          <div class="text-xs text-gray-600 mt-1"><?=htmlspecialchars(substr($r['start_at'] ?? '', 0, 16))?></div>
+        <div class="bd">
+          <h3><?=htmlspecialchars($r['title'])?></h3>
+          <div class="meta"><?=htmlspecialchars(substr($r['start_at'] ?? '', 0, 16))?></div>
         </div>
       </a>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
-    <?php endif; ?>
-  </div>
+  </section>
+<?php endif; ?>
 
-  <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-    <div class="mx-auto px-5 text-center text-sm" style="max-width:1100px">
-      <div class="mb-2"><?=site_config_get("site_name")?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div>
-      <div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div>
-    </div>
-  </footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>

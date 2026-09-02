@@ -13,6 +13,7 @@
     - 预置 localStorage：跳过首页角色浮层、固定主题
     - 等 networkidle 后再等 400ms 让字体/布局稳定
   这些处理改前改后一致，所以 diff 仍然有效。
+  会员页：OF_COOKIE="PHPSESSID=…" python3 tests/visual/snap.py OUT member.php?view=dashboard（先用 curl 登录拿到 session）
 """
 import sys, os, json
 from pathlib import Path
@@ -38,6 +39,13 @@ def snap(out_dir: Path, pages):
         for name, theme, w, h in STATES:
             ctx = b.new_context(viewport={"width": w, "height": h},
                                 reduced_motion="reduce", device_scale_factor=1)
+            # 可选：OF_COOKIE="PHPSESSID=xxx; other=yyy" 带登录态拍会员页
+            ck = os.environ.get("OF_COOKIE", "")
+            if ck:
+                from urllib.parse import urlparse
+                host = urlparse(BASE).hostname
+                ctx.add_cookies([{"name": kv.split("=", 1)[0].strip(), "value": kv.split("=", 1)[1].strip(), "domain": host, "path": "/"}
+                                 for kv in ck.split(";") if "=" in kv])
             ctx.add_init_script(f"""
               try {{
                 localStorage.setItem('of_role','beginner');

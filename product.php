@@ -10,7 +10,7 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
-$CONN = ['飞书','钉钉','企业微信','Slack','Notion','GitHub','Google Sheets','PostgreSQL','Webhook','OpenAPI','Salesforce','HubSpot'];
+$CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮件','Ghost','虎皮椒支付','Search Console','Webhook','OpenAPI','MCP']; // 全部在 lib/ 与 api/ 里核过：NotifyChannels / NotionClient / api/ingest / MailChannel / PaymentChannel / SeoConsole / WebhookSystem / mcp-server
 $FAQS = [
   ['OpenFlow 需要写代码吗？','不需要。TIPS 框架下可视化配置触达/洞察/个性化/销售四力；需要时可用 Task Graph 编排 Agent，深浅兼顾。'],
   ['适合一人公司吗？','OpenFlow 就是为 OPC 一人公司设计的。装完即用，自生长 AI Engine 自动爬取、洞察、转化，一个人也能驱动整套增长系统。'],
@@ -31,9 +31,9 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <meta name="description" content="Open Flow 产品介绍：连接、编排、执行三步原理，可视化画布、AI 步骤、开放连接器与可运行演示。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。 -->
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
 <style>
 /* 产品页独有：四个演示部件。其余全部来自 modules.css。 */
 .mock-canvas{position:relative;border-radius:14px;background:var(--bg-soft);border:1px solid var(--border);height:190px;overflow:hidden;margin:18px}
@@ -174,9 +174,9 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="split">
       <div class="sp-txt">
         <h3>开放连接器生态</h3>
-        <p class="lead">不是封闭的私有集成，而是开放的连接标准。核心能力永久开源，常用系统开箱即用，私有系统用 OpenAPI 或 Webhook 自定义接入。</p>
+        <p class="lead">不是封闭的私有集成，而是开放的连接标准。核心能力永久开源；飞书 / 企业微信 / Notion / Search Console 等常用系统已接好，私有系统用 OpenAPI 或 Webhook 自定义接入。每一项都能在代码里翻到。</p>
         <ul class="sp-list">
-          <li><?=$ck?><span>400+ 内置连接器，持续更新</span></li>
+          <li><?=$ck?><span>18 个 MCP 工具、32 个插件钩子、92 个 API，Agent 可直接调用</span></li>
           <li><?=$ck?><span>核心能力永久开源 · 鱼与渔结合</span></li>
           <li><?=$ck?><span>Webhook 双向触发与回调</span></li>
         </ul>
@@ -190,7 +190,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="split rev">
       <div class="sp-txt">
         <h3>自生长 AI Engine，从 Marketing 到 Sales</h3>
-        <p class="lead">OpenFlow 不是被动工具，而是主动驱动增长的引擎：每 6 小时自动爬取信号、AI 洞察、生成内容、主动触达转化。装完即用，每个人都能改造成专属自己的增长引擎。</p>
+        <p class="lead">OpenFlow 不是被动工具，而是主动驱动增长的引擎：按你设的周期自动爬取信号、AI 洞察、生成内容、主动触达转化。装完即用，每个人都能改造成专属自己的增长引擎。</p>
         <ul class="sp-list">
           <li><?=$ck?><span>主动爬取舆情与行业热点</span></li>
           <li><?=$ck?><span>AI 撰写草稿（人工审核后发布）</span></li>
@@ -217,7 +217,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="sec-head center">
       <span class="kicker">增长闭环</span>
       <h2>点一下，看增长引擎跑起来</h2>
-      <p class="lead">下面的增长闭环每 6 小时自动执行：爬取信号 → AI 洞察 → 生成草稿 → 主动触达。点击「运行一轮」观察完整过程。</p>
+      <p class="lead">下面的增长闭环按你配置的 cron 周期自动执行：爬取信号 → AI 洞察 → 生成草稿 → 主动触达。点击「运行一轮」观察完整过程。</p>
     </div>
     <div class="demo-wrap">
       <div class="demo-fig">
@@ -299,26 +299,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   </section>
 
   <!-- ══ footer（共享 .foot） ══ -->
-  <footer class="foot" data-od-id="site-footer">
-    <div class="fb">
-      <div class="brand"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>芭乐派 · OpenFlow</div>
-      <p class="f-about">芭乐派增长操作系统的开源底座。TIPS 框架（触达/洞察/个性化/销售）四力合一，自生长 AI Engine 主动驱动增长。</p>
-      <p class="note">核心能力永久开源 · 鱼与渔相结合</p>
-    </div>
-    <div class="fb">
-      <h4>站点导航</h4>
-      <a href="/product">产品</a><a href="/capability">能力</a><a href="/courses">课程</a><a href="/academy">学院</a><a href="/community">论坛</a><a href="/about">关于我们</a>
-    </div>
-    <div class="fb">
-      <h4>资源</h4>
-      <a href="/courses">芭乐派课程</a><a href="/docs">文档中心</a><a href="/docs#templates">模板库</a><a href="/docs#api">开放 API</a>
-    </div>
-    <div class="fb">
-      <h4>联系</h4>
-      <a href="mailto:hello@openflow.dev">hello@openflow.dev</a><a href="mailto:hello@openflow.dev">商务合作</a><a href="mailto:careers@openflow.dev">加入团队</a><a href="/community">门派社区</a>
-    </div>
-    <div class="f-bottom"><span>© 2026 芭乐派 · OpenFlow 增长操作系统</span><?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><?=i18n_switcher()?><?php endif; ?><span>帮一人公司设计 Agent 能跑的增长系统</span></div>
-  </footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
 <button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 

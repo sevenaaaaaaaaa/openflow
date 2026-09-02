@@ -154,6 +154,28 @@ function mkt_stats(): array {
     ];
 }
 
+/** 资产类型 → 线框图标 path / 色相 / 封面代号（前台渲染用；data 里配的 emoji 不再直出） */
+function mkt_type_meta(string $type): array {
+    $m = [
+        'plugin'     => ['hue' => 'ok',     'code' => 'PLUGIN', 'icon' => '<path d="M10 4a2 2 0 0 1 4 0v1h3a1 1 0 0 1 1 1v3h1a2 2 0 0 1 0 4h-1v3a1 1 0 0 1-1 1h-3v1a2 2 0 0 1-4 0v-1H6a1 1 0 0 1-1-1v-3H4a2 2 0 0 1 0-4h1V6a1 1 0 0 1 1-1h3V4Z"/>'],
+        'skill'      => ['hue' => 'accent', 'code' => 'SKILL',  'icon' => '<path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/>'],
+        'theme'      => ['hue' => 'warn',   'code' => 'THEME',  'icon' => '<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2 1.5-2H17a4 4 0 0 0 4-4c0-5-4-10-9-10Z"/><circle cx="8" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="7.5" r="1" fill="currentColor"/><circle cx="16" cy="10" r="1" fill="currentColor"/>'],
+        'bundle'     => ['hue' => 'danger', 'code' => 'BUNDLE', 'icon' => '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>'],
+        'membership' => ['hue' => 'warn',   'code' => 'VIP',    'icon' => '<path d="M6 3h12l4 6-10 12L2 9l4-6Z"/><path d="M2 9h20M9 3 7 9l5 12M15 3l2 6-5 12"/>'],
+    ];
+    return $m[$type] ?? ['hue' => 'neutral', 'code' => strtoupper($type ?: 'ASSET'), 'icon' => '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>'];
+}
+function mkt_type_icon(string $type): string {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . mkt_type_meta($type)['icon'] . '</svg>';
+}
+/** 资产卡的生成式封面（与 CoverRenderer 同一套 .gcov 样式） */
+function mkt_asset_cover(array $a, array $typeNames = []): string {
+    $t = (string)($a['type'] ?? '');
+    $m = mkt_type_meta($t);
+    $label = htmlspecialchars($typeNames[$t]['name'] ?? $t);
+    return '<div class="gcov h-' . $m['hue'] . '"><span class="gc-code" aria-hidden="true">' . $m['code'] . '</span><span class="gc-k">' . mkt_type_icon($t) . $label . '</span></div>';
+}
+
 // ═══ 远程市场同步 ═══
 function mkt_remote_url(): string {
     return json_read(DATA_DIR . '/marketplace-settings.json')['remote_url'] ?? '';

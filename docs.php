@@ -1,6 +1,9 @@
 <?php
 /**
  * 文档中心 — 产品文档 / 模板库 / 开放 API
+ *
+ * v7（2026-09-01）：迁到共享 archetype。md_render 输出接到共享 .prose（.md-* 类保留做兼容），
+ * 文档目录用 .g-main-aside.aside-left + .cat-nav，API 表用 hairline 行。数据逻辑原样保留。
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
@@ -134,145 +137,124 @@ if ($inlineCta['enabled'] ?? false) {
     $templates[] = ['name' => '文中 CTA 模板', 'type' => '内容组件', 'desc' => ($inlineCta['default_title'] ?? '') . ' — ' . ($inlineCta['default_description'] ?? ''), 'usage' => '文章编辑器中插入 {{title}} {{button}} 模板'];
 }
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>文档中心 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="产品文档 · 模板库 · 开放 API，快速上手 OpenFlow">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body)}
-  .doc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;transition:.15s}
-  .doc-card:hover{box-shadow:var(--shadow-sm)}
-  .acd-tab{padding:8px 18px;border-radius:999px;font-size:13.5px;font-weight:600;text-decoration:none;transition:.15s}
-  .md-h{font-size:17px;font-weight:800;margin:18px 0 8px;color:var(--fg)}
-  .md-p{font-size:13.5px;line-height:1.8;color:var(--muted);margin:6px 0}
-  .md-list{margin:6px 0 6px 18px;font-size:13.5px;line-height:1.9;color:var(--muted);list-style:disc}
-  .code{background:var(--accent);color:var(--on-accent);border-radius:var(--r-sm);padding:14px;font-size:12.5px;overflow-x:auto;line-height:1.7;margin:8px 0}
-  .api-row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--bg-soft)}
-  .api-method{flex-shrink:0;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px}
-  .get{background:var(--ok-soft);color:var(--ok)}.post{background:var(--accent-soft);color:var(--accent)}
-  .md-code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:12px;font-family:ui-monospace,Menlo,monospace}
-  .md-quote{border-left:3px solid var(--accent);background:var(--bg-soft);padding:8px 14px;margin:8px 0;font-size:13px;color:var(--muted);border-radius:0 8px 8px 0}
-  .doc-side{position:sticky;top:90px;max-height:calc(100vh - 120px);overflow-y:auto}
-  .doc-side a{display:block;padding:8px 12px;border-radius:var(--r-sm);font-size:13px;color:var(--muted);text-decoration:none;transition:.12s}
-  .doc-side a:hover{background:var(--bg)}
-  .doc-side a.active{background:var(--accent);color:var(--on-accent);font-weight:600}
-  .doc-side .grp{font-size:10.5px;font-weight:800;letter-spacing:.04em;color:var(--faint);text-transform:uppercase;padding:14px 12px 4px}
-  .doc-content h1{font-size:24px;font-weight:800;color:var(--fg);margin:4px 0 14px}
-  .doc-content h2{font-size:18px;font-weight:800;color:var(--fg);margin:22px 0 8px}
-  .doc-content h3{font-size:15px;font-weight:700;color:var(--fg);margin:16px 0 6px}
-
-  /* 设计语言统一：token 语义工具类（终版契约） */
-  .text-faint{color:var(--faint)}.text-muted{color:var(--muted)}.text-fg{color:var(--fg)}
-  .text-ok{color:var(--ok)}.text-accent{color:var(--accent)}.text-danger{color:var(--danger)}
-  .bg-surface{background:var(--surface)}
+/* 文档中心独有：目录侧栏、API 行。markdown 输出的 .md-* 类映射到 .prose 的排版。 */
+.g-main-aside.aside-left{grid-template-columns:minmax(0,230px) minmax(0,1fr)}
+.g-main-aside.aside-left>aside{position:sticky;top:calc(var(--chrome-h) + 24px);max-height:calc(100vh - 120px);overflow-y:auto}
+.cat-nav{display:flex;flex-direction:column;gap:2px}
+.cat-nav a{display:block;padding:8px 12px;border-radius:10px;font-size:13.5px;color:var(--muted);transition:background .15s,color .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-nav a:hover{background:var(--hover);color:var(--fg)}
+.cat-nav a.active{background:var(--accent-soft);color:var(--accent-strong);font-weight:600}
+.doc-meta{font-family:var(--font-mono);font-size:11.5px;color:var(--ok);font-weight:700;letter-spacing:.04em;margin-bottom:14px}
+.prose .md-h{font-weight:800}
+.prose h2.md-h{font-size:22px}.prose h3.md-h{font-size:18px}.prose h4.md-h{font-size:16px}
+.prose .md-p{color:var(--muted)}
+.prose .md-list{list-style:disc}
+.prose .md-quote{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 12px 12px 0;color:var(--muted)}
+.prose .md-code{font-family:var(--font-mono);font-size:.92em;background:var(--hover);padding:2px 6px;border-radius:6px}
+.prose pre.code{background:var(--surface-strong);border:1px solid var(--border);color:var(--fg)}
+.api-row{display:grid;grid-template-columns:60px minmax(0,1fr);gap:16px;align-items:start;padding:16px 4px;border-bottom:1px solid var(--border-soft)}
+.api-row:last-child{border-bottom:none}
+.api-method{font-family:var(--font-mono);font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;text-align:center}
+.api-method.get{background:var(--ok-soft);color:var(--ok)}.api-method.post{background:var(--accent-soft);color:var(--accent)}
+.api-row code{font-family:var(--font-mono);font-size:13.5px;font-weight:700}
+.api-row .d{font-size:13.5px;color:var(--muted);margin-top:3px}
+.api-row .p{font-family:var(--font-mono);font-size:11.5px;color:var(--faint);margin-top:3px}
+.tpl{display:flex;flex-direction:column;gap:10px}
+.tpl .hd{display:flex;align-items:center;gap:8px}
+.tpl h3{font-size:15.5px;font-weight:800}
+.tpl p{font-size:13.5px;color:var(--muted);line-height:1.7}
+.tpl .use{font-family:var(--font-mono);font-size:12px;background:var(--hover);border-radius:var(--r-sm);padding:8px 10px;color:var(--muted);margin-top:auto}
+@media (max-width:1080px){.g-main-aside.aside-left{grid-template-columns:1fr}.g-main-aside.aside-left>aside{position:static;max-height:none}.cat-nav{flex-direction:row;flex-wrap:wrap}}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="docs"></script>
+<body data-of-main>
+<?php of_shell('docs'); ?>
 
-<section style="padding:clamp(20px,4vw,44px) 0 clamp(28px,4vw,48px)">
-  <div class="mx-auto px-5" style="max-width:1120px">
-    <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);align-items:center">
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <span class="kicker" style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--accent);text-transform:uppercase">DOCUMENTATION</span>
-        <h1 style="font-size:clamp(30px,4.5vw,46px);font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--fg)">文档中心<span style="font-family:var(--font-display);font-style:italic">查得到、看得懂</span></h1>
-        <p style="color:var(--muted);font-size:15px;line-height:1.8;max-width:540px">产品文档 · 模板库 · 开放 API。从快速上手到开发者扩展，一页页讲清楚。</p>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">
-          <a href="#docs" style="padding:12px 24px;border-radius:999px;font-weight:700;font-size:14px;background:var(--accent);color:var(--on-accent);text-decoration:none"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span> 产品文档</a>
-          <a href="#templates" style="padding:12px 24px;border-radius:999px;font-weight:700;font-size:14px;background:var(--surface);color:var(--fg);border:1px solid var(--border);text-decoration:none"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4a2 2 0 0 1 4 0v1h3a1 1 0 0 1 1 1v3h1a2 2 0 0 1 0 4h-1v3a1 1 0 0 1-1 1h-3v1a2 2 0 0 1-4 0v-1H6a1 1 0 0 1-1-1v-3H4a2 2 0 0 1 0-4h1V6a1 1 0 0 1 1-1h3V4Z"/></svg></span> 模板库</a>
-          <a href="#api" style="padding:12px 24px;border-radius:999px;font-weight:700;font-size:14px;background:var(--surface);color:var(--fg);border:1px solid var(--border);text-decoration:none"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6M15 3v6M7 9h10v4a5 5 0 0 1-10 0V9Z"/><path d="M12 18v3"/></svg></span> 开放 API</a>
-        </div>
-        <div style="display:flex;gap:18px;margin-top:8px;color:var(--faint);font-size:12.5px;flex-wrap:wrap">
-          <span><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span> <b style="color:var(--fg)"><?=count($docIndex)?></b> 篇文档</span>
-          <span><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6M15 3v6M7 9h10v4a5 5 0 0 1-10 0V9Z"/><path d="M12 18v3"/></svg></span> <b style="color:var(--fg)">REST</b> API</span>
-          <span><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4a2 2 0 0 1 4 0v1h3a1 1 0 0 1 1 1v3h1a2 2 0 0 1 0 4h-1v3a1 1 0 0 1-1 1h-3v1a2 2 0 0 1-4 0v-1H6a1 1 0 0 1-1-1v-3H4a2 2 0 0 1 0-4h1V6a1 1 0 0 1 1-1h3V4Z"/></svg></span> <b style="color:var(--fg)">模板</b>库</span>
-        </div>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
+  <section id="top" class="reveal in" data-od-anchor data-od-id="docs-hero">
+    <div class="hero">
+      <div class="hero-copy">
+        <span class="kicker">DOCUMENTATION</span>
+        <h1>文档中心<br><i class="si">查得到、看得懂</i></h1>
+        <p class="lead">产品文档 · 模板库 · 开放 API。从快速上手到开发者扩展，一页页讲清楚。</p>
+        <div class="cta-row"><a class="btn primary" href="#docs">产品文档</a><a class="btn ghost" href="#templates">模板库</a><a class="btn ghost" href="#api">开放 API</a></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <?php
-        $docCards = array_slice($docIndex, 0, 4);
-        $docIcons = ['🗂️', '🚀', '🧩', '🔌'];
-        $di = 0;
-        foreach ($docCards as $dn => $dv): ?>
-        <a href="?doc=<?=htmlspecialchars($dn)?>" style="display:flex;flex-direction:column;gap:10px;padding:18px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border);backdrop-filter:blur(16px) saturate(150%);text-decoration:none;transition:transform .25s var(--ease-spring),box-shadow .25s,border-color .25s" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='var(--shadow-sm)';this.style.borderColor='var(--border-strong)'" onmouseout="this.style.transform='none';this.style.boxShadow='none';this.style.borderColor='var(--border)'">
-          <span style="width:38px;height:38px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:18px"><?=$docIcons[$di] ?? '📄'?></span>
-          <b style="font-size:14.5px;color:var(--fg)"><?=htmlspecialchars($dv['title'])?></b>
-          <span style="font-size:11.5px;color:var(--faint)"><?=htmlspecialchars($dv['modified'])?> · <?=round($dv['size']/1024, 1)?>KB</span>
-        </a>
-        <?php $di++; endforeach; ?>
+      <div class="hero-win">
+        <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">docs · <?=count($docIndex)?> 篇</div></div>
+        <div class="win-flow">
+          <?php $docCards = array_slice($docIndex, 0, 4); $k = 0; foreach ($docCards as $dn => $dv): if ($k++) echo '<div class="flow-link"></div>'; ?>
+          <a class="flow-row" href="?doc=<?=htmlspecialchars($dn)?>"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span><div><div class="ft"><?=htmlspecialchars($dv['title'])?></div><div class="fd"><?=htmlspecialchars($dv['modified'])?> · <?=round($dv['size']/1024, 1)?>KB</div></div></a>
+          <?php endforeach; ?>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<div class="mx-auto px-5 py-10" style="max-width:1000px">
-  <!-- 产品文档 -->
-  <div id="docs">
-    <h2 class="text-2xl font-extrabold text-fg mb-5"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span> 产品文档</h2>
-    <div style="display:grid;gap:28px;grid-template-columns:220px 1fr;align-items:start">
-      <!-- 文档索引 -->
-      <aside class="doc-side doc-card" style="padding:14px">
-        <div class="grp">文档目录</div>
-        <?php foreach ($docIndex as $name => $meta): ?>
-        <a href="docs?doc=<?=$name?>" class="<?=$name===$docName?'active':''?>" title="<?=htmlspecialchars($meta['title'])?>"><?=htmlspecialchars($meta['title'])?></a>
-        <?php endforeach; ?>
-        <div class="grp">跳转</div>
-        <a href="#templates"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4a2 2 0 0 1 4 0v1h3a1 1 0 0 1 1 1v3h1a2 2 0 0 1 0 4h-1v3a1 1 0 0 1-1 1h-3v1a2 2 0 0 1-4 0v-1H6a1 1 0 0 1-1-1v-3H4a2 2 0 0 1 0-4h1V6a1 1 0 0 1 1-1h3V4Z"/></svg></span> 模板库</a>
-        <a href="#api"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6M15 3v6M7 9h10v4a5 5 0 0 1-10 0V9Z"/><path d="M12 18v3"/></svg></span> 开放 API</a>
+  <section id="docs" class="sec reveal" data-od-anchor data-od-id="docs-body">
+    <div class="g-main-aside aside-left">
+      <aside>
+        <div class="aside-box">
+          <h3>文档目录</h3>
+          <nav class="cat-nav" aria-label="文档目录">
+            <?php foreach ($docIndex as $name => $meta): ?>
+            <a href="docs?doc=<?=$name?>" class="<?=$name===$docName?'active':''?>" title="<?=htmlspecialchars($meta['title'])?>"><?=htmlspecialchars($meta['title'])?></a>
+            <?php endforeach; ?>
+          </nav>
+        </div>
+        <div class="aside-box">
+          <h3>跳转</h3>
+          <nav class="cat-nav" aria-label="跳转"><a href="#templates">模板库</a><a href="#api">开放 API</a></nav>
+        </div>
       </aside>
-
-      <!-- 当前文档内容 -->
-      <article class="doc-card doc-content" style="min-height:420px">
-        <div class="text-[11px] font-bold tracking-wide mb-2" style="color:var(--ok)"><?=htmlspecialchars($docName)?>.md · <?=$docIndex[$docName]['modified'] ?? ''?></div>
+      <article class="card" style="min-height:420px">
+        <div class="doc-meta"><?=htmlspecialchars($docName)?>.md · <?=$docIndex[$docName]['modified'] ?? ''?></div>
         <?php if (trim($docMd) === ''): ?>
-          <div class="md-p" style="padding:40px 0;text-align:center;color:var(--faint)">该文档暂无内容</div>
+          <div class="empty">该文档暂无内容</div>
         <?php else: ?>
-          <?=md_render($docMd)?>
+          <div class="prose"><?=md_render($docMd)?></div>
         <?php endif; ?>
       </article>
     </div>
-  </div>
+  </section>
 
-  <!-- 模板库 -->
-  <div id="templates" style="margin-top:44px">
-    <h2 class="text-2xl font-extrabold text-fg mb-5"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4a2 2 0 0 1 4 0v1h3a1 1 0 0 1 1 1v3h1a2 2 0 0 1 0 4h-1v3a1 1 0 0 1-1 1h-3v1a2 2 0 0 1-4 0v-1H6a1 1 0 0 1-1-1v-3H4a2 2 0 0 1 0-4h1V6a1 1 0 0 1 1-1h3V4Z"/></svg></span> 模板库</h2>
-    <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+  <section id="templates" class="sec reveal" data-od-anchor data-od-id="docs-templates">
+    <div class="sec-head row"><div><span class="kicker">模板库</span><h2>拿来就用的模板</h2></div></div>
+    <div class="grid g3" style="gap:16px">
       <?php foreach ($templates as $t): ?>
-      <div class="doc-card">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full" style="background:var(--bg);color:var(--muted)"><?=htmlspecialchars($t['type'])?></span>
-          <h3 class="font-extrabold text-[15px]"><?=htmlspecialchars($t['name'])?></h3>
-        </div>
-        <p class="text-[13px] text-muted leading-relaxed mb-3"><?=htmlspecialchars($t['desc'])?></p>
-        <div class="text-[12px] font-mono" style="background:var(--bg);border-radius:var(--r-sm);padding:8px 10px;color:var(--muted)"><?=htmlspecialchars($t['usage'])?></div>
+      <div class="card tpl">
+        <div class="hd"><span class="pill neutral" style="height:24px"><?=htmlspecialchars($t['type'])?></span><h3><?=htmlspecialchars($t['name'])?></h3></div>
+        <p><?=htmlspecialchars($t['desc'])?></p>
+        <div class="use"><?=htmlspecialchars($t['usage'])?></div>
       </div>
       <?php endforeach; ?>
     </div>
-  </div>
+  </section>
 
-  <!-- 开放 API -->
-  <div id="api" style="margin-top:44px">
-    <h2 class="text-2xl font-extrabold text-fg mb-2"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6M15 3v6M7 9h10v4a5 5 0 0 1-10 0V9Z"/><path d="M12 18v3"/></svg></span> 开放 API</h2>
-    <p class="text-[13.5px] text-muted mb-5">统一 JSON 接口，均支持跨域（Access-Control-Allow-Origin: *），可用于对接 CRM、数据分析工具等。</p>
-    <div class="doc-card" style="padding:18px 22px">
+  <section id="api" class="sec reveal" data-od-anchor data-od-id="docs-api">
+    <div class="sec-head row"><div><span class="kicker">开放 API</span><h2>统一 JSON 接口</h2></div></div>
+    <p class="lead" style="color:var(--muted);font-size:14.5px">统一 JSON 接口，均支持跨域（Access-Control-Allow-Origin: *），可用于对接 CRM、数据分析工具等。</p>
+    <div class="card">
       <?php foreach ($apiEndpoints as $ep): ?>
       <div class="api-row">
         <span class="api-method <?=strtoupper($ep['method'])==='GET'?'get':'post'?>"><?=htmlspecialchars($ep['method'])?></span>
-        <div class="min-w-0 flex-1">
-          <code style="font-size:13px;font-weight:700;color:var(--fg)"><?=htmlspecialchars($ep['path'])?></code>
-          <div class="text-[13px] text-muted mt-0.5"><?=htmlspecialchars($ep['desc'])?></div>
-          <div class="text-[11.5px] text-faint mt-0.5 font-mono"><?=htmlspecialchars($ep['params'])?></div>
-        </div>
+        <div><code><?=htmlspecialchars($ep['path'])?></code><div class="d"><?=htmlspecialchars($ep['desc'])?></div><div class="p"><?=htmlspecialchars($ep['params'])?></div></div>
       </div>
       <?php endforeach; ?>
     </div>
-    <div class="doc-card mt-4">
-      <h3 class="font-extrabold mb-2">调用示例</h3>
+    <div class="card prose">
+      <h3>调用示例</h3>
       <pre class="code">// 提交预约线索
 fetch('/api/form-submit', {
   method: 'POST',
@@ -283,56 +265,20 @@ fetch('/api/form-submit', {
   })
 });</pre>
     </div>
-  </div>
-</div>
+  </section>
 
-  <!-- CTA band -->
-  <div style="background:linear-gradient(135deg,var(--accent),oklch(58% .16 295));border-radius:var(--r-lg);padding:clamp(28px,4vw,48px);color:#fff;margin-top:44px;text-align:center">
-    <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;opacity:.75">芭乐派 · OpenFlow</div>
-    <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.02em;margin:10px 0 8px">文档看懂了，系统该动手设计了</h2>
-    <p style="opacity:.85;font-size:14.5px;line-height:1.7;max-width:560px;margin:0 auto 22px">工具在文档，方法论在课程，落地在你的增长系统。装完 OpenFlow，先从 New-1 开始。</p>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a href="/courses" style="padding:12px 26px;border-radius:999px;font-weight:700;font-size:14px;background:#fff;color:var(--accent);text-decoration:none">开始学习 New-1</a>
-      <a href="/community" style="padding:12px 26px;border-radius:999px;font-weight:700;font-size:14px;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.6);text-decoration:none">进门派问问</a>
+  <section class="reveal" data-od-anchor data-od-id="docs-cta">
+    <div class="cta-band">
+      <span class="kicker">芭乐派 · OpenFlow</span>
+      <h2>文档看懂了，系统该动手设计了</h2>
+      <p class="lead">工具在文档，方法论在课程，落地在你的增长系统。装完 OpenFlow，先从 New-1 开始。</p>
+      <div class="cta-row"><a href="/courses" class="btn primary">开始学习 New-1</a><a href="/community" class="btn ghost">进门派社区</a></div>
     </div>
-  </div>
-</div>
+  </section>
 
-<footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-  <div class="mx-auto px-5" style="max-width:1120px">
-    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:28px;padding-bottom:22px;border-bottom:1px solid var(--border)">
-      <div>
-        <div style="font-weight:800;font-size:15px;color:var(--fg)">芭乐派 · OpenFlow</div>
-        <p style="font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:8px;max-width:320px">芭乐派增长操作系统的开源底座。TIPS 框架（触达/洞察/个性化/销售）四力合一，自生长 AI Engine 主动驱动增长。</p>
-        <p style="font-size:12px;color:var(--faint);margin-top:6px">核心能力永久开源 · 鱼与渔相结合</p>
-      </div>
-      <div>
-        <div style="font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;margin-bottom:10px">站点导航</div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <a href="/product" style="color:var(--muted);text-decoration:none;font-size:13px">产品</a>
-          <a href="/capability" style="color:var(--muted);text-decoration:none;font-size:13px">能力</a>
-          <a href="/courses" style="color:var(--muted);text-decoration:none;font-size:13px">课程</a>
-          <a href="/academy" style="color:var(--muted);text-decoration:none;font-size:13px">学院</a>
-          <a href="/about" style="color:var(--muted);text-decoration:none;font-size:13px">关于我们</a>
-        </div>
-      </div>
-      <div>
-        <div style="font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;margin-bottom:10px">资源</div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <a href="/docs" style="color:var(--muted);text-decoration:none;font-size:13px">文档中心</a>
-          <a href="/downloads" style="color:var(--muted);text-decoration:none;font-size:13px">资料下载</a>
-          <a href="/podcasts" style="color:var(--muted);text-decoration:none;font-size:13px">播客</a>
-          <a href="/marketplace" style="color:var(--muted);text-decoration:none;font-size:13px">生态市场</a>
-          <a href="/community" style="color:var(--muted);text-decoration:none;font-size:13px">门派社区</a>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:16px;flex-wrap:wrap">
-      <div style="font-size:12px;color:var(--muted)">© 2026 芭乐派 · OpenFlow 增长操作系统</div>
-      <div style="font-size:12px;color:var(--faint)">帮一人公司设计 Agent 能跑的增长系统</div>
-    </div>
-  </div>
-</footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>
 <?php PageCache::end('docs', 1800); ?>

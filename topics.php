@@ -1,6 +1,8 @@
 <?php
 /**
  * 专题聚合页 — 浏览所有专题及其下文章
+ *
+ * v7（2026-09-01）：迁到共享 archetype；顺手修掉 <body> 标签被 site-shell 脚本截断的错误。数据逻辑原样保留。
  * /topics/{slug}  单个专题详情
  * /topics.php    专题列表
  */
@@ -34,99 +36,88 @@ if ($currentTopic) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= $currentTopic ? (htmlspecialchars($currentTopic['title'] ?? '专题') . ' | ' . site_config_get('site_name')) : ('专题合集 | ' . site_config_get('site_name')) ?></title>
-<link rel="stylesheet" href="/assets/tokens.css?v=20260901a">
-<link rel="stylesheet" href="/assets/modules.css?v=20260901a">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<link rel="stylesheet" href="/assets/tokens.css?v=20260902b">
+<link rel="stylesheet" href="/assets/modules.css?v=20260902b">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body)}
-  .topic-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;transition:.15s;display:block;text-decoration:none;color:inherit}
-  .topic-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(30,30,30,.08);border-color:var(--accent)}
-  .art-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bg);text-decoration:none;color:inherit}
-  .art-row:last-child{border-bottom:none}
+/* 专题页独有：专题卡。其余全部来自 modules.css。 */
+.tp-card{display:flex;flex-direction:column;gap:14px}
+.tp-card .hd{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.tp-card .cov{width:140px;height:90px;object-fit:cover;border-radius:12px;flex:0 0 auto}
+.tp-card .hd>div{flex:1;min-width:240px}
+.tp-card h2{font-size:20px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tp-card p{font-size:14px;color:var(--muted);line-height:1.75;margin-top:6px}
+.tp-card .more{font-size:12.5px;color:var(--accent);font-weight:600}
 </style>
-<link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body>
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="topics"></script> class="min-h-screen">
-  
+<body data-of-main>
+<?php of_shell('topics'); ?>
 
-  <div class="mx-auto px-5 py-10" style="max-width:1100px">
-    <?php if ($currentTopic): ?>
-    <!-- 单专题详情 -->
-    <nav class="mb-6 text-sm text-gray-600"><a href="/topics" class="hover:text-[#2b5f7e]">← 全部专题</a></nav>
-    <div class="rounded-3xl p-8 mb-8" style="background:linear-gradient(135deg,var(--ok-soft) 0%,var(--accent-soft) 100%)">
-      <div class="text-xs font-bold tracking-widest text-green-600 uppercase mb-2">专题</div>
-      <h1 class="text-3xl font-extrabold text-gray-900"><?=htmlspecialchars($currentTopic['title'] ?? '')?></h1>
-      <p class="text-gray-600 mt-3 max-w-2xl leading-relaxed"><?=htmlspecialchars($currentTopic['description'] ?? '')?></p>
-      <?php if (!empty($currentTopic['category'])): ?><span class="mt-4 inline-block text-[11px] px-3 py-1 rounded-full" style="background:var(--surface);color:var(--ok)"><?=htmlspecialchars($catNames[$currentTopic['category']] ?? $currentTopic['category'])?></span><?php endif; ?>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
+  <?php if ($currentTopic): ?>
+  <section id="top" class="reveal in" data-od-anchor data-od-id="topic-head">
+    <nav class="art-meta" aria-label="面包屑" style="justify-content:center"><a href="/topics" style="color:var(--faint)">← 全部专题</a></nav>
+    <div class="hero-center" style="padding-top:18px;padding-bottom:0">
+      <span class="kicker">专题</span>
+      <h1><?=htmlspecialchars($currentTopic['title'] ?? '')?></h1>
+      <p class="lead"><?=htmlspecialchars($currentTopic['description'] ?? '')?></p>
+      <?php if (!empty($currentTopic['category'])): ?><span class="badge ok"><?=htmlspecialchars($catNames[$currentTopic['category']] ?? $currentTopic['category'])?></span><?php endif; ?>
     </div>
-    <div class="flex items-center gap-2 mb-5">
-      <h2 class="text-lg font-bold">收录文章</h2>
-      <span class="text-xs text-gray-400"><?=count($topicArticles)?> 篇</span>
-    </div>
+  </section>
+  <section class="sec reveal reader" data-od-anchor data-od-id="topic-articles">
+    <div class="sec-head row"><div><span class="kicker">收录文章 · <?=count($topicArticles)?> 篇</span><h2>按顺序读</h2></div></div>
     <?php if (empty($topicArticles)): ?>
-    <div class="rounded-3xl p-12 text-center" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">该专题下暂无文章</div>
+    <div class="empty">该专题下暂无文章</div>
     <?php else: ?>
-    <div class="grid gap-3">
-      <?php foreach ($topicArticles as $a): ?>
-      <a href="/articles/<?=htmlspecialchars($a['slug'])?>" class="art-row rounded-2xl px-5 py-4" style="background:var(--surface);border:1px solid var(--border)">
-        <div style="flex:1">
-          <div class="font-semibold text-gray-900"><?=htmlspecialchars($a['title'])?></div>
-          <div class="text-xs text-gray-400 mt-1"><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?> · <?=htmlspecialchars($catNames[$a['category'] ?? ''] ?? '')?></div>
-        </div>
-        <span class="text-[#2b5f7e] text-sm shrink-0">阅读 →</span>
-      </a>
+    <div class="rank">
+      <?php foreach ($topicArticles as $i => $a): ?>
+      <a href="/articles/<?=htmlspecialchars($a['slug'])?>"><span class="n"><?=$i+1?></span><span class="t"><b><?=htmlspecialchars($a['title'])?></b><span><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?> · <?=htmlspecialchars($catNames[$a['category'] ?? ''] ?? '')?></span></span></a>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
-    <?php else: ?>
-    <div class="text-center py-4 mb-8">
-      <h1 class="text-3xl font-extrabold"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span> 专题合集</h1>
-      <p class="text-gray-600 mt-3 max-w-xl mx-auto">围绕核心议题的深度内容聚合，一次读透一个主题</p>
+  </section>
+  <?php else: ?>
+  <section id="top" class="reveal in" data-od-anchor data-od-id="topics-hero">
+    <div class="hero-center" style="padding-bottom:0">
+      <span class="kicker">专题</span>
+      <h1>一次读透<i class="si">一个主题</i></h1>
+      <p class="lead">围绕核心议题的深度内容聚合，一次读透一个主题</p>
     </div>
-
+  </section>
+  <section class="sec reveal" data-od-anchor data-od-id="topics-list">
     <?php if (empty($topics)): ?>
-    <div class="rounded-3xl p-12 text-center" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">专题筹备中</div>
+    <div class="empty">专题筹备中</div>
     <?php else: foreach ($topics as $t): $tArts = array_values(array_filter(array_map(fn($id) => $articleMap[$id] ?? null, $t['article_ids'] ?? []))); ?>
-    <div class="topic-card mb-6">
-      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
-        <?php if (!empty($t['cover'])): ?><img src="<?=htmlspecialchars(strpos($t['cover'],'http')===0?$t['cover']:'/'.ltrim($t['cover'],'/'))?>" style="width:140px;height:90px;object-fit:cover;border-radius:12px" onerror="this.style.display='none'"><?php endif; ?>
-        <div style="flex:1;min-width:240px">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <h2 class="text-xl font-bold"><?=htmlspecialchars($t['title'] ?? '')?></h2>
-            <?php if (!empty($t['category'])): ?><span class="text-[11px] px-3 py-1 rounded-full" style="background:var(--ok-soft);color:var(--ok)"><?=htmlspecialchars($catNames[$t['category']] ?? $t['category'])?></span><?php endif; ?>
-            <span class="text-xs text-gray-400"><?=count($tArts)?> 篇文章</span>
-          </div>
-          <p class="text-sm text-gray-600 mt-2 leading-relaxed"><?=htmlspecialchars($t['description'] ?? '')?></p>
+    <div class="card tp-card">
+      <div class="hd">
+        <?php if (!empty($t['cover'])): ?><img class="cov" src="<?=htmlspecialchars(strpos($t['cover'],'http')===0?$t['cover']:'/'.ltrim($t['cover'],'/'))?>" alt="" onerror="this.remove()"><?php endif; ?>
+        <div>
+          <h2><a href="/topics/<?=htmlspecialchars($t['slug'] ?? '')?>"><?=htmlspecialchars($t['title'] ?? '')?></a><?php if (!empty($t['category'])): ?><span class="badge ok"><?=htmlspecialchars($catNames[$t['category']] ?? $t['category'])?></span><?php endif; ?><span class="note"><?=count($tArts)?> 篇文章</span></h2>
+          <p><?=htmlspecialchars($t['description'] ?? '')?></p>
         </div>
       </div>
-      <div class="mt-4">
-        <?php foreach (array_slice($tArts, 0, 5) as $a): ?>
-        <a href="/articles/<?=htmlspecialchars($a['slug'])?>" class="art-row">
-          <span class="text-[#2b5f7e] text-sm">▸</span>
-          <span class="flex-1 text-sm font-medium"><?=htmlspecialchars($a['title'])?></span>
-          <span class="text-xs text-gray-400"><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?></span>
-        </a>
+      <div class="rank">
+        <?php foreach (array_slice($tArts, 0, 5) as $i => $a): ?>
+        <a href="/articles/<?=htmlspecialchars($a['slug'])?>"><span class="n"><?=$i+1?></span><span class="t"><b><?=htmlspecialchars($a['title'])?></b><span><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?></span></span></a>
         <?php endforeach; ?>
-        <?php if (count($tArts) > 5): ?><div class="text-xs text-[#2b5f7e] mt-2 font-semibold">+ <?=count($tArts)-5?> 篇更多…</div><?php endif; ?>
       </div>
+      <?php if (count($tArts) > 5): ?><a class="more" href="/topics/<?=htmlspecialchars($t['slug'] ?? '')?>">+ <?=count($tArts)-5?> 篇更多 →</a><?php endif; ?>
     </div>
     <?php endforeach; endif; ?>
-    <?php endif; /* end single-topic else */ ?>
-  </div>
+  </section>
+  <?php endif; ?>
 
-  <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-    <div class="mx-auto px-5 text-center text-sm" style="max-width:1100px">
-      <div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div>
-      <div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div>
-    </div>
-  </footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>

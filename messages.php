@@ -1,6 +1,8 @@
 <?php
 /**
  * 站内信 — 会员收件箱
+ *
+ * v7（2026-09-01）：迁到共享 archetype（reader + 消息卡）。类型色从 hex 改为 badge 语义色。删除接口原样保留。
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/MemberSystem.php';
@@ -16,59 +18,62 @@ inbox_mark_read($member);
 $unread = inbox_unread($member);
 
 $typeLabels = ['system' => '系统', 'order' => '订单', 'consultation' => '咨询', 'live' => '直播', 'membership' => '会员', 'marketing' => '通知'];
-$typeColors = ['system' => '#2b5f7e', 'order' => 'var(--ok)', 'consultation' => '#7c3aed', 'live' => '#dc2626', 'membership' => '#b45309', 'marketing' => '#d97706'];
+$typeBadge = ['system' => 'neutral', 'order' => 'ok', 'consultation' => 'hl', 'live' => 'danger', 'membership' => 'warn', 'marketing' => 'warn'];
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>站内信 | OpenFlow</title>
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
-  .msg-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;transition:.15s}
-  .msg-item:hover{border-color:var(--accent)}
+/* 站内信独有：消息卡。其余全部来自 modules.css。 */
+.msg{display:flex;flex-direction:column;gap:10px}
+.msg .hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.msg .hd b{font-size:15px}
+.msg .hd .when{margin-left:auto;font-family:var(--font-mono);font-size:12px;color:var(--faint)}
+.msg p{font-size:14px;color:var(--muted);line-height:1.75;white-space:pre-line}
+.msg .ft{display:flex;align-items:center;gap:12px}
+.msg .del{font-size:12.5px;color:var(--faint);margin-left:auto}
+.msg .del:hover{color:var(--danger)}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('home'); ?>
 
-  <div class="mx-auto px-5 py-8" style="max-width:900px">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold">🔔 站内信</h1>
-      <span class="text-sm text-gray-600">共 <?=count($messages)?> 条 · <?=htmlspecialchars($member['name'] ?? '')?></span>
-    </div>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
 
+  <section class="reader reveal in" data-od-id="messages">
+    <div class="sec-head row"><div><span class="kicker">站内信</span><h2>收件箱</h2></div><span class="sub">共 <?=count($messages)?> 条 · <?=htmlspecialchars($member['name'] ?? '')?></span></div>
     <?php if (empty($messages)): ?>
-    <div class="rounded-3xl p-12 text-center" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">暂无消息</div>
-    <?php else: foreach ($messages as $m): ?>
-    <div class="msg-item" data-id="<?=htmlspecialchars($m['id'])?>">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <span style="font-size:20px"><?=htmlspecialchars($m['icon'] ?? '🔔')?></span>
-        <strong style="font-size:15px"><?=htmlspecialchars($m['title'] ?? '')?></strong>
-        <span style="font-size:11px;padding:2px 8px;border-radius:999px;color:var(--surface);background:<?=$typeColors[$m['type'] ?? 'system'] ?? '#2b5f7e'?>"><?=$typeLabels[$m['type'] ?? 'system'] ?? '系统'?></span>
-        <span class="text-sm text-gray-400" style="margin-left:auto"><?=htmlspecialchars($m['created_at'] ?? '')?></span>
-      </div>
-      <p class="text-sm text-gray-600 leading-relaxed mt-3" style="white-space:pre-line"><?=htmlspecialchars($m['content'] ?? '')?></p>
-      <?php if (!empty($m['link'])): ?>
-      <a href="<?=htmlspecialchars($m['link'])?>" class="inline-block mt-3 text-xs font-bold px-5 py-2 rounded-full" style="background:var(--accent);color:var(--on-accent)">查看详情 →</a>
-      <?php endif; ?>
-      <button onclick="delMsg('<?=htmlspecialchars($m['id'])?>', this)" style="margin-left:10px" class="mt-3 text-xs text-gray-400 underline">删除</button>
+    <div class="empty" style="margin-top:18px">暂无消息</div>
+    <?php else: ?>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:18px">
+    <?php foreach ($messages as $m): $bt = $typeBadge[$m['type'] ?? 'system'] ?? 'neutral'; ?>
+    <div class="card msg" data-id="<?=htmlspecialchars($m['id'])?>" style="padding:22px 24px">
+      <div class="hd"><span class="ic" style="width:34px;height:34px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span><b><?=htmlspecialchars($m['title'] ?? '')?></b><span class="<?=$bt==='hl'||$bt==='neutral'?'pill '.$bt:'badge '.$bt?>"><?=$typeLabels[$m['type'] ?? 'system'] ?? '系统'?></span><span class="when"><?=htmlspecialchars($m['created_at'] ?? '')?></span></div>
+      <p><?=htmlspecialchars($m['content'] ?? '')?></p>
+      <div class="ft"><?php if (!empty($m['link'])): ?><a href="<?=htmlspecialchars($m['link'])?>" class="btn subtle" style="margin-left:-14px">查看详情 →</a><?php endif; ?><button onclick="delMsg('<?=htmlspecialchars($m['id'])?>', this)" class="del">删除</button></div>
     </div>
-    <?php endforeach; endif; ?>
-  </div>
+    <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+  </section>
 
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
 function delMsg(id, btn) {
   if (!confirm('删除这条消息？')) return;
   var body = new FormData(); body.append('msg_id', id);
   fetch('/api/message?action=delete', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
-    .then(function(d){ if (d.ok) btn.closest('.msg-item').remove(); });
+    .then(function(d){ if (d.ok) btn.closest('.msg').remove(); });
 }
 </script>
-<footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)"><div class="mx-auto px-5 text-center text-sm" style="max-width:1100px"><div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div><div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div></div></footer>
 </body>
 </html>
