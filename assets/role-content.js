@@ -29,7 +29,7 @@ window.OF_ROLES = {
     steps: [
       {h:'连接增长信号', p:'接入舆情、搜索热点、CDP 事件——OpenFlow 替你盯住市场变化。'},
       {h:'设计你的系统', p:'把增长漏斗拆成 Agent 可执行的任务图，四引擎协同推进。'},
-      {h:'主动驱动增长', p:'自生长引擎每 6 小时推一轮，从 Marketing 到 Sales 全闭环。'}
+      {h:'主动驱动增长', p:'自生长引擎按你设的周期推一轮，从 Marketing 到 Sales 全闭环。'}
     ],
     band: {
       kicker: '新手友好',
@@ -84,7 +84,7 @@ window.OF_ROLES = {
       kicker: '芭乐派 · 帮一人公司设计 Agent 能跑的增长系统',
       title1: '让增长动作',
       title2: '主动发生',
-      lead: '自生长 AI Engine 每 6 小时推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动触达。从 Marketing 到 Sales 全闭环，把增长交给系统，你专注策略判断。',
+      lead: '自生长 AI Engine 按你设的周期推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动触达。从 Marketing 到 Sales 全闭环，把增长交给系统，你专注策略判断。',
       cta1: '免费开始',
       cta2: '查看平台演示',
       cta3: '预约诊断',
