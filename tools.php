@@ -47,7 +47,7 @@ pre.meta-out{background:var(--accent);color:var(--on-accent);padding:14px;border
 </head>
 <body class="min-h-screen">
 <script src="/assets/inject.js?v=20260830b" data-cfasync="false" data-site-inject></script>
-<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="tools"></script>
+<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="tools"></script>
 
 <section style="padding:clamp(20px,4vw,44px) 0 clamp(28px,4vw,48px)">
   <div class="mx-auto px-5" style="max-width:1120px">
