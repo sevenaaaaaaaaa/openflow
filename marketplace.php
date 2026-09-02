@@ -58,18 +58,12 @@ $typeNames = mkt_categories();
 .search{display:flex;gap:10px;max-width:520px}
 .search .inp{border-radius:999px;padding-left:20px}
 .search .btn{border-radius:999px;flex:0 0 auto}
-.mk-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
-.mk{display:flex;flex-direction:column;gap:10px;padding:22px 24px}
-.mk .hd{display:flex;align-items:center;gap:12px}
-.mk .em{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:20px;flex:0 0 auto}
-.mk .em svg{width:20px;height:20px}
-.mk .ttl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15.5px;font-weight:700}
-.mk .by{font-size:12px;color:var(--faint);font-family:var(--font-mono);margin-top:2px}
-.mk p{font-size:13.5px;color:var(--muted);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.mk .meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:auto;font-family:var(--font-mono);font-size:12px;color:var(--faint)}
-.mk .meta .star{color:var(--warn)}
-.mk .buy{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid var(--border-soft)}
-.mk .buy b{font-family:var(--font-display);font-size:18px;color:var(--ok)}
+.mk-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.mk .cov{display:block}
+.mk .tag-r{position:absolute;right:12px;bottom:12px;z-index:1}
+.mk .bd p{font-size:13.5px;color:var(--muted);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mk .meta{align-items:center}
+.scn-f .gcov{aspect-ratio:2.4/1}
 .filters{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .filters .tab-bar{border-bottom:none;padding-bottom:0;justify-content:flex-start;flex:1}
 .filters .sort{display:flex;gap:6px;margin-left:auto}
@@ -102,7 +96,7 @@ $typeNames = mkt_categories();
     <a class="back" href="/marketplace">← 返回市场</a>
     <div class="card" style="margin-top:16px">
       <div class="dt-head">
-        <div class="em"><?=htmlspecialchars($skill['icon'] ?? '⚡')?></div>
+        <div class="em"><?=mkt_type_icon('skill')?></div>
         <div>
           <h1><?=htmlspecialchars($skill['title'] ?? '')?></h1>
           <div class="row">
@@ -192,42 +186,60 @@ $typeNames = mkt_categories();
           <input type="hidden" name="sort" value="<?=htmlspecialchars($sort)?>">
           <button class="btn primary" type="submit">搜索</button>
         </form>
+        <div class="trust"><span class="dot"></span><?=$stats['total']?> 个资产 · <?=$stats['plugins']?> 个插件 · <?=$stats['themes']?> 个主题 · 核心能力永久开源</div>
       </div>
       <div class="hero-win">
-        <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">marketplace · 四个入口</div></div>
+        <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">marketplace · 按类型进入</div></div>
         <div class="win-flow">
-          <a class="flow-row" href="/category/marketplace/skills"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span><div><div class="ft">Skill 技能</div><div class="fd">开箱即用的增长能力</div></div></a>
-          <div class="flow-link"></div>
-          <a class="flow-row" href="/category/marketplace/plugins"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4a2 2 0 0 1 4 0v1h3a1 1 0 0 1 1 1v3h1a2 2 0 0 1 0 4h-1v3a1 1 0 0 1-1 1h-3v1a2 2 0 0 1-4 0v-1H6a1 1 0 0 1-1-1v-3H4a2 2 0 0 1 0-4h1V6a1 1 0 0 1 1-1h3V4Z"/></svg></span><div><div class="ft">插件</div><div class="fd">扩展系统功能</div></div></a>
-          <div class="flow-link"></div>
-          <a class="flow-row" href="/category/marketplace/themes"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2 1.5-2H17a4 4 0 0 0 4-4c0-5-4-10-9-10Z"/><circle cx="8" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="7.5" r="1" fill="currentColor"/><circle cx="16" cy="10" r="1" fill="currentColor"/></svg></span><div><div class="ft">主题</div><div class="fd">视觉与布局</div></div></a>
-          <div class="flow-link"></div>
-          <a class="flow-row" href="/community"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span><div><div class="ft">论坛</div><div class="fd">社区问答与讨论</div></div></a>
+          <?php $entries = [['skill','Skill 技能','开箱即用的增长能力：AI 指令 / 工具 / 工作流'],['plugin','插件','扩展后台功能的 PHP 模块，装完即生效'],['theme','主题','前台视觉与布局，一键切换'],['bundle','组合包','多个产品打包，一次装齐']]; foreach ($entries as $k => $e): if ($k) echo '<div class="flow-link"></div>'; ?>
+          <a class="flow-row" href="?type=<?=$e[0]?>"><span class="fi"><?=mkt_type_icon($e[0])?></span><div><div class="ft"><?=$e[1]?></div><div class="fd"><?=$e[2]?></div></div></a>
+          <?php endforeach; ?>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="stats" class="sec reveal" data-od-anchor data-od-id="mkt-stats">
-    <div class="stats">
-      <div class="st"><div class="st-n"><?=$stats['total']?></div><span class="st-en">Assets</span><span class="st-t">全部资产</span></div>
-      <div class="st"><div class="st-n"><?=$stats['plugins']?></div><span class="st-en">Plugins</span><span class="st-t">插件</span></div>
-      <div class="st"><div class="st-n"><?=$stats['skills']?></div><span class="st-en">Skills</span><span class="st-t">技能</span></div>
-      <div class="st"><div class="st-n"><?=$stats['themes']?></div><span class="st-en">Themes</span><span class="st-t">主题</span></div>
+  <?php
+  // 编辑精选：安装量最高的 4 个（全量，不受筛选影响）；只在默认视图（无搜索 / 无类型筛选）展示
+  $picks = [];
+  if ($q === '' && $type === 'all') { $picks = mkt_search('', 'all', 'popular'); $picks = array_slice($picks, 0, 4); }
+  if (count($picks) >= 2): $lead = $picks[0]; $rest = array_slice($picks, 1, 3); ?>
+  <section id="picks" class="sec reveal" data-od-anchor data-od-id="mkt-picks">
+    <div class="sec-head row"><div><span class="kicker">EDITOR'S PICKS</span><h2>装得最多的</h2></div><span class="sub">按安装量</span></div>
+    <div class="scn">
+      <a class="scn-f" href="<?=htmlspecialchars($lead['url'])?>" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
+        <?=mkt_asset_cover($lead, $typeNames)?>
+        <div style="padding:22px 24px;display:flex;flex-direction:column;gap:8px;flex:1">
+          <span class="f-tag"><?=$typeNames[$lead['type']]['name'] ?? $lead['type']?> · <?=$lead['installs'] ?? 0?> 次安装</span>
+          <h3 style="font-size:20px;font-weight:800;letter-spacing:-.01em"><?=htmlspecialchars($lead['title'])?></h3>
+          <p style="font-size:14.5px;color:var(--muted);line-height:1.8"><?=htmlspecialchars($lead['description'] ?? '')?></p>
+          <span class="note mono" style="margin-top:auto"><?=htmlspecialchars($lead['author'] ?? '')?></span>
+        </div>
+      </a>
+      <div class="scn-s">
+        <?php foreach ($rest as $r): ?>
+        <a class="scn-row" href="<?=htmlspecialchars($r['url'])?>">
+          <span class="ic" style="color:var(--<?=mkt_type_meta($r['type'])['hue']==='neutral'?'muted':mkt_type_meta($r['type'])['hue']?>)"><?=mkt_type_icon($r['type'])?></span>
+          <div><b><?=htmlspecialchars($r['title'])?></b><span><?=htmlspecialchars(mb_strimwidth($r['description'] ?? '', 0, 60, '…'))?></span></div>
+        </a>
+        <?php endforeach; ?>
+      </div>
     </div>
   </section>
+  <?php endif; ?>
 
   <section id="browse" class="sec reveal" data-od-anchor data-od-id="mkt-browse">
+    <div class="sec-head row"><div><span class="kicker">BROWSE</span><h2><?=$q !== '' ? '搜索「' . htmlspecialchars($q) . '」' : ($type === 'all' ? '全部资产' : ($typeNames[$type]['name'] ?? $type))?></h2></div><span class="sub"><?=count($assets)?> 个<?php if ($q !== '' || $type !== 'all'): ?> · <a href="/marketplace" style="color:var(--accent)">清除筛选</a><?php endif; ?></span></div>
     <div class="filters">
-      <div class="tab-bar" role="navigation" aria-label="类型">
+      <div class="tab-bar dense" role="navigation" aria-label="类型">
         <a class="tab-p" href="?type=all&sort=<?=$sort?>" aria-selected="<?=$type==='all'?'true':'false'?>">全部</a>
         <?php foreach ($categories as $tk => $tc): ?>
-        <a class="tab-p" href="?type=<?=$tk?>&sort=<?=$sort?>" aria-selected="<?=$type===$tk?'true':'false'?>"><?=$tc['icon']?> <?=$tc['name']?></a>
+        <a class="tab-p" href="?type=<?=$tk?>&sort=<?=$sort?>" aria-selected="<?=$type===$tk?'true':'false'?>"><span class="ic"><?=mkt_type_icon($tk)?></span><?=$tc['name']?></a>
         <?php endforeach; ?>
       </div>
       <div class="sort">
         <?php foreach (['popular'=>'热门','rating'=>'评分','new'=>'最新'] as $sk=>$sv): ?>
-        <a class="pill <?=$sort===$sk?'hl':'neutral'?>" href="?type=<?=$type?>&sort=<?=$sk?>"><?=$sv?></a>
+        <a class="pill <?=$sort===$sk?'hl':'neutral'?>" href="?type=<?=$type?>&sort=<?=$sk?><?=$q!==''?'&q='.urlencode($q):''?>"><?=$sv?></a>
         <?php endforeach; ?>
       </div>
     </div>
@@ -235,33 +247,35 @@ $typeNames = mkt_categories();
     <?php if (empty($assets)): ?>
     <div class="empty">暂无匹配资产</div>
     <?php else: ?>
-    <div class="mk-grid">
-      <?php foreach ($assets as $a): ?>
-      <div class="card mk" data-od-id="mkt-asset-<?=htmlspecialchars($a['id'] ?? '')?>">
-        <a href="<?=htmlspecialchars($a['url'])?>" style="display:contents">
-          <div class="hd">
-            <span class="em"><?=htmlspecialchars($a['icon'])?></span>
-            <div style="min-width:0">
-              <div class="ttl"><span><?=htmlspecialchars($a['title'])?></span><span class="pill neutral" style="height:24px"><?=$typeNames[$a['type']]['name'] ?? $a['type']?></span></div>
-              <div class="by"><?=htmlspecialchars($a['author'] ?? '')?><?=($a['author_type'] ?? '') === 'user' ? ' · 用户发布' : ''?><?=($a['source'] ?? '') === 'remote' ? ' · 远程' : ''?></div>
-            </div>
-          </div>
+    <div class="a-grid mk-grid">
+      <?php foreach ($assets as $a): $tm = mkt_type_meta($a['type'] ?? ''); $price = (float)($a['price'] ?? 0); ?>
+      <article class="a-card mk" data-od-id="mkt-asset-<?=htmlspecialchars($a['id'] ?? '')?>">
+        <a href="<?=htmlspecialchars($a['url'])?>" class="cov"><?=mkt_asset_cover($a, $typeNames)?><?php if (!empty($a['installed'])): ?><span class="badge ok tag-r">已安装</span><?php elseif ($price <= 0): ?><span class="pill neutral tag-r">免费</span><?php else: ?><span class="pill hl tag-r">¥<?=number_format($price,0)?></span><?php endif; ?></a>
+        <div class="bd">
+          <span class="cat" style="color:var(--<?=$tm['hue']==='neutral'?'muted':$tm['hue']?>)"><?=htmlspecialchars($a['author'] ?? 'OpenFlow')?><?=($a['author_type'] ?? '') === 'user' ? ' · 用户发布' : ''?><?=($a['source'] ?? '') === 'remote' ? ' · 远程' : ''?></span>
+          <h3><a href="<?=htmlspecialchars($a['url'])?>" style="color:inherit"><?=htmlspecialchars($a['title'])?></a></h3>
           <p><?=htmlspecialchars($a['description'] ?? '')?></p>
-          <?php if (($a['type'] ?? '') === 'bundle'): ?><div class="note" style="color:var(--accent)">包含 <?=$a['items_count'] ?? 0?> 个产品</div><?php endif; ?>
+          <?php if (($a['type'] ?? '') === 'bundle'): ?><span class="note" style="color:var(--accent);margin:0">包含 <?=$a['items_count'] ?? 0?> 个产品</span><?php endif; ?>
           <div class="meta">
-            <?php if (($a['rating_count'] ?? 0) > 0): ?><span class="star">★ <?=number_format((float)$a['rating'], 1)?></span><?php endif; ?>
+            <?php if (($a['rating_count'] ?? 0) > 0): ?><span style="color:var(--warn)">★ <?=number_format((float)$a['rating'], 1)?></span><span>·</span><?php endif; ?>
             <span><?=$a['installs'] ?? 0?> 次安装</span>
-            <?php if (($a['type'] ?? '') === 'skill' && (float)($a['price'] ?? 0) <= 0): ?><span class="badge ok">免费安装</span><?php endif; ?>
-            <?php if (!empty($a['installed'])): ?><span class="badge ok" style="margin-left:auto">已安装</span><?php endif; ?>
+            <?php if (in_array($a['type'] ?? '', ['bundle','membership']) && $price > 0): ?><button type="button" onclick="purchaseSkill('<?=htmlspecialchars($a['id'])?>')" class="btn primary" style="margin-left:auto;height:34px;padding:0 14px;font-size:12.5px"><?=$a['type']==='membership'?'开通会员':'购买'?> →</button>
+            <?php else: ?><a href="<?=htmlspecialchars($a['url'])?>" class="go" style="margin-left:auto;color:var(--accent);font-weight:600;font-family:var(--font-body)">查看 →</a><?php endif; ?>
           </div>
-        </a>
-        <?php if (in_array($a['type'] ?? '', ['bundle','membership']) && ($a['price'] ?? 0) > 0): ?>
-        <div class="buy"><b>¥<?=number_format($a['price'],0)?></b><button onclick="purchaseSkill('<?=htmlspecialchars($a['id'])?>')" class="btn primary" style="height:40px;padding:0 18px;font-size:13.5px"><?=$a['type']==='membership'?'开通会员':'购买组合包'?> →</button></div>
-        <?php endif; ?>
-      </div>
+        </div>
+      </article>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
+  </section>
+
+  <section id="how" class="sec reveal" data-od-anchor data-od-id="mkt-how">
+    <div class="sec-head center"><span class="kicker">HOW IT WORKS</span><h2>三步，把别人的能力变成你的</h2></div>
+    <div class="wf">
+      <div class="wf-step"><span class="wf-n">1</span><h3>找到</h3><p>按类型或关键词找到你要的 Skill / 插件 / 主题，看安装量与评分。</p></div>
+      <div class="wf-step"><span class="wf-n">2</span><h3>一键安装</h3><p>登录后点「安装」，免费的直接进后台；付费的走虎皮椒支付，付完自动解锁。</p></div>
+      <div class="wf-step"><span class="wf-n">3</span><h3>在后台启用</h3><p>插件在「插件」里开关，Skill 在 Agent 工作流里调用，主题在「外观」里切换。装完就能改，改坏了一键停用。</p></div>
+    </div>
   </section>
 
   <section id="publish" class="reveal" data-od-anchor data-od-id="mkt-publish">
@@ -269,7 +283,7 @@ $typeNames = mkt_categories();
       <span class="kicker">OIA · One is All</span>
       <h2>想发布你的插件 / 技能？</h2>
       <p class="lead">你一旦参与，就同时是开发者、创作者、作者。不用先申请资质、不用先会写代码——用 AI 生成插件骨架，或直接发布一个可复用的 Skill，分享给整个社区。</p>
-      <div class="cta-row"><a href="/account?view=login" class="btn primary">开始创作 →</a></div>
+      <div class="cta-row"><a href="/account?view=developer" class="btn primary">开始创作 →</a><a href="/docs" class="btn ghost">阅读开发文档</a></div>
     </div>
   </section>
 <?php endif; ?>
