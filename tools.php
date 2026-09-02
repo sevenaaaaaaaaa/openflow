@@ -11,163 +11,162 @@ if (PageCache::begin('tools', 1800)) exit;
 $siteName = site_config_get('site_name', 'OpenFlow');
 admin_header_reset(); // 确保无残留输出
 
-// 用 docs.php 相同的头部风格
+// 工具表：icon 为 24×24 线框 path，渲染时包进 <svg>
 $tools = [
-    ['id' => 'seo', 'name' => 'SEO 检查器', 'icon' => '🔍', 'desc' => '输入标题/描述/关键词，一键检查 SEO 健康状况'],
-    ['id' => 'meta', 'name' => 'Meta 生成器', 'icon' => '🏷', 'desc' => '输入标题关键词，自动生成 SEO meta 标签代码'],
-    ['id' => 'readability', 'name' => '文章可读性分析', 'icon' => '📖', 'desc' => '粘贴文本，分析字数/阅读时间/关键词密度'],
-    ['id' => 'ltv', 'name' => 'LTV/CAC 计算器', 'icon' => '📈', 'desc' => '估算商业模式健康度与回本周期'],
-    ['id' => 'funnel', 'name' => '转化漏斗计算器', 'icon' => '🪜', 'desc' => '输入各环节转化率，定位流失点'],
+    ['id' => 'seo', 'name' => 'SEO 检查器', 'icon' => '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', 'desc' => '输入标题/描述/关键词，一键检查 SEO 健康状况'],
+    ['id' => 'meta', 'name' => 'Meta 生成器', 'icon' => '<path d="M3 3h7l11 11-7 7L3 10V3Z"/><circle cx="8" cy="8" r="1.5"/>', 'desc' => '输入标题关键词，自动生成 SEO meta 标签代码'],
+    ['id' => 'readability', 'name' => '文章可读性分析', 'icon' => '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/>', 'desc' => '粘贴文本，分析字数/阅读时间/关键词密度'],
+    ['id' => 'ltv', 'name' => 'LTV/CAC 计算器', 'icon' => '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>', 'desc' => '估算商业模式健康度与回本周期'],
+    ['id' => 'funnel', 'name' => '转化漏斗计算器', 'icon' => '<path d="M5 3v18M8 3v18M5 8h3M8 13h3M5 18h3M13 5l6 14M15.5 9.5l1.5-1M17 13l1.5-1"/>', 'desc' => '输入各环节转化率，定位流失点'],
 ];
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>增长工具箱 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="免费网站增长工具：SEO 检查、Meta 生成、可读性分析、LTV/CAC 计算、转化漏斗诊断">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-body{background:var(--bg);font-family:var(--font-body)}
-.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;transition:.15s}
-.tool-card:hover{box-shadow:var(--shadow-sm)}
-.tool-btn{background:var(--accent);color:var(--on-accent);font-weight:700;padding:10px 20px;border-radius:999px;border:none;cursor:pointer}
-.tool-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:14px;background:var(--bg-soft)}
-.tool-input:focus{outline:none;border-color:var(--accent)}
-.result-box{background:var(--bg);border-radius:var(--r-sm);padding:14px;font-size:13.5px;line-height:1.8}
-.ok{color:var(--ok)}.bad{color:var(--danger)}.warn{color:var(--warn)}
-pre.meta-out{background:var(--accent);color:var(--on-accent);padding:14px;border-radius:var(--r-sm);font-size:12.5px;overflow-x:auto}
-
-  /* 设计语言统一：token 语义工具类（终版契约） */
-  .text-faint{color:var(--faint)}.text-muted{color:var(--muted)}.text-fg{color:var(--fg)}
-  .text-ok{color:var(--ok)}.text-accent{color:var(--accent)}.text-danger{color:var(--danger)}
-  .bg-surface{background:var(--surface)}
+/* 工具箱独有：首屏窗内工具目录、工具面板、结果盒。tab 切换走外壳通用 tab。 */
+.hero-win .link-grid{grid-template-columns:1fr;gap:2px;padding:10px}
+.hero-win .link-it{padding:12px 14px}
+.tools .tab-panel.on{display:block}
+.tools .ph{display:flex;flex-direction:column;gap:6px;margin-bottom:22px}
+.tools .ph h2{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.tools .ph h2 .ic{width:34px;height:34px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.tools .ph h2 .ic svg{width:17px;height:17px}
+.tools .ph p{font-size:14px;color:var(--muted)}
+.tools .two{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,3vw,32px);align-items:start}
+.tools .inp{min-height:46px;padding:11px 14px;font-size:14px}
+.tools textarea.inp{min-height:0}
+.tools .run{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.res{background:var(--bg-soft);border:1px solid var(--border-soft);border-radius:var(--r-md);padding:16px 18px;font-size:13.5px;line-height:1.8}
+.res b{font-weight:700}
+.res .tip{font-size:12.5px;color:var(--muted)}
+.res .ok{color:var(--ok)}.res .bad{color:var(--danger)}.res .warn{color:var(--warn)}
+.res.bad{color:var(--danger)}
+pre.meta-out{background:var(--fg);color:var(--on-accent);padding:16px 18px;border-radius:var(--r-md);font-size:12.5px;line-height:1.7;overflow-x:auto;font-family:var(--font-mono)}
+.funnel-stage{display:grid;grid-template-columns:1fr 1fr 36px;gap:8px;align-items:center;margin-bottom:8px}
+.funnel-stage .mx{color:var(--danger)}
+@media (max-width:860px){.tools .two{grid-template-columns:1fr}}
 </style>
 </head>
-<body class="min-h-screen">
-<script src="/assets/inject.js?v=20260830b" data-cfasync="false" data-site-inject></script>
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="tools"></script>
+<body data-of-main>
+<?php of_shell('tools'); ?>
 
-<section style="padding:clamp(20px,4vw,44px) 0 clamp(28px,4vw,48px)">
-  <div class="mx-auto px-5" style="max-width:1120px">
-    <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);align-items:center">
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <span class="kicker" style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--accent);text-transform:uppercase">FREE GROWTH TOOLS</span>
-        <h1 style="font-size:clamp(30px,4.5vw,46px);font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--fg)">增长工具箱<span style="font-family:var(--font-display);font-style:italic">免费、即用、可落地</span></h1>
-        <p style="color:var(--muted);font-size:15px;line-height:1.8;max-width:540px">SEO 检查 · 文案优化 · 商业模型诊断。给增长动作配好趁手的工具。</p>
-        <div style="display:flex;gap:18px;margin-top:8px;color:var(--faint);font-size:12.5px;flex-wrap:wrap">
-          <span><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/><path d="m15 3 6 6"/></svg></span> <b style="color:var(--fg)"><?=count($tools)?></b> 个工具</span>
-          <span><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span> 全部免费</span>
-          <span><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8-.8-.7-2-.7-3 0Z"/><path d="M12 15l-3-3c2-5.5 5-9 9-9s3 6-1 11l-5 1Z"/><path d="M9 12c-2.5 1-4 3-4.5 5M15 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/></svg></span> 开箱即用</span>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+  <section id="top" class="reveal in" data-od-anchor data-od-id="tools-hero">
+    <div class="hero">
+      <div class="hero-copy">
+        <span class="kicker">FREE GROWTH TOOLS</span>
+        <h1>增长工具箱<br><i class="si">免费 · 即用 · 可落地</i></h1>
+        <p class="lead">SEO 检查 · 文案优化 · 商业模型诊断。给增长动作配好趁手的工具。</p>
+        <div class="trust"><span class="dot"></span><?=count($tools)?> 个工具 · 全部免费 · 开箱即用</div>
+      </div>
+      <div class="hero-win">
+        <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">tools · <?=count($tools)?> 个</div></div>
+        <div class="link-grid">
+          <?php foreach ($tools as $t): ?>
+          <a class="link-it" href="#tool-<?=htmlspecialchars($t['id'])?>" data-tool-link="<?=htmlspecialchars($t['id'])?>"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><?=$t['icon']?></svg></span><span class="lt"><b><?=htmlspecialchars($t['name'])?></b><span><?=htmlspecialchars($t['desc'])?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+          <?php endforeach; ?>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <?php foreach (array_slice($tools, 0, 4) as $tk => $t): $tcolors = [['var(--accent-soft)','var(--accent)'],['var(--ok-soft)','var(--ok)'],['oklch(70% .13 305/.14)','oklch(60% .18 300)'],['oklch(70% .13 75/.14)','oklch(62% .15 70)']]; ?>
-        <a href="#tool-<?=htmlspecialchars($t['id'])?>" style="display:flex;flex-direction:column;gap:10px;padding:18px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border);backdrop-filter:blur(16px) saturate(150%);text-decoration:none;transition:transform .25s var(--ease-spring),box-shadow .25s,border-color .25s" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='var(--shadow-sm)';this.style.borderColor='var(--border-strong)'" onmouseout="this.style.transform='none';this.style.boxShadow='none';this.style.borderColor='var(--border)'">
-          <span style="width:38px;height:38px;border-radius:12px;background:<?=$tcolors[$tk][0]?>;color:<?=$tcolors[$tk][1]?>;display:grid;place-items:center;font-size:18px"><?=$t['icon']?></span>
-          <b style="font-size:14.5px;color:var(--fg)"><?=htmlspecialchars($t['name'])?></b>
-          <span style="font-size:12px;color:var(--muted);line-height:1.5"><?=htmlspecialchars($t['desc'])?></span>
-        </a>
-        <?php endforeach; ?>
+    </div>
+  </section>
+
+  <section id="toolbox" class="sec tools reveal" data-od-anchor data-od-id="tools-box">
+    <div class="tab-bar dense" role="tablist" data-tabs id="toolTabs" aria-label="选择工具">
+      <?php foreach ($tools as $k => $t): ?>
+      <button class="tab-p" role="tab" type="button" id="tab-<?=$t['id']?>" aria-controls="tool-<?=$t['id']?>" aria-selected="<?=$k===0?'true':'false'?>"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><?=$t['icon']?></svg></span><?=htmlspecialchars($t['name'])?></button>
+      <?php endforeach; ?>
+    </div>
+
+    <!-- SEO 检查器 -->
+    <div class="tab-panel on card" id="tool-seo" role="tabpanel" aria-labelledby="tab-seo">
+    <div class="ph"><h2><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>SEO 检查器</h2><p>检查标题、描述、关键词的健康度，获得优化建议</p></div>
+      <div class="two">
+        <div class="form-grid">
+          <div class="field"><label for="seoTitle">页面标题</label><input id="seoTitle" class="inp" placeholder="你的 SEO 标题"></div>
+          <div class="field"><label for="seoDesc">Meta 描述</label><textarea id="seoDesc" class="inp" rows="3" placeholder="页面描述（50-160字最佳）"></textarea></div>
+          <div class="field"><label for="seoKw">关键词（逗号分隔）</label><input id="seoKw" class="inp" placeholder="关键词1, 关键词2, 关键词3"></div>
+          <div class="run"><button type="button" class="btn primary" onclick="runSeo()">检查 SEO</button></div>
+        </div>
+        <div id="seoResult" class="res">输入信息后点击「检查 SEO」</div>
       </div>
     </div>
-  </div>
-</section>
 
-<div class="mx-auto px-5 py-10" style="max-width:1000px">
-  <div class="flex gap-3 mb-8 flex-wrap" id="toolTabs">
-    <?php foreach ($tools as $t): ?>
-    <button class="tool-btn" data-tool="<?=$t['id']?>" style="background:<?=$t['id']==='seo'?'var(--accent)':'var(--surface)'?>;color:<?=$t['id']==='seo'?'var(--on-accent)':'var(--muted)'?>;border:1px solid var(--border)" onclick="switchTool('<?=$t['id']?>',this)"><?=$t['icon']?> <?=$t['name']?></button>
-    <?php endforeach; ?>
-  </div>
-
-  <!-- SEO 检查器 -->
-  <div class="tool-card" id="tool-seo">
-    <h2 class="text-xl font-extrabold mb-1" style="display:flex;align-items:center"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-3px;margin-right:6px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> SEO 检查器</h2>
-    <p class="text-sm text-muted mb-5">检查标题、描述、关键词的健康度，获得优化建议</p>
-    <div class="grid gap-4" style="grid-template-columns:1fr 1fr;align-items:start">
-      <div>
-        <div class="mb-3"><label class="text-sm font-semibold block mb-1">页面标题</label><input id="seoTitle" class="tool-input" placeholder="你的 SEO 标题"></div>
-        <div class="mb-3"><label class="text-sm font-semibold block mb-1">Meta 描述</label><textarea id="seoDesc" class="tool-input" rows="3" placeholder="页面描述（50-160字最佳）"></textarea></div>
-        <div class="mb-3"><label class="text-sm font-semibold block mb-1">关键词（逗号分隔）</label><input id="seoKw" class="tool-input" placeholder="关键词1, 关键词2, 关键词3"></div>
-        <button class="tool-btn" onclick="runSeo()">检查 SEO</button>
+    <!-- Meta 生成器 -->
+    <div class="tab-panel card" id="tool-meta" role="tabpanel" aria-labelledby="tab-meta">
+    <div class="ph"><h2><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7l11 11-7 7L3 10V3Z"/><circle cx="8" cy="8" r="1.5"/></svg></span>Meta 生成器</h2><p>输入标题和关键词，自动生成完整的 SEO meta 标签代码</p></div>
+      <div class="form-grid">
+        <div class="field"><label for="metaTitle">文章标题</label><input id="metaTitle" class="inp" placeholder="文章标题"></div>
+        <div class="field"><label for="metaKw">关键词（逗号分隔）</label><input id="metaKw" class="inp" placeholder="关键词1, 关键词2"></div>
+        <div class="field"><label for="metaDesc">描述（可选）</label><textarea id="metaDesc" class="inp" rows="2" placeholder="留空自动生成"></textarea></div>
       </div>
-      <div id="seoResult" class="result-box">输入信息后点击「检查 SEO」</div>
+      <div class="run"><button type="button" class="btn primary" onclick="runMeta()">生成 Meta</button></div>
+      <div id="metaResult" style="margin-top:16px"></div>
     </div>
-  </div>
 
-  <!-- Meta 生成器 -->
-  <div class="tool-card" id="tool-meta" style="display:none">
-    <h2 class="text-xl font-extrabold mb-1" style="display:flex;align-items:center"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-3px;margin-right:6px"><path d="M3 3h7l11 11-7 7L3 10V3Z"/><circle cx="8" cy="8" r="1.5"/></svg> Meta 生成器</h2>
-    <p class="text-sm text-muted mb-5">输入标题和关键词，自动生成完整的 SEO meta 标签代码</p>
-    <div class="mb-3"><label class="text-sm font-semibold block mb-1">文章标题</label><input id="metaTitle" class="tool-input" placeholder="文章标题"></div>
-    <div class="mb-3"><label class="text-sm font-semibold block mb-1">关键词（逗号分隔）</label><input id="metaKw" class="tool-input" placeholder="关键词1, 关键词2"></div>
-    <div class="mb-3"><label class="text-sm font-semibold block mb-1">描述（可选）</label><textarea id="metaDesc" class="tool-input" rows="2" placeholder="留空自动生成"></textarea></div>
-    <button class="tool-btn" onclick="runMeta()">生成 Meta</button>
-    <div id="metaResult" style="margin-top:12px"></div>
-  </div>
-
-  <!-- 可读性分析 -->
-  <div class="tool-card" id="tool-readability" style="display:none">
-    <h2 class="text-xl font-extrabold mb-1"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span> 文章可读性分析</h2>
-    <p class="text-sm text-muted mb-5">粘贴你的文章，分析字数、阅读时间、标题结构和关键词密度</p>
-    <div class="mb-3"><textarea id="readText" class="tool-input" rows="10" placeholder="粘贴你的文章内容（支持 Markdown）"></textarea></div>
-    <button class="tool-btn" onclick="runReadability()">分析</button>
-    <div id="readResult" style="margin-top:12px"></div>
-  </div>
-
-  <!-- LTV/CAC -->
-  <div class="tool-card" id="tool-ltv" style="display:none">
-    <h2 class="text-xl font-extrabold mb-1" style="display:flex;align-items:center"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-3px;margin-right:6px"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg> LTV/CAC 计算器</h2>
-    <p class="text-sm text-muted mb-5">估算客户终身价值、获客成本比与回本周期</p>
-    <div class="grid gap-3" style="grid-template-columns:1fr 1fr">
-      <div><label class="text-sm font-semibold block mb-1">月均客单价 ¥</label><input id="ltvArpu" class="tool-input" type="number" value="100"></div>
-      <div><label class="text-sm font-semibold block mb-1">月流失率 %</label><input id="ltvChurn" class="tool-input" type="number" value="5"></div>
-      <div><label class="text-sm font-semibold block mb-1">获客成本 CAC ¥</label><input id="ltvCac" class="tool-input" type="number" value="300"></div>
-      <div><label class="text-sm font-semibold block mb-1">毛利率 %</label><input id="ltvMargin" class="tool-input" type="number" value="60"></div>
+    <!-- 可读性分析 -->
+    <div class="tab-panel card" id="tool-readability" role="tabpanel" aria-labelledby="tab-readability">
+    <div class="ph"><h2><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span>文章可读性分析</h2><p>粘贴你的文章，分析字数、阅读时间、标题结构和关键词密度</p></div>
+      <div class="field"><label for="readText">文章内容</label><textarea id="readText" class="inp" rows="10" placeholder="粘贴你的文章内容（支持 Markdown）"></textarea></div>
+      <div class="run"><button type="button" class="btn primary" onclick="runReadability()">分析</button></div>
+      <div id="readResult" style="margin-top:16px"></div>
     </div>
-    <button class="tool-btn mt-4" onclick="runLtv()">计算</button>
-    <div id="ltvResult" style="margin-top:12px"></div>
-  </div>
 
-  <!-- 转化漏斗 -->
-  <div class="tool-card" id="tool-funnel" style="display:none">
-    <h2 class="text-xl font-extrabold mb-1"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v18M8 3v18M5 8h3M8 13h3M5 18h3M13 5l6 14M15.5 9.5l1.5-1M17 13l1.5-1"/></svg></span> 转化漏斗计算器</h2>
-    <p class="text-sm text-muted mb-5">输入各环节人数，定位转化流失点</p>
-    <div id="funnelStages">
-      <div class="funnel-stage" style="display:flex;gap:8px;margin-bottom:8px">
-        <input class="tool-input" placeholder="环节名（如 访问）" style="flex:1">
-        <input class="tool-input" type="number" placeholder="人数" style="flex:1">
+    <!-- LTV/CAC -->
+    <div class="tab-panel card" id="tool-ltv" role="tabpanel" aria-labelledby="tab-ltv">
+    <div class="ph"><h2><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg></span>LTV/CAC 计算器</h2><p>估算客户终身价值、获客成本比与回本周期</p></div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="field"><label for="ltvArpu">月均客单价 ¥</label><input id="ltvArpu" class="inp" type="number" value="100"></div>
+        <div class="field"><label for="ltvChurn">月流失率 %</label><input id="ltvChurn" class="inp" type="number" value="5"></div>
+        <div class="field"><label for="ltvCac">获客成本 CAC ¥</label><input id="ltvCac" class="inp" type="number" value="300"></div>
+        <div class="field"><label for="ltvMargin">毛利率 %</label><input id="ltvMargin" class="inp" type="number" value="60"></div>
       </div>
+      <div class="run"><button type="button" class="btn primary" onclick="runLtv()">计算</button></div>
+      <div id="ltvResult" style="margin-top:16px"></div>
     </div>
-    <button class="tool-btn mt-2" style="background:var(--surface);color:var(--muted);border:1px solid var(--border)" onclick="addFunnelStage()">+ 添加环节</button>
-    <button class="tool-btn mt-2" onclick="runFunnel()">计算</button>
-    <div id="funnelResult" style="margin-top:12px"></div>
-  </div>
-</div>
 
-<footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-  <div class="mx-auto px-5 text-center text-sm" style="max-width:1120px">
-    <div class="mb-2"><?=htmlspecialchars($siteName)?> · 增长工具箱</div>
-    <div class="flex gap-6 justify-center mb-3 text-xs">
-      <a href="/academy" class="transition" style="color:var(--muted)">学院</a>
-      <a href="/community" class="transition" style="color:var(--muted)">论坛</a>
-      <a href="/docs" class="transition" style="color:var(--muted)">文档</a>
-      <a href="/marketplace" class="transition" style="color:var(--muted)">生态市场</a>
+    <!-- 转化漏斗 -->
+    <div class="tab-panel card" id="tool-funnel" role="tabpanel" aria-labelledby="tab-funnel">
+    <div class="ph"><h2><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v18M8 3v18M5 8h3M8 13h3M5 18h3M13 5l6 14M15.5 9.5l1.5-1M17 13l1.5-1"/></svg></span>转化漏斗计算器</h2><p>输入各环节人数，定位转化流失点</p></div>
+      <div id="funnelStages">
+        <div class="funnel-stage">
+          <input class="inp" placeholder="环节名（如 访问）">
+          <input class="inp" type="number" placeholder="人数">
+          <span></span>
+        </div>
+      </div>
+      <div class="run"><button type="button" class="btn ghost" onclick="addFunnelStage()">+ 添加环节</button><button type="button" class="btn primary" onclick="runFunnel()">计算</button></div>
+      <div id="funnelResult" style="margin-top:16px"></div>
     </div>
-  </div>
-</footer>
+  </section>
 
- <script>
+  <section class="reveal" data-od-id="tools-cta">
+    <div class="cta-band">
+      <span class="kicker">NEXT STEP</span>
+      <h2>工具算出了问题，系统来解决问题</h2>
+      <p class="lead">OpenFlow 把这些检查变成 Agent 每天自动跑的动作：诊断、建议、执行、复盘，一条线走完。</p>
+      <div class="cta-row"><a href="/product" class="btn primary">看看 OpenFlow 怎么做</a><a href="/docs" class="btn ghost">阅读文档</a></div>
+    </div>
+  </section>
+
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
+<script>
 /* 工具箱使用 → 行为触发 */
 if (window.fcTrack) { try { fcTrack('tool_use', { tool_name: '工具箱', page: location.pathname }); } catch (e) {} }
-function switchTool(id, btn) {
-  document.querySelectorAll('[id^="tool-"]').forEach(function(el){ el.style.display = 'none'; });
-  document.getElementById('tool-' + id).style.display = '';
-  document.querySelectorAll('#toolTabs .tool-btn').forEach(function(b){ b.style.background = 'var(--surface)'; b.style.color = 'var(--muted)'; });
-  btn.style.background = 'var(--accent)'; btn.style.color = 'var(--on-accent)';
+function gotoTool(id) {
+  var t = document.querySelector('#toolTabs [aria-controls="tool-' + id + '"]');
+  if (t) { t.click(); document.getElementById('toolbox').scrollIntoView({behavior:'smooth', block:'start'}); }
 }
+document.querySelectorAll('a[data-tool-link]').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); gotoTool(a.getAttribute('data-tool-link')); }); });
+if (location.hash.indexOf('#tool-') === 0) { var _t = document.querySelector('#toolTabs [aria-controls="' + location.hash.slice(1) + '"]'); if (_t) _t.click(); }
 function api(action, data, cb) {
   fetch('/api/tools', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(Object.assign({action:action}, data))})
     .then(function(r){return r.json();}).then(cb);
@@ -187,7 +186,7 @@ function runSeo() {
     document.getElementById('seoResult').innerHTML = h;
   });
 }
-function item(ok, label, tip){ return '<div style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="'+(ok?'ok':'bad')+'">'+(ok?'✓':'✗')+'</span> <b>'+label+'</b><div class="text-sm" style="color:var(--muted)">'+esc(tip)+'</div></div>'; }
+function item(ok, label, tip){ return '<div style="padding:6px 0;border-bottom:1px solid var(--border-soft)"><span class="'+(ok?'ok':'bad')+'">'+(ok?'✓':'✗')+'</span> <b>'+label+'</b><div class="tip">'+esc(tip)+'</div></div>'; }
 
 // Meta
 function runMeta() {
@@ -202,7 +201,7 @@ function runReadability() {
   api('readability', {text:document.getElementById('readText').value}, function(d){
     if (!d.ok) { document.getElementById('readResult').innerHTML = '<div class="result-box bad">文本太短</div>'; return; }
     var x = d.data;
-    var h = '<div class="result-box"><div class="grid gap-3" style="grid-template-columns:1fr 1fr 1fr">' +
+    var h = '<div class="res"><div class="grid g3">' +
       '<div><b>'+x.cn_chars+'</b>字</div><div><b>'+x.read_minutes+'</b>分钟阅读</div><div><b>'+x.sentences+'</b>句</div>' +
       '</div><div style="margin-top:8px">段落 '+x.paragraphs+' · 标题 '+x.headings+' 个</div>';
     if (x.heading_list.length) h += '<div style="margin-top:8px;font-size:12.5px;color:var(--muted)">标题结构：' + x.heading_list.map(function(hd){return esc(hd);}).join(' → ') + '</div>';
@@ -217,8 +216,8 @@ function runLtv() {
     if (!d.ok) return;
     var x = d.data;
     var color = x.health === '健康' ? 'var(--ok)' : (x.health === '需改善' ? 'var(--warn)' : 'var(--danger)');
-    document.getElementById('ltvResult').innerHTML = '<div class="result-box">' +
-      '<div class="grid gap-3" style="grid-template-columns:1fr 1fr">' +
+    document.getElementById('ltvResult').innerHTML = '<div class="res">' +
+      '<div class="grid g2">' +
       '<div>客户生命周期 <b>'+x.life_months+'</b> 月</div><div>客户终身价值 <b>¥'+x.ltv+'</b></div>' +
       '<div>LTV/CAC <b>'+x.ltv_cac_ratio+'</b></div><div>回本周期 <b>'+x.payback_months+'</b> 月</div></div>' +
       '<div style="margin-top:8px;color:'+color+';font-weight:700">健康度：'+x.health+'</div>' +
@@ -230,8 +229,7 @@ function runLtv() {
 function addFunnelStage() {
   var div = document.createElement('div');
   div.className = 'funnel-stage';
-  div.style.cssText = 'display:flex;gap:8px;margin-bottom:8px';
-  div.innerHTML = '<input class="tool-input" placeholder="环节名" style="flex:1"><input class="tool-input" type="number" placeholder="人数" style="flex:1"><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--danger);cursor:pointer">✕</button>';
+    div.innerHTML = '<input class="inp" placeholder="环节名"><input class="inp" type="number" placeholder="人数"><button type="button" class="mx" aria-label="删除环节" onclick="this.parentElement.remove()">✕</button>';
   document.getElementById('funnelStages').appendChild(div);
 }
 function runFunnel() {
@@ -244,13 +242,13 @@ function runFunnel() {
   api('funnel', {stages:stages}, function(d){
     if (!d.ok) return;
     var x = d.data;
-    var h = '<div class="result-box">';
+    var h = '<div class="res">';
     x.forEach(function(s, i){
       var loss = i>0 ? ' 流失 ' + s.dropoff + ' (' + (100-s.step_conv) + '%)' : '';
-      h += '<div style="padding:6px 0;border-bottom:1px solid var(--border)">' +
+      h += '<div style="padding:6px 0;border-bottom:1px solid var(--border-soft)">' +
         '<b>'+esc(s.name)+'</b>: '+s.count+' 人' +
         '<span class="'+(s.step_conv>=50?'ok':'warn')+'"> · 环节转化 '+(s.step_conv===100&&i===0?'100%':s.step_conv+'%')+'</span>' +
-        '<span class="text-sm" style="color:var(--muted)"> · 总转化 '+s.total_conv+'%'+loss+'</span></div>';
+        '<span class="tip"> · 总转化 '+s.total_conv+'%'+loss+'</span></div>';
     });
     h += '</div>';
     document.getElementById('funnelResult').innerHTML = h;
