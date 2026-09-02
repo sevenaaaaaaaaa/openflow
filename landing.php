@@ -13,14 +13,10 @@ foreach (get_landing_pages() as $p) {
 
 if (!$landing) {
     http_response_code(404);
-    ?><!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 | OpenFlow</title>
-    <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
-<link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
-</head>
-    <body style="background:var(--bg);color:var(--fg)"><div class="mx-auto px-5 py-[180px] text-center" style="max-width:var(--container)">
-    <p style="font-size:64px;font-weight:700;color:var(--accent)">404</p><h1 style="margin-top:16px;font-size:28px;font-weight:700">页面不存在</h1>
-    <a href="/" style="display:inline-flex;margin-top:32px;border-radius:999px;background:var(--accent);padding:12px 28px;font-weight:600;color:var(--on-accent);text-decoration:none">返回首页</a>
+    ?><!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>404 | OpenFlow</title><?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?></head>
+    <body style="display:grid;place-items:center;min-height:100vh;text-align:center;padding:20px"><div>
+    <p class="kicker" style="font-size:48px;letter-spacing:0">404</p><h1 style="margin-top:16px;font-size:28px;font-weight:700">页面不存在</h1>
+    <a href="/" class="btn primary" style="margin-top:28px">返回首页</a>
     </div></body></html><?php
     exit;
 }
@@ -89,222 +85,74 @@ $jsonLd = [
     'url' => $pageUrl,
 ];
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?=htmlspecialchars($pageTitle)?></title>
-<meta name="description" content="<?=htmlspecialchars($pageDesc)?>">
-<link rel="canonical" href="<?=htmlspecialchars($pageUrl)?>">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="OpenFlow XMP">
-<meta property="og:title" content="<?=htmlspecialchars($landing['title'])?>">
-<meta property="og:description" content="<?=htmlspecialchars($pageDesc)?>">
-<meta property="og:url" content="<?=htmlspecialchars($pageUrl)?>">
-<meta property="og:locale" content="zh_CN">
-<script type="application/ld+json"><?=json_encode($jsonLd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)?></script>
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" data-cfasync="false" data-site-inject></script>
-<link rel="stylesheet" href="/assets/tokens.css?v=20260816">
-<link rel="stylesheet" href="/assets/modules.css?v=20260816">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 | OpenFlow</title>
+    <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  /* ── 旧 Betterup 专属类 → token 重写（删 site-arc-betterup.css 后内联补齐） ── */
-  .bg-jade{background:var(--accent);color:var(--on-accent);border-radius:999px;font-weight:600}
-  .bg-jade:hover{background:var(--accent-strong)}
-  .bg-flow:hover{background:var(--accent-strong)}
-  .nav-link{color:var(--muted)}
-  .nav-link:hover,.nav-link[aria-current="page"]{color:var(--fg)}
-  .brand-text{color:var(--fg)}
-  .eyebrow{background:linear-gradient(90deg,var(--accent),var(--accent-strong));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-family:var(--font-mono);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
-  .grid-bg{background-image:linear-gradient(var(--accent-soft) 1px,transparent 1px),linear-gradient(90deg,var(--accent-soft) 1px,transparent 1px);background-size:48px 48px}
-  .text-ink{color:var(--fg)}
-  .bg-bg{background:var(--bg)}
-  .border-line{border-color:var(--border)}
-  .max-w-site{max-width:var(--container)}
-  .text-muted{color:var(--muted)}
-  .bg-surface{background:var(--surface)}
-  .bg-surface\/85{background:var(--surface)}
-  .bg-surface\/95{background:var(--surface-strong)}
-  .foot-h{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
-  .foot-l{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:14px}
-  .foot-l a{color:var(--muted);text-decoration:none}
-  .foot-l a:hover{color:var(--fg)}
-  .lp-card{display:flex;flex-direction:column;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:0 4px 16px oklch(0.35 0.05 295 / .07);transition:transform .2s,box-shadow .2s;text-decoration:none}
-  .lp-card:hover{transform:translateY(-3px);box-shadow:0 16px 40px oklch(0.35 0.07 295 / .12)}
-  .lp-media{aspect-ratio:16/9;overflow:hidden;background:linear-gradient(135deg,var(--ok-soft) 0%,var(--bg) 50%,var(--accent-soft) 100%)}
-  .lp-media img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
-  .lp-card:hover .lp-media img{transform:scale(1.04)}
-  .lp-body{padding:18px 20px 20px;display:flex;flex-direction:column;flex:1;gap:9px}
-  .lp-body h3{font-size:17px;font-weight:700;line-height:1.45;color:var(--fg)}
-  .lp-card:hover .lp-body h3{color:var(--ok)}
-  .lp-body p{font-size:13.5px;line-height:1.7;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* 专题聚合页：全部来自 modules.css（hero-center / a-card / cta-band）。 */
+.lp-tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 </style>
-<link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
+<script src="/assets/inject.js?v=20260830b" data-cfasync="false" data-site-inject></script>
 </head>
-<body class="bg-bg text-ink antialiased">
+<body data-of-main>
+<?php of_shell('articles'); ?>
 
-<header class="fixed inset-x-0 top-0 z-50">
-  <div class="border-b border-line bg-surface/85 backdrop-blur-xl">
-    <div class="mx-auto flex h-[68px] max-w-site items-center justify-between px-5 sm:px-8">
-      <a href="/" class="flex items-center gap-2.5" aria-label="OpenFlow 首页">
-        <svg viewBox="0 0 32 32" class="h-8 w-8" aria-hidden="true"><defs><linearGradient id="lp-lg-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset=".52" stop-color="var(--ok)"/><stop offset="1" stop-color="var(--accent-soft)"/></linearGradient></defs><rect x="1.6" y="1.6" width="28.8" height="28.8" rx="8.5" fill="url(#lp-lg-1)"/><path d="M7.5 19c2.8-5.2 4.6 2.6 7.4-2.2s4.8 2.6 7.6-2.2" fill="none" stroke="var(--fg)" stroke-width="2.3" stroke-linecap="round"/><circle cx="23.2" cy="9.6" r="1.9" fill="var(--fg)"/></svg>
-        <span class="brand-text text-[19px] font-bold tracking-tight leading-none">OpenFlow</span>
-      </a>
-      <nav class="hidden lg:flex items-center gap-5 text-[14.5px]">
-        <a href="/" class="nav-link">首页</a>
-        <a href="/capability" class="nav-link">产品</a>
-        <a href="/courses" class="nav-link">解决方案</a>
-        <a href="/academy" class="nav-link">学院</a>
-        <a href="/about" class="nav-link">关于我们</a>
-      </nav>
-      <div class="hidden lg:flex items-center gap-4">
-        <a href="/#contact" class="rounded-full bg-jade px-5 py-2.5 text-[14.5px] font-semibold hover:bg-flow transition" style="color:var(--on-accent)">预约诊断</a>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+  <section id="top" class="reveal in" data-od-anchor data-od-id="lp-hero">
+    <nav class="art-meta" aria-label="面包屑" style="justify-content:center"><a href="/" style="color:var(--faint)">首页</a><span class="sep"></span><a href="/academy" style="color:var(--faint)">学院</a><span class="sep"></span><span><?=htmlspecialchars(mb_substr($landing['title'], 0, 30))?></span></nav>
+    <div class="hero-center" style="padding-top:18px">
+      <span class="kicker"><?=htmlspecialchars($modeBadge)?></span>
+      <h1><?=htmlspecialchars($landing['title'])?></h1>
+      <?php if (!empty($landing['show_description']) && !empty($landing['description'])): ?><p class="lead"><?=htmlspecialchars($landing['description'])?></p><?php endif; ?>
+      <div class="lp-tags">
+        <?php foreach ($tags as $t): ?><span class="badge ok"># <?=htmlspecialchars($t)?></span><?php endforeach; ?>
+        <?php if (!empty($landing['aggregate_category'])): ?><span class="pill hl"><?=htmlspecialchars($landing['aggregate_category'])?></span><?php endif; ?>
+        <?php if (!empty($landing['aggregate_author'])): ?><span class="pill neutral"><?=htmlspecialchars($landing['aggregate_author'])?></span><?php endif; ?>
       </div>
-      <button id="burger" class="burger lg:hidden p-2 -mr-2" aria-label="菜单" aria-expanded="false">
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
-      </button>
+      <div class="trust"><span class="dot"></span>共 <?=count($items)?> 篇文章</div>
     </div>
-  </div>
-  <div id="mobile-menu" class="lg:hidden hidden border-t border-line bg-surface/95 backdrop-blur-xl">
-    <nav class="mx-auto max-w-site px-5 py-5 flex flex-col gap-1 text-ink">
-      <a href="/" class="py-3 border-b border-line">首页</a>
-      <a href="/capability" class="py-3 border-b border-line">产品</a>
-      <a href="/courses" class="py-3 border-b border-line">解决方案</a>
-      <a href="/academy" class="py-3 border-b border-line">学院</a>
-      <a href="/about" class="py-3 border-b border-line">关于我们</a>
-    </nav>
-  </div>
-</header>
+  </section>
 
-<section class="relative overflow-hidden bg-bg pt-[128px] pb-10 lg:pt-[150px]">
-  <div class="absolute inset-0 grid-bg opacity-70"></div>
-    <div class="relative mx-auto max-w-site px-5 sm:px-8">
-      <nav class="text-[13px] text-muted flex flex-wrap items-center gap-2 mb-6" aria-label="面包屑">
-        <a href="/" class="hover:text-ink transition">首页</a><span>/</span>
-        <a href="/academy" class="hover:text-ink transition">学院</a><span>/</span>
-        <span class="text-ink"><?=htmlspecialchars(mb_substr($landing['title'], 0, 30))?></span>
-      </nav>
-    <div class="max-w-3xl">
-      <p class="eyebrow"><?=htmlspecialchars($modeBadge)?></p>
-      <h1 class="mt-4 text-[34px] font-bold leading-[1.2] tracking-tight sm:text-[44px]"><?=htmlspecialchars($landing['title'])?></h1>
-      <?php if (!empty($landing['show_description']) && !empty($landing['description'])): ?>
-      <p class="mt-5 max-w-[640px] text-[16px] leading-[1.85] text-muted"><?=htmlspecialchars($landing['description'])?></p>
-      <?php endif; ?>
-      <?php if (!empty($tags)): ?>
-      <div class="mt-6 flex flex-wrap gap-2">
-        <?php foreach ($tags as $t): ?>
-        <span class="inline-flex items-center rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold" style="background:var(--ok-soft);color:var(--ok)"># <?=htmlspecialchars($t)?></span>
-        <?php endforeach; ?>
-      </div>
-      <?php endif; ?>
-      <?php if (!empty($landing['aggregate_category'])): ?>
-      <div class="mt-6"><span class="inline-flex items-center rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold" style="background:var(--accent-soft);color:var(--accent-strong)">📂 <?=htmlspecialchars($landing['aggregate_category'])?></span></div>
-      <?php endif; ?>
-      <?php if (!empty($landing['aggregate_author'])): ?>
-      <div class="mt-6"><span class="inline-flex items-center rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold" style="background:var(--bg);color:var(--warn)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span> <?=htmlspecialchars($landing['aggregate_author'])?></span></div>
-      <?php endif; ?>
-      <p class="mt-5 text-[13px] text-muted">共 <?=count($items)?> 篇文章</p>
-    </div>
-  </div>
-</section>
-
-<section class="bg-bg pb-20">
-  <div class="mx-auto max-w-site px-5 sm:px-8">
+  <section id="list" class="sec reveal" data-od-anchor data-od-id="lp-list">
     <?php if (empty($items)): ?>
-    <div class="rounded-2xl border border-line bg-white p-14 text-center text-muted">该专题暂无已发布的文章。</div>
+    <div class="empty">该专题暂无已发布的文章。</div>
     <?php else: ?>
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="a-grid">
       <?php foreach ($items as $a):
         $cv = $a['cover'] ?? '';
         $cvUrl = $cv ? (strpos($cv, 'http') === 0 ? $cv : $baseUrl . '/' . ltrim($cv, '/')) : '';
         $cn = $catNames[$a['category'] ?? ''] ?? '';
       ?>
-      <a href="/article/<?=htmlspecialchars($a['slug'])?>" class="lp-card">
-        <div class="lp-media">
-          <?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="<?=htmlspecialchars($a['title'])?>" loading="lazy">
-          <?php else: ?><div class="flex h-full items-center justify-center text-[40px]"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span></div><?php endif; ?>
-        </div>
-        <div class="lp-body">
-          <?php if ($cn): ?><span class="text-[11.5px] font-semibold" style="color:var(--ok)"><?=htmlspecialchars($cn)?></span><?php endif; ?>
+      <a href="/article/<?=htmlspecialchars($a['slug'])?>" class="a-card">
+        <div class="cov"><?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="<?=htmlspecialchars($a['title'])?>" loading="lazy"><?php else: ?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg><?php endif; ?></div>
+        <div class="bd">
+          <?php if ($cn): ?><span class="cat"><?=htmlspecialchars($cn)?></span><?php endif; ?>
           <h3><?=htmlspecialchars($a['title'])?></h3>
-          <p><?=htmlspecialchars(mb_substr(strip_tags($a['content'] ?? ''), 0, 90))?></p>
-          <span class="mt-auto text-[12px] text-muted"><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?></span>
+          <p style="font-size:13px;color:var(--muted);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"><?=htmlspecialchars(mb_substr(strip_tags($a['content'] ?? ''), 0, 90))?></p>
+          <div class="meta"><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?></div>
         </div>
       </a>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
+  </section>
 
-    <div class="mt-14 rounded-3xl border border-line p-8 text-center sm:p-12" style="background:linear-gradient(135deg,var(--ok-soft) 0%,var(--bg) 55%,var(--accent-soft) 100%)">
-      <h2 class="text-[24px] font-bold tracking-tight sm:text-[28px]">想获取完整的网站增长方法论？</h2>
-      <p class="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted">预约一次免费诊断，或订阅我们的内容更新。</p>
-      <div class="mt-7 flex flex-wrap justify-center gap-3">
-        <a href="/#contact" class="rounded-full bg-jade px-7 py-3 font-semibold hover:bg-flow transition" style="color:var(--on-accent)">预约诊断</a>
-        <a href="/community" class="rounded-full border border-line bg-white px-7 py-3 font-semibold text-ink hover:border-accent transition">返回社区</a>
-      </div>
+  <section class="reveal" data-od-id="lp-cta">
+    <div class="cta-band">
+      <span class="kicker">NEXT</span>
+      <h2>想获取完整的网站增长方法论？</h2>
+      <p class="lead">预约一次免费诊断，或订阅我们的内容更新。</p>
+      <div class="cta-row"><a href="/#contact" class="btn primary">预约诊断</a><a href="/community" class="btn ghost">返回社区</a></div>
     </div>
-  </div>
-</section>
+  </section>
 
-<footer class="pt-16 lg:pt-20" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-  <div class="mx-auto max-w-site px-5 sm:px-8">
-    <div class="grid gap-12 pb-14 lg:grid-cols-[1.25fr_2.75fr]">
-      <div>
-        <div class="flex items-center gap-2.5">
-          <svg viewBox="0 0 32 32" class="h-8 w-8" aria-hidden="true"><defs><linearGradient id="lp-lg-2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset=".52" stop-color="var(--ok)"/><stop offset="1" stop-color="var(--accent-soft)"/></linearGradient></defs><rect x="1.6" y="1.6" width="28.8" height="28.8" rx="8.5" fill="url(#lp-lg-2)"/><path d="M7.5 19c2.8-5.2 4.6 2.6 7.4-2.2s4.8 2.6 7.6-2.2" fill="none" stroke="var(--fg)" stroke-width="2.3" stroke-linecap="round"/><circle cx="23.2" cy="9.6" r="1.9" fill="var(--fg)"/></svg>
-          <span class="text-[19px] font-bold tracking-tight">芭乐派 · OpenFlow</span>
-        </div>
-        <p class="mt-5 text-[15px] font-medium" style="color:var(--fg)">帮一人公司设计 Agent 能跑的增长系统</p>
-        <p class="mt-2.5 text-[13.5px] leading-relaxed" style="color:var(--muted)">芭乐派（OpenFlow 科技有限公司）<br>成立于 2026 年 · 上海</p>
-      </div>
-      <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-        <div>
-          <p class="foot-h">产品</p>
-          <ul class="foot-l">
-            <li><a href="/product">产品总览</a></li>
-            <li><a href="/capability">TIPS 能力</a></li>
-            <li><a href="/courses">New-1~4 + R.B.E</a></li>
-            <li><a href="/community">门派社区</a></li>
-          </ul>
-        </div>
-        <div>
-          <p class="foot-h">解决方案</p>
-          <ul class="foot-l">
-            <li><a href="/courses">内容增长</a></li>
-            <li><a href="/courses">线索转化</a></li>
-            <li><a href="/courses">自动化培育</a></li>
-            <li><a href="/academy">数据洞察</a></li>
-          </ul>
-        </div>
-        <div>
-          <p class="foot-h">联系我们</p>
-          <ul class="foot-l">
-            <li><a href="tel:13800000000">13800000000</a></li>
-            <li><a href="mailto:admin@example.com">admin@example.com</a></li>
-            <li><a href="https://example.com">example.com</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="flex flex-col gap-3 py-7 text-[13px] sm:flex-row sm:items-center sm:justify-between" style="border-top:1px solid var(--border);color:var(--muted)">
-      <p>© 2026 OpenFlow 科技有限公司　<a href="https://beian.miit.gov.cn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none"></a></p>
-      <div class="flex gap-6">
-        <a href="#" class="transition" style="color:inherit">隐私政策</a>
-        <a href="#" class="transition" style="color:inherit">服务条款</a>
-      </div>
-    </div>
-  </div>
-</footer>
-
-<script>
-(function() {
-  var b = document.getElementById('burger'), m = document.getElementById('mobile-menu');
-  if (b && m) b.addEventListener('click', function() {
-    var open = m.classList.toggle('hidden') === false;
-    b.setAttribute('aria-expanded', open);
-  });
-})();
-</script>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>
