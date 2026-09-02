@@ -73,6 +73,24 @@ function mail_channels_save(array $channels): bool {
     return json_write(mail_channels_file(), $channels);
 }
 
+/** 站点是否具备可用的邮件通道（默认渠道已启用且 SMTP 至少配了 host + from）。注册验证码等流程用它决定要不要向用户索要一个根本收不到的验证码。 */
+function mail_available(): bool {
+    static $ok = null;
+    if ($ok !== null) return $ok;
+    $channels = mail_channels();
+    $key = $channels['_default'] ?? 'smtp';
+    $ch = $channels[$key] ?? null;
+    if (!$ch || empty($ch['enabled'])) {
+        if (!empty($channels['smtp']['enabled'])) { $key = 'smtp'; $ch = $channels['smtp']; }
+        else return $ok = false;
+    }
+    if ($key === 'smtp') {
+        $p = $ch['params'] ?? [];
+        return $ok = !empty($p['host']) && (!empty($p['from']) || !empty($p['user']));
+    }
+    return $ok = true;
+}
+
 /** 统一发送入口：用默认渠道（或指定渠道）发送邮件 */
 function mail_send(string $to, string $subject, string $body, string $channel = ''): bool {
     $channels = mail_channels();
