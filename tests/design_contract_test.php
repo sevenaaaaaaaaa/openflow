@@ -14,10 +14,10 @@ chdir($ROOT);
 $MIGRATED = ['index.php','about.php','product.php','capability.php','courses.php','academy.php','enterprise.php','navigation.php','events.php','community.php','marketplace.php',
              'articles.php','article.php','category.php','docs.php','downloads.php','podcasts.php','author.php','search.php','topics.php',
              'event.php','community-post.php','reviews.php','messages.php','activate.php','nps.php','download.php','navigation-site.php','survey-my.php','front-builder.php',
-             'shop.php','live.php','tools.php','consultation.php'];
-$PENDING  = ['member.php','course-player.php','survey.php','asset.php'];
+             'shop.php','live.php','tools.php','consultation.php','survey.php','asset.php','course-player.php'];
+$PENDING  = ['member.php'];
 // 对外独立页（问卷 / NPS 由外链打开，不接站点外壳、不带页脚）—— 只免 of_shell / .foot 两项，其余契约照常
-$STANDALONE = ['nps.php','survey-my.php'];
+$STANDALONE = ['nps.php','survey-my.php','survey.php'];
 
 $SHARED_CLASSES = ['btn','card','sec-head','kicker','foot','stats','hero','hero-center','cta-row','trust','worlds','wf','tl','scn','split','cols','qr','link-grid','cta-band','tab-bar','tab-p','faq','inp','field'];
 $MAX_STYLE_LINES = 60;
