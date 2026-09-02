@@ -93,7 +93,7 @@ function renderCard(array $a, array $catLabels, $size = 'normal'): string {
 <meta name="description" content="增长实践、AI 工具评测、行业洞察 — 共 <?=$total?> 篇深度文章">
 <link rel="stylesheet" href="/assets/tailwind-build.css">
 <script src="/assets/inject.js" defer></script>
-<script src="/assets/site-shell.js?v=20260826b" defer></script>
+<script src="/assets/site-shell.js?v=20260901a" defer></script>
 <style>
   .hero{position:relative;overflow:hidden;border-radius:24px;padding:52px 36px 44px;background:linear-gradient(150deg,var(--surface) 0%,rgba(221,255,14,.06) 45%,rgba(56,189,248,.10) 100%);border:1px solid var(--border);margin-bottom:28px}
   .hero .glow-r{position:absolute;top:-80px;right:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.18),transparent 70%)}
