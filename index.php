@@ -546,7 +546,8 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
     </div>
     <div class="fb">
       <h4>资源</h4>
-      <a href="#insights" data-od-id="f-r-courses">芭乐派课程</a><a href="#top" data-od-id="f-r-docs">文档中心</a><a href="#top" data-od-id="f-r-tpl">模板库</a><a href="#top" data-od-id="f-r-api">开放 API</a>
+      <a href="/courses" data-od-id="f-r-courses">芭乐派课程</a><a href="/docs" data-od-id="f-r-docs">文档中心</a><a href="/docs#templates" data-od-id="f-r-tpl">模板库</a><a href="/docs#api" data-od-id="f-r-api">开放 API</a>
+      <a href="/gtm-onepager.html" data-od-id="f-r-onepager">一页纸介绍</a><a href="/gtm-deck.html" data-od-id="f-r-deck">产品介绍幻灯片</a><a href="/lp/solo-growth.html" data-od-id="f-r-h5">一人公司增长手册（H5）</a>
     </div>
     <div class="fb">
       <h4>联系</h4>

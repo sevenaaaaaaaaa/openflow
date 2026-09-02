@@ -24,6 +24,7 @@ if (!function_exists('of_footer')) {
     <div class="fb">
       <h4>资源</h4>
       <a href="/docs">文档中心</a><a href="/downloads">资料下载</a><a href="/podcasts">播客</a><a href="/marketplace">生态市场</a><a href="/navigation">增长导航</a>
+      <a href="/gtm-onepager.html">一页纸介绍</a><a href="/gtm-deck.html">产品介绍幻灯片</a><a href="/lp/solo-growth.html">一人公司增长手册（H5）</a>
     </div>
     <div class="fb">
       <h4>联系</h4>
