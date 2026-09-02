@@ -133,12 +133,12 @@ if (!defined('OF_EMBED')) admin_header('SEO 站长工具');
           <tbody>
             <?php foreach (array_slice($cache['gsc'],0,20) as $r): ?>
             <tr>
-              <td><strong><?=htmlspecialchars($r['query'])?></strong></td>
-              <td class="text-sm text-muted" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($r['page'])?></td>
-              <td><?=$r['clicks']?></td>
-              <td><?=$r['impressions']?></td>
-              <td><?=$r['ctr']?>%</td>
-              <td><?=$r['position']?></td>
+              <td><strong><?=htmlspecialchars($r['query'] ?? '')?></strong></td>
+              <td class="text-sm text-muted" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($r['page'] ?? '')?></td>
+              <td><?=(int)($r['clicks'] ?? 0)?></td>
+              <td><?=(int)($r['impressions'] ?? 0)?></td>
+              <td><?=isset($r['ctr']) ? $r['ctr'] : (($r['impressions'] ?? 0) > 0 ? round(($r['clicks'] ?? 0) / $r['impressions'] * 100, 2) : 0)?>%</td>
+              <td><?=htmlspecialchars((string)($r['position'] ?? '—'))?></td>
             </tr>
             <?php endforeach; ?>
           </tbody>

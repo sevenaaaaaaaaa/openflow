@@ -78,6 +78,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         crm_save_customers($customers);
         flash('success', '客户信息已更新');
+    } elseif ($action === 'claim_raw') {
+        // 原始提交 → 跟进线索（CSV 表头是中文：时间/来源页面/姓名/电话/公司/邮箱/职位/需求留言/其他字段）
+        $rEmail = mb_strtolower(trim($_POST['raw_email'] ?? '')); $rPhone = trim($_POST['raw_phone'] ?? ''); $rName = trim($_POST['raw_name'] ?? '');
+        if ($rEmail === '' && $rPhone === '') { flash('error', '这条提交没有邮箱也没有电话，无法建线索'); header('Location: /xmp/crm?tab=raw'); exit; }
+        $lead = crm_ensure_lead($rEmail ?: $rPhone, $rName, $rPhone);
+        $d = crm_get(); $k = mb_strtolower($rEmail ?: $rPhone);
+        if (isset($d['leads'][$k])) {
+            if (empty($d['leads'][$k]['company']) && !empty($_POST['raw_company'])) $d['leads'][$k]['company'] = trim($_POST['raw_company']);
+            if (empty($d['leads'][$k]['source'])) $d['leads'][$k]['source'] = 'form:' . trim($_POST['raw_page'] ?? '');
+            if (!empty($_POST['raw_message'])) $d['leads'][$k]['follow_ups'][] = ['owner' => $_SESSION['admin_user'] ?? 'system', 'time' => date('Y-m-d H:i'), 'content' => '表单留言：' . trim($_POST['raw_message'])];
+            crm_save($d);
+        }
+        flash('success', '已转为跟进线索');
+        header('Location: /xmp/crm?tab=pipeline&focus=' . urlencode($rEmail ?: $rPhone)); exit;
     } elseif ($action === 'import' && !empty($_FILES['csv_file']['tmp_name'])) {
         $imported = 0; $skipped = 0; $duplicated = 0;
         $handle = fopen($_FILES['csv_file']['tmp_name'], 'r');
@@ -350,29 +364,44 @@ admin_header('CRM 线索管理');
     </script>
 
     <?php elseif ($tab === 'raw'): ?>
-    <div class="card" style="padding:0;overflow:auto">
+    <?php
+      // CSV 表头中文 → 字段
+      $__col = function (array $r, array $names) { foreach ($names as $n) if (isset($r[$n]) && $r[$n] !== '') return $r[$n]; return ''; };
+      $__known = array_map(fn($l) => mb_strtolower($l['email'] ?? ''), $data['leads'] ?? []);
+    ?>
+    <div class="card lst-card">
       <?php if (empty($rawLeads)): ?>
-        <div class="empty">暂无原始提交（网站表单提交后自动写入 CSV）</div>
+        <div class="of-empty" style="border:0;margin:0;padding:40px">还没有原始提交。前台任何表单提交都会先落到这里，再由你决定要不要转成跟进线索。</div>
       <?php else: ?>
-      <table>
-        <thead>
-          <tr>
-            <?php foreach (array_keys($rawLeads[0]) as $header): ?>
-            <th><?=htmlspecialchars($header)?></th>
-            <?php endforeach; ?>
-            <th>操作</th>
-          </tr>
-        </thead>
+      <table class="lst-table">
+        <thead><tr><th style="width:130px">时间</th><th class="c-title">提交人</th><th style="width:220px">联系方式</th><th style="width:160px">来源页面</th><th style="width:26%">留言</th><th class="c-act" style="width:120px"></th></tr></thead>
         <tbody>
           <?php foreach ($rawLeads as $rl):
-            $rlEmail = $rl['email'] ?? '';
+            $rlEmail = mb_strtolower(trim($__col($rl, ['邮箱', 'email', 'Email'])));
+            $rlPhone = trim($__col($rl, ['电话', 'phone', '手机']));
+            $rlName  = $__col($rl, ['姓名', 'name']); $rlCo = $__col($rl, ['公司', 'company']); $rlJob = $__col($rl, ['职位', 'job', 'title']);
+            $rlPage  = $__col($rl, ['来源页面', 'page', 'source']); $rlMsg = $__col($rl, ['需求留言', 'message', '留言']); $rlTime = $__col($rl, ['时间', 'time', 'created_at']);
+            $claimed = $rlEmail !== '' && in_array($rlEmail, $__known, true);
           ?>
           <tr>
-            <?php foreach ($rl as $v): ?>
-            <td><?=htmlspecialchars($v)?></td>
-            <?php endforeach; ?>
-            <td>
-              <?php if ($rlEmail): ?><a href="?tab=pipeline&focus=<?=urlencode($rlEmail)?>" class="btn btn-ghost btn-sm">→ 转跟进</a><?php endif; ?>
+            <td class="lst-when" style="font-size:12px"><?=htmlspecialchars(substr($rlTime, 0, 16))?></td>
+            <td class="c-title"><div class="lst-title"><?=htmlspecialchars($rlName ?: '（未留姓名）')?></div><?php if ($rlCo || $rlJob): ?><div class="lst-sub"><span class="text-sm text-muted"><?=htmlspecialchars(trim($rlCo . ' · ' . $rlJob, ' ·'))?></span></div><?php endif; ?></td>
+            <td style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis"><?php if ($rlEmail): ?><div><?=htmlspecialchars($rlEmail)?></div><?php endif; if ($rlPhone): ?><div class="text-muted"><?=htmlspecialchars($rlPhone)?></div><?php endif; if (!$rlEmail && !$rlPhone): ?><span class="text-muted">—</span><?php endif; ?></td>
+            <td class="lst-slug" style="overflow:hidden;text-overflow:ellipsis" title="<?=htmlspecialchars($rlPage)?>"><?=htmlspecialchars($rlPage ?: '—')?></td>
+            <td style="font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="<?=htmlspecialchars($rlMsg)?>"><?=htmlspecialchars($rlMsg ?: '—')?></td>
+            <td class="c-act">
+              <?php if ($claimed): ?>
+                <a href="?tab=pipeline&focus=<?=urlencode($rlEmail)?>" class="btn btn-ghost btn-sm">已在跟进 →</a>
+              <?php elseif ($rlEmail || $rlPhone): ?>
+                <form method="post" style="display:inline">
+                  <?= csrf_field() ?>
+                  <input type="hidden" name="action" value="claim_raw">
+                  <input type="hidden" name="raw_email" value="<?=htmlspecialchars($rlEmail)?>"><input type="hidden" name="raw_phone" value="<?=htmlspecialchars($rlPhone)?>">
+                  <input type="hidden" name="raw_name" value="<?=htmlspecialchars($rlName)?>"><input type="hidden" name="raw_company" value="<?=htmlspecialchars($rlCo)?>">
+                  <input type="hidden" name="raw_page" value="<?=htmlspecialchars($rlPage)?>"><input type="hidden" name="raw_message" value="<?=htmlspecialchars($rlMsg)?>">
+                  <button type="submit" class="btn btn-primary btn-sm">转跟进</button>
+                </form>
+              <?php else: ?><span class="text-muted" style="font-size:12px">无联系方式</span><?php endif; ?>
             </td>
           </tr>
           <?php endforeach; ?>

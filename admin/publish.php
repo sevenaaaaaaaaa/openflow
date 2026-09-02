@@ -107,7 +107,7 @@ admin_header('内容分发');
             <?php foreach ($platforms as $pk => $pv): ?>
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px">
               <input type="checkbox" name="platforms[]" value="<?=$pk?>" style="width:16px;height:16px">
-              <?=$pv['name']?><?=$pv['variant']?' <span style="color:var(--text-3);font-size:11px">·自动变体</span>':''?>
+              <?=$pv['name']?><?=!empty($pv['variant'])?' <span style="color:var(--text-3);font-size:11px">·自动变体</span>':''?>
             </label>
             <?php endforeach; ?>
           </div>
