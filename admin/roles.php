@@ -144,24 +144,53 @@ admin_header('角色与权限');
         </div>
       </div>
 
-      <?php $sel = $editing['perms'] ?? []; ?>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px">
-        <button type="button" class="btn btn-ghost btn-sm" onclick="document.querySelectorAll('.perm-cb').forEach(c=>c.checked=true)">全选</button>
-        <button type="button" class="btn btn-ghost btn-sm" onclick="document.querySelectorAll('.perm-cb').forEach(c=>c.checked=false)">全不选</button>
+      <?php $sel = $editing['perms'] ?? [];
+        // 权限键 → 人话：用导航树里的条目名（同 key），没有的保留原 key
+        require_once dirname(__DIR__) . '/includes/admin-nav.php';
+        $__lbl = ['pages'=>'页面','articles'=>'文章','leads'=>'线索','social'=>'社媒','security'=>'账号安全','activity'=>'操作记录','export'=>'数据导出','submissions'=>'表单提交','structured'=>'结构化数据','seo'=>'SEO 基础','seo-tools'=>'SEO 工具','seo-batch'=>'SEO 批量','seo-console'=>'站长工具','redirects'=>'301 重定向','landing'=>'落地页','flow'=>'运营主线','dashboard'=>'经营驾驶舱','cdp'=>'CDP 数据中台','media'=>'媒体库','tags'=>'标签','categories'=>'分类','downloads'=>'资料下载','podcasts'=>'播客视频','ingest'=>'外部导入','settings'=>'系统设置','users'=>'后台用户','themes'=>'主题','navigation'=>'站点结构','plugins'=>'插件','scripts'=>'脚本','devops'=>'运维','storage'=>'存储','qr'=>'二维码','ai-config'=>'AI Agent','tasks'=>'内容生产任务','messages'=>'站内信','events'=>'活动报名','live'=>'直播','nps'=>'NPS','survey'=>'问卷','reviews'=>'评价','approvals'=>'审核','featured'=>'推荐位','bookmarks'=>'收藏','follows'=>'关注','commerce'=>'商业中心','orders'=>'订单','coupons'=>'优惠券','membership'=>'会员','subscription'=>'付费订阅','marketplace'=>'生态市场','shop-settings'=>'商城设置','crm'=>'CRM','consultation'=>'咨询','wechat-mp'=>'公众号','campaigns'=>'活动 / CRO','automation'=>'营销自动化','canvas'=>'画布流程','ma-sync'=>'MA 融合同步','channels'=>'分发渠道','notify-channels'=>'通知渠道','email'=>'邮件','sms'=>'短信','forms'=>'表单','utm-builder'=>'UTM 生成器','abtests'=>'A/B 测试','profiling'=>'用户画像','segments'=>'用户分群','tracking'=>'埋点','analytics'=>'运营分析','insights'=>'营销洞察','conversion'=>'转化组件','evolution'=>'自我进化','geo'=>'GEO 话题监控','sentiment'=>'舆情监测','topics'=>'专题','dam'=>'数字资产','knowledge'=>'知识库','version-diff'=>'版本对比','community-config'=>'社区配置','community-mod'=>'社区管理','moderation'=>'内容审核','site-builder'=>'站点搭建'];
+        // 没在上表里的：用导航树里 id 等于权限键的条目名
+        foreach (admin_nav_tree() as $__a) foreach ($__a['groups'] as $__g) foreach ($__g['items'] as $__it) { if (!isset($__lbl[$__it['id']])) $__lbl[$__it['id']] = $__it['label']; }
+      ?>
+      <div class="rl-tools">
+        <span class="rl-count"><b id="rlN"><?=count($sel)?></b> / <?=count($all)?> 项已授权</span>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="rlAll(true)">全选</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="rlAll(false)">全不选</button>
       </div>
       <?php foreach ($groups as $gname => $perms): if (!$perms) continue; ?>
-        <fieldset style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px">
-          <legend style="padding:0 6px;font-size:13px;color:var(--muted)"><?=htmlspecialchars($gname)?></legend>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px 14px">
+        <fieldset class="rl-group">
+          <legend><label class="rl-glab"><input type="checkbox" class="rl-gcb" aria-label="全选本组"> <?=htmlspecialchars($gname)?> <span class="rl-gn"></span></label></legend>
+          <div class="rl-grid">
             <?php foreach ($perms as $p): ?>
-              <label style="display:flex;gap:7px;align-items:center;font-size:13px">
+              <label class="rl-item" title="<?=htmlspecialchars($p)?>">
                 <input type="checkbox" class="perm-cb" name="perms[]" value="<?=htmlspecialchars($p)?>" <?=in_array($p, $sel, true)?'checked':''?>>
-                <?=htmlspecialchars($p)?>
+                <span><?=htmlspecialchars($__lbl[$p] ?? $p)?><?php if (isset($__lbl[$p])): ?><code><?=htmlspecialchars($p)?></code><?php endif; ?></span>
               </label>
             <?php endforeach; ?>
           </div>
         </fieldset>
       <?php endforeach; ?>
+      <style>
+      .rl-tools{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+      .rl-count{margin-right:auto;font-size:12.5px;color:var(--muted)}.rl-count b{font-family:var(--font-mono);color:var(--fg)}
+      .rl-group{border:1px solid var(--border);border-radius:12px;padding:10px 14px 12px;margin-bottom:10px;background:var(--surface-strong)}
+      .rl-group legend{padding:0 6px}
+      .rl-glab{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer}
+      .rl-glab input{width:15px;height:15px;margin:0}
+      .rl-gn{font-family:var(--font-mono);font-size:11px;color:var(--faint);font-weight:500}
+      .rl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px 12px}
+      .rl-item{display:flex;gap:8px;align-items:center;font-size:13px;padding:5px 6px;border-radius:8px;cursor:pointer}
+      .rl-item:hover{background:var(--hover)}
+      .rl-item input{width:15px;height:15px;margin:0;flex:0 0 auto}
+      .rl-item span{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+      .rl-item code{font-size:10.5px;color:var(--faint);background:none;padding:0}
+      </style>
+      <script>
+      function rlSync(){var all=document.querySelectorAll('.perm-cb'),n=document.querySelectorAll('.perm-cb:checked').length;document.getElementById('rlN').textContent=n;
+        document.querySelectorAll('.rl-group').forEach(function(g){var cbs=g.querySelectorAll('.perm-cb'),c=g.querySelectorAll('.perm-cb:checked').length,gc=g.querySelector('.rl-gcb');gc.checked=c===cbs.length&&cbs.length>0;gc.indeterminate=c>0&&c<cbs.length;g.querySelector('.rl-gn').textContent=c+'/'+cbs.length;});}
+      function rlAll(v){document.querySelectorAll('.perm-cb').forEach(function(c){c.checked=v});rlSync();}
+      document.addEventListener('change',function(e){if(e.target.classList.contains('rl-gcb')){e.target.closest('.rl-group').querySelectorAll('.perm-cb').forEach(function(c){c.checked=e.target.checked});rlSync();}else if(e.target.classList.contains('perm-cb'))rlSync();});
+      rlSync();
+      </script>
 
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn btn-primary"><?= $editing ? '保存修改' : '创建角色' ?></button>
