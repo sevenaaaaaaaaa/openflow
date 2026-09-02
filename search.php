@@ -1,6 +1,8 @@
 <?php
 /**
  * 前台搜索结果页 — 相关话题/课程/文章/资料/技能
+ *
+ * v7（2026-09-01）：迁到共享 archetype（hero-center 搜索框 + 分组 link-grid）。搜索逻辑原样保留。
  * /search?q=关键词
  */
 require_once __DIR__ . '/admin/config.php';
@@ -14,106 +16,66 @@ if ($q) {
     $results = SearchEngine::search($q);
 }
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>搜索「<?=htmlspecialchars($q)?>」 | <?=site_config_get('site_name')?></title>
 <meta name="description" content="搜索 <?=htmlspecialchars($q)?> 相关文章、专题、课程、资料与技能">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body)}
-  .res-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px;transition:.15s;display:block;text-decoration:none;color:inherit}
-  .res-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(30,30,30,.08);border-color:var(--accent)}
+/* 搜索页零私有 CSS */
+
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('search'); ?>
 
-  <div class="mx-auto px-5 py-10" style="max-width:1100px">
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
+  <section id="top" class="reveal in" data-od-anchor data-od-id="search-hero">
+    <div class="hero-center" style="padding-bottom:0">
+      <span class="kicker">搜索</span>
+      <?php if ($q): ?><h1>「<?=htmlspecialchars($q)?>」<i class="si">的搜索结果</i></h1><?php else: ?><h1>找<i class="si">文章、课程、资料</i></h1><?php endif; ?>
+      <form class="search" action="/search" method="get" role="search" style="display:flex;gap:10px;width:min(560px,100%)">
+        <input class="inp" type="search" name="q" value="<?=htmlspecialchars($q)?>" placeholder="搜索文章、专题、课程、资料、技能…" aria-label="搜索" style="border-radius:999px;padding-left:20px">
+        <button class="btn primary" type="submit" style="border-radius:999px">搜索</button>
+      </form>
+      <?php if ($q && !empty($results['ok'])): ?>
+      <div class="trust"><span class="dot"></span>文章 <?=count($results['articles'])?> · 专题 <?=count($results['topics'])?> · 课程 <?=count($results['courses'])?> · 资料 <?=count($results['downloads'])?> · 技能 <?=count($results['skills'])?></div>
+      <?php endif; ?>
+    </div>
+  </section>
+
+  <section id="results" class="sec reveal" data-od-anchor data-od-id="search-results">
     <?php if (!$q): ?>
-    <div class="text-center py-20 text-gray-400">请输入关键词搜索</div>
+    <div class="empty">请输入关键词搜索</div>
     <?php elseif (empty($results['ok'])): ?>
-    <div class="text-center py-20 text-gray-400">搜索服务暂不可用，请稍后再试</div>
+    <div class="empty">搜索服务暂不可用，请稍后再试</div>
     <?php else: ?>
-    <h1 class="text-2xl font-bold mb-2">「<?=htmlspecialchars($q)?>」的搜索结果</h1>
-    <p class="text-sm text-gray-600 mb-8">
-      文章 <?=count($results['articles'])?> · 专题 <?=count($results['topics'])?> · 课程 <?=count($results['courses'])?> · 资料 <?=count($results['downloads'])?> · 技能 <?=count($results['skills'])?>
-    </p>
-
-    <?php if ($results['articles']): ?>
-    <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span> 相关文章</h2>
-    <div class="grid gap-3 mb-10 md:grid-cols-2">
-      <?php foreach ($results['articles'] as $a): ?>
-      <a href="/articles/<?=htmlspecialchars($a['slug'])?>" class="res-card">
-        <div class="font-semibold text-gray-900"><?=htmlspecialchars($a['title'])?></div>
-        <div class="text-xs text-gray-400 mt-1"><?=htmlspecialchars($a['category'] ?? '')?></div>
-      </a>
+    <?php $groups = [
+      ['articles','文章', fn($a)=>['/articles/'.htmlspecialchars($a['slug']), $a['title'], $a['category'] ?? '']],
+      ['topics','专题', fn($t)=>['/topics/'.htmlspecialchars($t['slug']), $t['title'], mb_substr($t['description'] ?? '',0,80)]],
+      ['courses','课程', fn($c)=>['/courses/'.htmlspecialchars($c['id']), $c['title'], $c['price'] ? '¥'.$c['price'] : '免费']],
+      ['downloads','资料', fn($d)=>['/downloads', $d['title'], '资料下载']],
+      ['skills','技能', fn($sk)=>['/marketplace?view=skill&id='.htmlspecialchars($sk['id']), $sk['title'], 'Skill']],
+    ]; $any = false; foreach ($groups as [$key,$label,$fn]): if (empty($results[$key])) continue; $any = true; ?>
+    <div class="sec-head row" style="margin-top:8px"><div><span class="kicker"><?=$label?> · <?=count($results[$key])?></span></div></div>
+    <div class="link-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:28px">
+      <?php foreach ($results[$key] as $it): [$href,$t,$sub] = $fn($it); ?>
+      <a class="link-it" href="<?=$href?>"><span class="lt"><b><?=htmlspecialchars($t)?></b><span><?=htmlspecialchars($sub)?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <?php endforeach; ?>
     </div>
+    <?php endforeach; ?>
+    <?php if (!$any): ?><div class="empty">没有找到与「<?=htmlspecialchars($q)?>」相关的内容，换个关键词试试。</div><?php endif; ?>
     <?php endif; ?>
+  </section>
 
-    <?php if ($results['topics']): ?>
-    <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span> 相关专题</h2>
-    <div class="grid gap-3 mb-10 md:grid-cols-2">
-      <?php foreach ($results['topics'] as $t): ?>
-      <a href="/topics/<?=htmlspecialchars($t['slug'])?>" class="res-card">
-        <div class="font-semibold text-gray-900"><?=htmlspecialchars($t['title'])?></div>
-        <div class="text-xs text-gray-600 mt-1 line-clamp-2"><?=htmlspecialchars($t['description'] ?? '')?></div>
-      </a>
-      <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if ($results['courses']): ?>
-    <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span> 相关课程</h2>
-    <div class="grid gap-3 mb-10 md:grid-cols-2">
-      <?php foreach ($results['courses'] as $c): ?>
-      <a href="/courses/<?=htmlspecialchars($c['id'])?>" class="res-card">
-        <div class="flex items-center justify-between">
-          <div class="font-semibold text-gray-900"><?=htmlspecialchars($c['title'])?></div>
-          <span class="text-xs font-bold text-green-600"><?=$c['price'] ? '¥'.$c['price'] : '免费'?></span>
-        </div>
-      </a>
-      <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if ($results['downloads']): ?>
-    <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span> 相关资料</h2>
-    <div class="grid gap-3 mb-10 md:grid-cols-2">
-      <?php foreach ($results['downloads'] as $d): ?>
-      <a href="/downloads" class="res-card">
-        <div class="font-semibold text-gray-900"><?=htmlspecialchars($d['title'])?></div>
-      </a>
-      <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if ($results['skills']): ?>
-    <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span> 相关技能</h2>
-    <div class="grid gap-3 mb-10 md:grid-cols-2">
-      <?php foreach ($results['skills'] as $s): ?>
-      <a href="/marketplace?view=skill&id=<?=htmlspecialchars($s['id'])?>" class="res-card">
-        <div class="font-semibold text-gray-900"><?=htmlspecialchars($s['title'])?></div>
-      </a>
-      <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if (!$results['articles'] && !$results['topics'] && !$results['courses'] && !$results['downloads'] && !$results['skills']): ?>
-    <div class="text-center py-16 text-gray-400">没有找到与「<?=htmlspecialchars($q)?>」相关的内容，换个关键词试试。</div>
-    <?php endif; ?>
-    <?php endif; ?>
-  </div>
-
-  <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-    <div class="mx-auto px-5 text-center text-sm" style="max-width:1100px">
-      <div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div>
-      <div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div>
-    </div>
-  </footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>
