@@ -89,9 +89,9 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 <title>学院 · 门派知识库 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="芭乐派增长方法论内容库：文章 · 资料下载 · 播客 · 视频教程，从利润公式到 Agent 系统，把增长讲清楚、用起来">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260903a">
 <style>
 /* 学院页独有：首屏搜索框与统计行。其余全部来自 modules.css。 */
 .search{display:flex;gap:10px;max-width:520px}

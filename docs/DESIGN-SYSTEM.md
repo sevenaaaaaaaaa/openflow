@@ -36,13 +36,43 @@ includes/site-footer.php  of_footer()       全站同一个 .foot（4 列 + 版�
 ## 二、#shell · 浏览器外壳契约（tokens.css 引用的那一章）
 
 外壳由 `includes/site-nav.php` 的 `of_shell('<page>')` 在 `<body>` 第一行注入，
-渲染全部在 `assets/site-shell.js`。四条硬约束，任何迭代不得移除或简化：
+渲染全部在 `assets/site-shell.js`，几何全部在 `modules.css` 开头的「外壳几何」段。
+
+### 单坐标系（v8，2026-09-02 重写）
+
+2026-09-02 之前的外壳有两套坐标系：顶栏 y=0 时横跨视口，滚动后变成避让侧栏的 fixed 胶囊，
+导航"居中"的参照系在滚动一瞬间从视口切到内容区（1280 宽时跳 ~120px），mega 又嵌在 `<a>` 里
+继承了导航 pill 样式、`position:fixed` 的包含块随滚动改变……7 次"修导航"都在这个错误模型里改参数。
+v8 换成**单坐标系**：
+
+```
+侧栏  position:fixed  left:14px  top:var(--chrome-top)  width:var(--sb-w)        ← 左列
+顶栏  position:sticky top:var(--chrome-top)  margin-left:calc(var(--content-l) + var(--gx))  margin-right:var(--gx)   ← 右列
+正文  #main            margin-left:var(--content-l)  padding: … var(--gx) …                                          ← 右列
+```
+
+顶栏与正文用同一个 `--content-l`（侧栏宽 + 34px；关闭 / 抽屉时 0）和同一个 `--gx`，
+所以 **顶栏宽度 ≡ 正文内容宽度，导航中心 ≡ 正文中心**，任何侧栏状态、任何滚动位置都成立；
+侧栏三态只改 `--sb-w`（248 / 76 / 0），两列各自过渡同一个属性。
+
+五条硬约束，任何迭代不得移除或简化（`tests/visual/shell_geom.py` 会量）：
 
 1. **红绿灯永远在导航最左侧**（`.lights` 三个 `.light-r/.light-y/.light-g`）。
-2. **导航真居中且保持浏览器标签页形态**：`#chrome .bar` 是 `1fr auto 1fr` 三栏网格，
-   中栏 `.topnav .tab-pill`。曾有人改成 `auto auto 1fr auto` 把导航挤到左边，已回退，别再犯。
-3. **侧栏三态** `body[data-sb=full|rail|closed]`，窄屏变 `drawer`。宽度走 `--sb-w`。
-4. **所有动效走 `--ease-spring`**（Arc 原版弹簧 `cubic-bezier(.32,.72,0,1)`）。
+2. **导航居中于正文，且保持浏览器标签页形态**：`#chrome .bar` 是 `minmax(0,1fr) auto minmax(0,1fr)` 三栏网格
+   （两侧必须能缩到 0，否则不是真居中），`|导航中心 − 正文中心| ≤ 2px`。
+3. **滚动只改表面，不改几何**：`#chrome.scrolled` 只允许动 background / border-color / box-shadow。
+   top / left / width / height / 字号一律不动；状态由 1px 哨兵 + IntersectionObserver 切换，没有阈值抖动。
+4. **侧栏三态** `body[data-sb=full|rail|closed]`，窄屏变底部抽屉 `drawer`。
+5. **所有动效走 `--ease-spring`**（Arc 原版弹簧 `cubic-bezier(.32,.72,0,1)`）。
+
+顶栏按**自身宽度**用容器查询（`@container chrome`）分级收缩：搜索胶囊 → 品牌副标 → 品牌文字 → 导航图标 → 导航进抽屉。
+不要再用视口断点管顶栏——它的可用宽度取决于侧栏状态，视口宽度说明不了任何问题。
+
+### mega 菜单
+
+body 级单例 `#mega`，`site-shell.js` 在 hover（80ms 意图延迟）/ ↓ 键时把它锚到当前 tab 中心（夹在胶囊宽度内），
+面板顶部 14px 透明区是 hover 桥。样式全部在 `.mg-*` 命名空间，条目复用 `.link-it`；**绝不**把面板嵌进 `<a>`，
+导航选择器一律写成 `.tabs > .tab-pill`，不许用 `.tabs a`。窄屏没有 hover：mega 的子项在侧栏 / 抽屉里以手风琴呈现（`.s-row .s-more .s-sub`）。
 
 `data-page` 决定导航高亮，合法值：`home product capability courses articles marketplace community events navigation about`。
 学院及其子页（docs / tools / podcasts / downloads / category / topics / search / author）都归 `articles`；
@@ -168,6 +198,7 @@ python3 tests/visual/snap.py --diff /tmp/before /tmp/after
 ```
 
 `snap.py` 用真 Chromium 在 **亮 / 暗 × 桌面 1280 / 手机 390** 四种状态下拍整页，逐像素比。
+`tests/visual/shell_geom.py` 量外壳几何契约（第二节五条 + mega 定位 / hover 桥 / 键盘 + 窄屏抽屉），改外壳必跑。
 它会关掉动效、预置角色浮层已选、固定主题，所以两次结果可复现（不改任何东西连拍两次 = 8/8 一致）。
 
 约定：**改共享层时首页必须逐像素不变**（除非就是在修首页 bug，那要在提交说明里写清哪一节变了）。
