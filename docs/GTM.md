@@ -93,6 +93,7 @@
 | 增长引擎：爬热点 → 总结 → 撰写 → 巡检 → 优化，五步可视 | `GrowthFlywheel` |
 | **AI 没配置也能用**，只是不自动写稿——不会白屏 | 优雅降级已测试 |
 | 自我体检：从错误日志、404、慢页面、空模块等六个来源自动产出改进建议清单 | `SelfEvolve` |
+| 已接好的外部系统：飞书 / 企业微信 / WhatsApp 通知，Notion 双向同步，GitHub 仓库导入，SMTP / Ghost 邮件，虎皮椒支付，Google Search Console | `NotifyChannels` `NotionClient` `api/ingest` `MailChannel` `PaymentChannel` `SeoConsole` |
 
 ## ⛔ 不能说（旧文案里有，但站不住）
 
@@ -103,6 +104,7 @@
 | 「甚至帮你**自动修**」 | `SelfEvolve` 只**产出建议清单**，不自动改代码。改成「自动体检、给出改进清单」 |
 | 「每 6 小时自动爬热点写草稿」 | 周期取决于用户自己配的 cron，不是内置固定值。改成「按你设的周期自动运行」 |
 | 任何"提升 X%"「帮客户增长 Y 倍」 | 没有真实客户数据之前，一个数都不能编 |
+| 「400+ 内置连接器」、钉钉 / Slack / Salesforce / HubSpot / Google Sheets / PostgreSQL 连接器 | **代码里没有**。真实清单见上表「已接好的外部系统」；其余一律说「Webhook / OpenAPI / MCP 自定义接入」 |
 
 > **替代写法**：把"唯一"换成**具体的、可验证的差异**。
 > 不说「唯一有自我进化的系统」，说「**它会自己体检，把该修的列给你**——
