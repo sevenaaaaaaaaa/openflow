@@ -43,7 +43,7 @@ if (!defined('OF_EMBED')) admin_header('标签管理');
         <?php if (empty($tags)): ?><span class="text-sm text-muted">暂无标签</span><?php endif; ?>
         <?php foreach ($tags as $t): ?>
         <span class="tag-item"><?=htmlspecialchars($t)?>
-          <form method="post" style="display:inline" onsubmit="return confirm('确认删除标签?')">
+          <form method="post" style="display:inline" data-confirm="确认删除标签?">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="delete">
             <input type="hidden" name="tag" value="<?=htmlspecialchars($t)?>">

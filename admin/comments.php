@@ -76,7 +76,7 @@ admin_header('评论管理');
               <?php if ($isPending): ?><a href="?act=approve&id=<?=urlencode($c['id'])?>" class="btn btn-p btn-sm">通过</a><?php endif; ?>
               <a href="?act=pin&id=<?=urlencode($c['id'])?>" class="btn btn-s btn-sm"><?=!empty($c['pinned']) ? '取消置顶' : '置顶'?></a>
               <?php if (($c['status'] ?? '') !== 'hidden'): ?><a href="?act=hide&id=<?=urlencode($c['id'])?>" class="btn btn-s btn-sm">隐藏</a><?php endif; ?>
-              <a href="?act=delete&id=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除？')">删除</a>
+              <a href="?act=delete&id=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除？">删除</a>
             </td>
           </tr>
           <?php endforeach; endif; ?>

@@ -101,14 +101,14 @@ document.getElementById('addForm').onsubmit=function(e){
   e.preventDefault();
   const fd=new FormData(this);
   fd.append('csrf_token', '<?=csrf_token()?>');
-  fetch('../api/featured-manage.php',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();else alert(d.error||'添加失败')});
+  fetch('../api/featured-manage.php',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();else ofAlert(d.error||'添加失败')});
 };
 function toggleFeatured(id,enabled){
-  fetch('../api/featured-manage.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'action=toggle&id='+id+'&enabled='+enabled+'&csrf_token=<?=csrf_token()?>'}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();else alert(d.error||'操作失败')});
+  fetch('../api/featured-manage.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'action=toggle&id='+id+'&enabled='+enabled+'&csrf_token=<?=csrf_token()?>'}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();else ofAlert(d.error||'操作失败')});
 }
-function removeFeatured(id){
-  if(!confirm('确定删除？'))return;
-  fetch('../api/featured-manage.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'action=remove&id='+id+'&csrf_token=<?=csrf_token()?>'}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();else alert(d.error||'删除失败')});
+async function removeFeatured(id){
+  if(!await ofConfirm('确定删除？'))return;
+  fetch('../api/featured-manage.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'action=remove&id='+id+'&csrf_token=<?=csrf_token()?>'}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();else ofAlert(d.error||'删除失败')});
 }
 </script>
 <?php admin_footer(); ?>

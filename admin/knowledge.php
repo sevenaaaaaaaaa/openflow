@@ -94,7 +94,7 @@ admin_header('知识库');
               </td>
               <td class="text-sm text-muted"><?=$cats[$d['category'] ?? 'general'] ?? $d['category']?></td>
               <td class="text-sm text-muted"><?=htmlspecialchars(implode('、', array_slice($d['tags'] ?? [],0,3)))?></td>
-              <td><a href="?delete=<?=urlencode($d['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除?')">删除</a></td>
+              <td><a href="?delete=<?=urlencode($d['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除?">删除</a></td>
             </tr>
             <?php endforeach; ?>
           </tbody>

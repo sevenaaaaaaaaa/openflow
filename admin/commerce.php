@@ -169,7 +169,7 @@ admin_header('商业中心');
               </form>
             </td>
             <td>
-              <form method="post" style="display:inline" onsubmit="return confirm('删除商品？')">
+              <form method="post" style="display:inline" data-confirm="删除商品？">
                 <?= csrf_field() ?>
                 <input type="hidden" name="delete_product" value="1">
                 <input type="hidden" name="product_id" value="<?=htmlspecialchars($p['id'])?>">

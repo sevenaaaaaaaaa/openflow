@@ -145,7 +145,7 @@ admin_header('品牌数字资产');
               <span style="font-size:11px;color:var(--text-3)"><?=round($a['size']/1024)?>KB</span>
               <span>
                 <a href="javascript:copyDAM('<?=htmlspecialchars($a['file'])?>')" class="btn btn-ghost btn-sm">复制</a>
-                <a href="?delete=<?=urlencode($a['id'])?>&type=<?=$currentType?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除?')">✕</a>
+                <a href="?delete=<?=urlencode($a['id'])?>&type=<?=$currentType?>" class="btn btn-danger btn-sm" data-confirm="确认删除?">✕</a>
               </span>
             </div>
           </div>
@@ -161,7 +161,7 @@ admin_header('品牌数字资产');
 function copyDAM(path) {
   var url = location.origin + '/' + path;
   navigator.clipboard.writeText(url).then(function() {
-    if (window.fcToast) window.fcToast('已复制: ' + url, 'success'); else alert('已复制');
+    if (window.fcToast) window.fcToast('已复制: ' + url, 'success'); else ofAlert('已复制');
   });
 }
 </script>

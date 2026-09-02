@@ -86,7 +86,7 @@ admin_header('人群激活');
           <button class="btn btn-primary btn-sm"><?=$edit?'更新':'创建'?></button>
           <?php if ($edit): ?>
           <a href="/xmp/destinations" class="btn btn-ghost btn-sm">取消</a>
-          <form method="post" onsubmit="return confirm('删除?')" style="display:inline;margin-left:8px"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=htmlspecialchars($edit['id'])?>"><button class="btn btn-ghost btn-sm" style="color:#dc2626">删除</button></form>
+          <form method="post" data-confirm="删除?" style="display:inline;margin-left:8px"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=htmlspecialchars($edit['id'])?>"><button class="btn btn-ghost btn-sm" style="color:#dc2626">删除</button></form>
           <?php endif; ?>
         </form>
       </div>

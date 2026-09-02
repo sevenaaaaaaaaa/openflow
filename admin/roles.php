@@ -117,7 +117,7 @@ admin_header('角色与权限');
             <td style="white-space:nowrap">
               <a href="?edit=<?=urlencode($slug)?>" class="btn btn-ghost btn-sm"><?=$slug==='admin'?'查看':'编辑'?></a>
               <?php if (!$builtin): ?>
-                <a href="?delete=<?=urlencode($slug)?>" class="btn btn-danger btn-sm" onclick="return confirm('删除角色「<?=htmlspecialchars(role_label($slug))?>」?')">删除</a>
+                <a href="?delete=<?=urlencode($slug)?>" class="btn btn-danger btn-sm" data-confirm="删除角色「<?=htmlspecialchars(role_label($slug))?>」?">删除</a>
               <?php endif; ?>
             </td>
           </tr>

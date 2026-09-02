@@ -134,12 +134,12 @@ admin_header('生态市场');
             <td><?=($s['status'] ?? '') === 'published' ? '<span class="text-sm" style="color:var(--ok)">已发布</span>' : (($s['status'] ?? '') === 'pending' ? '<span class="text-sm" style="color:var(--warn)">待审核</span>' : (($s['status'] ?? '') === 'rejected' ? '<span class="text-sm" style="color:var(--danger)">已拒绝</span>' : '<span class="text-sm" style="color:var(--faint)">草稿</span>'))?></td>
             <td style="white-space:nowrap">
               <?php if (($s['status'] ?? '') === 'pending'): ?>
-              <a href="?approve=<?=urlencode($s['id'])?>" class="btn btn-primary btn-sm" onclick="return confirm('通过并上架？')">✓ 通过</a>
-              <a href="?reject=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('拒绝该产品？')">✕ 拒绝</a>
+              <a href="?approve=<?=urlencode($s['id'])?>" class="btn btn-primary btn-sm" data-confirm="通过并上架？">✓ 通过</a>
+              <a href="?reject=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm" data-confirm="拒绝该产品？">✕ 拒绝</a>
               <?php endif; ?>
               <a href="?tab=new&edit=<?=urlencode($s['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
               <a href="?dup_skill=<?=urlencode($s['id'])?>" class="btn btn-ghost btn-sm">复制</a>
-              <a href="?del_skill=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除？')">删除</a>
+              <a href="?del_skill=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除？">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>

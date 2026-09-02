@@ -82,7 +82,7 @@ $reasons = ReportSystem::reasons();
 <script>
 function resolveReport(id, status) {
   const note = prompt('处理备注（可选）：') || '';
-  fetch('../api/report-manage.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'id='+encodeURIComponent(id)+'&status='+status+'&note='+encodeURIComponent(note)+'&csrf_token=<?=csrf_token()?>'}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();else alert(d.error||'操作失败')});
+  fetch('../api/report-manage.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'id='+encodeURIComponent(id)+'&status='+status+'&note='+encodeURIComponent(note)+'&csrf_token=<?=csrf_token()?>'}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();else ofAlert(d.error||'操作失败')});
 }
 </script>
 <?php admin_footer(); ?>

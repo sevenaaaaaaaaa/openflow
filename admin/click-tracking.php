@@ -46,7 +46,7 @@ admin_header('圈选埋点');
           <div style="display:flex;gap:6px">
             <a href="/xmp/click-tracking?edit=<?=urlencode($t['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
             <form method="post" style="margin:0"><?= csrf_field() ?><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?=htmlspecialchars($t['id'])?>"><button class="btn btn-ghost btn-sm"><?=!empty($t['enabled'])?'停用':'启用'?></button></form>
-            <form method="post" onsubmit="return confirm('删除?')" style="margin:0"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=htmlspecialchars($t['id'])?>"><button class="btn btn-ghost btn-sm" style="color:#dc2626">×</button></form>
+            <form method="post" data-confirm="删除?" style="margin:0"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=htmlspecialchars($t['id'])?>"><button class="btn btn-ghost btn-sm" style="color:#dc2626">×</button></form>
           </div>
         </div>
         <div style="font-size:12px;color:var(--faint);margin-top:4px;font-family:monospace"><?=htmlspecialchars($t['selector'])?> → <?=htmlspecialchars($t['event'])?><?=!empty($t['page'])?' @'.htmlspecialchars($t['page']):' @全站'?></div>
@@ -144,7 +144,7 @@ function injectPicker(f) {
       document.getElementById('selInput').value = buildSelector(e.target);
       document.getElementById('pickerOv').style.display = 'none';
     }, true);
-  } catch (err) { alert('圈选器需要同源页面，请确认地址是本站路径'); }
+  } catch (err) { ofAlert('圈选器需要同源页面，请确认地址是本站路径'); }
 }
 </script>
 <?php admin_footer(); ?>

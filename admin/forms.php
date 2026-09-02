@@ -93,7 +93,7 @@ admin_header('表单管理');
             <td><span class="badge <?=($f['status']??'draft')==='published'?'badge-green':'badge-yellow'?>"><?=$f['status']??'draft'?></span></td>
             <td><code style="font-size:11px" onclick="copy(this)">[form slug="<?=htmlspecialchars($f['slug'])?>"]</code></td>
             <td><a href="?edit=<?=urlencode($f['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-              <form method="post" style="display:inline" onsubmit="return confirm('确认删除?')">
+              <form method="post" style="display:inline" data-confirm="确认删除?">
                 <?= csrf_field() ?>
           </tr>
           <?php endforeach; ?>
@@ -216,7 +216,7 @@ function addPresetField(key, label) {
   document.getElementById('fieldsList').appendChild(div);
 }
 function copy(el) {
-  navigator.clipboard.writeText(el.textContent).then(function() { alert('已复制嵌入代码'); });
+  navigator.clipboard.writeText(el.textContent).then(function() { ofAlert('已复制嵌入代码'); });
 }
 </script>
 <?php admin_footer(); ?>

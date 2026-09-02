@@ -181,8 +181,8 @@ function downloadQR(data, name) {
 }
 function generateCustomQR() {
   var url = document.getElementById('customUrl').value.trim();
-  if (!url) { alert('请输入 URL'); return; }
-  if (!url.match(/^https?:\/\//)) { alert('URL 需以 http:// 或 https:// 开头'); return; }
+  if (!url) { ofAlert('请输入 URL'); return; }
+  if (!url.match(/^https?:\/\//)) { ofAlert('URL 需以 http:// 或 https:// 开头'); return; }
   var qrData = '/qr.php?t=qr_custom_' + Date.now() + '&url=' + encodeURIComponent(url);
   window.open('https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(location.origin + qrData), '_blank');
 }

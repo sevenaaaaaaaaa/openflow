@@ -94,7 +94,7 @@ admin_header('自定义内容类型');
           <div style="margin-top:12px"><button class="btn btn-primary btn-sm">保存类型</button></div>
         </form>
         <?php if ($type): ?>
-        <form method="post" onsubmit="return confirm('删除类型「<?=htmlspecialchars($type['name'])?>」?条目文件会保留作备份。')" style="margin-top:8px">
+        <form method="post" data-confirm="删除类型「<?=htmlspecialchars($type['name'])?>」？条目文件会保留作备份。" style="margin-top:8px">
           <?= csrf_field() ?><input type="hidden" name="action" value="delete_type"><input type="hidden" name="slug" value="<?=htmlspecialchars($type['slug'])?>">
           <button class="btn btn-ghost btn-sm" style="color:#dc2626">删除此类型</button>
         </form>
@@ -114,7 +114,7 @@ admin_header('自定义内容类型');
         <div><strong><?=htmlspecialchars($e['title'])?></strong> <span style="font-size:11px;padding:1px 6px;border-radius:999px;background:<?=($e['status']??'')==='published'?'#dcfce7':'#f1f5f9'?>;color:<?=($e['status']??'')==='published'?'#166534':'#64748b'?>"><?=($e['status']??'')==='published'?'已发布':'草稿'?></span></div>
         <div style="display:flex;gap:6px">
           <a href="/xmp/cpt?type=<?=urlencode($type['slug'])?>&edit=<?=urlencode($e['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-          <form method="post" onsubmit="return confirm('删除?')" style="margin:0"><?= csrf_field() ?><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="id" value="<?=htmlspecialchars($e['id'])?>"><button class="btn btn-ghost btn-sm" style="color:#dc2626">×</button></form>
+          <form method="post" data-confirm="删除?" style="margin:0"><?= csrf_field() ?><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="id" value="<?=htmlspecialchars($e['id'])?>"><button class="btn btn-ghost btn-sm" style="color:#dc2626">×</button></form>
         </div>
       </div>
       <?php endforeach; ?>

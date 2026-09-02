@@ -128,7 +128,7 @@ admin_header('退款售后');
                 <input type="hidden" name="refund" value="1">
                 <input type="hidden" name="order_id" value="<?=htmlspecialchars($o['id'])?>">
                 <input type="text" name="reason" placeholder="退款原因" style="width:70px;padding:5px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
-                <button class="btn btn-danger btn-sm" onclick="return confirm('确认退款？将扣回佣金与分成')">退款</button>
+                <button class="btn btn-danger btn-sm" data-confirm="确认退款？将扣回佣金与分成">退款</button>
               </form>
               <?php else: ?><span class="text-sm" style="color:var(--faint)">—</span><?php endif; ?>
             </td>

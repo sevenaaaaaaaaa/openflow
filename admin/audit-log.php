@@ -49,7 +49,7 @@ if ($__sub === 'self'):
     <div class="flex items-center gap-4 mb-2">
       <h1 style="margin-bottom:0">审计日志</h1>
       <div style="margin-left:auto;display:flex;gap:8px">
-        <a href="?clear=1&csrf_token=<?=csrf_token()?>" class="btn btn-danger btn-sm" onclick="return confirm('确定清空所有日志？')">清空日志</a>
+        <a href="?clear=1&csrf_token=<?=csrf_token()?>" class="btn btn-danger btn-sm" data-confirm="确定清空所有日志？">清空日志</a>
       </div>
     </div>
     <p class="sub">记录所有管理后台操作，便于安全审计和问题追踪</p>
