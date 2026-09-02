@@ -52,6 +52,9 @@
     }
   })();
 
+  // <details class="ae-more"> 之类的下拉菜单：点外面关闭
+  document.addEventListener('click', function (e) { $$('details[open].ae-more, details[open].of-menu').forEach(function (d) { if (!d.contains(e.target)) d.open = false; }); });
+
   /* ── 2. 对话框 + toast ── */
   var dlg = null, dlgResolve = null;
   function ensureDialog() {
@@ -144,6 +147,7 @@
     // 粘性保存条：挑最长且有提交按钮、底部在首屏以下的那张表单
     var target = null, submitBtn = null;
     forms.forEach(function (f) {
+      if (f.hasAttribute('data-no-savebar')) return;   // 页面自己有常驻保存按钮
       var btn = $('button[type=submit],input[type=submit],button:not([type])', f); if (!btn) return;
       var r = f.getBoundingClientRect(); if (r.height < window.innerHeight * 0.9) return;
       if (!target || r.height > target.getBoundingClientRect().height) { target = f; submitBtn = btn; }

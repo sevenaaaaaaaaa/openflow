@@ -108,8 +108,14 @@ admin_header('审核中心');
             <td style="white-space:nowrap">
               <form method="post" style="display:inline">
                 <?= csrf_field() ?>
-              <form method="post" style="display:inline">
+                <input type="hidden" name="review_teacher" value="1"><input type="hidden" name="member_id" value="<?=htmlspecialchars($t['id'])?>">
+                <button type="submit" name="approve" value="1" class="btn btn-primary btn-sm">通过</button>
+              </form>
+              <form method="post" style="display:inline" data-confirm="拒绝 <?=htmlspecialchars($t['name'], ENT_QUOTES)?> 的讲师申请？">
                 <?= csrf_field() ?>
+                <input type="hidden" name="review_teacher" value="1"><input type="hidden" name="member_id" value="<?=htmlspecialchars($t['id'])?>">
+                <button type="submit" name="approve" value="0" class="btn btn-ghost btn-sm">拒绝</button>
+              </form>
             </td>
           </tr>
           <?php endforeach; ?>
@@ -129,11 +135,17 @@ admin_header('审核中心');
             <td class="text-sm text-muted"><?=htmlspecialchars($s['category'])?></td>
             <td class="text-sm text-muted" style="max-width:220px"><?=htmlspecialchars(mb_substr($s['excerpt'] ?? '',0,40))?></td>
             <td style="white-space:nowrap">
-              <button class="btn btn-ghost btn-sm" onclick="previewSubmission('<?=htmlspecialchars($s['id'])?>')">👁 预览</button>
-              <form method="post" style="display:inline">
+              <button class="btn btn-ghost btn-sm" onclick="previewSubmission('<?=htmlspecialchars($s['id'])?>')">预览</button>
+              <form method="post" style="display:inline" data-confirm="通过并发布「<?=htmlspecialchars($s['title'], ENT_QUOTES)?>」？">
                 <?= csrf_field() ?>
-              <form method="post" style="display:inline">
+                <input type="hidden" name="review_article" value="1"><input type="hidden" name="submission_id" value="<?=htmlspecialchars($s['id'])?>">
+                <button type="submit" name="approve" value="1" class="btn btn-primary btn-sm">通过并发布</button>
+              </form>
+              <form method="post" style="display:inline" data-confirm="驳回「<?=htmlspecialchars($s['title'], ENT_QUOTES)?>」？作者会收到站内信。">
                 <?= csrf_field() ?>
+                <input type="hidden" name="review_article" value="1"><input type="hidden" name="submission_id" value="<?=htmlspecialchars($s['id'])?>">
+                <button type="submit" name="approve" value="0" class="btn btn-ghost btn-sm">驳回</button>
+              </form>
             </td>
           </tr>
           <?php endforeach; ?>

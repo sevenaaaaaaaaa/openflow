@@ -1191,6 +1191,8 @@ code{font-family:var(--font-mono); font-size:12.5px; background:var(--hover); pa
 .badge-green{background:var(--ok-soft); color:var(--ok)}
 .badge-yellow{background:var(--warn-soft); color:var(--warn)}
 .badge-gray{background:var(--hover); color:var(--muted)}
+.badge-red,.badge-danger{background:var(--danger-soft,color-mix(in oklab,var(--danger) 14%,transparent)); color:var(--danger)}
+.badge-blue,.badge-accent{background:var(--accent-soft); color:var(--accent)}
 .text-muted{color:var(--muted)}
 .text-sm{font-size:13px}
 .lbl{font-size:12.5px; font-weight:700; color:var(--muted); display:block; margin-bottom:6px}

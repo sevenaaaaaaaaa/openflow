@@ -36,6 +36,9 @@
 #sidebar .sb-recent a:hover{background:var(--hover);color:var(--fg)}
 #sidebar .sb-recent a i{width:5px;height:5px;border-radius:50%;background:var(--border-strong);flex:0 0 auto}
 #sidebar .sb-recent:empty::before{content:"打开过的页面会出现在这里";display:block;padding:6px 10px;font-size:12px;color:var(--faint)}
+#sidebar .sb-plugins a{display:flex;align-items:center;gap:8px;padding:7px 10px!important;border-radius:10px;font-size:13px!important;font-weight:500;color:var(--muted);text-decoration:none}
+#sidebar .sb-plugins a:hover{background:var(--hover);color:var(--fg)}
+#sidebar .sb-plugins svg{width:15px;height:15px}
 #sidebar .sb-foot{grid-column:1/-1;grid-row:2;padding:8px 10px 2px;font-size:11px;color:var(--faint);border-top:1px solid var(--border-soft)}
 /* 三态：rail 只留区图标；closed 整个收起，正文顶到左边 */
 body[data-sb="rail"]{--sb-w:calc(var(--sb-rail) + 16px)}
@@ -113,3 +116,59 @@ table[data-of-table] tr.of-hide{display:none}
 .of-ic{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;vertical-align:-3px;flex:0 0 auto}
 .of-ic svg{width:15px;height:15px}
 a>.of-ic:only-child,button>.of-ic:only-child{width:16px;height:16px}
+
+/* ── 6. 列表页骨架（lst-*）+ 选择条 + 行内菜单：articles / orders / crm / mall 等列表页共用 ── */
+.lst-filter{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.lst-search{flex:1 1 240px;max-width:420px;display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border:1.5px solid var(--border);border-radius:11px;background:var(--surface);color:var(--faint)}
+.lst-search:focus-within{border-color:var(--accent)}
+.lst-search svg{width:15px;height:15px;flex:0 0 auto}
+.lst-search input{flex:1;border:0;outline:0;background:transparent;font-size:13.5px;color:var(--fg);min-width:0;padding:0}
+.lst-sel{height:38px;padding:0 30px 0 12px;border:1.5px solid var(--border);border-radius:11px;font-size:13px;font-weight:600;background:var(--surface);color:var(--fg)}
+.lst-count{margin-left:auto;font-family:var(--font-mono);font-size:12px;color:var(--faint);white-space:nowrap}
+.lst-card{padding:0;overflow:visible}
+.lst-card > .of-tbl{margin:0;padding:8px 18px 10px}
+.lst-card > .of-pager{padding:10px 18px 12px;margin:0;border-top:1px solid var(--border)}
+.lst-card > .of-empty{margin:8px 18px}
+.lst-table{width:100%;table-layout:fixed}
+.lst-table th{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:12px 14px;white-space:nowrap}
+.lst-table td{padding:12px 14px;vertical-align:middle}
+.lst-table tr.sel td{background:var(--accent-soft)}
+.lst-table .c-check{width:22px;padding-right:0}
+.lst-table .c-check input{width:16px;height:16px;margin:0;display:block}
+.lst-table .c-title{width:auto}
+.lst-table .c-cat{width:150px;white-space:nowrap}
+.lst-table .c-status{width:130px;white-space:nowrap}
+.lst-table .c-meta{width:140px;white-space:nowrap;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+.lst-table .c-act{width:172px;white-space:nowrap;text-align:right}
+.lst-table td.c-title{overflow:hidden}
+.lst-item{display:flex;align-items:center;gap:12px;min-width:0}
+.lst-body{min-width:0;flex:1}
+.lst-title{font-size:14px;font-weight:700;line-height:1.4;display:flex;align-items:center;gap:6px;min-width:0}
+.lst-title .inline-edit{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.lst-sub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;min-width:0}
+.lst-slug{font-family:var(--font-mono);font-size:11px;color:var(--faint);background:none;padding:2px 4px;margin:-2px -4px}
+.lst-when{font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-top:2px}
+.lst-acts{display:inline-flex;align-items:center;gap:4px}
+.ib{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:9px;color:var(--muted);cursor:pointer;position:relative;transition:background .15s,color .15s}
+.ib:hover{background:var(--hover);color:var(--fg)}
+.ib svg{width:16px;height:16px}
+.ib input{position:absolute;inset:0;opacity:0;cursor:pointer;margin:0}
+.ib:has(input:checked){color:var(--accent);background:var(--accent-soft)}
+.of-menu{position:relative}
+.of-menu summary{list-style:none}
+.of-menu summary::-webkit-details-marker{display:none}
+.of-menu-list{position:absolute;right:0;top:calc(100% + 4px);min-width:150px;padding:6px;border-radius:12px;border:1px solid var(--border);background:var(--surface-strong);box-shadow:var(--shadow);display:flex;flex-direction:column;z-index:30;text-align:left}
+.of-menu-list a,.of-menu-list button{display:block;width:100%;text-align:left;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--fg);background:none;border:0;cursor:pointer;text-decoration:none;white-space:nowrap}
+.of-menu-list a:hover,.of-menu-list button:hover{background:var(--hover)}
+.of-menu-list .danger{color:var(--danger)}
+@media(max-width:1180px){.lst-card:not(:has(.of-menu)){overflow-x:auto}.lst-card:not(:has(.of-menu)) .lst-table{min-width:720px}}
+@media(max-width:1100px){.lst-table .c-meta{display:none}}
+@media(max-width:840px){.lst-table .c-cat{display:none}.lst-table .c-title{min-width:0}.lst-card{overflow-x:auto}.lst-table{min-width:640px}}
+.of-selbar{position:fixed;left:calc(var(--sb-w) + 26px);right:92px;bottom:14px;z-index:70;display:flex;align-items:center;gap:10px;padding:10px 12px 10px 18px;border-radius:16px;border:1px solid var(--border);background:var(--surface-strong);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);box-shadow:var(--shadow-sm);transform:translateY(120%);opacity:0;pointer-events:none;transition:transform .3s var(--ease-spring),opacity .2s,left .35s var(--ease-spring)}
+.of-selbar.show{transform:none;opacity:1;pointer-events:auto}
+.of-selbar .sel-n{font-size:13px;color:var(--muted);margin-right:6px}
+.of-selbar .sel-n b{color:var(--fg);font-family:var(--font-mono)}
+.of-selbar .lst-sel{height:36px}
+body.has-selbar .main{padding-bottom:90px}
+body[data-sb="closed"] .of-selbar{left:14px}
+@media(max-width:840px){.of-selbar{left:14px;right:14px;flex-wrap:wrap}}
