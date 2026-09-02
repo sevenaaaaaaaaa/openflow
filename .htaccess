@@ -89,6 +89,13 @@ RewriteRule ^download/(.+)$ download.php?slug=$1 [L,QSA]
 RewriteRule ^downloads/(.+)$ download.php?slug=$1 [L,QSA]
 RewriteRule ^category/([a-z]+)/([a-z0-9_-]+)/?$ category.php?section=$1&subkey=$2 [L,QSA]
 RewriteRule ^community-post/(.+)$ community-post.php?id=$1 [L,QSA]
+# 生态资产详情伪静态（asset.php 头部注释里承诺了这条路径，但一直没有规则；个人中心「为你推荐」链到这里 → 404）
+RewriteRule ^(skill|plugin|theme)/([^/]+)/?$ asset.php?type=$1&id=$2 [L,QSA,B]
+
+# API：前台脚本用无后缀形式请求（/api/member?action=login）。以前没有这条规则，
+# 服务器不开 MultiViews 时全部 404 —— 登录 / 注册弹窗提交后直接失败。
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^api/([a-z0-9_-]+)/?$ api/$1.php [L,QSA]
 
 # 已存在的文件/目录直接放行
 RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -110,8 +117,11 @@ RewriteRule ^topic/(.+)$ topics.php?slug=$1 [L,QSA,B]
 RewriteRule ^topics/(.+)$ topics.php?slug=$1 [L,QSA,B]
 RewriteRule ^navigation/?$ navigation.php [L,QSA]
 RewriteRule ^navigation-site/?$ navigation-site.php [L,QSA]
+# 增长导航站点详情：导航页每张站点卡都链到 /navigation/{id}，此前没有规则 → 全部 404
+RewriteRule ^navigation/([^/]+)/?$ navigation-site.php?site=$1 [L,QSA,B]
 RewriteRule ^event/(.+)$ event.php?slug=$1 [L,QSA,B]
 RewriteRule ^events/?$ events.php [L,QSA]
+RewriteRule ^events/(.+)$ event.php?slug=$1 [L,QSA,B]
 RewriteRule ^lp/(.+)$ landing.php?slug=$1 [L,QSA,B]
 RewriteRule ^b/(.+)$ front-builder.php?slug=$1 [L,QSA,B]
 

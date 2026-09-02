@@ -31,12 +31,18 @@ if ($type === 'skill') {
 } elseif ($type === 'plugin') {
     foreach (mkt_assets() as $a) if ($a['type'] === 'plugin' && $a['id'] === $id) $asset = $a;
 } elseif ($type === 'theme') {
-    $themes = json_read(DATA_DIR . '/themes.json');
-    foreach (($themes['themes'] ?? []) as $t) if ($t['id'] === $id) {
+    // 主题来自 ThemeSystem（预设 + 自定义）；以前只翻 themes.json['themes']，预设主题一个都找不到 → 全部「资产不存在」
+    $t = class_exists('ThemeSystem') ? ThemeSystem::get($id) : null;
+    if ($t) {
         $asset = $t;
+        $asset['id'] = $id;
         $asset['type'] = 'theme';
+        $asset['title'] = $t['name'] ?? $id;
+        $asset['description'] = $t['desc'] ?? ($t['description'] ?? '');
         $asset['icon'] = '';
+        $asset['author'] = $t['author'] ?? 'OpenFlow';
         $asset['version'] = $t['version'] ?? '1.0.0';
+        $asset['installed'] = ThemeSystem::activeId() === $id;
     }
 }
 
@@ -162,8 +168,13 @@ $emojiOrSvg = fn(string $e, string $fallback) => (preg_match('/^[\x{1F000}-\x{1F
             <button type="button" class="btn primary" onclick="purchase()">购买 ¥<?=$price?></button>
             <button type="button" class="btn ghost" onclick="installAsset()">安装</button>
           <?php endif; ?>
-        <?php else: ?>
+        <?php elseif ($type === 'skill'): ?>
           <button type="button" class="btn primary" onclick="installAsset()">免费安装</button>
+        <?php elseif (!empty($asset['installed'])): ?>
+          <span class="badge ok"><span class="dot"></span><?=$type === 'theme' ? '本站正在使用' : '本站已启用'?></span>
+        <?php else: ?>
+          <?php /* 插件 / 主题是站点级资产，由站长在后台启用；以前这里也是「免费安装」按钮，点了报「Skill 不存在」 */ ?>
+          <span class="pill neutral" style="white-space:normal;text-align:center">随 OpenFlow 开源发行 · 站长在后台一键启用</span>
         <?php endif; ?>
       </div>
     </div>

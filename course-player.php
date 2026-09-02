@@ -197,7 +197,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
           <?php endif; ?>
           <?php endif; ?>
           <?php if ($member): ?>
-          <button type="button" onclick="toggleFav(<?=json_encode($courseId)?>, this)" class="btn ghost<?=$isFav?' fav-on':''?>" style="height:40px;font-size:14px"><?=$isFav?'★ 已收藏':'☆ 收藏课程'?></button>
+          <button type="button" onclick="toggleFav(<?=htmlspecialchars(json_encode($courseId), ENT_QUOTES)?>, this)" class="btn ghost<?=$isFav?' fav-on':''?>" style="height:40px;font-size:14px"><?=$isFav?'★ 已收藏':'☆ 收藏课程'?></button>
           <?php endif; ?>
         </div>
 

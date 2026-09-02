@@ -98,28 +98,61 @@ function member_check_whitelist(string $email, string $phone): array {
 }
 
 // ─── 验证码 ───
-function member_send_captcha(string $target): bool {
+/**
+ * 验证码能通过什么通道送达：email（站点邮件通道可用且目标是邮箱）/ none。
+ * 短信网关尚未接入，所以手机号永远是 none。
+ */
+function member_captcha_channel(string $target): string {
+    if (strpos($target, '@') !== false) {
+        require_once __DIR__ . '/MailChannel.php';
+        return mail_available() ? 'email' : 'none';
+    }
+    return 'none';
+}
+
+/** 注册是否需要验证码 = 开关打开 且 验证码真的送得到。以前只看开关：邮件没配时用户被要求填一个永远收不到的验证码，注册从上线起就不可能成功。 */
+function member_captcha_required(string $target): bool {
+    return !empty(member_settings()['captcha_enabled']) && member_captcha_channel($target) !== 'none';
+}
+
+/** 发送验证码，返回 ['ok'=>bool,'error'=>string,'channel'=>string] */
+function member_send_captcha_ex(string $target): array {
     $s = member_settings();
+    $channel = member_captcha_channel($target);
+    if ($channel === 'none') {
+        return ['ok' => false, 'channel' => 'none', 'error' => strpos($target, '@') !== false ? '站点尚未配置邮件服务，当前注册无需验证码' : '暂不支持短信验证码，请使用邮箱注册'];
+    }
     // 频率限制
     $captcha = json_read(member_captcha_file());
     $now = time();
     $recent = array_filter($captcha, fn($c) => $now - ($c['time'] ?? 0) < ($s['rate_limit']['window'] ?? 60));
     $count = count(array_filter($recent, fn($c) => ($c['target'] ?? '') === $target));
-    if ($count >= ($s['rate_limit']['max'] ?? 10)) return false;
+    if ($count >= ($s['rate_limit']['max'] ?? 10)) return ['ok' => false, 'channel' => $channel, 'error' => '发送过于频繁，请稍后再试'];
 
     $code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
     $captcha[] = ['target' => $target, 'code' => $code, 'time' => $now, 'used' => false];
-    // 保留最近 50 条
     $captcha = array_slice($captcha, -50);
     json_write(member_captcha_file(), $captcha);
 
-    // 发送（demo 模式：存文件；真实环境接短信/邮件服务）
-    // TODO: 接入短信网关/邮件 SMTP
+    // 发送日志（后台「用户验证码」页读取）
     $sentLog = DATA_DIR . '/members/captcha-sent.json';
     $sent = json_read($sentLog);
-    $sent[] = ['target' => $target, 'code' => $code, 'time' => date('Y-m-d H:i:s')];
-    json_write($sentLog, $sent);
-    return true;
+    $sent[] = ['target' => $target, 'code' => $code, 'time' => date('Y-m-d H:i:s'), 'channel' => $channel];
+    json_write($sentLog, array_slice($sent, -200));
+
+    $site = htmlspecialchars((string)(json_read(DATA_DIR . '/settings.json')['site_name'] ?? 'OpenFlow'));
+    $body = '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#211910">'
+          . '<p style="font-size:14px;color:#6b665e;margin:0 0 12px">' . $site . ' 注册验证码</p>'
+          . '<p style="font-size:32px;font-weight:800;letter-spacing:.18em;margin:0 0 16px">' . $code . '</p>'
+          . '<p style="font-size:13px;color:#6b665e;margin:0">10 分钟内有效。如果不是你本人操作，忽略这封邮件即可。</p></div>';
+    $ok = mail_send($target, "【{$site}】注册验证码 {$code}", $body);
+    if (!$ok) return ['ok' => false, 'channel' => $channel, 'error' => '验证码邮件发送失败，请稍后重试或联系站长'];
+    return ['ok' => true, 'channel' => $channel, 'error' => ''];
+}
+
+/** 兼容旧调用 */
+function member_send_captcha(string $target): bool {
+    return member_send_captcha_ex($target)['ok'];
 }
 
 function member_verify_captcha(string $target, string $code): bool {

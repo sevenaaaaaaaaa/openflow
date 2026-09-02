@@ -27,6 +27,13 @@ $settings = json_read($settingsFile);
     'footer_about' => 'AI 时代的网站增长操作系统',
     'footer_contact' => '',
     'copyright_text' => '',
+    // 社交账号：填了才在前台 footer 显示对应图标（以前图标写死 href="#"，点了没反应）
+    'social_github' => 'https://github.com/sevenaaaaaaaaa/openflow',
+    'social_x' => '',
+    'social_youtube' => '',
+    'social_wechat' => '',
+    'social_bilibili' => '',
+    'social_zhihu' => '',
     'smtp_host' => '',
     'smtp_port' => '465',
     'smtp_user' => '',
@@ -100,6 +107,11 @@ admin_header('系统设置');
         <div class="field"><label>SEO 关键词 <span class="hint">· 逗号分隔</span></label><input type="text" name="settings[site_keywords]" value="<?=htmlspecialchars($settings['site_keywords'] ?? '')?>"></div>
         <div class="field"><label>Footer 简介 <span class="hint">· footer 品牌区文案</span></label><input type="text" name="settings[footer_about]" value="<?=htmlspecialchars($settings['footer_about'] ?? 'AI 时代的网站增长操作系统')?>"></div>
         <div class="field"><label>Footer 联系信息 <span class="hint">· 每行一条</span></label><textarea name="settings[footer_contact]" rows="3" placeholder="OpenFlow 科技有限公司&#10;成立于 2021 年 · 上海"><?=htmlspecialchars($settings['footer_contact'] ?? '')?></textarea></div>
+        <div class="field-row">
+          <?php foreach (['social_github'=>['GitHub','https://github.com/…'],'social_x'=>['X / Twitter','https://x.com/…'],'social_youtube'=>['YouTube','https://youtube.com/@…'],'social_wechat'=>['微信公众号','二维码图片或文章链接'],'social_bilibili'=>['B 站','https://space.bilibili.com/…'],'social_zhihu'=>['知乎','https://www.zhihu.com/org/…']] as $__k => [$__l, $__ph]): ?>
+          <div class="field"><label><?=$__l?> <span class="hint">· 空则不显示</span></label><input type="url" name="settings[<?=$__k?>]" value="<?=htmlspecialchars($settings[$__k] ?? '')?>" placeholder="<?=$__ph?>"></div>
+          <?php endforeach; ?>
+        </div>
         <div class="field"><label>自定义版权文案 <span class="hint">· 空则自动生成「© 年份 公司名 备案号」</span></label><input type="text" name="settings[copyright_text]" value="<?=htmlspecialchars($settings['copyright_text'] ?? '')?>"></div>
       </div>
 
