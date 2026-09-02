@@ -251,9 +251,9 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 <script type="application/ld+json"><?=json_encode($jsonLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?></script>
 <?php if ($faqLd): ?><script type="application/ld+json"><?=json_encode($faqLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?></script><?php endif; ?>
 <script type="application/ld+json"><?=json_encode($breadcrumbLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?></script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260903a">
 <style>
 /* 文章页独有：标签云。其余（阅读版式 .reader/.prose、动作条、付费墙）全部来自 modules.css。 */
 .art-tags{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}
