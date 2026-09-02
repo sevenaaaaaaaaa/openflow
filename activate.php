@@ -1,6 +1,8 @@
 <?php
 /**
  * 激活码兑换页 — 用户输入激活码激活课程/服务
+ *
+ * v7（2026-09-01）：迁到共享 archetype（reader + form-card）。激活接口原样保留。
  * /activate
  */
 require_once __DIR__ . '/admin/config.php';
@@ -12,71 +14,63 @@ $member = member_current();
 $activated = [];
 if ($member) $activated = act_member_activated($member['id']);
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>激活码兑换 | <?=site_config_get('site_name')?></title>
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
-  .code-input{letter-spacing:3px;text-align:center;font-family:ui-monospace,'SF Mono',monospace;font-weight:700}
+/* 激活页独有：激活码输入与已激活列表。其余全部来自 modules.css。 */
+.code-input{letter-spacing:3px;text-align:center;font-family:var(--font-mono);font-weight:700;font-size:18px}
+.act-row{display:flex;gap:10px}
+.act-row .btn{flex:0 0 auto}
+#actMsg{border-radius:var(--r-sm);padding:12px 16px;font-size:14px;font-weight:600}
+.done{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 4px;border-bottom:1px solid var(--border-soft)}
+.done:last-child{border-bottom:none}
+.done b{font-size:14.5px}
+.done .sub{font-family:var(--font-mono);font-size:12px;color:var(--faint);margin-top:3px}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('home'); ?>
 
-  <div class="mx-auto px-5 py-14" style="max-width:720px">
-    <div class="bg-white border border-[var(--border)] rounded-3xl p-8" style="box-shadow:0 8px 32px rgba(0,0,0,.06)">
-      <div class="text-center">
-        <div class="text-5xl mb-3">🎫</div>
-        <h1 class="text-2xl font-bold text-gray-900">激活码兑换</h1>
-        <p class="text-gray-600 mt-2 text-sm">输入从渠道方获得的激活码，解锁对应课程或服务</p>
-      </div>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
 
+  <section class="reader reveal in" data-od-id="activate" style="max-width:720px">
+    <div class="hero-center" style="padding-top:8px;padding-bottom:28px">
+      <span class="kicker">激活码</span>
+      <h1 style="font-size:clamp(28px,4vw,40px)">激活码<i class="si">兑换</i></h1>
+      <p class="lead">输入从渠道方获得的激活码，解锁对应课程或服务</p>
+    </div>
+    <div class="form-card">
       <?php if (empty($member)): ?>
-      <div class="mt-8 text-center">
-        <p class="text-sm text-gray-600 mb-4">请先登录后再兑换激活码</p>
-        <a href="/account?view=login&next=/activate" class="inline-block rounded-full bg-[var(--accent)] text-white px-8 py-3 font-semibold">登录 / 注册</a>
-      </div>
+      <div class="gate-box"><p>请先登录后再兑换激活码</p><a href="/account?view=login&next=/activate" class="btn primary">登录 / 注册</a></div>
       <?php else: ?>
-      <div class="mt-8 flex gap-3">
-        <input type="text" id="actCode" class="code-input flex-1 border border-[var(--border)] rounded-2xl px-5 py-4 text-lg outline-none" placeholder="XXXX-XXXX-XXXX" autocomplete="off">
-        <button id="actBtn" class="rounded-2xl bg-[var(--accent)] text-white px-8 font-bold" onclick="doActivate()">激活</button>
-      </div>
-      <div id="actMsg" class="mt-4 text-sm hidden rounded-2xl px-5 py-4"></div>
-
-      <div class="mt-10 border-t border-[var(--bg)] pt-6">
-        <h2 class="font-bold text-gray-900 mb-4">已激活的产品</h2>
+      <div class="act-row"><input type="text" id="actCode" class="inp code-input" placeholder="XXXX-XXXX-XXXX" autocomplete="off" aria-label="激活码"><button id="actBtn" class="btn primary" onclick="doActivate()">激活</button></div>
+      <div id="actMsg" hidden style="margin-top:14px"></div>
+      <div style="margin-top:32px">
+        <div class="sec-head row"><div><span class="kicker">已激活的产品</span></div></div>
         <?php if (empty($activated)): ?>
-        <p class="text-sm text-gray-400">暂无已激活的产品</p>
+        <p class="note" style="margin-top:12px">暂无已激活的产品</p>
         <?php else: ?>
-        <div class="space-y-2">
+        <div style="margin-top:8px">
           <?php foreach (array_reverse($activated) as $a): ?>
-          <div class="flex items-center justify-between rounded-2xl border border-[var(--border)] px-5 py-3">
-            <div>
-              <div class="font-semibold text-gray-900"><?=htmlspecialchars($a['goods_type'])?> · <?=htmlspecialchars($a['goods_id'])?></div>
-              <div class="text-xs text-gray-400 mt-1">码：<code><?=htmlspecialchars($a['code'])?></code> · <?=htmlspecialchars(substr($a['activated_at'] ?? '', 0, 10))?></div>
-            </div>
-            <span class="pill px-3 py-1 rounded-full text-xs" style="background:var(--ok-soft);color:var(--ok)">已激活</span>
-          </div>
+          <div class="done"><div><b><?=htmlspecialchars($a['goods_type'])?> · <?=htmlspecialchars($a['goods_id'])?></b><div class="sub">码：<?=htmlspecialchars($a['code'])?> · <?=htmlspecialchars(substr($a['activated_at'] ?? '', 0, 10))?></div></div><span class="badge ok">已激活</span></div>
           <?php endforeach; ?>
         </div>
         <?php endif; ?>
       </div>
       <?php endif; ?>
     </div>
-  </div>
+  </section>
 
-  <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-    <div class="mx-auto px-5 text-center text-sm" style="max-width:720px">
-      <div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div>
-      <div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div>
-    </div>
-  </footer>
-
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
 function doActivate() {
   var code = document.getElementById('actCode').value.trim();
@@ -101,8 +95,8 @@ function doActivate() {
 function showMsg(text, type) {
   var msg = document.getElementById('actMsg');
   msg.textContent = text;
-  msg.classList.remove('hidden');
-  msg.style.background = type === 'success' ? 'var(--ok-soft)' : '#fee2e2';
+  msg.hidden = false;
+  msg.style.background = type === 'success' ? 'var(--ok-soft)' : 'var(--danger-soft)';
   msg.style.color = type === 'success' ? 'var(--ok)' : 'var(--danger)';
 }
 </script>
