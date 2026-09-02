@@ -89,84 +89,85 @@
     {
       id: 'product', label: '产品', href: '/product', icon: 'box',
       mega: {
-        title: '产品与平台', blurb: '芭乐派增长操作系统 · 帮一人公司设计 Agent 能跑的增长系统',
+        title: '产品', blurb: '芭乐派增长操作系统 · 帮一人公司设计 Agent 能跑的增长系统',
         cols: [
-          { head: '核心产品', items: [
-            { t: '内容引擎 CMS', d: '文章 · 页面 · 发布', href: '/category/products/cms' },
-            { t: '营销自动化 MA', d: '可视化工作流引擎', href: '/category/products/ma' },
-            { t: '客户数据 CDP', d: '画像 · 分群 · 洞察', href: '/category/products/cdp' },
-            { t: 'SEO / GEO 引擎', d: '搜索与 AI 优化', href: '/category/products/seo' }
+          { head: '它是怎么工作的', items: [
+            { t: '可视化编排画布', d: '拖拽触发器、条件、动作，连线即流程', href: '/product#feat-canvas' },
+            { t: 'AI 步骤', d: '给流程装上判断力：分类、打分、生成', href: '/product#feat-ai' },
+            { t: '开放连接器', d: '飞书 · 企微 · Notion · GitHub · 支付', href: '/product#feat-connectors' },
+            { t: '自生长 AI Engine', d: '按周期自动跑：信号 → 洞察 → 草稿 → 触达', href: '/product#feat-engine' }
           ]},
-          { head: '增长与商业', items: [
-            { t: 'CRM 与线索', d: '线索池与转化', href: '/category/products/crm' },
-            { t: '商业与订阅', d: '商城 · 会员 · 付费', href: '/category/products/commerce' },
-            { t: '社区与内容', d: '论坛 · 评论 · 积分', href: '/category/products/community' },
-            { t: '数据分析', d: '归因 · A/B · 洞察', href: '/category/products/data' }
+          { head: '看看再说', items: [
+            { t: '在线演示', d: '点一下，看增长引擎跑起来', href: '/product#demo' },
+            { t: '它值多少', d: '增长引擎产生的实际价值', href: '/product#value' },
+            { t: '常见问题', d: '部署 · 数据 · 开源 · 价格', href: '/product#faq' },
+            { t: '企业与私有化', d: '托管 / 自建 / 混合', href: '/enterprise' }
           ]}
         ],
-        foot: [{ t: '产品总览', href: '/product' }, { t: '能力矩阵', href: '/category/capabilities/content' }, { t: 'API 文档', href: '/xmp/api-docs' }]
+        foot: [{ t: '产品总览', href: '/product' }, { t: '四种能力', href: '/capability' }, { t: '文档中心', href: '/docs' }]
       }
     },
     {
       id: 'capability', label: '能力', href: '/capability', icon: 'bolt',
       mega: {
-        title: '六大核心能力', blurb: 'TIPS 框架 · 触达/洞察/个性化/销售四力合一',
+        title: '能力 · TIPS 框架', blurb: '触达 / 洞察 / 个性化 / 销售 四力合一，加上自生长与开源两个底座',
         cols: [
-          { head: '内容与增长', items: [
-            { t: '内容引擎', d: 'CMS · 课程 · 资料 · 播客', href: '/category/capabilities/content' },
-            { t: '增长与获客', d: '落地页 · 表单 · SEO · 工具', href: '/category/capabilities/growth' },
-            { t: '转化与留存', d: 'MA 自动化 · 会员 · 订阅', href: '/category/capabilities/conversion' },
-            { t: '数据与洞察', d: 'CDP · 分析 · 归因 · A/B', href: '/category/capabilities/data' }
+          { head: '四力', items: [
+            { t: '触达 Touch', d: '内容引擎 · 分发渠道 · 触达体系', href: '/capability#cap-touch' },
+            { t: '洞察 Insight', d: '数据 · CDP · 舆情 · 分析', href: '/capability#cap-insight' },
+            { t: '个性化 Personality', d: '画像 · 分群 · 自动化', href: '/capability#cap-personality' },
+            { t: '销售 Sales', d: 'CRM · 转化 · 商城 · 订阅', href: '/capability#cap-sales' }
           ]},
-          { head: '商业与运营', items: [
-            { t: '商业闭环', d: '商城 · 生态 · 分销', href: '/category/capabilities/commerce' },
-            { t: '社区运营', d: '论坛 · 积分 · 直播 · 咨询', href: '/category/capabilities/community' },
-            { t: '内容学院', d: '文章 · 案例 · 方法论', href: '/category/academy/articles' },
-            { t: '生态市场', d: 'Skill · 插件 · 主题', href: '/category/marketplace/skills' }
+          { head: '底座', items: [
+            { t: '自生长 AI Engine', d: '按周期自动推一轮增长', href: '/capability#cap-engine' },
+            { t: '永久开源', d: '核心能力 MIT 开源，Tools 与 Strategy 双向迭代', href: '/capability#cap-open' },
+            { t: '接你现有的工具', d: '不用推翻现在在用的东西', href: '/capability#connectors' },
+            { t: '托管还是自建', d: '云端 SaaS / 私有化 / 混合', href: '/capability#deploy' }
           ]}
         ],
-        foot: [{ t: '全部能力', href: '/capability' }, { t: '进入学院', href: '/category/academy/articles' }, { t: '社区讨论', href: '/community' }]
+        foot: [{ t: '全部能力', href: '/capability' }, { t: '看它跑出什么', href: '/capability#scenes' }, { t: '社区讨论', href: '/community' }]
       }
     },
     {
       id: 'courses', label: '课程', href: '/courses', icon: 'book',
       mega: {
-        title: '芭乐派 · 学习路径', blurb: 'New-1~4 课程 + R.B.E 训练营 · 以 OpenFlow 为工具',
+        title: '课程 · 学习路径', blurb: 'New-1~4 基石课 + R.B.E 训练营 · 以 OpenFlow 为工具',
         cols: [
-          { head: '课程类型', items: [
-            { t: '大课程', d: '体系化完整课程', href: '/category/courses/big' },
-            { t: '系列课', d: '主题系列课程', href: '/category/courses/series' },
-            { t: '专栏', d: '深度专题专栏', href: '/category/courses/column' },
-            { t: '直播课', d: '实时互动课程', href: '/category/courses/live' }
+          { head: '课程', items: [
+            { t: '全部课程', d: '按顺序学，边学边用', href: '/courses#catalog' },
+            { t: '基石课', d: 'New-1~4：利润公式 · 四引擎 · 系统设计', href: '/courses?f=基石#catalog' },
+            { t: '训练营', d: 'R.B.E：带着做，交作业，晒数据', href: '/courses?f=训练营#catalog' },
+            { t: '直播与活动', d: '公开课 · 线下局', href: '/events' }
           ]},
-          { head: '相关资源', items: [
-            { t: '免费资源', d: '入门免费内容', href: '/category/courses/free' },
-            { t: '资料下载', d: '白皮书 · 模板', href: '/downloads' },
-            { t: '播客视频', d: '干货音视频', href: '/podcasts' },
-            { t: '内容学院', d: '增长实践文章', href: '/category/academy/articles' }
+          { head: '配套', items: [
+            { t: '资料下载', d: '白皮书 · 模板 · 清单', href: '/downloads' },
+            { t: '播客视频', d: '对谈与拆解', href: '/podcasts' },
+            { t: '文章', d: '增长实践与方法论', href: '/articles' },
+            { t: '1v1 咨询', d: '带着你的问题来', href: '/consultation' }
           ]}
         ],
-        foot: [{ t: '浏览全部课程', href: '/courses' }]
+        foot: [{ t: '浏览全部课程', href: '/courses' }, { t: '进学院', href: '/academy' }]
       }
     },
     {
       id: 'articles', label: '学院', href: '/academy', icon: 'doc',
       mega: {
-        title: '内容学院', blurb: '增长系统 · Agent · 一人公司方法论',
+        title: '学院', blurb: '增长系统 · Agent · 一人公司方法论，读、下、听、练',
         cols: [
-          { head: '内容专区', items: [
-            { t: '文章', d: '增长实践文章', href: '/category/academy/articles' },
-            { t: '资料', d: '白皮书 · 模板 · 报告', href: '/category/academy/downloads' },
-            { t: '播客视频', d: '干货音视频', href: '/category/academy/podcasts' },
-            { t: '专题合集', d: '主题系列文章', href: '/category/academy/topics' }
+          { head: '内容', items: [
+            { t: '文章', d: '增长实践与行业洞察', href: '/articles' },
+            { t: '资料', d: '白皮书 · 模板 · 报告', href: '/downloads' },
+            { t: '播客视频', d: '干货音视频', href: '/podcasts' },
+            { t: '专题合集', d: '按主题串起来的系列', href: '/topics' }
           ]},
           { head: '文档与工具', items: [
-            { t: '文档中心', d: '产品文档 · 使用指南', href: '/category/academy/docs' },
-            { t: '工具箱', d: 'SEO 检查 · Meta · LTV', href: '/category/academy/tools' },
+            { t: '文档中心', d: '产品文档 · 使用指南 · API', href: '/docs' },
+            { t: '工具箱', d: 'SEO 检查 · Meta · LTV 计算', href: '/tools' },
+            { t: '增长导航', d: '值得用的增长 / AI 站点', href: '/navigation' },
             { t: '社区问答', d: '提问与讨论', href: '/community' }
           ]}
         ],
-        foot: [{ t: '进入学院', href: '/academy' }, { t: '浏览工具', href: '/category/academy/tools' }]
+        foot: [{ t: '进入学院', href: '/academy' }, { t: '搜索全站', href: '/search' }]
       }
     },
     {
@@ -174,16 +175,17 @@
       mega: {
         title: '生态市场', blurb: 'Skill · 插件 · 主题 · 一人公司增长门派',
         cols: [
-          { head: '生态分类', items: [
-            { t: 'Skill 技能', d: '开箱即用的增长能力', href: '/category/marketplace/skills' },
-            { t: '插件', d: '扩展系统功能', href: '/category/marketplace/plugins' },
-            { t: '主题', d: '视觉与布局', href: '/category/marketplace/themes' },
-            { t: '论坛', d: '社区问答与讨论', href: '/category/marketplace/forum' }
+          { head: '资产', items: [
+            { t: 'Skill 技能', d: '开箱即用的增长能力', href: '/marketplace?type=skill' },
+            { t: '插件', d: '扩展系统功能', href: '/marketplace?type=plugin' },
+            { t: '主题', d: '视觉与布局', href: '/marketplace?type=theme' },
+            { t: '全部资产', d: '搜索、按热度浏览', href: '/marketplace' }
           ]},
           { head: '开发者', items: [
-            { t: 'API 文档', d: 'REST API 参考', href: '/xmp/api-docs' },
-            { t: '开发者文档', d: '架构与扩展点', href: '/md-docs/DEVELOPER.md' },
-            { t: 'GitHub', d: '开源仓库', href: 'https://github.com/balepai/openflow' }
+            { t: '开放 API', d: 'REST 端点参考', href: '/docs#api' },
+            { t: '开发者文档', d: '架构与扩展点', href: '/docs?doc=DEVELOPER' },
+            { t: 'GitHub', d: 'MIT 开源仓库', href: 'https://github.com/sevenaaaaaaaaa/openflow' },
+            { t: '论坛', d: '提问、交作业、晒增长数据', href: '/community' }
           ]}
         ],
         foot: [{ t: '进入生态市场', href: '/marketplace' }]
@@ -195,18 +197,41 @@
     { id: 'about', label: '关于', href: '/about', icon: 'info' }
   ];
 
+  /* 旧的 /category/{section}/{key} 中转页链接 → 真实目的地（data/nav.json 里若还留着旧链接也会被改写；服务端 category.php 同步 301） */
+  var LEGACY = {
+    '/category/products/cms': '/product#feat-canvas', '/category/products/ma': '/product#feat-canvas', '/category/products/cdp': '/capability#cap-insight', '/category/products/seo': '/capability#cap-touch',
+    '/category/products/crm': '/capability#cap-sales', '/category/products/commerce': '/capability#cap-sales', '/category/products/community': '/community', '/category/products/data': '/capability#cap-insight',
+    '/category/capabilities/content': '/capability#cap-touch', '/category/capabilities/growth': '/capability#cap-touch', '/category/capabilities/conversion': '/capability#cap-personality', '/category/capabilities/data': '/capability#cap-insight',
+    '/category/capabilities/commerce': '/capability#cap-sales', '/category/capabilities/community': '/community',
+    '/category/courses/big': '/courses?f=基石#catalog', '/category/courses/series': '/courses#catalog', '/category/courses/column': '/articles', '/category/courses/live': '/events', '/category/courses/free': '/downloads',
+    '/category/academy/articles': '/articles', '/category/academy/downloads': '/downloads', '/category/academy/podcasts': '/podcasts', '/category/academy/topics': '/topics', '/category/academy/docs': '/docs', '/category/academy/tools': '/tools',
+    '/category/marketplace/skills': '/marketplace?type=skill', '/category/marketplace/plugins': '/marketplace?type=plugin', '/category/marketplace/themes': '/marketplace?type=theme', '/category/marketplace/forum': '/community',
+    '/xmp/api-docs': '/docs#api', '/md-docs/DEVELOPER.md': '/docs?doc=DEVELOPER', 'https://github.com/balepai/openflow': 'https://github.com/sevenaaaaaaaaa/openflow'
+  };
+  function fixHref(h) { if (typeof h !== 'string') return h; var k = h.replace(/\/$/, ''); return LEGACY[k] || h; }
+  function fixNav(list) {
+    list.forEach(function (n) {
+      n.href = fixHref(n.href);
+      if (n.mega) {
+        (n.mega.cols || []).forEach(function (c) { (c.items || []).forEach(function (it) { it.href = fixHref(it.href); }); });
+        (n.mega.foot || []).forEach(function (f) { f.href = fixHref(f.href); });
+      }
+    });
+    return list;
+  }
+
   /* ── 导航数据源解析：window.OF_NAV（PHP 注入 data/nav.json）优先，内置兜底 ── */
   var NAV = (function () {
     var raw = window.OF_NAV;
     if (raw && !Array.isArray(raw) && Array.isArray(raw.items)) raw = raw.items;
-    if (!Array.isArray(raw) || !raw.length) return NAV_FALLBACK;
+    if (!Array.isArray(raw) || !raw.length) return fixNav(NAV_FALLBACK);
     var ok = [];
     for (var i = 0; i < raw.length; i++) {
       var n = raw[i];
       if (!n || !n.id || !n.label || typeof n.href !== 'string') continue;
       ok.push(n);
     }
-    return ok.length ? ok : NAV_FALLBACK;
+    return fixNav(ok.length ? ok : NAV_FALLBACK);
   })();
 
   /* 侧栏空间名用导航中文标签，而不是 data-page 的英文 id */
@@ -776,6 +801,13 @@
       function sel(t) {
         tabs.forEach(function (x) { var on = x === t; x.setAttribute('aria-selected', on ? 'true' : 'false'); x.tabIndex = on ? 0 : -1; var p = panelOf(x); if (p) p.classList.toggle('on', on); });
       }
+      // 深链：#<tab id> 或 #<panel id> 或 tab 的 data-hash 命中时直接选中该 tab 并滚到 tablist
+      function byHash() {
+        var h = (location.hash || '').slice(1); if (!h) return;
+        var hit = tabs.filter(function (t) { return t.id === h || t.getAttribute('aria-controls') === h || t.dataset.hash === h; })[0];
+        if (hit) { sel(hit); var go = function () { var y = bar.getBoundingClientRect().top + window.scrollY - 88; window.scrollTo({ top: Math.max(0, y), behavior: 'auto' }); }; go(); setTimeout(go, 200); setTimeout(go, 700); }
+      }
+      byHash(); window.addEventListener('hashchange', byHash);
       tabs.forEach(function (t, i) {
         t.tabIndex = t.getAttribute('aria-selected') === 'true' ? 0 : -1;
         t.addEventListener('click', function () { sel(t); });

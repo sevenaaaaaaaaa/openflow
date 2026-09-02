@@ -135,7 +135,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
           <div class="flow-link"></div>
           <a class="flow-row" href="/podcasts"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span><div><div class="ft">播客视频</div><div class="fd">对谈 · 实操 · 拆解</div></div></a>
           <div class="flow-link"></div>
-          <a class="flow-row" href="/category/academy/tools"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/><path d="m15 3 6 6"/></svg></span><div><div class="ft">工具箱</div><div class="fd">SEO 检查 · Meta · LTV</div></div></a>
+          <a class="flow-row" href="/tools"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/><path d="m15 3 6 6"/></svg></span><div><div class="ft">工具箱</div><div class="fd">SEO 检查 · Meta · LTV</div></div></a>
         </div>
       </div>
     </div>
@@ -189,6 +189,9 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
     $arts = floor_articles($published, $fd['cats']);
     $previews = floor_articles($drafts, $fd['cats'], 3);
     $hasContent = !empty($arts) || !empty($previews);
+    // 「从 New-1 开始」占位链接：课稿文章存在就直达，否则落到文章列表（以前写死 slug，文章不存在时 404）
+    $startHref = '/articles';
+    foreach ($published as $__a) if (($__a['slug'] ?? '') === 'ai-bonus-opc-cold-start') { $startHref = '/articles/ai-bonus-opc-cold-start'; break; }
   ?>
   <section id="floor-<?=htmlspecialchars($fk)?>" class="sec reveal" data-od-anchor data-od-id="academy-floor-<?=htmlspecialchars($fk)?>">
     <div class="sec-head row">
@@ -197,7 +200,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
     </div>
     <?php if (!$hasContent): ?>
     <div class="link-grid">
-      <a class="link-it dashed" href="/articles/ai-bonus-opc-cold-start"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8-.8-.7-2-.7-3 0Z"/><path d="M12 15l-3-3c2-5.5 5-9 9-9s3 6-1 11l-5 1Z"/><path d="M9 12c-2.5 1-4 3-4.5 5"/></svg></span><span class="lt"><b>从 New-1 开始</b><span>一人公司冷启动，免费课稿</span></span></a>
+      <a class="link-it dashed" href="<?=$startHref?>"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8-.8-.7-2-.7-3 0Z"/><path d="M12 15l-3-3c2-5.5 5-9 9-9s3 6-1 11l-5 1Z"/><path d="M9 12c-2.5 1-4 3-4.5 5"/></svg></span><span class="lt"><b>从 New-1 开始</b><span>一人公司冷启动，免费课稿</span></span></a>
       <a class="link-it dashed" href="/courses"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span><span class="lt"><b>学方法论</b><span>利润公式 + 四引擎，边学边用</span></span></a>
       <a class="link-it dashed" href="/community"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span><span class="lt"><b>进门派聊聊</b><span>提问、交作业、晒增长数据</span></span></a>
     </div>
@@ -254,7 +257,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         <?php else: ?>
         <div class="a-grid" style="margin-top:18px">
           <?php foreach ($courses as $c): $ccUrl = $cover($c); ?>
-          <a class="a-card" href="/courses/<?=urlencode($c['slug'])?>">
+          <a class="a-card" href="/course/<?=urlencode($c['slug'] ?: $c['id'])?>">
             <div class="cov"><?php if ($ccUrl): ?><img src="<?=htmlspecialchars($ccUrl)?>" alt="" loading="lazy"><?php endif; ?><div class="play"><span>▶</span></div></div>
             <div class="bd">
               <span class="cat warn"><?=htmlspecialchars($c['type'] ?? '视频教程')?></span>

@@ -12,9 +12,10 @@ $ROOT = dirname(__DIR__);
 chdir($ROOT);
 
 $MIGRATED = ['index.php','about.php','product.php','capability.php','courses.php','academy.php','enterprise.php','navigation.php','events.php','community.php','marketplace.php',
-             'articles.php','article.php','category.php','docs.php','downloads.php','podcasts.php','author.php','search.php','topics.php',
+             'articles.php','article.php','docs.php','downloads.php','podcasts.php','author.php','search.php','topics.php',
              'event.php','community-post.php','reviews.php','messages.php','activate.php','nps.php','download.php','navigation-site.php','survey-my.php','front-builder.php',
              'shop.php','live.php','tools.php','consultation.php','survey.php','asset.php','course-player.php','member.php','landing.php','thank-you.php','seo-board.php'];
+// category.php 2026-09-03 起只做 301（无 HTML），不在契约范围
 $PENDING  = []; // 2026-09-02：前台页面全部迁完；新页面先进这里，迁完挪到 MIGRATED
 // 对外独立页（问卷 / NPS 由外链打开，不接站点外壳、不带页脚）—— 只免 of_shell / .foot 两项，其余契约照常
 $STANDALONE = ['nps.php','survey-my.php','survey.php'];

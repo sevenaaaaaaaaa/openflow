@@ -20,7 +20,9 @@ $member = member_current();
 $next = $_GET['next'] ?? '';
 
 // 登录后跳转
-if (!$member && $view === 'dashboard') {
+// 未登录访问任何非公开视图（我的课程 / 订单 / 会员…）→ 登录页并带回跳；原先只拦 dashboard，其它视图渲染成一张空白页
+if (!$member && !in_array($view, ['login', 'register', 'reset-password'], true)) {
+    $next = $next ?: ($_SERVER['REQUEST_URI'] ?? '');
     header('Location: member.php?view=login' . ($next ? '&next=' . urlencode($next) : ''));
     exit;
 }

@@ -13,6 +13,7 @@ if (PageCache::begin('podcasts', 1800)) exit;
 $pods = json_read(DATA_DIR . '/podcasts.json');
 $items = array_values(array_filter($pods['items'] ?? [], fn($p) => ($p['status'] ?? 'published') === 'published'));
 $categories = $pods['categories'] ?? [];
+if (!$categories) { $categories = array_values(array_unique(array_filter(array_map(fn($p) => trim((string)($p['category'] ?? '')), $items)))); sort($categories); }
 $cat = req_str('cat');
 $playId = req_str('play');
 $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '');
@@ -102,7 +103,9 @@ $featured = array_values(array_filter($items, fn($p) => !empty($p['featured'])))
           <?php $pcats = array_slice($categories, 0, 4); foreach ($pcats as $k => $pc): if ($k) echo '<div class="flow-link"></div>'; ?>
           <a class="flow-row" href="?cat=<?=urlencode($pc)?>"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span><div><div class="ft"><?=htmlspecialchars($pc)?></div><div class="fd">查看该分类内容</div></div></a>
           <?php endforeach; ?>
-          <?php if (empty($pcats)): ?><div class="empty" style="margin:18px">分类整理中</div><?php endif; ?>
+          <?php if (empty($pcats)): foreach (array_slice($items, 0, 4) as $k => $pp): if ($k) echo '<div class="flow-link"></div>'; ?>
+          <a class="flow-row" href="/podcasts?play=<?=urlencode($pp['id'])?>"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8z"/></svg></span><div><div class="ft"><?=htmlspecialchars($pp['title'] ?? '')?></div><div class="fd"><?=htmlspecialchars(substr($pp['created_at'] ?? '', 0, 10))?> · 点击播放</div></div></a>
+          <?php endforeach; if (empty($items)): ?><div class="empty" style="margin:18px">第一期正在录制中</div><?php endif; endif; ?>
         </div>
       </div>
     </div>
@@ -111,8 +114,8 @@ $featured = array_values(array_filter($items, fn($p) => !empty($p['featured'])))
   <section id="list" class="sec reveal" data-od-anchor data-od-id="podcasts-list">
     <?php if ($categories): ?>
     <div class="tab-bar" role="navigation" aria-label="分类">
-      <a class="tab-p" href="podcasts" aria-selected="<?=!$cat?'true':'false'?>">全部</a>
-      <?php foreach ($categories as $c): ?><a class="tab-p" href="podcasts?cat=<?=urlencode($c)?>" aria-selected="<?=$cat===$c?'true':'false'?>"><?=htmlspecialchars($c)?></a><?php endforeach; ?>
+      <a class="tab-p" href="/podcasts" aria-selected="<?=!$cat?'true':'false'?>">全部</a>
+      <?php foreach ($categories as $c): ?><a class="tab-p" href="/podcasts?cat=<?=urlencode($c)?>" aria-selected="<?=$cat===$c?'true':'false'?>"><?=htmlspecialchars($c)?></a><?php endforeach; ?>
     </div>
     <?php endif; ?>
     <?php if (empty($items)): ?>
