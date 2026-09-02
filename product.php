@@ -10,7 +10,7 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
-$CONN = ['飞书','钉钉','企业微信','Slack','Notion','GitHub','Google Sheets','PostgreSQL','Webhook','OpenAPI','Salesforce','HubSpot'];
+$CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮件','Ghost','虎皮椒支付','Search Console','Webhook','OpenAPI','MCP']; // 全部在 lib/ 与 api/ 里核过：NotifyChannels / NotionClient / api/ingest / MailChannel / PaymentChannel / SeoConsole / WebhookSystem / mcp-server
 $FAQS = [
   ['OpenFlow 需要写代码吗？','不需要。TIPS 框架下可视化配置触达/洞察/个性化/销售四力；需要时可用 Task Graph 编排 Agent，深浅兼顾。'],
   ['适合一人公司吗？','OpenFlow 就是为 OPC 一人公司设计的。装完即用，自生长 AI Engine 自动爬取、洞察、转化，一个人也能驱动整套增长系统。'],
@@ -174,9 +174,9 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="split">
       <div class="sp-txt">
         <h3>开放连接器生态</h3>
-        <p class="lead">不是封闭的私有集成，而是开放的连接标准。核心能力永久开源，常用系统开箱即用，私有系统用 OpenAPI 或 Webhook 自定义接入。</p>
+        <p class="lead">不是封闭的私有集成，而是开放的连接标准。核心能力永久开源；飞书 / 企业微信 / Notion / Search Console 等常用系统已接好，私有系统用 OpenAPI 或 Webhook 自定义接入。每一项都能在代码里翻到。</p>
         <ul class="sp-list">
-          <li><?=$ck?><span>400+ 内置连接器，持续更新</span></li>
+          <li><?=$ck?><span>18 个 MCP 工具、32 个插件钩子、92 个 API，Agent 可直接调用</span></li>
           <li><?=$ck?><span>核心能力永久开源 · 鱼与渔结合</span></li>
           <li><?=$ck?><span>Webhook 双向触发与回调</span></li>
         </ul>
@@ -190,7 +190,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="split rev">
       <div class="sp-txt">
         <h3>自生长 AI Engine，从 Marketing 到 Sales</h3>
-        <p class="lead">OpenFlow 不是被动工具，而是主动驱动增长的引擎：每 6 小时自动爬取信号、AI 洞察、生成内容、主动触达转化。装完即用，每个人都能改造成专属自己的增长引擎。</p>
+        <p class="lead">OpenFlow 不是被动工具，而是主动驱动增长的引擎：按你设的周期自动爬取信号、AI 洞察、生成内容、主动触达转化。装完即用，每个人都能改造成专属自己的增长引擎。</p>
         <ul class="sp-list">
           <li><?=$ck?><span>主动爬取舆情与行业热点</span></li>
           <li><?=$ck?><span>AI 撰写草稿（人工审核后发布）</span></li>
@@ -217,7 +217,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="sec-head center">
       <span class="kicker">增长闭环</span>
       <h2>点一下，看增长引擎跑起来</h2>
-      <p class="lead">下面的增长闭环每 6 小时自动执行：爬取信号 → AI 洞察 → 生成草稿 → 主动触达。点击「运行一轮」观察完整过程。</p>
+      <p class="lead">下面的增长闭环按你配置的 cron 周期自动执行：爬取信号 → AI 洞察 → 生成草稿 → 主动触达。点击「运行一轮」观察完整过程。</p>
     </div>
     <div class="demo-wrap">
       <div class="demo-fig">

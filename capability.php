@@ -24,10 +24,10 @@ $CAPS = [
   ['users','洞察 Insight','数据、CDP、舆情、分析。从几百个指标捞出该看的那 3-5 个，把数据变成判断。',[['CDP 画像','统一身份与行为追踪'],['舆情爬取','行业信号自动抓取'],['数据分析','从洞察走到策略']]],
   ['refresh','个性化 Personality','画像、分群、自动化。给对的人，在对的时刻，说对的话。',[['用户分群','行为驱动动态标签'],['营销自动化','行为触发工作流'],['动态内容','千人千面触达']]],
   ['check','销售 Sales','CRM、转化、商城、订阅。从触达到成交，让支付能力流向你。',[['CRM 管道','线索评分与跟进'],['转化组件','落地页/表单/CTA'],['商城订阅','付费闭环与分销']]],
-  ['box','自生长 AI Engine','每 6 小时推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动转化。装完即用。',[['主动爬取','舆情热点自动收集'],['AI 撰写','生成草稿待人工审核'],['主动转化','从 Marketing 到 Sales']]],
+  ['box','自生长 AI Engine','按你设的周期自动推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动转化。周期用 cron 自己定，装完即用。',[['主动爬取','舆情热点自动收集'],['AI 撰写','生成草稿待人工审核'],['主动转化','从 Marketing 到 Sales']]],
   ['doc','永久开源','核心能力永久开源，Tools 和 Strategy 双向迭代，鱼与渔相结合。',[['Tools 开源','工具即渔具'],['Strategy 同步','最前沿增长策略'],['自托管','数据完全可控']]],
 ];
-$CONN = ['飞书','钉钉','企业微信','Slack','Notion','GitHub','Google Sheets','PostgreSQL','Webhook','OpenAPI','Salesforce','HubSpot'];
+$CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮件','Ghost','虎皮椒支付','Search Console','Webhook','OpenAPI','MCP']; // 与 product.php 同一份，全部在代码里核过
 $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>';
 ?>
 <!doctype html>
@@ -99,7 +99,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
     <div class="sec-head center">
       <span class="kicker">集成生态</span>
       <h2>不用推翻你现在在用的东西</h2>
-      <p class="note">连接器清单为演示占位，正式版将展示完整列表。</p>
+      <p class="lead">下面每一项都已在代码里实现：通知与知识同步走飞书 / 企业微信 / WhatsApp / Notion，内容可从 GitHub 导入，邮件走 SMTP 或 Ghost，支付走虎皮椒，搜索数据来自 Search Console；其余系统用 Webhook / OpenAPI / MCP 接入。</p>
     </div>
     <div class="sp-win" id="connChips2">
       <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">connectors</div></div>
