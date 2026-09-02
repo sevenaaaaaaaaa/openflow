@@ -1,6 +1,8 @@
 <?php
 /**
  * 点评榜单 — 「网站增长领域的大众点评」首页
+ *
+ * v7（2026-09-01）：迁到共享 archetype（hero-center + tab 筛选 + 榜单卡）。排序 / 筛选逻辑原样保留。
  * 支持：网站/产品/书籍/活动 四类点评，按评分/热度排行，分类筛选
  */
 require_once __DIR__ . '/admin/config.php';
@@ -47,80 +49,71 @@ $ranked = array_values(array_filter($ranked, fn($t) => $t['count'] > 0)); // 只
 $typeNames = ['site' => '网站', 'product' => '产品', 'book' => '书籍', 'event' => '活动'];
 $typeIcons = ['site' => '🌐', 'product' => '🎓', 'book' => '📚', 'event' => '🎉'];
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>点评榜单 | 芭乐派 · OpenFlow</title>
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body)}
-  .rv-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;transition:.15s;display:block;text-decoration:none;color:inherit}
-  .rv-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(30,30,30,.08);border-color:var(--accent)}
-  .stars{color:var(--warn);letter-spacing:1px}
+/* 点评榜独有：榜单卡。其余全部来自 modules.css。 */
+.rv{display:flex;flex-direction:column;gap:10px}
+.rv .hd{display:flex;align-items:center;gap:12px}
+.rv .em{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center;font-size:20px;flex:0 0 auto}
+.rv .ttl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15.5px;font-weight:700}
+.rv .rk{font-family:var(--font-mono);color:var(--faint);font-weight:700}
+.rv .stars{color:var(--warn);letter-spacing:.1em;font-size:13px;margin-top:3px}
+.rv .stars b{color:var(--warn);margin-left:6px}
+.rv .cnt{margin-left:auto;font-family:var(--font-mono);font-size:12px;color:var(--faint);white-space:nowrap}
+.rv p{font-size:13.5px;color:var(--muted);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('navigation'); ?>
 
-  <div class="mx-auto px-5 py-10" style="max-width:1100px">
-    <div class="text-center py-6 mb-6">
-      <h1 class="text-3xl font-extrabold">⭐ 点评榜单</h1>
-      <p class="text-gray-600 mt-3">网站增长领域的大众点评 · 用户真实打分与体验</p>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
+  <section id="top" class="reveal in" data-od-anchor data-od-id="reviews-hero">
+    <div class="hero-center" style="padding-bottom:0">
+      <span class="kicker">点评榜单</span>
+      <h1>网站增长领域的<i class="si">大众点评</i></h1>
+      <p class="lead">用户真实打分与体验</p>
     </div>
-
-    <!-- 筛选 -->
-    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
-      <div class="flex gap-2 flex-wrap">
-        <a href="?type=all&sort=<?=$sort?>" class="px-4 py-2 rounded-full text-sm font-semibold <?=$typeFilter==='all'?'':'bg-white border'?>" style="<?=$typeFilter==='all'?'background:var(--accent);color:var(--on-accent)':''?>">全部</a>
-        <?php foreach ($typeNames as $tk => $tv): ?>
-        <a href="?type=<?=$tk?>&sort=<?=$sort?>" class="px-4 py-2 rounded-full text-sm font-semibold <?=$typeFilter===$tk?'':'bg-white border'?>" style="<?=$typeFilter===$tk?'background:var(--accent);color:var(--on-accent)':''?>"><?=$typeIcons[$tk]?> <?=$tv?></a>
-        <?php endforeach; ?>
+  </section>
+  <section id="list" class="sec reveal" data-od-anchor data-od-id="reviews-list">
+    <div class="filters" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div class="tab-bar" style="border-bottom:none;padding-bottom:0;justify-content:flex-start;flex:1">
+        <a class="tab-p" href="?type=all&sort=<?=$sort?>" aria-selected="<?=$typeFilter==='all'?'true':'false'?>">全部</a>
+        <?php foreach ($typeNames as $tk => $tv): ?><a class="tab-p" href="?type=<?=$tk?>&sort=<?=$sort?>" aria-selected="<?=$typeFilter===$tk?'true':'false'?>"><?=$tv?></a><?php endforeach; ?>
       </div>
-      <div class="flex gap-2">
-        <a href="?type=<?=$typeFilter?>&sort=rating" class="px-4 py-2 rounded-full text-sm font-semibold <?=$sort==='rating'?'':'bg-white border'?>" style="<?=$sort==='rating'?'background:var(--ok);color:var(--surface)':''?>">评分最高</a>
-        <a href="?type=<?=$typeFilter?>&sort=count" class="px-4 py-2 rounded-full text-sm font-semibold <?=$sort==='count'?'':'bg-white border'?>" style="<?=$sort==='count'?'background:var(--ok);color:var(--surface)':''?>">最多点评</a>
+      <div style="display:flex;gap:6px;margin-left:auto">
+        <a class="pill <?=$sort==='rating'?'hl':'neutral'?>" href="?type=<?=$typeFilter?>&sort=rating">按评分</a>
+        <a class="pill <?=$sort==='count'?'hl':'neutral'?>" href="?type=<?=$typeFilter?>&sort=count">按热度</a>
       </div>
     </div>
-
     <?php if (empty($ranked)): ?>
-    <div class="rounded-3xl p-12 text-center" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">
-      暂无点评，<a href="/navigation" class="text-[#2b5f7e] underline">去导航站看看</a> 给网站打分吧
-    </div>
+    <div class="empty">暂无点评，<a href="/navigation" style="color:var(--accent)">去导航站看看</a> 给网站打分吧</div>
     <?php else: ?>
-    <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr))">
+    <div class="grid g3" style="gap:16px">
       <?php foreach ($ranked as $i => $t): ?>
-      <a href="<?=htmlspecialchars($t['type'] === 'site' ? '/navigation/' . urlencode($t['id']) : $t['url'])?>" class="rv-card">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7dd3fc,#86efac);display:grid;place-items:center;font-size:20px;flex-shrink:0"><?=htmlspecialchars($t['icon'])?></div>
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="font-bold">#<?=$i+1?> <?=htmlspecialchars($t['name'])?></span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full" style="background:var(--bg);color:var(--muted)"><?=$typeNames[$t['type']]?></span>
-            </div>
-            <div class="stars text-sm mt-1"><?=str_repeat('★', max(0, min(5, (int)round($t['rating']))))?><?=str_repeat('☆', max(0, 5 - (int)round($t['rating'])))?> <b style="color:#b45309"><?=number_format($t['rating'], 1)?></b></div>
-          </div>
-          <div style="text-align:right;font-size:12px;color:var(--faint)"><?=$t['count']?> 条点评</div>
+      <a href="<?=htmlspecialchars($t['type'] === 'site' ? '/navigation/' . urlencode($t['id']) : $t['url'])?>" class="card rv">
+        <div class="hd">
+          <span class="em"><?=htmlspecialchars($t['icon'])?></span>
+          <div style="min-width:0"><div class="ttl"><span class="rk">#<?=$i+1?></span><span><?=htmlspecialchars($t['name'])?></span><span class="pill neutral" style="height:24px"><?=$typeNames[$t['type']]?></span></div><div class="stars"><?=str_repeat('★', max(0, min(5, (int)round($t['rating']))))?><?=str_repeat('☆', max(0, 5 - (int)round($t['rating'])))?><b><?=number_format($t['rating'], 1)?></b></div></div>
+          <span class="cnt"><?=$t['count']?> 条点评</span>
         </div>
-        <p class="text-sm text-gray-600 mt-3 line-clamp-2"><?=htmlspecialchars($t['desc'] ?? '')?></p>
+        <p><?=htmlspecialchars($t['desc'] ?? '')?></p>
       </a>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
+  </section>
 
-    <!-- 点评说明 -->
-    <div class="rounded-3xl p-6 mt-10 text-center text-sm" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">
-      <span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 3.5 10.9c-.8.6-1.5 1.4-1.5 2.6h-4c0-1.2-.7-2-1.5-2.6A6 6 0 0 1 12 3Z"/></svg></span> 点评数据来自用户对网站 / 产品 / 书籍 / 活动的真实打分。<a href="/navigation" class="text-[#2b5f7e] underline">去导航站</a> 可点评网站，<a href="/courses" class="text-[#2b5f7e] underline">去课程页</a> 可点评课程。
-    </div>
-  </div>
-
-  <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-    <div class="mx-auto px-5 text-center text-sm" style="max-width:1100px">
-      <div class="mb-2"><?=site_config_get("site_name")?> · <?=site_config_get("site_slogan", '帮一人公司设计 Agent 能跑的增长系统')?></div>
-      <div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div>
-    </div>
-  </footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>

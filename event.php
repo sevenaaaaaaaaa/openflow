@@ -1,6 +1,8 @@
 <?php
 /**
  * 活动详情页
+ *
+ * v7（2026-09-01）：迁到共享 archetype（reader + art-head + cols 信息格 + prose）。报名逻辑与接口原样保留。
  * /events/{slug}
  */
 require_once __DIR__ . '/admin/config.php';
@@ -28,93 +30,83 @@ $capacity = (int)($event['capacity'] ?? 0);
 $joinedCount = count(array_filter($regList, fn($r) => ($r['status'] ?? '') !== 'rejected'));
 $full = $capacity > 0 && $joinedCount >= $capacity;
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($event['seo_title'] ?? $event['title'])?> | <?=site_config_get('site_name')?></title>
 <meta name="description" content="<?=htmlspecialchars($event['seo_desc'] ?? $event['description'] ?? '')?>">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body)}
+/* 活动详情页零私有 CSS */
+
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('events'); ?>
 
-  <div class="mx-auto px-5 py-10" style="max-width:1000px">
-    <a href="/academy" class="text-sm text-[#2b5f7e]">← 返回社区</a>
-    <?php if ($coverUrl): ?>
-    <img src="<?=htmlspecialchars($coverUrl)?>" alt="<?=htmlspecialchars($event['title'])?>" class="w-full rounded-3xl mt-4 object-cover" style="max-height:380px">
-    <?php endif; ?>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
 
-    <div class="rounded-3xl p-8 mt-6" style="background:var(--surface);border:1px solid var(--border)">
-      <span class="text-xs px-3 py-1 rounded-full" style="background:var(--ok-soft);color:var(--ok)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18l-2 12H5L3 7Z"/><path d="M5 7l1.5-3h11L19 7M12 7v12"/></svg></span> 活动</span>
-      <h1 class="text-3xl font-extrabold text-gray-900 mt-3"><?=htmlspecialchars($event['title'])?></h1>
-      <p class="text-gray-600 mt-3 leading-relaxed"><?=htmlspecialchars($event['description'] ?? '')?></p>
-
-      <div class="grid gap-4 mt-6 sm:grid-cols-3">
-        <div class="rounded-2xl px-5 py-4" style="background:var(--bg)">
-          <div class="text-xs text-gray-400">时间</div>
-          <div class="font-semibold mt-1"><?=htmlspecialchars($event['start_date'] ?? '')?></div>
-        </div>
-        <div class="rounded-2xl px-5 py-4" style="background:var(--bg)">
-          <div class="text-xs text-gray-400">地点</div>
-          <div class="font-semibold mt-1"><?=htmlspecialchars($event['location'] ?? '')?></div>
-        </div>
-        <div class="rounded-2xl px-5 py-4 flex items-center justify-center" style="background:var(--ok-soft)">
-          <?php if ($myReg): ?>
-          <div class="text-center">
-            <div class="font-bold" style="color:var(--ok)"><?=['pending'=>'报名审核中','approved'=>'✅ 已报名','rejected'=>'报名未通过'][$myReg['status'] ?? 'approved'] ?? '已报名'?></div>
-            <button onclick="cancelReg()" class="text-xs mt-1" style="color:var(--danger);background:none;border:none;cursor:pointer">取消报名</button>
-          </div>
-          <?php elseif ($full): ?>
-          <div class="font-bold" style="color:var(--danger)">名额已满</div>
-          <?php elseif ($event['registration_url'] ?? ''): ?>
-          <a href="<?=htmlspecialchars($event['registration_url'])?>" class="inline-block rounded-full bg-[var(--accent)] text-white px-8 py-3 font-semibold">立即报名 →</a>
-          <?php else: ?>
-          <div class="text-center">
-            <button onclick="doRegister()" class="inline-block rounded-full bg-[var(--accent)] text-white px-8 py-3 font-semibold" style="border:none;cursor:pointer">立即报名<?=$capacity > 0 ? '（剩 ' . max(0, $capacity - $joinedCount) . ' 位）' : ''?></button>
-            <div id="regMsg" class="text-xs mt-2"></div>
-          </div>
-          <?php endif; ?>
-        </div>
+  <article class="reader reveal in" data-od-id="event">
+    <nav class="art-meta" aria-label="面包屑" style="margin-bottom:18px"><a href="/events" style="color:var(--faint)">← 全部活动</a></nav>
+    <?php if ($coverUrl): ?><img class="art-cover" src="<?=htmlspecialchars($coverUrl)?>" alt="<?=htmlspecialchars($event['title'])?>"><?php endif; ?>
+    <div class="art-head">
+      <div class="art-meta">
+        <span class="badge <?=($event['event_type']??'')==='online'?'ok':'warn'?>"><?=($event['event_type']??'')==='online'?'线上':'线下'?></span>
+        <span><?=htmlspecialchars(substr($event['start_date'] ?? '', 0, 16))?></span><span class="sep"></span><span><?=htmlspecialchars($event['location'] ?? '')?></span>
       </div>
+      <h1><?=htmlspecialchars($event['title'])?></h1>
+      <p class="lead" style="color:var(--muted);font-size:16px;line-height:1.85"><?=htmlspecialchars($event['description'] ?? '')?></p>
+    </div>
 
-      <?php if (!empty($event['replay_url']) || !empty($event['live_room'])): ?>
-      <div class="mt-8 rounded-2xl overflow-hidden" style="background:#000;aspect-ratio:16/9;display:grid;place-items:center">
-        <?php if (!empty($event['replay_url'])): ?>
-        <video controls style="width:100%;height:100%" src="<?=htmlspecialchars($event['replay_url'])?>" poster="<?=htmlspecialchars($coverUrl)?>"></video>
+    <div class="cols">
+      <div><span class="w-tag">时间</span><h3><?=htmlspecialchars($event['start_date'] ?? '')?></h3></div>
+      <div><span class="w-tag">地点</span><h3><?=htmlspecialchars($event['location'] ?? '')?></h3></div>
+      <div><span class="w-tag">报名</span>
+        <?php if ($myReg): ?>
+        <h3 style="color:var(--ok)"><?=['pending'=>'报名审核中','approved'=>'已报名','rejected'=>'报名未通过'][$myReg['status'] ?? 'approved'] ?? '已报名'?></h3>
+        <button onclick="cancelReg()" class="btn subtle" style="align-self:flex-start;margin-left:-14px;color:var(--danger)">取消报名</button>
+        <?php elseif ($full): ?>
+        <h3 style="color:var(--danger)">名额已满</h3>
+        <?php elseif ($event['registration_url'] ?? ''): ?>
+        <a href="<?=htmlspecialchars($event['registration_url'])?>" class="btn primary" style="align-self:flex-start">立即报名 →</a>
         <?php else: ?>
-        <div class="text-white text-center"><div style="font-size:34px">🔴</div><div class="mt-2 font-semibold">直播进行中</div><div class="text-white/60 text-sm mt-1"><?=htmlspecialchars($event['location'] ?? '')?></div></div>
+        <button onclick="doRegister()" class="btn primary" style="align-self:flex-start">立即报名<?=$capacity > 0 ? '（剩 ' . max(0, $capacity - $joinedCount) . ' 席）' : ''?></button>
+        <div id="regMsg" class="note"></div>
         <?php endif; ?>
       </div>
-      <?php endif; ?>
+    </div>
 
-      <?php if (!empty($event['content'])): ?>
-      <div class="prose mt-8" style="line-height:1.9;color:var(--muted)"><?= $event['content'] ?></div>
-      <?php endif; ?>
-
-      <?php if (!empty($event['speakers'])): ?>
-      <h2 class="text-lg font-bold mt-8 mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.2 2.7-5 6-5s6 1.8 6 5"/><path d="M16 4.5a3.2 3.2 0 0 1 0 6.5M18 15.5c2 .8 3 2.3 3 4.5"/></svg></span> 嘉宾</h2>
-      <div class="grid gap-4 sm:grid-cols-2">
-        <?php foreach ($event['speakers'] as $sp): ?>
-        <div class="flex items-center gap-4 rounded-2xl px-5 py-4" style="background:var(--bg)">
-          <?php if (!empty($sp['avatar'])): ?><img src="<?=htmlspecialchars(strpos($sp['avatar'],'http')===0?$sp['avatar']:'/'.ltrim($sp['avatar'],'/'))?>" class="w-14 h-14 rounded-full object-cover" alt="" onerror="this.style.display='none'"><?php endif; ?>
-          <div>
-            <div class="font-bold text-gray-900"><?=htmlspecialchars($sp['name'] ?? '')?></div>
-            <div class="text-xs text-gray-400 mt-1"><?=htmlspecialchars($sp['title'] ?? '')?></div>
-          </div>
-        </div>
-        <?php endforeach; ?>
-      </div>
+    <?php if (!empty($event['replay_url']) || !empty($event['live_room'])): ?>
+    <div class="sp-win" style="margin-top:32px">
+      <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url"><?=!empty($event['replay_url'])?'replay':'live'?></div></div>
+      <?php if (!empty($event['replay_url'])): ?>
+      <video controls style="width:100%;aspect-ratio:16/9;display:block;background:var(--fg)" src="<?=htmlspecialchars($event['replay_url'])?>" poster="<?=htmlspecialchars($coverUrl)?>"></video>
+      <?php else: ?>
+      <div class="empty" style="margin:18px;border:none"><span class="badge danger"><span class="dot"></span>直播进行中</span><div style="margin-top:8px"><?=htmlspecialchars($event['location'] ?? '')?></div></div>
       <?php endif; ?>
     </div>
-  </div>
+    <?php endif; ?>
 
-  <script>
+    <?php if (!empty($event['content'])): ?><div class="prose" style="margin-top:32px"><?= $event['content'] ?></div><?php endif; ?>
+
+    <?php if (!empty($event['speakers'])): ?>
+    <div class="sec-head row" style="margin-top:36px"><div><span class="kicker">嘉宾</span></div></div>
+    <div class="link-grid" style="grid-template-columns:repeat(2,1fr);margin-top:8px">
+      <?php foreach ($event['speakers'] as $sp): ?>
+      <div class="link-it"><?php if (!empty($sp['avatar'])): ?><img src="<?=htmlspecialchars(strpos($sp['avatar'],'http')===0?$sp['avatar']:'/'.ltrim($sp['avatar'],'/'))?>" style="width:44px;height:44px;border-radius:50%;object-fit:cover" alt="" onerror="this.remove()"><?php else: ?><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></span><?php endif; ?><span class="lt"><b><?=htmlspecialchars($sp['name'] ?? '')?></b><span><?=htmlspecialchars($sp['title'] ?? '')?></span></span></div>
+      <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+  </article>
+
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
+<script>
   var EVENT_ID = <?=json_encode($event['id'])?>;
   var IS_LOGGED = <?=$member ? 'true' : 'false'?>;
   function regFetch(action) {
@@ -133,11 +125,5 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
     regFetch('cancel').then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
   }
   </script>
-  <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-    <div class="mx-auto px-5 text-center text-sm" style="max-width:1000px">
-      <div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div>
-      <div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div>
-    </div>
-  </footer>
 </body>
 </html>

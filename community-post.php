@@ -1,6 +1,8 @@
 <?php
 /**
  * 社区帖子详情 — 内容 + 评论
+ *
+ * v7（2026-09-01）：迁到共享 archetype（reader + prose + actions + 评论列表）。投票 / 评论接口原样保留；自绘顶栏换成共享外壳。
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/MemberSystem.php';
@@ -22,73 +24,69 @@ usort($postComments, fn($a,$b) => strcmp($a['created_at']??'', $b['created_at']?
 $member = member_current();
 $topic = $topicNames[$post['topic'] ?? ''] ?? ['name'=>'综合','icon'=>'💬'];
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($post['title'])?> | OpenFlow 社区</title>
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  /* ── 设计语言统一：token 语义工具类 ── */
-  .text-fg{color:var(--fg)}.text-muted{color:var(--muted)}.text-faint{color:var(--faint)}
-  .text-accent{color:var(--accent)}.text-ok{color:var(--ok)}.text-danger{color:var(--danger)}
-  body{background:var(--bg);font-family:var(--font-body)}
-  .cmt{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+/* 帖子页独有：评论列表。其余全部来自 modules.css。 */
+.cmts{display:flex;flex-direction:column}
+.cmt{padding:18px 4px;border-bottom:1px solid var(--border-soft)}
+.cmt .hd{display:flex;justify-content:space-between;gap:10px;font-family:var(--font-mono);font-size:12px;color:var(--faint);margin-bottom:6px}
+.cmt .hd b{color:var(--fg);font-family:var(--font-body);font-size:13.5px}
+.cmt p{font-size:14.5px;color:var(--muted);line-height:1.75}
+.vote-inline{display:inline-flex;align-items:center;gap:6px}
+.vote-inline .act{height:34px;padding:0 12px}
 </style>
-<link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-  <header class="border-b" style="background:var(--glass-bright);border-color:var(--border);backdrop-filter:blur(10px);position:sticky;top:0;z-index:40">
-    <div class="mx-auto px-5 py-3 flex items-center justify-between" style="max-width:900px">
-      <a href="/" class="font-bold text-lg text-fg">OpenFlow</a>
-      <nav class="flex items-center gap-4 text-sm">
-        <a href="/community" class="text-muted">← 返回社区</a>
-        <?php if ($member): ?><a href="/member.php" class="font-semibold text-ok"><?=htmlspecialchars($member['name'])?></a><?php endif; ?>
-      </nav>
+<body data-of-main>
+<?php of_shell('community'); ?>
+
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
+  <article class="reader reveal in" data-od-id="post">
+    <nav class="art-meta" aria-label="面包屑" style="margin-bottom:18px"><a href="/community" style="color:var(--faint)">← 返回社区</a></nav>
+    <div class="art-head">
+      <div class="art-meta"><span><?=$topic['icon']?> <?=htmlspecialchars($topic['name'])?></span><span class="sep"></span><span>by <?=htmlspecialchars($post['author_name'])?></span><span class="sep"></span><span><?=htmlspecialchars(substr($post['created_at']??'',0,10))?></span></div>
+      <h1><?=htmlspecialchars($post['title'])?></h1>
     </div>
-  </header>
-
-  <div class="mx-auto px-5 py-8" style="max-width:900px">
-    <!-- 帖子 -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px">
-      <div style="font-size:12px;color:var(--faint);margin-bottom:8px"><?=$topic['icon']?> <?=htmlspecialchars($topic['name'])?> · by <?=htmlspecialchars($post['author_name'])?> · <?=htmlspecialchars(substr($post['created_at']??'',0,10))?></div>
-      <h1 class="text-2xl font-bold mb-4"><?=htmlspecialchars($post['title'])?></h1>
-      <div class="text-[15px] leading-relaxed text-muted whitespace-pre-wrap"><?=htmlspecialchars($post['content'] ?? '')?></div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--bg);font-size:13px;color:var(--faint)">
-        <button class="vote-btn" onclick="vote('<?=htmlspecialchars($post['id'])?>',1)">▲</button>
-        <span class="font-bold text-sm" style="color:var(--fg)" id="votes_<?=htmlspecialchars($post['id'])?>"><?=$post['votes']??0?></span>
-        <button class="vote-btn" onclick="vote('<?=htmlspecialchars($post['id'])?>',-1)">▼</button>
-        <span style="margin-left:8px">💬 <?=count($postComments)?> 评论</span>
-      </div>
+    <div class="prose" style="white-space:pre-wrap"><?=htmlspecialchars($post['content'] ?? '')?></div>
+    <div class="actions">
+      <span class="vote-inline">
+        <button class="act" onclick="vote('<?=htmlspecialchars($post['id'])?>',1)" aria-label="赞同"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
+        <b id="votes_<?=htmlspecialchars($post['id'])?>"><?=$post['votes']??0?></b>
+        <button class="act" onclick="vote('<?=htmlspecialchars($post['id'])?>',-1)" aria-label="反对"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      </span>
+      <a class="act" href="#comments"><?=count($postComments)?> 评论</a>
     </div>
+  </article>
 
-    <!-- 评论 -->
-    <div id="comments" class="mt-8">
-      <h2 class="font-bold text-lg mb-4">评论（<?=count($postComments)?>）</h2>
-
-      <?php if ($member): ?>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px">
-        <textarea id="cmtContent" rows="2" placeholder="写下你的想法…" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px"></textarea>
-        <button onclick="addComment()" class="mt-2 rounded-full px-6 py-2 font-bold" style="background:var(--accent);color:var(--on-accent)">发布评论</button>
-      </div>
-      <?php else: ?>
-      <a href="/member.php?view=login&next=/community-post/<?=urlencode($post['id'])?>" class="block text-center py-3 rounded-xl font-semibold" style="background:var(--surface);border:1px solid var(--border);color:var(--accent);margin-bottom:16px">登录后参与讨论</a>
-      <?php endif; ?>
-
-      <?php if (empty($postComments)): ?>
-      <div class="text-center py-10 text-faint">暂无评论，来抢沙发！</div>
-      <?php endif; ?>
+  <section id="comments" class="reader reveal" data-od-id="post-comments">
+    <div class="sec-head row"><div><span class="kicker">评论 · <?=count($postComments)?></span><h2>大家怎么说</h2></div></div>
+    <?php if ($member): ?>
+    <div class="card" style="margin-top:14px;display:flex;flex-direction:column;gap:12px">
+      <textarea id="cmtContent" class="inp" rows="3" placeholder="写下你的想法…"></textarea>
+      <div class="cta-row"><button onclick="addComment()" class="btn primary">发布评论</button></div>
+    </div>
+    <?php else: ?>
+    <a href="/member.php?view=login&next=/community-post/<?=urlencode($post['id'])?>" class="btn ghost" style="margin-top:14px;align-self:flex-start">登录后评论</a>
+    <?php endif; ?>
+    <?php if (empty($postComments)): ?><div class="empty" style="margin-top:18px">暂无评论，来抢沙发！</div><?php endif; ?>
+    <div class="cmts" style="margin-top:10px">
       <?php foreach ($postComments as $c): ?>
-      <div class="cmt">
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--faint);margin-bottom:6px"><strong style="color:var(--fg)"><?=htmlspecialchars($c['author_name'])?></strong><span><?=htmlspecialchars(substr($c['created_at']??'',0,16))?></span></div>
-        <div class="text-sm leading-relaxed text-muted"><?=htmlspecialchars($c['content'])?></div>
-      </div>
+      <div class="cmt"><div class="hd"><b><?=htmlspecialchars($c['author_name'])?></b><span><?=htmlspecialchars(substr($c['created_at']??'',0,16))?></span></div><p><?=htmlspecialchars($c['content'])?></p></div>
       <?php endforeach; ?>
     </div>
-  </div>
+  </section>
 
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
 var MEMBER = <?=json_encode($member ? ['id'=>$member['id']] : null)?>;
 var POST_ID = <?=json_encode($post['id'])?>;
@@ -104,6 +102,5 @@ function addComment() {
   fetch('/api/community.php', {method:'POST', body:fd}).then(function(r){return r.json();}).then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
 }
 </script>
-<footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)"><div class="mx-auto px-5 text-center text-sm" style="max-width:1100px"><div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div><div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div></div></footer>
 </body>
 </html>

@@ -1,6 +1,8 @@
 <?php
 /**
  * 模块化页面前端渲染 — 渲染 builder-pages.json 的 blocks 数组
+ *
+ * v7（2026-09-01）：区块渲染器输出共享 archetype（hero-center / cols / cta-band / split / stats / form-card / prose）。
  * 路由：/b/{slug}
  */
 require_once __DIR__ . '/admin/config.php';
@@ -20,7 +22,7 @@ try {
 } catch (Throwable $e) {}
 $siteName = site_config_get('site_name');
 
-// 区块渲染器
+// 区块渲染器 —— v7：每种区块映射到 modules.css 的共享 archetype，后台搭出来的页与站点其他页同一套零件。
 function builder_render_block(array $b): string {
     $t = $b['type'] ?? 'text';
     $title = htmlspecialchars($b['title'] ?? '');
@@ -30,59 +32,61 @@ function builder_render_block(array $b): string {
     $btnText = htmlspecialchars($b['button_text'] ?? '');
     $btnUrl = htmlspecialchars($b['button_url'] ?? '');
     $bg = $b['bg_color'] ?? '';
-    $bgStyle = $bg ? 'style="background:' . htmlspecialchars($bg) . '"' : '';
-    $btn = $btnText && $btnUrl ? '<a href="' . $btnUrl . '" style="display:inline-block;margin-top:16px;padding:12px 28px;background:oklch(52% .17 258);color:#fff;border-radius:999px;font-weight:700;text-decoration:none">' . $btnText . '</a>' : '';
-
+    $bgStyle = $bg ? ' style="background:' . htmlspecialchars($bg) . ';border-radius:var(--r-lg);padding:clamp(28px,4vw,48px)"' : '';
+    $btn = $btnText && $btnUrl ? '<div class="cta-row"><a class="btn primary" href="' . $btnUrl . '">' . $btnText . '</a></div>' : '';
+    $head = fn(string $tag = 'h2', bool $center = true) => '<div class="sec-head' . ($center ? ' center' : '') . '">' . ($sub && $tag === 'h1' ? '<span class="kicker">' . $sub . '</span>' : '') . '<' . $tag . '>' . $title . '</' . $tag . '>' . ($sub && $tag !== 'h1' ? '<p class="lead">' . $sub . '</p>' : '') . '</div>';
+    $muted = fn(string $html) => '<div class="prose" style="color:var(--muted)">' . $html . '</div>';
     switch ($t) {
         case 'hero':
-            return '<section ' . $bgStyle . ' style="padding:clamp(60px,10vw,120px) 0;text-align:center"><div style="max-width:800px;margin:0 auto;padding:0 20px"><h1 style="font-size:clamp(32px,5vw,52px);font-weight:800;letter-spacing:-.03em;margin-bottom:14px">' . $title . '</h1>' . ($sub ? '<p style="font-size:18px;color:var(--muted);line-height:1.8">' . $sub . '</p>' : '') . ($content ? '<p style="color:var(--muted);margin-top:10px">' . $content . '</p>' : '') . $btn . '</div></section>';
+            return '<section class="reveal in"' . $bgStyle . '><div class="hero-center">' . ($sub ? '<span class="kicker">' . $sub . '</span>' : '') . '<h1>' . $title . '</h1>' . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div></section>';
         case 'features':
-            return '<section ' . $bgStyle . ' style="padding:60px 0"><div style="max-width:1000px;margin:0 auto;padding:0 20px"><h2 style="font-size:28px;font-weight:800;margin-bottom:30px;text-align:center">' . $title . '</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">' . ($content ? $content : '<p style="grid-column:1/-1;color:var(--muted);text-align:center">配置区块内容</p>') . '</div></div></section>';
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="cols n4">' . $content . '</div>' : '<div class="empty">配置区块内容</div>') . '</section>';
         case 'cta':
-            return '<section ' . $bgStyle . ' style="padding:50px 0;text-align:center"><div style="max-width:640px;margin:0 auto;padding:0 20px"><h2 style="font-size:26px;font-weight:800;margin-bottom:10px">' . $title . '</h2>' . ($content ? '<p style="color:var(--muted)">' . $content . '</p>' : '') . $btn . '</div></section>';
+        case 'newsletter':
+            return '<section class="reveal"' . $bgStyle . '><div class="cta-band">' . ($sub ? '<span class="kicker">' . $sub . '</span>' : '') . '<h2>' . $title . '</h2>' . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div></section>';
         case 'text':
-            return '<section ' . $bgStyle . ' style="padding:50px 0"><div style="max-width:800px;margin:0 auto;padding:0 20px"><h2 style="font-size:24px;font-weight:800;margin-bottom:14px">' . $title . '</h2><div style="color:var(--muted);line-height:1.9">' . $content . '</div></div></section>';
+            return '<section class="sec reveal reader"' . $bgStyle . '>' . $head('h2', false) . $muted($content) . '</section>';
         case 'image-text':
-            return '<section ' . $bgStyle . ' style="padding:60px 0"><div style="max-width:1000px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center"><div>' . ($img ? '<img src="' . $img . '" alt="" style="width:100%;border-radius:16px">' : '') . '</div><div><h2 style="font-size:26px;font-weight:800;margin-bottom:12px">' . $title . '</h2>' . ($content ? '<p style="color:var(--muted);line-height:1.8">' . $content . '</p>' : '') . $btn . '</div></div></section>';
+            return '<section class="sec reveal"' . $bgStyle . '><div class="split"><div class="sp-txt"><h3>' . $title . '</h3>' . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div><div class="sp-vis">' . ($img ? '<img src="' . $img . '" alt="" style="width:100%;border-radius:var(--r-md);border:1px solid var(--border)">' : '') . '</div></div></section>';
         case 'stats':
-            return '<section ' . $bgStyle . ' style="padding:50px 0"><div style="max-width:800px;margin:0 auto;padding:0 20px;text-align:center"><h2 style="font-size:24px;font-weight:800;margin-bottom:24px">' . $title . '</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px">' . ($content ?: '<p style="grid-column:1/-1;color:var(--muted)">配置数据</p>') . '</div></div></section>';
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="stats">' . $content . '</div>' : '<div class="empty">配置数据</div>') . '</section>';
+        case 'form':
+            return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . '<div class="form-card">' . ($content ?: '<p class="note" style="text-align:center">' . ($sub ?: '配置表单 slug') . '</p>') . '</div></section>';
+        case 'video':
+            return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . '<div class="sp-win">' . ($content ?: '<div class="empty" style="margin:18px;border:none">配置视频地址</div>') . '</div></section>';
         case 'testimonials':
         case 'logo-wall':
         case 'faq':
         case 'gallery':
-            return '<section ' . $bgStyle . ' style="padding:50px 0"><div style="max-width:900px;margin:0 auto;padding:0 20px"><h2 style="font-size:24px;font-weight:800;margin-bottom:20px;text-align:center">' . $title . '</h2><div style="color:var(--muted);text-align:center">' . ($content ?: '区块内容') . '</div></div></section>';
-        case 'form':
-            return '<section ' . $bgStyle . ' style="padding:50px 0"><div style="max-width:560px;margin:0 auto;padding:0 20px"><h2 style="font-size:24px;font-weight:800;margin-bottom:20px;text-align:center">' . $title . '</h2>' . ($content ?: '<p style="color:var(--muted);text-align:center">' . ($sub ?: '配置表单 slug') . '</p>') . '</div></section>';
-        case 'newsletter':
-            return '<section ' . $bgStyle . ' style="padding:50px 0;text-align:center"><div style="max-width:520px;margin:0 auto;padding:0 20px"><h2 style="font-size:22px;font-weight:800;margin-bottom:12px">' . $title . '</h2>' . ($sub ? '<p style="color:var(--muted)">' . $sub . '</p>' : '') . $btn . '</div></section>';
-        case 'video':
-            return '<section ' . $bgStyle . ' style="padding:50px 0"><div style="max-width:800px;margin:0 auto;padding:0 20px"><h2 style="font-size:24px;font-weight:800;margin-bottom:16px;text-align:center">' . $title . '</h2>' . ($content ?: '<p style="color:var(--muted);text-align:center">配置视频地址</p>') . '</div></section>';
         default:
-            return '<section ' . $bgStyle . ' style="padding:50px 0"><div style="max-width:800px;margin:0 auto;padding:0 20px"><h2>' . $title . '</h2><div style="color:var(--muted)">' . $content . '</div></div></section>';
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? $muted($content) : '<div class="empty">区块内容</div>') . '</section>';
     }
 }
 ?>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($page['seo_title'] ?: ($page['title'] . ' | ' . $siteName))?></title>
 <meta name="description" content="<?=htmlspecialchars($page['seo_desc'] ?? '')?>">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-:root{--accent:oklch(52% .17 258);--fg:oklch(22% .02 70);--muted:oklch(46% .016 70);--bg:oklch(96.5% .016 85)}
-body{font-family:"Space Grotesk","PingFang SC",sans-serif;background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:clip}
+/* 模块化页面零私有 CSS */
+
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
-<main>
+<body data-of-main>
+<?php of_shell('home'); ?>
+
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
 <?php foreach ($blocks as $b) echo builder_render_block($b); ?>
+
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
-<footer style="padding:40px 0;text-align:center;color:var(--muted);font-size:13px;border-top:1px solid var(--border);background:var(--bg-soft)">
-  <?=htmlspecialchars($siteName)?> · OpenFlow 模块化页面
-</footer>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>
