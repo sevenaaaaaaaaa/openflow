@@ -59,41 +59,28 @@ admin_header('权限管理');
 <div class="admin-layout">
   <?php admin_sidebar('users'); ?>
   <div class="main">
-    <h1>权限管理</h1>
-    <p class="sub">管理后台用户账号与角色权限</p>
+    <h1>后台用户</h1>
+    <p class="sub">谁能登录后台、用哪个角色。每个角色能看哪些模块在 <a href="/xmp/roles" style="color:var(--accent)">角色与权限</a> 里定义。</p>
 
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
-    <div class="card">
-      <h2>角色权限说明</h2>
-      <table>
-        <thead><tr><th>角色</th><th>页面管理</th><th>文章管理</th><th>分类/标签</th><th>SEO</th><th>媒体</th><th>线索</th><th>导出</th><th>设置</th><th>用户</th></tr></thead>
-        <tbody>
-          <tr><td><strong>超级管理员</strong></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
-          <tr><td><strong>市场总监</strong></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td><strong>销售总监</strong></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <h2>用户列表</h2>
-      <table>
-        <thead><tr><th>用户名</th><th>显示名称</th><th>角色</th><th>操作</th></tr></thead>
+    <div class="card lst-card">
+      <table class="lst-table">
+        <thead><tr><th style="width:200px">用户名</th><th class="c-title">显示名称</th><th style="width:140px">角色</th><th class="c-act" style="width:150px"></th></tr></thead>
         <tbody>
           <?php foreach ($users as $uk => $uv): ?>
           <tr>
-            <td><code><?=htmlspecialchars($uk)?></code></td>
-            <td><?=htmlspecialchars($uv['name'])?></td>
+            <td class="lst-slug"><?=htmlspecialchars($uk)?></td>
+            <td class="c-title"><div class="lst-title"><?=htmlspecialchars($uv['name'])?><?php if ($uk === ($_SESSION['admin_user'] ?? '')): ?> <span class="badge badge-blue" style="margin-left:6px">我</span><?php endif; ?></div></td>
             <td><span class="badge badge-<?=$uv['role']==='admin'?'green':($uv['role']==='marketing'?'yellow':'gray')?>"><?=htmlspecialchars($roleLabels[$uv['role']] ?? $uv['role'])?></span></td>
-            <td>
+            <td class="c-act">
               <button class="btn btn-ghost btn-sm" onclick="editUser('<?=htmlspecialchars($uk)?>','<?=htmlspecialchars($uv['name'])?>','<?=$uv['role']?>')">编辑</button>
               <?php if ($uk !== 'admin'): ?>
               <form method="post" style="display:inline" data-confirm="确认删除用户 <?=htmlspecialchars($uk)?>？">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="username" value="<?=htmlspecialchars($uk)?>">
-                <button type="submit" class="btn btn-danger btn-sm">删除</button>
+                <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)">删除</button>
               </form>
               <?php endif; ?>
             </td>

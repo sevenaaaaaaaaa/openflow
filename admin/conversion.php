@@ -103,64 +103,64 @@ admin_header('转化组件');
       <input type="hidden" name="save" value="1">
       <input type="hidden" name="tab" value="<?=$activeTab?>">
 
-      <?php if ($activeTab === 'top_bar'): $c = $conv['top_bar']; ?>
+      <?php if ($activeTab === 'top_bar'): $c = $conv['top_bar'] ?? []; ?>
       <div class="card">
         <h2>📢 全局顶部通知条</h2>
-        <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="enabled" value="1" <?=$c['enabled']?'checked':''?> style="width:18px;height:18px">启用顶部通知条</label></div>
+        <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="enabled" value="1" <?=!empty($c['enabled'])?'checked':''?> style="width:18px;height:18px">启用顶部通知条</label></div>
         <div class="field-row">
-          <div class="field"><label>通知文字</label><input type="text" name="text" value="<?=htmlspecialchars($c['text'])?>" placeholder="🎯 限时免费获取报告"></div>
-          <div class="field"><label>链接</label><input type="text" name="link" value="<?=htmlspecialchars($c['link'])?>" placeholder="/landing-page"></div>
+          <div class="field"><label>通知文字</label><input type="text" name="text" value="<?=htmlspecialchars($c['text'] ?? '')?>" placeholder="🎯 限时免费获取报告"></div>
+          <div class="field"><label>链接</label><input type="text" name="link" value="<?=htmlspecialchars($c['link'] ?? '')?>" placeholder="/landing-page"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>背景色</label><input type="text" name="bg_color" value="<?=htmlspecialchars($c['bg_color'])?>"></div>
-          <div class="field"><label>文字色</label><input type="text" name="text_color" value="<?=htmlspecialchars($c['text_color'])?>"></div>
+          <div class="field"><label>背景色</label><input type="text" name="bg_color" value="<?=htmlspecialchars($c['bg_color'] ?? '')?>"></div>
+          <div class="field"><label>文字色</label><input type="text" name="text_color" value="<?=htmlspecialchars($c['text_color'] ?? '')?>"></div>
         </div>
-        <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="dismissible" value="1" <?=$c['dismissible']?'checked':''?> style="width:18px;height:18px">可关闭</label></div>
-        <div class="preview-box" style="background:<?=htmlspecialchars($c['bg_color'])?>;color:<?=htmlspecialchars($c['text_color'])?>"><?=htmlspecialchars($c['text'])?> <?=$c['dismissible']?'[✕]':''?></div>
+        <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="dismissible" value="1" <?=!empty($c['dismissible'])?'checked':''?> style="width:18px;height:18px">可关闭</label></div>
+        <div class="preview-box" style="background:<?=htmlspecialchars($c['bg_color'] ?? '')?>;color:<?=htmlspecialchars($c['text_color'] ?? '')?>"><?=htmlspecialchars($c['text'] ?? '')?> <?=!empty($c['dismissible'])?'[✕]':''?></div>
       </div>
       <?php endif; ?>
 
-      <?php if ($activeTab === 'bottom_cta'): $c = $conv['bottom_cta']; ?>
+      <?php if ($activeTab === 'bottom_cta'): $c = $conv['bottom_cta'] ?? []; ?>
       <div class="card">
         <h2>⬇️ 全局底部 CTA</h2>
-        <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="enabled" value="1" <?=$c['enabled']?'checked':''?> style="width:18px;height:18px">启用底部 CTA</label></div>
+        <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="enabled" value="1" <?=!empty($c['enabled'])?'checked':''?> style="width:18px;height:18px">启用底部 CTA</label></div>
         <div class="field-row">
-          <div class="field"><label>标题</label><input type="text" name="title" value="<?=htmlspecialchars($c['title'])?>"></div>
-          <div class="field"><label>描述</label><input type="text" name="description" value="<?=htmlspecialchars($c['description'])?>"></div>
+          <div class="field"><label>标题</label><input type="text" name="title" value="<?=htmlspecialchars($c['title'] ?? '')?>"></div>
+          <div class="field"><label>描述</label><input type="text" name="description" value="<?=htmlspecialchars($c['description'] ?? '')?>"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>按钮文字</label><input type="text" name="button_text" value="<?=htmlspecialchars($c['button_text'])?>"></div>
-          <div class="field"><label>按钮链接</label><input type="text" name="button_url" value="<?=htmlspecialchars($c['button_url'])?>"></div>
+          <div class="field"><label>按钮文字</label><input type="text" name="button_text" value="<?=htmlspecialchars($c['button_text'] ?? '')?>"></div>
+          <div class="field"><label>按钮链接</label><input type="text" name="button_url" value="<?=htmlspecialchars($c['button_url'] ?? '')?>"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>背景色</label><input type="text" name="bg_color" value="<?=htmlspecialchars($c['bg_color'])?>"></div>
-          <div class="field"><label>文字色</label><input type="text" name="text_color" value="<?=htmlspecialchars($c['text_color'])?>"></div>
+          <div class="field"><label>背景色</label><input type="text" name="bg_color" value="<?=htmlspecialchars($c['bg_color'] ?? '')?>"></div>
+          <div class="field"><label>文字色</label><input type="text" name="text_color" value="<?=htmlspecialchars($c['text_color'] ?? '')?>"></div>
         </div>
       </div>
       <?php endif; ?>
 
-      <?php if ($activeTab === 'popup'): $c = $conv['popup']; ?>
+      <?php if ($activeTab === 'popup'): $c = $conv['popup'] ?? []; ?>
       <div class="card">
         <h2>💬 弹窗</h2>
-        <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="enabled" value="1" <?=$c['enabled']?'checked':''?> style="width:18px;height:18px">启用弹窗</label></div>
-        <div class="field"><label>标题</label><input type="text" name="title" value="<?=htmlspecialchars($c['title'])?>"></div>
-        <div class="field"><label>内容 (HTML)</label><textarea name="content" rows="3" style="font-family:var(--mono)"><?=htmlspecialchars($c['content'])?></textarea></div>
+        <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="enabled" value="1" <?=!empty($c['enabled'])?'checked':''?> style="width:18px;height:18px">启用弹窗</label></div>
+        <div class="field"><label>标题</label><input type="text" name="title" value="<?=htmlspecialchars($c['title'] ?? '')?>"></div>
+        <div class="field"><label>内容 (HTML)</label><textarea name="content" rows="3" style="font-family:var(--mono)"><?=htmlspecialchars($c['content'] ?? '')?></textarea></div>
         <div class="field-row">
-          <div class="field"><label>弹出位置</label><select name="position"><?php foreach ($conv['popup_positions'] ?? ['center'] as $pos): ?><option value="<?=$pos?>" <?=$c['position']===$pos?'selected':''?>><?=htmlspecialchars($pos)?></option><?php endforeach; ?></select></div>
-          <div class="field"><label>触发方式</label><select name="trigger"><?php foreach ($conv['popup_triggers'] ?? ['time'] as $tr): ?><option value="<?=$tr?>" <?=$c['trigger']===$tr?'selected':''?>><?=htmlspecialchars($tr)?></option><?php endforeach; ?></select></div>
+          <div class="field"><label>弹出位置</label><select name="position"><?php foreach ($conv['popup_positions'] ?? ['center'] as $pos): ?><option value="<?=$pos?>" <?=($c['position'] ?? '')===$pos?'selected':''?>><?=htmlspecialchars($pos)?></option><?php endforeach; ?></select></div>
+          <div class="field"><label>触发方式</label><select name="trigger"><?php foreach ($conv['popup_triggers'] ?? ['time'] as $tr): ?><option value="<?=$tr?>" <?=($c['trigger'] ?? '')===$tr?'selected':''?>><?=htmlspecialchars($tr)?></option><?php endforeach; ?></select></div>
         </div>
         <div class="field-row">
           <div class="field"><label>触发延迟 (秒)</label><input type="number" name="trigger_delay" value="<?=htmlspecialchars($c['trigger_delay'] ?? 10)?>" min="0" max="300"></div>
-          <div class="field"><label>弹出频次</label><select name="frequency"><?php foreach ($conv['popup_frequencies'] ?? ['once_per_session'] as $freq): ?><option value="<?=$freq?>" <?=$c['frequency']===$freq?'selected':''?>><?=htmlspecialchars($freq)?></option><?php endforeach; ?></select></div>
+          <div class="field"><label>弹出频次</label><select name="frequency"><?php foreach ($conv['popup_frequencies'] ?? ['once_per_session'] as $freq): ?><option value="<?=$freq?>" <?=($c['frequency'] ?? '')===$freq?'selected':''?>><?=htmlspecialchars($freq)?></option><?php endforeach; ?></select></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>页面范围</label><select name="page_scope" onchange="document.getElementById('pagePaths').style.display=this.value==='specific'?'block':'none'"><option value="all" <?=$c['page_scope']==='all'?'selected':''?>>全部页面</option><option value="home" <?=$c['page_scope']==='home'?'selected':''?>>仅首页</option><option value="article" <?=$c['page_scope']==='article'?'selected':''?>>仅文章页</option><option value="specific" <?=$c['page_scope']==='specific'?'selected':''?>>指定路径</option></select></div>
-          <div class="field"><label>宽度</label><input type="text" name="width" value="<?=htmlspecialchars($c['width'])?>" placeholder="500px"></div>
+          <div class="field"><label>页面范围</label><select name="page_scope" onchange="document.getElementById('pagePaths').style.display=this.value==='specific'?'block':'none'"><option value="all" <?=($c['page_scope'] ?? '')==='all'?'selected':''?>>全部页面</option><option value="home" <?=($c['page_scope'] ?? '')==='home'?'selected':''?>>仅首页</option><option value="article" <?=($c['page_scope'] ?? '')==='article'?'selected':''?>>仅文章页</option><option value="specific" <?=($c['page_scope'] ?? '')==='specific'?'selected':''?>>指定路径</option></select></div>
+          <div class="field"><label>宽度</label><input type="text" name="width" value="<?=htmlspecialchars($c['width'] ?? '')?>" placeholder="500px"></div>
         </div>
-        <div class="field" id="pagePaths" style="display:<?=$c['page_scope']==='specific'?'block':'none'?>"><label>指定路径 <span class="hint">一行一个</span></label><textarea name="page_paths" rows="2"><?=htmlspecialchars($c['page_paths'])?></textarea></div>
+        <div class="field" id="pagePaths" style="display:<?=($c['page_scope'] ?? '')==='specific'?'block':'none'?>"><label>指定路径 <span class="hint">一行一个</span></label><textarea name="page_paths" rows="2"><?=htmlspecialchars($c['page_paths'] ?? '')?></textarea></div>
         <div class="field-row">
-          <div class="field"><label>关联表单 <span class="hint">弹窗内嵌表单</span></label><select name="form_slug"><option value="">无</option><?php foreach ($forms as $f): ?><option value="<?=htmlspecialchars($f['slug'])?>" <?=$c['form_slug']===$f['slug']?'selected':''?>><?=htmlspecialchars($f['title'])?></option><?php endforeach; ?></select></div>
-          <div class="field"><label>背景图</label><input type="text" name="image" value="<?=htmlspecialchars($c['image'])?>" placeholder="图片路径"></div>
+          <div class="field"><label>关联表单 <span class="hint">弹窗内嵌表单</span></label><select name="form_slug"><option value="">无</option><?php foreach ($forms as $f): ?><option value="<?=htmlspecialchars($f['slug'])?>" <?=($c['form_slug'] ?? '')===$f['slug']?'selected':''?>><?=htmlspecialchars($f['title'])?></option><?php endforeach; ?></select></div>
+          <div class="field"><label>背景图</label><input type="text" name="image" value="<?=htmlspecialchars($c['image'] ?? '')?>" placeholder="图片路径"></div>
         </div>
         <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)">
           <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:700;margin-bottom:8px"><input type="checkbox" name="ab_enabled" value="1" <?=!empty($c['ab_enabled'])?'checked':''?> style="width:15px;height:15px"> 🧪 启用弹窗 A/B 测试（B 变体）</label>
@@ -179,21 +179,21 @@ admin_header('转化组件');
       </div>
       <?php endif; ?>
 
-      <?php if ($activeTab === 'inline_cta'): $c = $conv['inline_cta']; ?>
+      <?php if ($activeTab === 'inline_cta'): $c = $conv['inline_cta'] ?? []; ?>
       <div class="card">
         <h2>📝 文中 CTA 组件</h2>
         <p class="text-sm text-muted mb-4">提供默认模板，文章编辑器中可插入使用。支持变量替换。</p>
-        <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="enabled" value="1" <?=$c['enabled']?'checked':''?> style="width:18px;height:18px">启用文中 CTA</label></div>
+        <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="enabled" value="1" <?=!empty($c['enabled'])?'checked':''?> style="width:18px;height:18px">启用文中 CTA</label></div>
         <div class="field-row">
-          <div class="field"><label>默认标题</label><input type="text" name="default_title" value="<?=htmlspecialchars($c['default_title'])?>"></div>
-          <div class="field"><label>默认描述</label><input type="text" name="default_description" value="<?=htmlspecialchars($c['default_description'])?>"></div>
+          <div class="field"><label>默认标题</label><input type="text" name="default_title" value="<?=htmlspecialchars($c['default_title'] ?? '')?>"></div>
+          <div class="field"><label>默认描述</label><input type="text" name="default_description" value="<?=htmlspecialchars($c['default_description'] ?? '')?>"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>默认按钮文字</label><input type="text" name="default_button" value="<?=htmlspecialchars($c['default_button'])?>"></div>
-          <div class="field"><label>默认链接</label><input type="text" name="default_url" value="<?=htmlspecialchars($c['default_url'])?>"></div>
+          <div class="field"><label>默认按钮文字</label><input type="text" name="default_button" value="<?=htmlspecialchars($c['default_button'] ?? '')?>"></div>
+          <div class="field"><label>默认链接</label><input type="text" name="default_url" value="<?=htmlspecialchars($c['default_url'] ?? '')?>"></div>
         </div>
         <div class="field"><label>HTML 模板 <span class="hint">支持 {{title}} {{description}} {{button}} {{url}}</span></label>
-          <textarea name="default_template" rows="6" style="font-family:var(--mono);font-size:13px"><?=htmlspecialchars($c['default_template'])?></textarea>
+          <textarea name="default_template" rows="6" style="font-family:var(--mono);font-size:13px"><?=htmlspecialchars($c['default_template'] ?? '')?></textarea>
         </div>
         <div class="preview-box">
           <?php
