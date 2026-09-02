@@ -1,6 +1,8 @@
 <?php
 /**
  * 资料详情页 — 单个资料的完整展示 + 门禁表单下载
+ *
+ * v7（2026-09-01）：迁到共享 archetype（reader + art-head + contact-wrap 门禁表单）。下载接口原样保留。
  * /downloads/{slug}
  */
 require_once __DIR__ . '/admin/config.php';
@@ -23,67 +25,54 @@ $catNames = [];
 foreach ($catDefs as $c) $catNames[$c['key']] = $c['name'];
 $catName = $catNames[$dl['category'] ?? ''] ?? $dl['category'] ?? '资料';
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($dl['title'])?> | <?=site_config_get('site_name')?></title>
 <meta name="description" content="<?=htmlspecialchars(mb_substr($dl['description'] ?? '', 0, 120))?>">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body);color:var(--fg)}
-  .dl-detail{border:1px solid var(--border);background:var(--surface);border-radius:24px}
+/* 资料详情页零私有 CSS */
+
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('downloads'); ?>
 
-  <div class="mx-auto px-5 py-10" style="max-width:900px">
-    <a href="/downloads" style="color:var(--muted);text-decoration:none;font-size:13px">← 返回资料中心</a>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
 
-    <div class="dl-detail mt-6 p-8">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--ok));display:grid;place-items:center;font-size:28px">📄</div>
-        <div>
-          <div class="text-xs font-bold" style="color:var(--accent);letter-spacing:.1em">资料 · <?=htmlspecialchars($catName)?></div>
-          <h1 class="text-2xl font-extrabold mt-1"><?=htmlspecialchars($dl['title'])?></h1>
-        </div>
+  <section class="reveal in" data-od-id="download">
+    <nav class="art-meta" aria-label="面包屑" style="margin-bottom:18px"><a href="/downloads" style="color:var(--faint)">← 全部资料</a></nav>
+    <div class="contact-wrap">
+      <div class="ct-pitch">
+        <span class="kicker">资料 · <?=htmlspecialchars($catName)?></span>
+        <h2><?=htmlspecialchars($dl['title'])?></h2>
+        <p class="lead"><?=nl2br(htmlspecialchars($dl['description'] ?? ''))?></p>
+        <?php if (!empty($dl['tags'])): ?><div class="tags"><?php foreach ($dl['tags'] as $t): ?><span>#<?=htmlspecialchars($t)?></span><?php endforeach; ?></div><?php endif; ?>
+        <div class="art-meta" style="margin-top:8px"><span>已下载 <?=(int)($dl['download_count'] ?? 0)?> 次</span><span class="sep"></span><span>更新于 <?=htmlspecialchars(substr($dl['updated_at'] ?? $dl['created_at'] ?? '', 0, 10))?></span></div>
       </div>
-
-      <p class="text-gray-600 leading-relaxed text-[15px]"><?=nl2br(htmlspecialchars($dl['description'] ?? ''))?></p>
-
-      <?php if (!empty($dl['tags'])): ?>
-      <div class="flex gap-1.5 flex-wrap mt-4">
-        <?php foreach ($dl['tags'] as $t): ?>
-        <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold" style="background:var(--accent-soft);color:var(--accent)">#<?=htmlspecialchars($t)?></span>
-        <?php endforeach; ?>
-      </div>
-      <?php endif; ?>
-
-      <div style="display:flex;gap:20px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)">
-        <span>📥 已下载 <?=(int)($dl['download_count'] ?? 0)?> 次</span>
-        <span>🕒 更新于 <?=htmlspecialchars(substr($dl['updated_at'] ?? $dl['created_at'] ?? '', 0, 10))?></span>
-      </div>
-
-      <!-- 下载门禁表单 -->
-      <div class="mt-6 rounded-2xl p-6" style="background:var(--bg-soft);border:1px solid var(--border)">
-        <h2 class="font-bold mb-1">获取下载链接</h2>
-        <p class="text-xs text-gray-600 mb-4">填写信息后即可获取下载</p>
-        <form onsubmit="return submitDl(event)" class="grid gap-3">
+      <div class="form-card">
+        <div class="sec-head" style="gap:6px;margin-bottom:18px"><h3 class="h3" style="font-size:20px">获取下载链接</h3><p class="note">填写信息后即可获取下载</p></div>
+        <form onsubmit="return submitDl(event)" class="form-grid">
           <input type="hidden" name="download_id" value="<?=htmlspecialchars($dl['id'])?>">
-          <input type="text" name="name" required placeholder="你的姓名" class="w-full px-4 py-3 rounded-xl text-sm" style="border:1.5px solid var(--border);background:var(--surface)">
-          <input type="email" name="email" required placeholder="工作邮箱" class="w-full px-4 py-3 rounded-xl text-sm" style="border:1.5px solid var(--border);background:var(--surface)">
-          <input type="text" name="company" placeholder="公司 / 组织" class="w-full px-4 py-3 rounded-xl text-sm" style="border:1.5px solid var(--border);background:var(--surface)">
-          <input type="text" name="title" placeholder="职位（选填）" class="w-full px-4 py-3 rounded-xl text-sm" style="border:1.5px solid var(--border);background:var(--surface)">
-          <button type="submit" class="w-full rounded-full py-3 font-bold text-sm" style="background:var(--accent);color:var(--on-accent)">获取下载链接</button>
-          <div id="dlMsg" class="text-sm text-center"></div>
+          <div class="field"><label for="dl-name">姓名 *</label><input class="inp" id="dl-name" type="text" name="name" required placeholder="你的姓名"></div>
+          <div class="field"><label for="dl-email">工作邮箱 *</label><input class="inp" id="dl-email" type="email" name="email" required placeholder="工作邮箱"></div>
+          <div class="field"><label for="dl-company">公司 / 组织</label><input class="inp" id="dl-company" type="text" name="company" placeholder="公司 / 组织"></div>
+          <div class="field"><label for="dl-title">职位</label><input class="inp" id="dl-title" type="text" name="title" placeholder="选填"></div>
+          <button type="submit" class="btn primary" style="width:100%">获取下载链接</button>
+          <div id="dlMsg" class="f-note" style="text-align:center"></div>
         </form>
       </div>
     </div>
-  </div>
+  </section>
 
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
 function submitDl(e) {
   e.preventDefault();
@@ -96,9 +85,9 @@ function submitDl(e) {
         msg.innerHTML = '<span style="color:var(--ok)">✅ 下载开始…</span>';
         setTimeout(function(){ location.href = d.url; }, 800);
       } else {
-        msg.innerHTML = '<span style="color:#dc2626">😅 ' + (d.error || '下载失败') + '</span>';
+        msg.innerHTML = '<span style="color:var(--danger)">' + (d.error || '下载失败') + '</span>';
       }
-    }).catch(function(){ msg.innerHTML = '<span style="color:#dc2626">网络异常</span>'; });
+    }).catch(function(){ msg.innerHTML = '<span style="color:var(--danger)">网络异常</span>'; });
 }
 </script>
 </body>

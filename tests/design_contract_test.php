@@ -12,8 +12,11 @@ $ROOT = dirname(__DIR__);
 chdir($ROOT);
 
 $MIGRATED = ['index.php','about.php','product.php','capability.php','courses.php','academy.php','enterprise.php','navigation.php','events.php','community.php','marketplace.php',
-             'articles.php','article.php','category.php','docs.php','downloads.php','podcasts.php','author.php','search.php','topics.php'];
-$PENDING  = ['shop.php','member.php','live.php','course-player.php','tools.php','consultation.php','event.php','community-post.php','reviews.php','survey.php','nps.php','activate.php','messages.php','asset.php','download.php','front-builder.php','navigation-site.php','survey-my.php'];
+             'articles.php','article.php','category.php','docs.php','downloads.php','podcasts.php','author.php','search.php','topics.php',
+             'event.php','community-post.php','reviews.php','messages.php','activate.php','nps.php','download.php','navigation-site.php','survey-my.php','front-builder.php'];
+$PENDING  = ['shop.php','member.php','live.php','course-player.php','tools.php','consultation.php','survey.php','asset.php'];
+// 对外独立页（问卷 / NPS 由外链打开，不接站点外壳、不带页脚）—— 只免 of_shell / .foot 两项，其余契约照常
+$STANDALONE = ['nps.php','survey-my.php'];
 
 $SHARED_CLASSES = ['btn','card','sec-head','kicker','foot','stats','hero','hero-center','cta-row','trust','worlds','wf','tl','scn','split','cols','qr','link-grid','cta-band','tab-bar','tab-p','faq','inp','field'];
 $MAX_STYLE_LINES = 60;
@@ -37,7 +40,8 @@ foreach ($MIGRATED as $f) {
     check($lines <= $MAX_STYLE_LINES, "$tag 私有 <style> $lines 行 > $MAX_STYLE_LINES");
     check(strpos($src, 'tailwind-build.css') === false, "$tag 仍引用 tailwind-build.css");
     check(strpos($src, 'id="of-modules-css"') !== false || strpos($src, 'of_head_assets(') !== false, "$tag 没有引 modules.css（id=of-modules-css / of_head_assets）");
-    check(strpos($src, 'of_shell(') !== false, "$tag 没有通过 of_shell() 接外壳");
+    $standalone = in_array($f, $STANDALONE, true);
+    check($standalone || strpos($src, 'of_shell(') !== false, "$tag 没有通过 of_shell() 接外壳");
     check(!preg_match('/#[0-9a-fA-F]{3,8}\b/', preg_replace('/url\([^)]*\)/', '', $css)), "$tag 私有 CSS 里有 hex 色");
     check(!preg_match('/\brgba?\(/', $css), "$tag 私有 CSS 里有 rgb()/rgba()");
     // 行内样式里的 hex / rgb
@@ -51,7 +55,7 @@ foreach ($MIGRATED as $f) {
         }
     }
     // 页脚必须是共享 .foot
-    check(strpos($src, 'class="foot"') !== false || strpos($src, 'of_footer(') !== false || $f === 'navigation.php', "$tag 没有共享页脚 .foot");
+    check($standalone || strpos($src, 'class="foot"') !== false || strpos($src, 'of_footer(') !== false || $f === 'navigation.php', "$tag 没有共享页脚 .foot");
     // JS 拼正文的老习惯
     check(!preg_match('/\.innerHTML\s*=\s*[\'"]<(div|section|article) class="(card|prin|course|tl|fq)/', $src), "$tag 仍用 JS 拼正文卡片");
 }
