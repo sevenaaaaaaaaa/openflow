@@ -152,7 +152,7 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
             <span class="lv"><?=$mLevel['icon']?> <?=htmlspecialchars($mLevel['name'])?> <span class="note" style="margin:0;display:inline">· <?=$member['points']??0?> 积分</span></span>
             <div class="bd">
               <span class="badge ok"><?=$mEnt['icon']?> <?=htmlspecialchars($mEnt['tier_name'])?></span>
-              <?php if (sub_is_active($member['id'])): ?><span class="badge warn">⭐ 订阅</span><?php endif; ?>
+              <?php if (sub_is_active($member['id'])): ?><span class="badge warn">订阅中</span><?php endif; ?>
               <?php if (!empty($member['ambassador'])): ?><span class="badge ok">推荐大使</span><?php endif; ?>
             </div>
           </div>
@@ -430,7 +430,7 @@ function include_member_subscribe($member): void {
     $active = sub_is_active($member['id']);
     echo '<div class="card panel"><div class="ph"><div><h2>付费订阅</h2></div></div>';
     if ($active) {
-        echo '<div class="box ok">🎉 你已是订阅会员，有效期至 <strong>' . htmlspecialchars($mySub['expires_at'] ?? '') . '</strong></div>';
+        echo '<div class="box ok">你已是订阅会员，有效期至 <strong>' . htmlspecialchars($mySub['expires_at'] ?? '') . '</strong></div>';
     }
     if (empty($settings['enabled'])) {
         echo '<div class="empty">订阅暂未开放，敬请期待。</div>';
@@ -507,7 +507,7 @@ function include_member_ambassador($member): void {
 function include_member_teacher($member): void {
     $status = $member['teacher_status'] ?? 'none';
     echo '<div class="card panel"><div class="ph"><div><h2>成为讲师</h2></div></div>';
-    if ($status === 'approved') echo '<div class="box ok">🎉 你已成为讲师，可以在「投稿文章」中发布内容了。</div>';
+    if ($status === 'approved') echo '<div class="box ok">你已成为讲师，可以在「投稿文章」中发布内容了。</div>';
     elseif ($status === 'pending') echo '<div class="box warn">申请审核中，请耐心等待。</div>';
     else {
         echo '<p class="d">分享你的专业经验，成为 OpenFlow 认证讲师。提交申请后由管理员审核。</p>';
