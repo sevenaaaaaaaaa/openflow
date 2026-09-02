@@ -83,9 +83,9 @@ function renderCard(array $a, array $catLabels, $size = 'normal'): string {
 <title>内容学院 · 文章精选 | <?=$siteName?></title>
 <meta name="description" content="增长实践、AI 工具评测、行业洞察 — 共 <?=$total?> 篇深度文章">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260903a">
 <style>
 /* 文章列表独有：精选大卡横排 + 卡片摘要。其余全部来自 modules.css。 */
 .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}

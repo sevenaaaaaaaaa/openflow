@@ -37,35 +37,31 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   radial-gradient(40% 34% at 55% 108%,var(--blob-c),transparent 70%)}
 
 /* ── chrome 外壳（SSR） ── */
-#chrome{position:fixed;top:0;left:0;right:0;height:var(--chrome-h);z-index:60;display:flex;align-items:center;padding:0 14px;transition:background .3s,box-shadow .3s,border-color .3s,top .45s var(--ease-spring),left .45s var(--ease-spring),right .45s var(--ease-spring),height .45s var(--ease-spring),border-radius .45s var(--ease-spring);border-bottom:1px solid transparent}
-#chrome.scrolled{top:10px;left:calc(var(--sb-w) + 34px);right:clamp(16px,4vw,40px);height:56px;border-radius:999px;border:1px solid var(--border);background:color-mix(in oklab,var(--bg) 78%,transparent);backdrop-filter:blur(20px) saturate(170%);box-shadow:var(--shadow-sm);padding:0 14px}
-#chrome.capsule-mode{height:50px}
-#chrome.capsule-mode .brand{font-size:12.5px}
-#chrome.capsule-mode .brand .bn-sub{display:none}
-#chrome.capsule-mode .tabs a{height:30px;padding:0 10px;font-size:12.5px}
-#chrome.capsule-mode .tabs a .ic{width:13px;height:13px}
-#chrome.capsule-mode .cbtn{width:30px;height:30px}
-#chrome.capsule-mode .cbtn svg{width:15px;height:15px}
-#chrome.capsule-mode .kbd-chip{height:30px;font-size:12px}
-#chrome.capsule-mode .light{width:9px;height:9px}
+/* ── 外壳几何：单坐标系（v8，2026-09-02）──
+   侧栏 fixed 在左列；顶栏与正文都在右列，用同一个 --content-l 左让位、同一个 --gx 内边距，
+   所以顶栏宽度 == 正文内容宽度、导航中心 == 正文中心，任何侧栏状态 / 滚动位置下都成立。
+   顶栏是 sticky 而不是 fixed：它占据文档流、随正文列变宽变窄；滚动只改表面（背景 / 阴影 / 边框），
+   永远不改几何（top / left / width / height / 字号），所以不会再有「滑动时缩放漂移」。 */
+body{--gx:clamp(16px,4vw,40px);--content-l:calc(var(--sb-w) + 34px);--chrome-top:10px}
+body[data-sb="closed"],body[data-sb="drawer"]{--content-l:0px}
+#chrome{position:sticky;top:var(--chrome-top);z-index:60;height:var(--chrome-h);margin:var(--chrome-top) var(--gx) 0 calc(var(--content-l) + var(--gx));display:flex;align-items:center;padding:0 10px 0 12px;border-radius:999px;border:1px solid var(--border);background:color-mix(in oklab,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:inset 0 1px 0 color-mix(in oklab,var(--surface-strong),transparent 40%);transition:margin-left .45s var(--ease-spring),background .3s,box-shadow .3s,border-color .3s;container-type:inline-size;container-name:chrome}
+#chrome.scrolled{background:color-mix(in oklab,var(--bg) 93%,transparent);border-color:var(--border-strong);box-shadow:var(--shadow-sm)}
 html.theme-switching,html.theme-switching *,html.theme-switching *::before,html.theme-switching *::after{transition:background-color .35s,color .35s,border-color .35s,fill .35s,stroke .35s,box-shadow .35s !important}
-body[data-sb="closed"] #chrome.scrolled,body[data-sb="drawer"] #chrome.scrolled{left:18px}
-#chrome .bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;width:100%}
-#chrome .bar-start{display:flex;align-items:center;gap:12px;justify-self:start;min-width:0}
+#chrome .bar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;width:100%}
+#chrome .bar-start{display:flex;align-items:center;gap:12px;justify-self:start;min-width:0;overflow:clip;overflow-clip-margin:6px}
 .lights{display:flex;gap:8px;padding:0 4px}
 #chrome .lights{justify-self:start}
 .light{width:12px;height:12px;border-radius:50%;flex:0 0 auto;box-shadow:inset 0 0 2px oklch(0% 0 0/.18)}
 .light-r{background:oklch(64% .19 28)}
 .light-y{background:oklch(82% .15 82)}
 .light-g{background:oklch(68% .15 150)}
-.tabs{display:flex;align-items:center;justify-self:center;gap:2px;min-width:0;max-width:100%;overflow-x:auto;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tabs a,.tabs .tab-pill{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px;border-radius:12px;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap;border:1px solid transparent;transition:background .22s,color .22s,border-color .22s}
-.tabs a:hover,.tabs .tab-pill:hover{background:var(--glass);color:var(--fg)}
-.tabs a.on,.tabs .tab-pill.on{background:var(--surface-strong);color:var(--fg);border-color:var(--border);box-shadow:var(--shadow-sm)}
-.tabs a .ic{width:15px;height:15px;flex:0 0 auto;color:var(--faint);transition:color .2s}
-.tabs a .ic svg{width:15px;height:15px}
-.tabs a.on .ic,.tabs .tab-pill.on .ic{color:var(--accent)}
+.tabs{display:flex;align-items:center;justify-self:center;gap:2px;min-width:0;max-width:100%}
+.tabs>.tab-pill{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px;border-radius:12px;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap;border:1px solid transparent;transition:background .22s,color .22s,border-color .22s}
+.tabs>.tab-pill:hover,.tabs>.tab-pill.mega-open{background:var(--glass);color:var(--fg)}
+.tabs>.tab-pill.on{background:var(--surface-strong);color:var(--fg);border-color:var(--border);box-shadow:var(--shadow-sm)}
+.tabs>.tab-pill .ic{width:15px;height:15px;flex:0 0 auto;color:var(--faint);transition:color .2s}
+.tabs>.tab-pill .ic svg{width:15px;height:15px}
+.tabs>.tab-pill.on .ic{color:var(--accent)}
 .controls{display:flex;align-items:center;justify-self:end;gap:8px;flex:0 0 auto}
 .cbtn{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--muted);transition:background .2s,color .2s}
 .cbtn:hover{background:var(--hover);color:var(--fg)}
@@ -76,15 +72,13 @@ body[data-sb="closed"] #chrome.scrolled,body[data-sb="drawer"] #chrome.scrolled{
 .kbd-chip .kbd{font-family:var(--font-mono);font-size:11px;color:var(--faint);border:1px solid var(--border);border-radius:5px;padding:1px 5px;background:var(--surface)}
 .mobile-only{display:none}
 body[data-sb="closed"] #sidebar{transform:translateX(calc(-100% - 30px));opacity:0;pointer-events:none}
-body[data-sb="closed"] #main{margin-left:0}
 #btn-menu{display:none}
 body[data-sb="drawer"] #sidebar{transform:translateX(0);left:10px;width:min(300px,calc(100vw - 40px));opacity:1;pointer-events:auto}
-body[data-sb="drawer"] #main{margin-left:0}
 .scrim{position:fixed;inset:0;background:oklch(10% 0 0/.35);backdrop-filter:blur(3px);z-index:54;opacity:0;pointer-events:none;transition:opacity .25s}
 body[data-sb="drawer"] .scrim{opacity:1;pointer-events:auto}
 
 /* ── 侧栏 ── */
-#sidebar{position:fixed;top:calc(var(--chrome-h) + 10px);left:14px;bottom:14px;width:var(--sb-w);z-index:55;padding:14px 10px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;background:color-mix(in oklab,var(--bg-soft) 62%,transparent);backdrop-filter:blur(24px) saturate(170%);border:1px solid var(--border);border-radius:var(--r-md);transition:width .45s var(--ease-spring),transform .45s var(--ease-spring),opacity .3s}
+#sidebar{position:fixed;top:var(--chrome-top);left:14px;bottom:14px;width:var(--sb-w);z-index:55;padding:14px 10px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;background:color-mix(in oklab,var(--bg-soft) 88%,transparent);border:1px solid var(--border);border-radius:var(--r-md);transition:width .45s var(--ease-spring),transform .45s var(--ease-spring),opacity .3s;scrollbar-width:thin}
 .ws{display:flex;align-items:center;gap:10px;padding:8px 10px 14px;font-size:13px;font-weight:600}
 .ws .ic{width:18px;height:18px;color:var(--accent);flex:0 0 auto}
 .ws .ic svg{width:18px;height:18px}
@@ -94,6 +88,19 @@ body[data-sb="drawer"] .scrim{opacity:1;pointer-events:auto}
 .s-item .ic svg{width:15px;height:15px}
 .s-item:hover{background:var(--hover);color:var(--fg)}
 .s-item.on{background:var(--accent-soft);color:var(--accent-strong);font-weight:600}
+.s-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.s-row .s-item{min-width:0}
+.s-more{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--faint);transition:background .15s,color .15s,transform .3s var(--ease-spring)}
+.s-more svg{width:14px;height:14px}
+.s-more:hover{background:var(--hover);color:var(--fg)}
+.s-row.open .s-more{transform:rotate(180deg)}
+.s-sub{grid-column:1/-1;display:none;flex-direction:column;gap:1px;padding:2px 0 6px 12px;margin-left:15px;border-left:1px solid var(--border-soft)}
+.s-row.open .s-sub{display:flex}
+.s-sub a{display:flex;flex-direction:column;padding:6px 10px;border-radius:8px;font-size:13px;color:var(--muted);transition:background .15s,color .15s}
+.s-sub a b{font-weight:600;color:var(--fg)}
+.s-sub a span{font-size:11.5px;color:var(--faint)}
+.s-sub a:hover{background:var(--hover)}
+body[data-sb="rail"] .s-more,body[data-sb="rail"] .s-sub{display:none}
 .ws .chev{margin-left:auto;width:15px;height:15px;color:var(--faint);flex:0 0 auto;transition:transform .35s var(--ease-spring)}
 .sb-foot{margin-top:auto;display:flex;justify-content:flex-end;padding-top:8px}
 #sb-toggle{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;color:var(--muted);transition:background .2s,color .2s}
@@ -106,8 +113,8 @@ body[data-sb="rail"] .s-item,body[data-sb="rail"] .ws,body[data-sb="rail"] .drop
 body[data-sb="closed"]{--sb-w:0px}
 body[data-sb="closed"] #btn-menu{display:grid}
 /* ── 主内容 ── */
-#main{margin-left:calc(var(--sb-w) + 34px);padding:calc(var(--chrome-h) + 34px) clamp(16px,4vw,40px) 64px;transition:margin-left .45s var(--ease-spring)}
-body.of-shell-body{margin-left:calc(var(--sb-w) + 34px);padding:calc(var(--chrome-h) + 34px) clamp(16px,4vw,40px) 64px;transition:margin-left .45s var(--ease-spring)}
+#main{margin-left:var(--content-l);padding:30px var(--gx) 64px;transition:margin-left .45s var(--ease-spring);overflow-x:clip}
+body.of-shell-body{margin-left:var(--content-l);padding:30px var(--gx) 64px;transition:margin-left .45s var(--ease-spring)}
 section{max-width:var(--container);margin:0 auto}
 section+section{margin-top:clamp(64px,8vw,110px)}
 .sec{display:flex;flex-direction:column;gap:28px}
@@ -298,6 +305,27 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7}
 .avatar svg{width:16px;height:16px}
 .drop{position:absolute;top:calc(100% + 10px);right:0;min-width:248px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface-strong);backdrop-filter:blur(30px) saturate(180%);box-shadow:var(--shadow);padding:8px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .18s,transform .2s var(--ease-out);z-index:80}
 .drop.open{opacity:1;pointer-events:auto;transform:none}
+/* ── mega 菜单（v8）：body 级单例 #mega，由 site-shell.js 锚到当前 tab 中心；不再嵌在 <a> 里 ──
+   顶部 14px 透明区是 hover 桥：面板视觉上离胶囊 8px，鼠标经过空隙不会掉出。样式用 .mg-* 命名空间，
+   条目复用 .link-it，页脚复用 pill。 */
+#mega{position:fixed;z-index:61;padding-top:14px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .18s,transform .28s var(--ease-spring)}
+#mega.open{opacity:1;pointer-events:auto;transform:none}
+.mg-panel{display:grid;grid-template-columns:200px minmax(0,1fr);gap:22px;padding:20px 20px 18px 22px;border-radius:20px;border:1px solid var(--border);background:color-mix(in oklab,var(--bg) 94%,transparent);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);box-shadow:var(--shadow)}
+.mg-intro{display:flex;flex-direction:column;gap:8px;padding-right:22px;border-right:1px solid var(--border-soft)}
+.mg-intro h4{font-size:17px;font-weight:800;letter-spacing:-.01em;line-height:1.3}
+.mg-intro p{font-size:12.5px;color:var(--muted);line-height:1.7}
+.mg-foot{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:10px}
+.mg-foot a{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:600;background:var(--hover);color:var(--fg);transition:background .15s,color .15s}
+.mg-foot a:hover{background:var(--accent);color:var(--on-accent)}
+.mg-cols{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;align-content:start}
+.mg-col{display:flex;flex-direction:column;gap:1px}
+.mg-head{font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;padding:0 10px 6px}
+.mg-col .link-it{padding:8px 10px;gap:10px}
+.mg-col .link-it .lt b{font-size:13.5px}
+.mg-col .link-it .lt span{font-size:12px}
+.mg-col .link-it:focus-visible{background:var(--hover)}
+@media (max-width:960px){#mega{display:none}}
+
 .drop-head{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--border-soft);margin-bottom:6px}
 .drop-av{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--accent-strong);display:grid;place-items:center;font-size:15px;font-weight:700;flex:0 0 auto}
 .drop-name{font-size:13.5px;font-weight:700;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -350,28 +378,23 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7}
    在此之前 modules.css 没有任何 @media，移动端外壳由各页面自己补，
    这正是「视觉不统一」的一部分，现在收进共享层。
    ═════════════════════════════════════════════════════════════ */
-/* 命令面板胶囊最先让位，保证导航在中宽屏也能真居中 */
-@media (max-width:1280px){
-  .kbd-chip{display:none}
-}
-@media (max-width:1200px){
-  .brand .bn-sub{display:none}
-  .tabs a,.tabs .tab-pill,.topnav .tab-pill{padding:0 9px;font-size:12.5px}
-}
-/* 导航 10 项在中宽屏会顶到品牌上。先收品牌文字（logo 仍在，仍可点回首页），
-   导航文字一直保留到进抽屉为止 —— 图标不做主要识别（能力/活动同为闪电、
-   产品/生态同为方块，纯图标无法区分）。 */
-@media (max-width:1120px){
-  .brand>span:not(.ic){display:none}
-}
+/* 顶栏按【自身宽度】分级收缩（容器查询）：侧栏一收一放顶栏就换宽度，视口断点管不了它。
+   顺序：搜索胶囊 → 品牌副标 → 品牌文字 → 导航图标 → 导航整体进抽屉。 */
+@container chrome (max-width:1300px){.kbd-chip{display:none}}
+@container chrome (max-width:1180px){.brand .bn-sub{display:none}.tabs>.tab-pill{padding:0 10px}}
+@container chrome (max-width:1120px){.brand>span:not(.ic){display:none}}
+@container chrome (max-width:920px){.tabs>.tab-pill .ic{display:none}.tabs>.tab-pill{padding:0 11px;font-size:12.5px}}
+@container chrome (max-width:700px){.tabs{display:none}#btn-menu{display:grid}}
 @media (max-width:960px){
+  body{--content-l:0px;--gx:14px}
   .tabs,.topnav{display:none}
   #btn-menu{display:grid}
-  #main,body.of-shell-body{margin-left:0;padding-left:14px;padding-right:14px}
-  #chrome.scrolled{left:18px;right:18px}
-  #sidebar{top:auto;bottom:0;left:0;right:0;width:auto;max-height:74vh;overflow-y:auto;transform:translateX(-110%);border-radius:26px 26px 0 0;border:1px solid var(--border);border-bottom:0}
-  body[data-sb="full"] #sidebar,body[data-sb="rail"] #sidebar,body[data-sb="closed"] #sidebar{transform:translateX(-110%)}
-  body[data-sb="drawer"] #sidebar{transform:translateX(0);left:0;width:auto;top:auto;bottom:0;margin:0 10px;border-radius:26px 26px 0 0;border:1px solid var(--border);border-bottom:0;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+  #sidebar{top:auto;bottom:0;left:0;right:0;width:auto;max-height:74vh;overflow-y:auto;transform:translateY(105%);opacity:1;background:var(--bg-soft);border-radius:26px 26px 0 0;border:1px solid var(--border);border-bottom:0;margin:0 10px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+  body[data-sb="full"] #sidebar,body[data-sb="rail"] #sidebar,body[data-sb="closed"] #sidebar{transform:translateY(105%);pointer-events:none}
+  body[data-sb="drawer"] #sidebar{transform:none;pointer-events:auto;left:0;width:auto}
+  body[data-sb="rail"]{--sb-w:248px}
+  body[data-sb="rail"] .s-item b,body[data-sb="rail"] .ws b,body[data-sb="rail"] .sec-title span,body[data-sb="rail"] .drop-item b{display:revert}
+  body[data-sb="rail"] .s-item,body[data-sb="rail"] .ws,body[data-sb="rail"] .drop-item{justify-content:flex-start;padding:8px 10px}
   .drop{position:fixed;right:14px;top:74px;width:min(300px,calc(100vw - 28px))}
 }
 
