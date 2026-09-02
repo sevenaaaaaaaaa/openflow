@@ -47,17 +47,17 @@
   /* ── 共享资产：tokens.css + modules.css（终版契约，与 index.php 同源） ── */
   if (!document.getElementById('of-fonts-css')) {
     var lf = document.createElement('link');
-    lf.id = 'of-fonts-css'; lf.rel = 'stylesheet'; lf.href = '/assets/fonts/fonts.css?v=20260901a';
+    lf.id = 'of-fonts-css'; lf.rel = 'stylesheet'; lf.href = '/assets/fonts/fonts.css?v=20260902b';
     document.head.appendChild(lf);
   }
   if (!document.getElementById('of-tokens-css')) {
     var l1 = document.createElement('link');
-    l1.id = 'of-tokens-css'; l1.rel = 'stylesheet'; l1.href = '/assets/tokens.css?v=20260901a';
+    l1.id = 'of-tokens-css'; l1.rel = 'stylesheet'; l1.href = '/assets/tokens.css?v=20260902b';
     document.head.appendChild(l1);
   }
   if (!document.getElementById('of-modules-css')) {
     var l2 = document.createElement('link');
-    l2.id = 'of-modules-css'; l2.rel = 'stylesheet'; l2.href = '/assets/modules.css?v=20260901a';
+    l2.id = 'of-modules-css'; l2.rel = 'stylesheet'; l2.href = '/assets/modules.css?v=20260902b';
     document.head.appendChild(l2);
   }
   /* ── mega 菜单 CSS（site-shell 专属，不进共享层） ── */
@@ -215,7 +215,7 @@
   /* 侧栏空间名用导航中文标签，而不是 data-page 的英文 id */
   var PAGE_LABEL = (function () {
     for (var i = 0; i < NAV.length; i++) if (NAV[i].id === PAGE) return NAV[i].label;
-    return PAGE === 'home' ? '首页' : PAGE;
+    return PAGE === 'home' ? '首页' : (PAGE === 'account' ? '个人中心' : PAGE);
   })();
 
   /* ── O+F brand logo（终版） ── */

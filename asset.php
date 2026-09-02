@@ -25,7 +25,7 @@ if ($type === 'skill') {
     $asset = skill_get($id);
     if ($asset) {
         $asset['type'] = 'skill';
-        $asset['icon'] = $asset['icon'] ?? '⚡';
+        $asset['icon'] = $asset['icon'] ?? '';
         $asset['version'] = $asset['version'] ?? '1.0.0';
     }
 } elseif ($type === 'plugin') {
@@ -35,7 +35,7 @@ if ($type === 'skill') {
     foreach (($themes['themes'] ?? []) as $t) if ($t['id'] === $id) {
         $asset = $t;
         $asset['type'] = 'theme';
-        $asset['icon'] = '🎨';
+        $asset['icon'] = '';
         $asset['version'] = $t['version'] ?? '1.0.0';
     }
 }
@@ -53,7 +53,7 @@ $owned = $member && $product ? CommerceSystem::owns($member['id'], $product['id'
 // SEO
 $title = ($asset['title'] ?? $asset['name'] ?? $id) . ' - ' . $siteName;
 $desc = mb_substr(strip_tags($asset['description'] ?? ''), 0, 160);
-$icon = $asset['icon'] ?? '⚡';
+$icon = $asset['icon'] ?? '';
 $author = $asset['author'] ?? 'OpenFlow';
 
 // 相关推荐（按画像）
@@ -83,12 +83,15 @@ try {
 
 $typeLabel = ['skill' => 'Skill', 'plugin' => '插件', 'theme' => '主题'][$type] ?? $type;
 $stepCount = count($asset['steps'] ?? []);
+$typeIcon = ['skill' => '<path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/>', 'plugin' => '<path d="M9 3v3M15 3v3M8 6h8a2 2 0 0 1 2 2v4a6 6 0 0 1-12 0V8a2 2 0 0 1 2-2ZM12 18v3"/>', 'theme' => '<circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.2" fill="currentColor"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="10" r="1.2" fill="currentColor"/><path d="M12 12.5a2.5 2.5 0 0 0 0 5h1.5a1.5 1.5 0 0 1 0 3"/>'][$type] ?? '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>';
+$svgOf = fn(string $p) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' . $p . '</svg>';
+$emojiOrSvg = fn(string $e, string $fallback) => (preg_match('/^[\x{1F000}-\x{1FAFF}\x{2600}-\x{27BF}\x{FE0F}]+$/u', $e) || $e === '') ? $svgOf($fallback) : htmlspecialchars($e);
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($title)?></title>
 <meta name="description" content="<?=htmlspecialchars($desc)?>">
 <meta name="robots" content="index,follow">
@@ -107,149 +110,133 @@ $stepCount = count($asset['steps'] ?? []);
     'offers' => ['@type' => 'Offer', 'price' => $price, 'priceCurrency' => 'CNY', 'availability' => $price > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OnlineOnly'],
 ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)?>
 </script>
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-body{background:var(--bg);font-family:-apple-system,'PingFang SC','Noto Sans SC',system-ui,sans-serif}
-.dcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px}
-.buy-btn{background:var(--accent);color:var(--on-accent);font-weight:700;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:15px}
-.ghost-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-weight:600;padding:12px 24px;border-radius:12px;cursor:pointer}
-.step-item{border-left:3px solid var(--accent);padding:8px 14px;background:var(--bg-soft);border-radius:0 8px 8px 0;margin-bottom:8px}
-.rel-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;transition:.15s;display:block;text-decoration:none;color:inherit}
-.rel-card:hover{box-shadow:0 8px 20px rgba(30,30,30,.08)}
+/* 资产详情独有：详情头、步骤条、主题色预览。与 marketplace.php 的详情视图同一套命名。 */
+.dt-head{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:22px;align-items:start}
+.dt-head .em{width:76px;height:76px;border-radius:var(--r-md);background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:34px}
+.dt-head .em svg{width:32px;height:32px}
+.dt-head h1{font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.02em;line-height:1.25}
+.dt-head .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.dt-head .by{font-family:var(--font-mono);font-size:12.5px;color:var(--faint);margin-top:10px;display:flex;gap:12px;flex-wrap:wrap}
+.dt-side{display:flex;flex-direction:column;gap:8px;min-width:150px;align-items:stretch}
+.dt-side .price{font-family:var(--font-display);font-size:26px;font-weight:700;color:var(--ok);text-align:center}
+.step-item{border-left:3px solid var(--accent);padding:10px 16px;background:var(--bg-soft);border-radius:0 10px 10px 0}
+.step-item b{font-size:14.5px}
+.step-item p{font-size:13.5px;color:var(--muted);margin-top:4px;line-height:1.7}
+.steps{display:flex;flex-direction:column;gap:8px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px}
+.kv span{color:var(--faint)}
+.theme-prev{height:180px;border-radius:var(--r-md);border:1px solid var(--border)}
+.aside-box .link-grid{grid-template-columns:1fr;gap:2px}
+.aside-box .link-it{padding:10px 8px}
+.aside-box .link-it .ic{font-size:18px}
+@media (max-width:860px){.dt-head{grid-template-columns:1fr}.dt-side{min-width:0}}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('marketplace'); ?>
 
-<div class="mx-auto px-5 py-8" style="max-width:1100px">
-  <!-- 面包屑 -->
-  <div class="text-sm text-gray-600 mb-4">
-    <a href="/marketplace" class="hover:underline">生态市场</a> / <span><?=$typeLabel?></span>
-  </div>
-
-  <!-- 头部 -->
-  <div class="dcard mb-6">
-    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
-      <div style="width:88px;height:88px;border-radius:20px;background:linear-gradient(135deg,#7dd3fc,#86efac);display:grid;place-items:center;font-size:40px"><?=htmlspecialchars($icon)?></div>
-      <div style="flex:1;min-width:260px">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <h1 class="text-2xl font-extrabold"><?=htmlspecialchars($asset['title'] ?? $asset['name'] ?? $id)?></h1>
-          <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold" style="background:var(--ok-soft);color:var(--ok)"><?=$typeLabel?></span>
-          <?php if ($price > 0): ?><span class="inline-flex rounded-full px-3 py-1 text-xs font-bold" style="background:var(--accent);color:var(--on-accent)">¥<?=$price?></span>
-          <?php else: ?><span class="inline-flex rounded-full px-3 py-1 text-xs font-bold" style="background:var(--bg);color:var(--ok)">免费</span><?php endif; ?>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+  <section id="top" class="sec reveal in" data-od-anchor data-od-id="asset-head">
+    <div class="actions"><a href="/marketplace" class="act">← 生态市场</a><span class="act" style="pointer-events:none;color:var(--faint)"><?=$typeLabel?></span></div>
+    <div class="card dt-head">
+      <div class="em"><?=$emojiOrSvg($icon, $typeIcon)?></div>
+      <div>
+        <h1><?=htmlspecialchars($asset['title'] ?? $asset['name'] ?? $id)?></h1>
+        <div class="row">
+          <span class="badge ok"><?=$typeLabel?></span>
+          <?php if ($price > 0): ?><span class="pill hl">¥<?=$price?></span><?php else: ?><span class="pill neutral">免费</span><?php endif; ?>
+          <?php if ($owned): ?><span class="badge ok"><span class="dot"></span>已拥有</span><?php endif; ?>
         </div>
-        <div class="text-sm text-gray-600 mt-2">👤 <?=htmlspecialchars($author)?> · 📦 v<?=htmlspecialchars($asset['version'] ?? '1.0.0')?> · ⬇ <?=(int)($asset['installs'] ?? $asset['sales_count'] ?? 0)?> 安装 · ⭐ <?=$asset['rating'] ?? 0?></div>
+        <div class="by"><span><?=htmlspecialchars($author)?></span><span>v<?=htmlspecialchars($asset['version'] ?? '1.0.0')?></span><span><?=(int)($asset['installs'] ?? $asset['sales_count'] ?? 0)?> 安装</span><span>★ <?=$asset['rating'] ?? 0?></span></div>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="dt-side">
         <?php if ($product && $price > 0): ?>
+          <span class="price">¥<?=$price?></span>
           <?php if ($owned): ?>
-            <button class="ghost-btn" onclick="installAsset()">✅ 已拥有 · 安装</button>
+            <button type="button" class="btn ghost" onclick="installAsset()">已拥有 · 安装</button>
           <?php else: ?>
-            <button class="buy-btn" onclick="purchase()">🛒 购买 ¥<?=$price?></button>
-            <button class="ghost-btn" onclick="installAsset()">安装</button>
+            <button type="button" class="btn primary" onclick="purchase()">购买 ¥<?=$price?></button>
+            <button type="button" class="btn ghost" onclick="installAsset()">安装</button>
           <?php endif; ?>
         <?php else: ?>
-          <button class="buy-btn" onclick="installAsset()">⚡ 免费安装</button>
+          <button type="button" class="btn primary" onclick="installAsset()">免费安装</button>
         <?php endif; ?>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div style="display:grid;gap:20px" class="lg:grid-cols-3">
-    <!-- 主内容 -->
-    <div class="lg:col-span-2">
-      <div class="dcard mb-6">
-        <h2 class="text-lg font-extrabold mb-3">📝 介绍</h2>
-        <div class="text-[14px] leading-relaxed text-gray-600" style="line-height:1.9"><?=nl2br(htmlspecialchars($asset['description'] ?? '暂无描述'))?></div>
-      </div>
-
-      <?php if ($type === 'skill' && !empty($asset['steps'])): ?>
-      <div class="dcard mb-6">
-        <h2 class="text-lg font-extrabold mb-3">🛠 功能步骤（<?=$stepCount?>）</h2>
-        <?php foreach ($asset['steps'] as $si => $st): ?>
-        <div class="step-item">
-          <b>Step <?=$si + 1?>：<?=htmlspecialchars($st['title'] ?? '')?></b>
-          <?php if (!empty($st['desc'])): ?><div class="text-sm text-gray-600 mt-1"><?=htmlspecialchars($st['desc'])?></div><?php endif; ?>
+  <section id="detail" class="sec reveal" data-od-anchor data-od-id="asset-body">
+    <div class="g-main-aside">
+      <div>
+        <div class="card">
+          <div class="sec-head" style="gap:10px;margin-bottom:14px"><span class="kicker">ABOUT</span><h2 style="font-size:20px">介绍</h2></div>
+          <div class="prose" style="font-size:14.5px"><?=nl2br(htmlspecialchars($asset['description'] ?? '暂无描述'))?></div>
         </div>
-        <?php endforeach; ?>
-      </div>
-      <?php endif; ?>
 
-      <?php if ($type === 'theme'): ?>
-      <div class="dcard mb-6">
-        <h2 class="text-lg font-extrabold mb-3">🎨 主题预览</h2>
-        <div style="height:200px;border-radius:12px;background:linear-gradient(135deg,<?=htmlspecialchars($asset['primary_color'] ?? 'var(--accent)')?>,<?=htmlspecialchars($asset['accent_color'] ?? 'var(--on-accent)')?>)"></div>
-        <div class="text-sm text-gray-600 mt-3">主题色预览 · 实际效果以安装后为准</div>
+        <?php if ($type === 'skill' && !empty($asset['steps'])): ?>
+        <div class="card">
+          <div class="sec-head" style="gap:10px;margin-bottom:14px"><span class="kicker">STEPS</span><h2 style="font-size:20px">功能步骤（<?=$stepCount?>）</h2></div>
+          <div class="steps">
+            <?php foreach ($asset['steps'] as $si => $st): ?>
+            <div class="step-item"><b>Step <?=$si + 1?>：<?=htmlspecialchars($st['title'] ?? '')?></b><?php if (!empty($st['desc'])): ?><p><?=htmlspecialchars($st['desc'])?></p><?php endif; ?></div>
+            <?php endforeach; ?>
+          </div>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($type === 'theme'): ?>
+        <div class="card">
+          <div class="sec-head" style="gap:10px;margin-bottom:14px"><span class="kicker">PREVIEW</span><h2 style="font-size:20px">主题预览</h2></div>
+          <div class="theme-prev" style="background:linear-gradient(135deg,<?=htmlspecialchars($asset['primary_color'] ?? 'var(--accent)')?>,<?=htmlspecialchars($asset['accent_color'] ?? 'var(--accent-soft)')?>)"></div>
+          <p class="note">主题色预览 · 实际效果以安装后为准</p>
+        </div>
+        <?php endif; ?>
       </div>
-      <?php endif; ?>
+
+      <aside>
+        <div class="aside-box">
+          <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M8.5 8.5 12 12l3.5-3.5M4 14h16v6H4z"/></svg></span>资产信息</h3>
+          <div class="kv">
+            <span>类型</span><div><?=$typeLabel?></div>
+            <span>作者</span><div><?=htmlspecialchars($author)?></div>
+            <span>版本</span><div class="mono">v<?=htmlspecialchars($asset['version'] ?? '1.0.0')?></div>
+            <span>安装量</span><div class="mono"><?=(int)($asset['installs'] ?? $asset['sales_count'] ?? 0)?></div>
+          </div>
+          <?php if (!empty($asset['tags'])): ?><div class="tags"><?php foreach (array_slice($asset['tags'], 0, 5) as $t): ?><span>#<?=htmlspecialchars($t)?></span><?php endforeach; ?></div><?php endif; ?>
+        </div>
+
+        <?php if ($related): ?>
+        <div class="aside-box">
+          <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span>相关推荐</h3>
+          <div class="link-grid">
+            <?php foreach ($related as $ra): $rt = $ra['type'] === 'skill' ? 'Skill' : ($ra['type'] === 'plugin' ? '插件' : '主题'); ?>
+            <a class="link-it" href="/<?=urlencode($ra['type'])?>/<?=urlencode($ra['id'])?>"><span class="ic"><?=$emojiOrSvg((string)($ra['icon'] ?? ''), $ra['type'] === 'skill' ? '<path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/>' : '<path d="M9 3v3M15 3v3M8 6h8a2 2 0 0 1 2 2v4a6 6 0 0 1-12 0V8a2 2 0 0 1 2-2ZM12 18v3"/>')?></span><span class="lt"><b><?=htmlspecialchars($ra['title'] ?? $ra['name'] ?? '')?></b><span><?=$rt?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+            <?php endforeach; ?>
+          </div>
+        </div>
+        <?php endif; ?>
+
+        <?php if (!empty($relatedCourses)): ?>
+        <div class="aside-box">
+          <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span>配套课程</h3>
+          <div class="link-grid">
+            <?php foreach ($relatedCourses as $rc): $rcPrice = (float)($shopCfg['course_prices'][$rc['id']] ?? 0); ?>
+            <a class="link-it" href="/courses/<?=urlencode($rc['id'])?>?id=<?=urlencode($rc['id'])?>"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span><span class="lt"><b><?=htmlspecialchars($rc['title'] ?? '')?></b><span><?=htmlspecialchars($rc['type'] ?? '课程')?> · <?=count($rc['chapters'] ?? [])?> 章 · ¥<?=number_format($rcPrice,0)?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+            <?php endforeach; ?>
+          </div>
+        </div>
+        <?php endif; ?>
+      </aside>
     </div>
+  </section>
 
-    <!-- 侧栏 -->
-    <div>
-      <div class="dcard mb-6">
-        <h3 class="font-extrabold mb-3">📌 资产信息</h3>
-        <div class="text-sm text-gray-600 leading-8">
-          <div>类型：<?=$typeLabel?></div>
-          <div>作者：<?=htmlspecialchars($author)?></div>
-          <div>版本：v<?=htmlspecialchars($asset['version'] ?? '1.0.0')?></div>
-          <div>安装量：<?=(int)($asset['installs'] ?? $asset['sales_count'] ?? 0)?></div>
-          <?php if (!empty($asset['tags'])): ?>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><?php foreach (array_slice($asset['tags'], 0, 5) as $t): ?><span class="inline-flex rounded-full px-2.5 py-0.5 text-xs" style="background:var(--bg);color:var(--muted)">#<?=htmlspecialchars($t)?></span><?php endforeach; ?></div>
-          <?php endif; ?>
-        </div>
-      </div>
-
-      <div class="dcard mb-6">
-        <h3 class="font-extrabold mb-3">🕹 相关推荐</h3>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <?php foreach ($related as $ra): ?>
-          <a class="rel-card" href="/<?=urlencode($ra['type'])?>/<?=urlencode($ra['id'])?>">
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:24px"><?=htmlspecialchars($ra['icon'] ?? '📦')?></span>
-              <div>
-                <div class="font-bold text-[14px]"><?=htmlspecialchars($ra['title'] ?? $ra['name'] ?? '')?></div>
-                <div class="text-xs text-gray-600"><?=$ra['type'] === 'skill' ? 'Skill' : ($ra['type'] === 'plugin' ? '插件' : '主题')?></div>
-              </div>
-            </div>
-          </a>
-          <?php endforeach; ?>
-        </div>
-      </div>
-
-      <?php if (!empty($relatedCourses)): ?>
-      <div class="dcard mb-6">
-        <h3 class="font-extrabold mb-3">🎓 配套课程</h3>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <?php foreach ($relatedCourses as $rc): $rcPrice = (float)($shopCfg['course_prices'][$rc['id']] ?? 0); ?>
-          <a class="rel-card" href="/courses/<?=urlencode($rc['id'])?>?id=<?=urlencode($rc['id'])?>">
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:24px">🎓</span>
-              <div style="flex:1;min-width:0">
-                <div class="font-bold text-[14px]"><?=htmlspecialchars($rc['title'] ?? '')?></div>
-                <div class="text-xs text-gray-600"><?=htmlspecialchars($rc['type'] ?? '课程')?> · <?=count($rc['chapters'] ?? [])?> 章 · ¥<?=number_format($rcPrice,0)?></div>
-              </div>
-              <span style="font-size:12px;color:var(--accent)">→</span>
-            </div>
-          </a>
-          <?php endforeach; ?>
-        </div>
-      </div>
-      <?php endif; ?>
-    </div>
-  </div>
-</div>
-
-<footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-  <div class="mx-auto px-5 text-center text-sm" style="max-width:1100px">
-    <div class="mb-2"><?=htmlspecialchars($siteName)?> · 生态市场</div>
-    <div class="flex gap-6 justify-center mb-3 text-xs">
-      <a href="/marketplace" class="text-white/50 hover:text-white transition">生态市场</a>
-      <a href="/tools" class="text-white/50 hover:text-white transition">工具箱</a>
-      <a href="/docs" class="text-white/50 hover:text-white transition">文档</a>
-    </div>
-  </div>
-</footer>
-
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
 var ASSET_TYPE = <?=json_encode($type)?>;
 var ASSET_ID = <?=json_encode($id)?>;
