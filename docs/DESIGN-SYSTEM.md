@@ -227,4 +227,4 @@ python3 tests/visual/snap.py --diff /tmp/before /tmp/after
 新页面照第四节骨架写，写完把文件名加进 `tests/design_contract_test.php` 的 `$MIGRATED`（对外独立页另加 `$STANDALONE`）。
 不加也会被兜底检查抓到，但名单本身是进度表，请维护。
 
-`admin/` 与 `api/` 不在本设计系统范围内（后台仍是 tailwind）。
+`admin/` 不在本文范围内：后台外壳与交互框架层见 `docs/ADMIN-UX.md`（契约 `tests/admin_contract_test.php`）；`api/` 无界面。

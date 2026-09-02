@@ -267,7 +267,7 @@ admin_header('调研系统');
               <?php endif; ?>
               <a href="survey-stats.php?survey=<?=urlencode($s['id'])?>" class="btn btn-ghost btn-sm">📊 统计</a>
               <a href="survey.php?edit=<?=urlencode($s['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-              <a href="survey.php?delete=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除该问卷及全部回收数据?')">删除</a>
+              <a href="survey.php?delete=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除该问卷及全部回收数据?">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>
@@ -324,7 +324,7 @@ function closeImportDialog() { document.getElementById('importDialog').style.dis
 function doImport() {
   var fileInput = document.getElementById('importFile');
   var file = fileInput.files[0];
-  if (!file) { alert('请选择文件'); return; }
+  if (!file) { ofAlert('请选择文件'); return; }
   var result = document.getElementById('importResult');
   result.innerHTML = '<div class="spinner" style="text-align:center;padding:20px;color:var(--text-3)">⏳ 正在解析文档...</div>';
   var fd = new FormData();
@@ -361,7 +361,7 @@ function confirmImport() {
     if (q.required) box.querySelector('input[name="q_required[]"]').checked = true;
   });
   closeImportDialog();
-  alert('✅ 已添加 ' + IMPORTED_QUESTIONS.length + ' 道题目到列表');
+  ofAlert('✅ 已添加 ' + IMPORTED_QUESTIONS.length + ' 道题目到列表');
 }
 
 // ─── AI 生成 ───
@@ -370,7 +370,7 @@ function openAIGenDialog() { document.getElementById('aiGenDialog').style.displa
 function closeAIGenDialog() { document.getElementById('aiGenDialog').style.display = 'none'; }
 function doAIGenerate() {
   var topic = document.getElementById('aiTopic').value.trim();
-  if (!topic) { alert('请输入调研主题'); return; }
+  if (!topic) { ofAlert('请输入调研主题'); return; }
   var count = parseInt(document.getElementById('aiCount').value) || 10;
   var includeRating = document.getElementById('aiRating').checked;
   var result = document.getElementById('aiResult');
@@ -411,7 +411,7 @@ function confirmAI() {
     if (q.type === 'rating') box.querySelector('input[name="q_scale[]"]').value = q.scale || 5;
   });
   closeAIGenDialog();
-  alert('✅ 已添加 ' + AI_QUESTIONS.length + ' 道题目到列表');
+  ofAlert('✅ 已添加 ' + AI_QUESTIONS.length + ' 道题目到列表');
 }
 </script>
 <?php admin_footer(); ?>

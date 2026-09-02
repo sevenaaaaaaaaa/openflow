@@ -130,7 +130,7 @@ admin_header('聚合页管理');
             <td><strong><?=$matchCount?></strong> 篇</td>
             <td><span class="badge <?=($p['status']??'draft')==='published'?'badge-green':'badge-yellow'?>"><?=$p['status']??'draft'?></span></td>
             <td><a href="?edit=<?=urlencode($p['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=landing&id=<?=urlencode($p['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a>
-              <form method="post" style="display:inline" onsubmit="return confirm('确认删除?')">
+              <form method="post" style="display:inline" data-confirm="确认删除?">
                 <?= csrf_field() ?>
           </tr>
           <?php endforeach; ?>

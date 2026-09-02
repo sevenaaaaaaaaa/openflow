@@ -129,7 +129,7 @@ admin_header('激活码管理');
   <script>
   function exportBatch() {
     var codes = <?=json_encode(array_map(fn($c) => $c['code'], array_filter($codes, fn($c) => $c['status'] === 'unsold')))?>;
-    if (!codes.length) { alert('无未售激活码'); return; }
+    if (!codes.length) { ofAlert('无未售激活码'); return; }
     var text = codes.join('\n');
     var a = document.createElement('a');
     a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);

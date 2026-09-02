@@ -167,14 +167,15 @@ function importDict(input) {
     var reader = new FileReader();
     reader.onload = function(e) {
       try { var d = JSON.parse(e.target.result); if (!d.events) throw new Error('no events'); }
-      catch(err) { alert('无效的字典文件'); input.value = ''; return; }
-      if (confirm('导入字典将覆盖当前事件开关配置，继续？')) {
+      catch(err) { ofAlert('无效的字典文件'); input.value = ''; return; }
+      ofConfirm({ title: '导入字典', message: '将覆盖当前事件开关配置，继续？', okText: '导入' }).then(function (ok) {
+        if (!ok) { input.value = ''; return; }
         // 复用隐藏表单
         var dt = new DataTransfer();
         dt.items.add(file);
         document.getElementById('dictFileInput').files = dt.files;
         document.getElementById('dictImportForm').submit();
-      } else { input.value = ''; }
+      });
     };
     reader.readAsText(file);
   }

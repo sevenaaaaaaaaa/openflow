@@ -215,7 +215,7 @@ admin_header('增长大脑');
         </div>
         <a href="<?=htmlspecialchars($a['link'])?>" class="btn btn-sm btn-primary"><?=htmlspecialchars($a['cta'] ?: '去处理')?> →</a>
         <form method="post" style="margin:0"><?= csrf_field() ?><input type="hidden" name="action" value="complete_action"><input type="hidden" name="id" value="<?=htmlspecialchars($a['id'])?>"><button class="btn btn-sm btn-ghost">完成</button></form>
-        <form method="post" style="margin:0" onsubmit="return confirm('忽略这条建议?')"><?= csrf_field() ?><input type="hidden" name="action" value="dismiss_action"><input type="hidden" name="id" value="<?=htmlspecialchars($a['id'])?>"><button class="btn btn-sm btn-ghost" style="color:var(--faint)">忽略</button></form>
+        <form method="post" style="margin:0" data-confirm="忽略这条建议?"><?= csrf_field() ?><input type="hidden" name="action" value="dismiss_action"><input type="hidden" name="id" value="<?=htmlspecialchars($a['id'])?>"><button class="btn btn-sm btn-ghost" style="color:var(--faint)">忽略</button></form>
       </div>
       <?php endforeach; ?>
     </div>

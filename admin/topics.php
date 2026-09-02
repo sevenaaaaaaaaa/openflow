@@ -95,7 +95,7 @@ admin_header('专题管理');
             <td>
               <button class="btn btn-ghost btn-sm" onclick='editTopic(<?=json_encode($t, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?>)'>编辑</button>
               <a href="../content-preview.php?type=topic&id=<?=htmlspecialchars($t['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a>
-              <form method="post" style="display:inline" onsubmit="return confirm('确认删除?')">
+              <form method="post" style="display:inline" data-confirm="确认删除?">
                 <?= csrf_field() ?>
             </td>
           </tr>
@@ -116,7 +116,7 @@ admin_header('专题管理');
         </div>
         <div class="field-row">
           <div class="field"><label>描述</label><textarea name="description" id="f_desc" rows="2"></textarea></div>
-          <div class="field"><label>封面图 URL</label><input type="text" name="cover" id="f_cover" placeholder="assets/images/..." oninput="document.getElementById('coverPrev').src=this.value||'/assets/images/placeholder.png'"><div style="margin-top:6px"><img id="coverPrev" src="/assets/images/placeholder.png" style="height:64px;border-radius:8px;object-fit:cover;background:var(--surface-2)" onerror="this.src='/assets/images/placeholder.png'"></div></div>
+          <div class="field"><label>封面图 URL</label><input type="text" name="cover" id="f_cover" placeholder="assets/images/..." oninput="document.getElementById('coverPrev').src=this.value||'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2764%27 height=%2740%27%3E%3Crect width=%2764%27 height=%2740%27 rx=%278%27 fill=%27%23e5e7eb%27/%3E%3C/svg%3E'"><div style="margin-top:6px"><img id="coverPrev" src="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2764%27 height=%2740%27%3E%3Crect width=%2764%27 height=%2740%27 rx=%278%27 fill=%27%23e5e7eb%27/%3E%3C/svg%3E" style="height:64px;border-radius:8px;object-fit:cover;background:var(--surface-2)" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2764%27 height=%2740%27%3E%3Crect width=%2764%27 height=%2740%27 rx=%278%27 fill=%27%23e5e7eb%27/%3E%3C/svg%3E'"></div></div>
         </div>
         <div class="field-row">
           <div class="field"><label>SEO 标题</label><input type="text" name="seo_title" id="f_seo_title"></div>
@@ -176,7 +176,7 @@ function resetForm(){
   document.getElementById('f_seo_title').value='';document.getElementById('f_seo_desc').value='';
   document.getElementById('f_sort_order').value='0';
   document.getElementById('f_status').value='draft';
-  document.getElementById('coverPrev').src='/assets/images/placeholder.png';
+  document.getElementById('coverPrev').src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2764%27 height=%2740%27%3E%3Crect width=%2764%27 height=%2740%27 rx=%278%27 fill=%27%23e5e7eb%27/%3E%3C/svg%3E';
   document.querySelectorAll('.art-chk').forEach(function(c){ c.checked=false; });
   updateArtCount();
   document.getElementById('submitBtn').textContent='添加';

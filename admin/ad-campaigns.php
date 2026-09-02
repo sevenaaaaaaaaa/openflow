@@ -118,7 +118,7 @@ admin_header('投放管理');
             <td class="mono text-sm"><?=$roi['cpc'] !== null ? '¥' . $roi['cpc'] : '—'?></td>
             <td class="mono text-sm"><?=$roi['cpa'] !== null ? '¥' . $roi['cpa'] : '—'?></td>
             <td style="font-weight:700;color:<?=$roi['roi'] === null ? 'var(--muted)' : ($roi['roi'] >= 0 ? 'var(--ok)' : 'var(--danger)')?>"><?=$roi['roi'] === null ? '—' : ($roi['roi'] >= 0 ? '+' : '') . $roi['roi'] . '%'?></td>
-            <td style="white-space:nowrap"><a href="?edit=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('删除?')">删除</a></td>
+            <td style="white-space:nowrap"><a href="?edit=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" data-confirm="删除?">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

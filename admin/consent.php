@@ -54,7 +54,7 @@ admin_header('同意与数据保留');
     <?= csrf_field() ?><input type="hidden" name="action" value="purge_now">
     <div style="font-weight:700;margin-bottom:6px">立即执行清理</div>
     <div class="v-sub" style="margin-bottom:10px">按当前保留期立刻清理一次（平时由 cron 每 24 小时自动跑）。</div>
-    <button class="btn btn-ghost btn-sm" onclick="return confirm('将永久删除超期数据，确认？')">立即清理</button>
+    <button class="btn btn-ghost btn-sm" data-confirm="将永久删除超期数据，确认？">立即清理</button>
   </form>
 </div>
 <?php admin_footer(); ?>

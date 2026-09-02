@@ -74,12 +74,12 @@ admin_header('内容多语言');
           <?php if ($tr): ?><span style="font-size:11px;padding:1px 8px;border-radius:999px;background:<?=($tr['status']??'')==='published'?'#dcfce7':'#f1f5f9'?>;color:<?=($tr['status']??'')==='published'?'#166534':'#64748b'?>"><?=($tr['status']??'')==='published'?'已发布':'草稿'?></span><?php endif; ?>
         </div>
         <div style="display:flex;gap:6px">
-          <form method="post" style="margin:0" onsubmit="return confirm('用 AI 从基准内容初译到<?=htmlspecialchars(i18n_native($loc))?>？会覆盖当前译文草稿。')">
+          <form method="post" style="margin:0" data-confirm="用 AI 从基准内容初译到<?=htmlspecialchars(i18n_native($loc))?>？会覆盖当前译文草稿。">
             <?= csrf_field() ?><input type="hidden" name="action" value="ai_translate"><input type="hidden" name="a" value="<?=htmlspecialchars($current['id'])?>"><input type="hidden" name="locale" value="<?=htmlspecialchars($loc)?>">
             <button class="btn btn-ghost btn-sm">✨ AI 初译</button>
           </form>
           <?php if ($tr): ?>
-          <form method="post" style="margin:0" onsubmit="return confirm('删除该语言译文？')"><?= csrf_field() ?><input type="hidden" name="action" value="delete_translation"><input type="hidden" name="a" value="<?=htmlspecialchars($current['id'])?>"><input type="hidden" name="locale" value="<?=htmlspecialchars($loc)?>"><button class="btn btn-ghost btn-sm" style="color:#dc2626">删除</button></form>
+          <form method="post" style="margin:0" data-confirm="删除该语言译文？"><?= csrf_field() ?><input type="hidden" name="action" value="delete_translation"><input type="hidden" name="a" value="<?=htmlspecialchars($current['id'])?>"><input type="hidden" name="locale" value="<?=htmlspecialchars($loc)?>"><button class="btn btn-ghost btn-sm" style="color:#dc2626">删除</button></form>
           <?php endif; ?>
         </div>
       </div>

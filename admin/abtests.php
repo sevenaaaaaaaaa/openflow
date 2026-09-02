@@ -152,7 +152,7 @@ admin_header('A/B 测试');
             <td style="white-space:nowrap">
               <a href="abtests-stats.php?id=<?=urlencode($t['id'])?>" class="btn btn-ghost btn-sm">📊 统计</a>
               <a href="abtests.php?edit=<?=urlencode($t['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-              <a href="abtests.php?delete=<?=urlencode($t['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除该实验?')">删除</a>
+              <a href="abtests.php?delete=<?=urlencode($t['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除该实验?">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>
