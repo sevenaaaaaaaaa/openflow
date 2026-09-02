@@ -249,7 +249,7 @@ admin_header('活动管理');
             <td class="text-sm text-muted"><?=htmlspecialchars($e['location'] ?? '')?></td>
             <td><?=count($e['speakers'] ?? [])?> 位</td>
             <td><span class="badge <?=($e['status']??'draft')==='published'?'badge-green':'badge-yellow'?>"><?=$e['status']??'draft'?></span></td>
-            <td><a href="?regs=<?=urlencode($e['id'])?>" class="btn btn-s btn-sm">📋 报名</a><a href="?edit=<?=urlencode($e['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=event&id=<?=urlencode($e['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="?delete=<?=urlencode($e['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除?')">删除</a></td>
+            <td><a href="?regs=<?=urlencode($e['id'])?>" class="btn btn-s btn-sm">📋 报名</a><a href="?edit=<?=urlencode($e['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=event&id=<?=urlencode($e['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="?delete=<?=urlencode($e['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除?">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

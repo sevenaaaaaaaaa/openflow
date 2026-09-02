@@ -143,7 +143,7 @@ admin_header('运维工具');
       <h2>📦 全站备份</h2>
       <p class="text-sm text-muted mb-4">打包核心目录（admin/data/uploads/assets/lib/api）为 ZIP</p>
       <div class="flex gap-2">
-        <a href="?backup=1" class="btn btn-primary" onclick="return confirm('开始备份？可能需要几秒钟')">创建备份</a>
+        <a href="?backup=1" class="btn btn-primary" data-confirm="开始备份？可能需要几秒钟">创建备份</a>
       </div>
       <?php if (!empty($backups)): ?>
       <table style="margin-top:12px">
@@ -155,7 +155,7 @@ admin_header('运维工具');
             <td><?=round(filesize($bp)/1048576,2)?> MB</td>
             <td class="text-sm text-muted"><?=date('Y-m-d H:i', filemtime($bp))?></td>
             <td><a href="?dl=<?=urlencode($bn)?>" class="btn btn-ghost btn-sm">下载</a>
-              <a href="?delete_backup=<?=urlencode($bn)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-danger btn-sm" onclick="return confirm('删除?')">删除</a></td>
+              <a href="?delete_backup=<?=urlencode($bn)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-danger btn-sm" data-confirm="删除?">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

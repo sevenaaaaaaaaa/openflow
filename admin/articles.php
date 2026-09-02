@@ -42,9 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['quick_update'])) {
     $field = $_POST['field'] ?? '';
     $value = $_POST['value'] ?? '';
     $article = get_article($id);
-    if ($article && in_array($field, ['title','slug','category','status','cover','seo_title','seo_desc','seo_keywords'])) {
+    if ($article && in_array($field, ['title','slug','category','status','cover','seo_title','seo_desc','seo_keywords','is_pinned'])) {
         if ($field === 'tags') {
             $article['tags'] = array_filter(explode(',', $value));
+        } elseif ($field === 'is_pinned') {
+            $article['is_pinned'] = in_array((string)$value, ['1', 'true', 'on'], true);
         } else {
             $article[$field] = $value;
         }
@@ -209,7 +211,7 @@ td.actions{white-space:nowrap;width:1%}
         <option value="<?=htmlspecialchars($c['key'])?>"><?=htmlspecialchars($c['name'])?></option>
         <?php endforeach; ?>
       </select>
-      <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('确认批量操作?')">执行</button>
+      <button type="submit" class="btn btn-primary btn-sm" data-confirm="确认批量操作?">执行</button>
     </div>
     <?php endif; ?>
 
@@ -290,13 +292,13 @@ td.actions{white-space:nowrap;width:1%}
             <td class="actions">
               <?php if ($showTrash): ?>
               <a href="<?=of_hub_url(['trash'=>1,'restore'=>$a['id']])?>" class="btn btn-ghost btn-sm">♻️ 恢复</a>
-              <a href="<?=of_hub_url(['trash'=>1,'permanent_delete'=>$a['id']])?>" class="btn btn-danger btn-sm" onclick="return confirm('永久删除?无法恢复!')">🗑 永久删除</a>
+              <a href="<?=of_hub_url(['trash'=>1,'permanent_delete'=>$a['id']])?>" class="btn btn-danger btn-sm" data-confirm="永久删除?无法恢复!">🗑 永久删除</a>
               <?php else: ?>
               <a href="article-edit.php?id=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
               <a href="../content-preview.php?type=article&id=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a>
               <button type="button" class="btn btn-ghost btn-sm" onclick="openExport('<?=urlencode($a['id'])?>','<?=htmlspecialchars($a['title'], ENT_QUOTES)?>')">📤 导出</button>
               <a href="articles.php?copy=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm" title="快速复制">📋</a>
-              <a href="articles.php?delete=<?=urlencode($a['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认移至回收站?')">🗑</a>
+              <a href="articles.php?delete=<?=urlencode($a['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认移至回收站?">🗑</a>
               <?php endif; ?>
             </td>
           </tr>
@@ -370,13 +372,19 @@ document.querySelectorAll('.inline-edit').forEach(function(el) {
 function quickUpdate(el) {
   var id = el.dataset.id;
   var field = el.dataset.field;
-  var value = el.tagName === 'SELECT' ? el.value : el.textContent.trim();
+  var value = el.tagName === 'SELECT' ? el.value : (el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.textContent.trim());
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'articles.php', true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  el.disabled = true;
   xhr.onload = function() {
-    if (xhr.status !== 200) alert('保存失败');
+    el.disabled = false;
+    var ok = false; try { ok = xhr.status === 200 && JSON.parse(xhr.responseText).ok === true; } catch (e) {}
+    if (!ok) { ofAlert('保存失败', 'error'); return; }
+    var label = el.tagName === 'SELECT' ? (el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : el.value) : (el.checked ? '已置顶' : '已取消置顶');
+    ofAlert('已更新：' + label, 'success');
   };
+  xhr.onerror = function() { el.disabled = false; ofAlert('网络错误，未保存', 'error'); };
   xhr.send('quick_update=1&id=' + encodeURIComponent(id) + '&field=' + encodeURIComponent(field) + '&value=' + encodeURIComponent(value));
 }
 

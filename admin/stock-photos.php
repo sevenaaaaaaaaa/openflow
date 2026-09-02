@@ -108,7 +108,7 @@ document.querySelectorAll('.platform-tabs button').forEach(function(b) {
 function doStockSearch(page) {
   STOCK.query = document.getElementById('stockQ').value.trim();
   STOCK.page = page || 1;
-  if (!STOCK.query) { alert('请输入搜索关键词'); return; }
+  if (!STOCK.query) { ofAlert('请输入搜索关键词'); return; }
   var box = document.getElementById('stockResults');
   box.innerHTML = '<div class="spinner">⏳ 正在从 ' + STOCK.platform + ' 搜索「' + STOCK.query + '」...</div>';
 
@@ -139,10 +139,10 @@ function changePage(delta) {
   doStockSearch(STOCK.page + delta);
 }
 
-function downloadStock(idx) {
+async function downloadStock(idx) {
   var p = window.STOCK_PHOTOS[idx];
   if (!p) return;
-  if (!confirm('下载到本地媒体库（文章封面目录）？\n\n来源：' + p.platform + '\n作者：' + p.photographer)) return;
+  if (!await ofConfirm({ title: '下载到本地媒体库', message: '存入文章封面目录。来源：' + p.platform + ' · 作者：' + p.photographer, okText: '下载' })) return;
   fetch('../api/stock.php?action=download', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -151,14 +151,14 @@ function downloadStock(idx) {
   .then(function(r) { return r.json(); })
   .then(function(d) {
     if (d.ok) {
-      alert('✅ 已下载到媒体库：' + d.path + '\n可在文章编辑页封面选择中选用');
+      ofAlert('✅ 已下载到媒体库：' + d.path + '\n可在文章编辑页封面选择中选用');
       var grid = document.querySelectorAll('.stock-item')[idx];
       if (grid) grid.querySelector('.dl').textContent = '✓ 已下载';
     } else {
-      alert('❌ ' + (d.error || '下载失败'));
+      ofAlert('❌ ' + (d.error || '下载失败'));
     }
   })
-  .catch(function() { alert('❌ 下载失败'); });
+  .catch(function() { ofAlert('❌ 下载失败'); });
 }
 </script>
 <?php admin_footer(); ?>

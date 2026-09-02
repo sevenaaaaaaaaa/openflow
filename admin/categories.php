@@ -87,7 +87,7 @@ admin_header('分类管理 - ' . $typeLabels[$type]);
             <td class="text-sm text-muted"><?=htmlspecialchars($pName ?: '顶级')?></td>
             <td>
               <button class="btn btn-ghost btn-sm" onclick="editCat('<?=htmlspecialchars($c['key'],ENT_QUOTES)?>','<?=htmlspecialchars($c['name'],ENT_QUOTES)?>','<?=htmlspecialchars($c['parent']??'',ENT_QUOTES)?>')">编辑</button>
-              <form method="post" style="display:inline" onsubmit="return confirm('确认删除?')">
+              <form method="post" style="display:inline" data-confirm="确认删除?">
                 <?= csrf_field() ?>
             </td>
           </tr>

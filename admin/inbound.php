@@ -144,7 +144,7 @@ Body: {"email":"a@b.com","name":"外部用户","company":"XX 公司"}  // lead �
             <td class="text-sm text-muted"><?=htmlspecialchars($c['source'] ?? '—')?></td>
             <td class="text-sm text-muted"><?=count($c['mapping'] ?? [])?> 字段</td>
             <td><span class="badge <?=!empty($c['enabled'])?'badge-green':'badge-gray'?>"><?=!empty($c['enabled'])?'启用':'停用'?></span></td>
-            <td style="white-space:nowrap"><a href="?edit=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('删除该连接器?')">删除</a></td>
+            <td style="white-space:nowrap"><a href="?edit=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" data-confirm="删除该连接器?">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

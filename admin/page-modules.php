@@ -184,8 +184,8 @@ admin_header('落地页模块');
 </div>
 
 <script>
-function deleteModule(id) {
-  if (!confirm('确定删除模块？')) return;
+async function deleteModule(id) {
+  if (!await ofConfirm('确定删除模块？')) return;
   var fd = new FormData();
   fd.append('action', 'delete');
   fd.append('id', id);

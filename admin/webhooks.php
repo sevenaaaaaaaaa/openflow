@@ -59,7 +59,7 @@ admin_header('Webhook 管理');
           <td>
             <form method="post" style="display:inline"><?=csrf_field()?><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?=$wh['id']?>">
             <input type="hidden" name="enabled" value="<?=$wh['enabled'] ? '' : '1'?>"><button class="btn btn-sm btn-ghost"><?=$wh['enabled'] ? '禁用' : '启用'?></button></form>
-            <form method="post" style="display:inline" onsubmit="return confirm('确定删除？')"><?=csrf_field()?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=$wh['id']?>">
+            <form method="post" style="display:inline" data-confirm="确定删除？"><?=csrf_field()?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=$wh['id']?>">
             <button class="btn btn-sm btn-danger">删除</button></form>
           </td>
         </tr>

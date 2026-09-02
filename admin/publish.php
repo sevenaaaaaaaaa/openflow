@@ -68,7 +68,7 @@ admin_header('内容分发');
       <div class="flex gap-2 ml-auto">
         <a href="content-calendar.php" class="btn btn-ghost btn-sm">内容日历</a>
         <?php if (CloudflareApi::configured()): ?>
-        <a href="../admin/cloudflare.php?purge=1&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm" onclick="return confirm('发布后清理 Cloudflare 缓存？')">☁️ 清缓存</a>
+        <a href="../admin/cloudflare.php?purge=1&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm" data-confirm="发布后清理 Cloudflare 缓存？">☁️ 清缓存</a>
         <?php endif; ?>
       </div>
     </div>
@@ -113,7 +113,7 @@ admin_header('内容分发');
           </div>
         </div>
         <div class="flex gap-3" style="margin-top:12px">
-          <button type="submit" name="publish" class="btn btn-primary" onclick="return confirm('确认立即发布？')">📤 立即发布</button>
+          <button type="submit" name="publish" class="btn btn-primary" data-confirm="确认立即发布？">📤 立即发布</button>
           <div class="field" style="display:flex;align-items:center;gap:8px;margin:0">
             <input type="datetime-local" name="send_at" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px">
             <button type="submit" name="schedule" class="btn btn-ghost">⏰ 定时发布</button>

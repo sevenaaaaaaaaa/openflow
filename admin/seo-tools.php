@@ -110,7 +110,7 @@ if (!defined('OF_EMBED')) admin_header('SEO 工具');
 
 <script>
 function copy(t) {
-  navigator.clipboard.writeText(t).then(function() { alert('已复制: ' + t); });
+  navigator.clipboard.writeText(t).then(function() { ofAlert('已复制: ' + t); });
 }
 </script>
 <?php if (!defined('OF_EMBED')) admin_footer(); ?>

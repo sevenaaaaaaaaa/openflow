@@ -89,7 +89,7 @@ admin_header('权限管理');
             <td>
               <button class="btn btn-ghost btn-sm" onclick="editUser('<?=htmlspecialchars($uk)?>','<?=htmlspecialchars($uv['name'])?>','<?=$uv['role']?>')">编辑</button>
               <?php if ($uk !== 'admin'): ?>
-              <form method="post" style="display:inline" onsubmit="return confirm('确认删除用户 <?=htmlspecialchars($uk)?>
+              <form method="post" style="display:inline" data-confirm="确认删除用户 <?=htmlspecialchars($uk)?>？">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="username" value="<?=htmlspecialchars($uk)?>">

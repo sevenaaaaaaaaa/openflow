@@ -212,7 +212,7 @@ admin_header('营销自动化');
             <td style="white-space:nowrap">
               <a href="?toggle=<?=urlencode($f['id'])?>" class="btn btn-ghost btn-sm"><?=($f['enabled']??false)?'停用':'启用'?></a>
               <a href="automation.php?edit=<?=urlencode($f['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-              <a href="?delete=<?=urlencode($f['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除?')">删除</a>
+              <a href="?delete=<?=urlencode($f['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除?">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>

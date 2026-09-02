@@ -103,7 +103,7 @@ admin_header('优惠券');
             <td class="text-sm text-muted"><?=substr($c['start_time']??'',0,10)?> ~ <?=substr($c['end_time']??'',0,10)?></td>
             <td><?=($c['status']??'')==='active'?'<span style="color:var(--ok)">启用</span>':'<span style="color:var(--faint)">停用</span>'?></td>
             <td><a href="?edit=<?=$c['id']?>" class="btn btn-ghost btn-sm">编辑</a>
-              <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="delete" value="1"><input type="hidden" name="id" value="<?=$c['id']?>"><button class="btn btn-danger btn-sm" onclick="return confirm('确认删除？')">删除</button></form>
+              <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="delete" value="1"><input type="hidden" name="id" value="<?=$c['id']?>"><button class="btn btn-danger btn-sm" data-confirm="确认删除？">删除</button></form>
             </td>
           </tr>
           <?php endforeach; ?>

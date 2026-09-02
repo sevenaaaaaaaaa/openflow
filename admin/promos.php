@@ -92,7 +92,7 @@ admin_header('站内营销投放');
               </td>
               <td style="white-space:nowrap">
                 <a href="?edit=<?=urlencode($p['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-                <a href="?delete=<?=urlencode($p['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('删除?')">删</a>
+                <a href="?delete=<?=urlencode($p['id'])?>" class="btn btn-danger btn-sm" data-confirm="删除?">删</a>
               </td>
             </tr>
           <?php endforeach; ?>

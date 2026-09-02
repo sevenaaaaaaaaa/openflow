@@ -73,10 +73,10 @@ admin_header('批量导入');
 <script>
 function copySecret() {
   var el = document.getElementById('secretKey');
-  navigator.clipboard.writeText(el.textContent).then(function() { alert('已复制'); });
+  navigator.clipboard.writeText(el.textContent).then(function() { ofAlert('已复制'); });
 }
-function refreshSecret() {
-  if (!confirm('刷新密钥后，旧的密钥将失效。确认刷新?')) return;
+async function refreshSecret() {
+  if (!await ofConfirm('刷新密钥后，旧的密钥将失效。确认刷新?')) return;
   var newSecret = 'sk_' + Array.from({length:24}, function(){ return 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random()*36)]; }).join('');
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '../api/batch-import.php', true);
@@ -86,7 +86,7 @@ function refreshSecret() {
 }
 function localImport() {
   var file = document.getElementById('importFile').files[0];
-  if (!file) { alert('请选择 JSON 文件'); return; }
+  if (!file) { ofAlert('请选择 JSON 文件'); return; }
   var box = document.getElementById('importResult');
   box.innerHTML = '<div class="msg" style="background:var(--surface-2)">⏳ 正在导入，请稍候...</div>';
   var reader = new FileReader();

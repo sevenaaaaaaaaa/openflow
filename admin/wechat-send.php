@@ -173,7 +173,7 @@ admin_header('微信群发');
           <input type="text" name="media_id" placeholder="media_id 或通过素材库选择">
         </div>
         <div class="flex gap-3" style="margin-top:12px">
-          <button type="submit" class="btn btn-primary" onclick="return confirm('确认立即群发？')">立即群发</button>
+          <button type="submit" class="btn btn-primary" data-confirm="确认立即群发？">立即群发</button>
         </div>
       </form>
     </div>

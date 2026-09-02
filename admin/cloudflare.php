@@ -83,7 +83,7 @@ admin_header('Cloudflare');
       <h1 style="margin-bottom:0"> Cloudflare</h1>
       <div class="flex gap-2 ml-auto">
         <a href="?verify=1&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm">🔌 测试连接</a>
-        <a href="?purge=1&csrf_token=<?=csrf_token()?>" class="btn btn-primary btn-sm" onclick="return confirm('清理全站 Cloudflare 缓存？')">🧹 清全站缓存</a>
+        <a href="?purge=1&csrf_token=<?=csrf_token()?>" class="btn btn-primary btn-sm" data-confirm="清理全站 Cloudflare 缓存？">🧹 清全站缓存</a>
       </div>
     </div>
     <p class="sub">CDN 缓存管理 · DNS 管理 · 站点性能监控 · 安全等级</p>
@@ -140,7 +140,7 @@ admin_header('Cloudflare');
             <td class="text-sm text-muted"><?=htmlspecialchars($d['content'] ?? '')?></td>
             <td><span class="badge <?=($d['proxied'] ?? false)?'badge-green':'badge-gray'?>"><?=($d['proxied'] ?? false)?'CF代理':'仅DNS'?></span></td>
             <td>
-              <a href="?del_dns=<?=htmlspecialchars($d['id'] ?? '')?>&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="return confirm('删除 DNS 记录？')">删除</a>
+              <a href="?del_dns=<?=htmlspecialchars($d['id'] ?? '')?>&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm" style="color:var(--danger)" data-confirm="删除 DNS 记录？">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>
