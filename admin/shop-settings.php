@@ -142,10 +142,16 @@ if ($__sub === 'self'):
             <td><span class="badge <?=['pending'=>'badge-yellow','approved'=>'badge-green','rejected'=>'badge-gray'][$w['status']??'pending']?>"><?=['pending'=>'待处理','approved'=>'已打款','rejected'=>'已驳回'][$w['status']??'pending']?></span></td>
             <td>
               <?php if (($w['status']??'')==='pending'): ?>
-              <form method="post" style="display:inline">
+              <form method="post" style="display:inline" data-confirm="确认已向 <?=htmlspecialchars($w['member_name'] ?? '', ENT_QUOTES)?> 打款 ¥<?=number_format($w['amount']??0,2)?>？此操作只记录状态，不会自动转账。">
                 <?= csrf_field() ?>
-              <form method="post" style="display:inline">
+                <input type="hidden" name="review_withdraw" value="1"><input type="hidden" name="member_id" value="<?=htmlspecialchars($w['member_id'] ?? '')?>">
+                <button type="submit" name="approve" value="1" class="btn btn-primary btn-sm">标记已打款</button>
+              </form>
+              <form method="post" style="display:inline" data-confirm="驳回这笔提现？余额会退回用户账户。">
                 <?= csrf_field() ?>
+                <input type="hidden" name="review_withdraw" value="1"><input type="hidden" name="member_id" value="<?=htmlspecialchars($w['member_id'] ?? '')?>">
+                <button type="submit" name="approve" value="0" class="btn btn-ghost btn-sm">驳回</button>
+              </form>
               <?php endif; ?>
             </td>
           </tr>

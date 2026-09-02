@@ -27,10 +27,17 @@ $avgEventsPerUser = $totalVisitors > 0 ? round($totalEvents / $totalVisitors, 1)
 admin_header('CDP 客户数据中台');
 ?>
 <style>
-.cdp-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;overflow-x:auto;flex-wrap:nowrap}
+.cdp-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;max-width:100%}
 .cdp-tabs a{padding:10px 16px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
 .cdp-tabs a:hover{color:var(--fg)}
 .cdp-tabs a.active{color:var(--accent);border-bottom-color:var(--accent)}
+@media(max-width:840px){.cdp-g{grid-template-columns:1fr!important}.main{overflow-x:auto}.card{overflow-x:auto}}
+@media(min-width:841px) and (max-width:1180px){.cdp-g{grid-template-columns:1fr 1fr!important}}
+.cdp-av{width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:12px;flex:0 0 auto}
+.cdp-health{font-family:var(--font-mono);font-weight:800;font-size:13px;padding:2px 8px;border-radius:999px;background:var(--hover)}
+.cdp-health.ok{color:var(--ok)}.cdp-health.warn{color:var(--warn)}.cdp-health.danger{color:var(--danger)}
+.inline-tag{display:inline-flex;align-items:center;padding:1px 8px;border-radius:999px;background:var(--hover);font-size:11.5px;font-weight:500;color:var(--muted)}
+.inline-tag.more{background:none;border:1px dashed var(--border-strong)}
 .cdp-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
 .cdp-stat .num{font-size:28px;font-weight:800}
 .cdp-stat .lab{font-size:12px;color:var(--muted);margin-top:4px}
@@ -160,7 +167,7 @@ admin_header('CDP 客户数据中台');
         <?php endforeach; ?>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+    <div class="cdp-g" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
       <div class="card">
         <h2>设备分布</h2>
         <?php $maxDevice = max($devices) ?: 1; foreach ($devices as $device => $count): ?>
@@ -237,7 +244,7 @@ admin_header('CDP 客户数据中台');
         <?php endforeach; ?>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div class="cdp-g" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
       <div class="card">
         <h2>活跃时段热力图（近7天）</h2>
         <?php $maxHeat = max($heatmap) ?: 1; ?>
@@ -269,7 +276,7 @@ admin_header('CDP 客户数据中台');
 
     <?php elseif ($tab === 'profiles'): ?>
     <?php $tags = CdpSystem::getTagDistribution(); ?>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="cdp-g" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
       <div class="card">
         <h2>标签分布</h2>
         <?php if (empty($tags)): ?>
@@ -286,6 +293,46 @@ admin_header('CDP 客户数据中台');
         <?php endforeach; ?>
         <?php endif; ?>
       </div>
+      <div class="card">
+        <h2>用户属性分布</h2>
+        <?php $cityDist = CdpSystem::getPropertyDistribution('city');
+        if (!empty($cityDist)):
+            $maxProp = max($cityDist) ?: 1;
+            foreach (array_slice($cityDist, 0, 8, true) as $val => $count): ?>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0">
+          <span style="min-width:80px;font-size:12px;font-weight:600"><?=htmlspecialchars($val)?></span>
+          <div style="flex:1;height:14px;border-radius:3px;background:var(--hover);overflow:hidden">
+            <div style="height:100%;width:<?=round($count/$maxProp*100)?>%;background:var(--grad);border-radius:3px"></div>
+          </div>
+          <span style="font-size:12px;color:var(--muted)"><?=$count?></span>
+        </div>
+        <?php endforeach; else: ?>
+        <div class="empty">暂无属性数据</div>
+        <?php endif; ?>
+      </div>
+    </div>
+    <div class="card lst-card">
+      <div style="display:flex;align-items:center;gap:10px;padding:16px 18px 4px"><h2 style="margin:0">用户</h2><span class="hint" style="font-size:12px;color:var(--faint)">· 按最近活跃排序，前 200 个；筛选框可按 ID / 姓名 / 邮箱 / 标签搜</span></div>
+      <table class="lst-table">
+        <thead><tr><th class="c-title">用户</th><th style="width:220px">标签</th><th style="width:90px">健康分</th><th style="width:80px">事件</th><th style="width:90px">首访</th><th style="width:90px">最近</th><th class="c-act" style="width:90px"></th></tr></thead>
+        <tbody>
+        <?php foreach (array_slice($profiles, 0, 200, true) as $vid => $p):
+            $health = CdpSystem::getHealthScore($vid);
+            $hc = $health >= 70 ? 'ok' : ($health >= 40 ? 'warn' : 'danger');
+            $tagLabels = []; foreach (($p['tags'] ?? []) as $tk => $tv) { $tl = is_int($tk) ? $tv : $tk; if (is_string($tl)) $tagLabels[] = $tl; }
+        ?>
+          <tr>
+            <td class="c-title"><div class="lst-item"><span class="cdp-av"><?= strtoupper(substr($vid, -2)) ?></span><div class="lst-body"><div class="lst-title"><a href="profile-detail.php?v=<?=urlencode($vid)?>" style="color:inherit;text-decoration:none"><?=htmlspecialchars($p['properties']['name'] ?? $vid)?></a></div><div class="lst-sub"><span class="lst-slug"><?=htmlspecialchars($p['properties']['email'] ?? $vid)?></span></div></div></div></td>
+            <td><?php foreach (array_slice($tagLabels, 0, 3) as $tl): ?><span class="inline-tag"><?=htmlspecialchars($tl)?></span> <?php endforeach; if (count($tagLabels) > 3): ?><span class="inline-tag more">+<?=count($tagLabels)-3?></span><?php endif; if (!$tagLabels): ?><span class="text-muted">—</span><?php endif; ?></td>
+            <td><span class="cdp-health <?=$hc?>"><?=$health?></span></td>
+            <td class="text-sm text-muted"><?=$p['events_count']?></td>
+            <td class="lst-when"><?=date('m/d', strtotime($p['first_seen']))?></td>
+            <td class="lst-when"><?=date('m/d', strtotime($p['last_seen'] ?? $p['first_seen']))?></td>
+            <td class="c-act"><a href="profile-detail.php?v=<?=urlencode($vid)?>" class="btn btn-ghost btn-sm">详情</a></td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
     </div>
 
     <?php elseif ($tab === 'retention'): ?>
@@ -341,7 +388,7 @@ admin_header('CDP 客户数据中台');
 
     <?php elseif ($tab === 'rfm'): ?>
     <?php $rfmData = CdpSystem::getRFMAnalysis(); $rfmDist = CdpSystem::getRFMDistribution(); ?>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="cdp-g" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
       <div class="card">
         <h2>RFM 客户分群</h2>
         <p class="text-sm text-muted mb-4">基于最近访问时间(R)、访问频率(F)、消费金额(M)</p>
@@ -398,7 +445,7 @@ admin_header('CDP 客户数据中台');
 
     <?php elseif ($tab === 'path'): ?>
     <?php $paths = CdpSystem::getPathAnalysis(15); $entries = CdpSystem::getEntryPages(10); ?>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div class="cdp-g" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
       <div class="card">
         <h2>用户路径 TOP15</h2>
         <p class="text-sm text-muted mb-4">最常用的事件转移路径</p>
@@ -431,7 +478,7 @@ admin_header('CDP 客户数据中台');
     $ltv = CdpSystem::getLTVAnalysis();
     $aov = CdpSystem::getAOVDistribution();
     ?>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+    <div class="cdp-g" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
       <div class="revenue-card"><div class="big-num">¥<?=number_format($ltv['total_revenue'], 0)?></div><div style="font-size:13px;color:var(--muted);margin-top:4px">总收入</div></div>
       <div class="revenue-card"><div class="big-num"><?=$ltv['paying_users']?></div><div style="font-size:13px;color:var(--muted);margin-top:4px">付费用户</div></div>
       <div class="revenue-card"><div class="big-num">¥<?=$ltv['arpu']?></div><div style="font-size:13px;color:var(--muted);margin-top:4px">ARPU (人均)</div></div>
@@ -494,7 +541,7 @@ admin_header('CDP 客户数据中台');
     $revDevice = CdpSystem::getRevenueAttribution('device');
     $convChannel = CdpSystem::getConversionByDimension('channel');
     ?>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px" class="attr-grid">
+    <div class="cdp-g" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px" class="attr-grid">
       <div class="card">
         <h2>📡 营收归因 · 渠道</h2>
         <?php if (empty($revChannel)): ?><p class="text-sm text-muted" style="padding:20px;text-align:center">暂无渠道订单数据</p><?php endif; ?>
@@ -645,7 +692,7 @@ admin_header('CDP 客户数据中台');
     <div class="card">
       <h2>漏斗分析</h2>
       <p class="text-sm text-muted mb-4">分析用户从访问到转化的全流程</p>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      <div class="cdp-g" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
         <?php foreach ($funnel as $i => $step): ?>
         <div class="funnel-step">
           <div class="count"><?=$step['count']?></div>
@@ -670,7 +717,7 @@ admin_header('CDP 客户数据中台');
     $langDist = CdpSystem::getDimensionDistribution('language');
     $channelCross = CdpSystem::getDimensionEventCross('channel');
     ?>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="dim-grid">
+    <div class="cdp-g" style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="dim-grid">
       <div class="card">
         <h2>📡 渠道分布</h2>
         <?php foreach ($channelDist as $k => $v): ?>
@@ -807,52 +854,3 @@ function loadAiInsights(force) {
 document.addEventListener('DOMContentLoaded', function(){ loadAiInsights(false); });
 </script>
 <?php admin_footer(); ?>
-      <div class="card">
-        <h2>用户属性分布</h2>
-        <?php $cityDist = CdpSystem::getPropertyDistribution('city');
-        if (!empty($cityDist)):
-            $maxProp = max($cityDist) ?: 1;
-            foreach (array_slice($cityDist, 0, 8, true) as $val => $count): ?>
-        <div style="display:flex;align-items:center;gap:8px;padding:6px 0">
-          <span style="min-width:80px;font-size:12px;font-weight:600"><?=htmlspecialchars($val)?></span>
-          <div style="flex:1;height:14px;border-radius:3px;background:var(--hover);overflow:hidden">
-            <div style="height:100%;width:<?=round($count/$maxProp*100)?>%;background:var(--grad);border-radius:3px"></div>
-          </div>
-          <span style="font-size:12px;color:var(--muted)"><?=$count?></span>
-        </div>
-        <?php endforeach; else: ?>
-        <div class="empty">暂无属性数据</div>
-        <?php endif; ?>
-      </div>
-    </div>
-    <div class="card">
-      <h2>用户列表（前50）</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-top:12px">
-        <?php foreach (array_slice($profiles, 0, 50, true) as $vid => $p):
-            $health = CdpSystem::getHealthScore($vid);
-            $healthColor = $health >= 70 ? 'var(--ok)' : ($health >= 40 ? 'var(--warn)' : 'var(--danger)');
-        ?>
-        <div class="profile-card">
-          <div class="flex items-center gap-3 mb-3">
-            <div style="width:40px;height:40px;border-radius:50%;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px"><?= strtoupper(substr($vid, -2)) ?></div>
-            <div style="flex:1;min-width:0">
-              <div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($p['properties']['name'] ?? $vid)?></div>
-              <div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($p['properties']['email'] ?? '')?></div>
-            </div>
-            <div style="text-align:right;flex:0 0 auto">
-              <div style="font-size:11px;color:var(--muted)">健康分</div>
-              <div style="font-size:18px;font-weight:800;color:<?=$healthColor?>"><?=$health?></div>
-            </div>
-            <a href="profile-detail.php?v=<?=urlencode($vid)?>" style="flex:0 0 auto;font-size:11px;color:var(--accent)">详情 →</a>
-          </div>
-          <div class="health-bar" style="margin-bottom:8px"><div class="fill" style="width:<?=$health?>%;background:<?=$healthColor?>"></div></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
-            <?php foreach (($p['tags'] ?? []) as $tagKey => $tagVal): $tagLabel = is_int($tagKey) ? $tagVal : $tagKey; if (!is_string($tagLabel)) continue; ?>
-            <span style="background:var(--hover);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600"><?=htmlspecialchars($tagLabel)?></span>
-            <?php endforeach; ?>
-          </div>
-          <div style="font-size:11px;color:var(--muted)">事件: <?=$p['events_count']?> · 首访: <?=date('m/d', strtotime($p['first_seen']))?> · 最近: <?=date('m/d', strtotime($p['last_seen'] ?? $p['first_seen']))?></div>
-        </div>
-        <?php endforeach; ?>
-      </div>
-    </div>
