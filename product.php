@@ -129,7 +129,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <h2>不是 All in one，而是 Everything</h2>
     </div>
 
-    <div class="split">
+    <div class="split" id="feat-canvas" data-od-anchor>
       <div class="sp-txt">
         <h3>可视化编排画布</h3>
         <p class="lead">节点即逻辑。拖拽触发器、条件、动作与人工确认步骤，连线即成流程——零代码上手，也不挡专业用户的路。</p>
@@ -151,7 +151,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       </div></div>
     </div>
 
-    <div class="split rev">
+    <div class="split rev" id="feat-ai" data-od-anchor>
       <div class="sp-txt">
         <h3>AI 步骤：给流程装上判断力</h3>
         <p class="lead">用自然语言描述需求，AI 自动生成流程步骤与字段映射。摘要、分类、改写、抽取——大模型能力以步骤的形式进入你的工作流。</p>
@@ -171,7 +171,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       </div></div>
     </div>
 
-    <div class="split">
+    <div class="split" id="feat-connectors" data-od-anchor>
       <div class="sp-txt">
         <h3>开放连接器生态</h3>
         <p class="lead">不是封闭的私有集成，而是开放的连接标准。核心能力永久开源；飞书 / 企业微信 / Notion / Search Console 等常用系统已接好，私有系统用 OpenAPI 或 Webhook 自定义接入。每一项都能在代码里翻到。</p>
@@ -187,7 +187,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       </div></div>
     </div>
 
-    <div class="split rev">
+    <div class="split rev" id="feat-engine" data-od-anchor>
       <div class="sp-txt">
         <h3>自生长 AI Engine，从 Marketing 到 Sales</h3>
         <p class="lead">OpenFlow 不是被动工具，而是主动驱动增长的引擎：按你设的周期自动爬取信号、AI 洞察、生成内容、主动触达转化。装完即用，每个人都能改造成专属自己的增长引擎。</p>

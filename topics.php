@@ -101,7 +101,7 @@ if ($currentTopic) {
       <div class="hd">
         <?php if (!empty($t['cover'])): ?><img class="cov" src="<?=htmlspecialchars(strpos($t['cover'],'http')===0?$t['cover']:'/'.ltrim($t['cover'],'/'))?>" alt="" onerror="this.remove()"><?php endif; ?>
         <div>
-          <h2><a href="/topics/<?=htmlspecialchars($t['slug'] ?? '')?>"><?=htmlspecialchars($t['title'] ?? '')?></a><?php if (!empty($t['category'])): ?><span class="badge ok"><?=htmlspecialchars($catNames[$t['category']] ?? $t['category'])?></span><?php endif; ?><span class="note"><?=count($tArts)?> 篇文章</span></h2>
+          <h2><a href="/topic/<?=htmlspecialchars($t['slug'] ?? '')?>"><?=htmlspecialchars($t['title'] ?? '')?></a><?php if (!empty($t['category'])): ?><span class="badge ok"><?=htmlspecialchars($catNames[$t['category']] ?? $t['category'])?></span><?php endif; ?><span class="note"><?=count($tArts)?> 篇文章</span></h2>
           <p><?=htmlspecialchars($t['description'] ?? '')?></p>
         </div>
       </div>
@@ -110,7 +110,7 @@ if ($currentTopic) {
         <a href="/articles/<?=htmlspecialchars($a['slug'])?>"><span class="n"><?=$i+1?></span><span class="t"><b><?=htmlspecialchars($a['title'])?></b><span><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?></span></span></a>
         <?php endforeach; ?>
       </div>
-      <?php if (count($tArts) > 5): ?><a class="more" href="/topics/<?=htmlspecialchars($t['slug'] ?? '')?>">+ <?=count($tArts)-5?> 篇更多 →</a><?php endif; ?>
+      <?php if (count($tArts) > 5): ?><a class="more" href="/topic/<?=htmlspecialchars($t['slug'] ?? '')?>">+ <?=count($tArts)-5?> 篇更多 →</a><?php endif; ?>
     </div>
     <?php endforeach; endif; ?>
   </section>

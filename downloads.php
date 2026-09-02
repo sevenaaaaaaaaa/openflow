@@ -82,7 +82,7 @@ usort($downloads, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] 
         <div class="hd"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16"/></svg></span><div><h3><?=htmlspecialchars($d['title'])?></h3><div class="cat"><?=htmlspecialchars($cats[$d['category'] ?? ''] ?? $d['category'] ?? '资料')?></div></div></div>
         <p><?=htmlspecialchars($d['description'] ?? '')?></p>
         <?php if (!empty($d['tags'])): ?><div class="tags"><?php foreach (array_slice($d['tags'], 0, 4) as $t): ?><span>#<?=htmlspecialchars($t)?></span><?php endforeach; ?></div><?php endif; ?>
-        <a href="/downloads/<?=urlencode($d['slug'] ?: $d['id'])?>" class="btn ghost">查看详情 →</a>
+        <a href="/download/<?=urlencode($d['slug'] ?: $d['id'])?>" class="btn ghost">查看详情 →</a>
       </div>
       <?php endforeach; ?>
     </div>

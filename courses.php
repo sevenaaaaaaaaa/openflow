@@ -246,15 +246,15 @@ $$('.course').forEach(function(card){
   });
 });
 
-/* 筛选 */
-$$('#courseChips .tab-p').forEach(function(ch){
-  ch.addEventListener('click',function(){
-    var f=ch.dataset.filter, n=0;
-    $$('#courseChips .tab-p').forEach(function(x){x.setAttribute('aria-selected',x===ch?'true':'false')});
-    $$('.course').forEach(function(c){var show=f==='全部'||c.dataset.lv===f;c.hidden=!show;if(show)n++;});
-    $('#courseEmpty').hidden=n>0;
-  });
-});
+/* 筛选（支持 ?f=基石 深链） */
+function applyCourseFilter(f){
+  var n=0;
+  $$('#courseChips .tab-p').forEach(function(x){x.setAttribute('aria-selected',x.dataset.filter===f?'true':'false')});
+  $$('.course').forEach(function(c){var show=f==='全部'||c.dataset.lv===f;c.hidden=!show;if(show)n++;});
+  $('#courseEmpty').hidden=n>0;
+}
+$$('#courseChips .tab-p').forEach(function(ch){ ch.addEventListener('click',function(){ applyCourseFilter(ch.dataset.filter); }); });
+(function(){ try{ var f=new URLSearchParams(location.search).get('f'); if(f && $$('#courseChips .tab-p').some(function(x){return x.dataset.filter===f})) applyCourseFilter(f); }catch(e){} })();
 
 /* 账户 CTA */
 $$('[data-act]').forEach(function(el){el.addEventListener('click',function(e){e.preventDefault();
