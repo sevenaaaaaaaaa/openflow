@@ -190,7 +190,7 @@ function testProvider(id, btn) {
   }).then(function(r){return r.json();}).then(function(d){
     btn.disabled = false;
     if (d.ok) { btn.textContent = '✅ 连接成功'; btn.style.color = 'var(--ok)'; }
-    else { btn.textContent = '❌ 失败'; btn.style.color = 'var(--danger)'; alert(d.error || '连接失败'); }
+    else { btn.textContent = '❌ 失败'; btn.style.color = 'var(--danger)'; ofAlert(d.error || '连接失败', 'error'); }
     setTimeout(function(){ btn.textContent = original; btn.style.color = ''; }, 3000);
   }).catch(function(){ btn.disabled = false; btn.textContent = '❌ 网络异常'; });
 }

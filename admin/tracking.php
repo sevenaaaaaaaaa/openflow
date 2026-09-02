@@ -76,7 +76,7 @@ fcTrack('form_submit', { form: 'appointment' });</pre>
         <a href="?event=<?=urlencode($ev)?>" class="btn btn-sm <?=$eventFilter===$ev?'btn-primary':'btn-ghost'?>"><?=htmlspecialchars($ev)?> (<?=$cnt?>)</a>
         <?php endforeach; ?>
         <?php if ($eventFilter): ?><a href="tracking.php" class="btn btn-ghost btn-sm">清除筛选</a><?php endif; ?>
-        <a href="?clear=1" class="btn btn-danger btn-sm" style="margin-left:auto" onclick="return confirm('清空全部事件?')">清空</a>
+        <a href="?clear=1" class="btn btn-danger btn-sm" style="margin-left:auto" data-confirm="清空全部事件?">清空</a>
       </div>
       <?php endif; ?>
     </div>

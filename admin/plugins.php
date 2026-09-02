@@ -110,7 +110,7 @@ admin_header('插件管理');
             <td><span class="badge <?=($registry['enabled'][$pid] ?? false)?'badge-green':'badge-gray'?>"><?=($registry['enabled'][$pid] ?? false)?'已启用':'已禁用'?></span></td>
             <td>
               <a href="?toggle=<?=urlencode($pid)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-ghost btn-sm"><?=($registry['enabled'][$pid] ?? false)?'禁用':'启用'?></a>
-              <a href="?uninstall=<?=urlencode($pid)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-danger btn-sm" onclick="return confirm('确认卸载?')">卸载</a>
+              <a href="?uninstall=<?=urlencode($pid)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-danger btn-sm" data-confirm="确认卸载?">卸载</a>
             </td>
           </tr>
           <?php endforeach; ?>

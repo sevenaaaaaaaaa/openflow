@@ -191,7 +191,7 @@ admin_header('1v1 咨询');
             <input type="hidden" name="booking_id" value="<?=htmlspecialchars($b['id'])?>">
             <input type="hidden" name="booking_action" value="cancel">
             <input type="hidden" name="note" value="管理员取消">
-            <button class="btn btn-ghost btn-sm" onclick="return confirm('确认取消该预约？')" style="width:100%">↺ 取消预约</button>
+            <button class="btn btn-ghost btn-sm" data-confirm="确认取消该预约？" style="width:100%">↺ 取消预约</button>
           </form>
           <?php endif; ?>
           <?php if (in_array($b['status'], ['approved','paid'])): ?>
@@ -217,7 +217,7 @@ admin_header('1v1 咨询');
             <td><strong>¥<?=number_format($m['price'] ?? 0, 0)?></strong></td>
             <td class="text-sm text-muted"><?php foreach (array_slice($m['rep_courses'] ?? [], 0, 2) as $cid): ?><?=htmlspecialchars($courseMap[$cid] ?? $cid)?><br><?php endforeach; ?></td>
             <td><?=!empty($m['available']) ? '<span class="text-sm" style="color:var(--ok)">● 可预约</span>' : '<span class="text-sm" style="color:var(--faint)">○ 停用</span>'?></td>
-            <td><a href="#edit-<?=htmlspecialchars($m['id'])?>" class="btn btn-ghost btn-sm">编辑</a> <a href="?del_mentor=<?=urlencode($m['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除？')">删除</a></td>
+            <td><a href="#edit-<?=htmlspecialchars($m['id'])?>" class="btn btn-ghost btn-sm">编辑</a> <a href="?del_mentor=<?=urlencode($m['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除？">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

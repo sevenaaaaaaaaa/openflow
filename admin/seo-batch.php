@@ -147,7 +147,7 @@ if (!defined('OF_EMBED')) admin_header('批量 SEO 策略');
       <?php endforeach; ?>
 
       <button type="submit" name="save" class="btn btn-primary">保存策略</button>
-      <button type="submit" name="apply_all" class="btn btn-ghost" onclick="return confirm('确认将策略应用到所有内容？将覆盖现有 SEO 设置。')">应用到全部内容</button>
+      <button type="submit" name="apply_all" class="btn btn-ghost" data-confirm="确认将策略应用到所有内容？将覆盖现有 SEO 设置。">应用到全部内容</button>
     </form>
 
     <!-- Preview Results -->

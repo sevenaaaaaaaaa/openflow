@@ -70,7 +70,7 @@ admin_header('报表订阅');
             <td><?=htmlspecialchars($s['email'])?></td>
             <td><span class="badge badge-gray"><?=$s['period']==='weekly'?'每周':'每日'?></span></td>
             <td class="text-sm text-muted"><?=htmlspecialchars(substr($s['created_at'] ?? '', 0, 16))?></td>
-            <td><a href="?send=1" class="btn btn-s btn-sm" onclick="return confirm('立即发送报表给所有订阅者?')">📤 立即发送</a><a href="?del=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm">删除</a></td>
+            <td><a href="?send=1" class="btn btn-s btn-sm" data-confirm="立即发送报表给所有订阅者?">📤 立即发送</a><a href="?del=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

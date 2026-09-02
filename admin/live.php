@@ -134,7 +134,7 @@ admin_header('直播管理');
       <div style="display:flex;flex-direction:column;gap:8px;min-width:130px">
         <a href="?toggle_live=<?=urlencode($r['id'])?>" class="btn btn-sm <?=!empty($r['is_live']) ? 'btn-danger' : 'btn-success'?>" style="<?=!empty($r['is_live']) ? '' : 'background:var(--ok);color:#fff'?>"><?=!empty($r['is_live']) ? '🔴 结束直播' : '▶️ 标记开播'?></a>
         <a href="?tab=new&edit=<?=urlencode($r['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-        <a href="?del_room=<?=urlencode($r['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除？')">删除</a>
+        <a href="?del_room=<?=urlencode($r['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除？">删除</a>
       </div>
     </div>
     <?php endforeach; endif; ?>

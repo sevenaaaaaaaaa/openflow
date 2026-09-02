@@ -83,7 +83,7 @@ if (!defined('OF_EMBED')) admin_header('301 重定向');
             <td><?=htmlspecialchars($r['to'])?></td>
             <td class="text-sm text-muted"><?=htmlspecialchars($r['created'] ?? '')?></td>
             <td>
-              <form method="post" style="display:inline" onsubmit="return confirm('确认删除?')">
+              <form method="post" style="display:inline" data-confirm="确认删除?">
                 <?= csrf_field() ?>
                 <input type="hidden" name="remove" value="<?=htmlspecialchars($r['from'])?>">
                 <button type="submit" class="btn btn-danger btn-sm">删除</button>

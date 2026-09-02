@@ -356,7 +356,7 @@ if ($__sub === 'self'):
               <option value="subscribers">批量：发送给全部 <?=$subCount?> 位订阅者</option>
             </select>
           </div>
-          <button type="submit" name="send_newsletter" class="btn btn-primary" onclick="return confirm('确认发送?')">📬 发送 Newsletter</button>
+          <button type="submit" name="send_newsletter" class="btn btn-primary" data-confirm="确认发送?">📬 发送 Newsletter</button>
         </form>
         <?php endif; ?>
       </div>

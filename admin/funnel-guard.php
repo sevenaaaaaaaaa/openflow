@@ -22,7 +22,7 @@ admin_header('漏斗巡检');
   <div class="main">
     <div class="v-head">
       <div><h1>🚨 转化漏斗巡检</h1><p class="v-sub">近 7 天 vs 前 7 天 · 落地页 / 渠道转化率环比 · cron 每 6 小时自动</p></div>
-      <div class="v-actions"><a href="?scan=1" class="btn btn-s btn-sm" onclick="return confirm('立即执行一次巡检?')">▶ 立即巡检</a></div>
+      <div class="v-actions"><a href="?scan=1" class="btn btn-s btn-sm" data-confirm="立即执行一次巡检?">▶ 立即巡检</a></div>
     </div>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

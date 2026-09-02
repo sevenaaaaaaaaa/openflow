@@ -207,7 +207,7 @@ admin_header('GEO 话题监控');
         <div class="why"><?=htmlspecialchars($t['why'] ?? '')?></div>
         <div style="margin-top:8px">
           <a href="?generate=<?=urlencode($t['id'])?>" class="btn btn-primary btn-sm">🤖 AI 生成文章</a>
-          <a href="?delete_topic=<?=urlencode($t['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('删除该话题?')">删除</a>
+          <a href="?delete_topic=<?=urlencode($t['id'])?>" class="btn btn-danger btn-sm" data-confirm="删除该话题?">删除</a>
         </div>
       </div>
       <?php endforeach; ?>

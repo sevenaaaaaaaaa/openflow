@@ -146,7 +146,7 @@ admin_header('收款链接');
               <?php if (!empty($t['due'])): $overdue = empty($t['done']) && $t['due'] <= date('Y-m-d'); ?>
                 <span style="font-size:12px;color:<?=$overdue?'var(--danger)':'var(--text-3)'?>">· <?=htmlspecialchars($t['due'])?><?=$overdue?' 已到期':''?></span>
               <?php endif; ?></span>
-            <form method="post" style="display:inline" onsubmit="return confirm('删除这条待办?')"><?= csrf_field() ?><input type="hidden" name="action" value="del_todo"><input type="hidden" name="id" value="<?=htmlspecialchars($d['id'])?>"><input type="hidden" name="idx" value="<?=$i?>">
+            <form method="post" style="display:inline" data-confirm="删除这条待办?"><?= csrf_field() ?><input type="hidden" name="action" value="del_todo"><input type="hidden" name="id" value="<?=htmlspecialchars($d['id'])?>"><input type="hidden" name="idx" value="<?=$i?>">
               <button class="btn btn-ghost btn-sm" style="color:var(--text-3)">×</button></form>
           </div>
         <?php endforeach; ?>

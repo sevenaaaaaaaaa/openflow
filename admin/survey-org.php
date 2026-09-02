@@ -252,7 +252,7 @@ function copyToken(token) {
   var url = window.location.origin + '/survey-my.php?token=' + token;
   navigator.clipboard.writeText(url).then(function() {
     if (window.fcToast) window.fcToast('员工查询链接已复制', 'success');
-    else alert('已复制链接');
+    else ofAlert('已复制链接');
   });
 }
 </script>

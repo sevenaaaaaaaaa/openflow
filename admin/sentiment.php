@@ -157,7 +157,7 @@ admin_header('舆情监测');
             <td style="white-space:nowrap">
               <a href="?scan=<?=urlencode($t['id'])?>" class="btn btn-primary btn-sm">⚡ 采集</a>
               <a href="?report=<?=urlencode($t['id'])?>" class="btn btn-ghost btn-sm">📊 报告</a>
-              <a href="?delete=<?=urlencode($t['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('删除该主题及数据?')">删除</a>
+              <a href="?delete=<?=urlencode($t['id'])?>" class="btn btn-danger btn-sm" data-confirm="删除该主题及数据?">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>

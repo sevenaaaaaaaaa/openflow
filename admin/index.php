@@ -246,11 +246,11 @@ function fcFavPicker() {
     var hay = (c.label + ' ' + (c.keywords||'') + ' ' + c.section).toLowerCase();
     return hay.indexOf(q) >= 0;
   });
-  if (!found.length) { alert('没有找到匹配的功能'); return; }
+  if (!found.length) { ofAlert('没有找到匹配的功能'); return; }
   if (found.length > 1) {
     var pick = window.prompt('找到多个，输入要添加的序号：\n' + found.map(function(c,i){ return (i+1) + '. ' + c.label; }).join('\n'));
     var idx = parseInt(pick, 10) - 1;
-    if (isNaN(idx) || !found[idx]) { alert('序号无效'); return; }
+    if (isNaN(idx) || !found[idx]) { ofAlert('序号无效'); return; }
     found = [found[idx]];
   }
   var body = new FormData();
@@ -258,7 +258,7 @@ function fcFavPicker() {
   body.append('_csrf_token', OF_CSRF);
   fetch('index.php?fc_fav=add', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
-    .then(function(d){ if (d.ok) location.reload(); else alert(d.error || '添加失败'); });
+    .then(function(d){ if (d.ok) location.reload(); else ofAlert(d.error || '添加失败'); });
 }
 function fcFavRemove(url, el) {
   var body = new FormData();

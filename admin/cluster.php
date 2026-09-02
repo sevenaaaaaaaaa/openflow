@@ -169,7 +169,7 @@ admin_header('Cluster 聚合管理');
             <td>
               <a href="?edit=<?=urlencode($p['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
               <a href="../content-preview.php?type=landing&id=<?=urlencode($p['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a>
-              <form method="post" style="display:inline" onsubmit="return confirm('确认删除?')">
+              <form method="post" style="display:inline" data-confirm="确认删除?">
                 <?= csrf_field() ?>
                 <input type="hidden" name="delete" value="<?=htmlspecialchars($p['id'])?>">
                 <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)">🗑</button>
