@@ -54,7 +54,7 @@ $typeBadge = ['system' => 'neutral', 'order' => 'ok', 'consultation' => 'hl', 'l
     <div style="display:flex;flex-direction:column;gap:12px;margin-top:18px">
     <?php foreach ($messages as $m): $bt = $typeBadge[$m['type'] ?? 'system'] ?? 'neutral'; ?>
     <div class="card msg" data-id="<?=htmlspecialchars($m['id'])?>" style="padding:22px 24px">
-      <div class="hd"><span style="font-size:18px"><?=htmlspecialchars($m['icon'] ?? '🔔')?></span><b><?=htmlspecialchars($m['title'] ?? '')?></b><span class="<?=$bt==='hl'||$bt==='neutral'?'pill '.$bt:'badge '.$bt?>"><?=$typeLabels[$m['type'] ?? 'system'] ?? '系统'?></span><span class="when"><?=htmlspecialchars($m['created_at'] ?? '')?></span></div>
+      <div class="hd"><span class="ic" style="width:34px;height:34px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span><b><?=htmlspecialchars($m['title'] ?? '')?></b><span class="<?=$bt==='hl'||$bt==='neutral'?'pill '.$bt:'badge '.$bt?>"><?=$typeLabels[$m['type'] ?? 'system'] ?? '系统'?></span><span class="when"><?=htmlspecialchars($m['created_at'] ?? '')?></span></div>
       <p><?=htmlspecialchars($m['content'] ?? '')?></p>
       <div class="ft"><?php if (!empty($m['link'])): ?><a href="<?=htmlspecialchars($m['link'])?>" class="btn subtle" style="margin-left:-14px">查看详情 →</a><?php endif; ?><button onclick="delMsg('<?=htmlspecialchars($m['id'])?>', this)" class="del">删除</button></div>
     </div>
