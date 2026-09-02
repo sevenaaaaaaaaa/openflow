@@ -115,7 +115,7 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
   }
   function doRegister() {
     var msg = document.getElementById('regMsg');
-    if (!IS_LOGGED) { location.href = '/account?view=login&next=/events/' + <?=json_encode($slug)?>; return; }
+    if (!IS_LOGGED) { location.href = '/account?view=login&next=' + encodeURIComponent('/event/' + <?=json_encode($slug)?>); return; }
     if (!confirm('确认报名该活动？')) return;
     msg.textContent = '提交中…'; msg.style.color = 'var(--muted)';
     regFetch('register').then(function(d){ msg.textContent = d.message || d.error; msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; if (d.ok) setTimeout(function(){ location.reload(); }, 1000); });

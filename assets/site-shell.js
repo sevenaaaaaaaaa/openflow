@@ -292,6 +292,7 @@
           '<div id="regFields" style="display:none"><div class="field"><label for="fNick">昵称</label><input class="inp" id="fNick" placeholder="2-20 个字符" autocomplete="nickname"></div></div>' +
           '<div class="field"><label for="fMail">邮箱</label><input class="inp" id="fMail" placeholder="you@example.com" type="email" autocomplete="email"></div>' +
           '<div class="field"><label for="fPwd">密码</label><input class="inp" id="fPwd" placeholder="至少 6 位" type="password" autocomplete="current-password"></div>' +
+          '<div class="field" id="capRow" style="display:none"><label for="fCap">邮箱验证码</label><div style="display:flex;gap:8px"><input class="inp" id="fCap" placeholder="6 位验证码" inputmode="numeric" autocomplete="one-time-code" style="flex:1"><button type="button" class="btn ghost" id="capSend" style="flex:0 0 auto;white-space:nowrap">发送验证码</button></div></div>' +
           '<div class="err" id="authErr" role="alert"></div>' +
           '<button type="button" class="btn primary" id="authSubmit" style="width:100%">登录</button>' +
           '<p class="auth-foot">登录即开通 OpenFlow 社区账号，课程与社区内容跨站同步。</p>' +
@@ -581,13 +582,27 @@
       }
     }
     refreshAuth();
+    /* 与服务端会话对齐：以前只看 localStorage —— 在 /account 页登录后头像仍显示未登录，
+       服务端会话过期后头像却一直显示已登录，点「我的课程」又被弹回登录页。 */
+    fetch('/api/member?action=profile_summary', { method: 'POST', headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
+      .then(function (r) { return r.json().then(function (d) { return { http: r.status, d: d }; }).catch(function () { return { http: r.status, d: {} }; }); })
+      .then(function (res) {
+        var d = res.d || {};
+        if (res.http === 200 && d.ok) { var cu = curUser(); if (!cu || cu.email !== d.email || cu.nick !== d.name) setUser({ email: d.email || (cu && cu.email) || '', nick: d.name || '' }); }
+        else if (res.http === 401 && curUser()) setUser(null);
+      }).catch(function () {});
     avBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       if (curUser()) drop.classList.toggle('open');
       else openAuth('login');
     });
     g('dropProfile').addEventListener('click', function () { drop.classList.remove('open'); openProfile(); });
-    g('dropLogout').addEventListener('click', function () { drop.classList.remove('open'); setUser(null); toast('已退出登录'); });
+    function logout() {
+      /* 以前只清本地状态，服务端会话仍然有效：头像变回未登录，但 /account 还能直接进 */
+      var fd = new FormData(); fd.append('action', 'logout');
+      return fetch('/api/member', { method: 'POST', body: fd, credentials: 'same-origin' }).catch(function () {}).then(function () { setUser(null); toast('已退出登录'); });
+    }
+    g('dropLogout').addEventListener('click', function () { drop.classList.remove('open'); logout(); });
     g('drawer-auth').addEventListener('click', function () { if (curUser()) openProfile(); else openAuth('login'); });
     document.addEventListener('click', function (e) {
       if (drop.classList.contains('open') && !drop.contains(e.target) && !avBtn.contains(e.target)) drop.classList.remove('open');
@@ -621,6 +636,7 @@
       var login = m === 'login';
       g('tabLogin').classList.toggle('on', login); g('tabReg').classList.toggle('on', !login);
       g('regFields').style.display = login ? 'none' : 'block';
+      if (login) g('capRow').style.display = 'none';
       g('authTitle').textContent = login ? '登录 OpenFlow' : '注册 OpenFlow';
       authModal.setAttribute('aria-label', login ? '登录' : '注册');
       g('authSubmit').textContent = login ? '登录' : '注册并进入个人中心';
@@ -639,7 +655,7 @@
       btn.disabled = true; btn.textContent = '处理中…';
       var fd = new FormData();
       fd.append('account', mail); fd.append('password', pwd);
-      if (reg) { fd.append('name', nick); fd.append('email', mail); }
+      if (reg) { fd.append('name', nick); fd.append('email', mail); fd.append('captcha', g('fCap').value.trim()); }
       fetch('/api/member?action=' + (reg ? 'register' : 'login'), { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
         .then(function (r) { return r.json().then(function (d) { return { http: r.status, d: d }; }).catch(function () { return { http: 0, d: {} }; }); })
         .then(function (res) {
@@ -650,11 +666,28 @@
             closeAuth(); toast(reg ? '注册成功，欢迎加入芭乐派' : '已登录，欢迎回来');
             openProfile();
           } else {
+            /* 注册需要邮箱验证码：显示验证码栏（第一次提交时自动把码发出去） */
+            if (d.need_captcha && g('capRow').style.display === 'none') { g('capRow').style.display = 'block'; sendCaptcha(mail); setTimeout(function () { g('fCap').focus(); }, 30); }
             err.textContent = d.error || '操作失败，请稍后再试'; err.classList.add('show');
           }
         })
         .catch(function () { btn.disabled = false; btn.textContent = orig; err.textContent = '网络异常，请稍后再试'; err.classList.add('show'); });
     });
+
+    function sendCaptcha(mail) {
+      var sb = g('capSend'), err = g('authErr');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { err.textContent = '请先填写有效的邮箱地址'; err.classList.add('show'); return; }
+      sb.disabled = true; sb.textContent = '发送中…';
+      var fd = new FormData(); fd.append('target', mail);
+      fetch('/api/member?action=send_captcha', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (d) {
+          if (d.ok) { toast(d.message || '验证码已发送'); var n = 60; sb.textContent = n + 's'; var t = setInterval(function () { n--; if (n <= 0) { clearInterval(t); sb.disabled = false; sb.textContent = '重新发送'; } else sb.textContent = n + 's'; }, 1000); }
+          else { sb.disabled = false; sb.textContent = '发送验证码'; err.textContent = d.error || '发送失败'; err.classList.add('show'); }
+        })
+        .catch(function () { sb.disabled = false; sb.textContent = '发送验证码'; });
+    }
+    g('capSend').addEventListener('click', function () { sendCaptcha(g('fMail').value.trim()); });
 
     /* 个人中心 */
     var pfModal = g('profileModal');
@@ -701,7 +734,7 @@
       window.__timers = window.__timers || [];
       if (!on) window.__timers.forEach(function (t) { clearInterval(t); });
     });
-    g('pfLogout').addEventListener('click', function () { closePf(); setUser(null); toast('已退出登录'); });
+    g('pfLogout').addEventListener('click', function () { closePf(); logout(); });
     pfModal.addEventListener('keydown', function (e) { if (pfModal.classList.contains('open')) trapFocus(pfModal, e); });
     document.querySelectorAll('[data-close]').forEach(function (b) {
       b.addEventListener('click', function () {
