@@ -12,9 +12,11 @@ $homeArticles = [];
 try {
     $all = get_articles();
     $pub = array_values(array_filter($all, fn($a) => ($a['status'] ?? '') === 'published'));
+    $catNames = [];
+    foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
     foreach (array_slice($pub, 0, 3) as $a) {
         $homeArticles[] = [
-            'cat' => $a['category'] ?? '洞察',
+            'cat' => $catNames[$a['category'] ?? ''] ?? ($a['category'] ?? '洞察'),
             't' => $a['title'] ?? '',
             'meta' => max(1, (int)round(mb_strlen(strip_tags($a['content'] ?? '')) / 400)) . ' 分钟',
             'date' => substr($a['created_at'] ?? '', 0, 10),
@@ -468,8 +470,18 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
       <span class="kicker">增长洞察</span>
       <h2>关于增长系统与 Agent 的思考</h2>
     </div>
-    <div class="art-list">
-      <div id="homeArts"></div>
+    <div class="art-list" id="homeArts">
+      <?php
+      // 2026-09-02 修复：这一节原注释写着「JS 注入 → SSR」，但 SSR 从未落地，$homeArticlesJson 算完没人渲染，线上是空白一节。
+      // 现在服务端直出；没有已发布文章时用与旧版 JS 相同的三篇占位。
+      $arts = $homeArticles ?: [
+        ['cat'=>'方法论','t'=>'为什么你缺的不是工具，而是一套增长系统','meta'=>'8 分钟','date'=>'2026-08-10','d'=>'工具解决「怎么做」，系统解决「该做什么」。一人公司增长失速，往往是从 0 到 1 的系统没跑通。','link'=>'/academy'],
+        ['cat'=>'芭乐派','t'=>'利润公式拆解：销转率才是你的杠杆支点','meta'=>'6 分钟','date'=>'2026-08-02','d'=>'同样的线索，为什么别人转化率是你的两倍？用 Agent-Native 利润公式，算出你该先优化哪个环节。','link'=>'/courses'],
+        ['cat'=>'Agent 实践','t'=>'把增长漏斗画成 Task Graph：Agent 可执行的增长地图','meta'=>'10 分钟','date'=>'2026-07-26','d'=>'漏斗不是给人看的流程图，而是给 Agent 跑的任务图。五个判据，标出每一环该人做还是 Agent 做。','link'=>'/academy'],
+      ];
+      foreach (array_slice($arts, 0, 3) as $a): ?>
+      <a class="a-row" href="<?=htmlspecialchars($a['link'] ?: '/academy')?>" data-od-id="article-<?=htmlspecialchars(mb_substr($a['t'], 0, 4))?>"><span class="a-meta"><span class="pill neutral"><?=htmlspecialchars($a['cat'])?></span><span><?=htmlspecialchars($a['date'])?></span><span><?=htmlspecialchars($a['meta'])?></span></span><div class="a-body"><h3><?=htmlspecialchars($a['t'])?></h3><p><?=htmlspecialchars($a['d'])?></p></div><span class="a-go">阅读全文 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+      <?php endforeach; ?>
     </div>
   </section>
 
