@@ -122,7 +122,7 @@ admin_header('系统设置');
 
       <!-- Staging Mode -->
       <div class="card">
-        <h2>🧪 测试环境</h2>
+        <h2>测试环境</h2>
         <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="settings[staging_mode]" value="1" <?=$settings['staging_mode']?'checked':''?> style="width:18px;height:18px">启用测试环境模式</label></div>
         <div class="field"><label>顶部提示文字</label><input type="text" name="settings[staging_banner]" value="<?=htmlspecialchars($settings['staging_banner'])?>"></div>
         <div class="msg msg-info" style="margin-top:8px">启用后前台顶部将显示提示条，告知访客当前为测试环境</div>
@@ -130,7 +130,7 @@ admin_header('系统设置');
 
       <!-- Multi-language -->
       <div class="card">
-        <h2>🌐 多语言</h2>
+        <h2>多语言</h2>
         <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="settings[multilang_enabled]" value="1" <?=$settings['multilang_enabled']?'checked':''?> style="width:18px;height:18px">启用多语言版本</label></div>
         <div class="field-row">
           <div class="field"><label>默认语言</label><input type="text" name="settings[multilang_default]" value="<?=htmlspecialchars($settings['multilang_default'])?>" placeholder="zh-CN"></div>
@@ -164,14 +164,14 @@ admin_header('系统设置');
 
       <!-- CORS 跨域 -->
       <div class="card">
-        <h2>🌐 跨域埋点 (CORS) <span class="hint" style="font-weight:400">· 允许外部站点埋点到 CDP</span></h2>
+        <h2>跨域埋点 (CORS) <span class="hint" style="font-weight:400">· 允许外部站点埋点到 CDP</span></h2>
         <div class="field"><label>允许的来源 <span class="hint">· 逗号分隔，用于监控其他站点（如 WordPress）</span></label><input type="text" name="settings[cors_origins]" value="<?=htmlspecialchars($settings['cors_origins'])?>" placeholder="https://one.example.com"></div>
         <p class="text-sm text-muted">在这些站点的页面引入 <code>&lt;script src="https://你的域名/api/sdk.php" data-api="https://你的域名/api/cdp.php"&gt;&lt;/script&gt;</code> 即可跨域埋点。</p>
       </div>
 
       <!-- 功能开关 -->
       <div class="card">
-        <h2>⚙️ 功能开关 <span class="hint" style="font-weight:400">· 全局功能启停</span></h2>
+        <h2>功能开关 <span class="hint" style="font-weight:400">· 全局功能启停</span></h2>
         <div class="msg msg-info" style="margin-top:0">各模块内部开关（直播/咨询/订阅/商城/社区楼层等）在各模块设置页单独配置。</div>
         <div class="field-row">
           <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="settings[enable_comments]" value="1" <?=!empty($settings['enable_comments'])?'checked':''?> style="width:18px;height:18px">启用评论系统</label></div>
