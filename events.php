@@ -11,7 +11,13 @@ require_once __DIR__ . '/lib/SiteConfig.php';
 
 $now = time();
 $events = array_values(array_filter(json_read(DATA_DIR . '/events/index.json'), fn($e) => ($e['status'] ?? '') === 'published'));
-usort($events, fn($a, $b) => strcmp($a['start_date'] ?? '', $b['start_date'] ?? ''));
+// 排序：未结束的活动按开始时间升序排在前面（最近要开的最先），已结束的按时间倒序排在后面
+$evEnd = fn($e) => strtotime($e['end_date'] ?? $e['start_date'] ?? '2000-01-01');
+usort($events, function ($a, $b) use ($now, $evEnd) {
+    $ua = $evEnd($a) >= $now ? 0 : 1; $ub = $evEnd($b) >= $now ? 0 : 1;
+    if ($ua !== $ub) return $ua <=> $ub;
+    return $ua === 0 ? strcmp($a['start_date'] ?? '', $b['start_date'] ?? '') : strcmp($b['start_date'] ?? '', $a['start_date'] ?? '');
+});
 
 $typeFilter = $_GET['type'] ?? '';
 if ($typeFilter === 'upcoming') $events = array_values(array_filter($events, fn($e) => strtotime($e['end_date'] ?? $e['start_date'] ?? '2000-01-01') >= $now));
