@@ -7,6 +7,7 @@
  *   3. 每个带侧栏的后台页都能在导航树里定位到（按脚本名，含别名）
  *   4. 导航树里每个条目都指向存在的页面
  *   5. admin_header / admin_footer 挂了 admin-ui.css / admin-ui.js，且版本号一致
+ *   6. <form>/<select> 开闭成对（防止再出现被截断的表单）
  */
 declare(strict_types=1);
 $root = dirname(__DIR__);
@@ -22,6 +23,13 @@ foreach ($files as $f) {
     if ($b === 'config.php') continue;
     ok(!preg_match('/\bon(click|submit)\s*=\s*"[^"]*\bconfirm\(/', $s) && !preg_match('/(?<![\w.$])confirm\(/', $s), "$b 还在用原生 confirm()");
     ok(!preg_match('/(?<![\w.$])alert\(/', $s), "$b 还在用原生 alert()");
+}
+
+// 2.5 表单 / 表格标签成对（历史上有 20 处 <form> 在 csrf_field() 后被截断，按钮全没了）
+foreach ($files as $f) {
+    $b = basename($f); $s = file_get_contents($f);
+    ok(preg_match_all('/<form\b/', $s) === preg_match_all('/<\/form>/', $s), "$b <form> 与 </form> 数量不一致（表单被截断？）");
+    ok(preg_match_all('/<select\b/', $s) === preg_match_all('/<\/select>/', $s), "$b <select> 与 </select> 数量不一致");
 }
 
 // 3 + 4

@@ -145,8 +145,10 @@ admin_header('落地页构建器');
             <td><span class="badge <?=($p['status']??'draft')==='published'?'badge-green':'badge-yellow'?>"><?=$p['status']??'draft'?></span></td>
             <td>
               <a href="?edit=<?=urlencode($p['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-              <form method="post" style="display:inline" data-confirm="确认删除?">
+              <form method="post" style="display:inline" data-confirm="删除页面「<?=htmlspecialchars($p['title'] ?? '',ENT_QUOTES)?>」？">
                 <?= csrf_field() ?>
+                <button type="submit" name="delete" value="<?=htmlspecialchars($p['id'])?>" class="btn btn-ghost btn-sm" style="color:var(--danger)">删除</button>
+              </form>
             </td>
           </tr>
           <?php endforeach; ?>
