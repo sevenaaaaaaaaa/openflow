@@ -85,6 +85,7 @@ live → `events`，consultation → `enterprise`，course-player → `courses`�
 | 主栏 + 侧栏 | `.g-main-aside`(`.aside-left`) › `div` + `aside`(`.aside-box` `.rank`) | academy、navigation、community、asset、course-player、live 直播间、member（左导航） |
 | 正文阅读 | `.reader` › `.art-head` `.art-meta` `.art-cover` `.prose` `.actions`(`.act`) `.gate`(`.gate-box`) | article、community-post、event、asset 介绍 |
 | 弹层 | `.modal`(`.open`) › `.mbox` `.mhead`(`.mx`) `.mbody` | downloads 门禁表单、marketplace 安装 |
+| 生成式封面 | `.gcov`(`.h-accent/.h-ok/.h-warn/.h-danger/.h-neutral` `.lg`) › `.gc-code` `.gc-k` `.gc-t` | 无图的文章卡（`lib/CoverRenderer.php`）、生态资产卡（`mkt_asset_cover()`） |
 | 空状态 | `.empty` | 所有列表页 |
 | 页脚 | `.foot` › `.fb`(`.brand` `.f-about` `.note` `h4` `a`) `.f-bottom` | 所有页 |
 
@@ -94,6 +95,13 @@ live → `events`，consultation → `enterprise`，course-player → `courses`�
 功能页（表单 / 列表 / 控制台）的通用做法：面板 = `.card`，表单 = `.form-grid` › `.field` › `.inp`，
 状态词 = `.badge.ok/.warn/.danger` 或 `.pill.neutral/.hl`（颜色只从 token 来，lib 里遗留的 hex 状态色表只给后台用），
 结果消息 = 页面私有 `.msg.ok/.err`。member.php 是这套做法最完整的样本（16 个面板，私有 CSS 44 行）。
+
+### 图标
+
+全站图标只有一种：24×24 线框 svg（`stroke-width:1.8`，圆角端点），颜色跟 `currentColor`。
+**不直出 emoji**——后台数据里配的 emoji（导航分类、市场类型、消息类型、话题）到前台一律映射：
+`includes/nav-icons.php`（导航分类 / 地区 / 站点 favicon + 首字母兜底）、`mkt_type_icon()`（市场类型）、
+`CoverRenderer::PALETTE`（文章分类）。评分星 ★ 与 NPS 表情是刻意保留的两处例外。
 
 ### 新增零件的规则
 
