@@ -1,0 +1,62 @@
+# robots.txt - nownexts.com
+# OpenFlow Growth Operating System
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /xmp/
+Disallow: /api/
+Disallow: /data/
+Disallow: /uploads/
+Disallow: /vendor/
+Disallow: /bin/
+Disallow: /includes/
+Disallow: /lib/
+Disallow: /tmp/
+Disallow: /.git/
+
+# AI 训练数据访问
+User-agent: GPTBot
+Allow: /
+Allow: /articles/
+Allow: /article/
+Allow: /academy/
+Allow: /community/
+
+User-agent: Google-Extended
+Allow: /
+Allow: /articles/
+Allow: /article/
+Allow: /academy/
+Allow: /community/
+
+User-agent: CCBot
+Allow: /
+Allow: /articles/
+Allow: /article/
+Allow: /academy/
+Allow: /community/
+
+User-agent: anthropic-ai
+Allow: /
+Allow: /articles/
+Allow: /article/
+Allow: /academy/
+Allow: /community/
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /articles/
+Allow: /article/
+Allow: /academy/
+Allow: /community/
+
+# 站点地图
+Sitemap: https://nownexts.com/sitemap.xml
+Sitemap: https://nownexts.com/articles-sitemap.xml
+
+# 延迟（可选，避免服务器过载）
+Crawl-delay: 1
+
+# 根目录访问
+Disallow: /index.php
