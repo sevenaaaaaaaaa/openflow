@@ -62,55 +62,52 @@ $configs = [
 
 $cfg = $configs[$from] ?? $configs['lead'];
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($cfg['title'])?> | <?=htmlspecialchars($siteName)?></title>
-<link rel="stylesheet" href="/assets/tokens.css?v=20260901a">
-<link rel="stylesheet" href="/assets/modules.css?v=20260901a">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<meta name="robots" content="noindex">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body)}
+/* 感谢页：全部来自 modules.css（hero-center + link-it.top 列表 + cta-row），只收窄一列。 */
+.ty{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.ty .link-it .ic{font-size:18px}
 </style>
-<link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body>
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script> class="min-h-screen">
-  
+<body data-of-main>
+<?php of_shell('home'); ?>
 
-  <div class="mx-auto px-5 py-14 text-center" style="max-width:720px">
-    <div class="text-6xl mb-4"><?=$cfg['emoji']?></div>
-    <h1 class="text-3xl font-bold text-gray-900"><?=htmlspecialchars($cfg['title'])?></h1>
-    <p class="mt-3 text-gray-600 text-lg"><?=htmlspecialchars($cfg['sub'])?></p>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+  <section id="top" class="reveal in" data-od-anchor data-od-id="ty-hero">
+    <div class="hero-center">
+      <span class="badge ok" style="height:32px;padding:0 14px;font-size:13px"><span class="dot"></span><?=['lead'=>'已收到','course'=>'已报名','consult'=>'已预约','download'=>'已就绪','subscribe'=>'已订阅'][$from] ?? '已收到'?></span>
+      <h1><?=htmlspecialchars($cfg['title'])?></h1>
+      <p class="lead"><?=htmlspecialchars($cfg['sub'])?></p>
+    </div>
+  </section>
 
-    <div class="mt-10 grid gap-4">
+  <section class="sec reveal" data-od-anchor data-od-id="ty-next">
+    <div class="ty">
       <?php foreach ($cfg['blocks'] as $b): ?>
-      <div class="bg-white border border-[var(--border)] rounded-2xl p-6 text-left flex gap-4" style="box-shadow:0 4px 16px rgba(0,0,0,.05)">
-        <div class="text-3xl flex-shrink-0"><?=$b['icon']?></div>
-        <div class="flex-1">
-          <h3 class="font-bold text-gray-900 text-lg"><?=htmlspecialchars($b['title'])?></h3>
-          <p class="mt-1 text-gray-600 text-sm"><?=htmlspecialchars($b['desc'])?></p>
-          <?php if (($b['type'] ?? '') === 'link' && !empty($b['url'])): ?>
-          <a href="<?=htmlspecialchars($b['url'])?>" class="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--accent)] text-[var(--accent)] px-6 py-2.5 font-semibold text-sm hover:bg-[#333] transition">
-            <?=htmlspecialchars($b['btn'] ?? '前往')?> →
-          </a>
-          <?php endif; ?>
-        </div>
+      <div class="card link-it top" style="padding:22px 24px;gap:16px;cursor:default">
+        <span class="ic" style="width:42px;height:42px;border-radius:12px"><?=$b['icon']?></span>
+        <span class="lt">
+          <b style="font-size:16px"><?=htmlspecialchars($b['title'])?></b>
+          <span style="font-size:13.5px;line-height:1.7;color:var(--muted);margin-top:4px"><?=htmlspecialchars($b['desc'])?></span>
+          <?php if (($b['type'] ?? '') === 'link' && !empty($b['url'])): ?><a href="<?=htmlspecialchars($b['url'])?>" class="btn primary" style="height:40px;padding:0 18px;font-size:14px;margin-top:14px"><?=htmlspecialchars($b['btn'] ?? '前往')?> →</a><?php endif; ?>
+        </span>
       </div>
       <?php endforeach; ?>
+      <div class="cta-row" style="justify-content:center;margin-top:12px"><a href="/" class="btn subtle">← 返回首页</a></div>
     </div>
+  </section>
 
-    <a href="/" class="mt-10 inline-block text-[#2b5f7e] text-sm hover:underline">← 返回首页</a>
-  </div>
-
-  <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-    <div class="mx-auto px-5 text-center text-sm" style="max-width:720px">
-      <div class="mb-2"><?=htmlspecialchars($siteName)?> · <?=htmlspecialchars($site['site_slogan'] ?? '帮一人公司设计 Agent 能跑的增长系统')?></div>
-      <div class="text-xs" style="color:var(--muted)">&copy; 2026 <?=htmlspecialchars($site['company_name'] ?? $siteName)?></div>
-    </div>
-  </footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>
