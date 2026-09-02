@@ -39,9 +39,9 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 <title>能力 · TIPS 四力 | 芭乐派 · OpenFlow</title>
 <meta name="description" content="Open Flow 六大核心能力：可视化编排、AI 步骤、开放连接器、可观测与告警、企业级安全、多环境部署。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902a">
 <style>
 /* 能力页独有：连接器 chips（与产品页同款，等第三处出现再收进共享层） */
 .conn-chips{display:flex;flex-wrap:wrap;gap:8px;padding:22px}
