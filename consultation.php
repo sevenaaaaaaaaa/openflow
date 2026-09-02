@@ -29,191 +29,206 @@ $mentorId = $_GET['mentor'] ?? '';
 $mentor = $mentorId ? con_mentor($mentorId) : null;
 
 $slotOptions = con_slot_options();
+// 预约状态 → 共享 badge 修饰（颜色只从 token 来；lib 里的 hex 表是后台用的）
+$statusBadge = ['pending_review'=>'badge warn','approved'=>'pill hl','paid'=>'pill hl','confirmed'=>'badge ok','completed'=>'badge ok','rejected'=>'badge danger','cancelled'=>'pill neutral'];
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?=htmlspecialchars($settings['page_title'] ?? '1v1 咨询')?>  | <?=site_config_get("site_name")?></title>
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><?=htmlspecialchars($settings['page_title'] ?? '1v1 咨询')?> | <?=site_config_get("site_name")?></title>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body)}
-  .mentor-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;transition:.18s;display:flex;flex-direction:column;gap:12px}
-  .mentor-card:hover{box-shadow:var(--shadow-sm);transform:translateY(-2px)}
-  .slot-pick{display:flex;flex-wrap:wrap;gap:8px}
-  .slot-pick label{cursor:pointer;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 14px;font-size:13px;display:flex;align-items:center;gap:6px;background:var(--surface);transition:.12s}
-  .slot-pick label:has(input:checked){border-color:var(--ok);background:var(--ok);color:var(--surface)}
-  .slot-pick input{display:none}
-
-  /* 设计语言统一：token 语义工具类（终版契约） */
-  .text-faint{color:var(--faint)}.text-muted{color:var(--muted)}.text-fg{color:var(--fg)}
-  .text-ok{color:var(--ok)}.text-accent{color:var(--accent)}.text-danger{color:var(--danger)}
-  .bg-surface{background:var(--surface)}
+/* 咨询独有：导师头像、时段选择器、预约记录行。其余全部来自 modules.css。 */
+.mav{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent-soft),var(--ok-soft));color:var(--accent);display:grid;place-items:center;overflow:hidden;flex:0 0 auto}
+.mav img{width:100%;height:100%;object-fit:cover}
+.mav svg{width:24px;height:24px}
+.mav.lg{width:110px;height:110px}.mav.lg svg{width:44px;height:44px}
+.mentor{display:flex;flex-direction:column;gap:14px;color:inherit;text-decoration:none}
+.mentor .hd{display:flex;align-items:center;gap:14px}
+.mentor .hd b{font-size:18px;font-weight:800;letter-spacing:-.01em;display:block}
+.mentor .hd span{font-size:12.5px;color:var(--faint)}
+.mentor p{font-size:14px;color:var(--muted);line-height:1.75;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mentor .ft{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:14px;border-top:1px solid var(--border-soft)}
+.price{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--ok);letter-spacing:-.01em}
+.price small{font-family:var(--font-body);font-size:12px;font-weight:400;color:var(--faint);margin-left:4px}
+.m-prof{display:flex;gap:clamp(20px,3vw,32px);flex-wrap:wrap;align-items:flex-start}
+.m-prof .bio{flex:1;min-width:240px;display:flex;flex-direction:column;gap:10px}
+.m-prof .bio h1{font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.02em}
+.m-prof .bio p{font-size:14.5px;color:var(--muted);line-height:1.8}
+.m-prof .buy{text-align:center;padding-left:clamp(20px,3vw,32px);border-left:1px solid var(--border-soft);display:flex;flex-direction:column;gap:8px;align-items:center}
+.slot-pick{display:flex;flex-wrap:wrap;gap:8px}
+.slot-pick label{cursor:pointer;border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;background:var(--surface);transition:border-color .15s,background .15s,color .15s}
+.slot-pick label:hover{border-color:var(--border-strong)}
+.slot-pick label:has(input:checked){border-color:var(--accent);background:var(--accent);color:var(--on-accent)}
+.slot-pick input{position:absolute;opacity:0;pointer-events:none}
+.bk{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.bk .main{flex:1;min-width:260px;display:flex;flex-direction:column;gap:8px}
+.bk .main .who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:800;font-size:16px}
+.bk .main p{font-size:14px;color:var(--muted);line-height:1.7}
+.bk .main .ln{font-size:13px;display:flex;align-items:center;gap:6px}
+.bk .main .ln .ic{width:15px;height:15px;flex:0 0 auto}.bk .main .ln .ic svg{width:15px;height:15px}
+.bk .side{text-align:right;min-width:120px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+@media (max-width:860px){.m-prof .buy{border-left:0;padding-left:0;width:100%;align-items:flex-start;text-align:left}}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('enterprise'); ?>
 
-  <div class="mx-auto px-5 py-10" style="max-width:1120px">
-    <?php if ($view === 'detail' && $mentor): ?>
-    <!-- ═══ 咨询师详情 ═══ -->
-    <a href="/consultation" class="text-sm ">← 返回咨询师列表</a>
-    <div class="bg-surface rounded-3xl p-8 mt-4 mb-8" style="border:1px solid var(--border)">
-      <div class="flex gap-6 flex-wrap items-start">
-        <div style="width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--ok));display:grid;place-items:center;font-size:44px;overflow:hidden">
-          <?php if (!empty($mentor['avatar'])): ?><img src="<?=htmlspecialchars($mentor['avatar'])?>" style="width:100%;height:100%;object-fit:cover"><?php else: ?>👩‍<span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/></svg></span><?php endif; ?>
-        </div>
-        <div style="flex:1;min-width:240px">
-          <h1 class="text-2xl font-bold"><?=htmlspecialchars($mentor['name'])?></h1>
-          <div class="text-sm mt-1" style="color:var(--muted)"><?=htmlspecialchars($mentor['title'] ?? '')?></div>
-          <div class="flex gap-2 flex-wrap mt-3">
-            <?php foreach ($mentor['specialties'] ?? [] as $t): ?><span class="text-xs px-3 py-1 rounded-full" style="background:var(--bg);color:var(--muted)"># <?=htmlspecialchars($t)?></span><?php endforeach; ?>
-          </div>
-          <p class="text-sm leading-relaxed mt-4" style="color:var(--muted)"><?=htmlspecialchars($mentor['intro'] ?? '')?></p>
-        </div>
-        <div class="text-center px-6" style="border-left:1px solid var(--border)">
-          <div class="text-3xl font-extrabold" style="color:var(--ok)">¥<?=number_format($mentor['price'] ?? 0, 0)?></div>
-          <div class="text-xs text-muted mt-1">/ <?=htmlspecialchars($mentor['duration'] ?? '60 分钟')?></div>
-          <a href="#book" class="inline-block mt-4 px-8 py-3 rounded-full font-bold" style="background:var(--accent);color:var(--on-accent)">立即报名 →</a>
-        </div>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+<?php if ($view === 'detail' && $mentor): ?>
+  <!-- ═══ 咨询师详情 ═══ -->
+  <section id="top" class="sec reveal in" data-od-anchor data-od-id="con-detail">
+    <div class="actions"><a href="/consultation" class="act">← 返回咨询师列表</a></div>
+    <div class="card m-prof">
+      <div class="mav lg"><?php if (!empty($mentor['avatar'])): ?><img src="<?=htmlspecialchars($mentor['avatar'])?>" alt=""><?php else: ?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/></svg><?php endif; ?></div>
+      <div class="bio">
+        <div><h1><?=htmlspecialchars($mentor['name'])?></h1><div class="note" style="margin-top:4px;font-size:13.5px"><?=htmlspecialchars($mentor['title'] ?? '')?></div></div>
+        <?php if (!empty($mentor['specialties'])): ?><div class="tags"><?php foreach ($mentor['specialties'] as $t): ?><span># <?=htmlspecialchars($t)?></span><?php endforeach; ?></div><?php endif; ?>
+        <p><?=htmlspecialchars($mentor['intro'] ?? '')?></p>
+      </div>
+      <div class="buy">
+        <span class="price" style="font-size:32px">¥<?=number_format($mentor['price'] ?? 0, 0)?></span>
+        <span class="note" style="margin-top:0">/ <?=htmlspecialchars($mentor['duration'] ?? '60 分钟')?></span>
+        <a href="#book" class="btn primary" style="margin-top:8px">立即报名 →</a>
       </div>
     </div>
+  </section>
 
-    <!-- 代表课程 -->
-    <?php $repCourses = array_filter($mentor['rep_courses'] ?? [], fn($cid) => isset($courseMap[$cid])); ?>
-    <?php if ($repCourses): ?>
-    <h2 class="font-bold text-lg mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span> 代表课程</h2>
-    <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
+  <?php $repCourses = array_filter($mentor['rep_courses'] ?? [], fn($cid) => isset($courseMap[$cid])); ?>
+  <?php if ($repCourses): ?>
+  <section id="rep" class="sec reveal" data-od-anchor data-od-id="con-courses">
+    <div class="sec-head row"><div><span class="kicker">COURSES</span><h2>代表课程</h2></div></div>
+    <div class="a-grid">
       <?php foreach ($repCourses as $cid): $c = $courseMap[$cid]; ?>
-      <a href="/courses/<?=urlencode($cid)?>" class="bg-surface rounded-2xl overflow-hidden" style="border:1px solid var(--border);text-decoration:none;color:inherit">
-        <?php if (!empty($c['cover'])): ?><img src="<?=htmlspecialchars($c['cover'])?>" class="w-full h-36 object-cover" onerror="this.style.display='none'"><?php endif; ?>
-        <div class="p-4">
-          <div class="font-bold text-sm"><?=htmlspecialchars($c['title'])?></div>
-          <div class="text-xs text-muted mt-1 line-clamp-2"><?=htmlspecialchars($c['description'] ?? '')?></div>
-        </div>
+      <a href="/courses/<?=urlencode($cid)?>" class="a-card">
+        <div class="cov"><?php if (!empty($c['cover'])): ?><img src="<?=htmlspecialchars($c['cover'])?>" alt="" onerror="this.style.display='none'"><?php else: ?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg><?php endif; ?></div>
+        <div class="bd"><span class="cat">课程</span><h3><?=htmlspecialchars($c['title'])?></h3><div class="meta" style="font-family:var(--font-body)"><?=htmlspecialchars(mb_strimwidth($c['description'] ?? '', 0, 80, '…'))?></div></div>
       </a>
       <?php endforeach; ?>
     </div>
-    <?php endif; ?>
+  </section>
+  <?php endif; ?>
 
-    <!-- 报名表单 -->
-    <div class="bg-surface rounded-3xl p-8 mt-8" style="border:1px solid var(--border)" id="book">
-      <h2 class="font-bold text-xl mb-2"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span> 预约报名</h2>
-      <p class="text-sm text-muted mb-6">请填写以下资料，工作人员将进行资格审核；通过后完成付款即可锁定时段。</p>
-      <?php if (!$member): ?>
-      <div class="rounded-2xl p-6 text-center" style="background:var(--bg)">
-        <p class="text-sm mb-4">报名前请先登录/注册会员账号</p>
-        <a href="/account?view=login&next=<?=urlencode('/consultation?view=detail&mentor=' . $mentor['id'] . '#book')?>" class="inline-block px-8 py-3 rounded-full font-bold" style="background:var(--accent);color:var(--on-accent)">登录后报名</a>
+  <section id="book" class="sec reveal" data-od-anchor data-od-id="con-book">
+    <div class="contact-wrap">
+      <div class="ct-pitch">
+        <span class="kicker">BOOKING</span>
+        <h2>预约报名</h2>
+        <p class="lead">请填写以下资料，工作人员将进行资格审核；通过后完成付款即可锁定时段。</p>
+        <ul class="ct-list">
+          <li>提交后 1 个工作日内完成资格审核</li>
+          <li>审核通过 → 付款 → 导师与你协商最终时间</li>
+          <li>咨询结束后可回看完整回放</li>
+        </ul>
       </div>
-      <?php else: ?>
-      <form id="bookForm" onsubmit="return submitBooking(event)">
-        <input type="hidden" name="mentor_id" value="<?=htmlspecialchars($mentor['id'])?>">
-        <div class="grid gap-4" style="grid-template-columns:1fr 1fr">
-          <div><label class="text-sm font-semibold">公司/组织</label><input type="text" name="company" class="w-full mt-1 px-4 py-3 rounded-xl" style="border:1.5px solid var(--border);font-size:14px"></div>
-          <div><label class="text-sm font-semibold">职位</label><input type="text" name="position" class="w-full mt-1 px-4 py-3 rounded-xl" style="border:1.5px solid var(--border);font-size:14px"></div>
-          <div><label class="text-sm font-semibold">手机号 *</label><input type="tel" name="phone" value="<?=htmlspecialchars($member['phone'] ?? '')?>" class="w-full mt-1 px-4 py-3 rounded-xl" style="border:1.5px solid var(--border);font-size:14px"></div>
-          <div><label class="text-sm font-semibold">邮箱</label><input type="email" name="email" value="<?=htmlspecialchars($member['email'] ?? '')?>" class="w-full mt-1 px-4 py-3 rounded-xl" style="border:1.5px solid var(--border);font-size:14px"></div>
-        </div>
-        <div class="mt-4"><label class="text-sm font-semibold">咨询目标 *</label><textarea name="goal" rows="3" class="w-full mt-1 px-4 py-3 rounded-xl" style="border:1.5px solid var(--border);font-size:14px" placeholder="你希望解决的具体问题 / 想获得的帮助…"></textarea></div>
-        <div class="mt-4"><label class="text-sm font-semibold">相关经历</label><textarea name="experience" rows="2" class="w-full mt-1 px-4 py-3 rounded-xl" style="border:1.5px solid var(--border);font-size:14px" placeholder="与本咨询相关的背景（可选）"></textarea></div>
-        <div class="mt-4">
-          <label class="text-sm font-semibold">请选择 3 个期望时段 *</label>
-          <div class="slot-pick mt-2">
-            <?php foreach ($slotOptions as $i => $sl): ?>
-            <label><input type="radio" name="slot_<?=$i+1?>" value="<?=htmlspecialchars($sl)?>" onchange="bindSlot(<?=$i+1?>, this.value)"> <?=htmlspecialchars($sl)?></label>
-            <?php endforeach; ?>
+      <div class="form-card">
+        <?php if (!$member): ?>
+        <div class="gate-box" style="text-align:center"><p class="lead" style="font-size:15px">报名前请先登录 / 注册会员账号</p><a href="/account?view=login&next=<?=urlencode('/consultation?view=detail&mentor=' . $mentor['id'] . '#book')?>" class="btn primary">登录后报名</a></div>
+        <?php else: ?>
+        <form id="bookForm" class="form-grid" onsubmit="return submitBooking(event)">
+          <input type="hidden" name="mentor_id" value="<?=htmlspecialchars($mentor['id'])?>">
+          <div class="grid g2" style="gap:14px">
+            <div class="field"><label for="f-company">公司 / 组织</label><input id="f-company" type="text" name="company" class="inp"></div>
+            <div class="field"><label for="f-position">职位</label><input id="f-position" type="text" name="position" class="inp"></div>
+            <div class="field"><label for="f-phone">手机号 *</label><input id="f-phone" type="tel" name="phone" value="<?=htmlspecialchars($member['phone'] ?? '')?>" class="inp"></div>
+            <div class="field"><label for="f-email">邮箱</label><input id="f-email" type="email" name="email" value="<?=htmlspecialchars($member['email'] ?? '')?>" class="inp"></div>
           </div>
-          <input type="hidden" name="slot1" id="slot1"><input type="hidden" name="slot2" id="slot2"><input type="hidden" name="slot3" id="slot3">
-          <p class="text-xs text-muted mt-2">每个时段对应不同日期？提交后导师会与你协商最终时间。</p>
-        </div>
-        <div class="flex items-center gap-4 mt-6 flex-wrap">
-          <button type="submit" class="px-10 py-3 rounded-full font-bold" style="background:var(--accent);color:var(--on-accent)">提交报名</button>
-          <span class="text-sm text-muted">资格审核通过后将进入付款环节</span>
-        </div>
-        <div id="bookMsg" class="text-sm mt-3"></div>
-      </form>
-      <?php endif; ?>
-    </div>
-
-    <?php elseif ($view === 'my' && $member): ?>
-    <!-- ═══ 我的预约 ═══ -->
-    <h1 class="text-2xl font-bold"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2H9V4ZM9 10h6M9 14h4"/></svg></span> 我的预约</h1>
-    <p class="text-sm text-muted mt-1 mb-6">查看你的 1v1 咨询进度与回放</p>
-    <?php if (empty($myBookings)): ?>
-    <div class="rounded-3xl p-12 text-center" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">暂无预约记录</div>
-    <?php else: foreach ($myBookings as $b): $statusColor = con_status_color($b['status']); ?>
-    <div class="rounded-3xl p-6 mb-4 flex flex-wrap gap-4 items-start" style="background:var(--surface);border:1px solid var(--border)">
-      <div style="flex:1;min-width:260px">
-        <div class="flex items-center gap-3 flex-wrap">
-          <span class="font-bold"><?=htmlspecialchars($b['mentor_name'] ?? '')?></span>
-          <span class="text-xs px-3 py-1 rounded-full" style="background:<?=$statusColor?>;color:var(--surface)"><?=con_status_label($b['status'])?></span>
-        </div>
-        <div class="text-sm mt-2 text-muted"><?=htmlspecialchars($b['goal'] ?? '')?></div>
-        <?php if (!empty($b['slots'])): ?><div class="text-xs text-muted mt-2">期望时段：<?=htmlspecialchars(implode(' / ', $b['slots']))?></div><?php endif; ?>
-        <?php if (!empty($b['scheduled_at'])): ?><div class="text-sm mt-2" style="color:var(--accent)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span> 已约时间：<?=htmlspecialchars($b['scheduled_at'])?><?php if (!empty($b['meeting_link'])): ?> · <a href="<?=htmlspecialchars($b['meeting_link'])?>" target="_blank" class="underline">进入线上会议</a><?php endif; ?></div><?php endif; ?>
-        <?php if (!empty($b['replay_url'])): ?><div class="text-sm mt-2" style="color:var(--ok)"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5L10 9.5Z" fill="currentColor" stroke="none"/></svg></span> 回放：<a href="<?=htmlspecialchars($b['replay_url'])?>" target="_blank" class="underline">观看咨询回放</a></div><?php endif; ?>
-        <?php if (!empty($b['review_note'])): ?><div class="text-xs text-muted mt-2"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span> <?=htmlspecialchars($b['review_note'])?></div><?php endif; ?>
-      </div>
-      <div class="text-right" style="min-width:120px">
-        <div class="text-lg font-extrabold" style="color:var(--ok)">¥<?=number_format($b['amount'] ?? 0, 0)?></div>
-        <div class="text-xs text-muted"><?=htmlspecialchars(substr($b['created_at'] ?? '', 0, 10))?></div>
-        <?php if ($b['status'] === 'approved'): ?>
-        <button class="mt-2 px-6 py-2 rounded-full text-sm font-bold" style="background:var(--ok);color:var(--surface)" onclick="payBooking('<?=htmlspecialchars($b['id'])?>', this)">去付款</button>
+          <div class="field"><label for="f-goal">咨询目标 *</label><textarea id="f-goal" name="goal" rows="3" class="inp" placeholder="你希望解决的具体问题 / 想获得的帮助…"></textarea></div>
+          <div class="field"><label for="f-exp">相关经历</label><textarea id="f-exp" name="experience" rows="2" class="inp" placeholder="与本咨询相关的背景（可选）"></textarea></div>
+          <div class="field">
+            <label>请选择 3 个期望时段 *</label>
+            <div class="slot-pick">
+              <?php foreach ($slotOptions as $i => $sl): ?>
+              <label><input type="radio" name="slot_<?=$i+1?>" value="<?=htmlspecialchars($sl)?>" onchange="bindSlot(<?=$i+1?>, this.value)"><?=htmlspecialchars($sl)?></label>
+              <?php endforeach; ?>
+            </div>
+            <input type="hidden" name="slot1" id="slot1"><input type="hidden" name="slot2" id="slot2"><input type="hidden" name="slot3" id="slot3">
+            <p class="note">每个时段对应不同日期？提交后导师会与你协商最终时间。</p>
+          </div>
+          <div class="cta-row" style="align-items:center"><button type="submit" class="btn primary">提交报名</button><span class="note" style="margin:0">资格审核通过后将进入付款环节</span></div>
+          <div id="bookMsg" class="note" style="font-size:13.5px"></div>
+        </form>
         <?php endif; ?>
       </div>
     </div>
-    <?php endforeach; endif; ?>
+  </section>
 
-    <?php else: ?>
-    <!-- ═══ 咨询师列表 ═══ -->
-    <div class="text-center py-6 mb-8">
-      <h1 class="text-3xl font-extrabold" style="display:flex;align-items:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-4px;margin-right:8px"><path d="M7 11V6a1.5 1.5 0 0 1 3 0v4m0-5.5V5a1.5 1.5 0 0 1 3 0v4m0-4.5A1.5 1.5 0 0 1 16 5v4m0-3.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.7-2.3L4 13.5a1.6 1.6 0 0 1 2.4-2.1L8 13V8a1.5 1.5 0 0 1 3 0"/></svg><?=htmlspecialchars($settings['page_title'] ?? '1v1 专家咨询')?></h1>
-      <p class="text-muted mt-3 max-w-xl mx-auto"><?=htmlspecialchars($settings['page_desc'] ?? '')?></p>
+<?php elseif ($view === 'my' && $member): ?>
+  <!-- ═══ 我的预约 ═══ -->
+  <section id="top" class="sec reveal in" data-od-anchor data-od-id="con-my">
+    <div class="actions"><a href="/consultation" class="act">← 返回咨询师列表</a></div>
+    <div class="sec-head"><span class="kicker">MY BOOKINGS</span><h2>我的预约</h2><p class="lead">查看你的 1v1 咨询进度与回放</p></div>
+    <?php if (empty($myBookings)): ?>
+    <div class="empty">暂无预约记录</div>
+    <?php else: foreach ($myBookings as $b): ?>
+    <div class="card bk">
+      <div class="main">
+        <div class="who"><?=htmlspecialchars($b['mentor_name'] ?? '')?><span class="<?=$statusBadge[$b['status']] ?? 'pill neutral'?>"><?=con_status_label($b['status'])?></span></div>
+        <p><?=htmlspecialchars($b['goal'] ?? '')?></p>
+        <?php if (!empty($b['slots'])): ?><div class="note" style="margin:0">期望时段：<?=htmlspecialchars(implode(' / ', $b['slots']))?></div><?php endif; ?>
+        <?php if (!empty($b['scheduled_at'])): ?><div class="ln" style="color:var(--accent)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>已约时间：<?=htmlspecialchars($b['scheduled_at'])?><?php if (!empty($b['meeting_link'])): ?> · <a href="<?=htmlspecialchars($b['meeting_link'])?>" target="_blank" rel="noopener" style="text-decoration:underline">进入线上会议</a><?php endif; ?></div><?php endif; ?>
+        <?php if (!empty($b['replay_url'])): ?><div class="ln" style="color:var(--ok)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5L10 9.5Z" fill="currentColor" stroke="none"/></svg></span>回放：<a href="<?=htmlspecialchars($b['replay_url'])?>" target="_blank" rel="noopener" style="text-decoration:underline">观看咨询回放</a></div><?php endif; ?>
+        <?php if (!empty($b['review_note'])): ?><div class="ln note" style="margin:0"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg></span><?=htmlspecialchars($b['review_note'])?></div><?php endif; ?>
+      </div>
+      <div class="side">
+        <span class="price">¥<?=number_format($b['amount'] ?? 0, 0)?></span>
+        <span class="note mono" style="margin:0"><?=htmlspecialchars(substr($b['created_at'] ?? '', 0, 10))?></span>
+        <?php if ($b['status'] === 'approved'): ?><button type="button" class="btn primary" style="height:40px;padding:0 18px;font-size:14px" onclick="payBooking('<?=htmlspecialchars($b['id'])?>', this)">去付款</button><?php endif; ?>
+      </div>
     </div>
+    <?php endforeach; endif; ?>
+  </section>
 
-    <?php if (empty(array_filter($mentors, fn($m) => !empty($m['available'])))): ?>
-    <div class="rounded-3xl p-12 text-center" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">咨询师正在准备中，敬请期待</div>
+<?php else: ?>
+  <!-- ═══ 咨询师列表 ═══ -->
+  <section id="top" class="reveal in" data-od-anchor data-od-id="con-hero">
+    <div class="hero-center">
+      <span class="kicker">1V1 · 专家咨询</span>
+      <h1><?=htmlspecialchars($settings['page_title'] ?? '1v1 专家咨询')?></h1>
+      <?php if (!empty($settings['page_desc'])): ?><p class="lead"><?=htmlspecialchars($settings['page_desc'])?></p><?php endif; ?>
+      <?php if ($member): ?><div class="cta-row"><a href="/consultation?view=my" class="btn ghost">查看我的预约 →</a></div><?php endif; ?>
+    </div>
+  </section>
+
+  <section id="mentors" class="sec reveal" data-od-anchor data-od-id="con-list">
+    <?php $avail = array_filter($mentors, fn($m) => !empty($m['available'])); ?>
+    <div class="sec-head row"><div><span class="kicker">MENTORS</span><h2>咨询师</h2></div><span class="sub"><?=count($avail)?> 位可约</span></div>
+    <?php if (empty($avail)): ?>
+    <div class="empty">咨询师正在准备中，敬请期待</div>
     <?php else: ?>
-    <div class="grid gap-5" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr))">
-      <?php foreach ($mentors as $m): if (empty($m['available'])) continue; ?>
-      <a href="/consultation?view=detail&mentor=<?=urlencode($m['id'])?>" class="mentor-card" style="text-decoration:none;color:inherit">
-        <div style="display:flex;align-items:center;gap:14px">
-          <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--blob-b),var(--blob-c));display:grid;place-items:center;font-size:24px;overflow:hidden">
-            <?php if (!empty($m['avatar'])): ?><img src="<?=htmlspecialchars($m['avatar'])?>" style="width:100%;height:100%;object-fit:cover"><?php else: ?>👩‍<span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/></svg></span><?php endif; ?>
-          </div>
-          <div>
-            <div class="font-bold text-lg"><?=htmlspecialchars($m['name'])?></div>
-            <div class="text-xs text-muted mt-0.5"><?=htmlspecialchars($m['title'] ?? '')?></div>
-          </div>
+    <div class="grid g3" style="gap:18px">
+      <?php foreach ($avail as $m): ?>
+      <a href="/consultation?view=detail&mentor=<?=urlencode($m['id'])?>" class="card hov mentor" style="padding:24px">
+        <div class="hd">
+          <div class="mav"><?php if (!empty($m['avatar'])): ?><img src="<?=htmlspecialchars($m['avatar'])?>" alt=""><?php else: ?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/></svg><?php endif; ?></div>
+          <div><b><?=htmlspecialchars($m['name'])?></b><span><?=htmlspecialchars($m['title'] ?? '')?></span></div>
         </div>
-        <div class="text-sm text-muted leading-relaxed line-clamp-3"><?=htmlspecialchars($m['intro'] ?? '')?></div>
-        <div class="flex gap-2 flex-wrap">
-          <?php foreach (array_slice($m['specialties'] ?? [], 0, 3) as $t): ?><span class="text-xs px-3 py-1 rounded-full" style="background:var(--bg);color:var(--muted)"># <?=htmlspecialchars($t)?></span><?php endforeach; ?>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1px solid var(--bg-soft)">
-          <span class="text-xl font-extrabold" style="color:var(--ok)">¥<?=number_format($m['price'] ?? 0, 0)?><span class="text-xs font-normal text-muted">/ <?=htmlspecialchars($m['duration'] ?? '60 分钟')?></span></span>
-          <span class="text-xs px-4 py-2 rounded-full" style="background:var(--accent);color:var(--on-accent)">查看详情 →</span>
-        </div>
+        <p><?=htmlspecialchars($m['intro'] ?? '')?></p>
+        <?php if (!empty($m['specialties'])): ?><div class="tags"><?php foreach (array_slice($m['specialties'], 0, 3) as $t): ?><span># <?=htmlspecialchars($t)?></span><?php endforeach; ?></div><?php endif; ?>
+        <div class="ft"><span class="price">¥<?=number_format($m['price'] ?? 0, 0)?><small>/ <?=htmlspecialchars($m['duration'] ?? '60 分钟')?></small></span><span class="btn subtle">查看详情 →</span></div>
       </a>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
+  </section>
 
-    <?php if ($member): ?>
-    <div class="text-center mt-8"><a href="/consultation?view=my" class="text-sm  underline">查看我的预约 →</a></div>
-    <?php endif; ?>
-    <?php endif; ?>
-  </div>
-
-  <footer class="pt-10 pb-8" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-    <div class="mx-auto px-5 text-center text-sm" style="max-width:1120px">
-      <div class="mb-2"><?=site_config_get("site_name")?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div>
-      <div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div>
+  <section class="reveal" data-od-id="con-cta">
+    <div class="cta-band">
+      <span class="kicker">TEAM PLAN</span>
+      <h2>团队想整套落地？</h2>
+      <p class="lead">企业版提供驻场诊断、私有化部署与陪跑，把 1v1 的判断变成组织的能力。</p>
+      <div class="cta-row"><a href="/enterprise" class="btn primary">了解企业版</a><a href="/courses" class="btn ghost">先看看课程</a></div>
     </div>
-  </footer>
+  </section>
+<?php endif; ?>
 
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
 function bindSlot(idx, val) { document.getElementById('slot' + idx).value = val; }
 function submitBooking(e) {

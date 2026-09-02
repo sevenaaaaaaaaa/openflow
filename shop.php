@@ -15,89 +15,94 @@ $pointsProducts = mall_points_products();
 $catNames = [];
 foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>商城 | <?=site_config_get('site_name')?></title>
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body)}
-  .pcard{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;transition:.2s}
-  .pcard:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.1);border-color:var(--accent)}
-  .pcard .thumb{aspect-ratio:16/10;background:linear-gradient(135deg,var(--ok-soft),var(--accent-soft));display:grid;place-items:center;overflow:hidden}
-  .pcard .thumb img{width:100%;height:100%;object-fit:cover}
+/* 商城独有：价格行。其余全部来自 modules.css。 */
+.a-card .price{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.a-card .price b{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--ok);letter-spacing:-.01em}
+.a-card .price small{font-size:12px;color:var(--faint);margin-left:6px;font-weight:400}
+.a-card .cov.emj{color:var(--accent)}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('marketplace'); ?>
 
-  <div class="mx-auto px-5 py-10" style="max-width:1100px">
-    <?php if ($member): ?>
-    <div class="rounded-2xl px-5 py-4 mb-8 flex items-center justify-between" style="background:var(--ok-soft);color:var(--ok)">
-      <div>当前积分：<strong class="text-xl"><?=(int)($member['points'] ?? 0)?></strong></div>
-      <a href="/account" class="text-sm underline">如何获得积分 →</a>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+  <section id="top" class="reveal in" data-od-anchor data-od-id="shop-hero">
+    <div class="hero-center">
+      <span class="kicker">SHOP · 商城</span>
+      <h1>实体商品 <i class="si">&amp;</i> 积分商城</h1>
+      <p class="lead">周边、教材、工具包，以及用学习积分就能换的好东西。</p>
+      <?php if ($member): ?>
+      <div class="cta-row"><span class="badge ok"><span class="dot"></span>当前积分 <strong><?=(int)($member['points'] ?? 0)?></strong></span><a href="/account" class="btn subtle">如何获得积分 →</a></div>
+      <?php else: ?>
+      <div class="cta-row"><a href="/account?view=login&amp;next=/shop" class="btn ghost">登录后查看积分</a></div>
+      <?php endif; ?>
     </div>
-    <?php endif; ?>
+  </section>
 
-    <!-- 实体商品 -->
-    <h1 class="text-2xl font-bold mb-6"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1.5 13.5a1 1 0 0 1-1 1.1H5.5a1 1 0 0 1-1-1.1L6 7Z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg></span> 实体商品</h1>
+  <section id="products" class="sec reveal" data-od-anchor data-od-id="shop-products">
+    <div class="sec-head row"><div><span class="kicker">PRODUCTS</span><h2>实体商品</h2></div><span class="sub"><?=count($products)?> 件在售</span></div>
     <?php if (empty($products)): ?>
-    <div class="rounded-3xl p-12 text-center mb-12" style="background:var(--surface);border:1px solid var(--border);color:var(--faint)">实体商品筹备中</div>
+    <div class="empty">实体商品筹备中</div>
     <?php else: ?>
-    <div class="grid gap-5 mb-12 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="a-grid">
       <?php foreach ($products as $p): ?>
-      <div class="pcard">
-        <div class="thumb"><?php if ($p['image']): ?><img loading="lazy" src="<?=htmlspecialchars($p['image'])?>" alt="<?=htmlspecialchars($p['title'])?>"><?php else: ?><span class="text-4xl"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span></span><?php endif; ?></div>
-        <div class="p-5">
-          <h3 class="font-bold text-gray-900"><?=htmlspecialchars($p['title'])?></h3>
-          <p class="text-sm text-gray-600 mt-1 line-clamp-2"><?=htmlspecialchars($p['desc'] ?? '')?></p>
-          <div class="flex items-center justify-between mt-4">
-            <div>
-              <span class="font-bold text-lg text-green-600">¥<?=number_format($p['price'], 2)?></span>
-              <?php if (!empty($p['shipping'])): ?><span class="text-xs text-gray-400 ml-1"><?=htmlspecialchars($p['shipping'])?></span><?php endif; ?>
-            </div>
-            <button class="rounded-full bg-[var(--accent)] text-white px-6 py-2.5 text-sm font-semibold" onclick="buyProduct('<?=htmlspecialchars($p['id'])?>','<?=htmlspecialchars($p['title'])?>')">立即购买</button>
-          </div>
-          <div class="text-xs text-gray-400 mt-2">库存 <?=$p['stock'] ?? 0?> 件</div>
+      <article class="a-card">
+        <div class="cov emj"><?php if ($p['image']): ?><img loading="lazy" src="<?=htmlspecialchars($p['image'])?>" alt="<?=htmlspecialchars($p['title'])?>"><?php else: ?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg><?php endif; ?></div>
+        <div class="bd">
+          <span class="cat">实体 · 库存 <?=(int)($p['stock'] ?? 0)?> 件</span>
+          <h3><?=htmlspecialchars($p['title'])?></h3>
+          <p class="note" style="margin-top:0"><?=htmlspecialchars($p['desc'] ?? '')?></p>
+          <div class="price"><span><b>¥<?=number_format($p['price'], 2)?></b><?php if (!empty($p['shipping'])): ?><small><?=htmlspecialchars($p['shipping'])?></small><?php endif; ?></span><button type="button" class="btn primary" style="height:40px;padding:0 18px;font-size:14px" onclick="buyProduct('<?=htmlspecialchars($p['id'])?>','<?=htmlspecialchars($p['title'])?>')">立即购买</button></div>
         </div>
-      </div>
+      </article>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
+  </section>
 
-    <!-- 积分商城 -->
-    <h1 class="text-2xl font-bold mb-6"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4"/><path d="M5 12v8h14v-8M12 8v12M12 8s-1-5-4-5c-2 0-2.5 1.5-1 3 1.5 1.5 5 2 5 2ZM12 8s1-5 4-5c2 0 2.5 1.5 1 3-1.5 1.5-5 2-5 2Z"/></svg></span> 积分商城</h1>
+  <section id="points" class="sec reveal" data-od-anchor data-od-id="shop-points">
+    <div class="sec-head row"><div><span class="kicker">POINTS</span><h2>积分商城</h2></div><span class="sub">学习 · 发帖 · 签到都能赚积分</span></div>
     <?php if (empty($pointsProducts)): ?>
-    <div class="rounded-3xl p-12 text-center" style="background:var(--surface);border:1px solid var(--border);color:var(--faint)">积分商品筹备中</div>
+    <div class="empty">积分商品筹备中</div>
     <?php else: ?>
-    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="a-grid">
       <?php foreach ($pointsProducts as $p): ?>
-      <div class="pcard">
-        <div class="thumb"><?php if ($p['image']): ?><img loading="lazy" src="<?=htmlspecialchars($p['image'])?>" alt="<?=htmlspecialchars($p['title'])?>"><?php else: ?><span class="text-4xl"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="m8.5 13-2 8 5.5-3 5.5 3-2-8"/></svg></span></span><?php endif; ?></div>
-        <div class="p-5">
-          <h3 class="font-bold text-gray-900"><?=htmlspecialchars($p['title'])?></h3>
-          <p class="text-sm text-gray-600 mt-1 line-clamp-2"><?=htmlspecialchars($p['desc'] ?? '')?></p>
-          <div class="flex items-center justify-between mt-4">
-            <span class="pill px-3 py-1 rounded-full text-xs" style="background:var(--ok-soft);color:var(--ok)"><?=$p['points']?> 积分</span>
-            <button class="rounded-full bg-[var(--accent)] text-white px-6 py-2.5 text-sm font-semibold" onclick="redeem('<?=htmlspecialchars($p['id'])?>','<?=htmlspecialchars($p['title'])?>',<?=(int)$p['points']?>)">兑换</button>
-          </div>
+      <article class="a-card">
+        <div class="cov emj"><?php if ($p['image']): ?><img loading="lazy" src="<?=htmlspecialchars($p['image'])?>" alt="<?=htmlspecialchars($p['title'])?>"><?php else: ?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="m8.5 13-2 8 5.5-3 5.5 3-2-8"/></svg><?php endif; ?></div>
+        <div class="bd">
+          <span class="cat">积分兑换</span>
+          <h3><?=htmlspecialchars($p['title'])?></h3>
+          <p class="note" style="margin-top:0"><?=htmlspecialchars($p['desc'] ?? '')?></p>
+          <div class="price"><span class="badge ok"><?=(int)$p['points']?> 积分</span><button type="button" class="btn primary" style="height:40px;padding:0 18px;font-size:14px" onclick="redeem('<?=htmlspecialchars($p['id'])?>','<?=htmlspecialchars($p['title'])?>',<?=(int)$p['points']?>)">兑换</button></div>
         </div>
-      </div>
+      </article>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
-  </div>
+  </section>
 
-  <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-    <div class="mx-auto px-5 text-center text-sm" style="max-width:1100px">
-      <div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div>
-      <div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div>
+  <section class="reveal" data-od-id="shop-cta">
+    <div class="cta-band">
+      <span class="kicker">EARN POINTS</span>
+      <h2>积分从哪来？</h2>
+      <p class="lead">完成课程、在门派社区发帖回帖、每日签到，都会自动累计到你的账户。</p>
+      <div class="cta-row"><a href="/courses" class="btn primary">去学一门课</a><a href="/community" class="btn ghost">逛逛门派社区</a></div>
     </div>
-  </footer>
+  </section>
 
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
 function buyProduct(id, title) {
   <?php if (!$member): ?>
