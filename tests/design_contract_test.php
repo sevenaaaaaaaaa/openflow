@@ -11,8 +11,8 @@ declare(strict_types=1);
 $ROOT = dirname(__DIR__);
 chdir($ROOT);
 
-$MIGRATED = ['index.php','about.php','product.php','capability.php','courses.php','academy.php','enterprise.php','navigation.php','events.php','community.php'];
-$PENDING  = ['marketplace.php','shop.php','member.php','live.php','course-player.php','docs.php','search.php','articles.php','article.php','downloads.php','podcasts.php','tools.php','consultation.php','event.php','community-post.php','author.php','category.php','reviews.php','survey.php','nps.php'];
+$MIGRATED = ['index.php','about.php','product.php','capability.php','courses.php','academy.php','enterprise.php','navigation.php','events.php','community.php','marketplace.php'];
+$PENDING  = ['shop.php','member.php','live.php','course-player.php','docs.php','search.php','articles.php','article.php','downloads.php','podcasts.php','tools.php','consultation.php','event.php','community-post.php','author.php','category.php','reviews.php','survey.php','nps.php'];
 
 $SHARED_CLASSES = ['btn','card','sec-head','kicker','foot','stats','hero','hero-center','cta-row','trust','worlds','wf','tl','scn','split','cols','qr','link-grid','cta-band','tab-bar','tab-p','faq','inp','field'];
 $MAX_STYLE_LINES = 60;
