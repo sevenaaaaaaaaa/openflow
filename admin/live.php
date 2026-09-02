@@ -123,7 +123,7 @@ admin_header('直播管理');
         </div>
         <div class="text-sm text-muted" style="margin-top:6px"><?=htmlspecialchars(substr($r['start_at'] ?? '', 0, 16))?> → <?=htmlspecialchars(substr($r['end_at'] ?? '', 0, 16))?></div>
         <div class="text-sm" style="margin-top:6px;word-break:break-all">
-          <b>播放地址：</b><code style="background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:12px"><?=htmlspecialchars($r['hls_url'] ?: '(未填)')?></code>
+          <b>播放地址：</b><code style="background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:12px"><?=htmlspecialchars(($r['hls_url'] ?? '') ?: '(未填)')?></code>
         </div>
         <div class="text-sm" style="margin-top:4px;word-break:break-all">
           <b>Stream Key：</b><code style="background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:12px"><?=htmlspecialchars($r['stream_key'] ?? '')?></code>

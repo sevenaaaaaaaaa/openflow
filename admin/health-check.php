@@ -369,7 +369,7 @@ if (!defined('OF_EMBED')) admin_header('健康检测');
 <?php
 // B3：浅 CRUD 页归并为本页的子 tab
 require_once __DIR__ . '/_subtabs.php';
-$SUBTABS = ['self' => ['健康检测', '', 'health-check'],
+$SUBTABS = ['self' => ['健康检测', '', 'settings'],
             'stor' => ['存储', 'storage.php', 'storage']];
 $__sub = of_subtab_begin($SUBTABS);
 if ($__sub === 'self'):
