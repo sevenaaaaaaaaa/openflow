@@ -231,11 +231,11 @@ foreach ($formsData as $f) if (($f['type'] ?? '') === 'newsletter') { $newslette
 if (!$newsletterForm) foreach ($formsData as $f) if (($f['type'] ?? '') === 'lead' || ($f['type'] ?? '') === 'download') { $newsletterForm = $f; break; }
 $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($pageTitle)?></title>
 <meta name="description" content="<?=htmlspecialchars($pageDesc)?>">
 <link rel="canonical" href="<?=htmlspecialchars($articleUrl)?>">
@@ -251,223 +251,99 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 <script type="application/ld+json"><?=json_encode($jsonLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?></script>
 <?php if ($faqLd): ?><script type="application/ld+json"><?=json_encode($faqLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?></script><?php endif; ?>
 <script type="application/ld+json"><?=json_encode($breadcrumbLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?></script>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
 <style>
-:root{
-  --bg:oklch(96.5% .016 85); --bg-soft:oklch(94% .02 85);
-  --surface:oklch(100% 0 0 / .62); --surface-strong:oklch(100% 0 0 / .88);
-  --fg:oklch(22% .02 70); --muted:oklch(46% .016 70); --faint:oklch(60% .012 75);
-  --border:oklch(86% .014 80); --border-strong:oklch(76% .02 80);
-  --hover:oklch(22% .02 70 / .055); --hover-strong:oklch(22% .02 70 / .11);
-  --accent:oklch(52% .17 258); --accent-strong:oklch(46% .17 258); --accent-soft:oklch(52% .17 258 / .12); --on-accent:oklch(100% 0 0);
-  --ok:oklch(58% .17 152); --ok-soft:oklch(58% .17 152 / .12);
-  --warn:oklch(66% .15 75); --warn-soft:oklch(66% .15 75 / .14);
-  --danger:oklch(55% .2 25); --danger-soft:oklch(55% .2 25 / .12);
-  --glass:oklch(100% 0 0 / .5); --glass-bright:oklch(100% 0 0 / .66); --glass-border:oklch(100% 0 0 / .68);
-  --shadow:0 24px 60px -24px oklch(30% .04 80 / .28); --shadow-sm:0 10px 28px -14px oklch(30% .04 80 / .22);
-  --blob-a:oklch(72% .12 262 / .30); --blob-b:oklch(70% .13 305 / .24); --blob-c:oklch(74% .11 200 / .22);
-  --ease-spring:cubic-bezier(.34,1.56,.64,1); --ease-out:cubic-bezier(.22,1,.36,1);
-  --font-display:'Songti SC','Iowan Old Style',Georgia,'Times New Roman',serif;
-  --font-body:-apple-system,BlinkMacSystemFont,'PingFang SC','Segoe UI',system-ui,sans-serif;
-  --font-mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
-  --r-lg:26px; --r-md:18px; --r-sm:12px;
-  color-scheme:light;
-}
-[data-theme="dark"]{
-  --bg:oklch(19% .014 70); --bg-soft:oklch(22.5% .014 72);
-  --surface:oklch(27% .016 75 / .55); --surface-strong:oklch(30% .016 75 / .82);
-  --fg:oklch(93% .008 85); --muted:oklch(70% .014 80); --faint:oklch(55% .012 80);
-  --border:oklch(100% 0 0 / .1); --border-strong:oklch(100% 0 0 / .2);
-  --hover:oklch(93% .008 85 / .07); --hover-strong:oklch(93% .008 85 / .13);
-  --accent:oklch(74% .13 258); --accent-strong:oklch(80% .12 258); --accent-soft:oklch(74% .13 258 / .15); --on-accent:oklch(16% .03 260);
-  --ok:oklch(74% .15 152); --ok-soft:oklch(74% .15 152 / .15);
-  --warn:oklch(76% .13 75); --warn-soft:oklch(76% .13 75 / .16);
-  --danger:oklch(72% .16 25); --danger-soft:oklch(72% .16 25 / .14);
-  --glass:oklch(30% .014 75 / .5); --glass-bright:oklch(34% .014 75 / .62); --glass-border:oklch(100% 0 0 / .15);
-  --shadow:0 24px 60px -24px oklch(0% 0 0 / .55); --shadow-sm:0 10px 28px -14px oklch(0% 0 0 / .5);
-  --blob-a:oklch(62% .13 262 / .18); --blob-b:oklch(58% .14 305 / .15); --blob-c:oklch(60% .12 200 / .13);
-  color-scheme:dark;
-}
-*,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0; font-family:var(--font-body); color:var(--fg); background:var(--bg); overflow-x:clip; -webkit-font-smoothing:antialiased; line-height:1.6}
-a{color:inherit; text-decoration:none}
-::selection{background:var(--accent-soft)}
-:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
-h1,h2,h3,h4,p{margin:0}
-::-webkit-scrollbar{width:10px;height:10px}
-::-webkit-scrollbar-thumb{background:var(--border-strong); border-radius:99px; border:3px solid transparent; background-clip:padding-box}
-.si{font-family:var(--font-display); font-style:italic; font-weight:700; letter-spacing:-.01em}
-.kicker{font-family:var(--font-mono); font-size:11px; font-weight:700; letter-spacing:.18em; color:var(--accent); text-transform:uppercase}
-#chrome{position:fixed; inset:0 0 auto 0; z-index:60; padding:8px 14px}
-.bar{position:relative; height:56px; display:flex; align-items:center; gap:10px; padding:0 12px; border-radius:18px; background:var(--glass); -webkit-backdrop-filter:blur(22px) saturate(170%); backdrop-filter:blur(22px) saturate(170%); border:1px solid var(--border); box-shadow:var(--shadow-sm)}
-.bar.scrolled{background:var(--glass-bright)}
-.brand{display:flex; align-items:center; gap:9px; padding:0 6px; font-size:14px; font-weight:800; letter-spacing:-.01em}
-.brand .ic{width:22px;height:22px; color:var(--accent); flex:0 0 auto}
-.nav-spacer{flex:1}
-.back-link{display:inline-flex; align-items:center; gap:6px; height:38px; padding:0 14px; border-radius:12px; font-size:13px; font-weight:600; color:var(--muted); transition:background .2s,color .2s}
-.back-link:hover{background:var(--hover); color:var(--fg)}
-.theme-btn{width:38px;height:38px; border-radius:12px; display:grid; place-items:center; color:var(--muted); transition:background .2s,color .2s}
-.theme-btn:hover{background:var(--hover); color:var(--fg)}
-.theme-btn svg{width:17px;height:17px}
-main{padding-top:96px; padding-bottom:70px; position:relative; z-index:10; max-width:820px; margin:0 auto; padding-left:20px; padding-right:20px}
-.art-head{margin-bottom:40px}
-.art-meta{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px}
-.art-meta .pill{display:inline-flex; align-items:center; height:26px; padding:0 12px; border-radius:99px; font-size:12px; font-weight:700; background:var(--accent-soft); color:var(--accent)}
-.art-meta .sep{width:4px;height:4px;border-radius:50%;background:var(--faint)}
-.art-meta span{font-size:13px; color:var(--faint)}
-.art-head h1{font-size:clamp(30px,4.5vw,46px); font-weight:800; letter-spacing:-.03em; line-height:1.2; margin-bottom:18px}
-.art-cover{width:100%; border-radius:var(--r-md); margin-bottom:36px; object-fit:cover; max-height:440px; border:1px solid var(--border)}
-.art-body{font-size:16.5px; line-height:1.9; color:var(--fg)}
-.art-body h2{font-size:24px; font-weight:800; margin:36px 0 14px; letter-spacing:-.01em}
-.art-body h3{font-size:19px; font-weight:700; margin:28px 0 12px}
-.art-body p{margin:0 0 18px}
-.art-body ul,.art-body ol{margin:0 0 18px; padding-left:24px}
-.art-body li{margin-bottom:8px}
-.art-body a{color:var(--accent); border-bottom:1px solid var(--accent-soft)}
-.art-body img{max-width:100%; border-radius:14px; margin:18px 0}
-.art-body blockquote{border-left:3px solid var(--accent); padding:4px 0 4px 18px; margin:20px 0; color:var(--muted); background:var(--accent-soft); border-radius:0 12px 12px 0; padding:14px 18px}
-.art-body pre{background:var(--surface-strong); border:1px solid var(--border); border-radius:14px; padding:18px; overflow-x:auto; font-family:var(--font-mono); font-size:13px; line-height:1.7; margin:18px 0}
-.art-body code{font-family:var(--font-mono); font-size:.92em; background:var(--hover); padding:2px 6px; border-radius:6px}
-.art-body pre code{background:none; padding:0}
-.art-body table{width:100%; border-collapse:collapse; margin:18px 0; font-size:14.5px}
-.art-body th{text-align:left; padding:10px 12px; border-bottom:2px solid var(--border-strong); font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--faint)}
-.art-body td{padding:10px 12px; border-bottom:1px solid var(--border)}
-.art-body hr{border:0; border-top:1px solid var(--border); margin:32px 0}
-.art-actions{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:36px 0; padding-top:24px; border-top:1px solid var(--border)}
-.act-btn{display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 16px; border-radius:99px; border:1px solid var(--border); background:var(--surface-strong); font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; transition:background .2s,color .2s,border-color .2s}
-.act-btn:hover{background:var(--hover); color:var(--fg)}
-.act-btn.liked{background:var(--accent); color:var(--on-accent); border-color:transparent}
-.act-btn svg{width:16px;height:16px}
-.art-tags{display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 36px}
-.art-tags a{font-size:12.5px; color:var(--muted); padding:6px 14px; border-radius:99px; border:1px solid var(--border); transition:.2s}
-.art-tags a:hover{border-color:var(--accent); color:var(--accent)}
-.related{margin-top:48px}
-.related h2{font-size:22px; font-weight:800; margin-bottom:20px}
-.related .r-grid{display:grid; gap:14px; grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
-.related .r-card{display:block; padding:20px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); transition:transform .25s var(--ease-spring), box-shadow .25s, border-color .25s}
-.related .r-card:hover{transform:translateY(-3px); box-shadow:var(--shadow); border-color:var(--border-strong)}
-.related .r-card h3{font-size:15px; font-weight:700; line-height:1.45; margin-bottom:8px}
-.related .r-card p{font-size:12.5px; color:var(--faint)}
-.nl-box{margin-top:48px; padding:28px; border-radius:var(--r-lg); background:linear-gradient(135deg,var(--accent-soft),transparent); border:1px solid var(--border); text-align:center}
-.nl-box h3{font-size:20px; font-weight:800; margin-bottom:8px}
-.nl-box p{font-size:13.5px; color:var(--muted); margin-bottom:16px}
-.nl-box form{display:flex; gap:8px; max-width:400px; margin:0 auto}
-.nl-box input{flex:1; height:42px; padding:0 16px; border:1px solid var(--border); border-radius:99px; background:var(--surface-strong); font-size:14px; outline:none}
-.nl-box input:focus{border-color:var(--accent)}
-.nl-box button{height:42px; padding:0 20px; border-radius:99px; background:var(--accent); color:var(--on-accent); font-weight:700; font-size:14px; cursor:pointer; border:0}
-.foot{margin-top:70px; padding:56px 20px 40px; background:var(--surface-strong); border-top:1px solid var(--border)}
-.foot .f-in{max-width:1100px; margin:0 auto; display:grid; gap:36px; grid-template-columns:1.4fr repeat(3,1fr)}
-.foot h4{font-size:13px; font-weight:700; color:var(--fg); margin-bottom:14px}
-.foot a{display:block; font-size:13px; color:var(--muted); margin-bottom:10px; transition:color .2s}
-.foot a:hover{color:var(--fg)}
-.foot .brand{display:flex; align-items:center; gap:9px; font-weight:800; font-size:16px; margin-bottom:12px}
-.foot .brand .ic{width:22px;height:22px;color:var(--accent)}
-.foot .f-about{font-size:13px; color:var(--faint); line-height:1.7; max-width:280px}
-.foot .f-bottom{margin-top:40px; padding-top:20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:12px; color:var(--faint)}
-@media(max-width:640px){.foot .f-in{grid-template-columns:1fr 1fr}}
-.ambient{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
-.blob{position:absolute; border-radius:50%; filter:blur(72px)}
-.blob-a{width:52vw;height:52vw; left:-10vw; top:-14vh; background:radial-gradient(circle,var(--blob-a),transparent 65%)}
-.blob-b{width:44vw;height:44vw; right:-8vw; top:14vh; background:radial-gradient(circle,var(--blob-b),transparent 65%)}
-.blob-c{width:40vw;height:40vw; left:24vw; bottom:-22vh; background:radial-gradient(circle,var(--blob-c),transparent 65%)}
+/* 文章页独有：标签云。其余（阅读版式 .reader/.prose、动作条、付费墙）全部来自 modules.css。 */
+.art-tags{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}
+.art-tags a{font-size:12.5px;color:var(--muted);padding:6px 14px;border-radius:999px;border:1px solid var(--border);transition:border-color .2s,color .2s}
+.art-tags a:hover{border-color:var(--accent);color:var(--accent)}
+.not-found{text-align:center;padding:60px 0;display:flex;flex-direction:column;align-items:center;gap:12px}
 </style>
-<link rel="stylesheet" href="/assets/fonts/fonts.css">
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body>
-<div class="ambient" aria-hidden="true"><div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div></div>
+<body data-of-main>
+<?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('articles'); ?>
 
-<header id="chrome">
-  <div class="bar" id="bar">
-    <a class="brand" href="index.html"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>Open Flow</a>
-    <div class="nav-spacer"></div>
-    <a class="back-link" href="articles">← 返回文章</a>
-    <button class="theme-btn" id="themeBtn" aria-label="切换主题"></button>
-  </div>
-</header>
-
-<main>
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
   <?php if ($notFound): ?>
-  <div style="text-align:center;padding:80px 0">
-    <div style="font-size:60px;margin-bottom:20px">📄</div>
-    <h1 style="font-size:28px;font-weight:800;margin-bottom:12px">文章不存在</h1>
-    <p style="color:var(--muted);margin-bottom:24px">这篇文章可能已被删除或链接有误。</p>
-    <a href="articles" class="act-btn" style="background:var(--accent);color:var(--on-accent);border:0;padding:12px 24px">返回文章列表</a>
-  </div>
-  <?php else: ?>
-  <div class="art-head">
-    <div class="art-meta">
-      <?php if ($catName): ?><span class="pill"><?=htmlspecialchars($catName)?></span><?php endif; ?>
-      <a href="/author/<?=urlencode($article['author'] ?? 'OpenFlow')?>" style="color:var(--accent)"><?=htmlspecialchars($article['author'] ?? 'OpenFlow')?></a>
-      <span class="sep"></span>
-      <span><?=htmlspecialchars(substr($article['created_at'] ?? '', 0, 10))?></span>
-      <span class="sep"></span>
-      <span><?=$readMins?> 分钟阅读</span>
+  <section class="reader reveal in">
+    <div class="not-found">
+      <span class="kicker">404</span>
+      <h1 class="h3" style="font-size:28px">文章不存在</h1>
+      <p class="lead" style="color:var(--muted)">这篇文章可能已被删除或链接有误。</p>
+      <a href="/articles" class="btn primary">返回文章列表</a>
     </div>
-    <h1><?=htmlspecialchars($article['title'] ?? '')?></h1>
-  </div>
-
-  <?php if ($cover): ?><img class="art-cover" src="<?=htmlspecialchars($coverUrl)?>" alt="<?=htmlspecialchars($article['title'] ?? '')?>" loading="lazy"><?php endif; ?>
-
-  <?php if (function_exists('ads_render')): ?><div style="margin-bottom:24px"><?=ads_render('article_top')?></div><?php endif; ?>
-
-  <div class="art-body">
-    <?php if ($memberGate): ?>
-      <div style="padding:40px;text-align:center;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface-strong);margin:20px 0">
-        <div style="font-size:44px;margin-bottom:16px">💎</div>
-        <h2 style="font-size:22px;font-weight:800;margin-bottom:10px">这是一篇会员专享文章</h2>
-        <p style="color:var(--muted);font-size:14px;margin-bottom:20px">开通会员即可阅读全文</p>
-        <a href="member.php?view=subscribe" class="act-btn" style="background:var(--accent);color:var(--on-accent);border:0;padding:12px 28px">开通会员 →</a>
+  </section>
+  <?php else: ?>
+  <article class="reader reveal in" data-od-id="article">
+    <div class="art-head">
+      <div class="art-meta">
+        <?php if ($catName): ?><span class="badge ok"><?=htmlspecialchars($catName)?></span><?php endif; ?>
+        <a href="/author/<?=urlencode($article['author'] ?? 'OpenFlow')?>"><?=htmlspecialchars($article['author'] ?? 'OpenFlow')?></a>
+        <span class="sep"></span>
+        <span><?=htmlspecialchars(substr($article['created_at'] ?? '', 0, 10))?></span>
+        <span class="sep"></span>
+        <span><?=$readMins?> 分钟阅读</span>
       </div>
-    <?php elseif ($paidGate): ?>
-      <?php $pv = paid_preview($content); ?>
-      <?=article_render($pv['preview'])?>
-      <div style="position:relative;margin-top:-40px;padding-top:60px;background:linear-gradient(180deg,transparent,var(--surface-strong) 55%)">
-        <div style="padding:32px;text-align:center;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface-strong)">
-          <div style="font-size:38px;margin-bottom:12px">🔒</div>
-          <h2 style="font-size:20px;font-weight:800;margin-bottom:8px">继续阅读全文</h2>
-          <p style="color:var(--muted);font-size:14px;margin-bottom:18px"><?=htmlspecialchars($paidHint)?></p>
-          <a href="member.php?view=subscribe" class="act-btn" style="background:var(--accent);color:var(--on-accent);border:0;padding:12px 28px">立即升级 →</a>
+      <h1><?=htmlspecialchars($article['title'] ?? '')?></h1>
+    </div>
+
+    <?php if ($cover): ?><img class="art-cover" src="<?=htmlspecialchars($coverUrl)?>" alt="<?=htmlspecialchars($article['title'] ?? '')?>" loading="lazy"><?php endif; ?>
+    <?php if (function_exists('ads_render')): ?><div style="margin-bottom:24px"><?=ads_render('article_top')?></div><?php endif; ?>
+
+    <div class="prose">
+      <?php if ($memberGate): ?>
+        <div class="card gate-box">
+          <span class="kicker">会员专享</span>
+          <h2>这是一篇会员专享文章</h2>
+          <p>开通会员即可阅读全文</p>
+          <a href="member.php?view=subscribe" class="btn primary">开通会员 →</a>
         </div>
-      </div>
-    <?php else: ?>
-      <?=article_render($content)?>
+      <?php elseif ($paidGate): ?>
+        <?php $pv = paid_preview($content); ?>
+        <?=article_render($pv['preview'])?>
+        <div class="gate"><div class="card gate-box">
+          <span class="kicker">付费内容</span>
+          <h2>继续阅读全文</h2>
+          <p><?=htmlspecialchars($paidHint)?></p>
+          <a href="member.php?view=subscribe" class="btn primary">立即升级 →</a>
+        </div></div>
+      <?php else: ?>
+        <?=article_render($content)?>
+      <?php endif; ?>
+    </div>
+
+    <?php if (function_exists('ads_render')): ?><div style="margin-top:24px"><?=ads_render('article_bottom')?></div><?php endif; ?>
+
+    <div class="actions">
+      <button class="act" id="likeBtn"><?=htmlspecialchars((int)($artStats['likes'] ?? 0))?> 赞</button>
+      <button class="act" id="favBtn">收藏</button>
+      <button class="act" id="shareBtn">分享</button>
+      <button class="act" id="posterBtn" title="生成分享海报">生成海报</button>
+      <button class="act" id="viewBtn"><?=number_format((int)($artStats['views'] ?? 0))?> 阅读</button>
+    </div>
+
+    <?php if (!empty($article['tags'])): ?>
+    <div class="art-tags"><?php foreach ($article['tags'] as $t): ?><a href="/articles"># <?=htmlspecialchars($t)?></a><?php endforeach; ?></div>
     <?php endif; ?>
-  </div>
-
-  <?php if (function_exists('ads_render')): ?><div style="margin-top:24px"><?=ads_render('article_bottom')?></div><?php endif; ?>
-
-  <div class="art-actions">
-    <button class="act-btn" id="likeBtn"><?=htmlspecialchars((int)($artStats['likes'] ?? 0))?> 赞</button>
-    <button class="act-btn" id="favBtn">收藏</button>
-    <button class="act-btn" id="shareBtn">分享</button>
-    <button class="act-btn" id="posterBtn" title="生成分享海报">🎨 生成海报</button>
-    <button class="act-btn" id="viewBtn"><?=number_format((int)($artStats['views'] ?? 0))?> 阅读</button>
-  </div>
-
-  <?php if (!empty($article['tags'])): ?>
-  <div class="art-tags">
-    <?php foreach ($article['tags'] as $t): ?><a href="articles"># <?=htmlspecialchars($t)?></a><?php endforeach; ?>
-  </div>
-  <?php endif; ?>
+  </article>
 
   <?php if (!empty($related)): ?>
-  <div class="related">
-    <h2>相关阅读</h2>
-    <div class="r-grid">
+  <section class="reader reveal" data-od-id="article-related">
+    <div class="sec-head row"><div><span class="kicker">相关阅读</span><h2>接着看</h2></div></div>
+    <div class="link-grid" style="margin-top:18px;grid-template-columns:repeat(2,1fr)">
       <?php foreach ($related as $r): ?>
-      <a class="r-card" href="/article/<?=htmlspecialchars($r['a']['slug'])?>">
-        <h3><?=htmlspecialchars($r['a']['title'])?></h3>
-        <p><?=htmlspecialchars(substr($r['a']['created_at'] ?? '', 0, 10))?></p>
-      </a>
+      <a class="link-it" href="/article/<?=htmlspecialchars($r['a']['slug'])?>"><span class="lt"><b><?=htmlspecialchars($r['a']['title'])?></b><span><?=htmlspecialchars(substr($r['a']['created_at'] ?? '', 0, 10))?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <?php endforeach; ?>
     </div>
-  </div>
-
-  <div class="related" id="personalizedRecs" style="display:none">
-    <h2>🎯 猜你喜欢</h2>
-    <div class="r-grid" id="personalizedRecsGrid"></div>
-  </div>
+  </section>
+  <section class="reader reveal" id="personalizedRecs" hidden data-od-id="article-recs">
+    <div class="sec-head row"><div><span class="kicker">猜你喜欢</span><h2>为你挑的</h2></div></div>
+    <div class="link-grid" id="personalizedRecsGrid" style="margin-top:18px;grid-template-columns:repeat(2,1fr)"></div>
+  </section>
   <script>
   (function(){
     fetch('/api/recommend.php?type=articles&limit=3&exclude=<?=htmlspecialchars($article['id'] ?? '')?>', {credentials:'include'})
@@ -477,44 +353,44 @@ main{padding-top:96px; padding-bottom:70px; position:relative; z-index:10; max-w
         var box = document.getElementById('personalizedRecs');
         var grid = document.getElementById('personalizedRecsGrid');
         d.recommendations.forEach(function(a){
-          var el = document.createElement('a');
-          el.className = 'r-card';
-          el.href = a.url;
-          var h = document.createElement('h3'); h.textContent = a.title;
-          var p = document.createElement('p'); p.textContent = (a.category || '') + ' · ' + (a.tags || []).slice(0,2).join(' ');
-          el.appendChild(h); el.appendChild(p);
-          grid.appendChild(el);
+          var el = document.createElement('a'); el.className = 'link-it'; el.href = a.url;
+          var lt = document.createElement('span'); lt.className = 'lt';
+          var b = document.createElement('b'); b.textContent = a.title;
+          var sp = document.createElement('span'); sp.textContent = (a.category || '') + ' · ' + (a.tags || []).slice(0,2).join(' ');
+          lt.appendChild(b); lt.appendChild(sp); el.appendChild(lt); grid.appendChild(el);
         });
-        box.style.display = '';
+        box.hidden = false;
       });
   })();
   </script>
   <?php endif; ?>
 
-  <div class="nl-box">
-    <h3>✉️ 订阅内容更新</h3>
-    <p>每周获取网站增长与 AI 运营最新洞察，绝无打扰。</p>
-    <form onsubmit="return ofNewsletter(this,event)">
-      <input type="email" placeholder="你的邮箱" required>
-      <button type="submit">订阅</button>
-    </form>
-  </div>
+  <section class="reader reveal" data-od-id="article-newsletter">
+    <div class="cta-band">
+      <span class="kicker">订阅</span>
+      <h2>订阅内容更新</h2>
+      <p class="lead">每周获取网站增长与 AI 运营最新洞察，绝无打扰。</p>
+      <form onsubmit="return ofNewsletter(this,event)">
+        <input class="inp" type="email" placeholder="你的邮箱" required aria-label="邮箱">
+        <button class="btn primary" type="submit">订阅</button>
+      </form>
+    </div>
+  </section>
   <?php endif; ?>
-</main>
 
-<footer class="foot">
-  <div class="f-in">
-    <div>
+  <footer class="foot" data-od-id="site-footer">
+    <div class="fb">
       <div class="brand"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>芭乐派 · OpenFlow</div>
       <p class="f-about">芭乐派增长操作系统的开源底座。TIPS 框架（触达/洞察/个性化/销售）四力合一，自生长 AI Engine 主动驱动增长。</p>
       <p class="note">核心能力永久开源 · 鱼与渔相结合</p>
     </div>
-    <div><h4>站点导航</h4><a href="/product">产品</a><a href="/capability">能力</a><a href="/courses">课程</a><a href="/academy">学院</a><a href="/community">门派社区</a><a href="/about">关于我们</a></div>
-    <div><h4>资源</h4><a href="/courses">芭乐派课程</a><a href="/docs">文档中心</a><a href="/downloads">模板库</a><a href="/academy">内容学院</a></div>
-    <div><h4>联系</h4><a href="mailto:hello@openflow.dev">hello@openflow.dev</a><a href="/login">管理后台</a><a href="/community">门派社区</a></div>
-  </div>
-  <div class="f-bottom"><span>© 2026 芭乐派 · OpenFlow 增长操作系统</span><span>帮一人公司设计 Agent 能跑的增长系统</span></div>
-</footer>
+    <div class="fb"><h4>站点导航</h4><a href="/product">产品</a><a href="/capability">能力</a><a href="/courses">课程</a><a href="/academy">学院</a><a href="/community">门派社区</a><a href="/about">关于我们</a></div>
+    <div class="fb"><h4>资源</h4><a href="/courses">芭乐派课程</a><a href="/docs">文档中心</a><a href="/downloads">模板库</a><a href="/academy">内容学院</a></div>
+    <div class="fb"><h4>联系</h4><a href="mailto:hello@openflow.dev">hello@openflow.dev</a><a href="/login">管理后台</a><a href="/community">门派社区</a></div>
+    <div class="f-bottom"><span>© 2026 芭乐派 · OpenFlow 增长操作系统</span><span>帮一人公司设计 Agent 能跑的增长系统</span></div>
+  </footer>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 
 <script>
 var OF_SLUG = <?=json_encode($slug)?>;
@@ -523,9 +399,10 @@ if (window.fcTrack) { try { fcTrack('article_view', { slug: OF_SLUG, category: <
 function ofNewsletter(f,e){e.preventDefault();var em=f.querySelector('input').value;fetch('/api/newsletter.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em,source:'article'})}).then(function(r){return r.json();}).then(function(d){var b=f.querySelector('button');b.textContent=d.ok?'✅ 已订阅':'⚠️ '+(d.error||'失败');});return false;}
 function ofStat(action){return fetch('/api/article-stats.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action,slug:OF_SLUG})}).then(function(r){return r.json();});}
 var liked=false;
+if(document.getElementById('likeBtn')){
 document.getElementById('likeBtn').addEventListener('click',function(){
-  if(!liked){liked=true;ofStat('like').then(function(d){document.getElementById('likeBtn').textContent=(d.stats?d.stats.likes:0)+' 赞';});this.classList.add('liked');}
-  else{liked=false;ofStat('like').then(function(d){document.getElementById('likeBtn').textContent=(d.stats?d.stats.likes:0)+' 赞';});this.classList.remove('liked');}
+  if(!liked){liked=true;ofStat('like').then(function(d){document.getElementById('likeBtn').textContent=(d.stats?d.stats.likes:0)+' 赞';});this.classList.add('on');}
+  else{liked=false;ofStat('like').then(function(d){document.getElementById('likeBtn').textContent=(d.stats?d.stats.likes:0)+' 赞';});this.classList.remove('on');}
 });
 document.getElementById('favBtn').addEventListener('click',function(){ofStat('favorite').then(function(d){document.getElementById('favBtn').textContent=d.active?'已收藏':'收藏';});});
 document.getElementById('shareBtn').addEventListener('click',function(){
@@ -539,10 +416,7 @@ document.getElementById('posterBtn').addEventListener('click',function(){
   window.open('/share-card.php?type=article&id=<?=htmlspecialchars(urlencode($article['id'] ?? $article['slug'] ?? ''))?>', '_blank', 'width=640,height=1100');
 });
 document.getElementById('viewBtn').addEventListener('click',function(){ofStat('view');});
-// 主题切换
-(function(){var d=document.documentElement,b=document.getElementById('themeBtn');function render(){var dark=d.dataset.theme==='dark';b.innerHTML=dark?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"/></svg>';}render();b.addEventListener('click',function(){d.dataset.theme=d.dataset.theme==='dark'?'light':'dark';try{var s=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');s.theme=d.dataset.theme;localStorage.setItem('openflow-site-v3',JSON.stringify(s));}catch(e){}render();});})();
-var bar=document.getElementById('bar');
-window.addEventListener('scroll',function(){bar.classList.toggle('scrolled',window.scrollY>24);},{passive:true});
+}
 </script>
 </body>
 </html>
