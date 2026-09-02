@@ -103,8 +103,10 @@ admin_header('运营分析');
             <td><span class="badge <?=$m['r']>=21?'badge-red':'badge-yellow'?>" style="font-size:11px"><?=$m['r']?> 天</span></td>
             <td><strong>¥<?=number_format($m['m'],2)?></strong></td>
             <td>
-              <form method="post" style="display:inline">
+              <form method="post" style="display:inline" data-confirm="给 <?=htmlspecialchars($m['email'])?> 发一封挽回邮件？">
                 <?= csrf_field() ?>
+                <button type="submit" name="winback" value="<?=htmlspecialchars($m['id'] ?? $m['email'])?>" class="btn btn-ghost btn-sm">发挽回邮件</button>
+              </form>
             </td>
           </tr>
           <?php endforeach; ?>

@@ -118,8 +118,12 @@ admin_header('风控中心');
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
       <form method="post">
         <?= csrf_field() ?>
+        <button type="submit" name="scan" value="1" class="btn btn-ghost btn-sm">立即全量扫描</button>
+      </form>
       <form method="post">
         <?= csrf_field() ?>
+        <button type="submit" name="ai_audit" value="1" class="btn btn-primary btn-sm" <?=empty($rules['ai_enabled'])?'disabled title="先在「审核规则」里启用 AI 辅助审核"':''?>>AI 复审队列前 10 条</button>
+      </form>
     </div>
 
     <?php if (empty($queue)): ?>
@@ -163,6 +167,8 @@ admin_header('风控中心');
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <form method="post">
         <?= csrf_field() ?>
+        <button type="submit" name="scan" value="1" class="btn btn-primary btn-sm">立即全量扫描</button>
+      </form>
       <span class="text-sm text-muted" style="align-self:center">cron 每 12 小时自动扫描一次</span>
     </div>
     <div class="card" style="padding:0;overflow:auto">

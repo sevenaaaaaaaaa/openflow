@@ -87,8 +87,11 @@ admin_header('分类管理 - ' . $typeLabels[$type]);
             <td class="text-sm text-muted"><?=htmlspecialchars($pName ?: '顶级')?></td>
             <td>
               <button class="btn btn-ghost btn-sm" onclick="editCat('<?=htmlspecialchars($c['key'],ENT_QUOTES)?>','<?=htmlspecialchars($c['name'],ENT_QUOTES)?>','<?=htmlspecialchars($c['parent']??'',ENT_QUOTES)?>')">编辑</button>
-              <form method="post" style="display:inline" data-confirm="确认删除?">
+              <form method="post" style="display:inline" data-confirm="删除分类「<?=htmlspecialchars($c['name'],ENT_QUOTES)?>」？该分类下的内容会变成未分类。">
                 <?= csrf_field() ?>
+                <input type="hidden" name="action" value="delete"><input type="hidden" name="key" value="<?=htmlspecialchars($c['key'])?>">
+                <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)">删除</button>
+              </form>
             </td>
           </tr>
           <?php endforeach; ?>

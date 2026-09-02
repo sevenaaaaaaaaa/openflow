@@ -41,9 +41,11 @@ if (!defined('OF_EMBED')) admin_header('存储与性能');
     <!-- 风险 + 维护 -->
     <div class="card" style="margin-bottom:20px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-        <h2 style="font-size:15px">🛠️ 维护</h2>
-        <form method="post">
+        <h2 style="font-size:15px">维护</h2>
+        <form method="post" data-confirm="执行一次存储维护？会清理过期缓存、临时文件与超期日志，不会删除业务数据。">
           <?= csrf_field() ?>
+          <button type="submit" name="maintain" value="1" class="btn btn-ghost btn-sm">立即清理</button>
+        </form>
       </div>
       <?php if ($risks): ?>
       <div style="margin-top:12px">

@@ -136,6 +136,30 @@ admin_header('CRM 线索管理');
 .pipe-card .lab{font-size:12px;color:var(--text-3)}
 .stage-pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600}
 .followup{background:var(--surface-2);border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px}
+.crm-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:840px){.crm-kpis{grid-template-columns:1fr}.crm-f label{flex:1 1 140px}.crm-f input[type=number],.crm-f input[type=date]{width:100%}}
+.crm-kpis .pipe-card{text-align:left;padding:14px 18px}
+.crm-kpis .lab .hint{font-weight:400;color:var(--faint);font-size:11px}
+.crm-stages{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.crm-stage{--c:var(--fg);display:flex;align-items:center;gap:9px;padding:7px 12px 7px 10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);text-decoration:none;color:var(--fg);transition:border-color .15s,background .15s}
+.crm-stage:hover{border-color:var(--border-strong);background:var(--hover)}
+.crm-stage.on{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+.crm-stage .n{font-family:var(--font-mono);font-weight:800;font-size:16px;color:var(--c);min-width:18px}
+.crm-stage .l{display:flex;flex-direction:column;font-size:12.5px;font-weight:600;line-height:1.2}
+.crm-stage .l em{font-style:normal;font-weight:400;font-size:10.5px;color:var(--faint)}
+.crm-detail-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px}
+.crm-detail-h h2{margin:0;font-size:16px}
+.crm-sec-h{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--muted);margin:14px 0 8px;text-transform:uppercase}
+.crm-f{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}
+.crm-f label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--faint);font-weight:600;min-width:0}
+.crm-f input,.crm-f select{height:34px;padding:0 10px;border:1px solid var(--border);border-radius:9px;font-size:13px;background:var(--surface);color:var(--fg);min-width:0;width:100%}
+.crm-f input[type=number]{width:110px}.crm-f input[type=date]{width:140px}
+.crm-f .btn{height:34px}
+.crm-fold{border:1px solid var(--border);border-radius:12px;padding:0 12px;margin:4px 0 10px;background:var(--surface-strong)}
+.crm-fold summary{list-style:none;cursor:pointer;padding:10px 0;font-size:12.5px;font-weight:700;display:flex;gap:8px;align-items:baseline}
+.crm-fold summary::-webkit-details-marker{display:none}
+.crm-fold summary em{font-style:normal;font-weight:400;color:var(--faint);font-size:11.5px}
+.crm-fold .crm-f{padding-bottom:6px}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('crm'); ?>
@@ -159,8 +183,8 @@ admin_header('CRM 线索管理');
     </div>
     <?php endif; ?>
     <div class="flex items-center gap-4 mb-2">
-      <h1 style="margin-bottom:0"> CRM 线索</h1>
-      <div style="margin-left:auto;display:flex;gap:8px">
+      <h1 style="margin-bottom:0">CRM 线索</h1>
+      <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <span class="badge badge-gray"><?=count($data['leads'] ?? [])?> 跟进线索</span>
         <span class="badge badge-gray"><?=count($rawLeads)?> 原始提交</span>
         <a href="export.php?format=csv" class="btn btn-ghost btn-sm">导出 CSV</a>
@@ -177,12 +201,12 @@ admin_header('CRM 线索管理');
     <div id="importTip" style="display:none;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px">CSV 需含表头：<code>name,email,phone,company</code>，每行一条线索（email 或 phone 至少一项）。</div>
 
     <div class="tabs" style="margin-bottom:16px">
-      <a href="?tab=pipeline" class="<?=$tab==='pipeline'?'active':''?>">🔀 销售管线</a>
-      <a href="?tab=kanban" class="<?=$tab==='kanban'?'active':''?>">📋 看板视图</a>
-      <a href="?tab=pool" class="<?=$tab==='pool'?'active':''?>">🌊 公海 (<?=$poolCount?>)</a>
-      <a href="?tab=raw" class="<?=$tab==='raw'?'active':''?>">📥 原始提交 (<?=count($rawLeads)?>)</a>
-      <a href="?tab=customers" class="<?=$tab==='customers'?'active':''?>">🏢 客户 (<?=count(crm_get_customers())?>)</a>
-      <a href="?tab=arr" class="<?=$tab==='arr'?'active':''?>">💰 ARR 报表</a>
+      <a href="?tab=pipeline" class="<?=$tab==='pipeline'?'active':''?>">销售管线</a>
+      <a href="?tab=kanban" class="<?=$tab==='kanban'?'active':''?>">看板</a>
+      <a href="?tab=pool" class="<?=$tab==='pool'?'active':''?>">公海 (<?=$poolCount?>)</a>
+      <a href="?tab=raw" class="<?=$tab==='raw'?'active':''?>">原始提交 (<?=count($rawLeads)?>)</a>
+      <a href="?tab=customers" class="<?=$tab==='customers'?'active':''?>">客户 (<?=count(crm_get_customers())?>)</a>
+      <a href="?tab=arr" class="<?=$tab==='arr'?'active':''?>">ARR 报表</a>
     </div>
 
     <?php if ($tab === 'kanban'): ?>
@@ -462,13 +486,10 @@ admin_header('CRM 线索管理');
 
     <!-- 管线概览 -->
     <?php $pipelineW = crm_pipeline_weighted(); $forecast = crm_forecast(); $rates = crm_stage_win_rates(); ?>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px">
-      <div class="pipe-card"><div class="lab">管线总额</div><div class="num" style="color:var(--ok)">¥<?=number_format($pipelineValue,0)?></div></div>
-      <div class="pipe-card"><div class="lab">加权金额（×赢率）</div><div class="num" style="color:var(--accent)">¥<?=number_format($pipelineW['weighted'],0)?></div></div>
+    <div class="crm-kpis">
+      <div class="pipe-card"><div class="lab">管线总额</div><div class="num" style="color:var(--ok)">¥<?=number_format($pipelineValue,0)?></div><div class="lab"><?=count($data['leads'] ?? [])?> 条跟进中的线索</div></div>
+      <div class="pipe-card"><div class="lab">加权金额 <span class="hint">· 按阶段赢率折算</span></div><div class="num" style="color:var(--accent)">¥<?=number_format($pipelineW['weighted'],0)?></div></div>
       <div class="pipe-card"><div class="lab">销售预测</div><div class="num" style="color:var(--warn)">¥<?=number_format($forecast['weighted'],0)?></div><div class="lab"><?=$forecast['opportunities']?> 个商机</div></div>
-      <?php foreach ($stages as $k => $label): ?>
-      <div class="pipe-card"><div class="lab"><?=htmlspecialchars($label)?> <span style="font-size:10px;color:var(--faint)">赢率<?=round($rates[$k]*100)?>%</span></div><div class="num" style="color:<?=['new'=>'var(--faint)','contacted'=>'var(--accent)','qualified'=>'var(--warn)','opportunity'=>'var(--accent)','won'=>'var(--ok)','lost'=>'var(--danger)'][$k]?>"><?=$stageCounts[$k] ?? 0?></div></div>
-      <?php endforeach; ?>
     </div>
 
     <?php if (!empty($forecast['by_month'])): ?>
@@ -487,20 +508,20 @@ admin_header('CRM 线索管理');
     <?php endif; ?>
 
     <!-- 阶段筛选 -->
-    <div class="flex gap-2 mb-4" style="flex-wrap:wrap">
-      <a href="crm.php" class="btn btn-sm <?=!$stageFilter?'btn-primary':'btn-ghost'?>">全部 (<?=count($data['leads'] ?? [])?>)</a>
-      <?php foreach ($stages as $k => $label): ?>
-      <a href="?stage=<?=$k?>" class="btn btn-sm <?=$stageFilter===$k?'btn-primary':'btn-ghost'?>"><?=htmlspecialchars($label)?> (<?=$stageCounts[$k] ?? 0?>)</a>
+    <div class="crm-stages" role="tablist" aria-label="按阶段筛选">
+      <a href="crm.php" class="crm-stage <?=!$stageFilter?'on':''?>"><span class="n"><?=count($data['leads'] ?? [])?></span><span class="l">全部</span></a>
+      <?php $__sc=['new'=>'var(--faint)','contacted'=>'var(--accent)','qualified'=>'var(--warn)','opportunity'=>'var(--accent)','won'=>'var(--ok)','lost'=>'var(--danger)']; foreach ($stages as $k => $label): ?>
+      <a href="?stage=<?=$k?>" class="crm-stage <?=$stageFilter===$k?'on':''?>" style="--c:<?=$__sc[$k]?>"><span class="n"><?=$stageCounts[$k] ?? 0?></span><span class="l"><?=htmlspecialchars($label)?><em>赢率 <?=round($rates[$k]*100)?>%</em></span></a>
       <?php endforeach; ?>
     </div>
 
     <div style="display:grid;grid-template-columns:<?=$focusLead?'1.3fr 1fr':'1fr'?>;gap:20px" class="crm-grid">
       <!-- 线索列表 -->
-      <div class="card" style="padding:0;overflow:auto">
-        <table>
-          <thead><tr><th>线索</th><th>阶段</th><th>评分</th><th>跟进人</th><th>商机</th><th>操作</th></tr></thead>
+      <div class="card lst-card">
+        <table class="lst-table">
+          <thead><tr><th class="c-title">线索</th><th style="width:96px">阶段</th><th style="width:70px">评分</th><th style="width:110px">跟进人</th><th style="width:100px">商机</th><th class="c-act" style="width:80px"></th></tr></thead>
           <tbody>
-            <?php if (empty($leads)): ?><tr><td colspan="6" class="empty">暂无线索（表单提交自动生成）</td></tr><?php endif; ?>
+            <?php if (empty($leads)): ?><tr><td colspan="6"><div class="of-empty" style="border:0;margin:0">暂无线索。网站表单提交会自动进来；也可以右上角「导入 CSV」，或从<a href="segments.php">用户分群</a>导入。</div></td></tr><?php endif; ?>
             <?php foreach ($leads as $l): ?>
             <tr>
               <td>
@@ -511,7 +532,7 @@ admin_header('CRM 线索管理');
               <td><b style="color:<?=$l['score']>=60?'var(--ok)':($l['score']>=30?'var(--warn)':'var(--danger)')?>"><?=$l['score']?></b></td>
               <td class="text-sm text-muted"><?=htmlspecialchars($adminNames[$l['owner']] ?? $l['owner'] ?: '—')?></td>
               <td><?=$l['value'] ? '¥'.number_format($l['value'],0) : '—'?></td>
-              <td><a href="?focus=<?=urlencode($l['email'])?><?=$stageFilter?'&stage='.$stageFilter:''?>" class="btn btn-ghost btn-sm">👁 详情</a></td>
+              <td class="c-act"><a href="?focus=<?=urlencode($l['email'])?><?=$stageFilter?'&stage='.$stageFilter:''?>" class="btn btn-ghost btn-sm">详情</a></td>
             </tr>
             <?php endforeach; ?>
           </tbody>
@@ -520,8 +541,8 @@ admin_header('CRM 线索管理');
 
       <!-- 详情 -->
       <?php if ($focusLead): ?>
-      <div class="card" style="padding:0;overflow:auto">
-        <h2 style="padding:20px 20px 0">👁 线索详情</h2>
+      <div class="card crm-detail" style="padding:0;overflow:auto">
+        <div class="crm-detail-h"><h2>线索详情</h2><a href="crm.php<?=$stageFilter?'?stage='.$stageFilter:''?>" class="ib" title="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></a></div>
         <div style="padding:0 20px 20px">
           <!-- 基础信息 -->
           <div style="padding:14px;background:var(--surface-2);border-radius:12px;margin-bottom:14px">
@@ -556,89 +577,85 @@ admin_header('CRM 线索管理');
             </div>
             <?php endif; ?>
           </div>
-          </div>
 
           <!-- 阶段更新 + 商机 -->
-          <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <div class="crm-sec-h">阶段与商机</div>
+          <form method="post" class="crm-f">
             <?= csrf_field() ?>
             <input type="hidden" name="email" value="<?=htmlspecialchars($focusLead['email'])?>">
             <input type="hidden" name="action" value="update_stage">
             <input type="hidden" name="focus" value="<?=htmlspecialchars($focusLead['email'])?>">
-            <select name="stage" style="padding:7px;border:1.5px solid var(--border);border-radius:8px">
+            <label><span>阶段</span><select name="stage">
               <?php foreach ($stages as $k => $label): ?>
               <option value="<?=$k?>" <?=$focusLead['stage']===$k?'selected':''?>><?=htmlspecialchars($label)?></option>
               <?php endforeach; ?>
-            </select>
-            <input type="number" name="value" value="<?=htmlspecialchars($focusLead['value'] ?? 0)?>" placeholder="商机金额" step="100" style="width:110px;padding:7px;border:1.5px solid var(--border);border-radius:8px">
-            <input type="date" name="expected_close" value="<?=htmlspecialchars($focusLead['expected_close'] ?? '')?>" style="padding:7px;border:1.5px solid var(--border);border-radius:8px">
-            <button type="submit" class="btn btn-primary btn-sm">更新阶段</button>
+            </select></label>
+            <label><span>商机金额 ¥</span><input type="number" name="value" value="<?=htmlspecialchars($focusLead['value'] ?? 0)?>" step="100"></label>
+            <label><span>预计成交</span><input type="date" name="expected_close" value="<?=htmlspecialchars($focusLead['expected_close'] ?? '')?>"></label>
+            <button type="submit" class="btn btn-primary btn-sm">更新</button>
           </form>
 
           <!-- 转为客户（商机 → 客户） -->
-          <div style="padding:12px;background:var(--surface-2);border-radius:12px;margin-bottom:12px">
-            <div style="font-size:12px;font-weight:700;margin-bottom:8px">转为客户（won 后计入 ARR）</div>
-            <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <details class="crm-fold" <?=in_array($focusLead['stage'], ['opportunity','won'])?'open':''?>>
+            <summary>转为客户 <em>成交后填年化金额，计入 ARR</em></summary>
+            <form method="post" class="crm-f">
               <?= csrf_field() ?>
               <input type="hidden" name="email" value="<?=htmlspecialchars($focusLead['email'])?>">
               <input type="hidden" name="action" value="to_customer">
               <input type="hidden" name="focus" value="<?=htmlspecialchars($focusLead['email'])?>">
-              <input type="number" name="arr" placeholder="年化 ARR ¥" step="100" style="width:110px;padding:7px;border:1.5px solid var(--border);border-radius:8px">
-              <select name="plan_type" style="padding:7px;border:1.5px solid var(--border);border-radius:8px">
+              <label><span>年化 ARR ¥</span><input type="number" name="arr" placeholder="如 36000" step="100"></label>
+              <label><span>方案</span><select name="plan_type">
                 <option value="saas">SaaS 订阅</option><option value="private">私有化部署</option><option value="custom">定制开发</option>
-              </select>
-              <input type="date" name="contract_end" style="padding:7px;border:1.5px solid var(--border);border-radius:8px">
-              <button type="submit" class="btn btn-primary btn-sm">转客户</button>
+              </select></label>
+              <label><span>合同到期</span><input type="date" name="contract_end"></label>
+              <button type="submit" class="btn btn-primary btn-sm" data-confirm="把这条线索转为客户？会从管线移出并计入 ARR。">转客户</button>
             </form>
-          </div>
+          </details>
 
           <!-- 交接 -->
-          <form method="post" style="display:flex;gap:8px;margin-bottom:12px">
+          <div class="crm-sec-h">归属与评分</div>
+          <form method="post" class="crm-f">
             <?= csrf_field() ?>
             <input type="hidden" name="email" value="<?=htmlspecialchars($focusLead['email'])?>">
             <input type="hidden" name="action" value="transfer">
             <input type="hidden" name="focus" value="<?=htmlspecialchars($focusLead['email'])?>">
-            <select name="owner" style="flex:1;padding:7px;border:1.5px solid var(--border);border-radius:8px">
+            <label style="flex:1"><span>跟进人</span><select name="owner">
               <?php foreach ($adminNames as $uk => $un): ?>
               <option value="<?=htmlspecialchars($uk)?>" <?=$focusLead['owner']===$uk?'selected':''?>><?=htmlspecialchars($un)?></option>
               <?php endforeach; ?>
-            </select>
-            <button type="submit" class="btn btn-ghost btn-sm">交接线索</button>
+            </select></label>
+            <button type="submit" class="btn btn-ghost btn-sm">交接</button>
           </form>
 
           <!-- 手动加分 -->
-          <form method="post" style="display:flex;gap:8px;margin-bottom:16px">
+          <form method="post" class="crm-f">
             <?= csrf_field() ?>
             <input type="hidden" name="email" value="<?=htmlspecialchars($focusLead['email'])?>">
             <input type="hidden" name="action" value="score">
             <input type="hidden" name="focus" value="<?=htmlspecialchars($focusLead['email'])?>">
-            <span class="text-sm text-muted" style="align-self:center">手动加分</span>
-            <input type="number" name="delta" value="10" step="5" style="width:70px;padding:7px;border:1.5px solid var(--border);border-radius:8px">
+            <label><span>手动加减分</span><input type="number" name="delta" value="10" step="5"></label>
             <button type="submit" class="btn btn-ghost btn-sm">调整</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="aiScoreLead()" style="margin-left:auto">AI 评分建议</button>
           </form>
-
-          <!-- AI 评分建议 -->
-          <div style="margin-bottom:16px">
-            <button type="button" class="btn btn-primary btn-sm" onclick="aiScoreLead()">🤖 AI 评分建议</button>
-            <div id="aiScoreBox" style="margin-top:8px;display:none"></div>
-          </div>
+          <div id="aiScoreBox" style="margin:-4px 0 12px;display:none"></div>
 
           <!-- 跟进记录 -->
-          <div class="text-sm font-semibold mb-2">📝 跟进记录</div>
-          <form method="post" style="display:flex;gap:8px;margin-bottom:10px">
+          <div class="crm-sec-h">跟进</div>
+          <form method="post" class="crm-f">
             <?= csrf_field() ?>
             <input type="hidden" name="email" value="<?=htmlspecialchars($focusLead['email'])?>">
             <input type="hidden" name="action" value="add_followup">
             <input type="hidden" name="focus" value="<?=htmlspecialchars($focusLead['email'])?>">
-            <input type="text" name="content" placeholder="记录跟进内容…" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px">
-            <button type="submit" class="btn btn-primary btn-sm">添加</button>
+            <label style="flex:1"><span>跟进记录</span><input type="text" name="content" placeholder="今天聊了什么、下一步是什么"></label>
+            <button type="submit" class="btn btn-primary btn-sm">记一条</button>
           </form>
-          <form method="post" style="display:flex;gap:8px;margin-bottom:10px">
+          <form method="post" class="crm-f">
             <?= csrf_field() ?>
             <input type="hidden" name="email" value="<?=htmlspecialchars($focusLead['email'])?>">
             <input type="hidden" name="action" value="add_task">
             <input type="hidden" name="focus" value="<?=htmlspecialchars($focusLead['email'])?>">
-            <input type="text" name="title" placeholder="跟进任务（如：本周内电话回访）" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px">
-            <input type="date" name="due" style="padding:8px;border:1.5px solid var(--border);border-radius:8px">
+            <label style="flex:1"><span>待办</span><input type="text" name="title" placeholder="如：本周内电话回访"></label>
+            <label><span>截止</span><input type="date" name="due"></label>
             <button type="submit" class="btn btn-ghost btn-sm">设任务</button>
           </form>
           <?php if (empty($focusLead['follow_ups'])): ?>

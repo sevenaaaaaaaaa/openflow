@@ -290,12 +290,74 @@ admin_header($isNew ? '写新文章' : '编辑文章');
 .upload-progress .bar{height:4px;background:var(--surface-2);border-radius:2px;margin-top:8px;overflow:hidden}
 .upload-progress .bar .fill{height:100%;background:var(--accent);width:0%;transition:width .2s}
 
+/* ═══ 写文章页布局：左正文 / 右元数据，顶部操作条常驻 ═══ */
+.main.ae{max-width:1400px;padding-top:86px}
+.ae-head{position:sticky;top:calc(var(--chrome-h) + 18px);z-index:40;display:flex;align-items:center;gap:12px;padding:10px 14px;margin:-8px 0 18px;border-radius:16px;border:1px solid var(--border);background:var(--surface-strong);-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);box-shadow:var(--shadow-sm)}
+.ae-back svg{width:15px;height:15px}
+.ae-crumb{display:flex;align-items:center;gap:10px;min-width:0}
+.ae-kind{font-size:15px;font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+.ae-status-pill{font-family:var(--font-mono);font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--hover);color:var(--muted)}
+.ae-status-pill[data-s="published"]{background:var(--ok-soft,var(--accent-soft));color:var(--ok)}
+.ae-status-pill[data-s="scheduled"]{background:var(--warn-soft,var(--hover));color:var(--warn)}
+.ae-tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ae-more{position:relative}
+.ae-more summary{list-style:none;cursor:pointer;letter-spacing:.1em}
+.ae-more summary::-webkit-details-marker{display:none}
+.ae-menu{position:absolute;right:0;top:calc(100% + 6px);min-width:180px;padding:6px;border-radius:14px;border:1px solid var(--border);background:var(--surface-strong);box-shadow:var(--shadow);display:flex;flex-direction:column;z-index:50}
+.ae-menu button,.ae-menu a{display:block;width:100%;text-align:left;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--fg);background:none;border:0;cursor:pointer;text-decoration:none;white-space:nowrap}
+.ae-menu button:hover,.ae-menu a:hover{background:var(--hover)}
+.ae-grid{display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:20px;align-items:start}
+.ae-main{min-width:0;display:flex;flex-direction:column;gap:16px}
+.ae-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.ae-title{padding:6px 4px 0}
+.ae-title #titleInput{width:100%;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.25;padding:8px 10px;border:1.5px solid transparent;border-radius:12px;background:transparent;color:var(--fg)}
+.ae-title #titleInput:hover{border-color:var(--border)}
+.ae-title #titleInput:focus{outline:none;border-color:var(--accent);background:var(--surface)}
+.ae-title #titleInput::placeholder{color:var(--faint);font-weight:700}
+.ae-slug{display:flex;align-items:center;gap:6px;padding:2px 10px 0;font-family:var(--font-mono);font-size:12.5px;color:var(--faint)}
+.ae-slug input{border:0;border-bottom:1px dashed var(--border-strong);background:transparent;font:inherit;color:var(--muted);padding:2px 0;min-width:160px;width:auto;border-radius:0}
+.ae-slug input:focus{outline:none;border-bottom-color:var(--accent);color:var(--fg)}
+.ae-slug .hint{font-family:var(--font-sans);font-size:11.5px}
+#zenEditorCard{padding:12px 14px 14px}
+.mode-tabs{margin-bottom:10px;align-items:center}
+.mode-tab{padding:6px 14px;font-size:13px;border-radius:9px}
+.rt-editor .rt-content,.md-split textarea,.md-preview{min-height:min(62vh,760px)}
+.ae-tools-card{padding:12px 16px}
+.ae-tools-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.ae-tools-label{font-size:12.5px;font-weight:700;color:var(--muted);margin-right:4px}
+.ae-tools-sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+#internalLinks:not(:empty){margin-top:12px}
+.ae-sec{padding:16px 18px}
+.ae-sec h2{font-size:14px;font-weight:800;margin-bottom:12px;letter-spacing:-.01em}
+.ae-sec .field{margin-bottom:12px}
+.ae-sec .field label{font-size:12.5px}
+.ae-check{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:0 0 12px;cursor:pointer}
+.ae-check input{width:16px;height:16px;margin:0}
+.ae-check .hint{font-weight:400;color:var(--faint);font-size:12px}
+.ae-versions:empty{display:none}
+.ae-versions label{margin-top:2px}
+.ae-versions select{width:100%}
+.ae-tagcloud{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.ae-tagcloud .tag-item{cursor:pointer;font-size:12px}
+.ae-cover{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;margin-bottom:12px;border:1px solid var(--border)}
+.ae-fold summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;margin:-16px -18px;padding:16px 18px}
+.ae-fold summary::-webkit-details-marker{display:none}
+.ae-fold summary h2{margin:0}
+.ae-fold summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);transform:rotate(-45deg);transition:transform .2s}
+.ae-fold[open] summary::after{transform:rotate(45deg)}
+.ae-fold[open] summary{margin-bottom:0}
+.ae-fold .field:first-of-type,.ae-fold textarea{margin-top:14px}
+.ae-fold-hint{font-size:12px;color:var(--faint);font-weight:500}
+.ae-push .field,.ae-push p{margin-bottom:10px}
+@media(max-width:1180px){.ae-grid{grid-template-columns:1fr}.ae-side{display:grid;grid-template-columns:1fr 1fr;align-items:start}.ae-side .ae-fold{grid-column:1/-1}}
+@media(max-width:840px){.ae-side{grid-template-columns:1fr}.ae-head{top:calc(var(--chrome-h) + 14px);flex-wrap:wrap}.ae-title #titleInput{font-size:24px}.ae-kind{display:none}}
+
 /* ═══ Zen 沉浸写作模式 ═══ */
-body.zen-mode{background:#faf9f4;overflow-x:hidden}
+body.zen-mode{overflow-x:hidden}
 body.zen-mode .sidebar{transform:translateX(-110%);opacity:0;pointer-events:none;transition:transform .4s ease,opacity .3s}
 body.zen-mode .main{max-width:900px;margin:0 auto;padding:20px 32px 80px;transition:all .4s ease}
-body.zen-mode .main>h1{display:none}
-body.zen-mode #article-form>div:not(#zenEditorCard){display:none}
+body.zen-mode .ae-head,body.zen-mode .ae-side,body.zen-mode .ae-main>*:not(#zenEditorCard):not(.ae-title){display:none}
+body.zen-mode .ae-grid{display:block}
 body.zen-mode #zenEditorCard{box-shadow:0 24px 60px -24px rgba(0,0,0,.15)}
 body.zen-mode #zenEditorCard .mode-tabs{position:sticky;top:70px;z-index:10;background:rgba(250,249,244,.92);backdrop-filter:blur(12px);padding:10px 0;border-radius:12px}
 body.zen-mode .rt-editor{min-height:75vh;padding:32px 40px;font-size:17px;line-height:2}
@@ -305,91 +367,49 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('articles'); ?>
-  <div class="main">
-    <div class="flex items-center gap-4 mb-4">
-      <h1 style="margin-bottom:0"><?=$isNew?'写新文章':'编辑文章'?></h1>
-      <a href="articles.php" class="btn btn-ghost ml-auto">← 返回列表</a>
-    </div>
-
-    <?php if (!empty($message)): ?><?=msg('error', $message)?><?php endif; ?>
-
-    <form method="post" id="article-form">
+  <div class="main ae">
+    <form method="post" id="article-form" data-no-savebar>
       <?= csrf_field() ?>
-      <div class="card">
-        <div class="field"><label>文章标题 <span class="hint">· 必填</span></label>
-          <div style="display:flex;gap:8px">
-            <input type="text" name="title" value="<?=htmlspecialchars($article['title'])?>" required oninput="autoSlug(this.value)" id="titleInput" style="flex:1">
-            <button type="button" class="btn btn-ghost btn-sm" onclick="showImportDialog()" title="从网页导入">🌐 导入</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="showAIDialog()" title="AI 辅助">🤖 AI</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="saveAsTemplate()" title="存为模板">📋 存模板</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="loadTemplate()" title="从模板加载">📂 模板</button>
-            <button type="button" class="btn btn-ghost btn-sm" id="zenBtn" onclick="toggleZen()" title="沉浸式写作，无干扰">🧘 Zen</button>
-            <?php if (!$isNew): ?>
-            <a href="../share-card.php?type=article&id=<?=urlencode($article['id'])?>" class="btn btn-ghost btn-sm" target="_blank" title="生成分享卡片">🖼 分享卡</a>
-            <a href="qr.php?search=<?=urlencode(mb_substr($article['title'],0,30))?>" class="btn btn-ghost btn-sm" target="_blank" title="二维码">📱 QR</a>
-            <?php endif; ?>
-          </div>
+      <!-- 顶部操作条：始终可见的返回 / 状态 / 保存 -->
+      <div class="ae-head">
+        <a href="articles.php" class="btn btn-ghost btn-sm ae-back" title="返回列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>列表</span></a>
+        <div class="ae-crumb"><span class="ae-kind"><?=$isNew?'写新文章':'编辑文章'?></span><span class="ae-status-pill" id="aeStatusPill" data-s="<?=htmlspecialchars($article['status'])?>"><?=['draft'=>'草稿','published'=>'已发布','scheduled'=>'定时发布'][$article['status']] ?? htmlspecialchars($article['status'])?></span></div>
+        <div class="ae-tools">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="showImportDialog()" title="从网页导入">导入</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="showAIDialog()" title="AI 辅助">AI 辅助</button>
+          <details class="ae-more">
+            <summary class="btn btn-ghost btn-sm" title="更多">···</summary>
+            <div class="ae-menu">
+              <button type="button" onclick="saveAsTemplate()">存为模板</button>
+              <button type="button" onclick="loadTemplate()">从模板加载</button>
+              <button type="button" id="zenBtn" onclick="toggleZen()">Zen 沉浸写作</button>
+              <?php if (!$isNew): ?>
+              <a href="../share-card.php?type=article&id=<?=urlencode($article['id'])?>" target="_blank">生成分享卡片</a>
+              <a href="qr.php?search=<?=urlencode(mb_substr($article['title'],0,30))?>" target="_blank">二维码</a>
+              <a href="../article.php?slug=<?=urlencode($article['slug'])?>" target="_blank">在前台查看</a>
+              <?php endif; ?>
+            </div>
+          </details>
+          <button type="submit" class="btn btn-primary" onclick="syncContent()">保存文章</button>
         </div>
-        <div class="field-row">
-          <div class="field"><label>URL Slug <span class="hint">· 自动生成，可手动修改</span></label><input type="text" name="slug" id="slug" value="<?=htmlspecialchars($article['slug'])?>" placeholder="article-url-slug"></div>
-          <div class="field"><label>状态</label><select name="status"><option value="draft" <?=$article['status']==='draft'?'selected':''?>>草稿</option><option value="published" <?=$article['status']==='published'?'selected':''?>>已发布</option><option value="scheduled" <?=$article['status']==='scheduled'?'selected':''?>>定时发布</option></select></div>
-          <div class="field"><label style="display:flex;align-items:center;gap:8px;margin-top:26px;white-space:nowrap"><input type="checkbox" name="member_only" value="1" <?=!empty($article['member_only'])?'checked':''?> style="width:16px;height:16px"> 💎 会员专享 <span class="hint">· 仅会员可读</span></label></div>
-          <?php require_once __DIR__ . '/../lib/PaidContent.php'; $__tier = $article['required_tier'] ?? ''; ?>
-          <div class="field" style="min-width:170px"><label>🔒 付费门槛 <span class="hint">· 未达门槛显示预览+升级</span></label>
-            <select name="required_tier">
-              <?php foreach (paid_tier_options() as $tv => $tl): ?>
-              <option value="<?=htmlspecialchars($tv)?>" <?=$__tier===$tv?'selected':''?>><?=htmlspecialchars($tl)?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>定时发布 <span class="hint">· 留空则立即发布</span></label><input type="datetime-local" name="publish_at" value="<?=htmlspecialchars($article['publish_at'] ?? '')?>"></div>
-          <div class="field">
-            <?php if (!$isNew):
-              $verFile = DATA_DIR . '/versions/articles/' . $article['id'] . '.json';
-              $versions = json_read($verFile);
-            ?>
-            <label>版本历史 <span class="hint">· 共 <?=count($versions)?> 个版本</span></label>
-            <select id="versionSelect" onchange="previewVersion(this.value)" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
-              <option value="">当前版本</option>
-              <?php foreach (array_reverse($versions) as $v): ?>
-              <option value="<?=$v['version']?>">v<?=$v['version']?> — <?=substr($v['saved_at']??'',0,16)?></option>
-              <?php endforeach; ?>
-            </select>
-            <?php endif; ?>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>分类</label><select name="category"><option value="">未分类</option><?php foreach ($cats as $c): ?><option value="<?=htmlspecialchars($c['key'])?>" <?=$article['category']===$c['key']?'selected':''?>><?=htmlspecialchars($c['name'])?></option><?php endforeach; ?></select></div>
-          <div class="field"><label>作者</label>
-            <input type="text" name="author" value="<?=htmlspecialchars($article['author'])?>" list="author-list" autocomplete="off">
-            <?php
-              // 已建档作者做成下拉建议，减少"同一个人多种写法"
-              $authorNames = [];
-              if (is_file(DATA_DIR . '/authors.json')) {
-                  foreach ((json_read(DATA_DIR . '/authors.json') ?: []) as $__a) { if (!empty($__a['name'])) $authorNames[] = $__a['name']; }
-              }
-            ?>
-            <?php if ($authorNames): ?><datalist id="author-list"><?php foreach ($authorNames as $__n): ?><option value="<?=htmlspecialchars($__n)?>"><?php endforeach; ?></datalist><?php endif; ?>
-          </div>
-        </div>
-        <div class="field">
-          <label>标签 <span class="hint">· 逗号分隔</span></label>
-          <input type="text" name="tags" value="<?=htmlspecialchars(implode(', ', $article['tags'] ?? []))?>" placeholder="标签1, 标签2, 标签3" id="tagsInput">
-        </div>
-        <?php if (!empty($allTags)): ?>
-        <div style="margin-bottom:4px"><?php foreach ($allTags as $t): ?><span class="tag-item" style="cursor:pointer;margin:2px" onclick="addTag('<?=htmlspecialchars($t, ENT_QUOTES)?>')"><?=htmlspecialchars($t)?></span><?php endforeach; ?><span class="text-sm text-muted" style="margin-left:8px">点标签添加</span></div>
-        <?php endif; ?>
       </div>
 
-      <!-- Editor Mode Tabs -->
-      <input type="hidden" name="editor_mode" id="editorModeInput" value="<?=htmlspecialchars($editorMode)?>">
-      <div class="card" id="zenEditorCard" style="padding:16px">
+      <?php if (!empty($message)): ?><?=msg('error', $message)?><?php endif; ?>
+
+      <div class="ae-grid">
+        <!-- ── 左：标题 + 正文 ── -->
+        <div class="ae-main">
+          <div class="ae-title">
+            <input type="text" name="title" value="<?=htmlspecialchars($article['title'])?>" required oninput="autoSlug(this.value)" id="titleInput" placeholder="文章标题" autocomplete="off">
+            <div class="ae-slug"><span class="ae-slug-pre">/articles/</span><input type="text" name="slug" id="slug" value="<?=htmlspecialchars($article['slug'])?>" placeholder="article-url-slug" spellcheck="false"><span class="hint">· 由标题自动生成，可改</span></div>
+          </div>
+
+          <input type="hidden" name="editor_mode" id="editorModeInput" value="<?=htmlspecialchars($editorMode)?>">
+          <div class="card" id="zenEditorCard" style="padding:16px">
         <div class="mode-tabs">
-          <div class="mode-tab <?=$editorMode==='richtext'?'active':''?>" data-mode="richtext" onclick="switchMode('richtext')">📝 富文本</div>
-          <div class="mode-tab <?=$editorMode==='markdown'?'active':''?>" data-mode="markdown" onclick="switchMode('markdown')">📄 Markdown <span class="text-sm text-muted">分屏预览</span></div>
-          <button type="button" class="zen-exit" onclick="toggleZen()" style="display:none;margin-left:auto;padding:6px 14px;border-radius:99px;border:1px solid var(--border);background:var(--surface);font-size:12.5px;font-weight:600;cursor:pointer">✕ 退出 Zen</button>
+          <div class="mode-tab <?=$editorMode==='richtext'?'active':''?>" data-mode="richtext" onclick="switchMode('richtext')">富文本</div>
+          <div class="mode-tab <?=$editorMode==='markdown'?'active':''?>" data-mode="markdown" onclick="switchMode('markdown')">Markdown <span class="text-sm text-muted">分屏预览</span></div>
+          <button type="button" class="zen-exit" onclick="toggleZen()" style="display:none;margin-left:auto;padding:6px 14px;border-radius:99px;border:1px solid var(--border);background:var(--surface);font-size:12.5px;font-weight:600;cursor:pointer">退出 Zen</button>
           <span style="margin-left:auto;font-size:12px;color:var(--text-3);align-self:center">拖拽图片到编辑器任意位置即可上传并插入</span>
         </div>
 
@@ -406,10 +426,10 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
             <button type="button" onclick="rtCmd('insertUnorderedList')">UL</button>
             <button type="button" onclick="rtCmd('insertOrderedList')">OL</button>
             <span class="sep"></span>
-            <button type="button" onclick="rtInsertLink()">🔗 链接</button>
-            <button type="button" onclick="document.getElementById('rtImgInput').click()">🖼 图片</button>
+            <button type="button" onclick="rtInsertLink()">链接</button>
+            <button type="button" onclick="document.getElementById('rtImgInput').click()">图片</button>
             <input type="file" id="rtImgInput" accept="image/*" style="display:none" onchange="rtUploadImg(this)">
-            <button type="button" onclick="openMediaPicker()">📁 媒体库</button>
+            <button type="button" onclick="openMediaPicker()">媒体库</button>
             <span class="sep"></span>
             <button type="button" onclick="rtCmd('removeFormat')">清除格式</button>
           </div>
@@ -424,12 +444,12 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
               <button type="button" onclick="mdBlock('### ','')" title="小标题" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">H3</button>
               <button type="button" onclick="mdBlock('**','**')" title="加粗" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer;font-weight:700">B</button>
               <button type="button" onclick="mdBlock('*','*')" title="斜体" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer;font-style:italic">I</button>
-              <button type="button" onclick="mdBlock('> ','')" title="引用" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">❝ 引用</button>
-              <button type="button" onclick="mdBlock('- ','')" title="列表" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">• 列表</button>
+              <button type="button" onclick="mdBlock('> ','')" title="引用" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">引用</button>
+              <button type="button" onclick="mdBlock('- ','')" title="列表" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">列表</button>
               <button type="button" onclick="mdBlock('```\n','\n```')" title="代码块" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">&lt;/&gt; 代码</button>
-              <button type="button" onclick="mdBlock('[链接文字](https://)','')" title="链接" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">🔗 链接</button>
-              <button type="button" onclick="insertMedia()" title="插入图片" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">🖼 图片</button>
-              <button type="button" onclick="mdBlock('---\n','')" title="分割线" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">— 分隔</button>
+              <button type="button" onclick="mdBlock('[链接文字](https://)','')" title="链接" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">链接</button>
+              <button type="button" onclick="insertMedia()" title="插入图片" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">图片</button>
+              <button type="button" onclick="mdBlock('---\n','')" title="分割线" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer">分隔</button>
             </div>
             <textarea id="mdInput" oninput="renderMD(this.value)" placeholder="在此输入 Markdown...&#10;&#10;# 标题&#10;内容..." style="flex:1;min-height:300px"><?=htmlspecialchars($article['content'])?></textarea>
           </div>
@@ -440,58 +460,29 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
         <textarea name="content" id="contentHidden" style="display:none"><?=htmlspecialchars($article['content'])?></textarea>
       </div>
 
-      <!-- Cover -->
-      <div class="card">
-        <h2>封面图</h2>
-        <div class="field-row">
-          <div class="field"><label>封面图片路径</label><input type="text" name="cover" id="cover" value="<?=htmlspecialchars($article['cover'])?>" placeholder="uploads/articles/文件名.jpg"></div>
-          <div class="field"><label>或从媒体库选择</label><select onchange="pickCover(this)"><option value="">— 选择图片 —</option><?php foreach ($files as $fp): $n = basename($fp); $rel = 'uploads/articles/' . $n; ?><option value="<?=htmlspecialchars($rel)?>" <?=$article['cover']===$rel?'selected':''?>><?=htmlspecialchars($n)?></option><?php endforeach; ?></select></div>
-        </div>
-        <div class="field" style="margin-bottom:0"><label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-          <button type="button" class="btn btn-ghost btn-sm" onclick="openStockPicker()">🖼 从免费图库搜索封面</button>
-        </label></div>
-        <?php if ($article['cover']): ?>
-        <img id="coverPreview" src="<?=htmlspecialchars($coverUrl)?>" style="max-width:300px;max-height:180px;border-radius:8px;margin-top:8px;object-fit:cover">
-        <?php endif; ?>
-      </div>
+          <!-- 正文下方：写作时才用得到的工具 -->
+          <div class="card ae-tools-card">
+            <div class="ae-tools-row">
+              <span class="ae-tools-label">插入组件</span>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="insertComponent('cta')">CTA</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="insertComponent('event')">活动报名</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="insertComponent('download')">资料下载</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="insertComponent('newsletter')">订阅表单</button>
+              <?php if (!$isNew): ?><span class="ae-tools-sep"></span><button type="button" class="btn btn-ghost btn-sm" onclick="scanInternalLinks('<?=htmlspecialchars($article['id'])?>')">扫描内链机会</button><?php endif; ?>
+            </div>
+            <div id="insertPreview" style="margin-top:12px;display:none;border:1px solid var(--border);border-radius:8px;padding:16px;background:var(--surface-2)"></div>
+            <div id="internalLinks"></div>
+          </div>
 
-      <!-- SEO -->
-      <div class="card">
-        <h2>SEO 设置</h2>
-        <div class="field"><label>SEO 标题</label><input type="text" name="seo_title" value="<?=htmlspecialchars($article['seo_title'])?>" placeholder="留空则使用文章标题"></div>
-        <div class="field"><label>SEO 描述</label><textarea name="seo_desc" rows="2"><?=htmlspecialchars($article['seo_desc'])?></textarea></div>
-        <div class="field"><label>SEO 关键词 <span class="hint">· 逗号分隔</span></label><input type="text" name="seo_keywords" value="<?=htmlspecialchars($article['seo_keywords'])?>"></div>
-      </div>
-
-      <!-- Insertable Components -->
-      <div class="card">
-        <h2>📦 插入组件</h2>
-        <p class="text-sm text-muted mb-4">在文章内插入 CTA / 活动报名 / 资料下载 / Newsletter 订阅组件</p>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          <button type="button" class="btn btn-ghost btn-sm" onclick="insertComponent('cta')">📝 插入 CTA</button>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="insertComponent('event')">🎪 插入活动报名</button>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="insertComponent('download')">📥 插入资料下载</button>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="insertComponent('newsletter')">📬 插入订阅表单</button>
-        </div>
-        <div id="insertPreview" style="margin-top:12px;display:none;border:1px solid var(--border);border-radius:8px;padding:16px;background:var(--surface-2)"></div>
-      </div>
-
-      <!-- Structured Data -->
-      <div class="card">
-        <h2>结构化数据 (JSON-LD)</h2>
-        <p class="text-sm text-muted mb-4">自定义 Schema 代码，将嵌入页面 <code>&lt;head&gt;</code></p>
-        <textarea name="structured_data" rows="6" style="font-family:var(--mono);font-size:13px;line-height:1.6" placeholder='{"@context":"https://schema.org","@type":"Article","headline":"..."}'><?=htmlspecialchars($article['structured_data'] ?? '')?></textarea>
-      </div>
-
-      <!-- Push to Channels -->
+          <!-- Push to Channels -->
       <?php if (!$isNew):
         $allCh = json_read(DATA_DIR . '/channels.json');
         $availCh = array_merge($allCh['domestic'] ?? [], $allCh['international'] ?? []);
         $hasCh = count(array_filter($availCh, fn($c) => $c['enabled']));
       ?>
       <?php if ($hasCh): ?>
-      <div class="card">
-        <h2>📡 推送到分发渠道</h2>
+      <div class="card ae-push">
+        <h2>推送到分发渠道</h2>
         <p class="text-sm text-muted mb-4">一键将文章推送到已配置的国内外平台草稿箱</p>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="channelList">
           <?php foreach ($availCh as $ch): if (!$ch['enabled']) continue; ?>
@@ -501,25 +492,89 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
           </label>
           <?php endforeach; ?>
         </div>
-        <button type="button" class="btn btn-primary" onclick="pushArticle()">🚀 推送到选中渠道</button>
+        <button type="button" class="btn btn-primary" onclick="pushArticle()">推送到选中渠道</button>
         <div id="pushResult" style="margin-top:12px"></div>
       </div>
       <?php endif; ?>
       <?php endif; ?>
+        </div>
 
-      <!-- Internal Links -->
-      <?php if (!$isNew): ?>
-      <div class="card">
-        <h2>内链嗅探</h2>
-        <p class="text-sm text-muted mb-4">扫描全站已发布文章，自动推荐可插入的内链</p>
-        <button type="button" class="btn btn-ghost" onclick="scanInternalLinks('<?=htmlspecialchars($article['id'])?>')">🔍 扫描内链机会</button>
-        <div id="internalLinks" style="margin-top:12px"></div>
-      </div>
-      <?php endif; ?>
+        <!-- ── 右：发布与元数据 ── -->
+        <aside class="ae-side">
+          <section class="card ae-sec">
+            <h2>发布</h2>
+            <div class="field"><label>状态</label><select name="status" onchange="aeStatus(this.value)"><option value="draft" <?=$article['status']==='draft'?'selected':''?>>草稿</option><option value="published" <?=$article['status']==='published'?'selected':''?>>已发布</option><option value="scheduled" <?=$article['status']==='scheduled'?'selected':''?>>定时发布</option></select></div>
+            <div class="field" id="aePublishAt"><label>定时发布 <span class="hint">· 留空则立即发布</span></label><input type="datetime-local" name="publish_at" value="<?=htmlspecialchars($article['publish_at'] ?? '')?>"></div>
+            <label class="ae-check"><input type="checkbox" name="member_only" value="1" <?=!empty($article['member_only'])?'checked':''?>> 会员专享 <span class="hint">· 仅会员可读</span></label>
+            <?php require_once __DIR__ . '/../lib/PaidContent.php'; $__tier = $article['required_tier'] ?? ''; ?>
+          <div class="field"><label>付费门槛 <span class="hint">· 未达门槛显示预览+升级</span></label>
+            <select name="required_tier">
+              <?php foreach (paid_tier_options() as $tv => $tl): ?>
+              <option value="<?=htmlspecialchars($tv)?>" <?=$__tier===$tv?'selected':''?>><?=htmlspecialchars($tl)?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+            <div class="field ae-versions">
+            <?php if (!$isNew):
+              $verFile = DATA_DIR . '/versions/articles/' . $article['id'] . '.json';
+              $versions = json_read($verFile);
+            ?>
+            <label>版本历史 <span class="hint">· 共 <?=count($versions)?> 个版本</span></label>
+            <select id="versionSelect" onchange="previewVersion(this.value)" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
+              <option value="">当前版本</option>
+              <?php foreach (array_reverse($versions) as $v): ?>
+              <option value="<?=$v['version']?>">v<?=$v['version']?> — <?=substr($v['saved_at']??'',0,16)?></option>
+              <?php endforeach; ?>
+            </select>
+            <?php endif; ?>
+            </div>
+          </section>
 
-      <div class="flex gap-4">
-        <button type="submit" class="btn btn-primary" onclick="syncContent()">保存文章</button>
-        <a href="articles.php" class="btn btn-ghost">取消</a>
+          <section class="card ae-sec">
+            <h2>归类</h2>
+            <div class="field"><label>分类</label><select name="category"><option value="">未分类</option><?php foreach ($cats as $c): ?><option value="<?=htmlspecialchars($c['key'])?>" <?=$article['category']===$c['key']?'selected':''?>><?=htmlspecialchars($c['name'])?></option><?php endforeach; ?></select></div>
+            <div class="field"><label>作者</label>
+              <input type="text" name="author" value="<?=htmlspecialchars($article['author'])?>" list="author-list" autocomplete="off">
+              <?php
+              // 已建档作者做成下拉建议，减少"同一个人多种写法"
+              $authorNames = [];
+              if (is_file(DATA_DIR . '/authors.json')) {
+                  foreach ((json_read(DATA_DIR . '/authors.json') ?: []) as $__a) { if (!empty($__a['name'])) $authorNames[] = $__a['name']; }
+              }
+            ?>
+            <?php if ($authorNames): ?><datalist id="author-list"><?php foreach ($authorNames as $__n): ?><option value="<?=htmlspecialchars($__n)?>"><?php endforeach; ?></datalist><?php endif; ?>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label>标签 <span class="hint">· 逗号分隔</span></label>
+              <input type="text" name="tags" value="<?=htmlspecialchars(implode(', ', $article['tags'] ?? []))?>" placeholder="标签1, 标签2, 标签3" id="tagsInput">
+              <?php if (!empty($allTags)): ?>
+        <div class="ae-tagcloud"><?php foreach ($allTags as $t): ?><span class="tag-item" style="cursor:pointer;margin:2px" onclick="addTag('<?=htmlspecialchars($t, ENT_QUOTES)?>')"><?=htmlspecialchars($t)?></span><?php endforeach; ?></div>
+        <?php endif; ?>
+            </div>
+          </section>
+
+          <section class="card ae-sec">
+            <h2>封面</h2>
+            <?php if ($article['cover']): ?>
+            <img id="coverPreview" src="<?=htmlspecialchars($coverUrl)?>" class="ae-cover">
+            <?php endif; ?>
+            <div class="field"><label>图片路径</label><input type="text" name="cover" id="cover" value="<?=htmlspecialchars($article['cover'])?>" placeholder="uploads/articles/文件名.jpg"></div>
+            <div class="field"><label>从媒体库选择</label><select onchange="pickCover(this)"><option value="">— 选择图片 —</option><?php foreach ($files as $fp): $n = basename($fp); $rel = 'uploads/articles/' . $n; ?><option value="<?=htmlspecialchars($rel)?>" <?=$article['cover']===$rel?'selected':''?>><?=htmlspecialchars($n)?></option><?php endforeach; ?></select></div>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="openStockPicker()">从免费图库搜索封面</button>
+          </section>
+
+          <details class="card ae-sec ae-fold" id="seo" <?=($article['seo_title']||$article['seo_desc']||$article['seo_keywords'])?'open':''?>>
+            <summary><h2>SEO</h2><span class="ae-fold-hint"><?=($article['seo_title']||$article['seo_desc']||$article['seo_keywords'])?'已填写':'留空则用标题与摘要'?></span></summary>
+            <div class="field"><label>SEO 标题</label><input type="text" name="seo_title" value="<?=htmlspecialchars($article['seo_title'])?>" placeholder="留空则使用文章标题"></div>
+            <div class="field"><label>SEO 描述</label><textarea name="seo_desc" rows="3"><?=htmlspecialchars($article['seo_desc'])?></textarea></div>
+            <div class="field" style="margin-bottom:0"><label>SEO 关键词 <span class="hint">· 逗号分隔</span></label><input type="text" name="seo_keywords" value="<?=htmlspecialchars($article['seo_keywords'])?>"></div>
+          </details>
+
+          <details class="card ae-sec ae-fold" <?=!empty($article['structured_data'])?'open':''?>>
+            <summary><h2>结构化数据</h2><span class="ae-fold-hint">JSON-LD · 嵌入 &lt;head&gt;</span></summary>
+            <textarea name="structured_data" rows="6" style="font-family:var(--mono);font-size:12.5px;line-height:1.6;width:100%" placeholder='{"@context":"https://schema.org","@type":"Article","headline":"..."}'><?=htmlspecialchars($article['structured_data'] ?? '')?></textarea>
+          </details>
+        </aside>
       </div>
     </form>
   </div>
@@ -602,13 +657,17 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
 <div class="upload-progress" id="uploadProgress"><span id="uploadStatus">上传中...</span><div class="bar"><div class="fill" id="uploadFill"></div></div></div>
 
 <script>
+function aeStatus(v){var p=document.getElementById('aeStatusPill');if(p){p.dataset.s=v;p.textContent={draft:'草稿',published:'已发布',scheduled:'定时发布'}[v]||v;}var pa=document.getElementById('aePublishAt');if(pa)pa.style.display=(v==='scheduled')?'':'none';}
+aeStatus(document.querySelector('select[name=status]').value);
+if (location.hash === '#seo') { var __seo = document.getElementById('seo'); if (__seo) { __seo.open = true; setTimeout(function(){ __seo.scrollIntoView({block:'center'}); __seo.querySelector('input') && __seo.querySelector('input').focus(); }, 50); } }
 var currentMode = '<?=$editorMode?>';
 var mdContent = '';
 
 // ─── Zen 沉浸写作模式 ───
 function toggleZen() {
   var zen = document.body.classList.toggle('zen-mode');
-  document.getElementById('zenBtn').textContent = zen ? '🧘 退出 Zen' : '🧘 Zen';
+  document.getElementById('zenBtn').textContent = zen ? '退出 Zen' : 'Zen 沉浸写作';
+  var more = document.querySelector('.ae-more'); if (more) more.open = false;
   var exitBtn = document.querySelector('.zen-exit');
   if (exitBtn) exitBtn.style.display = zen ? 'inline-flex' : 'none';
   // Zen 模式下聚焦编辑器
@@ -1260,7 +1319,7 @@ function pushArticle() {
   xhr.open('POST', '../api/push-article.php', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.onload = function() {
-    btn.textContent = '🚀 推送到选中渠道'; btn.disabled = false;
+    btn.textContent = '推送到选中渠道'; btn.disabled = false;
     try {
       var resp = JSON.parse(xhr.responseText);
       var html = '';

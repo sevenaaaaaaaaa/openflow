@@ -68,7 +68,34 @@
 5. 长表单不用自己写「保存」浮层。
 6. `php tests/admin_contract_test.php` 必须全绿。
 
-## 八、还没做（第二阶段：逐页重排）
+## 八、第二阶段：逐页重排（v12 · 2026-09-03）
 
-按用户定的优先级：内容（写文章 / 内容中心 / 内容日历）→ 增长（自动化 / 活动 / 分群 / CDP）→ 商业（订单 / CRM / 线索 / 商城 / 会员）。
-框架层解决的是「每页都有」的问题；单页的信息架构（写文章页正文区 916px、内容中心 10 列表格挤压、设置页 3380px 一张表单）在第二阶段处理。
+框架层解决「每页都有」的问题；第二阶段按用户定的优先级逐页改信息架构。共用的列表页骨架（`lst-*`、`.of-selbar`、`.of-menu`、`.ib`）已提到 `admin-ui.css`，新列表页直接套：
+
+```html
+<div class="lst-filter">  <form class="lst-search" role="search">…</form> <select class="lst-sel">…</select> <span class="lst-count">N 条</span> </div>
+<div class="card lst-card">
+  <table class="lst-table">  <!-- table-layout:fixed；给非标题列写 width，标题列 class="c-title" -->
+    <thead><tr><th class="c-check">…</th><th class="c-title">…</th><th style="width:120px">…</th><th class="c-act"></th></tr></thead>
+    …
+```
+
+| 页面 | 原来 | 现在 |
+|---|---|---|
+| 写文章 `article-edit` | 单列 2671px；正文编辑器在 916px 以下；保存在 2535px | 顶部常驻操作条（返回 / 状态 / 导入 / AI / 更多 / 保存）；左正文（大标题 + slug 行 + 编辑器 62vh）右元数据（发布 / 归类 / 封面 / SEO 折叠 / JSON-LD 折叠）；Zen 模式保留 |
+| 内容中心 `content-hub` + `articles` | 10 列表格、表头与单元格错位、标题被压到 80px；4 条工具栏叠着 | 6 列 fixed 布局（标题列吃剩余宽度，slug / 标签放标题下）；子页操作按钮提到 tab 行；筛选一行；勾选后才出现的底部批量条（`.of-selbar`）；行内「···」菜单收纳导出 / 复制 / SEO / 回收站 |
+| 内容日历 `content-calendar` | 标题 + 工具栏 + 图例 + 提示 四段 | 一行工具栏（月份 / 今天 / 月周切换 / 图例 / ? 提示）；文章与资料颜色区分；导航归入「内容」区 |
+| 营销自动化 `automation` | 每个步骤 12 个字段全部平铺，不管动作类型 | 步骤按动作类型只显示相关字段（邮件 3 / 延迟 1 / 通知 3 / 标签 1 / 积分 1 / 优惠券 4），头部有编号、摘要、上下移；列表显示「邮件 → 延迟 → 标签」链 |
+| 活动 `campaigns` | 删除表单 HTML 断裂（无按钮无闭合）、删除无 CSRF；组件字段平铺 | 修好删除（带 CSRF + 确认）；列表显示组件链、排期、范围、真实状态（运行中 / 待开始 / 已过期）；组件编辑按类型显示位置 / 触发字段 |
+| 用户分群 `segments` | 新建要手写「规则 JSON」 | 条件构建器（字段 / 运算 / 值，按字段类型给运算符）；卡片显示规则链、AND/OR；从分群直达「建自动化」 |
+| CDP `cdp` | 「用户属性分布」「用户列表」写在 `admin_footer()` 之后（在 `</html>` 外面）；50 张用户卡片 | 归位到「用户画像」tab；用户列表改表格（前 200，自动筛选 / 排序 / 分页）；所有 inline grid 加响应式 |
+| 订单 `orders` | 只有查询框 | 四个可点的状态卡（已支付金额 / 已退款 / 待支付 / 全部）即筛选；一行搜索；表格 fixed 布局 + 自动分页 |
+| CRM `crm` | 9 个 KPI 卡（第 9 个掉到第二行）与阶段筛选按钮重复；详情面板 6 张表单平铺；面板里多了一个 `</div>` | 3 个金额卡 + 阶段漏斗 chips（数量 + 赢率，可点筛选）；详情分「阶段与商机 / 转客户（折叠，商机以上自动展开）/ 归属与评分 / 跟进」；转客户加确认 |
+| 商城 `mall` | 表单在列表上面占满首屏；删除表单 HTML 断裂；无编辑 | 列表优先，右上「新增」；`?edit=` 进入编辑（表单带回填）；删除修好（带 CSRF + 确认）；库存低 / 售罄着色 |
+| 会员 `membership` | 每行 select + 保存按钮；hex 颜色；emoji 权益表 | select 改了即存；token 色 KPI；权益表 ✓ / — 文本化 |
+
+顺带修的真 bug：**22 处被截断的 `<form>`**（`campaigns / mall / analytics / approvals / categories / forms / landing-pages / moderation / page-builder / plugins / shop-settings / storage / topics`——`csrf_field()` 之后的按钮与 `</form>` 全丢了，讲师审核、投稿审核、提现打款、删除分类 / 表单 / 专题 / 页面、内容扫描、存储维护这些按钮从基线起就不存在；已按各页的 POST 处理逻辑逐一补回并加确认，契约测试新增 form/select 标签配对检查）、`campaigns` 删除无 CSRF、`cdp.php` 60 行正文在 `</html>` 之后、`crm.php` 详情面板多一个闭合标签、`config.php` 缺 `.badge-red`（15 个页面在用）。
+
+### 还没做
+
+系统区（设置页 3380px 一张表单）用户未列为优先，下一阶段处理；`crm?tab=raw` 原始提交表沿用动态列头，没有单独重排。

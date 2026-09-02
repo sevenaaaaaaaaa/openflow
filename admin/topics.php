@@ -95,8 +95,10 @@ admin_header('专题管理');
             <td>
               <button class="btn btn-ghost btn-sm" onclick='editTopic(<?=json_encode($t, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?>)'>编辑</button>
               <a href="../content-preview.php?type=topic&id=<?=htmlspecialchars($t['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a>
-              <form method="post" style="display:inline" data-confirm="确认删除?">
+              <form method="post" style="display:inline" data-confirm="删除专题「<?=htmlspecialchars($t['title'] ?? '',ENT_QUOTES)?>」？文章本身不会被删。">
                 <?= csrf_field() ?>
+                <button type="submit" name="delete" value="<?=htmlspecialchars($t['id'])?>" class="btn btn-ghost btn-sm" style="color:var(--danger)">删除</button>
+              </form>
             </td>
           </tr>
           <?php endforeach; ?>

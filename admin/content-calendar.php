@@ -23,7 +23,7 @@ foreach ($articles as $a) {
         'title' => $a['title'] ?? '',
         'date' => substr($date, 0, 10),
         'scheduled' => !empty($a['publish_at']),
-        'color' => !empty($a['publish_at']) ? 'var(--warn)' : '#2e6b4f',
+        'color' => !empty($a['publish_at']) ? 'var(--warn)' : 'oklch(52% .12 160)',
     ];
 }
 // 活动：开始/结束日期
@@ -51,7 +51,7 @@ foreach ($downloads as $d) {
         'title' => $d['title'] ?? '',
         'date' => substr($d['created_at'] ?? '', 0, 10),
         'scheduled' => false,
-        'color' => 'var(--accent)',
+        'color' => 'oklch(55% .13 250)',
     ];
 }
 
@@ -90,14 +90,25 @@ usort($calendarItems, fn($a, $b) => strcmp($a['date'], $b['date']));
 admin_header('内容日历');
 ?>
 <style>
-.cal-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-.cal-nav{display:flex;gap:6px;align-items:center}
-.cal-nav button{padding:8px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--text)}
-.cal-nav button:hover{border-color:var(--accent)}
-.cal-nav button.cal-view-on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.cal-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:14px}
+.cal-head .sub{margin-bottom:0}
+.cal-count{margin-left:auto;font-size:12.5px;color:var(--muted);white-space:nowrap;padding-top:14px}
+.cal-count b{font-family:var(--font-mono);color:var(--fg)}
+.cal-toolbar{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.cal-nav{display:flex;gap:4px;align-items:center}
+.cal-nav button,.cal-seg button{height:34px;padding:0 12px;border-radius:9px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;color:var(--fg)}
+.cal-nav button:hover,.cal-seg button:hover{border-color:var(--border-strong);background:var(--hover)}
+.cal-month{font-size:15px;font-weight:800;min-width:120px;text-align:center;letter-spacing:-.01em}
+.cal-seg{display:inline-flex;padding:3px;border-radius:11px;background:var(--hover);gap:2px}
+.cal-seg button{height:28px;border:0;background:transparent;color:var(--muted);border-radius:8px}
+.cal-seg button.cal-view-on{background:var(--surface-strong);color:var(--fg);box-shadow:var(--shadow-sm)}
+.cal-help{position:relative;display:inline-flex}
+.cal-help summary{list-style:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}
+.cal-help summary::-webkit-details-marker{display:none}
+.cal-help .cal-tip{position:absolute;right:0;top:calc(100% + 8px);width:320px;z-index:20;box-shadow:var(--shadow);border:1px solid var(--border);line-height:1.7}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .cal-day{min-height:96px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:4px;transition:background .15s}
-.cal-day.today{background:rgba(221,255,14,.12);border-color:var(--accent)}
+.cal-day.today{background:var(--accent-soft);border-color:var(--accent)}
 .cal-day.dim{opacity:.4}
 .cal-day .dnum{font-size:12px;font-weight:600;color:var(--text-3);margin-bottom:2px}
 .cal-chip{font-size:11px;padding:3px 7px;border-radius:6px;color:#fff;font-weight:600;cursor:grab;display:flex;align-items:center;gap:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
@@ -110,42 +121,40 @@ admin_header('内容日历');
 .cal-handle-l{margin-right:3px}
 .cal-handle-r{margin-left:3px}
 .cal-day.resize-target{outline:2px dashed var(--accent);outline-offset:-2px;cursor:ew-resize}
-.cal-legend{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;font-size:12px;color:var(--text-2)}
+.cal-legend{display:flex;gap:12px;margin-left:auto;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--text-2)}
 .cal-legend .lg{display:flex;align-items:center;gap:5px}
 .cal-legend .dot{width:10px;height:10px;border-radius:3px}
 .cal-legend .dashed{outline:2px dashed rgba(0,0,0,.3);outline-offset:-1px}
-.cal-tip{font-size:12px;color:var(--text-3);background:var(--surface-2);padding:8px 14px;border-radius:8px;margin-bottom:16px}
-.cal-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e1e1e;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.cal-tip{font-size:12px;color:var(--muted);background:var(--surface-strong);padding:10px 14px;border-radius:10px}
+.cal-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 22px;border-radius:10px;font-size:13px;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+@media(max-width:840px){.cal-grid{grid-template-columns:repeat(7,minmax(76px,1fr))}.main{overflow-x:auto}.cal-legend{margin-left:0}}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('content-calendar'); ?>
   <div class="main">
-    <h1> 内容日历</h1>
-    <p class="sub">拖拽文章 / 资料到日历上的日期即可修改发布日期 · 未来日期 = 定时发布 · 活动支持起止日期</p>
+    <div class="cal-head">
+      <div><h1>内容日历</h1><p class="sub">拖拽文章 / 资料到日期即可改发布日期；未来日期 = 定时发布，活动支持起止日期</p></div>
+      <span class="cal-count"><b><?=count($calendarItems)?></b> 项内容</span>
+    </div>
 
     <div class="cal-toolbar">
       <div class="cal-nav">
-        <button onclick="calNav(-1)">‹</button>
-        <span id="calMonthLabel" style="font-size:16px;font-weight:700;min-width:160px;text-align:center"></span>
-        <button onclick="calNav(1)">›</button>
+        <button onclick="calNav(-1)" aria-label="上一月">‹</button>
+        <span id="calMonthLabel" class="cal-month"></span>
+        <button onclick="calNav(1)" aria-label="下一月">›</button>
         <button onclick="calToday()" style="margin-left:6px">今天</button>
-        <span style="width:1px;height:20px;background:var(--border);margin:0 6px"></span>
-        <button id="calViewMonth" onclick="calSetView('month')" class="cal-view-on">月</button>
-        <button id="calViewWeek" onclick="calSetView('week')">周</button>
       </div>
-      <span style="margin-left:auto" class="text-sm text-muted">当前显示 <?=count($calendarItems)?> 项内容</span>
+      <div class="cal-seg" role="tablist"><button id="calViewMonth" onclick="calSetView('month')" class="cal-view-on" role="tab">月</button><button id="calViewWeek" onclick="calSetView('week')" role="tab">周</button></div>
+      <div class="cal-legend">
+        <span class="lg"><span class="dot" style="background:oklch(52% .12 160)"></span>文章</span>
+        <span class="lg"><span class="dot" style="background:var(--accent)"></span>活动</span>
+        <span class="lg"><span class="dot" style="background:oklch(55% .13 250)"></span>资料</span>
+        <span class="lg"><span class="dot" style="background:oklch(60% .14 300)"></span>分发计划</span>
+        <span class="lg"><span class="dot" style="background:var(--ok)"></span>已分发</span>
+        <span class="lg"><span class="dot dashed" style="background:var(--warn)"></span>定时</span>
+        <details class="cal-help"><summary title="拖拽说明">?</summary><div class="cal-tip">拖拽带虚线的「定时」卡片到未来日期 = 定时发布，拖到今天 / 过去 = 立即发布。活动卡片整卡拖拽 = 整体移动；拖动卡片两侧的 <b>↔</b> 把手可分别调整开始日 / 结束日。</div></details>
+      </div>
     </div>
-
-    <div class="cal-legend">
-      <span class="lg"><span class="dot" style="background:#2e6b4f"></span>文章</span>
-      <span class="lg"><span class="dot" style="background:var(--accent)"></span>活动</span>
-      <span class="lg"><span class="dot" style="background:var(--accent)"></span>资料</span>
-      <span class="lg"><span class="dot" style="background:oklch(60% .14 300)"></span>分发计划</span>
-      <span class="lg"><span class="dot" style="background:var(--ok)"></span>已分发</span>
-      <span class="lg"><span class="dot dashed" style="background:var(--warn)"></span>定时发布</span>
-    </div>
-
-    <div class="cal-tip">💡 拖拽带虚线的「定时」卡片到未来日期 = 定时发布，拖到今天/过去 = 立即发布。活动卡片整卡拖拽 = 整体移动；拖动卡片两侧的 <b>↔</b> 把手可分别调整「开始日 / 结束日」。</div>
 
     <div id="calGrid" class="cal-grid"></div>
     <div id="calToast" class="cal-toast"></div>

@@ -46,13 +46,13 @@ function admin_nav_tree(): array {
                 ['id' => 'dashboard', 'label' => '经营驾驶舱', 'perm' => 'dashboard'],
                 ['id' => 'flow', 'label' => '运营主线', 'perm' => 'flow'],
                 ['id' => 'driver', 'label' => '增长驱动', 'perm' => 'flow'],
-                ['id' => 'content-calendar', 'label' => '内容日历', 'perm' => 'tasks'],
             ]],
         ]],
         ['id' => 'content', 'label' => '内容', 'icon' => $I['doc'], 'groups' => [
             ['label' => '创作与发布', 'items' => [
                 ['id' => 'content-hub', 'label' => '内容中心', 'perm' => 'pages', 'hint' => '文章 · 页面 · 下载 · 播客'],
                 ['id' => 'tasks', 'label' => '内容生产任务', 'perm' => 'tasks'],
+                ['id' => 'content-calendar', 'label' => '内容日历', 'perm' => 'tasks'],
                 ['id' => 'publish', 'label' => '内容分发', 'perm' => 'tasks'],
                 ['id' => 'channels', 'label' => '分发渠道', 'perm' => 'channels'],
                 ['id' => 'version-diff', 'label' => '版本对比', 'perm' => 'version-diff'],
@@ -320,7 +320,10 @@ function admin_nav_render(string $current, string $script = ''): void {
     <?php endforeach; ?>
     <div class="sb-panel-h" style="margin-top:14px">最近打开</div>
     <div id="sbRecent" class="sb-recent" data-current="<?=htmlspecialchars($current)?>" data-current-label="<?=htmlspecialchars($loc['label'])?>"></div>
-    <?php if (class_exists('PluginSystem')) PluginSystem::do_action('admin_sidebar_menu', $current); ?>
+    <?php if (class_exists('PluginSystem')): ob_start(); PluginSystem::do_action('admin_sidebar_menu', $current); $__plug = trim((string)ob_get_clean()); if ($__plug !== ''): ?>
+    <div class="sb-panel-h" style="margin-top:14px">插件</div>
+    <div class="sb-plugins"><?=$__plug?></div>
+    <?php endif; endif; ?>
   </div>
   <div class="sb-foot mono">OpenFlow</div>
 </nav>

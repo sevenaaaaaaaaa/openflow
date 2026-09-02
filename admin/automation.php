@@ -92,16 +92,45 @@ $behavList = ['page_view','article_view','element_click','download','purchase','
 
 admin_header('营销自动化');
 ?>
+<style>
+.au-h3{font-size:14px;font-weight:800;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.au-h3 .hint{font-weight:400;color:var(--faint);font-size:12px}
+.au-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.au-step{border:1px solid var(--border);border-radius:14px;background:var(--surface-strong);overflow:hidden}
+.au-step-head{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--hover)}
+.au-n{width:22px;height:22px;border-radius:50%;background:var(--fg);color:var(--bg);font-family:var(--font-mono);font-size:11px;font-weight:700;display:grid;place-items:center;flex:0 0 auto}
+.au-act{height:34px;padding:0 28px 0 10px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-weight:700;background:var(--surface);color:var(--fg);width:auto}
+.au-step-sum{flex:1;min-width:0;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.au-step-tools{display:flex;gap:2px}
+.au-step-tools .ib.danger:hover{color:var(--danger);background:var(--danger-soft,var(--hover))}
+.au-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;padding:12px 14px 14px}
+.au-f{display:none;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;min-width:0}
+.au-f > span:first-child{display:flex;gap:6px;align-items:baseline}
+.au-f em{font-style:normal;font-weight:400;color:var(--faint);font-size:11.5px}
+.au-f input,.au-f select,.au-f textarea{width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:9px;font-size:13px;background:var(--surface);color:var(--fg)}
+.au-f textarea{height:auto;padding:8px 10px;line-height:1.6;resize:vertical}
+.au-f.wide{grid-column:1/-1}
+.au-inline{display:flex;align-items:center;gap:8px}
+.au-inline input{width:120px}
+.au-step[data-action="send_email"] [data-f="subject"],.au-step[data-action="send_email"] [data-f="content"],.au-step[data-action="send_email"] [data-f="mail_id"],
+.au-step[data-action="delay"] [data-f="delay"],
+.au-step[data-action="notify"] [data-f="title"],.au-step[data-action="notify"] [data-f="content"],.au-step[data-action="notify"] [data-f="link"],
+.au-step[data-action="inbox"] [data-f="title"],.au-step[data-action="inbox"] [data-f="content"],.au-step[data-action="inbox"] [data-f="link"],
+.au-step[data-action="add_tag"] [data-f="tag"],
+.au-step[data-action="award_points"] [data-f="points"],
+.au-step[data-action="send_coupon"] [data-f^="coupon_"]{display:flex}
+@media(max-width:840px){.au-fields{grid-template-columns:1fr}}
+</style>
 <div class="admin-layout">
   <?php admin_sidebar('automation'); ?>
   <div class="main">
-    <h1> 营销自动化</h1>
+    <h1>营销自动化</h1>
     <p class="sub">自动化邮件流程 · 触发条件 → 动作（发邮件/通知/延迟）</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
     <div class="flex items-center gap-4 mb-4">
       <h2 style="margin-bottom:0">自动化流程</h2>
-      <a href="automation.php?edit=new" class="btn btn-primary btn-sm ml-auto">➕ 新建流程</a>
+      <a href="automation.php?edit=new" class="btn btn-primary btn-sm ml-auto">新建流程</a>
     </div>
 
     <?php if ($edit): ?>
@@ -115,24 +144,24 @@ admin_header('营销自动化');
           <div class="field"><label>启用</label><label style="display:flex;align-items:center;gap:6px;margin-top:8px;cursor:pointer"><input type="checkbox" name="enabled" value="1" <?=($edit['enabled']??false)?'checked':''?> style="width:16px;height:16px"> 启用此流程</label></div>
         </div>
 
-        <h3 style="font-size:15px;margin:16px 0 10px">🔔 触发器</h3>
+        <h3 class="au-h3">触发器 <span class="hint">· 什么事发生时启动这条流程</span></h3>
         <div class="field-row">
           <div class="field"><label>触发类型</label><select name="trigger" onchange="triggerChange(this)">
             <option value="form_submit" <?=($edit['trigger']??'')==='form_submit'?'selected':''?>>表单提交</option>
             <option value="member_register" <?=($edit['trigger']??'')==='member_register'?'selected':''?>>用户注册</option>
             <option value="nps_submit" <?=($edit['trigger']??'')==='nps_submit'?'selected':''?>>NPS 评分</option>
-            <option value="page_view" <?=($edit['trigger']??'')==='page_view'?'selected':''?>>👀 页面访问</option>
-            <option value="article_view" <?=($edit['trigger']??'')==='article_view'?'selected':''?>>📄 文章浏览</option>
-            <option value="element_click" <?=($edit['trigger']??'')==='element_click'?'selected':''?>>🖱 元素点击</option>
-            <option value="download" <?=($edit['trigger']??'')==='download'?'selected':''?>>📥 资料下载</option>
-            <option value="purchase" <?=($edit['trigger']??'')==='purchase'?'selected':''?>>🛒 购买成功</option>
-            <option value="course_complete" <?=($edit['trigger']??'')==='course_complete'?'selected':''?>>🎓 课程学完</option>
-            <option value="course_enroll" <?=($edit['trigger']??'')==='course_enroll'?'selected':''?>>📚 课程报名</option>
-            <option value="lesson_complete" <?=($edit['trigger']??'')==='lesson_complete'?'selected':''?>>✅ 完成课时</option>
-            <option value="role_selected" <?=($edit['trigger']??'')==='role_selected'?'selected':''?>>👤 选择角色</option>
-            <option value="tool_use" <?=($edit['trigger']??'')==='tool_use'?'selected':''?>>🧰 使用工具</option>
-            <option value="segment_enter" <?=($edit['trigger']??'')==='segment_enter'?'selected':''?>>🔵 进入分群</option>
-            <option value="segment_exit" <?=($edit['trigger']??'')==='segment_exit'?'selected':''?>>⚪ 退出分群</option>
+            <option value="page_view" <?=($edit['trigger']??'')==='page_view'?'selected':''?>>页面访问</option>
+            <option value="article_view" <?=($edit['trigger']??'')==='article_view'?'selected':''?>>文章浏览</option>
+            <option value="element_click" <?=($edit['trigger']??'')==='element_click'?'selected':''?>>元素点击</option>
+            <option value="download" <?=($edit['trigger']??'')==='download'?'selected':''?>>资料下载</option>
+            <option value="purchase" <?=($edit['trigger']??'')==='purchase'?'selected':''?>>购买成功</option>
+            <option value="course_complete" <?=($edit['trigger']??'')==='course_complete'?'selected':''?>>课程学完</option>
+            <option value="course_enroll" <?=($edit['trigger']??'')==='course_enroll'?'selected':''?>>课程报名</option>
+            <option value="lesson_complete" <?=($edit['trigger']??'')==='lesson_complete'?'selected':''?>>完成课时</option>
+            <option value="role_selected" <?=($edit['trigger']??'')==='role_selected'?'selected':''?>>选择角色</option>
+            <option value="tool_use" <?=($edit['trigger']??'')==='tool_use'?'selected':''?>>使用工具</option>
+            <option value="segment_enter" <?=($edit['trigger']??'')==='segment_enter'?'selected':''?>>进入分群</option>
+            <option value="segment_exit" <?=($edit['trigger']??'')==='segment_exit'?'selected':''?>>退出分群</option>
           </select></div>
           <div class="field" id="formSelBox" style="display:<?=($edit['trigger']??'')==='form_submit'?'block':'none'?>">
             <label>指定表单 <span class="hint">· 留空=全部</span></label>
@@ -156,41 +185,9 @@ admin_header('营销自动化');
           </div>
         </div>
 
-        <h3 style="font-size:15px;margin:16px 0 10px">⚙️ 动作步骤</h3>
-        <div id="stepList">
-          <?php foreach ($edit['steps'] ?? [] as $si => $st): ?>
-          <div class="step-row" style="border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;background:var(--surface-2)">
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-              <select name="step_action[]" style="width:130px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
-                <option value="send_email" <?=($st['action']??'')==='send_email'?'selected':''?>>📧 发送邮件</option>
-                <option value="delay" <?=($st['action']??'')==='delay'?'selected':''?>>⏱ 延迟</option>
-                <option value="notify" <?=($st['action']??'')==='notify'?'selected':''?>>🔔 通知</option>
-                <option value="add_tag" <?=($st['action']??'')==='add_tag'?'selected':''?>>🏷 打标签</option>
-                <option value="award_points" <?=($st['action']??'')==='award_points'?'selected':''?>>⭐ 加积分</option>
-                <option value="send_coupon" <?=($st['action']??'')==='send_coupon'?'selected':''?>>🎫 发优惠券</option>
-                <option value="inbox" <?=($st['action']??'')==='inbox'?'selected':''?>>✉ 站内信</option>
-              </select>
-              <input type="text" name="step_subject[]" value="<?=htmlspecialchars($st['subject'] ?? '')?>" placeholder="邮件主题" style="flex:1;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
-              <input type="number" name="step_delay[]" value="<?=htmlspecialchars($st['delay_minutes'] ?? 60)?>" placeholder="延迟(分钟)" style="width:110px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
-              <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.step-row').remove()">✕</button>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-              <input type="text" name="step_mail_id[]" value="<?=htmlspecialchars($st['mautic_email_id'] ?? '')?>" placeholder="Mautic 邮件ID(可选)" style="width:160px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
-              <input type="text" name="step_title[]" value="<?=htmlspecialchars($st['title'] ?? '')?>" placeholder="通知标题" style="width:200px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
-              <input type="text" name="step_link[]" value="<?=htmlspecialchars($st['link'] ?? '')?>" placeholder="通知链接" style="flex:1;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
-            </div>
-            <textarea name="step_content[]" rows="2" placeholder="邮件内容（支持 {name} {email} {company} 变量 · {recommend} 自动插入个性化推荐）" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><?=htmlspecialchars($st['content'] ?? '')?></textarea>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-              <input type="text" name="step_tag[]" value="<?=htmlspecialchars($st['tag'] ?? '')?>" placeholder="标签名(打标签)" style="width:140px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
-              <input type="number" name="step_points[]" value="<?=htmlspecialchars($st['points'] ?? 0)?>" placeholder="积分(加积分)" style="width:110px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
-              <input type="text" name="step_coupon_name[]" value="<?=htmlspecialchars($st['coupon_name'] ?? '')?>" placeholder="券名(发券)" style="width:140px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
-              <select name="step_coupon_type[]" style="padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px"><option value="fixed" <?=($st['coupon_type']??'fixed')==='fixed'?'selected':''?>>满减¥</option><option value="percent" <?=($st['coupon_type']??'')==='percent'?'selected':''?>>折扣%</option></select>
-              <input type="number" name="step_coupon_value[]" value="<?=htmlspecialchars($st['coupon_value'] ?? 0)?>" placeholder="券面值" style="width:90px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
-              <input type="number" name="step_coupon_min[]" value="<?=htmlspecialchars($st['coupon_min'] ?? 0)?>" placeholder="满额门槛" style="width:100px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
-            </div>
-          </div>
-          <?php endforeach; ?>
-        </div>
+        <h3 class="au-h3">动作步骤 <span class="hint">· 按顺序执行，每一步只填该动作需要的字段</span></h3>
+        <div id="stepList" class="au-steps"></div>
+        <script>var AU_STEPS = <?=json_encode(array_values($edit['steps'] ?? []), JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP)?>;</script>
         <button type="button" class="btn btn-ghost btn-sm" onclick="addStep()">+ 添加步骤</button>
         <div style="margin-top:12px"><button type="submit" name="save" class="btn btn-primary">保存流程</button>
         <a href="automation.php" class="btn btn-ghost">取消</a></div>
@@ -200,15 +197,15 @@ admin_header('营销自动化');
     <?php else: ?>
     <div class="card" style="padding:0;overflow:auto">
       <table>
-        <thead><tr><th>流程</th><th>触发器</th><th>步骤数</th><th>状态</th><th>操作</th></tr></thead>
+        <thead><tr><th>流程</th><th>触发器</th><th>步骤</th><th>状态</th><th class="actions">操作</th></tr></thead>
         <tbody>
-          <?php if (empty($flows)): ?><tr><td colspan="5" class="empty">暂无自动化流程，点击右上角创建</td></tr><?php endif; ?>
+          <?php if (empty($flows)): ?><tr><td colspan="5"><div class="of-empty" style="border:0;margin:0">还没有自动化流程。<a href="automation.php?edit=new">新建第一条</a>：比如「表单提交 → 发欢迎邮件 → 3 天后再发一封」</div></td></tr><?php endif; ?>
           <?php foreach ($flows as $f): ?>
           <tr>
             <td><strong><?=htmlspecialchars($f['name'])?></strong></td>
             <td class="text-sm text-muted"><?=$triggerLabels[$f['trigger']] ?? $f['trigger']?></td>
-            <td><?=count($f['steps'])?></td>
-            <td><span class="badge <?=($f['enabled']??false)?'badge-green':'badge-gray'?>"><?=($f['enabled']??false)?'🟢 运行中':'⏸ 已停'?></span></td>
+            <td class="text-sm text-muted"><?php $__names=['send_email'=>'邮件','delay'=>'延迟','notify'=>'通知','inbox'=>'站内信','add_tag'=>'标签','award_points'=>'积分','send_coupon'=>'优惠券']; echo htmlspecialchars(implode(' → ', array_map(fn($st)=>$__names[$st['action']??'']??($st['action']??'?'), $f['steps'] ?? []))) ?: '—'; ?></td>
+            <td><span class="badge <?=($f['enabled']??false)?'badge-green':'badge-gray'?>"><?=($f['enabled']??false)?'运行中':'已停用'?></span></td>
             <td style="white-space:nowrap">
               <a href="?toggle=<?=urlencode($f['id'])?>" class="btn btn-ghost btn-sm"><?=($f['enabled']??false)?'停用':'启用'?></a>
               <a href="automation.php?edit=<?=urlencode($f['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
@@ -222,7 +219,7 @@ admin_header('营销自动化');
 
     <!-- 运行日志 -->
     <div class="card" style="padding:0;overflow:auto;margin-top:16px">
-      <h2 style="padding:20px 20px 0">📜 运行日志</h2>
+      <h2 style="padding:20px 20px 0">运行日志</h2>
       <table>
         <thead><tr><th>时间</th><th>流程</th><th>级别</th><th>详情</th></tr></thead>
         <tbody>
@@ -252,32 +249,62 @@ function triggerChange(sel) {
   document.getElementById('behavValBox').style.display = disp;
   document.getElementById('behavPropsBox').style.display = disp;
 }
-function addStep() {
-  var d = document.createElement('div');
-  d.className = 'step-row';
-  d.style.cssText = 'border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;background:var(--surface-2)';
-  d.innerHTML =
-    '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">' +
-      '<select name="step_action[]" style="width:130px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="send_email">📧 发送邮件</option><option value="delay">⏱ 延迟</option><option value="notify">🔔 通知</option><option value="add_tag">🏷 打标签</option><option value="award_points">⭐ 加积分</option><option value="send_coupon">🎫 发优惠券</option><option value="inbox">✉ 站内信</option></select>' +
-      '<input type="text" name="step_subject[]" placeholder="邮件主题" style="flex:1;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">' +
-      '<input type="number" name="step_delay[]" value="60" placeholder="延迟(分钟)" style="width:110px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">' +
-      '<button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'.step-row\').remove()">✕</button>' +
+var AU_ACTIONS = {
+  send_email:   {label:'发送邮件', fields:['subject','content','mail_id']},
+  delay:        {label:'延迟',     fields:['delay']},
+  notify:       {label:'通知',     fields:['title','content','link']},
+  inbox:        {label:'站内信',   fields:['title','content','link']},
+  add_tag:      {label:'打标签',   fields:['tag']},
+  award_points: {label:'加积分',   fields:['points']},
+  send_coupon:  {label:'发优惠券', fields:['coupon_name','coupon_type','coupon_value','coupon_min']}
+};
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function stepHTML(st, i) {
+  st = st || {}; var act = st.action || 'send_email';
+  var opts = Object.keys(AU_ACTIONS).map(function(k){return '<option value="'+k+'"'+(k===act?' selected':'')+'>'+AU_ACTIONS[k].label+'</option>'}).join('');
+  return '<div class="au-step" data-action="'+act+'">' +
+    '<div class="au-step-head"><span class="au-n">'+(i+1)+'</span>' +
+      '<select name="step_action[]" class="au-act" onchange="stepAction(this)">'+opts+'</select>' +
+      '<span class="au-step-sum"></span>' +
+      '<span class="au-step-tools"><button type="button" class="ib" title="上移" onclick="stepMove(this,-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg></button><button type="button" class="ib" title="下移" onclick="stepMove(this,1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button><button type="button" class="ib danger" title="删除此步" onclick="this.closest(\'.au-step\').remove();stepRenumber()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></span>' +
     '</div>' +
-    '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">' +
-      '<input type="text" name="step_mail_id[]" placeholder="Mautic 邮件ID(可选)" style="width:160px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
-      '<input type="text" name="step_title[]" placeholder="通知标题" style="width:200px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
-      '<input type="text" name="step_link[]" placeholder="通知链接" style="flex:1;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
-    '</div>' +
-    '<textarea name="step_content[]" rows="2" placeholder="邮件内容（支持 {name} {email} 变量）" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"></textarea>' +
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">' +
-      '<input type="text" name="step_tag[]" placeholder="标签名(打标签)" style="width:140px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
-      '<input type="number" name="step_points[]" value="0" placeholder="积分(加积分)" style="width:110px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
-      '<input type="text" name="step_coupon_name[]" placeholder="券名(发券)" style="width:140px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
-      '<select name="step_coupon_type[]" style="padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px"><option value="fixed">满减¥</option><option value="percent">折扣%</option></select>' +
-      '<input type="number" name="step_coupon_value[]" value="0" placeholder="券面值" style="width:90px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
-      '<input type="number" name="step_coupon_min[]" value="0" placeholder="满额门槛" style="width:100px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">' +
-    '</div>';
-  document.getElementById('stepList').appendChild(d);
+    '<div class="au-fields">' +
+      '<label class="au-f" data-f="subject"><span>邮件主题</span><input type="text" name="step_subject[]" value="'+esc(st.subject)+'" placeholder="如：欢迎加入 OpenFlow"></label>' +
+      '<label class="au-f" data-f="mail_id"><span>Mautic 邮件 ID <em>可选，填了就发 Mautic 模板</em></span><input type="text" name="step_mail_id[]" value="'+esc(st.mautic_email_id)+'" placeholder="如 12"></label>' +
+      '<label class="au-f" data-f="delay"><span>等待</span><span class="au-inline"><input type="number" name="step_delay[]" value="'+esc(st.delay_minutes==null?60:st.delay_minutes)+'" min="0"><em>分钟后执行下一步</em></span></label>' +
+      '<label class="au-f" data-f="title"><span>标题</span><input type="text" name="step_title[]" value="'+esc(st.title)+'" placeholder="通知 / 站内信标题"></label>' +
+      '<label class="au-f" data-f="link"><span>链接 <em>可选</em></span><input type="text" name="step_link[]" value="'+esc(st.link)+'" placeholder="https:// 或 /path"></label>' +
+      '<label class="au-f wide" data-f="content"><span>内容 <em>支持 {name} {email} {company}；{recommend} 自动插入个性化推荐</em></span><textarea name="step_content[]" rows="3">'+esc(st.content)+'</textarea></label>' +
+      '<label class="au-f" data-f="tag"><span>标签名</span><input type="text" name="step_tag[]" value="'+esc(st.tag)+'" placeholder="如 vip-candidate"></label>' +
+      '<label class="au-f" data-f="points"><span>积分</span><span class="au-inline"><input type="number" name="step_points[]" value="'+esc(st.points==null?0:st.points)+'"><em>分</em></span></label>' +
+      '<label class="au-f" data-f="coupon_name"><span>券名</span><input type="text" name="step_coupon_name[]" value="'+esc(st.coupon_name)+'" placeholder="如 新人立减 20"></label>' +
+      '<label class="au-f" data-f="coupon_type"><span>类型</span><select name="step_coupon_type[]"><option value="fixed"'+((st.coupon_type||'fixed')==='fixed'?' selected':'')+'>满减 ¥</option><option value="percent"'+(st.coupon_type==='percent'?' selected':'')+'>折扣 %</option></select></label>' +
+      '<label class="au-f" data-f="coupon_value"><span>面值</span><input type="number" name="step_coupon_value[]" value="'+esc(st.coupon_value==null?0:st.coupon_value)+'"></label>' +
+      '<label class="au-f" data-f="coupon_min"><span>满额门槛</span><input type="number" name="step_coupon_min[]" value="'+esc(st.coupon_min==null?0:st.coupon_min)+'"></label>' +
+    '</div></div>';
+}
+function stepAction(sel) { var row = sel.closest('.au-step'); row.dataset.action = sel.value; stepSummary(row); }
+function stepSummary(row) {
+  var a = row.dataset.action, s = '';
+  var v = function(n){ var el = row.querySelector('[name="'+n+'[]"]'); return el ? el.value : ''; };
+  if (a === 'send_email') s = v('step_subject') || '（未填主题）';
+  else if (a === 'delay') s = '等 ' + v('step_delay') + ' 分钟';
+  else if (a === 'notify' || a === 'inbox') s = v('step_title') || '（未填标题）';
+  else if (a === 'add_tag') s = v('step_tag') ? '#' + v('step_tag') : '（未填标签）';
+  else if (a === 'award_points') s = '+' + v('step_points') + ' 分';
+  else if (a === 'send_coupon') s = (v('step_coupon_name') || '券') + ' · ' + (v('step_coupon_type') === 'percent' ? v('step_coupon_value') + '%' : '¥' + v('step_coupon_value'));
+  row.querySelector('.au-step-sum').textContent = s;
+}
+function stepRenumber() { document.querySelectorAll('#stepList .au-step').forEach(function (r, i) { r.querySelector('.au-n').textContent = i + 1; }); }
+function stepMove(btn, dir) { var r = btn.closest('.au-step'), p = r.parentNode; var t = dir < 0 ? r.previousElementSibling : r.nextElementSibling; if (!t) return; dir < 0 ? p.insertBefore(r, t) : p.insertBefore(t, r); stepRenumber(); }
+function addStep(st) {
+  var list = document.getElementById('stepList'), d = document.createElement('div');
+  d.innerHTML = stepHTML(st, list.children.length); var row = d.firstChild; list.appendChild(row); stepSummary(row);
+  if (!st) { row.querySelector('.au-act').focus(); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+}
+if (document.getElementById('stepList')) {
+  (window.AU_STEPS || []).forEach(function (st) { addStep(st); });
+  document.getElementById('stepList').addEventListener('input', function (e) { var r = e.target.closest('.au-step'); if (r) stepSummary(r); });
 }
 </script>
 <?php admin_footer(); ?>

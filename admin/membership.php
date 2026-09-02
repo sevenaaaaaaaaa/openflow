@@ -56,51 +56,62 @@ foreach ($entitlements as $e) $tierCount[$e['tier']] = ($tierCount[$e['tier']] ?
 
 admin_header('会员体系');
 ?>
+<style>
+.mb-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.mb-kpi{--c:var(--faint);padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);box-shadow:inset 3px 0 0 var(--c)}
+.mb-kpi .l{font-size:12.5px;color:var(--muted)}
+.mb-kpi .n{font-family:var(--font-mono);font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+.inline-select{height:32px;padding:0 26px 0 10px;border:1px solid var(--border);border-radius:9px;font-size:12.5px;font-weight:600;background:var(--surface);color:var(--fg);max-width:100%}
+.mb-ent td{font-size:13px}
+.mb-ent td:last-child{font-family:var(--font-mono);font-size:11.5px;color:var(--faint)}
+.ent{font-size:12.5px;color:var(--muted)}.ent.yes{color:var(--ok);font-weight:700}.ent.no{color:var(--faint)}
+@media(max-width:840px){.mb-kpis{grid-template-columns:1fr 1fr}}
+</style>
 <div class="admin-layout">
   <?php admin_sidebar('membership'); ?>
   <div class="main">
-    <h1> 会员体系</h1>
+    <h1>会员体系</h1>
     <p class="sub">统一会员等级 + 全站权益模型 · 打通文章/资料/课程/邮件/直播/1v1/社区</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
     <!-- 会员分布 -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
-      <div class="card" style="border-left:4px solid var(--faint)"><div class="text-sm text-muted">👤 免费用户</div><div style="font-size:26px;font-weight:800"><?=$tierCount['free']?></div></div>
-      <div class="card" style="border-left:4px solid #f59e0b"><div class="text-sm text-muted">⭐ 普通会员</div><div style="font-size:26px;font-weight:800"><?=$tierCount['member']?></div></div>
-      <div class="card" style="border-left:4px solid #b45309"><div class="text-sm text-muted">👑 VIP 会员</div><div style="font-size:26px;font-weight:800"><?=$tierCount['vip']?></div></div>
-      <div class="card"><div class="text-sm text-muted">👥 全部会员</div><div style="font-size:26px;font-weight:800"><?=count($members)?></div></div>
+    <div class="mb-kpis">
+      <div class="mb-kpi" style="--c:var(--faint)"><div class="l">免费用户</div><div class="n"><?=$tierCount['free']?></div></div>
+      <div class="mb-kpi" style="--c:var(--warn)"><div class="l">普通会员</div><div class="n"><?=$tierCount['member']?></div></div>
+      <div class="mb-kpi" style="--c:var(--accent)"><div class="l">VIP 会员</div><div class="n"><?=$tierCount['vip']?></div></div>
+      <div class="mb-kpi" style="--c:var(--border-strong)"><div class="l">全部会员</div><div class="n"><?=count($members)?></div></div>
     </div>
 
-    <div class="tabs" style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
-      <a href="?tab=members" class="btn <?=($_GET['tab']??'members')==='members'?'btn-primary':'btn-ghost'?> btn-sm">👥 会员等级管理</a>
-      <a href="?tab=plans" class="btn <?=($_GET['tab']??'')==='plans'?'btn-primary':'btn-ghost'?> btn-sm">📦 会员计划</a>
-      <a href="?tab=entitlements" class="btn <?=($_GET['tab']??'')==='entitlements'?'btn-primary':'btn-ghost'?> btn-sm">🔑 权益模型</a>
+    <div class="tabs" style="margin-bottom:16px">
+      <a href="?tab=members" class="<?=($_GET['tab']??'members')==='members'?'active':''?>">会员等级</a>
+      <a href="?tab=plans" class="<?=($_GET['tab']??'')==='plans'?'active':''?>">会员计划</a>
+      <a href="?tab=entitlements" class="<?=($_GET['tab']??'')==='entitlements'?'active':''?>">权益模型</a>
     </div>
 
     <?php if (($_GET['tab'] ?? 'members') === 'members'): ?>
-    <div class="card" style="padding:0;overflow:auto">
-      <table>
-        <thead><tr><th>会员</th><th>当前等级</th><th>积分</th><th>订阅</th><th>已购课程</th><th>咨询次数</th><th>授予等级</th></tr></thead>
+    <div class="card lst-card">
+      <table class="lst-table">
+        <thead><tr><th class="c-title">会员</th><th style="width:120px">当前等级</th><th style="width:80px">积分</th><th style="width:70px">订阅</th><th style="width:90px">已购课程</th><th style="width:90px">咨询次数</th><th style="width:150px">手动授予 <span class="hint" style="font-weight:400;text-transform:none;letter-spacing:0">· 改了即存</span></th></tr></thead>
         <tbody>
-          <?php if (empty($members)): ?><tr><td colspan="7" class="empty">暂无会员</td></tr><?php endif; ?>
+          <?php if (empty($members)): ?><tr><td colspan="7"><div class="of-empty" style="border:0;margin:0">还没有会员。用户在前台注册后会出现在这里。</div></td></tr><?php endif; ?>
           <?php foreach ($members as $m): $e = $entitlements[$m['id']] ?? member_entitlements($m); ?>
           <tr>
-            <td><strong><?=htmlspecialchars($m['name'] ?? '')?></strong><div class="text-sm text-muted"><?=htmlspecialchars($m['email'] ?? '')?></div></td>
-            <td><span class="badge" style="background:<?=$e['tier']==='vip'?'#b45309':($e['tier']==='member'?'#f59e0b':'var(--faint)')?>;color:#fff;padding:3px 10px;border-radius:999px;font-size:11px"><?=$e['icon']?> <?=htmlspecialchars($e['tier_name'])?></span></td>
-            <td><?=$e['points']?></td>
-            <td><?=$e['subscription'] ? '⭐ 是' : '—'?></td>
-            <td><?=count($e['owned_courses'])?></td>
-            <td><?=$e['consultation_used']?></td>
+            <td class="c-title"><div class="lst-title"><?=htmlspecialchars($m['name'] ?? '')?></div><div class="lst-sub"><span class="lst-slug"><?=htmlspecialchars($m['email'] ?? '')?></span></div></td>
+            <td><span class="badge <?=$e['tier']==='vip'?'badge-blue':($e['tier']==='member'?'badge-yellow':'badge-gray')?>"><?=htmlspecialchars($e['tier_name'])?></span></td>
+            <td class="mono"><?=$e['points']?></td>
+            <td><?=$e['subscription'] ? '<span class="badge badge-green">是</span>' : '<span class="text-muted">—</span>'?></td>
+            <td class="mono"><?=count($e['owned_courses'])?></td>
+            <td class="mono"><?=$e['consultation_used']?></td>
             <td>
-              <form method="post" style="display:flex;gap:4px;align-items:center">
+              <form method="post" data-no-guard>
                 <?= csrf_field() ?>
                 <input type="hidden" name="member_id" value="<?=htmlspecialchars($m['id'])?>">
-                <select name="tier" style="padding:6px;border:1.5px solid var(--border);border-radius:8px;font-size:12px">
-                  <option value="free" <?=$e['granted_tier']===''?'selected':''?>>自动</option>
+                <input type="hidden" name="grant" value="1">
+                <select name="tier" class="inline-select" onchange="this.form.requestSubmit()" aria-label="授予等级">
+                  <option value="free" <?=$e['granted_tier']===''?'selected':''?>>自动（按消费）</option>
                   <option value="member" <?=$e['granted_tier']==='member'?'selected':''?>>普通会员</option>
                   <option value="vip" <?=$e['granted_tier']==='vip'?'selected':''?>>VIP</option>
                 </select>
-                <button type="submit" name="grant" class="btn btn-ghost btn-sm">保存</button>
               </form>
             </td>
           </tr>
@@ -111,7 +122,7 @@ admin_header('会员体系');
 
     <?php elseif (($_GET['tab'] ?? '') === 'plans'): ?>
     <div class="card">
-      <h2>📦 会员计划（权益定义）</h2>
+      <h2>会员计划（权益定义）</h2>
       <p class="text-sm text-muted mb-4">每个计划定义权益清单，会员中心自动展示</p>
       <form method="post">
         <?= csrf_field() ?>
@@ -136,22 +147,22 @@ admin_header('会员体系');
 
     <?php else: ?>
     <div class="card">
-      <h2>🔑 统一权益模型</h2>
+      <h2>统一权益模型</h2>
       <p class="text-sm text-muted mb-4">所有付费/免费功能的鉴权统一由 MembershipSystem 提供</p>
-      <table>
-        <thead><tr><th>权益</th><th>免费用户</th><th>普通会员</th><th>VIP</th><th>说明</th></tr></thead>
+      <table data-static class="mb-ent">
+        <thead><tr><th>权益</th><th>免费用户</th><th>普通会员</th><th>VIP</th><th>键名</th></tr></thead>
         <tbody>
-          <tr><td>公开文章</td><td>✅</td><td>✅</td><td>✅</td><td>articles</td></tr>
-          <tr><td>会员专享文章</td><td>🔒</td><td>✅</td><td>✅</td><td>articles_member</td></tr>
-          <tr><td>资料下载</td><td>🔒</td><td>✅</td><td>✅</td><td>downloads</td></tr>
-          <tr><td>订阅邮件</td><td>🔒</td><td>✅</td><td>✅</td><td>newsletter / subscription_email</td></tr>
-          <tr><td>课程购买观看</td><td>🛒 按需购买</td><td>🛒 按需购买</td><td>✅ 免费看</td><td>courses</td></tr>
-          <tr><td>直播观看</td><td>✅</td><td>✅</td><td>✅</td><td>live</td></tr>
-          <tr><td>直播回放</td><td>🔒</td><td>✅</td><td>✅</td><td>live_replay</td></tr>
-          <tr><td>1v1 咨询</td><td>✅ 可预约</td><td>✅ 可预约</td><td>✅ 85 折</td><td>consultation / consultation_discount</td></tr>
-          <tr><td>社区发帖评论</td><td>✅</td><td>✅</td><td>✅ + 徽章</td><td>community_post / community_vip_badge</td></tr>
-          <tr><td>积分等级</td><td>✅</td><td>✅</td><td>✅</td><td>level_virtual</td></tr>
-          <tr><td>投稿优先审核</td><td>—</td><td>—</td><td>✅</td><td>priority_review</td></tr>
+          <tr><td>公开文章</td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td>articles</td></tr>
+          <tr><td>会员专享文章</td><td><span class="ent no">—</span></td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td>articles_member</td></tr>
+          <tr><td>资料下载</td><td><span class="ent no">—</span></td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td>downloads</td></tr>
+          <tr><td>订阅邮件</td><td><span class="ent no">—</span></td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td>newsletter / subscription_email</td></tr>
+          <tr><td>课程购买观看</td><td><span class="ent">按需购买</span></td><td><span class="ent">按需购买</span></td><td><span class="ent yes">✓ 免费看</span></td><td>courses</td></tr>
+          <tr><td>直播观看</td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td>live</td></tr>
+          <tr><td>直播回放</td><td><span class="ent no">—</span></td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td>live_replay</td></tr>
+          <tr><td>1v1 咨询</td><td><span class="ent yes">✓ 可预约</span></td><td><span class="ent yes">✓ 可预约</span></td><td><span class="ent yes">✓ 85 折</span></td><td>consultation / consultation_discount</td></tr>
+          <tr><td>社区发帖评论</td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓ + 徽章</span></td><td>community_post / community_vip_badge</td></tr>
+          <tr><td>积分等级</td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td><span class="ent yes">✓</span></td><td>level_virtual</td></tr>
+          <tr><td>投稿优先审核</td><td><span class="ent no">—</span></td><td><span class="ent no">—</span></td><td><span class="ent yes">✓</span></td><td>priority_review</td></tr>
         </tbody>
       </table>
     </div>
