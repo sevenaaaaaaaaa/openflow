@@ -33,7 +33,7 @@ $typeColors = ['system' => '#2b5f7e', 'order' => 'var(--ok)', 'consultation' => 
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script>
+<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
 
   <div class="mx-auto px-5 py-8" style="max-width:900px">
     <div class="flex items-center justify-between mb-6">
