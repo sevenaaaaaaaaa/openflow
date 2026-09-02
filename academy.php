@@ -7,6 +7,7 @@
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
+require_once __DIR__ . '/lib/CoverRenderer.php';
 
 // 页面缓存（300 秒）
 if (PageCache::begin('academy', 1800)) exit;
@@ -88,9 +89,9 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 <title>学院 · 门派知识库 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="芭乐派增长方法论内容库：文章 · 资料下载 · 播客 · 视频教程，从利润公式到 Agent 系统，把增长讲清楚、用起来">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
 <style>
 /* 学院页独有：首屏搜索框与统计行。其余全部来自 modules.css。 */
 .search{display:flex;gap:10px;max-width:520px}
@@ -171,7 +172,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
     <div class="a-grid">
       <?php foreach ($featured as $a): $cvUrl = $cover($a); ?>
       <a class="a-card" href="/articles/<?=htmlspecialchars($a['slug'])?>">
-        <div class="cov"><?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="" loading="lazy"><?php else: ?><?=$docIcon?><?php endif; ?></div>
+        <div class="cov"><?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="" loading="lazy"><?php else: ?><?=CoverRenderer::renderCard($a)?><?php endif; ?></div>
         <div class="bd">
           <span class="cat"><?=htmlspecialchars($catNames[$a['category'] ?? ''] ?? '文章')?></span>
           <h3><?=htmlspecialchars($a['title'])?></h3>
@@ -206,7 +207,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         $isPreview = ($a['status'] ?? '') !== 'published'; $cvUrl = $cover($a);
         $link = $isPreview ? '/academy' : '/articles/'.htmlspecialchars($a['slug']); ?>
       <a class="a-card" href="<?=$link?>">
-        <div class="cov"><?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="" loading="lazy"><?php else: ?><?=$isPreview?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>':$docIcon?><?php endif; ?></div>
+        <div class="cov"><?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="" loading="lazy"><?php elseif ($isPreview): ?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><?php else: ?><?=CoverRenderer::renderCard($a)?><?php endif; ?></div>
         <div class="bd">
           <span class="cat<?=$isPreview?' dim':''?>"><?=$isPreview?'即将发布':htmlspecialchars($catNames[$a['category'] ?? ''] ?? '文章')?></span>
           <h3><?=htmlspecialchars($a['title'])?></h3>
@@ -330,26 +331,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
   </section>
 
   <!-- ══ footer（共享 .foot） ══ -->
-  <footer class="foot" data-od-id="site-footer">
-    <div class="fb">
-      <div class="brand"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>芭乐派 · OpenFlow</div>
-      <p class="f-about">芭乐派增长操作系统的开源底座。TIPS 框架（触达/洞察/个性化/销售）四力合一，自生长 AI Engine 主动驱动增长。</p>
-      <p class="note">核心能力永久开源 · 鱼与渔相结合</p>
-    </div>
-    <div class="fb">
-      <h4>站点导航</h4>
-      <a href="/product">产品</a><a href="/capability">能力</a><a href="/courses">课程</a><a href="/community">门派社区</a><a href="/about">关于我们</a>
-    </div>
-    <div class="fb">
-      <h4>资源</h4>
-      <a href="/academy">学院</a><a href="/docs">文档中心</a><a href="/downloads">资料下载</a><a href="/podcasts">播客</a><a href="/marketplace">生态市场</a>
-    </div>
-    <div class="fb">
-      <h4>联系</h4>
-      <a href="mailto:hello@openflow.dev">hello@openflow.dev</a><a href="/community">门派社区</a>
-    </div>
-    <div class="f-bottom"><span>© 2026 芭乐派 · OpenFlow 增长操作系统</span><?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><?=i18n_switcher()?><?php endif; ?><span>帮一人公司设计 Agent 能跑的增长系统</span></div>
-  </footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
 <button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>

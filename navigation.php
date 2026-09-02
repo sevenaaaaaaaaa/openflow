@@ -8,6 +8,7 @@
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 require_once __DIR__ . '/lib/CommentSystem.php';
+require_once __DIR__ . '/includes/nav-icons.php';
 
 $nav = json_read(DATA_DIR . '/navigation.json');
 $categories = $nav['categories'] ?? [];
@@ -19,7 +20,8 @@ $banner = $nav['banner'] ?? [];
 usort($categories, fn($a, $b) => ($a['sort'] ?? 0) <=> ($b['sort'] ?? 0));
 
 $catNames = []; $catIcons = [];
-foreach ($categories as $c) { $catNames[$c['id']] = $c['name']; $catIcons[$c['id']] = $c['icon'] ?? '🌐'; }
+foreach ($categories as $c) { $catNames[$c['id']] = $c['name']; $catIcons[$c['id']] = nav_cat_icon((string)$c['id'], (string)$c['name']); }
+$allIcon = nav_cat_icon('all', '');
 
 // 筛选
 $region = $_GET['region'] ?? 'all';
@@ -56,9 +58,9 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 <title>增长导航 | 优秀网站增长·SEO·AI 运营工具</title>
 <meta name="description" content="收录国内外优秀的网站增长、SEO、AI 运营工具与学习资源，一站直达高质量增长资源。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260901a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260901a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260901a">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
 <style>
 /* 导航站独有：搜索框、热搜、分类侧栏项、站点卡评分。其余全部来自 modules.css。 */
 .search{display:flex;gap:10px;width:min(560px,100%);margin:0 auto}
@@ -70,13 +72,15 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 .cat-nav a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;font-size:14px;color:var(--muted);transition:background .15s,color .15s}
 .cat-nav a:hover{background:var(--hover);color:var(--fg)}
 .cat-nav a.active{background:var(--accent-soft);color:var(--accent-strong);font-weight:600}
-.cat-nav .em{width:20px;text-align:center;flex:0 0 auto}
+.cat-nav .em{width:16px;height:16px;flex:0 0 auto;color:var(--faint)}.cat-nav .em svg{width:16px;height:16px}.cat-nav a.active .em,.cat-nav a:hover .em{color:var(--accent)}
+.fl-h{display:flex;align-items:center;gap:10px}.fl-h .em{width:30px;height:30px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}.fl-h .em svg{width:16px;height:16px}
 .g-main-aside.aside-left{grid-template-columns:minmax(0,220px) minmax(0,1fr)}
 .g-main-aside.aside-left>aside{position:sticky;top:calc(var(--chrome-h) + 24px)}
 .site-card{display:flex;flex-direction:column;gap:8px;padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);backdrop-filter:blur(16px) saturate(150%);transition:transform .3s var(--ease-spring),box-shadow .3s,border-color .3s}
 .site-card:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:var(--shadow)}
 .site-card .hd{display:flex;align-items:center;gap:10px}
-.site-card .em{width:38px;height:38px;border-radius:11px;background:var(--accent-soft);display:grid;place-items:center;font-size:18px;flex:0 0 auto}
+.fav{position:relative;width:38px;height:38px;border-radius:11px;background:var(--accent-soft);color:var(--accent-strong);display:grid;place-items:center;flex:0 0 auto;overflow:hidden;font-weight:800;font-size:15px;font-family:var(--font-display)}
+.fav img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:8px;background:var(--surface)}
 .site-card .hd b{font-size:15px;font-weight:700}
 .site-card .hd .badge{margin-left:auto}
 .site-card p{font-size:13.5px;color:var(--muted);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -122,7 +126,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
   <?php if ($bannerSite || $featured): $bs = $bannerSite ?: ($featured[0] ?? null); if ($bs): ?>
   <section id="banner" class="sec reveal" data-od-anchor data-od-id="nav-banner">
     <a class="strip" href="/navigation/<?=urlencode($bs['id'])?>">
-      <span class="ic" style="font-size:20px"><?=$catIcons[$bs['category'] ?? ''] ?? '🌐'?></span>
+      <span class="ic"><?=$catIcons[$bs['category'] ?? ''] ?? $allIcon?></span>
       <div class="tx"><span class="kicker" style="font-size:11px"><?=htmlspecialchars($banner['title'] ?? '编辑首推')?></span><b><?=htmlspecialchars($bs['name'])?></b><span><?=htmlspecialchars($bs['description'] ?? '')?></span></div>
       <span class="btn primary">立即访问 →</span>
     </a>
@@ -136,18 +140,18 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
         <div class="aside-box">
           <h3>全部分类</h3>
           <nav class="cat-nav" aria-label="分类">
-            <a class="<?=!$cat?'active':''?>" href="/navigation?region=<?=$region?>"><span class="em">🌐</span>全部</a>
+            <a class="<?=!$cat?'active':''?>" href="/navigation?region=<?=$region?>"><span class="em"><?=$allIcon?></span>全部</a>
             <?php foreach ($categories as $c): ?>
-            <a class="<?=$cat===$c['id']?'active':''?>" href="?cat=<?=urlencode($c['id'])?>&region=<?=$region?>"><span class="em"><?=$catIcons[$c['id']]??'🌐'?></span><?=htmlspecialchars($c['name'])?></a>
+            <a class="<?=$cat===$c['id']?'active':''?>" href="?cat=<?=urlencode($c['id'])?>&region=<?=$region?>"><span class="em"><?=$catIcons[$c['id']] ?? $allIcon?></span><?=htmlspecialchars($c['name'])?></a>
             <?php endforeach; ?>
           </nav>
         </div>
         <div class="aside-box">
           <h3>地区</h3>
           <nav class="cat-nav" aria-label="地区">
-            <a class="<?=$region==='all'?'active':''?>" href="?region=all"><span class="em">🌐</span>全部</a>
-            <a class="<?=$region==='cn'?'active':''?>" href="?region=cn"><span class="em">🇨🇳</span>国内</a>
-            <a class="<?=$region==='intl'?'active':''?>" href="?region=intl"><span class="em">🌍</span>海外</a>
+            <a class="<?=$region==='all'?'active':''?>" href="?region=all"><span class="em"><?=nav_region_icon('all')?></span>全部</a>
+            <a class="<?=$region==='cn'?'active':''?>" href="?region=cn"><span class="em"><?=nav_region_icon('cn')?></span>国内</a>
+            <a class="<?=$region==='intl'?'active':''?>" href="?region=intl"><span class="em"><?=nav_region_icon('intl')?></span>海外</a>
           </nav>
         </div>
       </aside>
@@ -160,13 +164,13 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
         <?php else: foreach ($byCat as $cid => $list): ?>
         <div class="floor">
           <div class="sec-head row">
-            <div><span class="kicker"><?=count($list)?> 个</span><h2><span class="em" style="margin-right:6px"><?=$catIcons[$cid] ?? '🌐'?></span><?=htmlspecialchars($catNames[$cid] ?? '未分类')?></h2></div>
+            <div><span class="kicker"><?=count($list)?> 个</span><h2 class="fl-h"><span class="em"><?=$catIcons[$cid] ?? $allIcon?></span><?=htmlspecialchars($catNames[$cid] ?? '未分类')?></h2></div>
             <?php if ($cid): ?><a class="more" href="?cat=<?=urlencode($cid)?>">查看全部 →</a><?php endif; ?>
           </div>
           <div class="site-grid" style="margin-top:18px">
             <?php foreach ($list as $s): $rm = $ratingMap[$s['id']] ?? ['avg' => 0, 'count' => 0]; ?>
             <a href="/navigation/<?=urlencode($s['id'])?>" class="site-card">
-              <div class="hd"><span class="em"><?=$s['region']==='cn'?'🇨🇳':'🌍'?></span><b><?=htmlspecialchars($s['name'])?></b><?php if (!empty($s['featured'])): ?><span class="badge warn">推荐</span><?php endif; ?></div>
+              <div class="hd"><?=nav_site_icon($s)?><b><?=htmlspecialchars($s['name'])?></b><?php if (!empty($s['featured'])): ?><span class="badge warn">推荐</span><?php endif; ?></div>
               <p><?=htmlspecialchars($s['description'] ?? '')?></p>
               <?php if (!empty($rm['count'])): ?>
               <div class="rating"><span class="stars"><?=str_repeat('★', max(0, min(5, (int)round($rm['avg']))))?><?=str_repeat('☆', max(0, 5 - (int)round($rm['avg'])))?></span><b><?=number_format($rm['avg'], 1)?></b><span class="note"><?=$rm['count']?> 条点评</span></div>
@@ -180,6 +184,8 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
       </div>
     </div>
   </section>
+
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
 <button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 <script>
