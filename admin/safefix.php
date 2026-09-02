@@ -94,9 +94,9 @@ admin_header('人机协同修复');
       </div>
 
       <?php if ($st === 'pending'): ?>
-      <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?=htmlspecialchars($p['id'])?>"><button class="btn btn-primary" name="apply" value="1" onclick="return confirm('确认应用此修复？应用前会自动备份原文件。')">✅ 审核通过，应用修复</button></form>
+      <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?=htmlspecialchars($p['id'])?>"><button class="btn btn-primary" name="apply" value="1" data-confirm="确认应用此修复？应用前会自动备份原文件。">✅ 审核通过，应用修复</button></form>
       <?php elseif ($st === 'applied'): ?>
-      <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?=htmlspecialchars($p['id'])?>"><button class="btn btn-ghost" name="rollback" value="1" onclick="return confirm('确认回滚到修复前？')">↩️ 回滚修复</button></form>
+      <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?=htmlspecialchars($p['id'])?>"><button class="btn btn-ghost" name="rollback" value="1" data-confirm="确认回滚到修复前？">↩️ 回滚修复</button></form>
       <?php endif; ?>
     </div>
     <?php endforeach; ?>

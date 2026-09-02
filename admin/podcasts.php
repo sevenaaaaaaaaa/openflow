@@ -191,7 +191,7 @@ if (!defined('OF_EMBED')) admin_header('播客与视频');
             <td style="white-space:nowrap">
               <a href="podcasts.php?edit=<?=urlencode($p['id'])?>" class="btn btn-ghost btn-sm">✏️ 编辑</a>
               <a href="podcasts.php?copy=<?=urlencode($p['id'])?>" class="btn btn-ghost btn-sm">📋</a>
-              <a href="podcasts.php?delete=<?=urlencode($p['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除该播客?')">删除</a>
+              <a href="podcasts.php?delete=<?=urlencode($p['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除该播客?">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>

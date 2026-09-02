@@ -94,7 +94,7 @@ admin_header('社区管理');
             <td style="white-space:nowrap">
               <a href="../community-post.php?id=<?=urlencode($p['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a>
               <a href="?toggle_post=<?=urlencode($p['id'])?>" class="btn btn-ghost btn-sm"><?=($p['status']??'published')==='published'?'隐藏':'显示'?></a>
-              <a href="?delete_post=<?=urlencode($p['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除该帖及评论?')">删除</a>
+              <a href="?delete_post=<?=urlencode($p['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除该帖及评论?">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>
@@ -112,7 +112,7 @@ admin_header('社区管理');
             <td style="max-width:400px"><?=htmlspecialchars($c['content'])?></td>
             <td class="text-sm text-muted"><?=htmlspecialchars($c['author_name'])?></td>
             <td class="text-sm text-muted"><?=htmlspecialchars(substr($c['created_at']??'',0,16))?></td>
-            <td><a href="?delete_comment=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除该评论?')">删除</a></td>
+            <td><a href="?delete_comment=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除该评论?">删除</a></td>
           </tr>
           <?php endforeach; ?>
         </tbody>

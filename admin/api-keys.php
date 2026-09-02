@@ -58,7 +58,7 @@ admin_header('API Key 管理');
               <input type="hidden" name="enabled" value="<?=$k['enabled'] ? '' : '1'?>">
               <button class="btn btn-sm btn-ghost"><?=$k['enabled'] ? '禁用' : '启用'?></button>
             </form>
-            <form method="post" style="display:inline" onsubmit="return confirm('确定删除？')">
+            <form method="post" style="display:inline" data-confirm="确定删除？">
               <?=csrf_field()?>
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?=$k['id']?>">

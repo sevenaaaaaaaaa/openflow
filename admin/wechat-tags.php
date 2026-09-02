@@ -126,7 +126,7 @@ admin_header('微信标签');
             <td><strong><?=htmlspecialchars($t['name'])?></strong></td>
             <td><span class="badge badge-gray"><?=$t['count'] ?? 0?></span></td>
             <td>
-              <form method="post" style="display:inline" onsubmit="return confirm('删除标签？')">
+              <form method="post" style="display:inline" data-confirm="删除标签？">
                 <?= csrf_field() ?>
                 <input type="hidden" name="do" value="delete_tag">
                 <input type="hidden" name="tag_id" value="<?=$t['id']?>">

@@ -230,7 +230,7 @@ function togglePreview(mode) {
 function showPageAI() {
   var content = '';
   document.querySelectorAll('textarea[name^="content["]').forEach(function(ta) { content += ta.value + '\n'; });
-  if (!content.trim()) { alert('页面内容为空，无法使用 AI'); return; }
+  if (!content.trim()) { ofAlert('页面内容为空，无法使用 AI'); return; }
   var prompt = prompt('输入 AI 提示词（如：优化以下页面文案，使其更专业）:', '优化以下页面文案，使其更专业、简洁，适合企业官网风格。');
   if (!prompt) return;
 

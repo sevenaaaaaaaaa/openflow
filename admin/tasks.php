@@ -234,7 +234,7 @@ admin_header('任务分配');
               </form>
               <?php endif; ?>
               <?php if ($myRole === 'admin'): ?>
-              <a href="tasks.php?delete=<?=urlencode($t['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('确认删除该任务?')">删除</a>
+              <a href="tasks.php?delete=<?=urlencode($t['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除该任务?">删除</a>
               <?php endif; ?>
             </td>
           </tr>

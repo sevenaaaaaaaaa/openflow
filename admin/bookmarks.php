@@ -64,9 +64,9 @@ foreach ($bookmarks as $b) {
   </div>
 </div>
 <script>
-function removeBookmark(userId, type, id) {
-  if (!confirm('确定删除？')) return;
-  fetch('../api/bookmark.php',{method:'DELETE',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'user_id='+encodeURIComponent(userId)+'&target_type='+encodeURIComponent(type)+'&target_id='+encodeURIComponent(id)+'&csrf_token=<?=csrf_token()?>'}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();else alert(d.error||'删除失败')});
+async function removeBookmark(userId, type, id) {
+  if (!await ofConfirm('确定删除？')) return;
+  fetch('../api/bookmark.php',{method:'DELETE',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'user_id='+encodeURIComponent(userId)+'&target_type='+encodeURIComponent(type)+'&target_id='+encodeURIComponent(id)+'&csrf_token=<?=csrf_token()?>'}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();else ofAlert(d.error||'删除失败')});
 }
 </script>
 <?php admin_footer(); ?>

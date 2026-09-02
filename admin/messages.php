@@ -107,7 +107,7 @@ admin_header('站内信');
               <span class="text-sm text-muted" style="margin-left:auto"><?=htmlspecialchars($m['created_at'] ?? '')?></span>
             </div>
             <div class="text-sm text-muted" style="margin-top:4px;white-space:pre-line"><?=htmlspecialchars(mb_substr($m['content'] ?? '', 0, 120))?></div>
-            <a href="?del=<?=urlencode($m['id'])?>" class="btn btn-danger btn-sm" style="margin-top:6px" onclick="return confirm('确认删除？')">删除</a>
+            <a href="?del=<?=urlencode($m['id'])?>" class="btn btn-danger btn-sm" style="margin-top:6px" data-confirm="确认删除？">删除</a>
           </div>
           <?php endforeach; ?>
         </div>

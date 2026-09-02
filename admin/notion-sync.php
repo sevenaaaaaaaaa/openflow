@@ -94,8 +94,8 @@ admin_header('Notion 同步');
           </div>
           <div style="display:flex;gap:8px">
             <?php if ($ready): ?>
-            <a href="?push=<?=$type?>&csrf_token=<?=csrf_token()?>" class="btn btn-primary btn-sm" onclick="return confirm('推送 <?=$s['local_count']?> 条 <?=$label?> 到 Notion？')">⬆ 推送到 Notion</a>
-            <a href="?pull=<?=$type?>&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm" onclick="return confirm('从 Notion 拉取 <?=$label?> 到本地？（覆盖同名数据）')">⬇ 从 Notion 拉取</a>
+            <a href="?push=<?=$type?>&csrf_token=<?=csrf_token()?>" class="btn btn-primary btn-sm" data-confirm="推送 <?=$s['local_count']?> 条 <?=htmlspecialchars($label)?> 到 Notion？">⬆ 推送到 Notion</a>
+            <a href="?pull=<?=$type?>&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm" data-confirm="从 Notion 拉取 <?=$label?> 到本地？（覆盖同名数据）">⬇ 从 Notion 拉取</a>
             <?php else: ?>
             <span style="font-size:12px;color:var(--faint)">请先配置 Notion Token + Parent Page ID</span>
             <?php endif; ?>

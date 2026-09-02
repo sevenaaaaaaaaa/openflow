@@ -86,7 +86,7 @@ admin_header('作者管理');
                 <?php if ($authors): ?>
                 <form method="post" style="display:inline-flex;gap:4px;align-items:center"><?= csrf_field() ?><input type="hidden" name="action" value="merge"><input type="hidden" name="from_name" value="<?=htmlspecialchars($name)?>">
                   <select name="to_id" style="font-size:12px"><option value="">合并到…</option><?php foreach ($authors as $a): ?><option value="<?=htmlspecialchars($a['id'])?>"><?=htmlspecialchars($a['name'])?></option><?php endforeach; ?></select>
-                  <button class="btn btn-ghost btn-sm" onclick="return this.form.to_id.value?confirm('把「<?=htmlspecialchars($name)?>」的署名并入所选作者?'):false">合并</button>
+                  <button class="btn btn-ghost btn-sm" onclick="if(!this.form.to_id.value){ofAlert('请先选择要并入的作者','warning');return false}" data-confirm="把「<?=htmlspecialchars($name)?>」的署名并入所选作者？">合并</button>
                 </form>
                 <?php endif; ?>
               </td>
@@ -116,7 +116,7 @@ admin_header('作者管理');
               <td style="white-space:nowrap">
                 <a href="?edit=<?=urlencode($a['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
                 <a href="/authors/<?=urlencode($a['slug'])?>" target="_blank" class="btn btn-ghost btn-sm">主页</a>
-                <a href="?delete=<?=urlencode($a['id'])?>" class="btn btn-danger btn-sm" onclick="return confirm('删除档案?内容里的署名不受影响')">删</a>
+                <a href="?delete=<?=urlencode($a['id'])?>" class="btn btn-danger btn-sm" data-confirm="删除档案?内容里的署名不受影响">删</a>
               </td>
             </tr>
           <?php endforeach; ?>

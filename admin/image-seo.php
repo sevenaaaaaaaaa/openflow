@@ -128,7 +128,7 @@ if (!defined('OF_EMBED')) admin_header('图片 SEO 管理');
               <option value="<?=$d?>"><?=$d?></option>
               <?php endforeach; ?>
             </select>
-            <button type="submit" class="btn btn-ghost btn-sm" onclick="return confirm('将为没有 Alt 的图片自动生成默认 Alt，确认?')">⚡ 自动生成 Alt</button>
+            <button type="submit" class="btn btn-ghost btn-sm" data-confirm="将为没有 Alt 的图片自动生成默认 Alt，确认?">⚡ 自动生成 Alt</button>
           </form>
         </div>
       </div>

@@ -119,14 +119,14 @@ admin_header('备份管理');
           </div>
         </div>
         <div class="backup-actions">
-          <form method="post" style="display:inline" onsubmit="return confirm('确认从此备份恢复？当前数据将被备份后覆盖')">
+          <form method="post" style="display:inline" data-confirm="确认从此备份恢复？当前数据将被备份后覆盖">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="restore">
             <input type="hidden" name="backup_name" value="<?=htmlspecialchars($backup['name'])?>">
             <button type="submit" class="btn btn-ghost btn-sm">🔄 恢复</button>
           </form>
           <a href="?download=<?=urlencode($backup['name'])?>" class="btn btn-ghost btn-sm">📥 下载</a>
-          <form method="post" style="display:inline" onsubmit="return confirm('确认删除此备份?')">
+          <form method="post" style="display:inline" data-confirm="确认删除此备份?">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="delete">
             <input type="hidden" name="backup_name" value="<?=htmlspecialchars($backup['name'])?>">

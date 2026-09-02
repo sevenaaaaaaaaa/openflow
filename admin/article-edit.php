@@ -677,7 +677,7 @@ function insertMedia() {
       .then(function(r){ return r.json(); })
       .then(function(d){
         if (d.ok) mdBlock('![图片](' + d.url + ')\n', '');
-        else alert(d.error || '上传失败');
+        else ofAlert(d.error || '上传失败');
       });
   };
   input.click();
@@ -1109,7 +1109,7 @@ function spSetPlat(p) {
 function spSearch(page) {
   SP.query = document.getElementById('spQ').value.trim();
   SP.page = page || 1;
-  if (!SP.query) { alert('请输入关键词'); return; }
+  if (!SP.query) { ofAlert('请输入关键词'); return; }
   var box = document.getElementById('spResults');
   box.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3)">⏳ 搜索中...</div>';
   fetch('../api/stock.php?action=search&platform=' + SP.platform + '&q=' + encodeURIComponent(SP.query) + '&page=' + SP.page + '&per_page=12')
@@ -1147,13 +1147,13 @@ function spDownload(idx) {
       document.getElementById('cover').value = d.path;
       var preview = document.getElementById('coverPreview');
       if (preview) preview.src = '<?=SITE_URL?>/' + d.path;
-      alert('✅ 已下载并设为封面\n来源：' + p.platform + ' · 作者：' + p.photographer);
+      ofAlert('✅ 已下载并设为封面\n来源：' + p.platform + ' · 作者：' + p.photographer);
       closeStockPicker();
     } else {
-      alert('❌ ' + (d.error || '下载失败'));
+      ofAlert('❌ ' + (d.error || '下载失败'));
     }
   })
-  .catch(function() { alert('❌ 下载失败'); });
+  .catch(function() { ofAlert('❌ 下载失败'); });
 }
 
 // ─── Slug ───
@@ -1251,7 +1251,7 @@ function insertInternalLink(url, title) {
 function pushArticle() {
   var checked = document.querySelectorAll('#channelList input:checked');
   var channels = Array.from(checked).map(function(cb) { return cb.value; });
-  if (!channels.length) { alert('请选择至少一个渠道'); return; }
+  if (!channels.length) { ofAlert('请选择至少一个渠道'); return; }
   var btn = document.querySelector('[onclick="pushArticle()"]');
   btn.textContent = '⏳ 推送中...'; btn.disabled = true;
   document.getElementById('pushResult').innerHTML = '';
@@ -1294,14 +1294,14 @@ if (!$isNew) {
 echo json_encode($verData, JSON_UNESCAPED_UNICODE);
 ?>;
 
-function previewVersion(ver) {
+async function previewVersion(ver) {
   if (!ver) return;
   var found = null;
   for (var i = 0; i < versions.length; i++) {
     if (versions[i].version == ver) { found = versions[i]; break; }
   }
   if (!found) return;
-  if (confirm('要预览 v' + ver + ' 的内容吗？点击确定后内容将替换到编辑器（不保存）。如需恢复请手动保存。')) {
+  if (await ofConfirm({ title: '预览 v' + ver, message: '内容将替换到编辑器（不保存）。如需恢复请手动保存。', okText: '替换到编辑器' })) {
     if (currentMode === 'richtext') {
       document.getElementById('rtContent').innerHTML = found.content;
     } else {
@@ -1341,7 +1341,7 @@ function selectAIPrompt() {
 
 function doImport() {
   var url = document.getElementById('importUrl').value.trim();
-  if (!url) { alert('请输入 URL'); return; }
+  if (!url) { ofAlert('请输入 URL'); return; }
   var dl = document.getElementById('importDownloadImages').checked;
   var result = document.getElementById('importResult');
   result.innerHTML = '<p class="text-sm text-muted">⏳ 正在导入…</p>';
@@ -1374,7 +1374,7 @@ function doImport() {
 function doAI() {
   syncContent();
   var content = document.getElementById('contentHidden').value;
-  if (!content.trim()) { alert('请先撰写文章内容'); return; }
+  if (!content.trim()) { ofAlert('请先撰写文章内容'); return; }
   var sel = document.getElementById('aiPromptSelect');
   var promptText = sel.value === 'custom' ? document.getElementById('aiCustomPrompt').value : document.getElementById('aiCustomPrompt').value;
   var provider = document.getElementById('aiProvider').value;
@@ -1436,17 +1436,17 @@ function saveAsTemplate() {
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '../api/templates.php', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.onload = function() { alert('模板已保存: ' + name); };
+  xhr.onload = function() { ofAlert('模板已保存: ' + name); };
   xhr.send(JSON.stringify({action: 'save', template: tpl}));
 }
 
 function loadTemplate() {
-  if (!templates.length) { alert('暂无模板'); return; }
+  if (!templates.length) { ofAlert('暂无模板'); return; }
   var list = templates.map(function(t, i) { return (i+1) + '. ' + t.name; }).join('\n');
   var choice = prompt('选择模板编号:\n' + list + '\n\n输入编号(1-' + templates.length + '):');
   if (!choice) return;
   var idx = parseInt(choice) - 1;
-  if (idx < 0 || idx >= templates.length) { alert('无效选择'); return; }
+  if (idx < 0 || idx >= templates.length) { ofAlert('无效选择'); return; }
   var tpl = templates[idx];
   document.querySelector('input[name="title"]').value = tpl.title || '';
   autoSlug(tpl.title || '');
@@ -1455,7 +1455,7 @@ function loadTemplate() {
   if (tpl.tags) document.querySelector('input[name="tags"]').value = tpl.tags;
   if (tpl.editor_mode === 'markdown') { switchMode('markdown'); document.getElementById('mdInput').value = tpl.content || ''; renderMD(tpl.content || ''); }
   else { switchMode('richtext'); document.getElementById('rtContent').innerHTML = tpl.content || ''; }
-  alert('已加载模板: ' + tpl.name);
+  ofAlert('已加载模板: ' + tpl.name);
 }
 
 // ─── Auto-save ───

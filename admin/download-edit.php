@@ -131,8 +131,8 @@ function uploadDLFile(input) {
       try {
         var resp = JSON.parse(xhr.responseText);
         if (resp.ok) document.getElementById('filePath').value = resp.path;
-        else alert(resp.error || '上传失败');
-      } catch(e) { alert('上传失败'); }
+        else ofAlert(resp.error || '上传失败');
+      } catch(e) { ofAlert('上传失败'); }
     }
   };
   xhr.send(fd);
