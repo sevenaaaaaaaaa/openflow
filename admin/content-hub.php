@@ -38,10 +38,11 @@ admin_header('内容中心');
     <h1>内容中心</h1>
     <p class="sub">文章、页面、下载资料与播客视频，统一在这里管理</p>
 
-    <div class="hub-tabs">
+    <div class="hub-tabs" id="hubTabs">
       <?php foreach ($allowed as $k => $t): ?>
         <a class="hub-tab<?= $k === $tab ? ' on' : '' ?>" href="?tab=<?=urlencode($k)?>"><?=htmlspecialchars($t[0])?></a>
       <?php endforeach; ?>
+      <div class="hub-actions" id="hubActions"></div>
     </div>
 
     <div class="hub-tab-body">
@@ -58,13 +59,28 @@ admin_header('内容中心');
 </div>
 
 <style>
-.hub-tabs{display:flex;flex-wrap:wrap;gap:4px;margin:18px 0 22px;border-bottom:1px solid var(--border)}
-.hub-tab{padding:9px 15px;border-radius:8px 8px 0 0;font-size:13.5px;font-weight:600;color:var(--text-2);
-  text-decoration:none;border:1px solid transparent;border-bottom:none;position:relative;top:1px;transition:.15s}
-.hub-tab:hover{background:var(--bg-2);color:var(--text-1)}
-.hub-tab.on{background:var(--bg-1);color:var(--primary);border-color:var(--border);border-bottom:1px solid var(--bg-1)}
-/* 子页正文的首个 h1 与中心标题重复 */
+.hub-tabs{display:flex;align-items:flex-end;gap:2px;margin:6px 0 18px;border-bottom:1px solid var(--border)}
+.hub-tab{padding:10px 16px;font-size:13.5px;font-weight:600;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;border-radius:8px 8px 0 0}
+.hub-tab:hover{color:var(--fg);background:var(--hover)}
+.hub-tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.hub-actions{margin-left:auto;display:flex;gap:8px;padding-bottom:8px}
+.hub-actions:empty{display:none}
+@media(max-width:840px){.hub-tabs{flex-wrap:wrap}.hub-actions{margin-left:0;width:100%;flex-wrap:wrap;padding:8px 0}}
+/* 子页正文的首个 h1 与中心标题重复；子页的操作按钮由 JS 提到 tab 行右侧 */
 .hub-tab-body > h1:first-child{display:none}
 .hub-tab-body > .flex > h1{display:none}
+.hub-sub{font-size:13px;color:var(--muted);margin:-6px 0 14px}
+.hub-tab-body .of-subtabs{margin-top:0}
 </style>
+<script>
+// 子页自己的标题行（h1 + 操作按钮）：按钮提到 tab 行右侧，h1 隐藏（与「内容中心」重复）
+(function(){var dst=document.getElementById('hubActions'),body=document.querySelector('.hub-tab-body');if(!dst||!body)return;
+ var h1=body.querySelector('h1');if(!h1)return;var head=h1.closest('.flex, .v-head, .page-head')||h1.parentElement;
+ var btns=head.querySelectorAll('a.btn, button.btn, .lst-actions > *');if(btns.length){var grp=head.querySelector('.lst-actions, .ml-auto, .flex.gap-2');
+   var src=(grp&&grp.querySelectorAll('.btn').length===btns.length)?grp:null;
+   if(src){while(src.firstChild)dst.appendChild(src.firstChild);} else btns.forEach(function(b){dst.appendChild(b);});}
+ var sub=head.querySelector('p, .v-sub');
+ if(sub&&sub.textContent.trim()){var d=document.createElement('p');d.className='hub-sub';d.textContent=sub.textContent.trim();body.insertBefore(d,body.firstChild);}
+ head.style.display='none';})();
+</script>
 <?php admin_footer(); ?>

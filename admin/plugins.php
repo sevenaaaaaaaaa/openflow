@@ -131,8 +131,11 @@ admin_header('插件管理');
             <p class="text-sm text-muted"><?=htmlspecialchars($repo['description'])?></p>
           </div>
           <span class="text-sm text-muted">⭐ <?=$repo['stars']?></span>
-          <form method="post">
+          <form method="post" data-confirm="从 GitHub 安装 <?=htmlspecialchars($repo['full_name'], ENT_QUOTES)?>？安装后需在列表里手动启用。">
             <?= csrf_field() ?>
+            <input type="hidden" name="source" value="<?=htmlspecialchars($repo['full_name'])?>">
+            <button type="submit" name="install" value="1" class="btn btn-ghost btn-sm">安装</button>
+          </form>
         </div>
         <?php endforeach; ?>
       </div>

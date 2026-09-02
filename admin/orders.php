@@ -51,74 +51,95 @@ try {
     usort($orders, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
     $total  = count($orders);
     $orders = array_slice($orders, 0, 200);
-} catch (Exception $e) { $error = $error ?: '读取订单失败：' . $e->getMessage(); $total = 0; }
+    // 状态统计（全量，不受筛选影响）
+    $stats = ['n' => count($all), 'paid' => 0, 'refunded' => 0, 'pending' => 0, 'revenue' => 0.0, 'refund' => 0.0];
+    foreach ($all as $o) {
+        $st = $o['status'] ?? '';
+        if (isset($stats[$st])) $stats[$st]++;
+        if ($st === 'paid') $stats['revenue'] += (float)($o['amount'] ?? 0);
+        if ($st === 'refunded') $stats['refund'] += (float)($o['refund_amount'] ?? $o['amount'] ?? 0);
+    }
+} catch (Exception $e) { $error = $error ?: '读取订单失败：' . $e->getMessage(); $total = 0; $stats = null; }
 
 $statusLabels = ['pending'=>'待支付','paid'=>'已支付','refunded'=>'已退款','cancelled'=>'已取消'];
 
 if (!defined('OF_EMBED')) admin_header('订单与退款');
 ?>
+<style>
+.od-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.od-kpi{display:block;padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);text-decoration:none;color:inherit;transition:border-color .15s}
+a.od-kpi:hover{border-color:var(--border-strong)}
+.od-kpi.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.od-kpi .n{font-family:var(--font-mono);font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--ok)}
+.od-kpi .l{font-size:12px;color:var(--muted);margin-top:2px}
+.od-modal{display:none;position:fixed;inset:0;background:oklch(12% 0 0/.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:900;align-items:center;justify-content:center;padding:20px}
+@media(max-width:840px){.od-kpis{grid-template-columns:1fr 1fr}}
+</style>
 <?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
   <?php admin_sidebar('orders'); ?>
   <div class="main">
 <?php endif; ?>
     <h1>订单与退款</h1>
-    <p class="sub">查询订单并办理退款。退款会同步回收分销佣金、作者分成、购物积分，并撤销订阅与技能解锁。<?php
-      if (!empty($total)) echo '共 ' . (int)$total . ' 笔' . ($total > 200 ? '，显示最近 200 笔' : '') . '。';
-    ?></p>
+    <p class="sub">退款会同步回收分销佣金、作者分成、购物积分，并撤销订阅与技能解锁；部分退款只退金额、保留权益。</p>
 
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>
 
-    <form method="get" class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-      <div class="field" style="margin:0">
-        <label>订单号 / 邮箱 / 会员</label>
-        <input type="text" name="q" value="<?=htmlspecialchars($q)?>" placeholder="模糊匹配">
-      </div>
-      <div class="field" style="margin:0">
-        <label>状态</label>
-        <select name="status">
-          <option value="">全部</option>
-          <?php foreach ($statusLabels as $k => $v): ?>
-            <option value="<?=$k?>"<?=$status===$k?' selected':''?>><?=$v?></option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-      <button class="btn btn-primary">查询</button>
+    <?php if (!empty($stats)): ?>
+    <div class="od-kpis">
+      <a href="?" class="od-kpi <?=$status===''?'on':''?>"><div class="n">¥<?=number_format($stats['revenue'],0)?></div><div class="l">已支付金额 · <?=$stats['paid']?> 笔</div></a>
+      <a href="?status=refunded" class="od-kpi <?=$status==='refunded'?'on':''?>"><div class="n" style="color:var(--danger)">¥<?=number_format($stats['refund'],0)?></div><div class="l">已退款 · <?=$stats['refunded']?> 笔</div></a>
+      <a href="?status=pending" class="od-kpi <?=$status==='pending'?'on':''?>"><div class="n" style="color:var(--warn)"><?=$stats['pending']?></div><div class="l">待支付</div></a>
+      <div class="od-kpi"><div class="n" style="color:var(--muted)"><?=$stats['n']?></div><div class="l">全部订单</div></div>
+    </div>
+    <?php endif; ?>
+
+    <form method="get" class="lst-filter" role="search">
+      <div class="lst-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg><input type="search" name="q" value="<?=htmlspecialchars($q)?>" placeholder="订单号 / 邮箱 / 会员 ID" aria-label="搜索订单"></div>
+      <select name="status" class="lst-sel" onchange="this.form.submit()" aria-label="状态">
+        <option value="">全部状态</option>
+        <?php foreach ($statusLabels as $k => $v): ?>
+          <option value="<?=$k?>"<?=$status===$k?' selected':''?>><?=$v?></option>
+        <?php endforeach; ?>
+      </select>
+      <button class="btn btn-ghost btn-sm">查询</button>
+      <?php if ($q || $status): ?><a href="?" class="btn btn-ghost btn-sm">清除</a><?php endif; ?>
+      <span class="lst-count"><?=(int)($total ?? 0)?> 笔<?=(($total ?? 0) > 200) ? ' · 显示最近 200' : ''?></span>
     </form>
 
-    <div class="card" style="padding:0;overflow-x:auto">
-      <table class="table">
+    <div class="card lst-card">
+      <table class="lst-table">
         <thead><tr>
-          <th>订单号</th><th>商品</th><th>买家</th><th>金额</th>
-          <th>状态</th><th>时间</th><th style="width:1%">操作</th>
+          <th style="width:190px">订单号</th><th class="c-title">商品</th><th style="width:200px">买家</th><th style="width:130px">金额</th>
+          <th style="width:90px">状态</th><th style="width:150px">时间</th><th class="c-act" style="width:80px"></th>
         </tr></thead>
         <tbody>
         <?php if (empty($orders)): ?>
-          <tr><td colspan="7" class="empty">没有匹配的订单</td></tr>
+          <tr><td colspan="7"><div class="of-empty" style="border:0;margin:0"><?=($q||$status)?'没有匹配的订单，试试清除筛选。':'还没有订单。用户在商城 / 课程 / 会员页付款后会出现在这里。'?></div></td></tr>
         <?php endif; ?>
         <?php foreach ($orders as $o):
           $st = $o['status'] ?? '';
           $amt = (float)($o['amount'] ?? 0);
         ?>
           <tr>
-            <td class="mono" style="font-size:12px"><?=htmlspecialchars($o['id'] ?? '')?></td>
-            <td><?=htmlspecialchars($o['course_title'] ?? ($o['goods_type'] ?? '—'))?></td>
-            <td style="font-size:12px"><?=htmlspecialchars($o['email'] ?? ($o['member_id'] ?? '—'))?></td>
-            <td class="mono">¥<?=number_format($amt, 2)?>
+            <td class="lst-slug" style="font-size:12px;overflow:hidden;text-overflow:ellipsis" title="<?=htmlspecialchars($o['id'] ?? '')?>"><?=htmlspecialchars($o['id'] ?? '')?></td>
+            <td class="c-title"><div class="lst-title" style="font-size:13.5px"><?=htmlspecialchars($o['course_title'] ?? ($o['goods_type'] ?? '—'))?></div></td>
+            <td style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="<?=htmlspecialchars($o['email'] ?? ($o['member_id'] ?? ''))?>"><?=htmlspecialchars($o['email'] ?? ($o['member_id'] ?? '—'))?></td>
+            <td class="mono" style="font-weight:700">¥<?=number_format($amt, 2)?>
               <?php if ($st === 'refunded' && !empty($o['refund_amount'])): ?>
-                <span style="color:var(--danger);font-size:11px">（退 ¥<?=number_format((float)$o['refund_amount'], 2)?>）</span>
+                <div style="color:var(--danger);font-size:11px;font-weight:500">退 ¥<?=number_format((float)$o['refund_amount'], 2)?></div>
               <?php endif; ?>
             </td>
-            <td><span class="badge <?= $st === 'paid' ? 'ok' : ($st === 'refunded' ? 'danger' : '') ?>">
+            <td><span class="badge <?= $st === 'paid' ? 'badge-green' : ($st === 'refunded' ? 'badge-red' : ($st === 'pending' ? 'badge-yellow' : 'badge-gray')) ?>">
               <?=htmlspecialchars($statusLabels[$st] ?? $st)?></span></td>
-            <td style="font-size:12px;color:var(--text-3)"><?=htmlspecialchars($o['created_at'] ?? '')?></td>
-            <td>
+            <td class="lst-when" style="font-size:12px"><?=htmlspecialchars(substr($o['created_at'] ?? '', 0, 16))?></td>
+            <td class="c-act">
               <?php if ($st === 'paid'): ?>
                 <button type="button" class="btn btn-ghost btn-sm"
                   onclick="openRefund('<?=htmlspecialchars($o['id'] ?? '', ENT_QUOTES)?>', <?=$amt?>)">退款</button>
               <?php elseif ($st === 'refunded'): ?>
-                <span style="font-size:11px;color:var(--text-3)" title="<?=htmlspecialchars($o['refund_reason'] ?? '')?>">已退</span>
+                <span style="font-size:11px;color:var(--text-3)" title="<?=htmlspecialchars($o['refund_reason'] ?? '')?>"><?=!empty($o['refund_reason'])?'原因 ⓘ':'已退'?></span>
               <?php else: ?>
                 <span style="font-size:11px;color:var(--text-3)">—</span>
               <?php endif; ?>
@@ -130,8 +151,8 @@ if (!defined('OF_EMBED')) admin_header('订单与退款');
     </div>
 
     <!-- 退款确认 -->
-    <div id="refundBox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900;align-items:center;justify-content:center">
-      <form method="post" class="card" style="max-width:420px;width:92%;margin:0">
+    <div id="refundBox" class="od-modal" onclick="if(event.target===this)this.style.display='none'">
+      <form method="post" class="card" style="max-width:440px;width:100%;margin:0" data-no-guard>
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="refund">
         <input type="hidden" name="order_id" id="rfOrder">
@@ -148,9 +169,9 @@ if (!defined('OF_EMBED')) admin_header('订单与退款');
         <p style="font-size:12px;color:var(--danger);line-height:1.7">
           全额退款会同时撤销该订单带来的订阅与技能解锁，并回收已发放的分销佣金与作者分成。部分退款只退金额、保留权益。
         </p>
-        <div style="display:flex;gap:8px;margin-top:6px">
-          <button type="submit" class="btn btn-primary">确认退款</button>
+        <div style="display:flex;gap:8px;margin-top:6px;justify-content:flex-end">
           <button type="button" class="btn btn-ghost" onclick="document.getElementById('refundBox').style.display='none'">取消</button>
+          <button type="submit" class="btn btn-primary" style="background:var(--danger);border-color:transparent">确认退款</button>
         </div>
       </form>
     </div>

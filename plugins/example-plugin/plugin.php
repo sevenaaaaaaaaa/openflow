@@ -48,5 +48,5 @@ PluginSystem::add_action('form_submitted', function ($formId, $formType, $formDa
 // 4. 侧边栏菜单
 PluginSystem::add_action('admin_sidebar_menu', function ($current) {
     $active = ($current === 'example-plugin') ? 'active' : '';
-    echo '<a href="../plugins/example-plugin/view.php" class="' . $active . '" style="padding-left:44px;font-size:13px">📌 示例插件</a>';
+    echo '<a href="../plugins/example-plugin/view.php" class="' . $active . '">示例插件</a>';
 });
