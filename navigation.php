@@ -58,9 +58,9 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 <title>增长导航 | 优秀网站增长·SEO·AI 运营工具</title>
 <meta name="description" content="收录国内外优秀的网站增长、SEO、AI 运营工具与学习资源，一站直达高质量增长资源。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902a">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
 <style>
 /* 导航站独有：搜索框、热搜、分类侧栏项、站点卡评分。其余全部来自 modules.css。 */
 .search{display:flex;gap:10px;width:min(560px,100%);margin:0 auto}
