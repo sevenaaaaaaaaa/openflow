@@ -5,6 +5,7 @@
  * v7（2026-09-01）：迁到共享 archetype（reader 站点卡 + 评论部件 + link-grid 相关）。
  */
 require_once __DIR__ . '/admin/config.php';
+require_once __DIR__ . '/includes/nav-icons.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 require_once __DIR__ . '/lib/CommentSystem.php';
 require_once __DIR__ . '/lib/MemberSystem.php';
@@ -35,7 +36,8 @@ $related = array_values(array_filter($sites, fn($s) => $s['id'] !== $siteId && (
 <style>
 /* 站点详情独有：站点头。其余全部来自 modules.css。 */
 .site-hd{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
-.site-hd .em{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-size:30px;background:var(--accent-soft);flex:0 0 auto}
+.site-hd .fav{position:relative;width:64px;height:64px;border-radius:16px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-strong);flex:0 0 auto;overflow:hidden;font-weight:800;font-size:26px;font-family:var(--font-display)}
+.site-hd .fav img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12px;background:var(--surface)}
 .site-hd>div{flex:1;min-width:220px;display:flex;flex-direction:column;gap:10px}
 .site-hd h1{font-size:clamp(24px,3.5vw,32px);font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .site-hd p{font-size:15px;color:var(--muted);line-height:1.8}
@@ -51,7 +53,7 @@ $related = array_values(array_filter($sites, fn($s) => $s['id'] !== $siteId && (
   <section class="reader reveal in" data-od-id="site">
     <nav class="art-meta" aria-label="面包屑" style="margin-bottom:18px"><a href="/navigation" style="color:var(--faint)">← 增长导航</a></nav>
     <div class="card site-hd">
-      <span class="em"><?=($site['region']??'')==='cn'?'🇨🇳':'🌍'?></span>
+      <?=nav_site_icon($site)?>
       <div>
         <span class="kicker"><?=htmlspecialchars($catNames[$site['category'] ?? ''] ?? '未分类')?> · <?=($site['region']??'')==='cn'?'国内':'海外'?></span>
         <h1><?=htmlspecialchars($site['name'])?><?php if (!empty($site['featured'])): ?><span class="badge warn">编辑推荐</span><?php endif; ?></h1>
