@@ -9,7 +9,7 @@
 require_once __DIR__ . '/site-nav.php'; // 只定义函数与 OF_SHELL_VER，不输出
 if (!function_exists('of_head_assets')) {
     function of_head_assets(): void {
-        $v = defined('OF_SHELL_VER') ? OF_SHELL_VER : '20260902a';
+        $v = defined('OF_SHELL_VER') ? OF_SHELL_VER : '20260902b';
         echo '<script>try{var t=JSON.parse(localStorage.getItem(\'openflow-site-v3\')||\'{}\');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia(\'(prefers-reduced-motion: reduce)\').matches)document.documentElement.classList.add(\'rm\');}catch(e){}</script>' . "\n";
         echo '<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=' . $v . '">' . "\n";
         echo '<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=' . $v . '">' . "\n";
