@@ -24,9 +24,9 @@ $siteName = site_config_get('site_name');
 <title>商业发行版 | 芭乐派 · OpenFlow</title>
 <meta name="description" content="OpenFlow 商业发行版：SaaS 订阅、私有化部署、定制开发。一个 all-in-one 平台，缺什么用插件和技能自己改造。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260903a">
 <style>
 /* 企业页独有：可选方案卡。其余全部来自 modules.css。 */
 .plan-card{cursor:pointer;border-radius:var(--r-md);padding:22px 24px;border:1px solid var(--border);background:var(--surface);transition:border-color .2s,box-shadow .2s,transform .25s var(--ease-spring)}

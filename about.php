@@ -24,9 +24,9 @@ header('Cache-Control: no-cache, max-age=0');
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。
      id 与 site-shell.js 的注入判重一致，故 site-shell 不会重复插入。 -->
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260902b">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260902b">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260902b">
+<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
+<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260903a">
 <style>
 /* 关于页独有：创始人战绩窄栏里的四行成果。其余全部来自 modules.css。 */
 .win-lead{padding:18px 22px 4px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;font-family:var(--font-mono)}
