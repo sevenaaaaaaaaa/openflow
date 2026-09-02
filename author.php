@@ -1,6 +1,8 @@
 <?php
 /**
  * 作者/讲师主页
+ *
+ * v7（2026-09-01）：迁到共享 archetype（作者头 + stats + 分组 link-grid）。数据逻辑原样保留。
  * /authors/{name} — 显示该作者的简介、文章、课程、Skills/插件
  */
 require_once __DIR__ . '/admin/config.php';
@@ -47,113 +49,99 @@ foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
 
 $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($pageTitle)?></title>
 <meta name="description" content="<?=htmlspecialchars($authorName)?> 在 <?=site_config_get('site_name')?> 发布的文章、课程与技能">
-<link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-  body{background:var(--bg);font-family:var(--font-body)}
-  .acard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;transition:.15s;display:block;text-decoration:none;color:inherit}
-  .acard:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(30,30,30,.08);border-color:var(--accent)}
+/* 作者页独有：作者头。其余全部来自 modules.css。 */
+.au-head{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.au-head .av{width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--surface-strong);box-shadow:var(--shadow-sm);flex:0 0 auto}
+.au-head .av.txt{display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-strong);font-family:var(--font-display);font-size:34px;font-weight:700}
+.au-head .bd{flex:1;min-width:240px;display:flex;flex-direction:column;gap:8px}
+.au-head h1{font-size:clamp(26px,3.5vw,36px);font-weight:800;letter-spacing:-.02em}
+.au-head .ttl{color:var(--accent);font-weight:600;font-size:14px}
+.au-head p{color:var(--muted);font-size:15px;line-height:1.8;max-width:640px}
+.au-links{display:flex;gap:8px;flex-wrap:wrap}
 </style>
+<script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script>
+<body data-of-main>
+<?php of_shell('author'); ?>
 
-  <div class="mx-auto px-5 py-10" style="max-width:1100px">
-    <!-- 作者信息 -->
-    <div class="rounded-3xl p-8 mb-10 flex items-center gap-6 flex-wrap" style="background:linear-gradient(135deg,var(--ok-soft) 0%,var(--accent-soft) 100%)">
+<a class="skip" href="#main">跳到主要内容</a>
+<main id="main" data-od-id="main">
+
+  <section id="top" class="reveal in" data-od-anchor data-od-id="author-head">
+    <div class="card au-head">
       <?php if ($avatar): ?>
-      <img src="<?=htmlspecialchars(strpos($avatar,'http')===0?$avatar:'/'.ltrim($avatar,'/'))?>" class="w-24 h-24 rounded-full object-cover border-4 border-white" style="box-shadow:0 8px 24px rgba(0,0,0,.1)" alt="<?=htmlspecialchars($authorName)?>">
+      <img class="av" src="<?=htmlspecialchars(strpos($avatar,'http')===0?$avatar:'/'.ltrim($avatar,'/'))?>" alt="<?=htmlspecialchars($authorName)?>">
       <?php else: ?>
-      <div class="w-24 h-24 rounded-full grid place-items-center text-3xl font-bold text-white" style="background:linear-gradient(135deg,var(--accent-strong),var(--accent))"><?=htmlspecialchars(mb_substr($authorName, 0, 1))?></div>
+      <div class="av txt"><?=htmlspecialchars(mb_substr($authorName, 0, 1))?></div>
       <?php endif; ?>
-      <div class="flex-1 min-w-[240px]">
-        <h1 class="text-3xl font-extrabold text-gray-900"><?=htmlspecialchars($authorName)?></h1>
-        <?php if (!empty($authorTitle)): ?><div class="text-sm font-medium mt-1" style="color:var(--accent)"><?=htmlspecialchars($authorTitle)?></div><?php endif; ?>
-        <p class="text-gray-600 mt-2 leading-relaxed max-w-xl">
-          <?=$bio ? htmlspecialchars($bio) : ('专注内容创作与分享，在 ' . site_config_get('site_name') . ' 发布 ' . count($articles) . ' 篇文章、' . count($skills) . ' 个技能。')?>
-        </p>
+      <div class="bd">
+        <span class="kicker">作者 · AUTHOR</span>
+        <h1><?=htmlspecialchars($authorName)?></h1>
+        <?php if (!empty($authorTitle)): ?><div class="ttl"><?=htmlspecialchars($authorTitle)?></div><?php endif; ?>
+        <p><?=$bio ? htmlspecialchars($bio) : ('专注内容创作与分享，在 ' . site_config_get('site_name') . ' 发布 ' . count($articles) . ' 篇文章、' . count($skills) . ' 个技能。')?></p>
         <?php if (!empty($authorLinks)): ?>
-        <div class="flex gap-3 mt-3 flex-wrap">
-          <?php foreach ($authorLinks as $l): if (empty($l['url'])) continue; ?>
-            <a href="<?=htmlspecialchars($l['url'])?>" target="_blank" rel="nofollow noopener" class="text-sm px-3 py-1 rounded-full" style="background:var(--surface);border:1px solid var(--border);color:var(--accent);text-decoration:none"><?=htmlspecialchars($l['label'] ?? '链接')?> ↗</a>
-          <?php endforeach; ?>
-        </div>
+        <div class="au-links"><?php foreach ($authorLinks as $l): if (empty($l['url'])) continue; ?><a class="pill neutral" href="<?=htmlspecialchars($l['url'])?>" target="_blank" rel="nofollow noopener"><?=htmlspecialchars($l['label'] ?? $l['url'])?></a><?php endforeach; ?></div>
         <?php endif; ?>
-        <div class="flex gap-6 mt-4 text-sm text-[#2b5f7e]">
-          <span><strong><?=count($articles)?></strong> 篇文章</span>
-          <span><strong><?=count($courses)?></strong> 门课程</span>
-          <span><strong><?=count($skills)?></strong> 个技能</span>
-          <span><strong><?=count($plugins)?></strong> 个插件</span>
-        </div>
       </div>
     </div>
+  </section>
 
+  <section class="sec reveal" data-od-anchor data-od-id="author-stats">
+    <div class="stats">
+      <div class="st"><div class="st-n"><?=count($articles)?></div><span class="st-en">Articles</span><span class="st-t">篇文章</span></div>
+      <div class="st"><div class="st-n"><?=count($courses)?></div><span class="st-en">Courses</span><span class="st-t">门课程</span></div>
+      <div class="st"><div class="st-n"><?=count($skills)?></div><span class="st-en">Skills</span><span class="st-t">个技能</span></div>
+      <div class="st"><div class="st-n"><?=count($plugins)?></div><span class="st-en">Plugins</span><span class="st-t">个插件</span></div>
+    </div>
+  </section>
+
+  <section class="sec reveal" data-od-anchor data-od-id="author-works">
     <?php if ($articles): ?>
-    <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg></span> 专栏文章 (<?=count($articles)?>)</h2>
-    <div class="grid gap-3 mb-10 md:grid-cols-2">
+    <div class="sec-head row"><div><span class="kicker">文章</span><h2>TA 写的</h2></div></div>
+    <div class="link-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:28px">
       <?php foreach (array_slice($articles, 0, 12) as $a): ?>
-      <a href="/articles/<?=htmlspecialchars($a['slug'])?>" class="acard">
-        <div class="font-semibold text-gray-900"><?=htmlspecialchars($a['title'])?></div>
-        <div class="text-xs text-gray-400 mt-1"><?=htmlspecialchars($catNames[$a['category'] ?? ''] ?? '')?> · <?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?></div>
-      </a>
+      <a class="link-it" href="/articles/<?=htmlspecialchars($a['slug'])?>"><span class="lt"><b><?=htmlspecialchars($a['title'])?></b><span><?=htmlspecialchars($catNames[$a['category'] ?? ''] ?? '')?> · <?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
-
     <?php if ($courses): ?>
-    <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span> 课程</h2>
-    <div class="grid gap-3 mb-10 md:grid-cols-2">
+    <div class="sec-head row"><div><span class="kicker">课程</span><h2>TA 讲的</h2></div></div>
+    <div class="link-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:28px">
       <?php foreach ($courses as $c): ?>
-      <a href="/courses/<?=htmlspecialchars($c['id'])?>" class="acard">
-        <div class="flex items-center justify-between">
-          <div class="font-semibold text-gray-900"><?=htmlspecialchars($c['title'] ?? '')?></div>
-          <span class="text-xs font-bold text-green-600"><?=($c['price'] ?? 0) ? '¥'.$c['price'] : '免费'?></span>
-        </div>
-      </a>
+      <a class="link-it" href="/courses/<?=htmlspecialchars($c['id'])?>"><span class="lt"><b><?=htmlspecialchars($c['title'] ?? '')?></b><span><?=($c['price'] ?? 0) ? '¥'.$c['price'] : '免费'?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
-
     <?php if ($skills): ?>
-    <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span> 分享的技能</h2>
-    <div class="grid gap-3 mb-10 md:grid-cols-2">
-      <?php foreach ($skills as $s): ?>
-      <a href="/marketplace?view=skill&id=<?=htmlspecialchars($s['id'])?>" class="acard">
-        <div class="font-semibold text-gray-900"><?=htmlspecialchars($s['title'] ?? '')?></div>
-        <div class="text-xs text-gray-400 mt-1"><?=htmlspecialchars($s['type'] ?? '')?> · <?=htmlspecialchars(mb_substr($s['desc'] ?? '', 0, 60))?></div>
-      </a>
+    <div class="sec-head row"><div><span class="kicker">技能</span><h2>TA 做的 Skill</h2></div></div>
+    <div class="link-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:28px">
+      <?php foreach ($skills as $sk): ?>
+      <a class="link-it" href="/marketplace?view=skill&id=<?=htmlspecialchars($sk['id'])?>"><span class="lt"><b><?=htmlspecialchars($sk['title'] ?? '')?></b><span><?=htmlspecialchars($sk['type'] ?? '')?> · <?=htmlspecialchars(mb_substr($sk['desc'] ?? '', 0, 60))?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
-
     <?php if ($plugins): ?>
-    <h2 class="text-lg font-bold mb-4"><span class="ic emj"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4a2 2 0 0 1 4 0v1h3a1 1 0 0 1 1 1v3h1a2 2 0 0 1 0 4h-1v3a1 1 0 0 1-1 1h-3v1a2 2 0 0 1-4 0v-1H6a1 1 0 0 1-1-1v-3H4a2 2 0 0 1 0-4h1V6a1 1 0 0 1 1-1h3V4Z"/></svg></span> 发布的插件</h2>
-    <div class="grid gap-3 mb-10 md:grid-cols-2">
+    <div class="sec-head row"><div><span class="kicker">插件</span><h2>TA 做的插件</h2></div></div>
+    <div class="link-grid" style="grid-template-columns:repeat(2,1fr)">
       <?php foreach ($plugins as $p): ?>
-      <a href="/marketplace?view=plugin&id=<?=htmlspecialchars($p['id'] ?? '')?>" class="acard">
-        <div class="font-semibold text-gray-900"><?=htmlspecialchars($p['name'] ?? $p['title'] ?? '')?></div>
-      </a>
+      <a class="link-it" href="/marketplace?view=plugin&id=<?=htmlspecialchars($p['id'] ?? '')?>"><span class="lt"><b><?=htmlspecialchars($p['name'] ?? $p['title'] ?? '')?></b><span>插件</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
+    <?php if (!$articles && !$courses && !$skills && !$plugins): ?><div class="empty">这位作者还没有发布内容</div><?php endif; ?>
+  </section>
 
-    <?php if (!$articles && !$courses && !$skills && !$plugins): ?>
-    <div class="text-center py-16 text-gray-400">该作者还没有发布内容</div>
-    <?php endif; ?>
-  </div>
-
-  <footer class="pt-10 pb-8 mt-10" style="background:var(--bg-soft);border-top:1px solid var(--border);color:var(--fg)">
-    <div class="mx-auto px-5 text-center text-sm" style="max-width:1100px">
-      <div class="mb-2"><?=site_config_get('site_name')?> · <?=site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统')?></div>
-      <div class="text-xs" style="color:var(--muted)"><?=site_copyright()?></div>
-    </div>
-  </footer>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</main>
+<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>
