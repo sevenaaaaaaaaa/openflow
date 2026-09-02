@@ -4,6 +4,7 @@
  * 标签聚合页：按 aggregate_tags 聚合已发布文章
  */
 require_once __DIR__ . '/admin/config.php';
+require_once __DIR__ . '/lib/CoverRenderer.php';
 
 $slug = trim(req_str('slug'));
 $landing = null;
@@ -129,7 +130,7 @@ $jsonLd = [
         $cn = $catNames[$a['category'] ?? ''] ?? '';
       ?>
       <a href="/article/<?=htmlspecialchars($a['slug'])?>" class="a-card">
-        <div class="cov"><?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="<?=htmlspecialchars($a['title'])?>" loading="lazy"><?php else: ?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg><?php endif; ?></div>
+        <div class="cov"><?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="<?=htmlspecialchars($a['title'])?>" loading="lazy"><?php else: ?><?=CoverRenderer::renderCard($a)?><?php endif; ?></div>
         <div class="bd">
           <?php if ($cn): ?><span class="cat"><?=htmlspecialchars($cn)?></span><?php endif; ?>
           <h3><?=htmlspecialchars($a['title'])?></h3>

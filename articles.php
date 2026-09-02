@@ -68,7 +68,7 @@ function renderCard(array $a, array $catLabels, $size = 'normal'): string {
     $cls = $size === 'large' ? 'a-card feat' : 'a-card';
     return '<a href="/articles/' . $slug . '" class="' . $cls . '">'
         . '<div class="cov">' . $coverHtml . '</div>'
-        . '<div class="bd"><span class="cat">' . $cl['icon'] . ' ' . htmlspecialchars($cl['name']) . '</span>'
+        . '<div class="bd"><span class="cat">' . htmlspecialchars($cl['name']) . '</span>'
         . '<h3>' . $title . '</h3>'
         . ($excerpt ? '<p>' . $excerpt . '</p>' : '')
         . '<div class="meta">' . $date . '</div></div></a>';
