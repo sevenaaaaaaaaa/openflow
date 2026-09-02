@@ -28,18 +28,25 @@ $base = $siteUrl;
 
 echo '<?xml version="1.0" encoding="UTF-8"?>';
 ?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Static pages -->
-  <url><loc><?=$base?>/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
-  <url><loc><?=$base?>/about.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc><?=$base?>/capability.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc><?=$base?>/courses.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc><?=$base?>/academy.php</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
-  <url><loc><?=$base?>/reviews.php</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
-  <url><loc><?=$base?>/navigation.php</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
-  <url><loc><?=$base?>/podcasts.php</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
-  <url><loc><?=$base?>/marketplace.php</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
-  <url><loc><?=$base?>/thank-you</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
+  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- 主要页面 -->
+  <url><loc><?=$base?>/</loc><priority>1.0</priority><changefreq>daily</changefreq></url>
+  <url><loc><?=$base?>/about</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc><?=$base?>/product</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc><?=$base?>/capability</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc><?=$base?>/courses</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
+  <url><loc><?=$base?>/academy</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
+  <url><loc><?=$base?>/community</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
+  <url><loc><?=$base?>/marketplace</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
+  <url><loc><?=$base?>/navigation</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
+  <url><loc><?=$base?>/events</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
+  <url><loc><?=$base?>/enterprise</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc><?=$base?>/consultation</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc><?=$base?>/downloads</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+  <url><loc><?=$base?>/podcasts</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+  <url><loc><?=$base?>/articles</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
+  <url><loc><?=$base?>/lp/solo-growth</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc><?=$base?>/lp/one-pager</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
 
   <!-- Category 分类页 -->
   <?php

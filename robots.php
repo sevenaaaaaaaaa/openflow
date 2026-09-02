@@ -101,4 +101,5 @@ Allow: /
 Sitemap: <?=$base?>/sitemap.xml
 
 # LLMs.txt（给 LLM 的知识索引）
-# 见 <?=$base?>/llms.txt
+Allow: /llms.txt
+Allow: /sitemap.xml
