@@ -96,6 +96,24 @@
 
 顺带修的真 bug：**22 处被截断的 `<form>`**（`campaigns / mall / analytics / approvals / categories / forms / landing-pages / moderation / page-builder / plugins / shop-settings / storage / topics`——`csrf_field()` 之后的按钮与 `</form>` 全丢了，讲师审核、投稿审核、提现打款、删除分类 / 表单 / 专题 / 页面、内容扫描、存储维护这些按钮从基线起就不存在；已按各页的 POST 处理逻辑逐一补回并加确认，契约测试新增 form/select 标签配对检查）、`campaigns` 删除无 CSRF、`cdp.php` 60 行正文在 `</html>` 之后、`crm.php` 详情面板多一个闭合标签、`config.php` 缺 `.badge-red`（15 个页面在用）。
 
+## 九、第三轮：系统区 + 框架层两项新能力（v13 · 2026-09-03）
+
+框架层新增两个「零改页面」能力，现在和以后所有页面都能用：
+
+* **长表单分节目录**（`admin-ui.js` 3b）：POST 表单里有 ≥4 个带 `h2/h3` 的 `.card`、且高度超过 1.6 屏，右侧自动生成粘性目录并随滚动高亮；`.main` 变两栏（正文 + 188px 目录），≤1180px 隐藏。不想要就给 form 加 `data-no-secnav`。当前命中：系统设置（9 节）、广告位（5）、社区配置（4）、SEO 中心（4）。
+* **页内 tab**（3c）：`<div class="of-tabbed">` 的直接子元素带 `data-tab="标题"`（可选 `data-tab-id`），自动生成 tab 条，一次只显示一个；hash / sessionStorage 记忆，提交后带 `.msg` 的那个 pane 自动置前。内容导入页 6 张表单由此从 2659px 变一屏。
+
+| 页面 | 原来 | 现在 |
+|---|---|---|
+| 系统设置 `settings` | 3516px 一张表单 9 节，全靠滚 | 右侧分节目录 + 粘性保存条；emoji 去掉 |
+| 角色与权限 `roles` | 87 个权限只显示英文 key，无分组全选 | 每项显示中文名 + key，每组可整组勾选（半选态）、显示 n/m，顶部显示已授权计数 |
+| 后台用户 `users` | 顶部一张写死的「角色权限说明」表（与真实权限脱节） | 删掉假表，链到「角色与权限」；列表套 lst 骨架，标出「我」 |
+| 健康检测 `health-check` | **整页被隐藏**：self tab 要求权限 `health-check`，但注册表里没有这个键，连超管都看不到，进来只看到「存储」 | 权限改 `settings`，健康评分页回来了 |
+| 内容导入 `ingest` | 6 张表单纵向堆 2659px | `of-tabbed`：Obsidian / 平台 API / GitHub / Cloudflare / API 接入 / RSS |
+| CRM 原始提交 `crm?tab=raw` | 直接把 CSV 的 9 列吐出来；「转跟进」按钮读 `$rl['email']`，而 CSV 表头是中文「邮箱」→ **按钮从来没出现过** | 固定 6 列（时间 / 提交人 / 联系方式 / 来源 / 留言 / 操作）；新增 `claim_raw` 动作，真正把提交转成跟进线索（带公司、来源、留言进跟进记录），已在跟进的显示「已在跟进 →」 |
+
+顺带修的 PHP 警告（fresh install 或空数据时整页顶部一排 Warning）：`ai-config`（providers / global_prompts 未定义）、`publish`（variant）、`conversion`（四个组件配置为空时 30 处未定义键）、`live`（hls_url）、`seo-console`（GSC 缓存行缺字段）。走查脚本现在把 `<b>Warning</b>` 也算错误。
+
 ### 还没做
 
-系统区（设置页 3380px 一张表单）用户未列为优先，下一阶段处理；`crm?tab=raw` 原始提交表沿用动态列头，没有单独重排。
+主题、API 分佣、事件字典、用户画像、导航站这些页量过没有硬伤，只有 inline style 多；不值得单独重排。emoji 只替换按钮 / 标题 / 标签里的，卡片正文里的装饰 emoji（增长驱动、自我进化）保留——那是内容而不是控件。

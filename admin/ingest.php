@@ -49,13 +49,13 @@ admin_header('内容导入连接器');
 <div class="admin-layout">
   <?php admin_sidebar('ingest'); ?>
   <div class="main">
-    <h1> 内容导入连接器</h1>
+    <h1>内容导入</h1>
     <p class="sub">从飞书 / Notion / Obsidian / 印象笔记发布文章到后台（自动进入审核）</p>
-    <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
-
+    <div class="of-tabbed">
     <!-- Obsidian 本地上传 -->
-    <div class="card" style="background:linear-gradient(135deg,var(--surface),rgba(125,211,252,.1))">
-      <h2>📓 Obsidian 导入</h2>
+    <div class="card" data-tab="Obsidian" data-tab-id="obsidian">
+      <?php if ($message && strpos($message, 'Obsidian') !== false): ?><?=msg('success', $message)?><?php endif; ?>
+      <h2>Obsidian 导入</h2>
       <p class="text-sm text-muted mb-4">直接上传 Obsidian 导出的 .md 文件，自动转为文章草稿</p>
       <form method="post" enctype="multipart/form-data" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <?= csrf_field() ?>
@@ -65,10 +65,11 @@ admin_header('内容导入连接器');
     </div>
 
     <!-- 平台配置 -->
-    <form method="post">
+    <form method="post" data-tab="平台 API" data-tab-id="api">
       <?= csrf_field() ?>
       <div class="card">
-        <h2>⚙️ 平台 API 配置</h2>
+        <?php if ($message && strpos($message, 'Obsidian') === false): ?><?=msg('success', $message)?><?php endif; ?>
+        <h2>平台 API 配置</h2>
         <p class="text-sm text-muted mb-4">配置后可通过各平台 API 自动拉取文档</p>
         <div class="field-row">
           <div class="field"><label>飞书 OpenAPI Token</label><input type="password" name="feishu_token" value="<?=htmlspecialchars($config['feishu_token'] ?? '')?>" placeholder="飞书开放平台 tenant_access_token"></div>
@@ -100,8 +101,8 @@ admin_header('内容导入连接器');
     </form>
 
     <!-- GitHub Pages 批量导入 -->
-    <div class="card" style="background:linear-gradient(135deg,var(--surface),rgba(125,211,252,.1))">
-      <h2>🐙 GitHub Pages / 仓库导入</h2>
+    <div class="card" data-tab="GitHub" data-tab-id="github">
+      <h2>GitHub Pages / 仓库导入</h2>
       <p class="text-sm text-muted mb-4">从 GitHub Pages 或任意 GitHub 仓库批量导入 Markdown 文章（自动解析 front-matter，转为 HTML 草稿）</p>
       <div class="field-row">
         <div class="field"><label>仓库（owner/repo）</label><input type="text" id="ghRepo" class="inp" placeholder="yourname/your-blog" value=""></div>
@@ -116,14 +117,14 @@ admin_header('内容导入连接器');
         </div>
       </div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-primary" onclick="githubImport()">📥 导入为草稿</button>
+        <button class="btn btn-primary" onclick="githubImport()">导入为草稿</button>
         <span id="ghResult" class="text-sm align-center" style="align-self:center"></span>
       </div>
     </div>
 
     <!-- Cloudflare Pages 批量导入 -->
-    <div class="card">
-      <h2>🌩️ Cloudflare Pages 导入</h2>
+    <div class="card" data-tab="Cloudflare Pages" data-tab-id="cf">
+      <h2>Cloudflare Pages 导入</h2>
       <p class="text-sm text-muted mb-4">输入 Cloudflare Pages 站点地址，自动抓取 sitemap 或首页文章链接并导入为草稿</p>
       <div class="field-row">
         <div class="field"><label>站点地址</label><input type="text" id="cfSite" class="inp" placeholder="https://your-site.pages.dev"></div>
@@ -137,14 +138,14 @@ admin_header('内容导入连接器');
         </div>
       </div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-primary" onclick="cfImport()">📥 导入为草稿</button>
+        <button class="btn btn-primary" onclick="cfImport()">导入为草稿</button>
         <span id="cfResult" class="text-sm align-center" style="align-self:center"></span>
       </div>
     </div>
 
     <!-- API 用法 -->
-    <div class="card">
-      <h2>🔌 API 接入说明</h2>
+    <div class="card" data-tab="API 接入" data-tab-id="apidoc">
+      <h2>API 接入说明</h2>
       <p class="text-sm text-muted mb-4">各平台/工具可通过 HTTP 调用本连接器发布文章：</p>
       <pre style="background:#1e1e1e;color:#fff;padding:14px;border-radius:8px;font-size:13px;overflow-x:auto">curl -X POST https://example.com/api/ingest.php \
   -H "Content-Type: application/json" \
@@ -163,8 +164,8 @@ curl -X POST https://example.com/api/ingest.php \
     </div>
 
     <!-- ═══ RSS 引入 ═══ -->
-    <div class="card">
-      <h2>📡 RSS 引入</h2>
+    <div class="card" data-tab="RSS" data-tab-id="rss">
+      <h2>RSS 引入</h2>
       <p class="text-sm text-muted mb-4">从外部 RSS 源拉取文章，导入为草稿（支持 RSS 2.0 / Atom）</p>
       <div class="field-row">
         <div class="field"><label>RSS URL</label><input type="text" id="rssUrl" class="inp" placeholder="https://example.com/feed.xml"></div>
@@ -179,11 +180,12 @@ curl -X POST https://example.com/api/ingest.php \
         <div class="field"><label>标签（逗号分隔）</label><input type="text" id="rssTag" class="inp" placeholder="RSS, 资讯"></div>
       </div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-ghost" onclick="previewRss()">👁 预览</button>
-        <button class="btn btn-primary" onclick="importRss()">📥 导入为草稿</button>
+        <button class="btn btn-ghost" onclick="previewRss()">预览</button>
+        <button class="btn btn-primary" onclick="importRss()">导入为草稿</button>
       </div>
       <div id="rssPreview" class="mt-4"></div>
     </div>
+    </div><!-- /of-tabbed -->
   </div>
 </div>
 

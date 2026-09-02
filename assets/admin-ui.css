@@ -95,6 +95,22 @@ body.has-savebar .main{padding-bottom:96px}
 body[data-sb="closed"] .of-savebar{left:14px}
 @media(max-width:840px){.of-savebar{left:14px}}
 
+/* ── 3b. 长表单分节目录 ── */
+body.has-secnav .main{display:grid;grid-template-columns:minmax(0,1fr) 188px;column-gap:26px;align-items:start}
+.of-secnav-body{min-width:0}
+.of-secnav{position:sticky;top:calc(var(--chrome-h) + 30px);display:flex;flex-direction:column;gap:2px;padding:4px 0}
+.of-secnav .sn-h{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:0 12px 6px}
+.of-secnav a{display:block;padding:6px 12px;border-left:2px solid var(--border-soft);font-size:12.5px;color:var(--muted);text-decoration:none;line-height:1.4;transition:color .15s,border-color .15s}
+.of-secnav a:hover{color:var(--fg)}
+.of-secnav a.on{color:var(--accent);border-left-color:var(--accent);font-weight:700}
+@media(max-width:1180px){body.has-secnav .main{display:block}.of-secnav{display:none}}
+
+/* ── 3c. 页内 tab ── */
+.of-tabbar{margin-bottom:16px;flex-wrap:wrap}
+@media(max-width:840px){.of-tabbed form[style*='display:flex'],.of-tabbed .card form[style*='display:flex']{flex-wrap:wrap}.of-tabbed input[type=file]{max-width:100%;min-width:0}}
+.of-tabbed > [data-tab][hidden]{display:none!important}
+.of-tabbed > [data-tab] > .card:first-child,.of-tabbed > .card[data-tab]{margin-top:0}
+
 /* ── 4. 表格工具条 + 分页 ── */
 .of-tbl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
 .of-tbl .tb-q{flex:1 1 220px;max-width:340px;height:36px;padding:0 12px 0 34px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface-strong) no-repeat 11px center;background-size:15px;font-size:13px;color:var(--fg);outline:none}

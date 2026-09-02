@@ -4,7 +4,7 @@
  * 由 admin_footer() 引入，192 个后台页同时生效。每一段都只依赖 DOM 约定，不改任何业务代码：
  *   1. 侧栏：区切换 / 当前项滚到可见 / 最近打开
  *   2. 对话框：[data-confirm] 链接 / 按钮 / 表单 → 统一确认框（替代 98 处原生 confirm()）；ofAlert → toast
- *   3. 表单：POST 表单脏检测 + 离开提示；一屏放不下的表单自动加粘性保存条
+ *   3. 表单：POST 表单脏检测 + 离开提示；一屏放不下的表单自动加粘性保存条；≥4 分节的长表单右侧自动生成分节目录
  *   4. 表格：≥ 12 行的表自动获得筛选 / 计数 / 排序 / 分页
  *   5. emoji 图标 → 线框 svg
  */
@@ -174,6 +174,65 @@
       $('.sv-msg i', bar).style.visibility = d ? 'visible' : 'hidden';
     }
     if (bar) mark();
+  })();
+
+  /* ── 3b. 长表单分节导航：≥4 个 .card>h2 的分节且高度 > 1.6 屏，右侧粘性目录 + 滚动高亮 ── */
+  (function secnav() {
+    var main = $('.main'); if (!main || document.body.classList.contains('zen-mode')) return;
+    var forms = $$('form[method=post]', main).filter(function (f) { return !f.hasAttribute('data-no-secnav'); });
+    var target = null, secs = [];
+    forms.forEach(function (f) {
+      var cards = $$('.card', f).filter(function (c) { var h = c.querySelector(':scope > h2, :scope > h3'); return h && h.textContent.trim(); });
+      if (cards.length >= 4 && f.getBoundingClientRect().height > window.innerHeight * 1.6 && (!target || cards.length > secs.length)) { target = f; secs = cards; }
+    });
+    if (!target) return;
+    var wrap = document.createElement('div'); wrap.className = 'of-secnav-body';
+    while (main.firstChild) wrap.appendChild(main.firstChild);
+    main.appendChild(wrap);
+    var nav = document.createElement('nav'); nav.className = 'of-secnav'; nav.setAttribute('aria-label', '本页分节');
+    var h = '<div class="sn-h">本页</div>';
+    secs.forEach(function (c, i) {
+      if (!c.id) c.id = 'sec-' + (i + 1);
+      var hd = c.querySelector(':scope > h2, :scope > h3'), t = '';
+      hd.childNodes.forEach(function (n) { if (n.nodeType === 3) t += n.nodeValue; else if (n.nodeType === 1 && !n.classList.contains('hint') && n.tagName !== 'SMALL') t += n.textContent; });
+      t = t.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '').trim();
+      h += '<a href="#' + c.id + '" data-i="' + i + '">' + esc(t) + '</a>';
+    });
+    nav.innerHTML = h; main.appendChild(nav); document.body.classList.add('has-secnav');
+    var links = $$('a', nav);
+    nav.addEventListener('click', function (e) { var a = e.target.closest('a'); if (!a) return; e.preventDefault(); var el = document.getElementById(a.getAttribute('href').slice(1)); window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 92, behavior: 'smooth' }); history.replaceState(null, '', a.getAttribute('href')); });
+    var cur = -1;
+    function spy() {
+      var y = 120, best = 0;
+      secs.forEach(function (c, i) { if (c.getBoundingClientRect().top <= y) best = i; });
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) best = secs.length - 1;
+      if (best !== cur) { cur = best; links.forEach(function (a, i) { a.classList.toggle('on', i === best); }); }
+    }
+    window.addEventListener('scroll', spy, { passive: true }); spy();
+  })();
+
+  /* ── 3c. 页内 tab：<div class="of-tabbed"> 的直接子元素带 data-tab="标题" 即成一页一 tab；hash / sessionStorage 记忆 ── */
+  (function tabbed() {
+    $$('.of-tabbed').forEach(function (box, bi) {
+      var panes = $$(':scope > [data-tab]', box); if (panes.length < 2) return;
+      var key = 'of_tab:' + location.pathname + '#' + bi, bar = document.createElement('div'); bar.className = 'tabs of-tabbar'; bar.setAttribute('role', 'tablist');
+      var want = (location.hash || '').replace('#tab-', ''); try { if (!want) want = sessionStorage.getItem(key) || ''; } catch (e) {}
+      panes.forEach(function (p, i) {
+        var id = p.dataset.tabId || ('t' + (bi + 1) + '-' + (i + 1)); p.dataset.tabId = id;
+        var a = document.createElement('a'); a.href = '#tab-' + id; a.textContent = p.dataset.tab; a.setAttribute('role', 'tab'); a.dataset.for = id; bar.appendChild(a);
+      });
+      box.parentNode.insertBefore(bar, box);
+      function show(id) {
+        if (!panes.some(function (p) { return p.dataset.tabId === id; })) id = panes[0].dataset.tabId;
+        panes.forEach(function (p) { p.hidden = p.dataset.tabId !== id; });
+        $$('a', bar).forEach(function (a) { a.classList.toggle('active', a.dataset.for === id); a.setAttribute('aria-selected', a.dataset.for === id ? 'true' : 'false'); });
+        try { sessionStorage.setItem(key, id); } catch (e) {}
+      }
+      bar.addEventListener('click', function (e) { var a = e.target.closest('a'); if (!a) return; e.preventDefault(); show(a.dataset.for); history.replaceState(null, '', '#tab-' + a.dataset.for); });
+      // 提交过表单的那个 pane（有 msg / 错误提示）优先；否则记忆 / 首个
+      var flagged = panes.find(function (p) { return p.querySelector('.msg, .of-empty.err, [data-tab-active]'); });
+      show(flagged ? flagged.dataset.tabId : want);
+    });
   })();
 
   /* ── 4. 表格：筛选 / 计数 / 排序 / 分页（≥ 12 行才启用；data-static 跳过）── */

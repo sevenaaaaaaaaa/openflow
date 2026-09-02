@@ -62,7 +62,7 @@ admin_header('AI Agent 配置');
       <form method="post">
         <?= csrf_field() ?>
         <div id="providerList">
-          <?php foreach ($ai['providers'] as $i => $p): ?>
+          <?php foreach (($ai['providers'] ?? []) as $i => $p): ?>
           <div class="provider-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;padding:8px;background:var(--surface-2);border-radius:8px">
             <input type="hidden" name="provider_id[]" value="<?=htmlspecialchars($p['id'])?>">
             <input type="text" name="provider_name[]" value="<?=htmlspecialchars($p['name'])?>" placeholder="名称" style="width:120px;padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
@@ -75,7 +75,7 @@ admin_header('AI Agent 配置');
           <?php endforeach; ?>
         </div>
         <div class="field-row" style="margin-top:12px">
-          <div class="field"><label>默认供应商</label><select name="default_provider"><?php foreach ($ai['providers'] as $p): ?><option value="<?=htmlspecialchars($p['id'])?>" <?=($ai['default_provider']??'')===$p['id']?'selected':''?>><?=htmlspecialchars($p['name'])?></option><?php endforeach; ?></select></div>
+          <div class="field"><label>默认供应商</label><select name="default_provider"><?php foreach (($ai['providers'] ?? []) as $p): ?><option value="<?=htmlspecialchars($p['id'])?>" <?=($ai['default_provider']??'')===$p['id']?'selected':''?>><?=htmlspecialchars($p['name'])?></option><?php endforeach; ?></select></div>
           <div class="field"><label>默认模型</label><input type="text" name="default_model" value="<?=htmlspecialchars($ai['default_model'] ?? 'gpt-4o')?>"></div>
           <div class="field"><label>温度</label><input type="number" name="temperature" value="<?=htmlspecialchars($ai['temperature'] ?? 0.7)?>" min="0" max="2" step="0.1"></div>
         </div>
@@ -115,7 +115,7 @@ admin_header('AI Agent 配置');
       <form method="post">
         <?= csrf_field() ?>
         <div id="promptList">
-          <?php foreach ($ai['global_prompts'] as $i => $pr): ?>
+          <?php foreach (($ai['global_prompts'] ?? []) as $i => $pr): ?>
           <div class="prompt-row" style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--surface)">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
               <input type="hidden" name="prompt_id[]" value="<?=htmlspecialchars($pr['id'])?>">
