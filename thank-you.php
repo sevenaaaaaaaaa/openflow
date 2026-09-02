@@ -68,8 +68,8 @@ $cfg = $configs[$from] ?? $configs['lead'];
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?=htmlspecialchars($cfg['title'])?> | <?=htmlspecialchars($siteName)?></title>
-<link rel="stylesheet" href="/assets/tokens.css?v=20260826b">
-<link rel="stylesheet" href="/assets/modules.css?v=20260826b">
+<link rel="stylesheet" href="/assets/tokens.css?v=20260901a">
+<link rel="stylesheet" href="/assets/modules.css?v=20260901a">
 <link rel="stylesheet" href="/assets/tailwind-build.css?v=20260813ad">
 <script src="/assets/inject.js?v=20260830b" defer></script>
 <style>
@@ -78,7 +78,7 @@ $cfg = $configs[$from] ?? $configs['lead'];
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 </head>
 <body>
-<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="home"></script> class="min-h-screen">
+<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="home"></script> class="min-h-screen">
   
 
   <div class="mx-auto px-5 py-14 text-center" style="max-width:720px">

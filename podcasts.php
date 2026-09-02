@@ -75,7 +75,7 @@ $featured = array_values(array_filter($items, fn($p) => !empty($p['featured'])))
 </style>
 </head>
 <body class="min-h-screen">
-<script src="/assets/site-shell.js?v=20260826b" data-cfasync="false" data-page="articles"></script>
+<script src="/assets/site-shell.js?v=20260901a" data-cfasync="false" data-page="articles"></script>
 
   <div class="mx-auto px-5 py-8" style="max-width:1200px">
     <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);align-items:center;margin-bottom:24px">
