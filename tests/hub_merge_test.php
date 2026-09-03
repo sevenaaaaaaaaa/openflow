@@ -22,6 +22,9 @@ $HUBS = [
 ];
 
 $cfg = file_get_contents("{$root}/admin/config.php");
+// 侧栏在 nav v2 里已从 config.php 搬到 includes/admin-nav.php，
+// 且改成声明式的 ['id' => ...] 条目，不再是写死的 href。入口断言要跟着看这个文件。
+$nav = file_get_contents("{$root}/includes/admin-nav.php");
 $ht  = file_get_contents("{$root}/.htaccess");
 
 foreach ($HUBS as $label => [$hubFile, $tabFn, $slug]) {
@@ -70,14 +73,17 @@ foreach ($HUBS as $label => [$hubFile, $tabFn, $slug]) {
 
         // 侧栏不再有独立入口
         check("[{$key}] 侧栏已无 /xmp/{$oldSlug} 直链",
-              strpos($cfg, 'href="/xmp/' . $oldSlug . '"') === false);
+              strpos($cfg, 'href="/xmp/' . $oldSlug . '"') === false
+              && !preg_match("/'id'\s*=>\s*'" . preg_quote($oldSlug, '/') . "'/", $nav));
 
         // 语法
         exec('php -l ' . escapeshellarg($sub) . ' 2>&1', $o, $rc); $o = [];
         check("[{$key}] 语法通过", $rc === 0);
     }
 
-    check('侧栏有中心入口 /xmp/' . $slug, strpos($cfg, 'href="/xmp/' . $slug . '"') !== false);
+    check('侧栏有中心入口 /xmp/' . $slug,
+          (bool)preg_match("/'id'\s*=>\s*'" . preg_quote($slug, '/') . "'/", $nav)
+          || strpos($cfg, 'href="/xmp/' . $slug . '"') !== false);
     exec('php -l ' . escapeshellarg($hubPath) . ' 2>&1', $o, $rc); $o = [];
     check('中心页语法通过', $rc === 0);
 }

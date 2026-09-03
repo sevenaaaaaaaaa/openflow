@@ -29,7 +29,14 @@ $GLOBALS['FLOW']  = [];   // flow_handle 调用
 $GLOBALS['INBOX'] = [];
 
 class Database {
+    // 注入故障用：设 $GLOBALS['DB_FAIL'] 为一段 SQL 片段，命中就抛，模拟中途失败
+    private static function maybeFail(string $sql): void {
+        if (!empty($GLOBALS['DB_FAIL']) && str_contains($sql, $GLOBALS['DB_FAIL'])) {
+            throw new RuntimeException('模拟数据库故障');
+        }
+    }
     public static function query(string $sql, array $a = []): array {
+        self::maybeFail($sql);
         if (str_contains($sql, 'unlocked_skills FROM members')) {
             return [['unlocked_skills' => json_encode($GLOBALS['SKILLS'][$a[0]] ?? [])]];
         }
@@ -37,6 +44,7 @@ class Database {
         return [];
     }
     public static function execute(string $sql, array $a = []): bool {
+        self::maybeFail($sql);
         if (str_contains($sql, 'balance = balance + ?')) {
             $GLOBALS['BAL'][$a[1]] = ($GLOBALS['BAL'][$a[1]] ?? 0) + $a[0];
         } elseif (str_contains($sql, 'balance = balance - ?')) {
@@ -63,13 +71,16 @@ function gamification_award(string $m, int $p, string $r) { $GLOBALS['PTS'][] = 
 function flow_handle(string $e, array $c = []): array { $GLOBALS['FLOW'][] = [$e, $c]; return []; }
 
 require_once __DIR__ . '/../lib/PluginSystem.php';
+require_once __DIR__ . '/../lib/Txn.php';   // 退款已包在事务里，抽函数时要一起带上
 
-// 只抽 shop_refund_order()，避开 ShopSystem 顶部的一堆 require
+// 只抽退款相关的两个函数，避开 ShopSystem 顶部的一堆 require
 $src = file_get_contents(__DIR__ . '/../lib/ShopSystem.php');
-if (!preg_match('/\nfunction shop_refund_order\(.*?\n\}\n/s', $src, $m)) {
-    fwrite(STDERR, "无法抽取 shop_refund_order()\n"); exit(2);
+foreach (['shop_txn_json_files', 'shop_refund_order'] as $__fn) {
+    if (!preg_match('/\nfunction ' . $__fn . '\(.*?\n\}\n/s', $src, $m)) {
+        fwrite(STDERR, "无法抽取 {$__fn}()\n"); exit(2);
+    }
+    eval($m[0]);
 }
-eval($m[0]);
 
 $pass = 0; $fail = 0;
 function check(string $n, bool $ok, string $d = '') {
@@ -189,6 +200,50 @@ reset_state($courseOrder);
 $broke = false;
 try { $r = shop_refund_order('o1'); } catch (\Throwable $e) { $broke = true; }
 check('插件抛错不影响退款', !$broke && ($r['ok'] ?? false) === true);
+
+echo "\n── 11. 中途失败不留半截状态（P0-05）──\n";
+// 这一节针对的是真实发生过的写法：每一步都套 try/catch 吞掉异常，
+// 佣金没收回来照样把订单标成已退款，还返回 ok=true。
+// 这里用「订单存在 JSON 里」的路径，因为 JSON 的快照还原是可以真验的。
+$GLOBALS['ORDER'] = ['id' => '__none__'];          // 逼 shop_get_order 落空，走 JSON 分支
+$jsonOrder = [
+    'id'=>'oj','status'=>'paid','amount'=>1000.0,'member_id'=>'m1','email'=>'b@t.com',
+    'goods_type'=>'course','course_title'=>'增长课',
+    'referrer_id'=>'r1','commission'=>100.0,'author'=>'a1','platform_fee'=>100.0,
+];
+$reload = fn() => json_read(shop_orders_file())[0] ?? [];
+
+// (a) 先证明这条路径本来是通的
+json_write(shop_orders_file(), [$jsonOrder]);
+$GLOBALS['BAL'] = []; $GLOBALS['INBOX'] = []; $GLOBALS['FLOW'] = []; $GLOBALS['PTS'] = [];
+unset($GLOBALS['DB_FAIL']);
+$r = shop_refund_order('oj', '正常退');
+check('JSON 订单可以正常退款', ($r['ok'] ?? false) === true, $r['error'] ?? '');
+check('JSON 里订单已置为 refunded', ($reload()['status'] ?? '') === 'refunded');
+
+// (b) 同一条路径，让「回收分销佣金」这一步失败
+json_write(shop_orders_file(), [$jsonOrder]);
+$GLOBALS['BAL'] = []; $GLOBALS['LOGS'] = []; $GLOBALS['INBOX'] = []; $GLOBALS['FLOW'] = []; $GLOBALS['PTS'] = [];
+$GLOBALS['DB_FAIL'] = 'balance = balance - ?';
+$r = shop_refund_order('oj', '故障退');
+unset($GLOBALS['DB_FAIL']);
+
+check('失败时返回 ok=false（而不是假装成功）', ($r['ok'] ?? true) === false);
+check('失败原因说明已回滚', str_contains($r['error'] ?? '', '回滚'), $r['error'] ?? '');
+check('退款金额不计入返回值', ($r['amount'] ?? -1) === 0);
+$o = $reload();
+check('订单仍是已支付，没有被标成已退款', ($o['status'] ?? '') === 'paid', (string)($o['status'] ?? ''));
+check('订单里没有留下退款金额', !isset($o['refund_amount']));
+check('订单里没有留下退款原因', !isset($o['refund_reason']));
+check('积分没有被扣（权益未动）', empty($GLOBALS['PTS']));
+check('没有发出「已退款」站内信', empty($GLOBALS['INBOX']));
+check('没有触发 refund 营销事件', empty($GLOBALS['FLOW']));
+
+// (c) 失败之后重试要能成功——回滚必须是干净的，不能把订单弄成不可退的状态
+$r = shop_refund_order('oj', '重试');
+check('故障排除后重试可以成功', ($r['ok'] ?? false) === true, $r['error'] ?? '');
+check('重试后订单正确置为 refunded', ($reload()['status'] ?? '') === 'refunded');
+check('重试后退款金额正确', (float)($reload()['refund_amount'] ?? 0) === 1000.0);   // JSON 会把 1000.0 存成 1000
 
 foreach (glob(DATA_DIR . '/shop/*') ?: [] as $f) if (is_file($f)) @unlink($f);
 @rmdir(DATA_DIR . '/shop');
