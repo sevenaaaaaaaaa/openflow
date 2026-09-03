@@ -15,6 +15,7 @@
 declare(strict_types=1);
 $root = dirname(__DIR__);
 $pass = 0; $fail = 0;
+ob_start(); require_once "$root/admin/config.php"; ob_end_clean();
 function ok(bool $c, string $msg): void { global $pass, $fail; if ($c) $pass++; else { $fail++; echo "  ✗ $msg\n"; } }
 
 /* ══════════ A. Webhook 投递保障 ══════════ */
@@ -88,6 +89,64 @@ if (!empty($m1[0]) && !empty($m2[0]) && !function_exists('ab_compute')) {
     $none = $mk(0, 0, 0, 0);
     ok($none['significant'] === false && $none['p'] === null, '无数据时不应给出显著结论');
 }
+
+/* ══════════ C. 内容修订与还原 ══════════ */
+require_once "$root/lib/RevisionSystem.php";
+$cfg = file_get_contents("$root/admin/config.php");
+$edit = file_get_contents("$root/admin/article-edit.php");
+
+// 必须挂在写入的咽喉处，而不是某个页面——光文章就有 30+ 个写入点
+ok(substr_count($cfg, 'rev_record(') >= 2, '修订没有挂在 save_article / save_page_content 里，写入路径会漏');
+ok(preg_match('/function save_article.*?rev_record\(/s', $cfg) === 1, 'save_article 里没有记版');
+ok(preg_match('/function save_page_content.*?rev_record\(/s', $cfg) === 1, 'save_page_content 里没有记版');
+ok(!str_contains($edit, "DATA_DIR . '/versions/articles'"), '编辑页里只覆盖单条路径的旧版本写入还在，会和新层重复记录');
+ok(str_contains($edit, '/xmp/revisions'), '编辑页没有通往修订历史的入口');
+ok(is_file("$root/admin/revisions.php"), '缺少修订历史页面');
+
+$rvPage = file_get_contents("$root/admin/revisions.php");
+ok(str_contains($rvPage, 'rev_restore('), '修订页没有还原动作——只能看不能还原等于没做');
+ok(str_contains($rvPage, 'rev_field_diff('), '修订页不能比对两版');
+ok(str_contains($rvPage, 'rev_source_label('), '修订页没有区分改动来源（人 / AI / 外部协作者）');
+
+// 真跑一遍：记版、去重、还原、还原可撤销、上限
+$tid = 'ctest_' . bin2hex(random_bytes(3));
+@unlink(rev_file('article', $tid));
+$GLOBALS['of_actor'] = ['name' => '契约测试', 'source' => 'admin'];
+save_article($tid, ['id' => $tid, 'title' => 'v1', 'content' => "A\nB", 'status' => 'draft']);
+ok(rev_count('article', $tid) === 1, '新建后应有 1 版');
+save_article($tid, ['title' => 'v2']);
+ok(rev_count('article', $tid) === 2, '改动后应记新版');
+save_article($tid, ['title' => 'v2']);
+ok(rev_count('article', $tid) === 2, '内容无变化不应重复记版');
+$revs = rev_all('article', $tid);
+ok(end($revs)['changed'] === ['title'], '没有正确记录变更字段');
+ok(end($revs)['by'] === '契约测试', '没有记录改动人');
+
+$GLOBALS['of_actor'] = ['name' => 'AI', 'source' => 'mcp'];
+save_article($tid, ['content' => "A\nB\nC"]);
+$revs = rev_all('article', $tid);
+ok(end($revs)['source'] === 'mcp', 'Agent 改动没有被标记来源，无法区分人改还是 AI 改');
+
+$GLOBALS['of_actor'] = ['name' => '契约测试', 'source' => 'admin'];
+$r = rev_restore('article', $tid, 1);
+ok($r['ok'] === true, '还原失败：' . $r['error']);
+$cur = get_article($tid);
+ok(($cur['title'] ?? '') === 'v1' && ($cur['content'] ?? '') === "A\nB", '还原没有把所有字段带回去');
+// 新建1 + 改标题2 + 无变化(不记) + AI 改正文3 + 还原4 = 4 版
+ok(rev_count('article', $tid) === 4, '还原本身没有记版，导致还原不可撤销（实际 ' . rev_count('article', $tid) . ' 版）');
+ok(rev_restore('article', $tid, 99999)['ok'] === false, '还原不存在的版本应失败而不是崩');
+
+// diff 要在裁剪之前验，否则被 REV_KEEP 裁掉的旧版本本来就取不到
+$d = rev_field_diff('article', $tid, 1, 2, 'title');
+ok(is_array($d) && $d !== [], '取不到字段级 diff');
+
+for ($i = 0; $i < REV_KEEP + 5; $i++) save_article($tid, ['title' => 'bulk' . $i]);
+ok(rev_count('article', $tid) <= REV_KEEP, '版本数超过上限 ' . REV_KEEP . '，版本库会无限膨胀');
+
+// 收尾：不留测试数据
+$__all = json_read(ARTICLES_DIR . '/index.json');
+json_write(ARTICLES_DIR . '/index.json', array_values(array_filter($__all, fn($a) => ($a['id'] ?? '') !== $tid)));
+@unlink(rev_file('article', $tid));
 
 echo "\n通过 $pass · 失败 $fail\n";
 exit($fail ? 1 : 0);

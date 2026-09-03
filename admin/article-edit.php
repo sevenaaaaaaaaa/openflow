@@ -116,26 +116,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $article['publish_at'] = $_POST['publish_at'] ?? '';
     $article['updated_at'] = date('Y-m-d H:i:s');
 
-    // Version tracking: save revision if content changed
-    if (!$isNew) {
-        $old = get_article($article['id']);
-        if ($old && ($old['content'] ?? '') !== ($article['content'] ?? '')) {
-            $verDir = DATA_DIR . '/versions/articles';
-            if (!is_dir($verDir)) mkdir($verDir, 0755, true);
-            $verFile = $verDir . '/' . $article['id'] . '.json';
-            $versions = json_read($verFile);
-            $versions[] = [
-                'content' => $old['content'],
-                'seo_title' => $old['seo_title'] ?? '',
-                'seo_desc' => $old['seo_desc'] ?? '',
-                'saved_at' => date('Y-m-d H:i:s'),
-                'version' => count($versions) + 1,
-            ];
-            // Keep max 20 versions
-            if (count($versions) > 20) $versions = array_slice($versions, -20);
-            json_write($verFile, $versions);
-        }
-    }
+    // 版本记录已下沉到 save_article() 里的 RevisionSystem：
+    // 旧代码只在本页这一条路径上记、且只存正文与两个 SEO 字段，
+    // MCP / 批量导入 / API 改的内容一律没有版本。见 lib/RevisionSystem.php。
 
     if ($isNew) {
         $article['id'] = 'article_' . date('Ymd_His') . '_' . substr(bin2hex(random_bytes(4)), 0, 8);
@@ -516,16 +499,14 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
           </div>
             <div class="field ae-versions">
             <?php if (!$isNew):
-              $verFile = DATA_DIR . '/versions/articles/' . $article['id'] . '.json';
-              $versions = json_read($verFile);
+              require_once __DIR__ . '/../lib/RevisionSystem.php';
+              $revCount = rev_count('article', $article['id']);
             ?>
-            <label>版本历史 <span class="hint">· 共 <?=count($versions)?> 个版本</span></label>
-            <select id="versionSelect" onchange="previewVersion(this.value)" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px">
-              <option value="">当前版本</option>
-              <?php foreach (array_reverse($versions) as $v): ?>
-              <option value="<?=$v['version']?>">v<?=$v['version']?> — <?=substr($v['saved_at']??'',0,16)?></option>
-              <?php endforeach; ?>
-            </select>
+            <label>修订历史 <span class="hint">· 共 <?=$revCount?> 版</span></label>
+            <a class="btn btn-ghost btn-sm" href="/xmp/revisions?type=article&id=<?=urlencode($article['id'])?>">
+              查看、比对与还原 →
+            </a>
+            <div class="hint" style="margin-top:6px;line-height:1.6">每次保存自动记一版，包含谁改的（人 / AI）。还原也会记一版，可以再撤销。</div>
             <?php endif; ?>
             </div>
           </section>
@@ -1343,32 +1324,7 @@ function pushArticle() {
   xhr.send(JSON.stringify({article_id: '<?=htmlspecialchars($article['id'] ?? '')?>', channels: channels, format: 'draft'}));
 }
 
-// ─── Version Preview ───
-var versions = <?php
-$verData = [];
-if (!$isNew) {
-    $verFile = DATA_DIR . '/versions/articles/' . $article['id'] . '.json';
-    $verData = json_read($verFile);
-}
-echo json_encode($verData, JSON_UNESCAPED_UNICODE);
-?>;
-
-async function previewVersion(ver) {
-  if (!ver) return;
-  var found = null;
-  for (var i = 0; i < versions.length; i++) {
-    if (versions[i].version == ver) { found = versions[i]; break; }
-  }
-  if (!found) return;
-  if (await ofConfirm({ title: '预览 v' + ver, message: '内容将替换到编辑器（不保存）。如需恢复请手动保存。', okText: '替换到编辑器' })) {
-    if (currentMode === 'richtext') {
-      document.getElementById('rtContent').innerHTML = found.content;
-    } else {
-      document.getElementById('mdInput').value = found.content;
-      renderMD(found.content);
-    }
-  }
-}
+// 版本预览已移到 /xmp/revisions（可比对、可真还原，且覆盖所有写入路径）
 
 // ─── Import Dialog ───
 var globalPrompts = <?=json_encode($aiCfg['global_prompts'] ?? [], JSON_UNESCAPED_UNICODE)?>;
