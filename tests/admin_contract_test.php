@@ -37,18 +37,31 @@ $_SESSION = ['admin_role' => 'admin'];
 if (!function_exists('has_perm')) { function has_perm(string $p): bool { return true; } }
 require_once "$root/includes/admin-nav.php";
 $ids = [];
+$checkHref = function (string $href, string $label) use ($root) {
+    $page = preg_replace('/\?.*$/', '', substr($href, strlen('/xmp/')));
+    ok(is_file("$root/admin/$page.php"), "导航条目「{$label}」指向不存在的页面 admin/$page.php");
+};
 foreach (admin_nav_tree() as $area) foreach ($area['groups'] as $g) foreach ($g['items'] as $it) {
     $ids[$it['id']] = true;
-    $href = $it['href'] ?? ('/xmp/' . $it['id']);
-    $page = preg_replace('/\?.*$/', '', substr($href, strlen('/xmp/')));
-    ok(is_file("$root/admin/$page.php"), "导航条目「{$it['label']}」指向不存在的页面 admin/$page.php");
+    // 聚合入口：簇内每个兄弟页都要真实存在（子 tab 条会直接链过去）
+    $subs = $it['subs'] ?: [['id' => $it['id'], 'href' => $it['href'] ?? ('/xmp/' . $it['id']), 'label' => $it['label']]];
+    foreach ($subs as $sb) {
+        $ids[$sb['id']] = true;
+        $checkHref($sb['href'] ?? ('/xmp/' . $sb['id']), $it['label'] . ' › ' . ($sb['label'] ?? $sb['id']));
+    }
 }
+foreach (admin_nav_pinned() as $p) { $ids[$p['id']] = true; $checkHref($p['href'], '置顶 ' . $p['label']); }
 foreach ($files as $f) {
     $b = basename($f); $s = file_get_contents($f);
     if (in_array($b, $noSidebar, true) || !str_contains($s, 'admin_sidebar(')) continue;
     $loc = admin_nav_locate('', basename($b, '.php'));
-    ok($loc['item'] !== null, "$b 在导航树里定位不到（补 ADMIN_NAV_ALIAS 或加条目）");
+    ok($loc['item'] !== null || !empty($loc['pinned']), "$b 在导航树里定位不到（补 ADMIN_NAV_ALIAS 或加条目）");
 }
+// 框架层：正文兜底包裹 + 簇内子 tab 条必须都在（17 个页面靠前者才有边距，52 个聚合入口靠后者才能到兄弟页）
+$cfgSrc = file_get_contents("$root/admin/config.php");
+ok(str_contains($cfgSrc, 'admin_wrap_body'), 'config.php 缺少正文兜底包裹 admin_wrap_body()');
+ok(str_contains($cfgSrc, 'admin_nav_cluster_bar'), 'config.php 没有注入簇内子 tab 条');
+ok(function_exists('admin_nav_cluster_bar'), 'admin-nav.php 缺少 admin_nav_cluster_bar()');
 
 // 5
 $cfg = file_get_contents("$root/admin/config.php");
