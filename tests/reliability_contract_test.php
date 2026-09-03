@@ -148,5 +148,62 @@ $__all = json_read(ARTICLES_DIR . '/index.json');
 json_write(ARTICLES_DIR . '/index.json', array_values(array_filter($__all, fn($a) => ($a['id'] ?? '') !== $tid)));
 @unlink(rev_file('article', $tid));
 
+/* ══════════ D. 多步写入的一致性（P0-05）══════════
+ * 退款要连着改：订单状态、分销佣金、作者分成、订阅权益、技能解锁、购物积分。
+ * 改造前每一步都套着 `try { ... } catch (Exception $e) {}`——佣金没收回来被静默吞掉，
+ * 函数照样往下跑，最后返回 ok=true。于是账面「已退款」，钱还在推广人余额里，
+ * 没有日志、没有提示。这里钉住三件事：核心写入在事务里、金额步骤不许吞异常、失败要能看见。
+ */
+$shop = file_get_contents("$root/lib/ShopSystem.php");
+ok(is_file("$root/lib/Txn.php"), '缺少 lib/Txn.php（多步写入一致性层）');
+require_once "$root/lib/Txn.php";
+foreach (['txn_run', 'txn_active'] as $fn) ok(function_exists($fn), "缺少 $fn()");
+ok(str_contains($shop, "require_once __DIR__ . '/Txn.php'"), 'ShopSystem 没有引入事务层');
+
+// 取出两个函数各自的事务闭包体，逐条检查
+// 第三项：积分变动的**实际调用**（只查函数名会被 function_exists 守卫蒙混过去）
+foreach ([['shop_refund_order', '退款', "gamification_award(\$order['member_id'], -\$backPoints"],
+         ['shop_mark_paid',   '支付', "gamification_award(\$order['member_id'], \$points"]] as [$fn, $cn, $ptsCall]) {
+    ok(preg_match('/function ' . $fn . '\(.*?txn_run\(function/s', $shop) === 1,
+       "{$cn}的核心写入没有包在事务里，中途失败会留半截状态");
+    if (!preg_match('/function ' . $fn . '\(.*?txn_run\(function.*?\n        \}, \$jsonTouched\);/s', $shop, $mm)) {
+        ok(false, "无法定位{$cn}的事务闭包（结构变了？）");
+        continue;
+    }
+    $body = $mm[0];
+    // 吞异常是这次要修掉的根因，不能让它回来
+    ok(!preg_match('/catch\s*\(\s*\\\\?Exception\s+\$e\s*\)\s*\{\s*\}/', $body),
+       "{$cn}的事务里还有 `catch (Exception \$e) {}` 空吞——失败会被伪装成成功");
+    // 余额与权益必须都在同一个事务里，少一样就还是半截
+    ok(str_contains($body, 'balance = balance'), "{$cn}的余额变动不在事务里");
+    ok(str_contains($body, $ptsCall), "{$cn}的积分变动不在事务里");
+    // 回滚要覆盖三处 JSON 存储，否则 SQLite 回滚了、文件还是新的
+    ok(preg_match('/function ' . $fn . '.*?\$jsonTouched = shop_txn_json_files\(\);/s', $shop) === 1,
+       "{$cn}没有用统一的 JSON 快照清单");
+}
+
+// 快照清单只能有一份，且必须覆盖全部四处存储。
+// 少一处就是「SQLite 回滚了、文件还是新的」——最难查的那种不一致。
+ok(str_contains($shop, 'function shop_txn_json_files'), '缺少统一的 JSON 快照清单');
+preg_match('/function shop_txn_json_files.*?\n\}/s', $shop, $sf);
+foreach (['shop_orders_file()' => '订单', 'sub_state_file()' => '订阅状态',
+          'members/index.json' => '购物积分', 'messages/index.json' => '积分变动站内信'] as $needle => $what) {
+    ok(str_contains($sf[0] ?? '', $needle), "JSON 快照没覆盖{$what}，回滚会留下不一致");
+}
+
+// 通知与旁路必须在事务外：插件抛错不该把已经完成的退款again撤回来
+ok(preg_match('/\}, \$jsonTouched\);.*?catch \(\\\\Throwable \$e\).*?return \[\'ok\'=>false/s', $shop) === 1,
+   '退款失败没有返回 ok=false，调用方无从判断');
+ok(preg_match('/\}, \$jsonTouched\);.*?inbox_send/s', $shop) === 1, '站内信应在事务提交之后再发');
+ok(preg_match('/\}, \$jsonTouched\);.*?flow_handle\(\'refund\'/s', $shop) === 1, '营销事件应在事务提交之后再触发');
+
+// 失败必须能被人看见
+$ord = file_get_contents("$root/admin/orders.php");
+ok(str_contains($ord, "\$error = \$r['error']"), '后台没有把退款失败原因显示出来，用户只会看到「没反应」');
+$txn = file_get_contents("$root/lib/Txn.php");
+ok(str_contains($txn, 'txn_log_rollback'), '回滚没有留痕，事后无法排查');
+ok(!preg_match("/txn_log_rollback.*?require_once.*?AuditLog/s", $txn),
+   '回滚留痕里不该 require AuditLog——会把 admin/config.php 整个拉起来（开 session、发 header）');
+
 echo "\n通过 $pass · 失败 $fail\n";
 exit($fail ? 1 : 0);

@@ -74,7 +74,10 @@ check('设置页开启需确认验证码', strpos($sec, "'action') === 'enable'"
 check('关闭 2FA 需再验一次', strpos($sec, "=== 'disable'") !== false && strpos($sec, 'Totp::verify') !== false);
 check('开启/关闭都留审计', substr_count($sec, "audit(") >= 3);
 $cfg = file_get_contents(__DIR__ . '/../admin/config.php');
-check('侧栏有账号安全入口', strpos($cfg, '/xmp/security') !== false);
+// 侧栏已搬到 includes/admin-nav.php，入口是 ['id' => 'security', ...] 而非写死的 URL
+$nav = file_get_contents(__DIR__ . '/../includes/admin-nav.php');
+check('侧栏有账号安全入口',
+      strpos($cfg, '/xmp/security') !== false || (bool)preg_match("/'id'\s*=>\s*'security'/", $nav));
 
 echo "\n" . str_repeat('─', 46) . "\n";
 echo $fail === 0 ? "全部通过：{$pass} 项\n" : "通过 {$pass} 项，失败 {$fail} 项\n";

@@ -83,28 +83,45 @@ if (($argv[1] ?? '') === '--render') {
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 
+    /* 汇报必须走 shutdown 钩子。
+     * 后台不少页面在渲染完子标签后直接 exit（例如 shop-settings?sub=pay），
+     * 这时 include 之后的代码根本不会执行，ob_get_clean() 拿不到内容，
+     * 缓冲区被 PHP 直接冲到 stdout —— 父进程收到的是整页 HTML 而不是那一行结果，
+     * 于是把正常页面判成失败。PHP 会先跑 shutdown 函数、再冲缓冲区，
+     * 所以在钩子里收网，页面 exit 与否都能正确汇报。 */
+    $report = function (string $prefix = '') use ($sessDir) {
+        if (!empty($GLOBALS['__smoke_reported'])) return;
+        $GLOBALS['__smoke_reported'] = true;
+
+        $out = '';
+        while (ob_get_level() > 0) { $out = (string)ob_get_clean() . $out; }
+
+        foreach (glob("{$sessDir}/*") ?: [] as $f) @unlink($f);
+        @rmdir($sessDir);
+
+        if ($prefix !== '') { echo $prefix; return; }
+
+        $bad = [];
+        foreach (explode("\n", $out) as $l) {
+            $l = trim(strip_tags($l));
+            if ($l !== '' && preg_match('/(Fatal error|Parse error|Uncaught|Warning:|Notice:|Deprecated:)/', $l)) {
+                $bad[] = mb_substr($l, 0, 160);
+            }
+        }
+        echo (empty($bad) ? 'OK' : 'ERR') . "\t" . strlen($out) . "\t"
+           . implode(' ｜ ', array_slice(array_unique($bad), 0, 3)) . "\n";
+    };
+    register_shutdown_function($report);
+
     ob_start();
     try {
         include dirname(__DIR__) . "/admin/{$page}.php";
     } catch (\Throwable $e) {
-        ob_end_clean();
-        echo "FATAL\t" . get_class($e) . ': ' . $e->getMessage()
-           . ' @' . basename($e->getFile()) . ':' . $e->getLine() . "\n";
+        $report("FATAL\t" . get_class($e) . ': ' . $e->getMessage()
+              . ' @' . basename($e->getFile()) . ':' . $e->getLine() . "\n");
         exit(0);
     }
-    $out = ob_get_clean();
-
-    foreach (glob("{$sessDir}/*") ?: [] as $f) @unlink($f);
-    @rmdir($sessDir);
-
-    $bad = [];
-    foreach (explode("\n", $out) as $l) {
-        $l = trim(strip_tags($l));
-        if ($l !== '' && preg_match('/(Fatal error|Parse error|Uncaught|Warning:|Notice:|Deprecated:)/', $l)) {
-            $bad[] = mb_substr($l, 0, 160);
-        }
-    }
-    echo (empty($bad) ? 'OK' : 'ERR') . "\t" . strlen($out) . "\t" . implode(' ｜ ', array_slice(array_unique($bad), 0, 3)) . "\n";
+    $report();
     exit(0);
 }
 

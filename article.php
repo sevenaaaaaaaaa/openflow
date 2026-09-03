@@ -71,8 +71,13 @@ $host = $_SERVER['HTTP_HOST'] ?? 'example.com';
 $baseUrl = $protocol . '://' . $host;
 $articleUrl = $baseUrl . '/article/' . $slug;
 
-// ─── 内容处理：标题锚点 + 阅读时间 ───
-$content = $article['content'] ?? '';
+// ─── 内容处理：短代码 → 标题锚点 → 阅读时间 ───
+// 短代码此前只是被 require 进来，shortcode_render() 从来没有被调用过：
+// 正文里写 [card type="course" id="x"] 会原样显示成方括号文本。先展开再做锚点，
+// 这样短代码产出的标题也能进目录。
+$rawContent = $article['content'] ?? '';
+$content = shortcode_render($rawContent);
+$usedShortcode = $content !== $rawContent;   // 用到了才注入短代码样式，没用到不给每篇文章加 CSS
 $toc = [];
 $hIdx = 0;
 $content = preg_replace_callback('/<h([23])([^>]*)>(.*?)<\/h\1>/is', function ($m) use (&$toc, &$hIdx) {
@@ -312,6 +317,7 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
           <a href="member.php?view=subscribe" class="btn primary">立即升级 →</a>
         </div></div>
       <?php else: ?>
+        <?php if ($usedShortcode) echo shortcode_style(); ?>
         <?=article_render($content)?>
       <?php endif; ?>
     </div>
