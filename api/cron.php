@@ -261,5 +261,13 @@ try {
     }
 } catch (Throwable $e) {}
 
+// ── Webhook 重投（P0-02）：首投失败的事件按指数退避在这里重发，耗尽转死信 ──
+$webhookRetry = ['skipped' => true];
+try {
+    require_once __DIR__ . '/../lib/WebhookSystem.php';
+    $webhookRetry = wh_process_queue(50);
+} catch (Throwable $e) { $webhookRetry = ['error' => $e->getMessage()]; }
+
 header('Content-Type: application/json; charset=utf-8');
-echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge, 'time' => date('Y-m-d H:i:s')]);
+echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge,
+                  'webhook_retry' => $webhookRetry, 'time' => date('Y-m-d H:i:s')]);
