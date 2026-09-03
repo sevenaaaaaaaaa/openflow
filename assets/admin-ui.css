@@ -31,6 +31,20 @@
 #sidebar .sb-link:hover{background:var(--hover);color:var(--fg)}
 #sidebar .sb-link.active{background:var(--accent-soft);color:var(--accent);font-weight:700}
 #sidebar .sb-link.active::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--accent)}
+/* ── 置顶入口（跨区常用，永远在最上面）── */
+#sidebar .sb-pins{display:flex;flex-direction:column;gap:1px;padding:2px 0 8px;margin-bottom:6px;border-bottom:1px solid var(--border-soft)}
+#sidebar .sb-pin{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:10px;font-size:13px;font-weight:600;color:var(--fg);text-decoration:none;transition:background .15s,color .15s}
+#sidebar .sb-pin svg{width:15px;height:15px;flex:0 0 auto;color:var(--muted)}
+#sidebar .sb-pin span:not(.tag){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sidebar .sb-pin .tag{margin-left:auto;flex:0 0 auto;font-family:var(--font-mono);font-size:9.5px;font-weight:700;letter-spacing:.02em;color:var(--faint);background:var(--hover);border-radius:999px;padding:2px 7px}
+#sidebar .sb-pin:hover{background:var(--hover)}
+#sidebar .sb-pin.active{background:var(--accent-soft);color:var(--accent)}
+#sidebar .sb-pin.active svg{color:var(--accent)}
+#sidebar .sb-pin.active .tag{background:transparent;color:var(--accent)}
+#sidebar .sb-desc{padding:0 10px 6px;font-size:11.5px;line-height:1.5;color:var(--faint)}
+#sidebar .sb-link .sb-n{display:inline-block;margin-left:6px;font-family:var(--font-mono);font-size:10px;font-style:normal;font-weight:700;color:var(--faint);background:var(--hover);border-radius:999px;padding:1px 5px;vertical-align:1px}
+#sidebar .sb-link.active .sb-n{background:transparent;color:var(--accent)}
+
 #sidebar .sb-recent{display:flex;flex-direction:column;gap:1px}
 #sidebar .sb-recent a{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:9px;font-size:12.5px;color:var(--muted);text-decoration:none}
 #sidebar .sb-recent a:hover{background:var(--hover);color:var(--fg)}
@@ -105,9 +119,21 @@ body.has-secnav .main{display:grid;grid-template-columns:minmax(0,1fr) 188px;col
 .of-secnav a.on{color:var(--accent);border-left-color:var(--accent);font-weight:700}
 @media(max-width:1180px){body.has-secnav .main{display:block}.of-secnav{display:none}}
 
+/* ── 3b-2. 簇内子 tab 条：侧栏一个聚合入口，兄弟功能在这里切（真跳转）── */
+.of-ctabs{display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin:0 0 22px;padding:4px 4px 4px 6px;border:1px solid var(--border-soft);border-radius:13px;background:var(--hover);width:fit-content;max-width:100%}
+.of-ctabs-h{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:0 10px 0 4px;white-space:nowrap}
+.of-ctab{padding:6px 13px;border-radius:9px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:background .15s,color .15s}
+.of-ctab:hover{background:var(--surface);color:var(--fg)}
+.of-ctab.on{background:var(--surface);color:var(--accent);box-shadow:0 1px 2px oklch(0% 0 0/.06)}
+body.zen-mode .of-ctabs{display:none}
+@media(max-width:840px){.of-ctabs{width:auto}.of-ctabs-h{display:none}}
+
 /* ── 3c. 页内 tab ── */
 .of-tabbar{margin-bottom:16px;flex-wrap:wrap}
-@media(max-width:840px){.of-tabbed form[style*='display:flex'],.of-tabbed .card form[style*='display:flex']{flex-wrap:wrap}.of-tabbed input[type=file]{max-width:100%;min-width:0}}
+@media(max-width:840px){.of-tabbed form[style*='display:flex'],.of-tabbed .card form[style*='display:flex']{flex-wrap:wrap}.of-tabbed input[type=file]{max-width:100%;min-width:0}
+  /* 文件选择框默认有固定最小宽度，窄屏会把整页顶出横向滚动（数字资产页上传框）*/
+  .main input[type=file]{max-width:100%;min-width:0}
+  .main form[style*='display:flex']{flex-wrap:wrap}}
 .of-tabbed > [data-tab][hidden]{display:none!important}
 .of-tabbed > [data-tab] > .card:first-child,.of-tabbed > .card[data-tab]{margin-top:0}
 

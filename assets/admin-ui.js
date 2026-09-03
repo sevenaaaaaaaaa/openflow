@@ -36,9 +36,15 @@
         show(a.dataset.area);
       });
     });
-    // 当前项滚到可见
+    // 当前项滚到可见——但别把顶上的置顶入口（工作台 / 驾驶舱 / 日历 / 进化）挤出视野：
+    // 只有当前项本来就在视野外时才滚，且滚动量不超过它到面板顶部的距离
     var act = $('.sb-link.active', sb);
-    if (act) { var pn = $('.sb-panels', sb); if (pn) pn.scrollTop = Math.max(0, act.offsetTop - pn.clientHeight / 2); }
+    if (act) {
+      var pn = $('.sb-panels', sb);
+      if (pn && act.offsetTop + act.offsetHeight > pn.clientHeight) {
+        pn.scrollTop = Math.max(0, act.offsetTop - pn.clientHeight / 2);
+      }
+    }
     // 最近打开（localStorage，最多 6 条，不含当前页）
     var rec = $('#sbRecent'); if (!rec) return;
     var KEY = 'of_admin_recent', list = [];
