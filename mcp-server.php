@@ -271,6 +271,8 @@ function mcp_handle(array $msg): ?array {
                     'message'=>'权限不足：'.mcp_tool_label($name).' 需要 '.mcp_tool_scope($name).' 权限']];
             }
 
+            // 让修订快照知道这一版是 Agent 改的（RevisionSystem 读这个全局）
+            $GLOBALS['of_actor'] = ['name' => 'AI · ' . ($ctx['name'] ?: 'MCP'), 'source' => 'mcp'];
             try {
                 $res = mcp_call($name, $args);
                 mcp_audit($name, $args, $ctx, true, '', (microtime(true)-$t0)*1000);
