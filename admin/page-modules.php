@@ -10,14 +10,9 @@ require_perm('landing');
 $modulesFile = DATA_DIR . '/page-modules.json';
 $modules = json_read($modulesFile);
 
-$blockTypes = [
-    'hero' => 'Hero 大标题', 'features' => '功能列表', 'cta' => 'CTA 行动号召',
-    'text' => '文本段落', 'image-text' => '图文混排', 'stats' => '数据指标',
-    'testimonials' => '客户证言', 'logo-wall' => 'Logo 墙', 'faq' => 'FAQ',
-    'gallery' => '图片画廊', 'form' => '表单嵌入', 'newsletter' => '订阅表单',
-    'video' => '视频嵌入', 'contact' => '联系表单', 'pricing' => '价格表',
-    'timeline' => '时间线', 'comparison' => '对比表',
-];
+// 与构建器、前台渲染器共用同一份类型表（module 是引用类型，模块库自身不该再嵌套引用）
+require_once __DIR__ . '/../lib/BlockRegistry.php';
+$blockTypes = array_diff_key(block_types(), ['module' => 1]);
 
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
