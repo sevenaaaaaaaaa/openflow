@@ -1282,10 +1282,42 @@ $roleLabel = $roleLabels[$role] ?? $role;
     </div>
   </div>
 </header>
-<?php }
+<?php
+    // 页面正文开始缓冲：17 个页面（同意与数据保留 / AI 用量 / API 权限矩阵 / 统一商品目录…）
+    // 调了 admin_header() 却从没写过 <div class="admin-layout"><div class="main">，
+    // 于是既没有侧栏、正文也没有任何边距，直接怼在顶栏底下的左上角。
+    // 与其逐页补 17 遍模板，不如在框架层兜底：admin_footer() 里发现没渲染过侧栏，就把正文包起来。
+    $GLOBALS['__of_body_ob'] = ob_get_level() + 1;
+    ob_start();
+}
+
+/** admin_footer() 用：正文没被 admin-layout 包过就补上（见 admin_header 末尾说明） */
+function admin_wrap_body(): void {
+    $lv = $GLOBALS['__of_body_ob'] ?? 0;
+    if (!$lv || ob_get_level() < $lv) return;                 // 没开缓冲（OF_EMBED 等）→ 不管
+    while (ob_get_level() > $lv) ob_end_flush();              // 页面自己开的层先收掉
+    $body = ob_get_clean();
+    $GLOBALS['__of_body_ob'] = 0;
+    if (!empty($GLOBALS['__of_sidebar_done'])) {
+        // 簇内子 tab 条：侧栏只留一个聚合入口，兄弟功能靠这条在页内切换。
+        // 在框架层注入到 .main 的开头，90 多个页面一行都不用改。
+        $bar = function_exists('admin_nav_cluster_bar') ? admin_nav_cluster_bar() : '';
+        if ($bar !== '' && !str_contains($body, 'of-ctabs')) {
+            $body = preg_replace_callback('~<div class="main"[^>]*>~', function ($m) use (&$bar) {
+                $out = $m[0] . $bar; $bar = ''; return $out;
+            }, $body, 1);
+        }
+        echo $body; return;
+    }
+    $cur = basename((string)($_SERVER['SCRIPT_FILENAME'] ?? ''), '.php');
+    echo '<div class="admin-layout">';
+    admin_sidebar($cur);
+    echo '<div class="main">', admin_nav_cluster_bar('', $cur), $body, '</div></div>';
+}
 
 function admin_sidebar(string $current): void {
     // v1（2026-09-03）：侧栏改为数据驱动（includes/admin-nav.php），当前页决定展开哪个区，不再记忆模块。
+    $GLOBALS['__of_sidebar_done'] = true;
     require_once dirname(__DIR__) . '/includes/admin-nav.php';
     // 以调用方文件名定位当前页（页面传的 id 常是历史遗留）
     $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
@@ -1339,6 +1371,7 @@ function markNotifRead() {
 <?php }
 
 function admin_footer(): void {
+    admin_wrap_body();
     // Toast notification support
     $flashType = '';
     $flashText = '';
