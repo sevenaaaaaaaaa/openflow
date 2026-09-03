@@ -7,8 +7,29 @@ require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/SubscriptionSystem.php';
 require_once __DIR__ . '/FlowSystem.php';
 require_once __DIR__ . '/CommissionPolicy.php';
+require_once __DIR__ . '/Txn.php';
 
 function shop_orders_file(): string { return DATA_DIR . '/shop/orders.json'; }
+
+/**
+ * 支付/退款这类多步写入会碰到的 JSON 文件，失败时要按快照还原。
+ * 两个函数共用一份，避免哪天加了新存储只补了一边——那种「回滚不干净」最难查。
+ *
+ *   shop/orders.json      订单本身（订阅与历史订单存在 JSON 里）
+ *   subscription/state.json  订阅有效期与状态
+ *   members/index.json    购物积分（gamification_award 写这里）
+ *   messages/index.json   积分变动会顺带发一条站内信；不还原的话，
+ *                         退款回滚了，用户却收到一条「已扣除 N 积分」
+ */
+function shop_txn_json_files(): array {
+    $files = [shop_orders_file()];
+    if (function_exists('sub_state_file')) $files[] = sub_state_file();
+    if (defined('DATA_DIR')) {
+        $files[] = DATA_DIR . '/members/index.json';
+        $files[] = DATA_DIR . '/messages/index.json';
+    }
+    return $files;
+}
 function shop_settings_file(): string { return DATA_DIR . '/shop/settings.json'; }
 
 // 读取当前用户的 UTM 归因来源（来自 track.php 存的 cookie）
@@ -214,80 +235,106 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
     }
     if (!$order || ($order['status'] ?? '') !== 'pending') return false;
 
-    // 更新订单状态（双源）
-    if ($inJson) {
-        $orders = json_read(shop_orders_file());
-        foreach ($orders as &$o) {
-            if (($o['id'] ?? '') === $orderId) {
-                $o['status'] = 'paid'; $o['paid_at'] = date('Y-m-d H:i:s'); $o['payment_method'] = $method;
-                break;
-            }
-        }
-        unset($o);
-        json_write(shop_orders_file(), $orders);
-    } else {
-        Database::execute(
-            "UPDATE orders SET status = 'paid', paid_at = ?, payment_method = ? WHERE id = ?",
-            [date('Y-m-d H:i:s'), $method, $orderId]
-        );
-    }
-    
-    // 分销佣金入账
-    if (!empty($order['referrer_id']) && $order['commission'] > 0) {
-        Database::execute(
-            "UPDATE members SET balance = balance + ? WHERE id = ?",
-            [$order['commission'], $order['referrer_id']]
-        );
-        // 记录积分日志
-        Database::insert('point_logs', [
-            'member_id' => $order['referrer_id'],
-            'points' => 0,
-            'type' => 'commission',
-            'description' => "订单 {$orderId} 分销佣金 {$order['commission']}",
-            'created_at' => date('Y-m-d H:i:s'),
-        ]);
-    }
+    /* ══ 资金与权益：要么全成，要么全不成 ══
+     * 支付回调里连着改六处：订单状态、分销佣金、作者分成、订阅有效期、技能解锁、购物积分。
+     * 以前没有事务——第四步失败，前三步就留在那儿：佣金发了、订阅没开通，
+     * 而回调返回 false 会让支付网关重试，重试又会因为订单已经是 paid 而直接退出，
+     * 于是这笔「钱收了、课没给」的订单永远卡在半截状态。
+     * 现在整段一起回滚：订单退回 pending，网关重试就能真正补上。
+     */
+    $jsonTouched = shop_txn_json_files();
 
-    // 课程作者分成入账（平台抽 10% + 分销佣金后剩余归作者；platform 课程无作者跳过）
-    if (!empty($order['author']) && ($order['goods_type'] ?? '') === 'course') {
-        $authorAmount = round((float)$order['amount'] - (float)$order['platform_fee'] - (float)$order['commission'], 2);
-        if ($authorAmount > 0) {
-            $authRows = Database::query("SELECT id FROM members WHERE id = ?", [$order['author']]);
-            if (!empty($authRows)) {
-                Database::execute("UPDATE members SET balance = balance + ? WHERE id = ?", [$authorAmount, $order['author']]);
+    try {
+        txn_run(function () use ($orderId, $order, $inJson, $method) {
+            // 更新订单状态（双源）
+            if ($inJson) {
+                $orders = json_read(shop_orders_file());
+                foreach ($orders as &$o) {
+                    if (($o['id'] ?? '') === $orderId) {
+                        $o['status'] = 'paid'; $o['paid_at'] = date('Y-m-d H:i:s'); $o['payment_method'] = $method;
+                        break;
+                    }
+                }
+                unset($o);
+                json_write(shop_orders_file(), $orders);
+            } else {
+                Database::execute(
+                    "UPDATE orders SET status = 'paid', paid_at = ?, payment_method = ? WHERE id = ?",
+                    [date('Y-m-d H:i:s'), $method, $orderId]
+                );
+            }
+    
+            // 分销佣金入账
+            if (!empty($order['referrer_id']) && $order['commission'] > 0) {
+                Database::execute(
+                    "UPDATE members SET balance = balance + ? WHERE id = ?",
+                    [$order['commission'], $order['referrer_id']]
+                );
+                // 记录积分日志
                 Database::insert('point_logs', [
-                    'member_id' => $order['author'], 'points' => 0, 'type' => 'course_author',
-                    'description' => "课程「{$order['course_title']}」作者分成 ¥{$authorAmount}", 'created_at' => date('Y-m-d H:i:s'),
+                    'member_id' => $order['referrer_id'],
+                    'points' => 0,
+                    'type' => 'commission',
+                    'description' => "订单 {$orderId} 分销佣金 {$order['commission']}",
+                    'created_at' => date('Y-m-d H:i:s'),
                 ]);
             }
-        }
-    }
+
+            // 课程作者分成入账（平台抽 10% + 分销佣金后剩余归作者；platform 课程无作者跳过）
+            if (!empty($order['author']) && ($order['goods_type'] ?? '') === 'course') {
+                $authorAmount = round((float)$order['amount'] - (float)$order['platform_fee'] - (float)$order['commission'], 2);
+                if ($authorAmount > 0) {
+                    $authRows = Database::query("SELECT id FROM members WHERE id = ?", [$order['author']]);
+                    if (!empty($authRows)) {
+                        Database::execute("UPDATE members SET balance = balance + ? WHERE id = ?", [$authorAmount, $order['author']]);
+                        Database::insert('point_logs', [
+                            'member_id' => $order['author'], 'points' => 0, 'type' => 'course_author',
+                            'description' => "课程「{$order['course_title']}」作者分成 ¥{$authorAmount}", 'created_at' => date('Y-m-d H:i:s'),
+                        ]);
+                    }
+                }
+            }
     
-    // 订阅订单：激活订阅状态
-    if (!empty($order['plan_id'])) {
-        $memberId = $order['member_id'];
-        $s = sub_get_member($memberId);
-        $months = ($order['period'] ?? 'month') === 'year' ? 12 : 1;
-        $base = ($s && ($s['status'] ?? '') === 'active' && !empty($s['expires_at'])) ? $s['expires_at'] : date('Y-m-d');
-        sub_set_member($memberId, [
-            'member_id' => $memberId,
-            'member_name' => '',
-            'plan_id' => $order['plan_id'],
-            'status' => 'active',
-            'expires_at' => date('Y-m-d', strtotime($base . ' +' . $months . ' month')),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
-    }
+            // 订阅订单：激活订阅状态
+            if (!empty($order['plan_id'])) {
+                $memberId = $order['member_id'];
+                $s = sub_get_member($memberId);
+                $months = ($order['period'] ?? 'month') === 'year' ? 12 : 1;
+                $base = ($s && ($s['status'] ?? '') === 'active' && !empty($s['expires_at'])) ? $s['expires_at'] : date('Y-m-d');
+                sub_set_member($memberId, [
+                    'member_id' => $memberId,
+                    'member_name' => '',
+                    'plan_id' => $order['plan_id'],
+                    'status' => 'active',
+                    'expires_at' => date('Y-m-d', strtotime($base . ' +' . $months . ' month')),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
     
-    // 付费技能：支付后解锁
-    if (($order['goods_type'] ?? '') === 'skill' && !empty($order['goods_id'])) {
-        $memberId = $order['member_id'];
-        Database::execute(
-            "UPDATE members SET unlocked_skills = json_insert(COALESCE(unlocked_skills, '[]'), '$[#]', ?) WHERE id = ?",
-            [$order['goods_id'], $memberId]
-        );
-    }
+            // 付费技能：支付后解锁
+            if (($order['goods_type'] ?? '') === 'skill' && !empty($order['goods_id'])) {
+                $memberId = $order['member_id'];
+                Database::execute(
+                    "UPDATE members SET unlocked_skills = json_insert(COALESCE(unlocked_skills, '[]'), '$[#]', ?) WHERE id = ?",
+                    [$order['goods_id'], $memberId]
+                );
+            }
     
+            // 积分奖励
+            if (!empty($order['member_id'])) {
+                $points = (int)($order['amount'] * 10); // 1元=10积分
+                if (function_exists('gamification_award')) {
+                    gamification_award($order['member_id'], $points, 'purchase');
+                }
+            }
+        }, $jsonTouched);
+    } catch (\Throwable $e) {
+        // 已回滚：订单仍是 pending，没有发出任何佣金与权益。
+        // 返回 false 让上游（支付回调）知道没成功——网关重试时会重新走完整流程。
+        error_log('[shop_mark_paid] 已回滚：' . $e->getMessage());
+        return false;
+    }
+
     // CDP 打标 + LTV
     try {
         $uid = $_COOKIE['fc_uid'] ?? '';
@@ -297,13 +344,6 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
         }
     } catch (Exception $e) {}
     
-    // 积分奖励
-    if (!empty($order['member_id'])) {
-        $points = (int)($order['amount'] * 10); // 1元=10积分
-        if (function_exists('gamification_award')) {
-            gamification_award($order['member_id'], $points, 'purchase');
-        }
-    }
     
     // 站内信通知
     if (!empty($order['member_id'])) {
@@ -392,90 +432,98 @@ function shop_refund_order(string $orderId, string $reason = '', float $amount =
     $isPartial = $refund < $paid;
     $now = date('Y-m-d H:i:s');
 
-    // ── 1. 订单状态（双源，与 shop_mark_paid 一致）──
-    if ($inJson) {
-        $orders = json_read(shop_orders_file());
-        foreach ($orders as &$o) {
-            if (($o['id'] ?? '') === $orderId) {
-                $o['status'] = 'refunded';
-                $o['refunded_at'] = $now;
-                $o['refund_amount'] = $refund;
-                $o['refund_reason'] = $reason;
-                break;
+    /* ══ 资金与权益：要么全成，要么全不成 ══
+     * 下面这一整段以前是「每步一个 try/catch 吞掉」：佣金没收回来也照样把订单标成
+     * 已退款，还返回 ok=true。现在任何一步失败都会抛出去，由 txn_run 回滚 SQLite
+     * 并按快照还原 JSON，调用方拿到的是明确的失败，而不是一个半截状态。
+     */
+    $jsonTouched = shop_txn_json_files();
+
+    try {
+        txn_run(function () use ($orderId, $reason, $order, $inJson, $paid, $refund, $isPartial, $now) {
+
+            // ── 1. 订单状态（双源，与 shop_mark_paid 一致）──
+            if ($inJson) {
+                $orders = json_read(shop_orders_file());
+                foreach ($orders as &$o) {
+                    if (($o['id'] ?? '') === $orderId) {
+                        $o['status'] = 'refunded';
+                        $o['refunded_at'] = $now;
+                        $o['refund_amount'] = $refund;
+                        $o['refund_reason'] = $reason;
+                        break;
+                    }
+                }
+                unset($o);
+                json_write(shop_orders_file(), $orders);
+            } else {
+                Database::execute(
+                    "UPDATE orders SET status = 'refunded', refunded_at = ?, refund_amount = ?, refund_reason = ? WHERE id = ?",
+                    [$now, $refund, $reason, $orderId]
+                );
             }
-        }
-        unset($o);
-        json_write(shop_orders_file(), $orders);
-    } else {
-        Database::execute(
-            "UPDATE orders SET status = 'refunded', refunded_at = ?, refund_amount = ?, refund_reason = ? WHERE id = ?",
-            [$now, $refund, $reason, $orderId]
-        );
-    }
 
-    // ── 2. 分销佣金回收 ──
-    if (!empty($order['referrer_id']) && (float)($order['commission'] ?? 0) > 0) {
-        $back = $isPartial ? round((float)$order['commission'] * $refund / $paid, 2) : (float)$order['commission'];
-        try {
-            Database::execute("UPDATE members SET balance = balance - ? WHERE id = ?", [$back, $order['referrer_id']]);
-            Database::insert('point_logs', [
-                'member_id' => $order['referrer_id'], 'points' => 0, 'type' => 'commission_refund',
-                'description' => "订单 {$orderId} 退款，回收分销佣金 {$back}", 'created_at' => $now,
-            ]);
-        } catch (Exception $e) {}
-    }
-
-    // ── 3. 课程作者分成回收 ──
-    if (!empty($order['author']) && ($order['goods_type'] ?? '') === 'course') {
-        $authorAmount = round($paid - (float)($order['platform_fee'] ?? 0) - (float)($order['commission'] ?? 0), 2);
-        if ($authorAmount > 0) {
-            $back = $isPartial ? round($authorAmount * $refund / $paid, 2) : $authorAmount;
-            try {
-                Database::execute("UPDATE members SET balance = balance - ? WHERE id = ?", [$back, $order['author']]);
+            // ── 2. 分销佣金回收 ──
+            if (!empty($order['referrer_id']) && (float)($order['commission'] ?? 0) > 0) {
+                $back = $isPartial ? round((float)$order['commission'] * $refund / $paid, 2) : (float)$order['commission'];
+                Database::execute("UPDATE members SET balance = balance - ? WHERE id = ?", [$back, $order['referrer_id']]);
                 Database::insert('point_logs', [
-                    'member_id' => $order['author'], 'points' => 0, 'type' => 'course_author_refund',
-                    'description' => "订单 {$orderId} 退款，回收作者分成 ¥{$back}", 'created_at' => $now,
+                    'member_id' => $order['referrer_id'], 'points' => 0, 'type' => 'commission_refund',
+                    'description' => "订单 {$orderId} 退款，回收分销佣金 {$back}", 'created_at' => $now,
                 ]);
-            } catch (Exception $e) {}
-        }
+            }
+
+            // ── 3. 课程作者分成回收 ──
+            if (!empty($order['author']) && ($order['goods_type'] ?? '') === 'course') {
+                $authorAmount = round($paid - (float)($order['platform_fee'] ?? 0) - (float)($order['commission'] ?? 0), 2);
+                if ($authorAmount > 0) {
+                    $back = $isPartial ? round($authorAmount * $refund / $paid, 2) : $authorAmount;
+                    Database::execute("UPDATE members SET balance = balance - ? WHERE id = ?", [$back, $order['author']]);
+                    Database::insert('point_logs', [
+                        'member_id' => $order['author'], 'points' => 0, 'type' => 'course_author_refund',
+                        'description' => "订单 {$orderId} 退款，回收作者分成 ¥{$back}", 'created_at' => $now,
+                    ]);
+                }
+            }
+
+            // ── 4. 权益撤销（部分退款保留权益，只退钱）──
+            if (!$isPartial) {
+                // 订阅：置为已取消
+                if (!empty($order['plan_id']) && !empty($order['member_id']) && function_exists('sub_get_member')) {
+                    $s = sub_get_member($order['member_id']);
+                    if ($s) {
+                        $s['status'] = 'cancelled';
+                        $s['updated_at'] = $now;
+                        sub_set_member($order['member_id'], $s);
+                    }
+                }
+                // 付费技能：撤销解锁
+                if (($order['goods_type'] ?? '') === 'skill' && !empty($order['goods_id']) && !empty($order['member_id'])) {
+                    $rows = Database::query("SELECT unlocked_skills FROM members WHERE id = ?", [$order['member_id']]);
+                    $list = json_decode($rows[0]['unlocked_skills'] ?? '[]', true);
+                    if (is_array($list)) {
+                        $list = array_values(array_filter($list, fn($x) => (string)$x !== (string)$order['goods_id']));
+                        Database::execute("UPDATE members SET unlocked_skills = ? WHERE id = ?",
+                            [json_encode($list, JSON_UNESCAPED_UNICODE), $order['member_id']]);
+                    }
+                }
+            }
+
+            // ── 4b. 购物积分回收（shop_mark_paid 按 1元=10积分 发放，这里等比收回）──
+            // 不收回的话，「下单拿积分 → 申请退款 → 积分留下」就是一个白嫖闭环。
+            if (!empty($order['member_id']) && function_exists('gamification_award')) {
+                $backPoints = (int)round($refund * 10);
+                if ($backPoints > 0) gamification_award($order['member_id'], -$backPoints, 'purchase_refund');
+            }
+
+        }, $jsonTouched);
+    } catch (\Throwable $e) {
+        // 到这里，SQLite 已回滚、JSON 已按快照还原：订单仍是「已支付」，钱和权益都没动。
+        // 返回失败而不是 ok=true，后台会把原因显示出来，可以重试或人工处理。
+        return ['ok'=>false, 'error'=>'退款未执行（已回滚，订单保持原状）：' . $e->getMessage(), 'amount'=>0];
     }
 
-    // ── 4. 权益撤销（部分退款保留权益，只退钱）──
-    if (!$isPartial) {
-        // 订阅：置为已取消
-        if (!empty($order['plan_id']) && !empty($order['member_id']) && function_exists('sub_get_member')) {
-            try {
-                $s = sub_get_member($order['member_id']);
-                if ($s) {
-                    $s['status'] = 'cancelled';
-                    $s['updated_at'] = $now;
-                    sub_set_member($order['member_id'], $s);
-                }
-            } catch (Exception $e) {}
-        }
-        // 付费技能：撤销解锁
-        if (($order['goods_type'] ?? '') === 'skill' && !empty($order['goods_id']) && !empty($order['member_id'])) {
-            try {
-                $rows = Database::query("SELECT unlocked_skills FROM members WHERE id = ?", [$order['member_id']]);
-                $list = json_decode($rows[0]['unlocked_skills'] ?? '[]', true);
-                if (is_array($list)) {
-                    $list = array_values(array_filter($list, fn($x) => (string)$x !== (string)$order['goods_id']));
-                    Database::execute("UPDATE members SET unlocked_skills = ? WHERE id = ?",
-                        [json_encode($list, JSON_UNESCAPED_UNICODE), $order['member_id']]);
-                }
-            } catch (Exception $e) {}
-        }
-    }
-
-    // ── 4b. 购物积分回收（shop_mark_paid 按 1元=10积分 发放，这里等比收回）──
-    // 不收回的话，「下单拿积分 → 申请退款 → 积分留下」就是一个白嫖闭环。
-    if (!empty($order['member_id']) && function_exists('gamification_award')) {
-        $backPoints = (int)round($refund * 10);
-        if ($backPoints > 0) {
-            try { gamification_award($order['member_id'], -$backPoints, 'purchase_refund'); }
-            catch (Exception $e) {}
-        }
-    }
+    /* ══ 以下是通知与旁路，失败不该把已经完成的退款再撤回来 ══ */
 
     // ── 5. 站内信通知 ──
     if (!empty($order['member_id']) && function_exists('inbox_send')) {
@@ -483,7 +531,7 @@ function shop_refund_order(string $orderId, string $reason = '', float $amount =
             $tip = $isPartial ? "部分退款 ¥{$refund}" : "已全额退款 ¥{$refund}";
             inbox_send($order['member_id'], '订单退款', "您的订单 {$orderId} {$tip}"
                 . ($reason !== '' ? "（原因：{$reason}）" : ''));
-        } catch (Exception $e) {}
+        } catch (\Throwable $e) {}
     }
 
     // ── 6. 事件总线：CDP 打标 + MA/画布触发器 ──
@@ -498,11 +546,12 @@ function shop_refund_order(string $orderId, string $reason = '', float $amount =
                 'props'     => ['reason' => $reason, 'partial' => $isPartial ? 1 : 0, 'paid_amount' => $paid],
             ]);
         }
-    } catch (Exception $e) {}
+    } catch (\Throwable $e) {}
 
     // ── 7. 插件钩子（旁路）──
     if (class_exists('PluginSystem')) {
-        PluginSystem::do_action('payment_refund', $orderId, $order, $refund, $reason);
+        try { PluginSystem::do_action('payment_refund', $orderId, $order, $refund, $reason); }
+        catch (\Throwable $e) {}
     }
 
     return ['ok'=>true, 'error'=>'', 'amount'=>$refund];

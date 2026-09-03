@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     foreach ($blockTypes as $bi => $bt) {
         if (empty($bt)) continue;
         $block = ['id' => 'blk_' . $bi . '_' . substr(bin2hex(random_bytes(4)), 0, 6), 'type' => $bt];
-        foreach (['title','subtitle','content','image','bg_color','button_text','button_url','video_url','icon','columns','count','items','form_slug','layout'] as $fk) {
+        foreach (['title','subtitle','content','image','bg_color','button_text','button_url','video_url','icon','columns','count','items','form_slug','layout','module_id'] as $fk) {
             if (isset($_POST['block_' . $fk][$bi])) $block[$fk] = $_POST['block_' . $fk][$bi];
         }
         // 区块级人群定向（BACKLOG T1-8）：全为不限/空则不写 audience，保持默认全员可见
@@ -114,13 +114,10 @@ if (isset($_GET['edit'])) {
     foreach ($pages as $p) { if ($p['id'] === $_GET['edit']) { $editPage = $p; break; } }
 }
 
-$blockTypes = [
-    'hero' => 'Hero 大标题', 'features' => '功能列表', 'cta' => 'CTA 行动号召',
-    'text' => '文本段落', 'image-text' => '图文混排', 'stats' => '数据指标',
-    'testimonials' => '客户证言', 'logo-wall' => 'Logo 墙', 'faq' => 'FAQ',
-    'gallery' => '图片画廊', 'form' => '表单嵌入', 'newsletter' => '订阅表单',
-    'video' => '视频嵌入',
-];
+// 类型表来自注册表，别再各抄一份（此前这里 13 种、模块库 17 种、前台渲染器 13 种，三份对不上）
+require_once __DIR__ . '/../lib/BlockRegistry.php';
+$blockTypes = block_types();
+$moduleLib  = block_modules();
 
 admin_header('落地页构建器');
 ?>
@@ -201,6 +198,18 @@ admin_header('落地页构建器');
                 <button type="button" class="btn btn-danger btn-sm" style="margin-left:auto" onclick="this.closest('.block-item').remove()">✕</button>
               </div>
               <div class="block-fields" style="display:grid;gap:8px">
+                <?php /* 引用模块库：定义一次、到处插入。选中后其余字段由模块本身决定 */ ?>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
+                  <span style="flex:0 0 auto">引用模块</span>
+                  <select name="block_module_id[]" style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+                    <option value="">不引用（用下面的字段自己填）</option>
+                    <?php foreach ($moduleLib as $mid => $mod): ?>
+                    <option value="<?=htmlspecialchars($mid)?>" <?=($blk['module_id'] ?? '')===$mid?'selected':''?>>
+                      <?=htmlspecialchars($mod['name'] ?? $mid)?> · <?=htmlspecialchars(block_type_label($mod['type'] ?? ''))?>
+                    </option>
+                    <?php endforeach; ?>
+                  </select>
+                </label>
                 <input type="text" name="block_title[]" value="<?=htmlspecialchars($blk['title']??'')?>" placeholder="标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">
                 <input type="text" name="block_subtitle[]" value="<?=htmlspecialchars($blk['subtitle']??'')?>" placeholder="副标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">
                 <textarea name="block_content[]" rows="2" placeholder="内容 (支持 HTML)" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--mono)"><?=htmlspecialchars($blk['content']??'')?></textarea>
@@ -278,6 +287,12 @@ function addBlock(type, label) {
       '<button type="button" class="btn btn-danger btn-sm" style="margin-left:auto" onclick="this.closest(\'.block-item\').remove()">✕</button>' +
     '</div>' +
     '<div class="block-fields" style="display:grid;gap:8px">' +
+      // 新块也必须输出这个字段，否则 block_module_id[] 与 block_type[] 的下标会错位
+      '<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)"><span style="flex:0 0 auto">引用模块</span>' +
+      '<select name="block_module_id[]" style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">' +
+        '<option value="">不引用（用下面的字段自己填）</option>' +
+        '<?php foreach ($moduleLib as $mid => $mod): ?><option value="<?=htmlspecialchars($mid)?>"><?=htmlspecialchars(($mod['name'] ?? $mid) . ' · ' . block_type_label($mod['type'] ?? ''))?></option><?php endforeach; ?>' +
+      '</select></label>' +
       '<input type="text" name="block_title[]" placeholder="标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' +
       '<input type="text" name="block_subtitle[]" placeholder="副标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' +
       '<textarea name="block_content[]" rows="2" placeholder="内容 (支持 HTML)" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--mono)"></textarea>' +
