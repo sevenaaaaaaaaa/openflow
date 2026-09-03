@@ -25,7 +25,7 @@
 
 const ADMIN_NAV_ALIAS = [
     // 编辑 / 详情 / 历史页 → 所属条目
-    'article-edit' => 'content-hub', 'articles' => 'content-hub', 'pages-list' => 'content-hub', 'downloads' => 'content-hub', 'download-edit' => 'content-hub',
+    'article-edit' => 'content-hub', 'revisions' => 'content-hub', 'articles' => 'content-hub', 'pages-list' => 'content-hub', 'downloads' => 'content-hub', 'download-edit' => 'content-hub',
     'podcasts' => 'content-hub', 'page-categories' => 'content-hub', 'tags' => 'content-hub', 'page-builder' => 'pages', 'page-editor-config' => 'pages',
     'course-edit' => 'courses', 'customer-detail' => 'crm', 'profile-detail' => 'profiling', 'user-profile' => 'profiling',
     'abtests-stats' => 'abtests', 'survey-agent' => 'survey', 'survey-org' => 'survey', 'sentiment-report' => 'sentiment',

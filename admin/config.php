@@ -654,7 +654,15 @@ function page_content(string $page): array {
 
 function save_page_content(string $page, array $data): bool {
     $existing = json_read(PAGES_DIR . '/' . $page . '.json');
-    return json_write(PAGES_DIR . '/' . $page . '.json', array_merge($existing, $data));
+    $merged = array_merge($existing, $data);
+    $ok = json_write(PAGES_DIR . '/' . $page . '.json', $merged);
+    if ($ok) {
+        try {
+            require_once dirname(__DIR__) . '/lib/RevisionSystem.php';
+            rev_record('page', $page, $existing ?: null, $merged);
+        } catch (\Throwable $e) {}
+    }
+    return $ok;
 }
 
 // ─── Leads ─────────────────────────────────────────
@@ -769,6 +777,14 @@ function save_article(string $id, array $data): bool {
     }
     $ok = json_write(ARTICLES_DIR . '/index.json', $all);
     if (!$ok) return false;
+
+    // ── 修订快照（P0-03）──
+    // 挂在这里而不是各个页面：光文章就有 37 个写入点（后台 / MCP / 批量导入 / 定时任务 / API），
+    // 逐个补必然漏。旁路执行，记版失败不影响保存本身。
+    try {
+        require_once dirname(__DIR__) . '/lib/RevisionSystem.php';
+        rev_record('article', $id, $before, $after ?? $data);
+    } catch (\Throwable $e) {}
 
     // ── 内容联动（旁路：失败不影响保存结果）──
     $wasPublished = ($before['status'] ?? '') === 'published';
