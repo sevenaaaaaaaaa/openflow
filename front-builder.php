@@ -22,46 +22,9 @@ try {
 } catch (Throwable $e) {}
 $siteName = site_config_get('site_name');
 
-// 区块渲染器 —— v7：每种区块映射到 modules.css 的共享 archetype，后台搭出来的页与站点其他页同一套零件。
-function builder_render_block(array $b): string {
-    $t = $b['type'] ?? 'text';
-    $title = htmlspecialchars($b['title'] ?? '');
-    $sub = htmlspecialchars($b['subtitle'] ?? '');
-    $content = $b['content'] ?? '';
-    $img = htmlspecialchars($b['image'] ?? '');
-    $btnText = htmlspecialchars($b['button_text'] ?? '');
-    $btnUrl = htmlspecialchars($b['button_url'] ?? '');
-    $bg = $b['bg_color'] ?? '';
-    $bgStyle = $bg ? ' style="background:' . htmlspecialchars($bg) . ';border-radius:var(--r-lg);padding:clamp(28px,4vw,48px)"' : '';
-    $btn = $btnText && $btnUrl ? '<div class="cta-row"><a class="btn primary" href="' . $btnUrl . '">' . $btnText . '</a></div>' : '';
-    $head = fn(string $tag = 'h2', bool $center = true) => '<div class="sec-head' . ($center ? ' center' : '') . '">' . ($sub && $tag === 'h1' ? '<span class="kicker">' . $sub . '</span>' : '') . '<' . $tag . '>' . $title . '</' . $tag . '>' . ($sub && $tag !== 'h1' ? '<p class="lead">' . $sub . '</p>' : '') . '</div>';
-    $muted = fn(string $html) => '<div class="prose" style="color:var(--muted)">' . $html . '</div>';
-    switch ($t) {
-        case 'hero':
-            return '<section class="reveal in"' . $bgStyle . '><div class="hero-center">' . ($sub ? '<span class="kicker">' . $sub . '</span>' : '') . '<h1>' . $title . '</h1>' . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div></section>';
-        case 'features':
-            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="cols n4">' . $content . '</div>' : '<div class="empty">配置区块内容</div>') . '</section>';
-        case 'cta':
-        case 'newsletter':
-            return '<section class="reveal"' . $bgStyle . '><div class="cta-band">' . ($sub ? '<span class="kicker">' . $sub . '</span>' : '') . '<h2>' . $title . '</h2>' . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div></section>';
-        case 'text':
-            return '<section class="sec reveal reader"' . $bgStyle . '>' . $head('h2', false) . $muted($content) . '</section>';
-        case 'image-text':
-            return '<section class="sec reveal"' . $bgStyle . '><div class="split"><div class="sp-txt"><h3>' . $title . '</h3>' . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div><div class="sp-vis">' . ($img ? '<img src="' . $img . '" alt="" style="width:100%;border-radius:var(--r-md);border:1px solid var(--border)">' : '') . '</div></div></section>';
-        case 'stats':
-            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="stats">' . $content . '</div>' : '<div class="empty">配置数据</div>') . '</section>';
-        case 'form':
-            return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . '<div class="form-card">' . ($content ?: '<p class="note" style="text-align:center">' . ($sub ?: '配置表单 slug') . '</p>') . '</div></section>';
-        case 'video':
-            return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . '<div class="sp-win">' . ($content ?: '<div class="empty" style="margin:18px;border:none">配置视频地址</div>') . '</div></section>';
-        case 'testimonials':
-        case 'logo-wall':
-        case 'faq':
-        case 'gallery':
-        default:
-            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? $muted($content) : '<div class="empty">区块内容</div>') . '</section>';
-    }
-}
+// 区块渲染器与类型表已下沉到 lib/BlockRegistry.php（三处抄了三份，其中四种类型前台根本不认）
+require_once __DIR__ . '/lib/BlockRegistry.php';
+
 ?>
 <!doctype html>
 <html lang="zh-CN" data-theme="light">
