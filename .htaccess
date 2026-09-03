@@ -1,5 +1,6 @@
 <IfModule mod_rewrite.c>
 RewriteEngine On
+CGIPassAuth On
 
 # 首页：优先动态版 index.php（避免浏览器缓存旧 index.html）
 DirectoryIndex index.php index.html
