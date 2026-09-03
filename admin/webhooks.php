@@ -17,6 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'toggle') {
         WebhookSystem::update($_POST['id'], ['enabled' => isset($_POST['enabled'])]);
         $message = '已更新';
+    } elseif ($action === 'replay') {
+        $message = wh_replay_dead($_POST['delivery_id'] ?? '') ? '已重新排队，稍后由定时任务重投' : '重放失败：该死信记录已不存在';
+    } elseif ($action === 'retry_now') {
+        $st = wh_process_queue(50);
+        $message = "已处理 {$st['processed']} 条待重投：成功 {$st['ok']} · 重新排队 {$st['requeued']} · 转死信 {$st['dead']}";
     } elseif ($action === 'test') {
         $results = WebhookSystem::trigger('webhook.test', ['message' => '测试触发', 'time' => date('Y-m-d H:i:s')]);
         $message = '测试已发送: ' . (count($results) > 0 ? ($results[0]['success'] ? '成功' : '失败') : '无匹配 Webhook');
@@ -29,6 +34,9 @@ if (!empty($_GET['msg'])) $message = $_GET['msg'];
 $webhooks = WebhookSystem::all();
 $events = WebhookSystem::availableEvents();
 $logs = WebhookSystem::logs(20);
+$deliveries = wh_deliveries(30);
+$deadList   = wh_dead_list(30);
+$queueList  = wh_queue_list(30);
 
 admin_header('Webhook 管理');
 ?>
@@ -103,6 +111,68 @@ admin_header('Webhook 管理');
       </div>
     </div>
   </div>
+</div>
+
+<h2 style="margin-top:34px">投递保障</h2>
+<p class="sub">首投失败不再直接丢弃：按 60s / 5min / 30min / 2h / 6h 退避重投，耗尽转入死信可手动重放。每次投递带稳定的 <code>X-Webhook-Delivery</code> 幂等键，重试时不变，接收方据此去重。</p>
+
+<div class="card" style="margin-bottom:18px">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+    <h3 style="margin:0">待重投 <span class="pill gray"><?=count($queueList)?></span></h3>
+    <?php if ($queueList): ?>
+    <form method="post" style="margin-left:auto"><?=csrf_field()?><input type="hidden" name="action" value="retry_now">
+      <button class="btn btn-ghost btn-sm">立即重投一轮</button></form>
+    <?php endif; ?>
+  </div>
+  <?php if (!$queueList): ?>
+    <div class="of-empty" style="border:0;margin:0">没有待重投的投递。失败的事件会自动排到这里，由定时任务按退避重发。</div>
+  <?php else: ?>
+  <table class="lst-table"><thead><tr><th>事件</th><th style="width:110px">第几次</th><th style="width:170px">下次重投</th><th>上次错误</th></tr></thead><tbody>
+    <?php foreach ($queueList as $q): ?>
+    <tr><td><b><?=htmlspecialchars($q['event'] ?? '')?></b><div class="lst-slug" style="font-size:11.5px"><?=htmlspecialchars($q['delivery_id'] ?? '')?></div></td>
+        <td class="mono"><?=(int)($q['attempt'] ?? 0)?> / <?=(int)($q['max_retry'] ?? 0)?></td>
+        <td class="mono" style="font-size:12px"><?=date('m-d H:i:s', (int)($q['next_at'] ?? time()))?></td>
+        <td style="font-size:12.5px;color:var(--muted)"><?=htmlspecialchars(mb_substr((string)($q['last_error'] ?? ''),0,60))?></td></tr>
+    <?php endforeach; ?>
+  </tbody></table>
+  <?php endif; ?>
+</div>
+
+<div class="card" style="margin-bottom:18px">
+  <h3 style="margin:0 0 12px">死信 <span class="pill <?=$deadList?'hl':'gray'?>"><?=count($deadList)?></span></h3>
+  <?php if (!$deadList): ?>
+    <div class="of-empty" style="border:0;margin:0">没有死信。重试全部耗尽的投递才会落到这里。</div>
+  <?php else: ?>
+  <table class="lst-table"><thead><tr><th>事件</th><th style="width:90px">尝试</th><th style="width:150px">失败时间</th><th>最后错误</th><th class="c-act" style="width:90px"></th></tr></thead><tbody>
+    <?php foreach ($deadList as $d): ?>
+    <tr><td><b><?=htmlspecialchars($d['event'] ?? '')?></b><div class="lst-slug" style="font-size:11.5px"><?=htmlspecialchars($d['delivery_id'] ?? '')?></div></td>
+        <td class="mono"><?=(int)($d['attempts'] ?? 0)?> 次</td>
+        <td class="lst-when" style="font-size:12px"><?=htmlspecialchars(substr((string)($d['died_at'] ?? ''),5,14))?></td>
+        <td style="font-size:12.5px;color:var(--danger)"><?=htmlspecialchars(mb_substr((string)($d['last_error'] ?? ''),0,60))?></td>
+        <td class="c-act"><form method="post"><?=csrf_field()?><input type="hidden" name="action" value="replay">
+          <input type="hidden" name="delivery_id" value="<?=htmlspecialchars($d['delivery_id'] ?? '')?>">
+          <button class="btn btn-ghost btn-sm">重放</button></form></td></tr>
+    <?php endforeach; ?>
+  </tbody></table>
+  <?php endif; ?>
+</div>
+
+<div class="card" style="margin-bottom:18px">
+  <h3 style="margin:0 0 12px">投递明细 <span class="hint" style="font-weight:400">· 最近 <?=count($deliveries)?> 次尝试</span></h3>
+  <?php if (!$deliveries): ?>
+    <div class="of-empty" style="border:0;margin:0">还没有投递记录。</div>
+  <?php else: ?>
+  <table class="lst-table"><thead><tr><th style="width:150px">时间</th><th>Webhook</th><th>事件</th><th style="width:80px">第几次</th><th style="width:90px">HTTP</th><th style="width:80px">耗时</th></tr></thead><tbody>
+    <?php foreach ($deliveries as $d): ?>
+    <tr><td class="lst-when" style="font-size:12px"><?=htmlspecialchars(substr((string)($d['at'] ?? ''),5,14))?></td>
+        <td><?=htmlspecialchars($d['webhook_name'] ?: ($d['webhook_id'] ?? ''))?></td>
+        <td><?=htmlspecialchars($d['event'] ?? '')?></td>
+        <td class="mono"><?=((int)($d['attempt'] ?? 0)) === 0 ? '首投' : '重投 '.(int)$d['attempt']?></td>
+        <td><span class="badge <?=!empty($d['success'])?'badge-green':'badge-red'?>"><?=(int)($d['http_code'] ?? 0) ?: '—'?></span></td>
+        <td class="mono" style="font-size:12px"><?=(int)($d['duration_ms'] ?? 0)?>ms</td></tr>
+    <?php endforeach; ?>
+  </tbody></table>
+  <?php endif; ?>
 </div>
 
 <div id="createDialog" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">

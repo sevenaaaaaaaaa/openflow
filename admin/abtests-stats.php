@@ -135,22 +135,45 @@ admin_header('A/B 测试统计');
     <?php endif; ?>
 
     <!-- 结论 -->
-    <div class="card" style="background:<?=$lift>=0?'linear-gradient(135deg,var(--surface),rgba(134,239,172,.12))':'linear-gradient(135deg,var(--surface),rgba(252,165,165,.12))'?>">
-      <?php if ($result['A']['impression'] + $result['B']['impression'] === 0): ?>
+    <?php
+    // 结论的呈现必须跟着显著性走：样本不足时，把「+X% 提升」当结论展示，
+    // 等于在教用户把噪声当信号。未显著一律中性呈现，并明确还差多少样本。
+    $sig      = $result['significant'] === true;
+    $hasData  = $result['A']['impression'] + $result['B']['impression'] > 0;
+    $totalImp = $result['A']['impression'] + $result['B']['impression'];
+    $needMore = $result['min_sample'] !== null ? max(0, $result['min_sample'] * 2 - $totalImp) : null;
+    $tone     = !$sig ? 'neutral' : ($lift >= 0 ? 'good' : 'bad');
+    $bg = ['neutral' => 'var(--surface)',
+           'good' => 'linear-gradient(135deg,var(--surface),rgba(134,239,172,.12))',
+           'bad'  => 'linear-gradient(135deg,var(--surface),rgba(252,165,165,.12))'][$tone];
+    ?>
+    <div class="card" style="background:<?=$bg?>">
+      <?php if (!$hasData): ?>
       <p class="text-muted" style="margin-bottom:0">还没有统计数据。启用实验后，访问页面的用户会自动记录曝光；在页面关键转化处调用 <code>fcTrackAB('<?=htmlspecialchars($current['id'])?>', '<?=htmlspecialchars($current['traffic_b'] ?? 50) > 50 ? 'B' : 'A'?>', 'conversion')</code> 即可统计转化。</p>
       <?php else: ?>
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-        <div style="font-size:44px"><?=$lift>=0?'📈':'📉'?></div>
+      <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
         <div>
-          <div style="font-size:20px;font-weight:700;color:<?=$lift>=0?'var(--ok)':'var(--danger)'?>"><?=($lift>=0?'+':'')?><?=$lift?>% 转化提升</div>
-          <div class="text-sm text-muted" style="margin-top:4px">
-            B 相对 A：转化率 <?=$aRate?>% → <?=$bRate?>%
-            <?php
-            if ($result['significant'] !== null && $result['significant'] === true) echo $lift >= 0 ? '（<b>p=' . $result['p'] . ' 统计显著</b>，B 显著更优，建议采用）' : '（<b>p=' . $result['p'] . ' 统计显著</b>，A 显著更优，建议保留 A）';
-            elseif ($result['p'] !== null) echo '（p=' . $result['p'] . ' 未达显著，样本量不足，建议继续观察）';
-            else echo '（数据不足，无法评估显著性）';
-            ?>
-          </div>
+          <?php if ($sig): ?>
+            <div style="font-size:20px;font-weight:700;color:<?=$lift>=0?'var(--ok)':'var(--danger)'?>">
+              <?=$lift >= 0 ? 'B 显著更优' : 'A 显著更优'?> · <?=($lift>=0?'+':'')?><?=$lift?>%
+            </div>
+            <div class="text-sm text-muted" style="margin-top:4px">
+              转化率 <?=$aRate?>% → <?=$bRate?>%，p=<?=$result['p']?> 达到显著（&lt;0.05）。<?=$lift >= 0 ? '建议采用 B。' : '建议保留 A。'?>
+            </div>
+          <?php else: ?>
+            <div style="font-size:20px;font-weight:700;color:var(--text-2)">还不能下结论</div>
+            <div class="text-sm text-muted" style="margin-top:4px">
+              当前差异 <?=($lift>=0?'+':'')?><?=$lift?>%（<?=$aRate?>% → <?=$bRate?>%）
+              <?php if ($result['p'] !== null): ?>
+                ，p=<?=$result['p']?> 未达显著，这个差异<b>还不能和随机波动区分开</b>。
+              <?php else: ?>
+                ，样本太少，无法计算显著性。
+              <?php endif; ?>
+              <?php if ($needMore !== null && $needMore > 0): ?>
+                按当前效应量估算，两组合计还需约 <b><?=number_format($needMore)?></b> 次曝光才有把握。
+              <?php endif; ?>
+            </div>
+          <?php endif; ?>
         </div>
       </div>
       <?php endif; ?>

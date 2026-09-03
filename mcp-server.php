@@ -20,6 +20,7 @@ require_once __DIR__ . '/lib/MemberSystem.php';
 require_once __DIR__ . '/lib/SentimentSystem.php';
 require_once __DIR__ . '/lib/Database.php';
 require_once __DIR__ . '/lib/SkillSystem.php';
+require_once __DIR__ . '/lib/McpGuard.php';   // P0-01：逐工具鉴权 + 审计留痕
 
 // HTTP 模式：web 请求或显式 --http 参数
 $httpMode = PHP_SAPI !== 'cli' || in_array('--http', $argv ?? []);
@@ -248,13 +249,36 @@ function mcp_handle(array $msg): ?array {
             ]];
 
         case 'tools/list':
-            global $tools;
-            return ['jsonrpc'=>'2.0','id'=>$id,'result'=>['tools'=>$tools]];
+            global $tools, $MCP_CTX;
+            // 只列调用方有权调用的工具——无权的工具对它根本不存在
+            return ['jsonrpc'=>'2.0','id'=>$id,'result'=>['tools'=>mcp_filter_tools($tools, $MCP_CTX ?? [])]];
 
         case 'tools/call':
+            global $MCP_CTX;
             $name = $msg['params']['name'] ?? '';
             $args = $msg['params']['arguments'] ?? [];
-            return ['jsonrpc'=>'2.0','id'=>$id,'result'=>mcp_call($name, $args)];
+            $ctx  = $MCP_CTX ?? ['transport'=>'stdio','permissions'=>['admin'],'name'=>'本机 stdio','key_id'=>''];
+            $t0   = microtime(true);
+
+            // 未登记的工具按写操作从严处理，防止新增工具漏登记就等于放开
+            if (!isset(mcp_tool_meta()[$name])) {
+                mcp_audit($name, $args, $ctx, false, '未在工具注册表中登记', (microtime(true)-$t0)*1000);
+                return ['jsonrpc'=>'2.0','id'=>$id,'error'=>['code'=>-32601,'message'=>'未知工具：'.$name]];
+            }
+            if (!mcp_can($ctx, $name)) {
+                mcp_audit($name, $args, $ctx, false, '权限不足（需要 '.mcp_tool_scope($name).'）', (microtime(true)-$t0)*1000);
+                return ['jsonrpc'=>'2.0','id'=>$id,'error'=>['code'=>-32002,
+                    'message'=>'权限不足：'.mcp_tool_label($name).' 需要 '.mcp_tool_scope($name).' 权限']];
+            }
+
+            try {
+                $res = mcp_call($name, $args);
+                mcp_audit($name, $args, $ctx, true, '', (microtime(true)-$t0)*1000);
+                return ['jsonrpc'=>'2.0','id'=>$id,'result'=>$res];
+            } catch (Throwable $e) {
+                mcp_audit($name, $args, $ctx, false, '执行失败：'.$e->getMessage(), (microtime(true)-$t0)*1000);
+                return ['jsonrpc'=>'2.0','id'=>$id,'error'=>['code'=>-32603,'message'=>'执行失败：'.$e->getMessage()]];
+            }
 
         case 'ping':
             return ['jsonrpc'=>'2.0','id'=>$id,'result'=>[]];
@@ -272,21 +296,16 @@ if ($httpMode) {
     // HTTP SSE 模式 — 需 API Key 鉴权（Authorization: Bearer <key> 或 X-Api-Key）
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
-    $authOk = false;
-    try {
-        $keys = json_read(DATA_DIR . '/api_key.json');
-        $expected = $keys['key'] ?? '';
-        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-        $apiKey = trim(str_replace('Bearer ', '', $authHeader)) ?: ($_SERVER['HTTP_X_API_KEY'] ?? '');
-        $authOk = $expected !== '' && hash_equals($expected, $apiKey);
-    } catch (Throwable $e) { $authOk = false; }
-    if (!$authOk) {
+    // 身份识别走 McpGuard：正式 Key 可按权限 / 到期 / IP 分权，旧的单一 Key 仍兼容
+    $auth = mcp_identify('http');
+    if (!$auth['ok']) {
         header('Content-Type: application/json');
         header('Access-Control-Allow-Origin: *');
         http_response_code(401);
-        echo json_encode(['jsonrpc'=>'2.0','id'=>null,'error'=>['code'=>-32001,'message'=>'Unauthorized: missing or invalid API Key (Authorization: Bearer <key>)']]);
+        echo json_encode(['jsonrpc'=>'2.0','id'=>null,'error'=>['code'=>-32001,'message'=>$auth['error']]], JSON_UNESCAPED_UNICODE);
         exit;
     }
+    $MCP_CTX = $auth['ctx'];
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Headers: Authorization, X-Api-Key, Content-Type');
     $input = json_decode(file_get_contents('php://input'), true);
@@ -301,6 +320,7 @@ if ($httpMode) {
 
 // stdio 模式：读一行 JSON-RPC，回一行
 if (PHP_SAPI === 'cli' && !$httpMode) {
+    $MCP_CTX = mcp_identify('stdio')['ctx'];   // 本机子进程视同管理员，但调用同样留痕
     while (($line = fgets(STDIN)) !== false) {
         $line = trim($line);
         if ($line === '') continue;
