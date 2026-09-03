@@ -5,9 +5,17 @@
  */
 require_once __DIR__ . '/../admin/config.php';
 
+require_once __DIR__ . '/WebhookDelivery.php';   // P0-02：重试 / 退避 / 死信 / 幂等
+
 class WebhookSystem {
     private static string $webhooksFile = DATA_DIR . '/webhooks.json';
     private static string $logFile = DATA_DIR . '/webhook_log.json';
+
+    /** 取单个 Webhook（重投与死信重放要用） */
+    public static function get(string $id): ?array {
+        $all = self::all();
+        return $all[$id] ?? null;
+    }
 
     /**
      * 获取所有 Webhook
@@ -81,8 +89,21 @@ class WebhookSystem {
             if (!$wh['enabled']) continue;
             if (!in_array('*', $wh['events']) && !in_array($event, $wh['events'])) continue;
 
-            $result = self::send($wh, $event, $payload);
+            // 首投在业务流程内同步发一次；失败不再当场丢弃，而是按退避入队重投
+            $deliveryId = wh_new_delivery_id();
+            $result = self::deliver($wh, $event, $payload, $deliveryId, 0);
             $results[] = $result;
+
+            if (!$result['success']) {
+                $maxRetry = max(0, (int)($wh['retry_count'] ?? 3));
+                if ($maxRetry > 0) {
+                    wh_enqueue((string)$wh['id'], $event, $payload, $deliveryId, 1, $maxRetry,
+                               (string)($result['error'] ?: ('HTTP ' . $result['http_code'])));
+                } else {
+                    wh_to_dead((string)$wh['id'], $event, $payload, $deliveryId, 1,
+                               (string)($result['error'] ?: ('HTTP ' . $result['http_code'])));
+                }
+            }
 
             // 更新统计
             $webhooks[$wh['id']]['last_triggered'] = date('Y-m-d H:i:s');
@@ -103,12 +124,17 @@ class WebhookSystem {
     }
 
     /**
-     * 发送单个 Webhook
+     * 投递一次。
+     * @param string $deliveryId 幂等键——同一条投递的所有重试复用它，接收方据此去重
+     * @param int    $attempt    0 = 首投，>=1 表示第几次重投
      */
-    private static function send(array $webhook, string $event, array $payload): array {
+    public static function deliver(array $webhook, string $event, array $payload, string $deliveryId = '', int $attempt = 0): array {
+        if ($deliveryId === '') $deliveryId = wh_new_delivery_id();
         $body = json_encode([
             'event' => $event,
             'timestamp' => date('Y-m-d H:i:s'),
+            'delivery_id' => $deliveryId,
+            'attempt' => $attempt,
             'data' => $payload,
         ], JSON_UNESCAPED_UNICODE);
 
@@ -120,6 +146,8 @@ class WebhookSystem {
             'X-Webhook-Event: ' . $event,
             'X-Webhook-Signature: sha256=' . $signature,
             'X-Webhook-Timestamp: ' . time(),
+            'X-Webhook-Delivery: ' . $deliveryId,   // 幂等键：重试时不变
+            'X-Webhook-Attempt: ' . $attempt,
         ];
 
         // 合并自定义 headers
@@ -145,7 +173,21 @@ class WebhookSystem {
 
         $success = $httpCode >= 200 && $httpCode < 300;
 
+        wh_log_attempt([
+            'delivery_id' => $deliveryId,
+            'webhook_id'  => $webhook['id'],
+            'webhook_name'=> $webhook['name'] ?? '',
+            'event'       => $event,
+            'attempt'     => $attempt,
+            'success'     => $success,
+            'http_code'   => $httpCode,
+            'duration_ms' => $duration,
+            'error'       => mb_substr((string)$error, 0, 200),
+        ]);
+
         return [
+            'delivery_id' => $deliveryId,
+            'attempt' => $attempt,
             'webhook_id' => $webhook['id'],
             'url' => $webhook['url'],
             'success' => $success,
