@@ -33,8 +33,9 @@
 #sidebar .sb-link.active::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:var(--accent)}
 /* ── 置顶入口（跨区常用，永远在最上面）── */
 #sidebar .sb-pins{display:flex;flex-direction:column;gap:1px;padding:2px 0 8px;margin-bottom:6px;border-bottom:1px solid var(--border-soft)}
-#sidebar .sb-pin{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:10px;font-size:13px;font-weight:600;color:var(--fg);text-decoration:none;transition:background .15s,color .15s}
-#sidebar .sb-pin svg{width:15px;height:15px;flex:0 0 auto;color:var(--muted)}
+#sidebar .sb-pin{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;font-size:13px;font-weight:600;color:var(--fg);text-decoration:none;transition:background .15s,color .15s}
+/* 置顶图标是次要标识，压到比 13px 标签更小一档；描边同步收细，否则小尺寸下笔画糊成一团 */
+#sidebar .sb-pin svg{width:13px;height:13px;flex:0 0 auto;color:var(--muted);stroke-width:1.7}
 #sidebar .sb-pin span:not(.tag){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #sidebar .sb-pin .tag{margin-left:auto;flex:0 0 auto;font-family:var(--font-mono);font-size:9.5px;font-weight:700;letter-spacing:.02em;color:var(--faint);background:var(--hover);border-radius:999px;padding:2px 7px}
 #sidebar .sb-pin:hover{background:var(--hover)}
