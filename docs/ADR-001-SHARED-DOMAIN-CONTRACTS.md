@@ -98,3 +98,7 @@ Flow 与 Loop 使用同一套领域身份和执行入口。模式只改变“谁
 - `delta` 由 `observed - baseline` 确定计算，模型只能解释结果，不能成为 `source_type`；
 - `domain_evidence_chain()` 校验三者属于同一租户和动作，任何断链都不能形成“已批准、已执行、有效”的结论；
 - 本批仍不新增持久化，也不接入现有写路径。
+
+## 只读证据投影
+
+`lib/EvidenceProjection.php` 将现有动作、自动化日志和成交账本保守映射到上述契约：能验证才投影，缺少运行边界、执行回执或逐笔归因时输出结构化 `gap`，不补造证据。写路径方案单列于 `ADR-002-EVIDENCE-WRITE-PATH.md`，当前仍为草案。
