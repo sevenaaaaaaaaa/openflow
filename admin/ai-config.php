@@ -47,13 +47,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ai = json_read($aiFile);
 }
 
-admin_header('AI Agent 配置');
+admin_header('模型与 AI 配置');
 ?>
 <div class="admin-layout">
   <?php admin_sidebar('ai-config'); ?>
   <div class="main">
-    <h1>AI Agent 配置</h1>
-    <p class="sub">管理 AI 供应商 · 全局提示词 · 文章/页面编辑器中将显示 AI 辅助按钮</p>
+    <h1>模型与 AI 配置</h1>
+    <p class="sub">管理模型供应商、预算与全局提示词，为内容和数据分析提供 AI 辅助；此处不是生产 Agent 控制台。</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
     <!-- Providers -->

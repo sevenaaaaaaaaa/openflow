@@ -103,7 +103,7 @@ $sevLabel = ['critical' => '🔴 严重', 'high' => '🟠 高', 'medium' => '�
 $sevColor = ['critical' => 'var(--danger)', 'high' => '#ea580c', 'medium' => '#ca8a04', 'info' => '#2563eb'];
 $catLabel = ['bug' => '🐞 Bug', 'content' => '📄 内容', 'perf' => '⚡ 性能', 'routing' => '🧭 路由', 'interaction' => '🎨 交互'];
 
-admin_header('自我进化中心');
+admin_header('系统体检与改进建议');
 ?>
 <style>
   .evo-hero{background:linear-gradient(135deg,var(--accent-soft),oklch(60% .18 300/.12));border:1px solid var(--border);border-radius:var(--r-lg);padding:28px}
@@ -123,8 +123,8 @@ admin_header('自我进化中心');
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <div style="font-size:34px">🧬</div>
         <div>
-          <h1 style="font-size:20px;font-weight:800">自我进化中心</h1>
-          <p class="text-sm text-muted" style="margin-top:2px">平台定期体检前后端数据，自动发现改进点。你的采纳就是下一次迭代。</p>
+          <h1 style="font-size:20px;font-weight:800">系统体检与改进建议</h1>
+          <p class="text-sm text-muted" style="margin-top:2px">扫描前后端状态并提出改进建议；系统不会自行修改代码或部署，采纳后仍由人处理和验证。</p>
         </div>
         <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
           <form method="get" style="display:inline"><?= csrf_field() ?><button class="btn btn-primary" name="scan" value="1">🔍 立即扫描</button></form>
