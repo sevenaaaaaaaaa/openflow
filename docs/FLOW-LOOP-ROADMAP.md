@@ -41,7 +41,7 @@
 
 领域边界与首批兼容契约见 `ADR-001-SHARED-DOMAIN-CONTRACTS.md`；任何数据库迁移仍需单独 ADR 和回滚方案。
 
-当前进展：`ActionProposal`、`Goal`、`SkillDefinition`、`FlowRun` 兼容契约和测试已落地，不接管存储、不改变现有 Flow 写路径；其余对象仍需逐个核查后进入契约。
+当前进展：`ActionProposal`、`Goal`、`SkillDefinition`、`FlowRun`、`Approval`、`Execution`、`Evaluation` 兼容契约和测试已落地，不接管存储、不改变现有 Flow 写路径；其余对象仍需逐个核查后进入契约。
 
 最小对象：
 
