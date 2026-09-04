@@ -1,6 +1,6 @@
 # ADR-001：Flow 与 Loop 共享领域契约
 
-- 状态：提议
+- 状态：已接受（第一批兼容契约）
 - 日期：2026-09-05
 - 决策范围：领域边界，不含数据库迁移和 UI
 
@@ -53,3 +53,16 @@ Flow 与 Loop 使用同一套领域身份和执行入口。模式只改变“谁
 ## 验收条件
 
 进入阶段 1 实现前，需要为每个共享对象补齐：字段契约、所有者模块、状态机、权限、幂等键、审计事件和兼容策略。第一项实现必须证明同一动作在 Flow 与 Loop 侧具有相同 ID、状态和执行结果。
+
+## 第一批实现：ActionProposal
+
+`lib/DomainContract.php` 已提供不接管存储的兼容层，`GrowthAction` 仍是事实所有者：
+
+- 旧状态 `pending/done/dismissed` 映射为共享状态 `proposed/succeeded/cancelled`；
+- 状态机固定为 `proposed → approved → running → succeeded/failed`，取消和失败重试必须走显式转换；
+- Flow 与 Loop 视图保留相同 `id`、`tenant_id` 和 `idempotency_key`，模式不参与身份计算；
+- 自动执行权限继续委托 `AutonomyGuard`，没有加载守卫时默认拒绝；
+- 只有带 `executor` 的真实执行结果才能写成成功，模型文字不能充当执行事实；
+- 本批不改变 `GrowthAction` JSON、不添加 Loop 存储，也不接入生产写路径。
+
+对应契约测试为 `tests/domain_contract_test.php`。下一批先核查调用点，再决定是否让 `GrowthAction` 原生写入契约元数据。
