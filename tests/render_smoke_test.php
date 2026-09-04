@@ -37,6 +37,7 @@ $urls = [
     ['site-builder', 'sub=foot'],
     ['health-check', 'sub=stor'],
     ['audit-log',    'sub=act'],
+    ['collaborators', ''],
     ['orders',       ''],
     ['orders',       'status=paid'],
     ['brain',        ''],
