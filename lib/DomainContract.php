@@ -13,6 +13,38 @@ if (!function_exists('domain_contract_version')) {
     /** Machine-readable ownership and lifecycle rules for the first shared slice. */
     function domain_contract_catalog(): array {
         return [
+            'Approval' => [
+                'owner' => 'AuditLog',
+                'required' => ['id', 'version', 'tenant_id', 'subject_type', 'subject_id', 'subject_version', 'decision', 'actor_type', 'actor_id', 'decided_at'],
+                'decisions' => ['approved', 'rejected', 'revoked'],
+                'actor_types' => ['human', 'policy'],
+                'permission' => 'existing admin, tenant and autonomy guards',
+                'idempotency' => 'tenant_id + subject_id + subject_version + decision',
+                'audit_events' => ['approval.approved', 'approval.rejected', 'approval.revoked'],
+            ],
+            'Execution' => [
+                'owner' => 'domain executor',
+                'required' => ['id', 'version', 'tenant_id', 'action_id', 'approval_id', 'status', 'executor', 'idempotency_key', 'created_at'],
+                'statuses' => ['queued', 'running', 'succeeded', 'failed', 'cancelled'],
+                'transitions' => [
+                    'queued' => ['running', 'cancelled'],
+                    'running' => ['succeeded', 'failed', 'cancelled'],
+                    'failed' => ['queued', 'cancelled'],
+                    'succeeded' => [],
+                    'cancelled' => [],
+                ],
+                'permission' => 'approved action plus existing domain guards',
+                'idempotency' => 'tenant_id + idempotency_key',
+                'audit_events' => ['execution.queued', 'execution.started', 'execution.succeeded', 'execution.failed', 'execution.cancelled'],
+            ],
+            'Evaluation' => [
+                'owner' => 'GrowthSignal and analytics',
+                'required' => ['id', 'version', 'tenant_id', 'action_id', 'execution_id', 'goal_id', 'metric', 'baseline', 'observed', 'delta', 'sample_size', 'source_type', 'source_ref', 'measured_at'],
+                'source_types' => ['event', 'order', 'conversion_ledger', 'analytics'],
+                'permission' => 'read-only analytics and tenant guards',
+                'idempotency' => 'tenant_id + execution_id + metric + source_ref',
+                'audit_events' => ['evaluation.recorded'],
+            ],
             'Goal' => [
                 'owner' => 'GrowthGoal',
                 'required' => ['id', 'version', 'tenant_id', 'status', 'metric', 'target', 'baseline', 'created_at'],
@@ -61,6 +93,75 @@ if (!function_exists('domain_contract_version')) {
                 'idempotency' => 'tenant_id + idempotency_key',
                 'audit_events' => ['action.proposed', 'action.approved', 'action.started', 'action.succeeded', 'action.failed', 'action.cancelled'],
             ],
+        ];
+    }
+
+    function domain_approval(array $source): array {
+        $tenantId = trim((string)($source['tenant_id'] ?? 'default')) ?: 'default';
+        $subjectId = trim((string)($source['subject_id'] ?? ($source['action_id'] ?? '')));
+        $subjectVersion = max(1, (int)($source['subject_version'] ?? 1));
+        $decision = (string)($source['decision'] ?? '');
+        $id = trim((string)($source['id'] ?? ''));
+        if ($id === '' && $subjectId !== '' && $decision !== '') {
+            $id = 'apr_' . substr(hash('sha256', $tenantId . '|' . $subjectId . '|' . $subjectVersion . '|' . $decision), 0, 20);
+        }
+        return [
+            'contract' => 'Approval', 'contract_version' => domain_contract_version(),
+            'id' => $id, 'version' => max(1, (int)($source['version'] ?? 1)), 'tenant_id' => $tenantId,
+            'subject_type' => (string)($source['subject_type'] ?? 'ActionProposal'),
+            'subject_id' => $subjectId, 'subject_version' => $subjectVersion,
+            'decision' => $decision, 'actor_type' => (string)($source['actor_type'] ?? 'human'),
+            'actor_id' => trim((string)($source['actor_id'] ?? '')),
+            'policy_ref' => trim((string)($source['policy_ref'] ?? '')),
+            'reason' => (string)($source['reason'] ?? ''),
+            'decided_at' => (string)($source['decided_at'] ?? ''),
+        ];
+    }
+
+    function domain_execution(array $source): array {
+        $tenantId = trim((string)($source['tenant_id'] ?? 'default')) ?: 'default';
+        $actionId = trim((string)($source['action_id'] ?? ''));
+        $key = trim((string)($source['idempotency_key'] ?? ''));
+        $id = trim((string)($source['id'] ?? ''));
+        if ($id === '' && $actionId !== '' && $key !== '') {
+            $id = 'exe_' . substr(hash('sha256', $tenantId . '|' . $actionId . '|' . $key), 0, 20);
+        }
+        return [
+            'contract' => 'Execution', 'contract_version' => domain_contract_version(),
+            'id' => $id, 'version' => max(1, (int)($source['version'] ?? 1)), 'tenant_id' => $tenantId,
+            'action_id' => $actionId, 'approval_id' => trim((string)($source['approval_id'] ?? '')),
+            'flow_run_id' => trim((string)($source['flow_run_id'] ?? '')),
+            'status' => (string)($source['status'] ?? 'queued'),
+            'executor' => trim((string)($source['executor'] ?? '')),
+            'idempotency_key' => $key, 'request_ref' => (string)($source['request_ref'] ?? ''),
+            'result_ref' => (string)($source['result_ref'] ?? ''), 'error' => (string)($source['error'] ?? ''),
+            'created_at' => (string)($source['created_at'] ?? ''),
+            'completed_at' => (string)($source['completed_at'] ?? ''),
+        ];
+    }
+
+    function domain_evaluation(array $source): array {
+        $tenantId = trim((string)($source['tenant_id'] ?? 'default')) ?: 'default';
+        $baseline = (float)($source['baseline'] ?? 0);
+        $observed = (float)($source['observed'] ?? 0);
+        $parts = [$tenantId, (string)($source['execution_id'] ?? ''), (string)($source['metric'] ?? ''), (string)($source['source_ref'] ?? '')];
+        $id = trim((string)($source['id'] ?? ''));
+        if ($id === '' && $parts[1] !== '' && $parts[2] !== '' && $parts[3] !== '') {
+            $id = 'eval_' . substr(hash('sha256', implode('|', $parts)), 0, 20);
+        }
+        return [
+            'contract' => 'Evaluation', 'contract_version' => domain_contract_version(),
+            'id' => $id, 'version' => max(1, (int)($source['version'] ?? 1)), 'tenant_id' => $tenantId,
+            'action_id' => trim((string)($source['action_id'] ?? '')),
+            'execution_id' => trim((string)($source['execution_id'] ?? '')),
+            'goal_id' => trim((string)($source['goal_id'] ?? '')),
+            'metric' => trim((string)($source['metric'] ?? '')), 'baseline' => $baseline,
+            'observed' => $observed, 'delta' => round($observed - $baseline, 4),
+            'sample_size' => max(0, (int)($source['sample_size'] ?? 0)),
+            'source_type' => (string)($source['source_type'] ?? ''),
+            'source_ref' => trim((string)($source['source_ref'] ?? '')),
+            'attribution' => (string)($source['attribution'] ?? 'observed'),
+            'measured_at' => (string)($source['measured_at'] ?? ''),
         ];
     }
 
@@ -187,7 +288,66 @@ if (!function_exists('domain_contract_version')) {
         if (isset($definition['types'], $object['type']) && !in_array($object['type'], $definition['types'], true)) {
             $errors[] = 'invalid_type:' . $object['type'];
         }
+        if (isset($definition['decisions'], $object['decision']) && !in_array($object['decision'], $definition['decisions'], true)) {
+            $errors[] = 'invalid_decision:' . $object['decision'];
+        }
+        if (isset($definition['actor_types'], $object['actor_type']) && !in_array($object['actor_type'], $definition['actor_types'], true)) {
+            $errors[] = 'invalid_actor_type:' . $object['actor_type'];
+        }
+        if (($type === 'Approval') && ($object['actor_type'] ?? '') === 'policy' && empty($object['policy_ref'])) {
+            $errors[] = 'missing:policy_ref';
+        }
+        if ($type === 'Execution' && ($object['status'] ?? '') === 'succeeded' && empty($object['result_ref'])) {
+            $errors[] = 'missing:result_ref';
+        }
+        if ($type === 'Execution' && ($object['status'] ?? '') === 'failed' && empty($object['error'])) {
+            $errors[] = 'missing:error';
+        }
+        if (isset($definition['source_types'], $object['source_type']) && !in_array($object['source_type'], $definition['source_types'], true)) {
+            $errors[] = 'invalid_source_type:' . $object['source_type'];
+        }
+        if ($type === 'Evaluation' && (int)($object['sample_size'] ?? 0) < 1) $errors[] = 'invalid_sample_size';
         return ['ok' => $errors === [], 'errors' => $errors];
+    }
+
+    function domain_execution_transition(array $execution, string $nextStatus, array $evidence = []): array {
+        $current = (string)($execution['status'] ?? '');
+        $allowed = domain_contract_catalog()['Execution']['transitions'][$current] ?? [];
+        if (!in_array($nextStatus, $allowed, true)) {
+            return ['ok' => false, 'error' => 'invalid_transition', 'from' => $current, 'to' => $nextStatus, 'execution' => $execution];
+        }
+        if ($nextStatus === 'succeeded' && empty($evidence['result_ref'])) {
+            return ['ok' => false, 'error' => 'missing_result_ref', 'execution' => $execution];
+        }
+        if ($nextStatus === 'failed' && empty($evidence['error'])) {
+            return ['ok' => false, 'error' => 'missing_error', 'execution' => $execution];
+        }
+        $next = $execution;
+        $next['status'] = $nextStatus;
+        $next['version'] = max(1, (int)($execution['version'] ?? 1)) + 1;
+        if (isset($evidence['result_ref'])) $next['result_ref'] = (string)$evidence['result_ref'];
+        if (isset($evidence['error'])) $next['error'] = (string)$evidence['error'];
+        if (in_array($nextStatus, ['succeeded','failed','cancelled'], true)) {
+            $next['completed_at'] = (string)($evidence['completed_at'] ?? date('c'));
+        }
+        return ['ok' => true, 'event' => 'execution.' . $nextStatus, 'execution' => $next];
+    }
+
+    /** Verify that approval, execution and evaluation describe one evidence chain. */
+    function domain_evidence_chain(array $action, array $approval, array $execution, array $evaluation): array {
+        $errors = [];
+        foreach ([['Approval',$approval], ['Execution',$execution], ['Evaluation',$evaluation]] as [$type, $object]) {
+            $validation = domain_contract_validate($type, $object);
+            foreach ($validation['errors'] as $error) $errors[] = $type . ':' . $error;
+        }
+        if (($approval['subject_type'] ?? '') !== 'ActionProposal' || ($approval['subject_id'] ?? '') !== ($action['id'] ?? '')) $errors[] = 'approval_subject_mismatch';
+        if (($approval['decision'] ?? '') !== 'approved') $errors[] = 'action_not_approved';
+        if (($execution['action_id'] ?? '') !== ($action['id'] ?? '')) $errors[] = 'execution_action_mismatch';
+        if (($execution['approval_id'] ?? '') !== ($approval['id'] ?? '')) $errors[] = 'execution_approval_mismatch';
+        if (($evaluation['action_id'] ?? '') !== ($action['id'] ?? '')) $errors[] = 'evaluation_action_mismatch';
+        if (($evaluation['execution_id'] ?? '') !== ($execution['id'] ?? '')) $errors[] = 'evaluation_execution_mismatch';
+        if (($evaluation['tenant_id'] ?? '') !== ($action['tenant_id'] ?? '') || ($execution['tenant_id'] ?? '') !== ($action['tenant_id'] ?? '')) $errors[] = 'tenant_mismatch';
+        return ['ok' => $errors === [], 'errors' => array_values(array_unique($errors))];
     }
 
     function domain_flow_run_transition(array $run, string $nextStatus): array {

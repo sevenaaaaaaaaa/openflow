@@ -89,3 +89,12 @@ Flow 与 Loop 使用同一套领域身份和执行入口。模式只改变“谁
 - 状态固定为 `queued → running → succeeded/failed`，禁止跳过执行直接写成功；
 - 结果必须包含真实 `executor`，并支持引用现有日志或领域结果；
 - `FlowSystem`、`CanvasSystem` 和 `AutomationSystem` 仍按原路径运行，本批不改变其签名。
+
+### Approval、Execution、Evaluation
+
+- `Approval` 是不可省略的决策证据：记录对象及版本、批准或拒绝、决策者、理由和时间；策略批准必须提供 `policy_ref`，不能用含糊的“AI 已同意”；
+- `Execution` 引用同一 `ActionProposal` 和已批准的 `Approval`，记录真实执行器、幂等键、请求与结果引用；它不替代现有领域执行函数；
+- `Evaluation` 同时引用动作、执行和目标，只接受事件、订单、成交账本或分析系统作为事实源，样本数必须大于零；
+- `delta` 由 `observed - baseline` 确定计算，模型只能解释结果，不能成为 `source_type`；
+- `domain_evidence_chain()` 校验三者属于同一租户和动作，任何断链都不能形成“已批准、已执行、有效”的结论；
+- 本批仍不新增持久化，也不接入现有写路径。
