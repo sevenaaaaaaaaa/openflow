@@ -55,6 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
             case 'webhook':
                 $node['url'] = $_POST['node_url'][$i] ?? '';
                 break;
+            case 'connection':
+                $node['action_id'] = preg_replace('/[^a-z0-9_]/', '', (string)($_POST['node_action_id'][$i] ?? ''));
+                break;
         }
         $nodes[] = $node;
     }
@@ -173,6 +176,7 @@ admin_header('画布编辑器');
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('score')">⭐ 加分</button>
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('stage')">📊 改阶段</button>
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('webhook')">🔗 Webhook</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('connection')">🔌 连接动作</button>
         </div>
         <div class="canvas-flow" id="canvasFlow">
           <?php $editNodes = $edit['nodes'] ?? []; foreach ($editNodes as $ni => $n): ?>
@@ -213,8 +217,11 @@ admin_header('画布编辑器');
 // 节点渲染函数
 function canvas_render_node(array $n, int $i, array $forms): void {
     $type = $n['type'] ?? 'trigger';
-    $icons = ['trigger'=>'🔔','send_email'=>'📧','condition'=>'🔀','delay'=>'⏱','notify'=>'📢','tag'=>'🏷','score'=>'⭐','stage'=>'📊','webhook'=>'🔗'];
-    $labels = ['trigger'=>'触发器','send_email'=>'发送邮件','condition'=>'条件分支','delay'=>'延迟','notify'=>'通知','tag'=>'打标签','score'=>'加分','stage'=>'改CRM阶段','webhook'=>'Webhook'];
+    // 开放能力：可用的连接动作（连接名 · 动作名）
+    static $CANVAS_CONN_ACTIONS = null;
+    if ($CANVAS_CONN_ACTIONS === null) { require_once __DIR__ . '/../lib/ConnectionActions.php'; $CANVAS_CONN_ACTIONS = action_options(); }
+    $icons = ['trigger'=>'🔔','send_email'=>'📧','condition'=>'🔀','delay'=>'⏱','notify'=>'📢','tag'=>'🏷','score'=>'⭐','stage'=>'📊','webhook'=>'🔗','connection'=>'🔌'];
+    $labels = ['trigger'=>'触发器','send_email'=>'发送邮件','condition'=>'条件分支','delay'=>'延迟','notify'=>'通知','tag'=>'打标签','score'=>'加分','stage'=>'改CRM阶段','webhook'=>'Webhook','connection'=>'连接动作'];
     echo '<div class="canvas-node ' . $type . '" draggable="true" ondragstart="nodeDragStart(event)" ondragover="event.preventDefault()" ondrop="nodeDrop(event)">';
     echo '<button type="button" class="del" onclick="this.closest(\'.canvas-node\').remove()">✕</button>';
     echo '<div class="node-head">' . $icons[$type] . ' ' . $labels[$type] . '</div>';
@@ -274,9 +281,16 @@ function canvas_render_node(array $n, int $i, array $forms): void {
         case 'webhook':
             echo '<input type="url" name="node_url[]" value="' . htmlspecialchars($n['url']??'') . '" placeholder="https://... 接收 URL">';
             break;
+        case 'connection':
+            echo '<select name="node_action_id[]"><option value="">请选择连接动作…</option>';
+            foreach ($CANVAS_CONN_ACTIONS as $aid => $alabel) {
+                echo '<option value="' . htmlspecialchars($aid) . '"' . (($n['action_id'] ?? '') === $aid ? ' selected' : '') . '>' . htmlspecialchars($alabel) . '</option>';
+            }
+            echo '</select>';
+            break;
     }
     // 与 JS addNode 对齐：为非当前类型的动作字段补隐藏占位，保证各 node_xxx[] 与 node_type[] 下标一致
-    foreach (['tag'=>'node_tag','score'=>'node_score','stage'=>'node_stage','webhook'=>'node_url'] as $t => $fname) {
+    foreach (['tag'=>'node_tag','score'=>'node_score','stage'=>'node_stage','webhook'=>'node_url','connection'=>'node_action_id'] as $t => $fname) {
         if ($t !== $type) echo '<input type="hidden" name="' . $fname . '[]" value="">';
     }
     echo '</div></div>';
@@ -285,6 +299,7 @@ function canvas_render_node(array $n, int $i, array $forms): void {
 <script>
 var FORMS = <?=json_encode(array_map(fn($f)=>(['slug'=>$f['slug'],'title'=>$f['title']]), $forms), JSON_UNESCAPED_UNICODE)?>;
 var dragNode = null;
+var CANVAS_CONN_ACTIONS = <?php require_once __DIR__ . '/../lib/ConnectionActions.php'; echo json_encode(action_options(), JSON_UNESCAPED_UNICODE); ?>;
 function addNode(type) {
   var flow = document.getElementById('canvasFlow');
   var idx = flow.querySelectorAll('.canvas-node').length;
@@ -316,9 +331,12 @@ function addNode(type) {
     body += '<input type="text" name="node_stage[]" placeholder="CRM 阶段，如 won / contacted">';
   } else if (type === 'webhook') {
     body += '<input type="url" name="node_url[]" placeholder="https://... 接收 URL">';
+  } else if (type === 'connection') {
+    body += '<select name="node_action_id[]"><option value="">请选择连接动作…</option>' +
+      Object.keys(CANVAS_CONN_ACTIONS).map(function(k){ return '<option value="'+k+'">'+CANVAS_CONN_ACTIONS[k].replace(/[<>&"]/g,'')+'</option>'; }).join('') + '</select>';
   }
   // 为非当前类型的动作补隐藏占位，保证 node_type[] 与各 node_xxx[] 下标对齐
-  ['tag','score','stage','webhook'].forEach(function(t){ if(t!==type){ var f={tag:'node_tag',score:'node_score',stage:'node_stage',webhook:'node_url'}[t]; body += '<input type="hidden" name="'+f+'[]" value="">'; }});
+  ['tag','score','stage','webhook','connection'].forEach(function(t){ if(t!==type){ var f={tag:'node_tag',score:'node_score',stage:'node_stage',webhook:'node_url',connection:'node_action_id'}[t]; body += '<input type="hidden" name="'+f+'[]" value="">'; }});
   d.innerHTML = '<button type="button" class="del" onclick="this.closest(\'.canvas-node\').remove()">✕</button><div class="node-head">' + icons[type] + ' ' + labels[type] + '</div><div class="node-body">' + body + '</div>';
   // 加箭头
   var arrow = document.createElement('div');

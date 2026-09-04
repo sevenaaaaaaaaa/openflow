@@ -168,6 +168,15 @@ function automation_execute_flow(array $flow, array $context): void {
                     } catch (Exception $e) { automation_log($flow['id'], '站内信失败: ' . $e->getMessage(), 'error'); }
                 }
                 break;
+            case 'connection_action':
+                // 开放能力：按连接动作模板向外部服务发请求（鉴权/SSRF 防护/留痕都在连接层）
+                $aid = (string)($step['action_id'] ?? '');
+                if ($aid !== '') {
+                    require_once __DIR__ . '/ConnectionActions.php';
+                    $ok = action_run_safe($aid, $context);
+                    automation_log($flow['id'], ($ok ? '连接动作成功: ' : '连接动作失败: ') . $aid, $ok ? 'info' : 'error');
+                }
+                break;
             case 'send_coupon':
                 // 站内动作：发放优惠券 + 站内信通知
                 $mid = $context['member_id'] ?? '';

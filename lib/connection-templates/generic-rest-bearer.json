@@ -1,0 +1,25 @@
+{
+  "openflow_connection_template": 1,
+  "name": "通用 REST API（Bearer Token）",
+  "note": "绝大多数 SaaS 的 API 都是这个形状：一个基址 + Authorization: Bearer <token> + JSON 请求体。改掉基址和路径就能接任何一家。这个模板的意义是演示机制，不是某个具体服务。",
+  "base_url": "https://api.example.com",
+  "auth": { "type": "bearer" },
+  "headers": { "Accept": "application/json" },
+  "secrets_needed": ["token"],
+  "actions": [
+    {
+      "name": "创建联系人",
+      "method": "POST",
+      "path": "/v1/contacts",
+      "body_mode": "json",
+      "body": { "email": "{{email}}", "name": "{{name}}", "source": "openflow", "tags": "{{tags}}" },
+      "note": "{{tags}} 如果上下文里是数组，代入后仍是数组（值的代入，不是文本拼接）"
+    },
+    {
+      "name": "按邮箱查联系人",
+      "method": "GET",
+      "path": "/v1/contacts",
+      "query": { "email": "{{email}}" }
+    }
+  ]
+}
