@@ -98,6 +98,14 @@ Flow 与 Loop 使用同一套领域身份和执行入口。模式只改变“谁
 - 调用必须经过 `queued → running → succeeded/failed`，没有真实结果引用不能成功，没有错误证据不能失败；
 - 两项均为纯契约，不修改 `automation.json`、`canvas-flows.json` 或 `skills/index.json`，也不调用 `skill_execute()`。
 
+### LoopDefinition、LoopRun、Memory、Policy
+
+- `LoopDefinition` 只引用共享 Goal、Flow、Skill 和 Policy ID，并固定以 Touch、Insight、Personalize、Sell 组织能力；
+- `LoopRun` 提供可暂停恢复的显式状态机、轮次上限、预算用量和 checkpoint，不承载客户或订单副本；
+- `Memory` 只接受事件、执行、评估或人工作为可追溯事实来源，模型输出不能直接成为事实；
+- `Policy` 只组合 AutonomyGuard 与现有领域守卫的权限、风险、预算和频控声明，不另造权限体系；
+- 本批均为纯契约，不创建 Loop 存储、不运行模型、不调用 Action Gateway。
+
 ### Approval、Execution、Evaluation
 
 - `Approval` 是不可省略的决策证据：记录对象及版本、批准或拒绝、决策者、理由和时间；策略批准必须提供 `policy_ref`，不能用含糊的“AI 已同意”；
