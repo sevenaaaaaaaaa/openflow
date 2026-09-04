@@ -38,6 +38,8 @@ $urls = [
     ['health-check', 'sub=stor'],
     ['audit-log',    'sub=act'],
     ['collaborators', ''],
+    ['connections', ''],
+    ['connections', 'edit=new'],
     ['orders',       ''],
     ['orders',       'status=paid'],
     ['brain',        ''],
