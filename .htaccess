@@ -2,6 +2,12 @@
 RewriteEngine On
 CGIPassAuth On
 
+# ── data/ 一律拒绝（放在所有规则之前）──
+# 全站的凭据、订单、会员都在 data/*.json 里。此前的保护只在 data/.htaccess，
+# 而那个目录是 gitignored 的，全新部署时它并不存在，得等健康检查提醒才补。
+# 这条规则在仓库里，部署即生效，不依赖 data/.htaccess 是否存在。
+RewriteRule ^data(/|$) - [F,L]
+
 # 首页：优先动态版 index.php（避免浏览器缓存旧 index.html）
 DirectoryIndex index.php index.html
 RewriteRule ^$ index.php [L,QSA]

@@ -1,0 +1,19 @@
+{
+  "openflow_connection_template": 1,
+  "name": "Slack Incoming Webhook",
+  "note": "在 Slack App 里开启 Incoming Webhooks，把生成的地址里 /services/ 之后的部分填进动作路径。",
+  "base_url": "https://hooks.slack.com",
+  "auth": { "type": "none" },
+  "headers": {},
+  "secrets_needed": [],
+  "actions": [
+    {
+      "name": "发消息",
+      "method": "POST",
+      "path": "/services/T000/B000/XXXX",
+      "body_mode": "json",
+      "body": { "text": "{{message}}" },
+      "note": "把路径换成你自己的 webhook 路径"
+    }
+  ]
+}

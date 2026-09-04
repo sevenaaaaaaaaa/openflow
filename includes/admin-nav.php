@@ -31,7 +31,7 @@ const ADMIN_NAV_ALIAS = [
     'abtests-stats' => 'abtests', 'survey-agent' => 'survey', 'survey-org' => 'survey', 'sentiment-report' => 'sentiment',
     'media-upload' => 'media', 'export' => 'data-export', 'export-all' => 'data-export', 'onboarding' => 'workspace', 'debug' => 'devops',
     'notion-sync' => 'data-sync', 'languages' => 'settings', 'storage' => 'health-check', 'activity' => 'audit-log', 'footer-links' => 'site-builder',
-    'mail-settings' => 'email', 'payment-settings' => 'shop-settings', 'seo' => 'seo-center', 'seo-tools' => 'seo-center', 'seo-batch' => 'seo-center',
+    'mail-settings' => 'email', 'connections' => 'settings', 'payment-settings' => 'shop-settings', 'seo' => 'seo-center', 'seo-tools' => 'seo-center', 'seo-batch' => 'seo-center',
     'seo-console' => 'seo-center', 'redirects' => 'seo-center', 'structured-data' => 'seo-center', 'structured' => 'seo-center', 'landing' => 'landing-pages',
     'image-seo' => 'seo-center', 'index' => 'workspace',
 ];
@@ -326,7 +326,8 @@ function admin_nav_tree(): array {
                 ]],
             ]],
             ['label' => '集成与运维', 'items' => [
-                ['label' => '开放接口', 'hint' => 'Key · Webhook · 文档', 'subs' => [
+                ['label' => '开放接口', 'hint' => '连接 · Key · Webhook · 文档', 'subs' => [
+                    ['id' => 'connections', 'label' => '连接（外部服务）', 'perm' => 'settings'],
                     ['id' => 'api-keys', 'label' => 'API Key', 'perm' => 'settings'],
                     ['id' => 'webhooks', 'label' => 'Webhook', 'perm' => 'settings'],
                     ['id' => 'api-docs', 'label' => 'API 文档', 'perm' => 'settings'],
