@@ -90,6 +90,14 @@ Flow 与 Loop 使用同一套领域身份和执行入口。模式只改变“谁
 - 结果必须包含真实 `executor`，并支持引用现有日志或领域结果；
 - `FlowSystem`、`CanvasSystem` 和 `AutomationSystem` 仍按原路径运行，本批不改变其签名。
 
+### FlowDefinition、SkillInvocation
+
+- `FlowDefinition` 保留现有 Automation/Canvas Flow ID，以 `source_type` 明确事实所有者，并对 `steps` 或 `nodes/edges` 生成确定性结构指纹；
+- 旧 `enabled` 只映射为共享 `active/paused` 状态，不反写原记录；输入输出 Schema 默认表达现有开放上下文，不虚构严格字段；
+- `SkillInvocation` 使用租户、Skill ID、Skill 版本和幂等键生成跨模式一致身份，记录执行器、请求/结果引用、错误和可选成本；
+- 调用必须经过 `queued → running → succeeded/failed`，没有真实结果引用不能成功，没有错误证据不能失败；
+- 两项均为纯契约，不修改 `automation.json`、`canvas-flows.json` 或 `skills/index.json`，也不调用 `skill_execute()`。
+
 ### Approval、Execution、Evaluation
 
 - `Approval` 是不可省略的决策证据：记录对象及版本、批准或拒绝、决策者、理由和时间；策略批准必须提供 `policy_ref`，不能用含糊的“AI 已同意”；
