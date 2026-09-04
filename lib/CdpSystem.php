@@ -60,8 +60,11 @@ class CdpSystem {
             if ($canonical) $visitorId = $canonical; // 主身份作为画像 key
         }
 
+        require_once __DIR__ . '/EventIdentity.php';
+        $eventId = event_identity($data);
+        unset($data['_event_id']);
         $entry = [
-            'id' => 'evt_' . bin2hex(random_bytes(8)),
+            'id' => $eventId,
             'event' => $event,
             'visitor_id' => $visitorId,
             'member_id' => $memberId,
@@ -71,7 +74,7 @@ class CdpSystem {
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
             'ip' => self::getClientIp(),
             'timestamp' => date('Y-m-d H:i:s'),
-            'message_id' => 'evt_' . md5($visitorId . $event . microtime(true) . bin2hex(random_bytes(4))),
+            'message_id' => $eventId,
             'ts' => time() * 1000,
             'session_id' => self::currentSessionId(),
         ];
