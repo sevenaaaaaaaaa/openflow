@@ -62,6 +62,31 @@ if (!function_exists('domain_contract_version')) {
                 'idempotency' => 'tenant_id + id + version',
                 'audit_events' => ['skill.drafted', 'skill.reviewed', 'skill.published', 'skill.rejected', 'skill.archived'],
             ],
+            'SkillInvocation' => [
+                'owner' => 'SkillSystem',
+                'required' => ['id', 'version', 'tenant_id', 'skill_id', 'skill_version', 'status', 'executor', 'idempotency_key', 'created_at'],
+                'statuses' => ['queued', 'running', 'succeeded', 'failed', 'cancelled'],
+                'transitions' => [
+                    'queued' => ['running', 'cancelled'],
+                    'running' => ['succeeded', 'failed', 'cancelled'],
+                    'failed' => ['queued', 'cancelled'],
+                    'succeeded' => [],
+                    'cancelled' => [],
+                ],
+                'permission' => 'SkillGuard plus declared SkillDefinition permissions',
+                'idempotency' => 'tenant_id + skill_id + skill_version + idempotency_key',
+                'audit_events' => ['skill.queued', 'skill.started', 'skill.succeeded', 'skill.failed', 'skill.cancelled'],
+            ],
+            'FlowDefinition' => [
+                'owner' => 'AutomationSystem or CanvasSystem',
+                'required' => ['id', 'version', 'tenant_id', 'status', 'source_type', 'name', 'trigger', 'structure_hash', 'input_schema', 'output_schema', 'risk_level', 'permissions', 'created_at'],
+                'statuses' => ['draft', 'active', 'paused', 'archived'],
+                'source_types' => ['automation', 'canvas'],
+                'risk_levels' => ['low', 'medium', 'high', 'critical'],
+                'permission' => 'existing automation/canvas admin and domain guards',
+                'idempotency' => 'tenant_id + id + version + structure_hash',
+                'audit_events' => ['flow.defined', 'flow.activated', 'flow.paused', 'flow.archived'],
+            ],
             'FlowRun' => [
                 'owner' => 'FlowSystem',
                 'required' => ['id', 'version', 'tenant_id', 'definition_id', 'status', 'trigger', 'idempotency_key', 'created_at'],
@@ -205,6 +230,61 @@ if (!function_exists('domain_contract_version')) {
         ];
     }
 
+    /** Normalize an existing Automation or Canvas flow without owning its storage. */
+    function domain_flow_definition(array $source, string $sourceType = 'automation', string $viewMode = 'flow'): array {
+        $sourceType = in_array($sourceType, ['automation','canvas'], true) ? $sourceType : 'automation';
+        $structure = $sourceType === 'canvas'
+            ? ['nodes'=>array_values((array)($source['nodes'] ?? [])), 'edges'=>array_values((array)($source['edges'] ?? []))]
+            : ['steps'=>array_values((array)($source['steps'] ?? []))];
+        $permissions = array_values(array_unique(array_map('strval', (array)($source['permissions'] ?? []))));
+        sort($permissions);
+        $status = (string)($source['status'] ?? (!empty($source['enabled']) ? 'active' : 'paused'));
+        $trigger = trim((string)($source['trigger'] ?? ''));
+        if ($sourceType === 'canvas' && $trigger === '') {
+            foreach ($structure['nodes'] as $node) {
+                if (($node['type'] ?? '') === 'trigger') { $trigger = trim((string)($node['trigger'] ?? '')); break; }
+            }
+        }
+        return [
+            'contract'=>'FlowDefinition', 'contract_version'=>domain_contract_version(),
+            'id'=>trim((string)($source['id'] ?? '')), 'version'=>max(1, (int)($source['version'] ?? 1)),
+            'tenant_id'=>trim((string)($source['tenant_id'] ?? 'default')) ?: 'default',
+            'status'=>$status, 'source_type'=>$sourceType, 'name'=>trim((string)($source['name'] ?? '')),
+            'trigger'=>$trigger, 'structure_hash'=>hash('sha256', json_encode($structure, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
+            'input_schema'=>is_array($source['input_schema'] ?? null) ? $source['input_schema'] : ['type'=>'object','additionalProperties'=>true],
+            'output_schema'=>is_array($source['output_schema'] ?? null) ? $source['output_schema'] : ['type'=>'object'],
+            'risk_level'=>(string)($source['risk_level'] ?? 'medium'), 'permissions'=>$permissions,
+            'structure'=>$structure, 'created_at'=>(string)($source['created_at'] ?? ($source['updated_at'] ?? '')),
+            'updated_at'=>(string)($source['updated_at'] ?? ''),
+            'source_ref'=>['owner'=>$sourceType === 'canvas' ? 'CanvasSystem' : 'AutomationSystem', 'id'=>(string)($source['id'] ?? '')],
+            'view_mode'=>in_array($viewMode, ['flow','loop'], true) ? $viewMode : 'flow',
+        ];
+    }
+
+    /** Build an invocation envelope; execution remains owned by SkillSystem. */
+    function domain_skill_invocation(array $source, string $viewMode = 'flow'): array {
+        $tenantId = trim((string)($source['tenant_id'] ?? 'default')) ?: 'default';
+        $skillId = trim((string)($source['skill_id'] ?? ''));
+        $skillVersion = trim((string)($source['skill_version'] ?? '1.0.0')) ?: '1.0.0';
+        $key = trim((string)($source['idempotency_key'] ?? ''));
+        $id = trim((string)($source['id'] ?? ''));
+        if ($id === '' && $skillId !== '' && $key !== '') {
+            $id = 'ski_' . substr(hash('sha256', $tenantId . '|' . $skillId . '|' . $skillVersion . '|' . $key), 0, 20);
+        }
+        return [
+            'contract'=>'SkillInvocation', 'contract_version'=>domain_contract_version(),
+            'id'=>$id, 'version'=>max(1, (int)($source['version'] ?? 1)), 'tenant_id'=>$tenantId,
+            'skill_id'=>$skillId, 'skill_version'=>$skillVersion, 'status'=>(string)($source['status'] ?? 'queued'),
+            'executor'=>trim((string)($source['executor'] ?? 'SkillSystem::skill_execute')),
+            'idempotency_key'=>$key, 'request_ref'=>(string)($source['request_ref'] ?? ''),
+            'result_ref'=>(string)($source['result_ref'] ?? ''), 'error'=>(string)($source['error'] ?? ''),
+            'cost'=>is_array($source['cost'] ?? null) ? $source['cost'] : [],
+            'created_at'=>(string)($source['created_at'] ?? ''), 'completed_at'=>(string)($source['completed_at'] ?? ''),
+            'source_ref'=>['owner'=>'SkillSystem', 'skill_id'=>$skillId],
+            'view_mode'=>in_array($viewMode, ['flow','loop'], true) ? $viewMode : 'flow',
+        ];
+    }
+
     /** Create a deterministic run envelope; it does not execute or persist a flow. */
     function domain_flow_run(array $source, string $viewMode = 'flow'): array {
         $tenantId = trim((string)($source['tenant_id'] ?? 'default')) ?: 'default';
@@ -306,8 +386,37 @@ if (!function_exists('domain_contract_version')) {
         if (isset($definition['source_types'], $object['source_type']) && !in_array($object['source_type'], $definition['source_types'], true)) {
             $errors[] = 'invalid_source_type:' . $object['source_type'];
         }
+        if (isset($definition['risk_levels'], $object['risk_level']) && !in_array($object['risk_level'], $definition['risk_levels'], true)) {
+            $errors[] = 'invalid_risk_level:' . $object['risk_level'];
+        }
+        if ($type === 'FlowDefinition' && (!is_array($object['input_schema'] ?? null) || !is_array($object['output_schema'] ?? null))) {
+            $errors[] = 'invalid_io_schema';
+        }
+        if ($type === 'SkillInvocation' && ($object['status'] ?? '') === 'succeeded' && empty($object['result_ref'])) {
+            $errors[] = 'missing:result_ref';
+        }
+        if ($type === 'SkillInvocation' && ($object['status'] ?? '') === 'failed' && empty($object['error'])) {
+            $errors[] = 'missing:error';
+        }
         if ($type === 'Evaluation' && (int)($object['sample_size'] ?? 0) < 1) $errors[] = 'invalid_sample_size';
         return ['ok' => $errors === [], 'errors' => $errors];
+    }
+
+    function domain_skill_invocation_transition(array $invocation, string $nextStatus, array $evidence = []): array {
+        $current = (string)($invocation['status'] ?? '');
+        $allowed = domain_contract_catalog()['SkillInvocation']['transitions'][$current] ?? [];
+        if (!in_array($nextStatus, $allowed, true)) {
+            return ['ok'=>false, 'error'=>'invalid_transition', 'from'=>$current, 'to'=>$nextStatus, 'invocation'=>$invocation];
+        }
+        if ($nextStatus === 'succeeded' && empty($evidence['result_ref'])) return ['ok'=>false, 'error'=>'missing_result_ref', 'invocation'=>$invocation];
+        if ($nextStatus === 'failed' && empty($evidence['error'])) return ['ok'=>false, 'error'=>'missing_error', 'invocation'=>$invocation];
+        $next = $invocation;
+        $next['status'] = $nextStatus;
+        $next['version'] = max(1, (int)($invocation['version'] ?? 1)) + 1;
+        foreach (['result_ref','error','completed_at'] as $field) if (array_key_exists($field, $evidence)) $next[$field] = $evidence[$field];
+        if (isset($evidence['cost']) && is_array($evidence['cost'])) $next['cost'] = $evidence['cost'];
+        if (in_array($nextStatus, ['succeeded','failed','cancelled'], true) && empty($next['completed_at'])) $next['completed_at'] = date('c');
+        return ['ok'=>true, 'event'=>'skill.' . $nextStatus, 'invocation'=>$next];
     }
 
     function domain_execution_transition(array $execution, string $nextStatus, array $evidence = []): array {
