@@ -44,6 +44,18 @@ function extract_fn(string $src, string $name): string {
     }
     exit(2);
 }
+// quote_site_url() 现在委托给 admin/config.php 里的 of_abs_url()（原来两处各有一份实现）。
+// 这里是脱离 config 抽函数跑的，所以给它一个等价的桩。
+if (!function_exists('of_abs_url')) {
+    function of_abs_url(string $path = ''): string {
+        $u = function_exists('site_config_get') ? (string)site_config_get('site_url') : '';
+        if ($u === '') {
+            $https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
+            $u = ($https ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+        }
+        return rtrim($u, '/') . ($path !== '' ? '/' . ltrim($path, '/') : '');
+    }
+}
 $qsrc = file_get_contents(__DIR__ . '/../lib/QuoteSystem.php');
 foreach (['quote_site_url','quote_pay_url','quote_create','quote_get_by_token','quote_is_expired','quote_all',
           'quote_stages','quote_locate','quote_update','quote_set_stage','quote_add_todo','quote_toggle_todo',

@@ -330,4 +330,44 @@ function block_from_html(string $html): array {
     return block_from_blockmodel(blockmodel_from_html($html));
 }
 
+/* ─────────────────────────────────────────────────────────
+ * 内容派生的锚点
+ *
+ * 落地页的区块有稳定的 _key，批注钉在上面就行。文章正文是一坨 HTML，
+ * 每次解析出来的 _key 都是新的，钉不住任何东西。
+ *
+ * 所以文章用「按内容算出来的锚点」：同一段文字，无论解析多少次都得到同一个锚。
+ * 代价是那段文字被改动后锚点会失效——这不是缺陷而是事实：那段话已经不是原来那段了。
+ * 批注里同时存着当时的引文，锚点失效也知道当初说的是哪一句。
+ * ───────────────────────────────────────────────────────── */
+
+/** 按内容算锚点：同样的内容永远得到同样的锚 */
+function block_anchor(array $b): string {
+    $basis = block_type_of($b) . '|' . (string)($b['style'] ?? '') . '|'
+           . (string)($b['listItem'] ?? '') . '|' . trim(block_plain_text($b));
+    if (trim(block_plain_text($b)) === '') {
+        // 没有文字的块（图片、嵌入等）用它的可辨识字段兜底
+        $basis .= '|' . (string)($b['src'] ?? $b['url'] ?? $b['html'] ?? $b['title'] ?? '');
+    }
+    return 'a' . substr(sha1($basis), 0, 11);
+}
+
+/** HTML → 带稳定锚点的块序列（给文章正文做块级批注用） */
+function block_anchored_from_html(string $html): array {
+    $out = [];
+    foreach (block_from_html($html) as $b) {
+        $b['_key'] = block_anchor($b);
+        $out[] = $b;
+    }
+    // 同一篇里出现两段一模一样的文字时，锚点会撞；补后缀区分，保持可定位
+    $seen = [];
+    foreach ($out as &$b) {
+        $k = $b['_key']; $n = 1;
+        while (isset($seen[$b['_key']])) { $b['_key'] = $k . '_' . (++$n); }
+        $seen[$b['_key']] = true;
+    }
+    unset($b);
+    return $out;
+}
+
 }

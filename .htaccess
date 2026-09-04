@@ -126,6 +126,11 @@ RewriteRule ^events/(.+)$ event.php?slug=$1 [L,QSA,B]
 RewriteRule ^lp/(.+)$ landing.php?slug=$1 [L,QSA,B]
 RewriteRule ^b/(.+)$ front-builder.php?slug=$1 [L,QSA,B]
 
+# 外部临时协作：/c/{token} 第一次打开就把 token 换成会话再跳到 /c/，
+# 这样 token 不会留在浏览器历史与 referrer 里
+RewriteRule ^c/?$ collab.php [L,QSA]
+RewriteRule ^c/(.+)$ collab.php?t=$1 [L,QSA,B]
+
 # 功能页
 RewriteRule ^search$ search.php [L,QSA]
 RewriteRule ^thank-you/?$ thank-you.php [L,QSA]

@@ -25,7 +25,7 @@
 
 const ADMIN_NAV_ALIAS = [
     // 编辑 / 详情 / 历史页 → 所属条目
-    'article-edit' => 'content-hub', 'revisions' => 'content-hub', 'articles' => 'content-hub', 'pages-list' => 'content-hub', 'downloads' => 'content-hub', 'download-edit' => 'content-hub',
+    'article-edit' => 'content-hub', 'revisions' => 'content-hub', 'collaborators' => 'content-hub', 'articles' => 'content-hub', 'pages-list' => 'content-hub', 'downloads' => 'content-hub', 'download-edit' => 'content-hub',
     'podcasts' => 'content-hub', 'page-categories' => 'content-hub', 'tags' => 'content-hub', 'page-builder' => 'pages', 'page-editor-config' => 'pages',
     'course-edit' => 'courses', 'customer-detail' => 'crm', 'profile-detail' => 'profiling', 'user-profile' => 'profiling',
     'abtests-stats' => 'abtests', 'survey-agent' => 'survey', 'survey-org' => 'survey', 'sentiment-report' => 'sentiment',
@@ -92,6 +92,7 @@ function admin_nav_tree(): array {
                     ['id' => 'publish', 'label' => '内容分发', 'perm' => 'tasks'],
                     ['id' => 'channels', 'label' => '分发渠道', 'perm' => 'channels'],
                     ['id' => 'version-diff', 'label' => '版本对比', 'perm' => 'version-diff'],
+                    ['id' => 'collaborators', 'label' => '外部协作', 'perm' => 'articles'],
                 ]],
                 ['label' => '页面与落地页', 'hint' => '站点页 · 落地页 · 转化件', 'subs' => [
                     ['id' => 'pages', 'href' => '/xmp/pages?page=index', 'label' => '页面编辑', 'perm' => 'pages'],
