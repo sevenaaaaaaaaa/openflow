@@ -56,11 +56,10 @@ if (empty($clean)) { http_response_code(500); echo json_encode(['ok'=>false,'err
 $title = trim($_POST['title'] ?? '');
 if ($title === '') $title = mb_substr($desc, 0, 20);
 
-// 存落地页
-$builderFile = DATA_DIR . '/builder-pages.json';
-$pages = json_read($builderFile);
+// 存落地页 —— 走唯一写入口，AI 生成的这一版同样进版本历史
+require_once __DIR__ . '/../lib/BuilderPages.php';
+$GLOBALS['of_actor'] = ['name' => 'AI 生成', 'source' => 'mcp'];   // 认得出是 AI 建的
 $page = [
-    'id' => 'lp_' . date('Ymd_His') . '_' . substr(bin2hex(random_bytes(4)), 0, 8),
     'title' => $title,
     'slug' => preg_replace('/[^a-z0-9\x{4e00}-\x{9fff}-]/u', '-', $title) . '_' . substr(bin2hex(random_bytes(2)), 0, 4),
     'seo_title' => $title,
@@ -68,10 +67,9 @@ $page = [
     'status' => 'draft',
     'is_ad_landing' => true,
     'blocks' => $clean,
-    'created_at' => date('Y-m-d H:i:s'),
-    'updated_at' => date('Y-m-d H:i:s'),
 ];
-$pages[] = $page;
-json_write($builderFile, $pages);
+$newId = save_builder_page('', $page);
+if ($newId === '') { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'落地页保存失败']); exit; }
+$page['id'] = $newId;
 
 echo json_encode(['ok' => true, 'message' => '落地页已生成', 'page_id' => $page['id'], 'blocks' => count($clean), 'edit_url' => '/xmp/page-builder?edit=' . $page['id']], JSON_UNESCAPED_UNICODE);

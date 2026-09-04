@@ -9,7 +9,8 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 
 $slug = $_GET['slug'] ?? '';
-$pages = json_read(DATA_DIR . '/builder-pages.json');
+require_once __DIR__ . '/lib/BuilderPages.php';
+$pages = builder_pages_all();
 $page = null;
 foreach ((array)$pages as $p) if (($p['slug'] ?? '') === $slug && ($p['status'] ?? '') === 'published') { $page = $p; break; }
 if (!$page) { http_response_code(404); echo '<h1 style="padding:80px;text-align:center;font-family:sans-serif">页面不存在</h1>'; exit; }

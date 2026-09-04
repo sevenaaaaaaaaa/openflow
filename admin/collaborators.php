@@ -45,7 +45,8 @@ $pending = note_pending_all(40);
 
 // 可共享的内容：文章 + 落地页
 $articles = array_slice(json_read(ARTICLES_DIR . '/index.json'), 0, 300);
-$lps = json_read(DATA_DIR . '/builder-pages.json');
+require_once __DIR__ . '/../lib/BuilderPages.php';
+$lps = builder_pages_all();
 
 admin_header('外部协作');
 ?>
@@ -93,7 +94,7 @@ admin_header('外部协作');
               <option value="<?=htmlspecialchars($a['id'])?>" data-type="article"><?=htmlspecialchars(mb_substr($a['title'] ?? $a['id'], 0, 40))?></option>
               <?php endforeach; ?>
             </optgroup>
-            <optgroup label="落地页（只能批注，不能编辑）">
+            <optgroup label="落地页">
               <?php foreach ($lps as $p): ?>
               <option value="<?=htmlspecialchars($p['id'])?>" data-type="page"><?=htmlspecialchars(mb_substr($p['title'] ?? $p['id'], 0, 40))?></option>
               <?php endforeach; ?>
@@ -116,7 +117,8 @@ admin_header('外部协作');
             <?php endforeach; ?>
             <input type="hidden" name="caps[]" value="view">
           </div>
-          <span class="hint">落地页暂不支持外部编辑：它的改动还没有版本记录，给不出「谁改的、能不能退回去」。</span>
+          <span class="hint">编辑权限给出去之前想一下：对方的每次保存都会记进版本历史并标明是谁改的，随时可以还原；
+            落地页只能改区块文案，增删和排序仍然只有你能做。</span>
         </label>
         <label style="grid-column:1/-1">备注（自己看的）
           <input class="inp" name="note" maxlength="200" placeholder="例如：本周五前给意见">

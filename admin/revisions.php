@@ -37,7 +37,15 @@ $diffField = (string)($_GET['field'] ?? 'content');
 
 $title = '';
 if ($type === 'article') { $a = get_article($id); $title = $a['title'] ?? $id; }
+elseif ($type === 'landing') {
+    require_once __DIR__ . '/../lib/BuilderPages.php';
+    $lp = builder_page_get($id); $title = $lp['title'] ?? $id;
+}
 else { $p = json_read(PAGES_DIR . '/' . $id . '.json'); $title = $p['title'] ?? $id; }
+
+// 回到哪里去：不同类型的编辑页不一样
+$backUrl = $type === 'article' ? '/xmp/article-edit?id=' . urlencode($id)
+        : ($type === 'landing' ? '/xmp/page-builder?edit=' . urlencode($id) : '/xmp/content-hub?tab=pages');
 
 admin_header('修订历史');
 ?>
@@ -69,7 +77,8 @@ admin_header('修订历史');
   <?php admin_sidebar('content-hub'); ?>
   <div class="main">
     <h1>修订历史</h1>
-    <p class="sub"><?=htmlspecialchars($title)?> · 共 <?=count($revs)?> 版。每次保存自动记一版；还原也会记一版，所以还原本身也能撤销。</p>
+    <p class="sub"><?=htmlspecialchars($title)?> · 共 <?=count($revs)?> 版。每次保存自动记一版；还原也会记一版，所以还原本身也能撤销。
+      <a href="<?=htmlspecialchars($backUrl)?>">← 回到编辑</a></p>
 
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 

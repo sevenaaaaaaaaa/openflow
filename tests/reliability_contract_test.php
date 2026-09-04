@@ -205,5 +205,57 @@ ok(str_contains($txn, 'txn_log_rollback'), '回滚没有留痕，事后无法排
 ok(!preg_match("/txn_log_rollback.*?require_once.*?AuditLog/s", $txn),
    '回滚留痕里不该 require AuditLog——会把 admin/config.php 整个拉起来（开 session、发 header）');
 
+/* ══════════ E. 落地页的版本记录（2026-09-04）══════════
+ * 文章和普通页面早就有修订，唯独落地页漏着：admin/page-builder.php 和
+ * api/ai-landing.php 各自直接 json_write，改错了退不回去、也说不清是谁改的。
+ * 这个洞直接卡住了外部协作——上一版只能给落地页批注权限，不能给编辑权限。
+ * 这里钉住：写入口只有一个、它一定记版、还原可用、且还原不会毁掉块身份。
+ */
+require_once "$root/lib/BuilderPages.php";
+$bp = file_get_contents("$root/lib/BuilderPages.php");
+$pb = file_get_contents("$root/admin/page-builder.php");
+$ail = file_get_contents("$root/api/ai-landing.php");
+
+ok(function_exists('save_builder_page'), '缺少落地页的唯一写入口');
+ok(str_contains($bp, "rev_record('landing'"), '落地页写入口没有记版');
+ok(str_contains($pb, 'save_builder_page('), '构建器没走写入口');
+ok(str_contains($ail, 'save_builder_page('), 'AI 生成没走写入口');
+// 绕过写入口的直接写盘不能再有，否则「挂在咽喉处」就白挂了
+foreach ([['page-builder', $pb], ['ai-landing', $ail]] as [$nm, $src]) {
+    ok(!preg_match('/json_write\s*\(\s*(\$builderFile|DATA_DIR\s*\.\s*.\/builder-pages\.json.)/', $src),
+       "{$nm} 里还有绕过写入口的直接写盘，那条路径不会记版");
+}
+ok(in_array('blocks', rev_tracked_fields('landing'), true), '落地页的可比对字段里没有区块');
+ok(rev_tracked_fields('landing') !== rev_tracked_fields('page'),
+   '落地页和普通页面共用了字段表——两者是不同存储，id 可能重名，历史不能混');
+
+// 真跑一遍：记版、归属、还原、块身份
+$lid = save_builder_page('', ['title' => 'rel 契约页', 'slug' => 'rel-ctest', 'status' => 'draft',
+    'blocks' => [['_type' => 'hero', 'title' => '原标题'], ['_type' => 'cta', 'title' => '第二块']]]);
+ok($lid !== '', '新建落地页失败');
+$keysBefore = array_map('block_key_of', builder_page_get($lid)['blocks']);
+ok(rev_count('landing', $lid) === 1, '新建后应有 1 版');
+
+$GLOBALS['of_actor'] = ['name' => '王编辑', 'source' => 'external'];
+$blks = builder_page_get($lid)['blocks'];
+$blks[0]['title'] = '外部改过的标题';
+save_builder_page($lid, ['blocks' => $blks]);
+ok(rev_count('landing', $lid) === 2, '改动后应记新版');
+$rv = rev_all('landing', $lid);
+ok(end($rv)['source'] === 'external', '外部协作者的改动没有被标成 external');
+ok(end($rv)['by'] === '王编辑', '没有记录是谁改的');
+
+$GLOBALS['of_actor'] = ['name' => '作者', 'source' => 'admin'];
+$rr = rev_restore('landing', $lid, 1);
+ok($rr['ok'] === true, '落地页还原失败：' . $rr['error']);
+ok((builder_page_get($lid)['blocks'][0]['title'] ?? '') === '原标题', '还原没有把内容带回去');
+ok(array_map('block_key_of', builder_page_get($lid)['blocks']) === $keysBefore,
+   '还原把块的 _key 换掉了——挂在块上的批注会集体变成孤儿');
+ok(rev_count('landing', $lid) === 3, '还原本身没有记版，还原就撤销不了');
+ok(rev_restore('landing', 'nonexistent_lp', 1)['ok'] === false, '还原不存在的落地页应当失败而不是崩');
+
+builder_page_delete($lid);
+@unlink(rev_file('landing', $lid));
+
 echo "\n通过 $pass · 失败 $fail\n";
 exit($fail ? 1 : 0);

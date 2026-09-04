@@ -53,9 +53,9 @@ function note_blocks(string $type, string $id): array {
         return block_anchored_from_html((string)($a['content'] ?? ''));
     }
     if ($type === 'page') {
-        foreach ((array)json_read(DATA_DIR . '/builder-pages.json') as $p) {
-            if (($p['id'] ?? '') === $id) return block_normalize_all($p['blocks'] ?? []);
-        }
+        require_once __DIR__ . '/BuilderPages.php';
+        $p = builder_page_get($id);
+        if ($p) return block_normalize_all($p['blocks'] ?? []);
     }
     return [];
 }
@@ -64,7 +64,9 @@ function note_blocks(string $type, string $id): array {
 function note_target_title(string $type, string $id): string {
     if ($type === 'article') { $a = function_exists('get_article') ? get_article($id) : null; return (string)($a['title'] ?? $id); }
     if ($type === 'page') {
-        foreach ((array)json_read(DATA_DIR . '/builder-pages.json') as $p) if (($p['id'] ?? '') === $id) return (string)($p['title'] ?? $id);
+        require_once __DIR__ . '/BuilderPages.php';
+        $p = builder_page_get($id);
+        if ($p) return (string)($p['title'] ?? $id);
     }
     return $id;
 }

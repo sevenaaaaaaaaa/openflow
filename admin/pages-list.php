@@ -10,7 +10,8 @@ require_login();
 require_perm('settings');
 
 $sitePages = json_read(DATA_DIR . '/site-pages.json');
-$builderPages = json_read(DATA_DIR . '/builder-pages.json');
+require_once __DIR__ . '/../lib/BuilderPages.php';
+$builderPages = builder_pages_all();
 $landingPages = json_read(DATA_DIR . '/landing-pages.json');
 $seo = json_read(DATA_DIR . '/seo.json');
 

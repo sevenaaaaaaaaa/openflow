@@ -50,6 +50,9 @@ function rev_actor(): array {
 /** 参与比对与还原的字段：正文类在前，便于展示 */
 function rev_tracked_fields(string $type): array {
     if ($type === 'page') return ['title', 'content', 'blocks', 'seo_title', 'seo_desc', 'seo_keywords'];
+    // 落地页和普通页面是两套存储（builder-pages.json vs data/pages/*.json），
+    // id 有可能重名，所以类型分开，历史不能混在一起。
+    if ($type === 'landing') return ['title', 'slug', 'status', 'blocks', 'seo_title', 'seo_desc', 'is_ad_landing'];
     return ['title', 'content', 'excerpt', 'status', 'category', 'tags', 'cover',
             'slug', 'author', 'seo_title', 'seo_desc', 'seo_keywords', 'publish_at'];
 }
@@ -178,6 +181,12 @@ function rev_restore(string $type, string $id, int $rev): array {
     } elseif ($type === 'page') {
         if (!function_exists('save_page_content')) return ['ok' => false, 'error' => '保存函数不可用'];
         $ok = save_page_content($id, (array)$target['data']);
+    } elseif ($type === 'landing') {
+        require_once __DIR__ . '/BuilderPages.php';
+        if (!builder_page_get($id)) return ['ok' => false, 'error' => '落地页不存在或已删除'];
+        // 快照里的 blocks 连 _key 一起存着，还原后块身份不变，
+        // 挂在这些块上的批注不会因为一次还原就全成孤儿。
+        $ok = save_builder_page($id, (array)$target['data']) !== '';
     } else {
         return ['ok' => false, 'error' => '不支持的内容类型：' . $type];
     }
@@ -207,7 +216,7 @@ function rev_field_label(string $f): string {
     return [
         'title' => '标题', 'content' => '正文', 'excerpt' => '摘要', 'status' => '状态',
         'category' => '分类', 'tags' => '标签', 'cover' => '封面', 'slug' => '短链',
-        'author' => '作者', 'blocks' => '区块', 'publish_at' => '定时发布',
+        'author' => '作者', 'blocks' => '区块', 'publish_at' => '定时发布', 'is_ad_landing' => '广告落地页',
         'seo_title' => 'SEO 标题', 'seo_desc' => 'SEO 描述', 'seo_keywords' => 'SEO 关键词',
     ][$f] ?? $f;
 }
