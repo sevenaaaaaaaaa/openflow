@@ -82,5 +82,30 @@ $completed = domain_flow_run_record_result($started['run'], ['ok'=>true,'executo
 check('verified run result succeeds', $completed['ok'] && $completed['run']['status'] === 'succeeded');
 check('FlowRun result remains traceable', $completed['run']['result']['result_ref'] === 'log_88');
 
+echo "\n── Approval → Execution → Evaluation evidence chain ──\n";
+$approval = domain_approval(['action_id'=>$flow['id'],'subject_version'=>$flow['version'],'decision'=>'approved','actor_type'=>'human','actor_id'=>'admin_1','reason'=>'客户已同意','decided_at'=>'2026-09-05 12:00:00']);
+check('human approval validates', domain_contract_validate('Approval', $approval)['ok']);
+check('approval id is deterministic', $approval['id'] === domain_approval(['action_id'=>$flow['id'],'subject_version'=>$flow['version'],'decision'=>'approved','actor_type'=>'human','actor_id'=>'admin_2'])['id']);
+$policyApproval = domain_approval(['action_id'=>$flow['id'],'decision'=>'approved','actor_type'=>'policy','actor_id'=>'autonomy_guard']);
+check('policy approval requires policy reference', !domain_contract_validate('Approval', $policyApproval)['ok']);
+
+$execution = domain_execution(['action_id'=>$flow['id'],'approval_id'=>$approval['id'],'flow_run_id'=>$flowRun['id'],'executor'=>'crm.followup','idempotency_key'=>'followup:customer_7:20260905','status'=>'succeeded','result_ref'=>'crm_event_10','created_at'=>'2026-09-05 12:01:00','completed_at'=>'2026-09-05 12:01:01']);
+check('execution validates', domain_contract_validate('Execution', $execution)['ok']);
+check('execution id is deterministic', $execution['id'] === domain_execution(['action_id'=>$flow['id'],'idempotency_key'=>'followup:customer_7:20260905'])['id']);
+$queuedExecution = domain_execution(array_merge($execution, ['status'=>'queued','result_ref'=>'','completed_at'=>'']));
+$runningExecution = domain_execution_transition($queuedExecution, 'running');
+check('execution starts without changing identity', $runningExecution['ok'] && $runningExecution['execution']['id'] === $queuedExecution['id']);
+check('execution cannot claim success without result reference', !domain_execution_transition($runningExecution['execution'], 'succeeded')['ok']);
+check('execution succeeds with evidence', domain_execution_transition($runningExecution['execution'], 'succeeded', ['result_ref'=>'crm_event_10'])['ok']);
+
+$evaluation = domain_evaluation(['action_id'=>$flow['id'],'execution_id'=>$execution['id'],'goal_id'=>'g_1','metric'=>'revenue','baseline'=>20000,'observed'=>21500,'sample_size'=>1,'source_type'=>'order','source_ref'=>'order_900','attribution'=>'direct','measured_at'=>'2026-09-06 12:00:00']);
+check('evaluation validates', domain_contract_validate('Evaluation', $evaluation)['ok']);
+check('evaluation delta is derived from facts', $evaluation['delta'] === 1500.0);
+check('model output cannot be an evaluation source', !domain_contract_validate('Evaluation', array_merge($evaluation, ['source_type'=>'model']))['ok']);
+check('empty samples cannot claim a result', !domain_contract_validate('Evaluation', array_merge($evaluation, ['sample_size'=>0]))['ok']);
+check('complete evidence chain validates', domain_evidence_chain($flow, $approval, $execution, $evaluation)['ok']);
+$wrongExecution = $execution; $wrongExecution['approval_id'] = 'apr_other';
+check('broken approval link is rejected', !domain_evidence_chain($flow, $approval, $wrongExecution, $evaluation)['ok']);
+
 echo "\n" . ($fail === 0 ? "✅ 全部通过（{$pass}）\n" : "❌ 失败 {$fail} / 通过 {$pass}\n");
 exit($fail === 0 ? 0 : 1);
