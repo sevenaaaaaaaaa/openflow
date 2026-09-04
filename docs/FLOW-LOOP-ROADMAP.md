@@ -28,7 +28,7 @@
 已落地：
 
 - PHPUnit 不再允许失败继续；
-- 全部独立契约测试进入阻断任务（阶段 0 建立时 77 个，当前 78 个）；
+- 全部独立契约测试进入阻断任务（阶段 0 建立时 77 个，后续新增测试自动纳入）；
 - `tests/flow_baseline.php` 可重复生成 AITIPS Flow JSON 基线；
 - CI 保存每个提交的 Flow 基线报告；
 - 当前测量范围和未自动化指标见 `FLOW-BASELINE.md`。
@@ -42,6 +42,8 @@
 领域边界与首批兼容契约见 `ADR-001-SHARED-DOMAIN-CONTRACTS.md`；任何数据库迁移仍需单独 ADR 和回滚方案。
 
 当前进展：`ActionProposal`、`Goal`、`SkillDefinition`、`FlowRun`、`Approval`、`Execution`、`Evaluation` 兼容契约和测试已落地，不接管存储、不改变现有 Flow 写路径；其余对象仍需逐个核查后进入契约。
+
+只读 `EvidenceProjection` 已用于验证现有数据可投影范围，并把缺少运行边界、执行回执和逐笔归因明确报告为 gap；写路径影子双写方案见 ADR-002，目前未实施。
 
 最小对象：
 
