@@ -220,6 +220,7 @@ require_once __DIR__ . '/../lib/GrowthEngine.php';
 require_once __DIR__ . '/../lib/SafeFix.php';
 require_once __DIR__ . '/../lib/ThemeSystem.php';
 require_once __DIR__ . '/../lib/GrowthFlywheel.php';
+require_once __DIR__ . '/../lib/WorkspaceMode.php';
 
 // ─── 业务函数库（全局函数，必须加载以保证被各类/页面调用） ───
 require_once __DIR__ . '/../lib/SiteConfig.php';

@@ -76,7 +76,7 @@ admin_header('工作台');
         <div class="eng-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8-.8-.7-2.2-.7-3 .8Z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.9A12.9 12.9 0 0 1 22 2c0 2.7-.9 7-4 11-2.9 3.8-6.1 5.7-9 7.6"/><path d="M9 12H4s.5-3 2-4c1.6-1.2 5 0 5 0"/><path d="M12 15v5s3.5-.5 4-2c.5-1.4 0-5 0-5"/></svg></div>
         <div style="flex:1;min-width:240px">
           <h4 style="font-size:16px">系统已就绪，三步让增长系统跑起来</h4>
-          <p style="font-size:13px;color:var(--muted);margin-top:5px;line-height:1.6">配置 AI、接好支付与邮件、发布第一篇内容——增长飞轮就会自己转起来。</p>
+          <p style="font-size:13px;color:var(--muted);margin-top:5px;line-height:1.6">配置 AI、接好支付与邮件、发布第一篇内容，再按业务需要启用规则流程。</p>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <a href="ai-config.php" class="btn btn-s btn-sm">① 配置 AI</a>
@@ -98,7 +98,7 @@ admin_header('工作台');
 
     <div class="panels">
       <div class="panel">
-        <div class="p-head"><h3>增长引擎</h3><span class="p-sub mono">自动增长闭环 · 热点→洞察→草稿</span></div>
+        <div class="p-head"><h3>规则增长引擎</h3><span class="p-sub mono">固定步骤 · 热点→洞察→草稿</span></div>
         <div class="p-body">
           <div class="eng">
             <div class="eng-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M12 20v-6"/><path d="M12 14c0-4 2.5-6 6-6 0 4-2.5 6-6 6Z"/><path d="M12 11c0-3 1.8-5 5-5 0 3-1.8 5-5 5Z"/></svg></div>
@@ -135,7 +135,7 @@ admin_header('工作台');
           <?php $feed = []; foreach (array_slice($aiInsights['insights'] ?? [], 0, 2) as $i) { $feed[] = ['t'=>$i['title'] ?? '', 'd'=>$i['desc'] ?? '', 'c'=>'accent']; } foreach (array_slice($aiInsights['anomalies'] ?? [], 0, 2) as $a) { $feed[] = ['t'=>'异常：'.($a['title'] ?? ''), 'd'=>$a['desc'] ?? '', 'c'=>'warn']; } if (empty($feed)) { $feed[] = ['t'=>'CDP 采集', 'd'=>'行为事件 '.(int)($local['events_24h']??0).' 条入库 · '.($local['time'] ?? ''), 'c'=>'accent']; } foreach ($feed as $f): ?>
           <div class="tl-item <?=$f['c']?>"><div class="t-time mono"><?=htmlspecialchars(date('m-d H:i', time()))?></div><div class="t-title"><?=htmlspecialchars($f['t'])?></div><div class="t-desc"><?=htmlspecialchars($f['d'])?></div></div>
           <?php endforeach; ?>
-          <div class="tl-item"><div class="t-time mono"><?=htmlspecialchars(date('m-d', strtotime('-1 day')))?></div><div class="t-desc" style="color:var(--faint)">增长引擎已自动执行 · 持续覆盖行业热点</div></div>
+          <div class="tl-item"><div class="t-time mono"><?=htmlspecialchars(date('m-d', strtotime('-1 day')))?></div><div class="t-desc" style="color:var(--faint)">规则增长引擎运行记录 · 结果以实际日志为准</div></div>
         </div></div>
       </div>
       <div class="panel">
