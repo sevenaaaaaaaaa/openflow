@@ -33,7 +33,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>芭乐派 · OpenFlow 增长操作系统</title>
-<meta name="description" content="芭乐派给一人公司的增长系统。OpenFlow 是其开源底座：它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。">
+<meta name="description" content="芭乐派给一人公司的增长系统。OpenFlow 用稳定 Flow 连接内容、数据与销售，并以受控的 TIPS Agent Loop 辅助判断和优化。">
 <?php if (function_exists('seo_head')): seo_head(['title' => '芭乐派 · OpenFlow 增长操作系统', 'canonical' => site_config_get('site_url') . '/']); endif; ?>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='2' y1='16' x2='30' y2='16' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='oklch(52%25 .17 258)'/%3E%3Cstop offset='1' stop-color='oklch(58%25 .16 285)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='16' fill='oklch(16%25 0 0)'/%3E%3Cpath d='M16 6.5a9.5 9.5 0 1 1-9.5 9.5' stroke='url(%23g)' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M11.5 10.5v12M11.5 14h7.6M11.5 18.5h7.6' stroke='oklch(96%25 0 0)' stroke-width='2.2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
@@ -110,7 +110,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
     <div class="hero-center">
       <span class="kicker">芭乐派 · 给一人公司的增长系统</span>
       <h1>你不缺<i class="si">怎么做</i>，<br>你缺 <span class="hr-word" id="hr-word" role="button" tabindex="0" aria-label="点击切换关键词">该做什么</span></h1>
-      <p class="lead">市面上的增长工具都默认你有一支团队。芭乐派做的是另一套：它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。</p>
+      <p class="lead">市面上的增长工具都默认你有一支团队。芭乐派把内容、数据、自动化和销售接进同一套 TIPS 系统：已知方法交给 Flow 稳定执行，未知路径由受控 Loop 辅助判断。</p>
       <div class="cta-row">
         <a class="btn primary" href="/courses" data-od-id="home-cta-start">免费开始（开源）</a>
         <a class="btn ghost" href="/product" data-od-id="home-cta-demo">先看它一天干什么</a>
@@ -219,7 +219,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
   <section id="touch" class="sec reveal" data-od-anchor data-od-id="touch">
     <div class="sec-head center">
       <span class="kicker">TIPS 框架 · 增长能力</span>
-      <h2>这四件事，从今天起不用你做了</h2>
+      <h2>这四件事，放进同一条增长链路</h2>
       <p class="lead">触达把变化送进来，洞察把判断递到你面前，个性化让内容贴着你的声线，销售把线索跑成成交。</p>
     </div>
     <div class="deck auto" id="tips-auto" data-auto="on" data-interval="4500">
@@ -258,7 +258,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
           <div class="sp-txt">
             <span class="kicker">洞察 Insight · AI 提炼该做什么</span>
             <h3>只把「值得你判断的」递到面前</h3>
-            <p class="lead">热点总结、选题建议自动生成。不是给你 37 条线索，是告诉你今天该联系哪 3 个。</p>
+            <p class="lead">热点总结、选题建议和高意向线索排序，把值得判断的信息集中到同一个工作台。</p>
             <ul class="sp-list">
               <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>热点总结与选题建议</div></li>
               <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span><div>情绪与热度标注，决策项待你确认</div></li>
@@ -341,8 +341,8 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
     </div>
     <div class="wf">
       <div class="wf-step"><span class="wf-n">01</span><h3>告诉它盯什么</h3><p>接入舆情、搜索热点、你自己的客户行为。配一次，之后它自己盯。</p><span class="wf-driver"><span class="pill hl">Webhook · RSS 接入</span></span></div>
-      <div class="wf-step"><span class="wf-n">02</span><h3>告诉它什么该自动、什么等你点头</h3><p>选题、撰写、触达、转化，每一段你都能决定是它直接做，还是出草稿等你确认。</p><span class="wf-driver"><span class="pill hl">Task Graph 编排</span></span></div>
-      <div class="wf-step"><span class="wf-n">03</span><h3>然后你就可以去干别的了</h3><p>按你设的周期自己跑一轮：洞察 → 优化 → 转化 → 反馈。你回来看结果，不用盯过程。</p><span class="wf-driver"><span class="pill hl">AI Engine · 周期你定</span></span></div>
+      <div class="wf-step"><span class="wf-n">02</span><h3>划清自动与审批边界</h3><p>用 Flow 配置确定性动作；发布、群发、报价等关键环节继续等待确认。</p><span class="wf-driver"><span class="pill hl">Flow · 审批边界</span></span></div>
+      <div class="wf-step"><span class="wf-n">03</span><h3>让系统按边界推进</h3><p>Flow 按已批准规则稳定执行；Loop 从只读建议和沙盘开始，验证后再逐步接入审批与执行。</p><span class="wf-driver"><span class="pill hl">Policy · 可审计</span></span></div>
     </div>
   </section>
 
@@ -352,7 +352,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
   <section id="scenes" class="sec reveal" data-od-anchor data-od-id="scenes">
     <div class="sec-head center">
       <span class="kicker">谁在用它</span>
-      <h2>这些场景里，Agent 正在替人跑增长</h2>
+      <h2>这些场景，正在逐步进入 Flow 与 Loop</h2>
       <p class="lead">不是给大厂用的复杂系统，是给一人公司和超级个体的增长引擎。</p>
     </div>
     <div>
@@ -402,7 +402,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
           <div class="tp-steps">
             <div class="tp-step"><span class="tp-n">01</span><div><b>接入周报与监控</b><span>数据源自动汇集</span></div></div>
             <div class="tp-step"><span class="tp-n">02</span><div><b>配置工作流规则</b><span>谁触发、跑什么、通知谁</span></div></div>
-            <div class="tp-step"><span class="tp-n">03</span><div><b>自动执行与通知</b><span>人只处理异常与决策</span></div></div>
+            <div class="tp-step"><span class="tp-n">03</span><div><b>按规则执行与通知</b><span>关键动作保留审批与接管</span></div></div>
           </div>
         </div>
         <div class="tab-panel" id="scene-p4" role="tabpanel" aria-labelledby="scene-t4">
@@ -524,7 +524,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
   <footer class="foot" data-od-id="site-footer">
     <div class="fb">
       <div class="brand"><span class="ic"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-f" x1="2" y1="16" x2="30" y2="16" gradientUnits="userSpaceOnUse"><stop stop-color="var(--accent)"/><stop offset="1" stop-color="oklch(58% .16 285)"/></linearGradient></defs><path d="M16 6.5a9.5 9.5 0 1 1-9.5 9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M11.5 10v13M11.5 13.5h8.2M11.5 18.5h8.2" stroke="url(#ofg-f)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M19.7 18.5c2.3 0 4.4-.7 6.1-2M25 14.3l1.6 2.2-2.9 1" stroke="url(#ofg-f)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>芭乐派 · OpenFlow</div>
-      <p class="f-about">芭乐派给一人公司的增长系统。它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。核心能力永久开源。</p>
+      <p class="f-about">芭乐派给一人公司的增长系统。用 Flow 稳定执行已知方法，用受控 Loop 辅助探索未知路径。核心能力永久开源。</p>
       <p class="note">核心能力永久开源 · 鱼与渔相结合</p>
       <div class="f-social" aria-label="社交媒体">
         <?php

@@ -82,7 +82,7 @@ header('Cache-Control: no-cache, max-age=0');
       <div class="st"><div class="st-n">10年</div><span class="st-en">Growth</span><span class="st-t">增长操盘</span></div>
       <div class="st"><div class="st-n">7</div><span class="st-en">Industries</span><span class="st-t">跨行业覆盖</span></div>
       <div class="st"><div class="st-n">50+</div><span class="st-en">Playbooks</span><span class="st-t">方法论落地</span></div>
-      <div class="st"><div class="st-n">1套</div><span class="st-en">System</span><span class="st-t">Agent 增长系统</span></div>
+      <div class="st"><div class="st-n">1套</div><span class="st-en">System</span><span class="st-t">Flow + Loop 增长系统</span></div>
     </div>
   </section>
 
@@ -128,9 +128,9 @@ header('Cache-Control: no-cache, max-age=0');
     </div>
     <div class="wf n4">
       <div class="wf-step"><span class="wf-n">01</span><h3>设计系统，不操作系统</h3><p>你不缺怎么做，你缺该做什么。工具解决怎么做，系统解决该做什么。</p></div>
-      <div class="wf-step"><span class="wf-n">02</span><h3>Agent 能跑，人做判断</h3><p>把规则明确的交给 Agent，把判断留给人——人只做 Agent 做不到的五件事。</p></div>
+      <div class="wf-step"><span class="wf-n">02</span><h3>Flow 执行，Loop 辅助</h3><p>规则明确的交给 Flow，路径未知的由 Loop 从建议和沙盘开始；关键判断仍由人负责。</p></div>
       <div class="wf-step"><span class="wf-n">03</span><h3>核心能力永久开源</h3><p>Tools 和 Strategy 双向迭代，鱼与渔相结合，让用户既用得上工具也用得上策略。</p></div>
-      <div class="wf-step"><span class="wf-n">04</span><h3>自生长，不是被操作</h3><p>每个人安装后都能快速改造成专属自己的增长引擎，从 Marketing 到 Sales 主动驱动。</p></div>
+      <div class="wf-step"><span class="wf-n">04</span><h3>持续改进，而非失控自治</h3><p>通过真实结果、审批和复盘逐步打磨专属工作流，从 Marketing 到 Sales 稳定交付。</p></div>
     </div>
   </section>
 
@@ -199,7 +199,7 @@ header('Cache-Control: no-cache, max-age=0');
     <div class="cta-band">
       <span class="kicker">下一步</span>
       <h2>从了解我们，到跑出你的增长系统</h2>
-      <p class="lead">产品、课程、社区——三条路，都通向同一个地方：不再被重复消耗，让 Agent 替你驱动增长。</p>
+      <p class="lead">产品、课程、社区——三条路，都通向同一个地方：把重复工作沉淀为 Flow，把未知路径交给受控 Loop 逐步验证。</p>
       <div class="cta-row">
         <a class="btn primary" href="/courses">开始学习</a>
         <a class="btn ghost" href="/product">看看产品</a>
