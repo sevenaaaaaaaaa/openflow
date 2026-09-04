@@ -23,11 +23,52 @@ function automation_save(array $flows): bool {
 }
 
 // 日志
-function automation_log(string $flowId, string $msg, string $level = 'info'): void {
+function automation_log(string $flowId, string $msg, string $level = 'info', array $shadow = []): void {
     $log = json_read(automation_log_file());
-    $log[] = ['time'=>date('Y-m-d H:i:s'),'flow'=>$flowId,'level'=>$level,'message'=>$msg];
+    $entry = ['time'=>date('Y-m-d H:i:s'),'flow'=>$flowId,'level'=>$level,'message'=>$msg];
+    // Optional shadow fields. Existing readers keep consuming the four fields above.
+    foreach (['run_id','trigger','status','idempotency_key','tenant_id','result'] as $key) {
+        if (array_key_exists($key, $shadow)) $entry[$key] = $shadow[$key];
+    }
+    $log[] = $entry;
     $log = array_slice($log, -200);
     json_write(automation_log_file(), $log);
+}
+
+/** Only a single low-risk add_tag flow with a stable event key enters shadow mode. */
+function automation_shadow_add_tag(array $flow, array $context): ?array {
+    $steps = array_values((array)($flow['steps'] ?? []));
+    if (count($steps) !== 1 || ($steps[0]['action'] ?? '') !== 'add_tag') return null;
+    $eventKey = trim((string)($context['idempotency_key'] ?? ($context['event_id'] ?? ($context['_event_id'] ?? ''))));
+    $flowId = trim((string)($flow['id'] ?? ''));
+    $uid = trim((string)($context['uid'] ?? ''));
+    $tag = trim((string)($steps[0]['tag'] ?? ''));
+    if ($eventKey === '' || $flowId === '' || $uid === '' || $tag === '') return null;
+
+    require_once __DIR__ . '/DomainContract.php';
+    $run = domain_flow_run([
+        'flow_id'=>$flowId, 'trigger'=>$flow['trigger'] ?? ($context['event'] ?? 'unknown'),
+        'idempotency_key'=>$eventKey, 'tenant_id'=>$context['tenant_id'] ?? 'default',
+        'created_at'=>date('Y-m-d H:i:s'),
+    ]);
+    return [
+        'run_id'=>$run['id'], 'trigger'=>$run['trigger'], 'status'=>'running',
+        'idempotency_key'=>$run['idempotency_key'], 'tenant_id'=>$run['tenant_id'],
+        'uid'=>$uid, 'tag'=>$tag,
+    ];
+}
+
+function automation_shadow_log(array $shadow, string $status, array $result = []): void {
+    $meta = $shadow;
+    unset($meta['uid'], $meta['tag']);
+    $meta['status'] = $status;
+    if ($result) $meta['result'] = $result;
+    automation_log(
+        (string)($shadow['flow_id'] ?? ''),
+        '影子运行：' . $status,
+        $status === 'failed' ? 'error' : 'info',
+        $meta
+    );
 }
 
 /**
@@ -103,6 +144,11 @@ function automation_match_trigger(array $flow, string $trigger, array $context):
 // 执行一个流程（按步骤）
 function automation_execute_flow(array $flow, array $context): void {
     $steps = $flow['steps'] ?? [];
+    $shadow = automation_shadow_add_tag($flow, $context);
+    if ($shadow) {
+        $shadow['flow_id'] = (string)$flow['id'];
+        automation_shadow_log($shadow, 'running');
+    }
     foreach ($steps as $step) {
         switch ($step['action'] ?? '') {
             case 'send_email':
@@ -134,10 +180,20 @@ function automation_execute_flow(array $flow, array $context): void {
                 $tag = trim($step['tag'] ?? '');
                 if ($uid && $tag) {
                     try {
-                        require_once __DIR__ . '/CdpSync.php';
+                        if (!function_exists('cdp_add_tag')) require_once __DIR__ . '/CdpSync.php';
                         cdp_add_tag($uid, $tag);
                         automation_log($flow['id'], '打标签: ' . $tag);
-                    } catch (Exception $e) { automation_log($flow['id'], '打标签失败: ' . $e->getMessage(), 'error'); }
+                        if ($shadow && function_exists('cdp_get_by_id')) {
+                            $customer = cdp_get_by_id($uid);
+                            $tags = json_decode((string)($customer['tags'] ?? '[]'), true) ?: [];
+                            if (in_array($tag, $tags, true)) {
+                                automation_shadow_log($shadow, 'succeeded', ['executor'=>'CdpSync::cdp_add_tag','result_ref'=>'cdp_customer:' . $uid]);
+                            }
+                        }
+                    } catch (Exception $e) {
+                        automation_log($flow['id'], '打标签失败: ' . $e->getMessage(), 'error');
+                        if ($shadow) automation_shadow_log($shadow, 'failed', ['executor'=>'CdpSync::cdp_add_tag','error'=>$e->getMessage()]);
+                    }
                 }
                 break;
             case 'award_points':

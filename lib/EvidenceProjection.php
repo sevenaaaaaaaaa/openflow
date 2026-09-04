@@ -40,6 +40,7 @@ if (!function_exists('evidence_project')) {
             }
         }
 
+        $runsById = [];
         foreach (array_values($flowLogs) as $index => $row) {
             $structured = !empty($row['run_id']) && !empty($row['flow']) && !empty($row['idempotency_key']) && !empty($row['status']);
             if (!$structured) {
@@ -53,9 +54,10 @@ if (!function_exists('evidence_project')) {
                 'result'=>$row['result'] ?? null,
             ], 'flow');
             $validation = domain_contract_validate('FlowRun', $run);
-            if ($validation['ok']) $objects['FlowRun'][] = $run;
+            if ($validation['ok']) $runsById[$run['id']] = $run;
             else $gaps[] = evidence_projection_gap('automation_log', $index, 'invalid_structured_run:' . implode(',', $validation['errors']));
         }
+        $objects['FlowRun'] = array_values($runsById);
 
         $events = is_array($conversionLedger['events'] ?? null) ? $conversionLedger['events'] : [];
         if (!$events && ((int)($conversionLedger['total']['count'] ?? 0) > 0)) {
