@@ -4,6 +4,7 @@
  */
 require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/../lib/CdpSystem.php';
+require_once __DIR__ . '/../lib/EventIdentity.php';
 
 header('Content-Type: application/json; charset=utf-8');
 cors_headers();
@@ -16,6 +17,7 @@ switch ($action) {
         $event = $_POST['event'] ?? '';
         $data = json_decode($_POST['data'] ?? '{}', true) ?: [];
         $visitorId = $_POST['visitor_id'] ?? '';
+        $eventId = event_identity($data + $_POST);
 
         if (empty($event)) {
             http_response_code(400);
@@ -23,7 +25,7 @@ switch ($action) {
             exit;
         }
 
-        CdpSystem::track($event, $data, $visitorId);
+        CdpSystem::track($event, $data + ['_event_id'=>$eventId], $visitorId);
 
         // 触发营销自动化（行为事件 → MA 流程）
         $triggerEvents = ['page_view', 'article_view', 'element_click', 'download', 'purchase', 'course_complete', 'course_start', 'course_enroll', 'lesson_complete', 'role_selected', 'tool_use', 'user_register', 'user_login', 'form_submit'];
@@ -37,6 +39,7 @@ switch ($action) {
                     'label' => $data['label'] ?? $event,
                     'page' => $data['url_path'] ?? '',
                     'props' => $data,
+                    'event_id' => $eventId,
                 ]);
             } catch (Exception $e) {}
         }

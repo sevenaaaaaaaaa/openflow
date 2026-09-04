@@ -10,6 +10,7 @@ require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/../lib/Database.php';
 require_once __DIR__ . '/../lib/CdpSystem.php';
 require_once __DIR__ . '/../lib/FlowSystem.php';
+require_once __DIR__ . '/../lib/EventIdentity.php';
 
 header('Content-Type: application/json; charset=utf-8');
 cors_headers();
@@ -18,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
 $event = trim($input['event'] ?? '');
 if (empty($event)) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'event 不能为空']); exit; }
+$eventId = event_identity($input);
 
 $uid = $_COOKIE['fc_uid'] ?? '';
 if ($uid === '') {
@@ -71,6 +73,7 @@ Database::insert('events', [
     'member_email' => $memberEmail,
     'props' => json_encode($input['props'] ?? [], JSON_UNESCAPED_UNICODE),
     'ip' => $_SERVER['REMOTE_ADDR'] ?? '',
+    'message_id' => $eventId,
     'created_at' => date('Y-m-d H:i:s'),
 ]);
 
@@ -83,6 +86,7 @@ try {
         'label' => $input['label'] ?? '',
         'page' => $input['page'] ?? '',
         'props' => $input['props'] ?? [],
+        'event_id' => $eventId,
     ]);
 } catch (Exception $e) {}
 
