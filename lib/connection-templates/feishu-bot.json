@@ -1,0 +1,19 @@
+{
+  "openflow_connection_template": 1,
+  "name": "飞书群机器人",
+  "note": "在飞书群里添加「自定义机器人」，把 Webhook 地址最后那一段 token 填进动作路径里的 YOUR_HOOK_TOKEN。飞书的 token 在 URL 路径里而不是查询参数，所以这里没有单独的秘钥字段。",
+  "base_url": "https://open.feishu.cn",
+  "auth": { "type": "none" },
+  "headers": {},
+  "secrets_needed": [],
+  "actions": [
+    {
+      "name": "发文本消息",
+      "method": "POST",
+      "path": "/open-apis/bot/v2/hook/YOUR_HOOK_TOKEN",
+      "body_mode": "json",
+      "body": { "msg_type": "text", "content": { "text": "{{message}}" } },
+      "note": "把路径里的 YOUR_HOOK_TOKEN 换成你机器人的 token"
+    }
+  ]
+}

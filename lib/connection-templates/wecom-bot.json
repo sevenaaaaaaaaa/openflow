@@ -1,0 +1,26 @@
+{
+  "openflow_connection_template": 1,
+  "name": "企业微信群机器人",
+  "note": "在企业微信群里添加机器人，把 Webhook 地址里 key= 后面那一段填到 API Key 里。事件字段（email / name / amount / order_id 等）可以在消息里用 {{ }} 引用。",
+  "base_url": "https://qyapi.weixin.qq.com",
+  "auth": { "type": "api_key", "in": "query", "name": "key" },
+  "headers": {},
+  "secrets_needed": ["value"],
+  "actions": [
+    {
+      "name": "发文本消息",
+      "method": "POST",
+      "path": "/cgi-bin/webhook/send",
+      "body_mode": "json",
+      "body": { "msgtype": "text", "text": { "content": "{{message}}" } },
+      "note": "上下文里放 message 字段即可；例如自动化里把 message 设为「新订单 {{order_id}}，金额 {{amount}}」"
+    },
+    {
+      "name": "新订单提醒",
+      "method": "POST",
+      "path": "/cgi-bin/webhook/send",
+      "body_mode": "json",
+      "body": { "msgtype": "markdown", "markdown": { "content": "**新订单** {{order_id}}\n> 金额：¥{{amount}}\n> 邮箱：{{email}}\n> 时间：{{now}}" } }
+    }
+  ]
+}
