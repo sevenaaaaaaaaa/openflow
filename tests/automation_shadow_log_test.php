@@ -22,6 +22,9 @@ $flow=['id'=>'flow_tag','trigger'=>'form_submit','steps'=>[['action'=>'add_tag',
 check('stable event key is required',automation_shadow_add_tag($flow,['uid'=>'c1'])===null);
 check('multiple steps are excluded',automation_shadow_add_tag(array_merge($flow,['steps'=>[['action'=>'add_tag','tag'=>'x'],['action'=>'notify']]]),['uid'=>'c1','event_id'=>'e1'])===null);
 check('high-risk/non-tag action is excluded',automation_shadow_add_tag(array_merge($flow,['steps'=>[['action'=>'send_email']]]),['uid'=>'c1','event_id'=>'e1'])===null);
+$repeatA=automation_shadow_add_tag($flow,['uid'=>'c1','event_id'=>'event_repeat']);
+$repeatB=automation_shadow_add_tag($flow,['uid'=>'c1','event_id'=>'event_repeat']);
+check('duplicate event id resolves to same run id',($repeatA['run_id']??'')!=='' && $repeatA['run_id']===$repeatB['run_id']);
 
 echo "\n── verified shadow write ──\n";
 automation_execute_flow($flow,['uid'=>'c1','event_id'=>'event_1']);

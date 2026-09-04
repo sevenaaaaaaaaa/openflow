@@ -31,6 +31,7 @@ require_once __DIR__ . '/../lib/MessageSystem.php';
 require_once __DIR__ . '/../lib/MembershipSystem.php';
 require_once __DIR__ . '/../lib/AutomationSystem.php';
 require_once __DIR__ . '/../lib/CanvasSystem.php';
+require_once __DIR__ . '/../lib/EventIdentity.php';
 
 // 行为 → 标签 + 积分 + 价值分映射
 function flow_behavior_map(): array {
@@ -107,10 +108,7 @@ function flow_handle(string $event, array $ctx = []): array {
 
     // ── C. 价值流：营销自动化 / 画布 ──
     try {
-        $triggerData = array_merge(
-            ['email' => $email, 'uid' => $uid, 'member_id' => $memberId, 'label' => $ctx['label'] ?? '', 'page' => $ctx['page'] ?? ''],
-            $ctx['props'] ?? []
-        );
+        $triggerData = flow_trigger_context($ctx, $email, $uid, $memberId);
         if (function_exists('automation_trigger')) { automation_trigger('flow_' . $event, $triggerData); $result['triggers'][] = 'automation'; }
         if (function_exists('canvas_trigger')) { canvas_trigger('flow_' . $event, $triggerData); $result['triggers'][] = 'canvas'; }
 
