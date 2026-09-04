@@ -34,15 +34,22 @@ if (empty($r['ok']) || $aiText === '') {
 $blocks = AiCenter::extractJson($aiText);
 if (!is_array($blocks) || empty($blocks)) { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'AI 返回无法解析的区块']); exit; }
 
-// 规范化 blocks
-$allowed = ['hero','features','testimonial','cta','pricing','faq','form'];
+// 规范化 blocks —— 白名单来自区块注册表，别再抄第四份。
+// 这里原来写死了 ['hero','features','testimonial','cta','pricing','faq','form']：
+// 一是漏掉了注册表里的十来种，二是把 testimonials 写成了单数 testimonial——
+// AI 按注册表的类型名生成，反而会被这个白名单整块丢掉。
+require_once __DIR__ . '/../lib/BlockRegistry.php';
+require_once __DIR__ . '/../lib/BlockContract.php';
+$allowed = block_types();
+unset($allowed['module']);          // 引用类型只能由人在后台选，AI 不能凭空引用模块
 $clean = [];
 foreach ($blocks as $b) {
-    $t = $b['type'] ?? '';
-    if (!in_array($t, $allowed, true)) continue;
-    $b['id'] = 'blk_' . bin2hex(random_bytes(4));
+    if (!is_array($b)) continue;
+    $t = block_type_of($b);
+    if (!isset($allowed[$t])) continue;
     $clean[] = $b;
 }
+$clean = block_normalize_all($clean);   // 统一形状并分配稳定的 _key
 if (empty($clean)) { http_response_code(500); echo json_encode(['ok'=>false,'error'=>'AI 未生成有效区块']); exit; }
 
 // 标题从需求提取

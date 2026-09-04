@@ -34,19 +34,40 @@ function block_type_label(string $t): string { return block_types()[$t] ?? $t; }
 
 /** 可复用模块库（admin/page-modules.php 维护），只返回启用的 */
 function block_modules(): array {
+    require_once __DIR__ . '/BlockContract.php';
     $all = json_read(DATA_DIR . '/page-modules.json');
     $out = [];
     foreach ((array)$all as $m) {
         if (!is_array($m) || empty($m['id'])) continue;
         if (isset($m['enabled']) && !$m['enabled']) continue;
-        $out[$m['id']] = $m;
+        $mid = (string)$m['id'];
+
+        // admin/page-modules.php 把区块字段**嵌在 block 子对象里**存：
+        //   {id, name, type, description, block:{type,title,subtitle,content,...}, enabled}
+        // 而渲染器读的是顶层 title / content。不摊平的话，后台配好的模块
+        // 会渲染成一个空壳（标题空、内容空）——又是一次「配了不生效」。
+        $payload = (isset($m['block']) && is_array($m['block'])) ? $m['block'] : $m;
+
+        // 类型以模块顶层为准（表单里两处写的是同一个值，顶层是权威）
+        $type = (string)($m['type'] ?? '');
+        if ($type === '') $type = block_type_of($payload);
+        if ($type === '' || $type === 'module') $type = 'text';   // 模块库不允许再嵌套引用
+
+        // 模块的 id 是它在库里的身份（被区块引用），必须保留
+        $n = block_normalize($payload, $mid);
+        $n['_type'] = $type;
+        $n['id']    = $mid;
+        $n['name']  = (string)($m['name'] ?? $mid);
+        $out[$mid]  = $n;
     }
     return $out;
 }
 
 // 区块渲染器 —— v7：每种区块映射到 modules.css 的共享 archetype，后台搭出来的页与站点其他页同一套零件。
 function builder_render_block(array $b): string {
-    $t = $b['type'] ?? 'text';
+    require_once __DIR__ . '/BlockContract.php';
+    $t = block_type_of($b);
+    if ($t === '') $t = 'text';
     $title = htmlspecialchars($b['title'] ?? '');
     $sub = htmlspecialchars($b['subtitle'] ?? '');
     $content = $b['content'] ?? '';
@@ -66,9 +87,11 @@ function builder_render_block(array $b): string {
         $mods = block_modules();
         if (!isset($mods[$mid])) return '';                 // 模块被删或停用 → 静默不渲染，不报错
         $depth++;
+        // 模块库里的条目本身也是一个块：去掉库内身份（id / name / enabled），
+        // 按它自己的类型渲染。类型缺失时退回 text，绝不静默变成空白。
         $inner = $mods[$mid];
-        $inner['type'] = $inner['type'] ?? 'text';
-        unset($inner['id']);
+        unset($inner['id'], $inner['name'], $inner['enabled']);
+        if (block_type_of($inner) === '' || block_type_of($inner) === 'module') $inner['_type'] = 'text';
         $html = builder_render_block($inner);
         $depth--;
         return $html;
