@@ -70,14 +70,22 @@ ok(collab_can($g, 'comment') === true, '授予的批注权限没生效');
 $forged = $g; $forged['caps'] = ['view', 'delete', 'edit'];
 ok(collab_can($forged, 'delete') === false, '伪造的 caps 竟然被认了');
 
-/* ── 5. 落地页不给编辑（它没有版本记录，给不出「谁改的、能不能退回」）── */
+/* ── 5. 落地页现在也能授予编辑（它接上版本记录了）── */
+// 上一版这里是「落地页一律不给 edit」，理由是它直接 json_write、没有版本记录。
+// lib/BuilderPages.php 把它收进同一条咽喉之后，这个限制才可以撤——
+// 所以这条断言现在反过来钉：能授予，但**必须**是在有版本记录的前提下。
 $rp = collab_create(['label' => '客户', 'type' => 'page', 'target_id' => 'lp1',
                      'caps' => ['view', 'comment', 'edit'], 'days' => 3]);
-ok(!in_array('edit', $rp['grant']['caps'], true), '落地页竟然发出了可编辑的链接');
-ok(collab_can($rp['grant'], 'edit') === false, '落地页的编辑权限没有被兜住');
-// 历史 grant 里塞了 edit 也不行
-$oldPage = $rp['grant']; $oldPage['caps'] = ['view', 'edit'];
-ok(collab_can($oldPage, 'edit') === false, '历史 grant 带着 edit，落地页竟然能改');
+ok(in_array('edit', $rp['grant']['caps'], true), '落地页应当可以授予编辑权限了');
+ok(collab_can($rp['grant'], 'edit') === true, '落地页的编辑权限没生效');
+// 前提：落地页的写入口必须记版，否则上面这条就是在放出无审计的外部写入
+$bp = file_get_contents("$root/lib/BuilderPages.php");
+ok(str_contains($bp, "rev_record('landing'"), '落地页的写入口没有记版——不该开放外部编辑');
+$pb = file_get_contents("$root/admin/page-builder.php");
+ok(str_contains($pb, 'save_builder_page('), '构建器没走唯一写入口，会绕过版本记录');
+ok(!preg_match('/json_write\(\$builderFile/', $pb), '构建器里还有绕过写入口的直接写盘');
+$ail = file_get_contents("$root/api/ai-landing.php");
+ok(str_contains($ail, 'save_builder_page('), 'AI 生成落地页没走唯一写入口，会绕过版本记录');
 
 /* ── 6. 有效期 ── */
 ok(collab_create(['label'=>'x','type'=>'article','target_id'=>'a1','days'=>9999])['grant']['expires_at']

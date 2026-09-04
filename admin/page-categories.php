@@ -16,7 +16,8 @@ $staticPages = [
     'capability' => ['name' => '产品', 'icon' => '⚡'],
     'courses' => ['name' => '解决方案', 'icon' => '📚'],
 ];
-$builderPages = json_read(DATA_DIR . '/builder-pages.json');
+require_once __DIR__ . '/../lib/BuilderPages.php';
+$builderPages = builder_pages_all();
 foreach ($builderPages as $bp) {
     $staticPages[$bp['id']] = ['name' => $bp['title'] ?? $bp['id'], 'icon' => '🧱'];
 }
