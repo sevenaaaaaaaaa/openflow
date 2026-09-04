@@ -15,8 +15,7 @@ require_once __DIR__ . '/ShopSystem.php';
 
 /** 站点根地址（用于拼支付链接） */
 function quote_site_url(): string {
-    $u = function_exists('site_config_get') ? (string)site_config_get('site_url') : '';
-    return rtrim($u ?: (( (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '')), '/');
+    return of_abs_url();          // 实现已提到 admin/config.php，这里不再自带一份
 }
 
 /** 收款单的公开支付链接 */

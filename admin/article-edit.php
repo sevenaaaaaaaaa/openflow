@@ -506,7 +506,19 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
             <a class="btn btn-ghost btn-sm" href="/xmp/revisions?type=article&id=<?=urlencode($article['id'])?>">
               查看、比对与还原 →
             </a>
-            <div class="hint" style="margin-top:6px;line-height:1.6">每次保存自动记一版，包含谁改的（人 / AI）。还原也会记一版，可以再撤销。</div>
+            <div class="hint" style="margin-top:6px;line-height:1.6">每次保存自动记一版，包含谁改的（人 / AI / 外部协作者）。还原也会记一版，可以再撤销。</div>
+
+            <?php /* 外部临时协作：把这一篇限时交给外面的人 */
+              require_once __DIR__ . '/../lib/CollabReview.php';
+              $openNotes = note_open_count('article', $article['id']);
+            ?>
+            <label style="margin-top:14px">外部协作
+              <?php if ($openNotes): ?><span class="badge badge-orange"><?=$openNotes?> 条待处理批注</span><?php endif; ?>
+            </label>
+            <a class="btn btn-ghost btn-sm" href="/xmp/collaborators">
+              <?=$openNotes ? '查看批注与协作链接' : '发一条限时协作链接'?> →
+            </a>
+            <div class="hint" style="margin-top:6px;line-height:1.6">对方不用注册，到期自动收回；改动记进版本历史并标明是谁改的。</div>
             <?php endif; ?>
             </div>
           </section>
