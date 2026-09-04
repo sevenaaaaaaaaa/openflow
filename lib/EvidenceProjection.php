@@ -41,6 +41,8 @@ if (!function_exists('evidence_project')) {
         }
 
         $runsById = [];
+        $approvalsById = [];
+        $executionsById = [];
         foreach (array_values($flowLogs) as $index => $row) {
             $structured = !empty($row['run_id']) && !empty($row['flow']) && !empty($row['idempotency_key']) && !empty($row['status']);
             if (!$structured) {
@@ -56,8 +58,22 @@ if (!function_exists('evidence_project')) {
             $validation = domain_contract_validate('FlowRun', $run);
             if ($validation['ok']) $runsById[$run['id']] = $run;
             else $gaps[] = evidence_projection_gap('automation_log', $index, 'invalid_structured_run:' . implode(',', $validation['errors']));
+            if (!empty($row['approval']) && is_array($row['approval'])) {
+                $approval = domain_approval($row['approval']);
+                $approvalValidation = domain_contract_validate('Approval', $approval);
+                if ($approvalValidation['ok']) $approvalsById[$approval['id']] = $approval;
+                else $gaps[] = evidence_projection_gap('automation_log', $index, 'invalid_shadow_approval:' . implode(',', $approvalValidation['errors']));
+            }
+            if (!empty($row['execution']) && is_array($row['execution'])) {
+                $execution = domain_execution($row['execution']);
+                $executionValidation = domain_contract_validate('Execution', $execution);
+                if ($executionValidation['ok']) $executionsById[$execution['id']] = $execution;
+                else $gaps[] = evidence_projection_gap('automation_log', $index, 'invalid_shadow_execution:' . implode(',', $executionValidation['errors']));
+            }
         }
         $objects['FlowRun'] = array_values($runsById);
+        $objects['Approval'] = array_values(array_replace(array_column($objects['Approval'], null, 'id'), $approvalsById));
+        $objects['Execution'] = array_values(array_replace(array_column($objects['Execution'], null, 'id'), $executionsById));
 
         $events = is_array($conversionLedger['events'] ?? null) ? $conversionLedger['events'] : [];
         if (!$events && ((int)($conversionLedger['total']['count'] ?? 0) > 0)) {
