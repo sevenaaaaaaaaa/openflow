@@ -54,7 +54,9 @@ Flow 与 Loop 使用同一套领域身份和执行入口。模式只改变“谁
 
 进入阶段 1 实现前，需要为每个共享对象补齐：字段契约、所有者模块、状态机、权限、幂等键、审计事件和兼容策略。第一项实现必须证明同一动作在 Flow 与 Loop 侧具有相同 ID、状态和执行结果。
 
-## 第一批实现：ActionProposal
+## 已实现的兼容契约
+
+### ActionProposal
 
 `lib/DomainContract.php` 已提供不接管存储的兼容层，`GrowthAction` 仍是事实所有者：
 
@@ -65,4 +67,25 @@ Flow 与 Loop 使用同一套领域身份和执行入口。模式只改变“谁
 - 只有带 `executor` 的真实执行结果才能写成成功，模型文字不能充当执行事实；
 - 本批不改变 `GrowthAction` JSON、不添加 Loop 存储，也不接入生产写路径。
 
-对应契约测试为 `tests/domain_contract_test.php`。下一批先核查调用点，再决定是否让 `GrowthAction` 原生写入契约元数据。
+对应契约测试为 `tests/domain_contract_test.php`。是否让 `GrowthAction` 原生写入契约元数据，留待写路径集成 ADR 决定。
+
+### Goal
+
+- `GrowthGoal` 继续拥有目标存储和进度计算；
+- Flow 与 Loop 共享目标 ID、指标、目标值、基线、周期和预算；
+- 当前只规范 `active/achieved/archived`，不改变“单一 active”现有行为。
+
+### SkillDefinition
+
+- `SkillSystem` 继续拥有技能定义、发布和执行；
+- 共享技能 ID、语义版本、类型、发布状态和显式权限；
+- 类型只允许 `prompt/tool/workflow`，权限沿用 `SkillGuard`，不增加任意代码执行能力；
+- `tips_stage` 作为可选分类字段，不强迫历史技能迁移。
+
+### FlowRun
+
+- 第一版是确定性运行信封，不是新的执行器或运行数据库；
+- 使用 `tenant + definition + idempotency_key` 生成跨模式一致的 run ID；
+- 状态固定为 `queued → running → succeeded/failed`，禁止跳过执行直接写成功；
+- 结果必须包含真实 `executor`，并支持引用现有日志或领域结果；
+- `FlowSystem`、`CanvasSystem` 和 `AutomationSystem` 仍按原路径运行，本批不改变其签名。
