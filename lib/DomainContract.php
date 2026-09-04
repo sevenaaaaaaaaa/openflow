@@ -87,6 +87,47 @@ if (!function_exists('domain_contract_version')) {
                 'idempotency' => 'tenant_id + id + version + structure_hash',
                 'audit_events' => ['flow.defined', 'flow.activated', 'flow.paused', 'flow.archived'],
             ],
+            'Memory' => [
+                'owner' => 'GrowthMemory',
+                'required' => ['id', 'version', 'tenant_id', 'subject_id', 'kind', 'fact', 'source_type', 'source_ref', 'created_at'],
+                'types' => ['fact', 'result', 'correction'],
+                'source_types' => ['event', 'execution', 'evaluation', 'human'],
+                'permission' => 'existing tenant, privacy and GrowthMemory guards',
+                'idempotency' => 'tenant_id + subject_id + source_type + source_ref',
+                'audit_events' => ['memory.recorded', 'memory.corrected'],
+            ],
+            'Policy' => [
+                'owner' => 'AutonomyGuard and existing domain guards',
+                'required' => ['id', 'version', 'tenant_id', 'status', 'risk_level', 'permissions', 'daily_budget', 'daily_action_cap', 'created_at'],
+                'statuses' => ['active', 'disabled', 'archived'],
+                'risk_levels' => ['low', 'medium', 'high', 'critical'],
+                'permission' => 'admin-owned composition of existing guards',
+                'idempotency' => 'tenant_id + id + version',
+                'audit_events' => ['policy.activated', 'policy.disabled', 'policy.archived'],
+            ],
+            'LoopDefinition' => [
+                'owner' => 'LoopRuntime',
+                'required' => ['id', 'version', 'tenant_id', 'status', 'goal_id', 'tips_stages', 'allowed_flow_ids', 'allowed_skill_ids', 'budgets', 'stop_conditions', 'created_at'],
+                'statuses' => ['draft', 'active', 'paused', 'archived'],
+                'permission' => 'Policy plus referenced Flow and Skill guards',
+                'idempotency' => 'tenant_id + id + version',
+                'audit_events' => ['loop.defined', 'loop.activated', 'loop.paused', 'loop.archived'],
+            ],
+            'LoopRun' => [
+                'owner' => 'LoopRuntime',
+                'required' => ['id', 'version', 'tenant_id', 'definition_id', 'goal_id', 'status', 'iteration', 'max_iterations', 'budget_usage', 'idempotency_key', 'created_at'],
+                'statuses' => ['queued', 'observing', 'planning', 'awaiting_approval', 'executing', 'evaluating', 'succeeded', 'failed', 'paused', 'cancelled'],
+                'transitions' => [
+                    'queued'=>['observing','paused','cancelled'], 'observing'=>['planning','failed','paused'],
+                    'planning'=>['awaiting_approval','evaluating','failed','paused'],
+                    'awaiting_approval'=>['executing','cancelled','paused'], 'executing'=>['evaluating','failed','paused'],
+                    'evaluating'=>['observing','succeeded','failed','paused'], 'failed'=>['observing','cancelled'],
+                    'paused'=>['observing','cancelled'], 'succeeded'=>[], 'cancelled'=>[],
+                ],
+                'permission' => 'Loop Policy and referenced Action Gateway guards',
+                'idempotency' => 'tenant_id + definition_id + idempotency_key',
+                'audit_events' => ['loop.queued','loop.observing','loop.planning','loop.awaiting_approval','loop.executing','loop.evaluating','loop.succeeded','loop.failed','loop.paused','loop.cancelled'],
+            ],
             'FlowRun' => [
                 'owner' => 'FlowSystem',
                 'required' => ['id', 'version', 'tenant_id', 'definition_id', 'status', 'trigger', 'idempotency_key', 'created_at'],
@@ -285,6 +326,55 @@ if (!function_exists('domain_contract_version')) {
         ];
     }
 
+    function domain_memory(array $source): array {
+        $tenantId=trim((string)($source['tenant_id']??'default'))?:'default';
+        $subjectId=trim((string)($source['subject_id']??''));
+        $sourceType=(string)($source['source_type']??''); $sourceRef=trim((string)($source['source_ref']??''));
+        $id=trim((string)($source['id']??''));
+        if($id===''&&$subjectId!==''&&$sourceType!==''&&$sourceRef!=='')$id='mem_'.substr(hash('sha256',$tenantId.'|'.$subjectId.'|'.$sourceType.'|'.$sourceRef),0,20);
+        return ['contract'=>'Memory','contract_version'=>domain_contract_version(),'id'=>$id,'version'=>max(1,(int)($source['version']??1)),'tenant_id'=>$tenantId,
+            'subject_id'=>$subjectId,'kind'=>(string)($source['kind']??'fact'),'fact'=>trim((string)($source['fact']??'')),
+            'source_type'=>$sourceType,'source_ref'=>$sourceRef,'created_at'=>(string)($source['created_at']??'')];
+    }
+
+    function domain_policy(array $source): array {
+        $permissions=array_values(array_unique(array_map('strval',(array)($source['permissions']??[])))); sort($permissions);
+        return ['contract'=>'Policy','contract_version'=>domain_contract_version(),'id'=>trim((string)($source['id']??'')),'version'=>max(1,(int)($source['version']??1)),
+            'tenant_id'=>trim((string)($source['tenant_id']??'default'))?:'default','status'=>(string)($source['status']??'active'),
+            'risk_level'=>(string)($source['risk_level']??'low'),'permissions'=>$permissions,'daily_budget'=>max(0,(float)($source['daily_budget']??0)),
+            'daily_action_cap'=>max(0,(int)($source['daily_action_cap']??0)),'quiet_days'=>max(0,(int)($source['quiet_days']??0)),
+            'source_refs'=>array_values((array)($source['source_refs']??['AutonomyGuard'])),'created_at'=>(string)($source['created_at']??'')];
+    }
+
+    function domain_loop_definition(array $source): array {
+        $stages=array_values((array)($source['tips_stages']??['Touch','Insight','Personalize','Sell']));
+        return ['contract'=>'LoopDefinition','contract_version'=>domain_contract_version(),'id'=>trim((string)($source['id']??'')),'version'=>max(1,(int)($source['version']??1)),
+            'tenant_id'=>trim((string)($source['tenant_id']??'default'))?:'default','status'=>(string)($source['status']??'draft'),'goal_id'=>trim((string)($source['goal_id']??'')),
+            'tips_stages'=>$stages,'allowed_flow_ids'=>array_values((array)($source['allowed_flow_ids']??[])),'allowed_skill_ids'=>array_values((array)($source['allowed_skill_ids']??[])),
+            'policy_id'=>(string)($source['policy_id']??''),'budgets'=>is_array($source['budgets']??null)?$source['budgets']:[],
+            'stop_conditions'=>is_array($source['stop_conditions']??null)?$source['stop_conditions']:[],'created_at'=>(string)($source['created_at']??'')];
+    }
+
+    function domain_loop_run(array $source): array {
+        $tenantId=trim((string)($source['tenant_id']??'default'))?:'default'; $definitionId=trim((string)($source['definition_id']??''));
+        $key=trim((string)($source['idempotency_key']??'')); $id=trim((string)($source['id']??''));
+        if($id===''&&$definitionId!==''&&$key!=='')$id='loop_'.substr(hash('sha256',$tenantId.'|'.$definitionId.'|'.$key),0,20);
+        return ['contract'=>'LoopRun','contract_version'=>domain_contract_version(),'id'=>$id,'version'=>max(1,(int)($source['version']??1)),'tenant_id'=>$tenantId,
+            'definition_id'=>$definitionId,'goal_id'=>trim((string)($source['goal_id']??'')),'status'=>(string)($source['status']??'queued'),
+            'iteration'=>max(0,(int)($source['iteration']??0)),'max_iterations'=>max(1,(int)($source['max_iterations']??1)),
+            'budget_usage'=>is_array($source['budget_usage']??null)?$source['budget_usage']:['steps'=>0,'tokens'=>0,'cost'=>0,'elapsed_seconds'=>0],
+            'idempotency_key'=>$key,'checkpoint'=>is_array($source['checkpoint']??null)?$source['checkpoint']:[],
+            'created_at'=>(string)($source['created_at']??''),'updated_at'=>(string)($source['updated_at']??'')];
+    }
+
+    function domain_loop_run_transition(array $run,string $nextStatus,array $checkpoint=[]):array{
+        $current=(string)($run['status']??''); $allowed=domain_contract_catalog()['LoopRun']['transitions'][$current]??[];
+        if(!in_array($nextStatus,$allowed,true))return ['ok'=>false,'error'=>'invalid_transition','from'=>$current,'to'=>$nextStatus,'run'=>$run];
+        $next=$run;$next['status']=$nextStatus;$next['version']=max(1,(int)($run['version']??1))+1;$next['updated_at']=(string)($checkpoint['updated_at']??date('c'));
+        if($checkpoint)$next['checkpoint']=array_replace((array)($run['checkpoint']??[]),$checkpoint);
+        return ['ok'=>true,'event'=>'loop.'.$nextStatus,'run'=>$next];
+    }
+
     /** Create a deterministic run envelope; it does not execute or persist a flow. */
     function domain_flow_run(array $source, string $viewMode = 'flow'): array {
         $tenantId = trim((string)($source['tenant_id'] ?? 'default')) ?: 'default';
@@ -392,6 +482,9 @@ if (!function_exists('domain_contract_version')) {
         if ($type === 'FlowDefinition' && (!is_array($object['input_schema'] ?? null) || !is_array($object['output_schema'] ?? null))) {
             $errors[] = 'invalid_io_schema';
         }
+        if ($type === 'Memory' && isset($definition['types']) && !in_array($object['kind'] ?? '', $definition['types'], true)) $errors[]='invalid_kind:'.($object['kind']??'');
+        if ($type === 'LoopDefinition' && array_values((array)($object['tips_stages']??[])) !== ['Touch','Insight','Personalize','Sell']) $errors[]='invalid_tips_stages';
+        if ($type === 'LoopRun' && (int)($object['iteration']??0) > (int)($object['max_iterations']??0)) $errors[]='iteration_budget_exceeded';
         if ($type === 'SkillInvocation' && ($object['status'] ?? '') === 'succeeded' && empty($object['result_ref'])) {
             $errors[] = 'missing:result_ref';
         }
