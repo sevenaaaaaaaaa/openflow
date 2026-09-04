@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/BlockTargeting.php';
+// 注册表与块契约必须在顶部引入：下面的保存逻辑要用 block_new_key() / block_normalize_all()，
+// 而原来的 require 在第 120 多行，保存路径根本走不到。
+require_once __DIR__ . '/../lib/BlockRegistry.php';
+require_once __DIR__ . '/../lib/BlockContract.php';
 require_login();
 require_perm('pages');
 
@@ -28,7 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     $blockTypes = $_POST['block_type'] ?? [];
     foreach ($blockTypes as $bi => $bt) {
         if (empty($bt)) continue;
-        $block = ['id' => 'blk_' . $bi . '_' . substr(bin2hex(random_bytes(4)), 0, 6), 'type' => $bt];
+        // 块身份必须活过这次保存。以前这里每次都 random 一个新 id，
+        // 等于每保存一次就把所有区块换成「新块」——按块比对版本、给块留批注、
+        // 看单块转化，全都做不了。现在表单会把 _key 带回来，只有新块才生成。
+        $postedKey = trim((string)($_POST['block_key'][$bi] ?? ''));
+        if (!preg_match('/^[A-Za-z0-9_-]{1,64}$/', $postedKey)) $postedKey = block_new_key();
+        $block = ['_key' => $postedKey, '_type' => $bt];
         foreach (['title','subtitle','content','image','bg_color','button_text','button_url','video_url','icon','columns','count','items','form_slug','layout','module_id'] as $fk) {
             if (isset($_POST['block_' . $fk][$bi])) $block[$fk] = $_POST['block_' . $fk][$bi];
         }
@@ -43,6 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         if ($hasAud) $block['audience'] = $aud;
         $data['blocks'][] = $block;
     }
+    // 归一化 + 去重 _key：重复的 key 比没有 key 更糟，
+    // 它会让「按 key 定位块」悄悄指向错的那一个。
+    $data['blocks'] = block_normalize_all($data['blocks']);
 
     if (empty($id)) {
         $data['id'] = 'lp_' . date('Ymd_His') . '_' . substr(bin2hex(random_bytes(4)), 0, 8);
@@ -115,7 +127,6 @@ if (isset($_GET['edit'])) {
 }
 
 // 类型表来自注册表，别再各抄一份（此前这里 13 种、模块库 17 种、前台渲染器 13 种，三份对不上）
-require_once __DIR__ . '/../lib/BlockRegistry.php';
 $blockTypes = block_types();
 $moduleLib  = block_modules();
 
@@ -189,10 +200,13 @@ admin_header('落地页构建器');
             <div class="block-item" draggable="true" ondragstart="blkDragStart(event)" ondragover="blkDragOver(event)" ondrop="blkDrop(event)" ondragend="this.classList.remove('dragging')" style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--surface);cursor:grab">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
                 <span title="拖拽排序" style="cursor:grab;color:var(--faint)">☰</span>
-                <span style="font-weight:600;font-size:14px">🧱 <?=htmlspecialchars($blockTypes[$blk['type']] ?? $blk['type'])?></span>
+                <?php $bkType = block_type_of($blk); $bkKey = block_key_of($blk); ?>
+                <?php /* 块身份随表单往返，保存后不变 —— 块级批注/比对全靠它 */ ?>
+                <input type="hidden" name="block_key[]" value="<?=htmlspecialchars($bkKey)?>">
+                <span style="font-weight:600;font-size:14px">🧱 <?=htmlspecialchars($blockTypes[$bkType] ?? $bkType)?></span>
                 <select name="block_type[]" onchange="renameBlock(this)" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px">
                   <?php foreach ($blockTypes as $btk => $btv): ?>
-                  <option value="<?=$btk?>" <?=$blk['type']===$btk?'selected':''?>><?=htmlspecialchars($btv)?></option>
+                  <option value="<?=$btk?>" <?=$bkType===$btk?'selected':''?>><?=htmlspecialchars($btv)?></option>
                   <?php endforeach; ?>
                 </select>
                 <button type="button" class="btn btn-danger btn-sm" style="margin-left:auto" onclick="this.closest('.block-item').remove()">✕</button>
@@ -205,7 +219,7 @@ admin_header('落地页构建器');
                     <option value="">不引用（用下面的字段自己填）</option>
                     <?php foreach ($moduleLib as $mid => $mod): ?>
                     <option value="<?=htmlspecialchars($mid)?>" <?=($blk['module_id'] ?? '')===$mid?'selected':''?>>
-                      <?=htmlspecialchars($mod['name'] ?? $mid)?> · <?=htmlspecialchars(block_type_label($mod['type'] ?? ''))?>
+                      <?=htmlspecialchars($mod['name'] ?? $mid)?> · <?=htmlspecialchars(block_type_label(block_type_of($mod)))?>
                     </option>
                     <?php endforeach; ?>
                   </select>
@@ -286,12 +300,13 @@ function addBlock(type, label) {
       '</select>' +
       '<button type="button" class="btn btn-danger btn-sm" style="margin-left:auto" onclick="this.closest(\'.block-item\').remove()">✕</button>' +
     '</div>' +
+    '<input type="hidden" name="block_key[]" value="">' +
     '<div class="block-fields" style="display:grid;gap:8px">' +
-      // 新块也必须输出这个字段，否则 block_module_id[] 与 block_type[] 的下标会错位
+      // 新块也必须输出这些字段，否则 block_key[] / block_module_id[] 与 block_type[] 的下标会错位
       '<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)"><span style="flex:0 0 auto">引用模块</span>' +
       '<select name="block_module_id[]" style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">' +
         '<option value="">不引用（用下面的字段自己填）</option>' +
-        '<?php foreach ($moduleLib as $mid => $mod): ?><option value="<?=htmlspecialchars($mid)?>"><?=htmlspecialchars(($mod['name'] ?? $mid) . ' · ' . block_type_label($mod['type'] ?? ''))?></option><?php endforeach; ?>' +
+        '<?php foreach ($moduleLib as $mid => $mod): ?><option value="<?=htmlspecialchars($mid)?>"><?=htmlspecialchars(($mod['name'] ?? $mid) . ' · ' . block_type_label(block_type_of($mod)))?></option><?php endforeach; ?>' +
       '</select></label>' +
       '<input type="text" name="block_title[]" placeholder="标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' +
       '<input type="text" name="block_subtitle[]" placeholder="副标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' +
