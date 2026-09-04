@@ -63,15 +63,27 @@ ok(substr_count($builder, 'block_module_id[]') >= 2,
 // module 解引用要能真的把库里的模块渲染出来
 $tmpMods = DATA_DIR . '/page-modules.json';
 $backup  = is_file($tmpMods) ? file_get_contents($tmpMods) : null;
+// 关键：这里必须**照 admin/page-modules.php 真正保存的形状**写，
+// 也就是区块字段嵌在 block 子对象里。用手搓的扁平 fixture 测过，
+// 曾经让「模块渲染成空壳」这个 bug 整整躲过一轮——测试的形状不对，
+// 测得再多也是在测另一个系统。
 file_put_contents($tmpMods, json_encode([
-    ['id' => 'm_ctest', 'name' => '契约测试模块', 'type' => 'cta', 'title' => '模块库标题', 'enabled' => true],
-    ['id' => 'm_off',   'name' => '停用的',       'type' => 'cta', 'title' => '不该出现',   'enabled' => false],
+    ['id' => 'm_ctest', 'name' => '契约测试模块', 'type' => 'cta', 'enabled' => true,
+     'block' => ['type' => 'cta', 'title' => '模块库标题', 'content' => '模块库内容']],
+    ['id' => 'm_off',   'name' => '停用的',       'type' => 'cta', 'enabled' => false,
+     'block' => ['type' => 'cta', 'title' => '不该出现']],
+    // 老的扁平形状也得继续认（历史数据没有 block 子对象）
+    ['id' => 'm_flat',  'name' => '老扁平模块',   'type' => 'cta', 'enabled' => true,
+     'title' => '扁平标题'],
 ], JSON_UNESCAPED_UNICODE));
 $mods = block_modules();
 ok(isset($mods['m_ctest']), '启用的模块没被读出来');
 ok(!isset($mods['m_off']), '停用的模块不应被读出来');
 $out = builder_render_block(['type' => 'module', 'module_id' => 'm_ctest']);
 ok(str_contains($out, '模块库标题'), 'module 引用没有把库里的模块渲染出来——模块库依然是死的');
+ok(str_contains($out, '模块库内容'), '模块的正文没渲染出来（嵌套的 block 字段没摊平，会渲染成空壳）');
+ok(str_contains(builder_render_block(['type' => 'module', 'module_id' => 'm_flat']), '扁平标题'),
+   '老的扁平形状模块渲染不出来了——历史数据会集体变空白');
 ok(builder_render_block(['type' => 'module', 'module_id' => 'm_off']) === '', '停用的模块不该渲染');
 ok(builder_render_block(['type' => 'module', 'module_id' => '不存在']) === '', '引用不存在的模块应静默跳过而不是报错');
 if ($backup === null) @unlink($tmpMods); else file_put_contents($tmpMods, $backup);
