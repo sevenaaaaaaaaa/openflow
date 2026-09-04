@@ -14,14 +14,13 @@
 | 主页面视觉 | 各 `.php` 内联 `<style>` | index/product/capability/courses/about 各自内联 |
 | 次级页面样式 | `assets/tailwind-build.css` | academy/community/docs 等 35 个次级页 |
 | 独立页样式 | `assets/standalone.css` | 问卷/感谢页等 7 个独立页 |
-| 落地页模板 | `assets/site-arc-betterup.css` + `assets/site-betterup.js` | 仅 landing.php 使用 |
 | 次级页面外壳/导航 | `assets/site-shell.js` | 26 个次级页共用 |
 | 首页角色化 | `assets/role-content.js` + `assets/role-switch.js` | 仅首页 |
 | 埋点注入 | `assets/inject.js` | 全站 |
 | SEO 注入 | `assets/seo-inject.js` | 主页面 |
 | 埋点 SDK | `assets/cdp-track.js` | 全站 |
 
-**已删除的探索期变体**（勿恢复）：`site-arc.js/css`、`site-notion.js/css`、`site-betterup.css`、`site.js`、`dynamic-content.js`、`lead-form.js`。
+探索期的未引用主题变体已经移除；不要恢复未进入当前资产管线的样式和脚本。
 
 ---
 
@@ -80,7 +79,7 @@
 1. **先查表**：本文档 + `grep -rn "关键词" lib/`，确认没有现成实现
 2. **单一实现**：同一功能只在一处实现，其他地方 require 复用
 3. **命名一致**：模块名 = 功能名，不造同义词（如 GrowthDriver vs GrowthEngine 二选一）
-4. **不留旧品牌**：文案/字段名/注释禁止出现 flowcoming、幸福、Well Q、wellbeing、wellq、心理学、职场等历史词
+4. **品牌单一**：产品文案、字段名、注释和资源只使用当前 OpenFlow 品牌与增长业务语义，不保留历史品牌资产
 5. **不留备份**：工具产生的 `.bak*` 文件不入库（已在 .gitignore 排除）
 6. **不留死代码**：删除旧实现后，跑 `qa-check.sh` 确认无 0 引用残留
 

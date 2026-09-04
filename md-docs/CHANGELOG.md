@@ -111,7 +111,7 @@
 ## v1.0.0（2026-08-10 · 品牌升级）
 
 - 正式更名为 **OpenFlow XMP** — AI 时代的网站增长、营销与运营操作系统
-- 品牌定位升级：从「组织幸福 CXM」到「网站增长 XMP」，首页围绕「内容 + AI + 自动化」三引擎
+- 品牌定位升级为网站增长操作系统，首页围绕「内容 + AI + 自动化」三引擎
 - 基础设施：CLI `bin/of` · 数据库 `data/db/openflow.db` · 品牌占位全面更新
 - 新增文档：FEATURES / USAGE / CHANGELOG / REQUIREMENTS / ROADMAP
 

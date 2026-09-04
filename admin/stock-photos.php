@@ -78,7 +78,7 @@ admin_header('免费图库');
           <button data-plat="pixabay">Pixabay</button>
         </div>
         <div class="stock-searchbar">
-          <input type="text" id="stockQ" placeholder="输入关键词，如 office teamwork leadership well-being ..." onkeydown="if(event.key==='Enter'){doStockSearch(1)}">
+          <input type="text" id="stockQ" placeholder="输入关键词，如 AI growth content marketing ..." onkeydown="if(event.key==='Enter'){doStockSearch(1)}">
           <button class="btn btn-primary" onclick="doStockSearch(1)">搜索</button>
         </div>
         <div id="stockResults">
