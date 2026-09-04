@@ -125,6 +125,21 @@ define('ARTICLES_DIR', DATA_DIR . '/articles');
 define('LEADS_CSV', DATA_DIR . '/leads.csv');
 define('SITE_URL', '//' . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
 
+/**
+ * 绝对 URL —— 站点设置里配了就用配的，否则按当前请求推断。
+ * 之前 lib/QuoteSystem.php 里有一份同样的实现；外部协作链接也要用，
+ * 与其抄第二份，不如提到这里，让原来那份改成调用它。
+ */
+function of_abs_url(string $path = ''): string {
+    $u = function_exists('site_config_get') ? (string)site_config_get('site_url') : '';
+    if ($u === '') {
+        $https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
+              || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+        $u = ($https ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+    }
+    return rtrim($u, '/') . ($path !== '' ? '/' . ltrim($path, '/') : '');
+}
+
 foreach ([DATA_DIR, PAGES_DIR, ARTICLES_DIR, UPLOAD_DIR] as $dir) {
     if (!is_dir($dir)) mkdir($dir, 0755, true);
 }
