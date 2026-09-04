@@ -23,6 +23,8 @@
 |---|---|---|
 | `VISION.md` | 长期不变的产品边界 | TIPS 是共同业务模型；Flow/Copilot 与 Loop/Agent 是两种并存范式；业务、稳定与兼容优先 |
 | `FLOW-LOOP-ROADMAP.md` | 新方向如何渐进落地 | 先基线与共享契约，再建受控运行时和一个黄金 Loop，验证后才做双工作台与规模化 |
+| `FLOW-BASELINE.md` | 现有 AITIPS Flow 如何测量 | 8 个运行维度形成可重复 JSON 基线，完整 77 个契约测试阻断回归 |
+| `ADR-001-SHARED-DOMAIN-CONTRACTS.md` | Flow 与 Loop 是否共用业务对象 | 共用身份、权限、审计和执行入口；Loop 不复制现有业务实现 |
 | `AUDIT-01-CONTENT.md` | 内容/CMS 够不够，AI 让内容变成什么 | 内容不是页面，是活的知识与销售系统；生产三范式（人把关到什么程度） |
 | `AUDIT-02-CDP.md` | 用户数据/CDP 好不好，怎么不重造 BI | profiles.json 是 P0 架构债；价值在「画像即 Agent 实时决策供给」，不在报表 |
 | `AUDIT-03-MA.md` | 营销自动化是不是核心 | **自动化不是核心，个性化才是**；从「人连流程图」到「Agent 逐人决策」 |
