@@ -53,3 +53,11 @@
 - 无样本时比率返回 `null`，不以 100% 制造健康假象；观测器不写文件、不调用执行器，也不改变 Flow 写路径。
 
 在获得足够真实样本并确认上述口径稳定前，不扩展第二个动作。第二个动作的选择必须基于实际异常分布、可回读验证能力和回滚成本另行评审。
+
+## Approval / Execution 第一批影子信封
+
+- 仍只覆盖已启用的单节点 `add_tag` Flow，不扩大动作范围；
+- Flow 的启用配置作为确定性策略批准，`actor_type=policy`，明确记录 `enabled_flow_configuration` 与 `flow-definition:<id>:enabled`，不伪称某位人工在运行时批准；
+- 每次标签调用生成 Execution，引用同一 Approval 与 FlowRun；运行态无结果，只有标签回读成功后才带 `result_ref` 进入成功态；
+- Approval/Execution 只作为自动化日志的可选嵌套字段追加，旧四字段、原执行顺序、返回值和 GrowthAction 存储均不改变；
+- `EvidenceProjection` 按 ID 合并运行态与终态，非法信封报告 gap，不补造证据。

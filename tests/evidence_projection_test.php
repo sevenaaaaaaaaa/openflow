@@ -39,5 +39,16 @@ check('projection is explicitly read-only', $structured['mode']==='read_only');
 $action=$structured['objects']['ActionProposal'][0];$approval=$structured['objects']['Approval'][0];$execution=$structured['objects']['Execution'][0];$evaluation=$structured['objects']['Evaluation'][0];
 check('projected evidence chain validates', domain_evidence_chain($action,$approval,$execution,$evaluation)['ok']);
 
+echo "\n── optional shadow envelopes ──\n";
+$shadowApproval=domain_approval(['action_id'=>'act_tag','decision'=>'approved','actor_type'=>'policy','actor_id'=>'enabled_flow_configuration','policy_ref'=>'flow-definition:f1:enabled','decided_at'=>'2026-09-05 12:00:00']);
+$shadowRunning=domain_execution(['action_id'=>'act_tag','approval_id'=>$shadowApproval['id'],'flow_run_id'=>'run_tag','status'=>'running','executor'=>'CdpSync::cdp_add_tag','idempotency_key'=>'event_1:add_tag:0','created_at'=>'2026-09-05 12:00:00']);
+$shadowDone=domain_execution(array_merge($shadowRunning,['status'=>'succeeded','result_ref'=>'cdp_customer:c1','completed_at'=>'2026-09-05 12:00:01']));
+$shadowProjection=evidence_project([], [
+    ['time'=>'2026-09-05 12:00:00','flow'=>'f1','message'=>'影子运行：running','run_id'=>'run_tag','trigger'=>'page_view','status'=>'running','idempotency_key'=>'event_1','approval'=>$shadowApproval,'execution'=>$shadowRunning],
+    ['time'=>'2026-09-05 12:00:01','flow'=>'f1','message'=>'影子运行：succeeded','run_id'=>'run_tag','trigger'=>'page_view','status'=>'succeeded','idempotency_key'=>'event_1','approval'=>$shadowApproval,'execution'=>$shadowDone],
+], []);
+check('shadow approval coalesces by id',count($shadowProjection['objects']['Approval'])===1);
+check('shadow execution latest status wins',count($shadowProjection['objects']['Execution'])===1 && $shadowProjection['objects']['Execution'][0]['status']==='succeeded');
+
 echo "\n".($fail===0?"✅ 全部通过（{$pass}）\n":"❌ 失败 {$fail} / 通过 {$pass}\n");
 exit($fail===0?0:1);
