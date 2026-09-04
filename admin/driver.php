@@ -1,7 +1,6 @@
 <?php
 /**
- * 增长驱动引擎 — OpenFlow 的"主动推进"主引擎
- * 把舆情/AI/内容/CDP/MA 串成一条自动推动网站前进的飞轮
+ * 规则增长引擎 — 固定步骤的增长辅助流程，不是 TIPS Agent Loop。
  */
 require_once __DIR__ . '/config.php';
 require_login();
@@ -26,7 +25,7 @@ $aiCfg = AiCenter::isConfigured();
 // 待审核内容
 $pending = $state['pending_review'] ?? [];
 
-admin_header('增长驱动引擎');
+admin_header('规则增长引擎');
 ?>
 <style>
   .driver-hero{background:linear-gradient(135deg,var(--accent-soft),oklch(60% .18 300/.12));border:1px solid var(--border);border-radius:var(--r-lg);padding:24px}
@@ -48,8 +47,8 @@ admin_header('增长驱动引擎');
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <div style="font-size:36px">🔄</div>
         <div>
-          <h1 style="font-size:20px;font-weight:800">增长驱动引擎</h1>
-          <p class="text-sm text-muted" style="margin-top:2px">舆情 → 总结 → 撰写 → 更新 → 优化 → 转化 → 激活 → 洞察 → 增长。让网站被主动推着前进。</p>
+          <h1 style="font-size:20px;font-weight:800">规则增长引擎 <span class="evo-tag">固定步骤</span></h1>
+          <p class="text-sm text-muted" style="margin-top:2px">按既定步骤处理舆情、总结、草稿与洞察；每轮由用户或定时任务触发，不等同于自主 TIPS Loop。</p>
         </div>
         <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
           <form method="get" style="display:inline"><?= csrf_field() ?><button class="btn btn-primary" name="run" value="1">▶️ 运行一轮</button></form>

@@ -61,7 +61,8 @@ function admin_nav_pinned(): array {
         ['id' => 'workspace',        'label' => '工作台',    'tag' => '默认',   'perm' => 'dashboard', 'icon' => $I['home']],
         ['id' => 'dashboard',        'label' => '经营驾驶舱', 'tag' => '大屏',   'perm' => 'dashboard', 'icon' => $I['gauge']],
         ['id' => 'content-calendar', 'label' => '内容日历',   'tag' => '排期',   'perm' => 'tasks',     'icon' => $I['cal']],
-        ['id' => 'evolution',        'label' => '自我进化',   'tag' => '自生长', 'perm' => 'evolution', 'icon' => $I['eve']],
+        ['id' => 'evolution',        'label' => '系统体检',   'tag' => '建议',   'perm' => 'evolution', 'icon' => $I['eve']],
+        ['id' => 'loop-workspace',   'label' => 'Loop 工作台', 'tag' => '实验',  'perm' => 'dashboard', 'icon' => $I['ai']],
     ];
     $pins = [];
     foreach ($all as $p) {
@@ -138,7 +139,7 @@ function admin_nav_tree(): array {
                     ['id' => 'navigation', 'label' => '增长导航', 'perm' => 'navigation'],
                 ]],
                 ['label' => '审核中心', 'hint' => '投稿 · 讲师 · 规则', 'subs' => [
-                    ['id' => 'approvals', 'label' => '审核中心', 'perm' => 'approvals'],
+                    ['id' => 'approvals', 'label' => '内容与资质审核', 'perm' => 'approvals'],
                     ['id' => 'reviews', 'label' => '内容审核', 'perm' => 'reviews'],
                     ['id' => 'review-settings', 'label' => '审核规则', 'perm' => 'reviews'],
                 ]],
@@ -283,22 +284,22 @@ function admin_nav_tree(): array {
                 ]],
             ]],
         ]],
-        ['id' => 'ai', 'label' => 'AI 引擎', 'short' => 'AI', 'icon' => $I['ai'], 'desc' => '自生长引擎：主动驱动，不等你下指令', 'groups' => [
+        ['id' => 'ai', 'label' => 'AI 与自动化', 'short' => 'AI', 'icon' => $I['ai'], 'desc' => '规则引擎、AI 辅助与 Loop 实验能力', 'groups' => [
             ['label' => '主动增长', 'items' => [
-                ['id' => 'flow', 'label' => '运营主线', 'perm' => 'flow', 'hint' => '三流联动'],
-                ['id' => 'driver', 'label' => '增长驱动', 'perm' => 'flow', 'hint' => '主动引擎'],
+                ['id' => 'flow', 'label' => '业务链路总览', 'perm' => 'flow', 'hint' => '三流联动'],
+                ['id' => 'driver', 'label' => '规则增长引擎', 'perm' => 'flow', 'hint' => '固定步骤'],
                 ['label' => '增长大脑', 'hint' => '决策 · 轨道回溯', 'subs' => [
                     ['id' => 'brain', 'label' => '增长大脑', 'perm' => 'brain'],
                     ['id' => 'decision-trace', 'label' => '决策轨道', 'perm' => 'brain'],
                 ]],
-                ['label' => '自我进化', 'hint' => '进化 · 协同修复', 'subs' => [
-                    ['id' => 'evolution', 'label' => '自我进化', 'perm' => 'evolution'],
+                ['label' => '系统体检', 'hint' => '建议 · 协同修复', 'subs' => [
+                    ['id' => 'evolution', 'label' => '系统体检', 'perm' => 'evolution'],
                     ['id' => 'safefix', 'label' => '协同修复', 'perm' => 'evolution'],
                 ]],
             ]],
             ['label' => 'Agent 与知识', 'items' => [
-                ['label' => 'AI Agent', 'hint' => '模型 · 用量与预算', 'subs' => [
-                    ['id' => 'ai-config', 'label' => 'AI Agent', 'perm' => 'ai-config'],
+                ['label' => '模型与 AI', 'hint' => '供应商 · 用量与预算', 'subs' => [
+                    ['id' => 'ai-config', 'label' => '模型配置', 'perm' => 'ai-config'],
                     ['id' => 'ai-usage', 'label' => 'AI 用量与预算', 'perm' => 'ai-config'],
                 ]],
                 ['id' => 'knowledge', 'label' => '知识库', 'perm' => 'knowledge'],
@@ -462,6 +463,12 @@ function admin_nav_render(string $current, string $script = ''): void {
     <?php endforeach; ?>
   </div>
   <div class="sb-panels">
+    <?php $mode = function_exists('workspace_mode_current') ? workspace_mode_current() : 'flow'; ?>
+    <form method="post" action="/xmp/workspace-mode" style="display:flex;gap:4px;padding:8px 10px 10px">
+      <?=function_exists('csrf_field') ? csrf_field() : ''?>
+      <button class="btn btn-sm <?=$mode==='flow'?'btn-primary':'btn-ghost'?>" name="mode" value="flow" formaction="/xmp/workspace-mode" style="flex:1">Flow</button>
+      <button class="btn btn-sm <?=$mode==='loop'?'btn-primary':'btn-ghost'?>" name="mode" value="loop" formaction="/xmp/workspace-mode" style="flex:1">Loop 实验</button>
+    </form>
     <?php if ($pins): ?>
     <div class="sb-pins">
       <?php foreach ($pins as $p): $act = $loc['sub'] === $p['id']; ?>

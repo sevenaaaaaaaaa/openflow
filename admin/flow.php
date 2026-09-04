@@ -1,6 +1,6 @@
 <?php
 /**
- * 运营主线 — 数据流 / 内容流 / 价值流 三线联动总览
+ * 业务链路总览 — 数据流 / 内容流 / 价值流三线联动。
  * 展示每条流从源头到结果的实时数据，并标出各环节的联动状态
  */
 require_once __DIR__ . '/config.php';
@@ -62,7 +62,7 @@ $canvasCount = count(json_read(DATA_DIR . '/canvas-flows.json'));
 // 线索→成交 转化率
 $conversionRate = $leadCount ? round(count($paidOrders) / max(1, $leadCount) * 100) : 0;
 
-admin_header('运营主线');
+admin_header('业务链路总览');
 ?>
 <style>
   .flow-line{display:flex;align-items:stretch;gap:0;margin:10px 0 24px}
@@ -82,8 +82,8 @@ admin_header('运营主线');
 <div class="admin-layout">
   <?php admin_sidebar('flow'); ?>
   <div class="main">
-    <h1> 运营主线</h1>
-    <p class="sub">一条主线串起所有模块：内容吸引 → 数据识别 → 价值转化 · 各环节自动联动</p>
+    <h1> 业务链路总览</h1>
+    <p class="sub">查看内容、数据与价值链路的现有连接；具体规则仍在营销自动化和画布中配置。</p>
 
     <!-- ═══ B. 数据流 ═══ -->
     <div class="flow-title"><h2>📊 数据流</h2><span class="tag" style="background:var(--accent-soft)">匿名 → 识别 → 画像 → 线索</span></div>
