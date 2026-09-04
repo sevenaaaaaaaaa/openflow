@@ -70,9 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $r['ok'] ? $notice = '已回复' : $error = $r['error'];
         }
     } elseif ($act === 'edit') {
-        // 只有文章能被外部编辑：落地页没有版本记录，见 CollabAccess 里的说明
-        if (!$canEdit || $type !== 'article') { $error = '这条链接没有编辑权限'; }
-        else {
+        if (!$canEdit) { $error = '这条链接没有编辑权限'; }
+        elseif ($type === 'article') {
             collab_set_actor($grant);             // 改动以「外部协作者」身份进修订历史
             $ok = save_article($tid, [
                 'title'   => (string)($_POST['title'] ?? ''),
@@ -80,7 +79,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             $ok ? $notice = '已保存，你的改动记进了版本历史' : $error = '保存失败';
             if ($ok) collab_audit('外部协作者修改内容', $grant);
-        }
+        } elseif ($type === 'page') {
+            // 落地页按块改文字。**只认表单带回来的 _key**，照原顺序在原区块上改，
+            // 不新增也不删除区块——外部协作者的活儿是改文案，不是重排页面结构。
+            require_once __DIR__ . '/lib/BuilderPages.php';
+            collab_set_actor($grant);
+            $page = builder_page_get($tid);
+            if (!$page) { $error = '内容不存在'; }
+            else {
+                $keys = (array)($_POST['bkey'] ?? []);
+                $byKey = [];
+                foreach ($keys as $i => $k) $byKey[(string)$k] = $i;
+                $blocks = block_normalize_all($page['blocks'] ?? []);
+                foreach ($blocks as &$b) {
+                    $i = $byKey[block_key_of($b)] ?? null;
+                    if ($i === null) continue;                       // 表单里没有的块原样不动
+                    foreach (['title', 'subtitle', 'content'] as $f) {
+                        if (isset($_POST['b' . $f][$i])) $b[$f] = (string)$_POST['b' . $f][$i];
+                    }
+                }
+                unset($b);
+                $ok = save_builder_page($tid, ['blocks' => $blocks]) !== '';
+                $ok ? $notice = '已保存，你的改动记进了版本历史' : $error = '保存失败';
+                if ($ok) collab_audit('外部协作者修改内容', $grant);
+            }
+        } else { $error = '这种内容暂不支持编辑'; }
     }
     // POST 后重定向，避免刷新重复提交
     $_SESSION['collab_flash'] = ['n' => $notice, 'e' => $error];
@@ -191,6 +214,24 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
     <input type="text" name="title" value="<?=ctext((string)($article['title'] ?? ''))?>" placeholder="标题" style="margin-bottom:10px">
     <textarea name="content" rows="16" placeholder="正文"><?=ctext((string)($article['content'] ?? ''))?></textarea>
     <div style="margin-top:10px"><button class="btn">保存改动</button></div>
+  </form>
+  <?php endif; ?>
+
+  <?php if ($canEdit && $type === 'page' && $blocks): ?>
+  <form method="post" class="card">
+    <?=csrf_field()?><input type="hidden" name="action" value="edit">
+    <p class="hint" style="margin-top:0">按区块改文案。每次保存都会记进版本历史，标明是你改的，作者随时可以还原。
+      区块的增删和排序请让作者来做。</p>
+    <?php foreach ($blocks as $i => $b): $bk = block_key_of($b); ?>
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
+      <input type="hidden" name="bkey[]" value="<?=ctext($bk)?>">
+      <div class="hint" style="margin-bottom:6px">区块 <?=$i + 1?> · <?=ctext(block_type_of($b))?></div>
+      <input type="text" name="btitle[]" value="<?=ctext((string)($b['title'] ?? ''))?>" placeholder="标题" style="margin-bottom:6px">
+      <input type="text" name="bsubtitle[]" value="<?=ctext((string)($b['subtitle'] ?? ''))?>" placeholder="副标题" style="margin-bottom:6px">
+      <textarea name="bcontent[]" rows="2" placeholder="内容"><?=ctext((string)($b['content'] ?? ''))?></textarea>
+    </div>
+    <?php endforeach; ?>
+    <button class="btn">保存改动</button>
   </form>
   <?php endif; ?>
 

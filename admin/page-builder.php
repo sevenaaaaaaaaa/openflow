@@ -5,11 +5,11 @@ require_once __DIR__ . '/../lib/BlockTargeting.php';
 // 而原来的 require 在第 120 多行，保存路径根本走不到。
 require_once __DIR__ . '/../lib/BlockRegistry.php';
 require_once __DIR__ . '/../lib/BlockContract.php';
+require_once __DIR__ . '/../lib/BuilderPages.php';
 require_login();
 require_perm('pages');
 
-$builderFile = DATA_DIR . '/builder-pages.json';
-$pages = json_read($builderFile);
+$pages = builder_pages_all();
 
 $message = '';
 
@@ -56,20 +56,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     // 它会让「按 key 定位块」悄悄指向错的那一个。
     $data['blocks'] = block_normalize_all($data['blocks']);
 
-    if (empty($id)) {
-        $data['id'] = 'lp_' . date('Ymd_His') . '_' . substr(bin2hex(random_bytes(4)), 0, 8);
-        $data['created_at'] = date('Y-m-d H:i:s');
-        $pages[] = $data;
-    } else {
-        foreach ($pages as &$p) { if ($p['id'] === $id) { $p = array_merge($p, $data); break; } }
-    }
-    json_write($builderFile, $pages);
-    $message = '落地页已保存';
+    // 走唯一写入口：顺带记一版（此前落地页是直接 json_write，改错了退不回去）
+    $savedId = save_builder_page($id, $data);
+    $pages = builder_pages_all();
+    $message = $savedId !== '' ? '落地页已保存' : '保存失败：页面不存在';
+    if ($savedId !== '') $id = $savedId;
 }
 
 if (isset($_POST['delete'])) {
-    $pages = array_values(array_filter($pages, fn($p) => $p['id'] !== $_POST['delete']));
-    json_write($builderFile, $pages);
+    builder_page_delete((string)$_POST['delete']);
+    $pages = builder_pages_all();
     header('Location: /xmp/page-builder');
     exit;
 }
@@ -259,6 +255,19 @@ admin_header('落地页构建器');
 
         <button type="submit" class="btn btn-primary">保存落地页</button>
         <a href="page-builder.php" class="btn btn-ghost">取消</a>
+        <?php if (!empty($editPage['id'])):
+          require_once __DIR__ . '/../lib/RevisionSystem.php';
+          require_once __DIR__ . '/../lib/CollabReview.php';
+          $lrev = rev_count('landing', (string)$editPage['id']);
+          $lnotes = note_open_count('page', (string)$editPage['id']);
+        ?>
+        <a href="/xmp/revisions?type=landing&id=<?=urlencode((string)$editPage['id'])?>" class="btn btn-ghost">
+          修订历史<?=$lrev ? '（' . $lrev . ' 版）' : ''?>
+        </a>
+        <a href="/xmp/collaborators" class="btn btn-ghost">
+          外部协作<?=$lnotes ? '（' . $lnotes . ' 条待处理批注）' : ''?>
+        </a>
+        <?php endif; ?>
       </form>
     </div>
     <?php endif; ?>
