@@ -53,7 +53,47 @@ jobs:
 
       - name: 运行测试
         run: composer test
-        continue-on-error: true # dev-only 测试套件，失败不阻塞
+
+  contracts:
+    name: 核心契约测试（阻断）
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: gd, pdo_sqlite, mbstring, fileinfo, curl, openssl, json
+          coverage: none
+
+      - name: 运行全部独立契约测试
+        run: php tests/contract_suite.php
+
+  flow-baseline:
+    name: AITIPS Flow 运行基线
+    runs-on: ubuntu-latest
+    needs: contracts
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: gd, pdo_sqlite, mbstring, fileinfo, curl, openssl, json
+          coverage: none
+
+      - name: 生成 Flow 基线
+        run: OF_FLOW_BASELINE_REPORT="$RUNNER_TEMP/flow-baseline.json" php tests/flow_baseline.php
+
+      - name: 保存基线报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow-baseline-${{ github.sha }}
+          path: ${{ runner.temp }}/flow-baseline.json
+          retention-days: 30
 
   shellcheck:
     name: Shell 脚本检查（bin/ 与 deploy 脚本）
