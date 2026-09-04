@@ -31,6 +31,7 @@ composer-setup.php
 *.zip
 *.tar.gz
 openflow-deploy.zip
+/artifacts/
 
 # ─── 系统文件 ───
 .DS_Store
