@@ -9,7 +9,9 @@
  *
  * 【底座已经就位】
  *   - 修订层（RevisionSystem）管「谁改了什么、能不能退回去」，
- *     它的来源标记里本来就留了 external 这一档。
+ *     它的来源标记里本来就留了 external 这一档。落地页原本漏在外面（直接 json_write，
+ *     没有版本记录），所以上一版只给批注不给编辑；现在 lib/BuilderPages.php
+ *     把落地页也收进了同一条咽喉，两种内容都能放心交出去。
  *   - 块契约的 _key 管「批注钉在哪个块上」——没有稳定的块身份，
  *     外部协作者留的批注下次保存就会变成孤儿。
  *
@@ -77,11 +79,6 @@ function collab_create(array $opts): array {
     $caps = array_values(array_intersect((array)($opts['caps'] ?? ['view', 'comment']), array_keys(collab_caps())));
     if (!in_array('view', $caps, true)) $caps[] = 'view';
 
-    // 落地页暂不开放外部编辑：修订层挂在 save_article / save_page_content 上，
-    // 而落地页存在 builder-pages.json，走的是页面里直接 json_write，**没有版本记录**。
-    // 「谁改的、能不能退回去」是这套东西的前提，做不到就不给这个能力——
-    // 宁可少一档，也不要放出一条没人看得见的外部写入路径。
-    if ($type === 'page') $caps = array_values(array_diff($caps, ['edit']));
 
     // 有效期：必须有，且不允许无限期。默认 7 天，最长 90 天。
     $days = (int)($opts['days'] ?? 7);
@@ -153,8 +150,6 @@ function collab_usable(array $g): bool {
 /** 有没有某项能力 */
 function collab_can(array $g, string $cap): bool {
     if (!isset(collab_caps()[$cap])) return false;               // 不在白名单里的能力，问也是没有
-    // 兜底：即使历史 grant 里存着 edit，落地页也一律不给（理由见 collab_create）
-    if ($cap === 'edit' && ($g['type'] ?? '') === 'page') return false;
     return in_array($cap, (array)($g['caps'] ?? []), true);
 }
 
