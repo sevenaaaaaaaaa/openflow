@@ -162,11 +162,13 @@ OpenFlow 长期积累的不是一次性对话，而是三类可交付资产：
 
 ### 当前边界
 
-OpenFlow 已经有 Loop 所需的部分地基，但完整的 TIPS Agent 运行时仍在建设中：
+OpenFlow 已经完成 Loop 的首批地基，但生产级 TIPS Agent 仍在建设中：
 
 - 当前“增长大脑”以可解释的规则型建议为主，不等同于自主策略 Agent；
 - 当前“采纳”主要生成带上下文的待办或进入现有业务模块，不等同于端到端自动执行；
-- Skills、Flow、记忆、目标和评估已经存在，但尚未统一为完整的 Loop 生命周期；
+- Goal、Flow、Skill、Action、Approval、Execution、Evaluation、Memory、Policy 与 Loop 已有共享兼容契约；
+- 当前 Loop Runtime 只支持确定性的只读单轮计划，不调用模型或生产执行器，也不持久化运行状态；
+- “高意向线索 → 成交”目前仅有明确标记合成数据的沙盘，不代表真实业务效果；
 - 联邦智能、多租户平台化等能力目前主要是基础设施，不代表已经形成规模化网络效应；
 - AI 能力取决于用户配置的模型与预算；不配置 AI 时，确定性业务能力仍可使用。
 
@@ -263,12 +265,13 @@ AI 是可选能力。未配置模型时，OpenFlow 仍可作为完整的内容�
 
 ## 路线与未来远景
 
-### 近期：建立双工作台与统一契约
+### 近期：校准产品表达并渐进建立双工作台
 
-- 保留并完善现有 AITIPS Flow 工作台；
-- 建立独立但互通的 TIPS Agent Loop 工作台；
-- 统一 Goal、Flow、Skill、Action、Run、Evaluation、Memory 等核心对象；
-- 让 Agent 生成的任何动作都能在专业模式中查看、接管和修改；
+- 统一前台与后台的能力状态，区分生产可用、只读、沙盘与规划；
+- 保留并完善现有 AITIPS Flow 入口；
+- 先建立用户级模式偏好和只读 TIPS Agent Loop 沙盘入口；
+- 已统一 Goal、Flow、Skill、Action、Run、Evaluation、Memory 等核心兼容契约；
+- 下一步建设独立行动审批中心，再让 Agent 建议进入真实写路径；
 - 让成熟 Flow 可以被 Agent 当作可靠 Skill 调用；
 - 先以建议和人工审批为默认，不改变现有业务执行方式。
 
