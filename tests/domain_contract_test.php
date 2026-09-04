@@ -50,5 +50,37 @@ check('non-whitelisted action still requires a human', !$policy['allow'] && $pol
 $lowRisk = $flow; $lowRisk['action'] = '打标签：高意向';
 check('existing guard allows low-risk action', domain_action_policy($lowRisk, ['level'=>'guarded','daily_budget'=>0,'daily_action_cap'=>10,'quiet_days'=>0], ['actions'=>0,'spend'=>0])['allow']);
 
+echo "\n── Goal contract ──\n";
+$goalSource = ['id'=>'g_1','title'=>'季度收入','metric'=>'revenue','target'=>100000,'baseline'=>20000,'status'=>'active','created_at'=>'2026-09-01 00:00:00'];
+$flowGoal = domain_goal_view($goalSource, 'flow');
+$loopGoal = domain_goal_view($goalSource, 'loop');
+check('Goal identity is shared', $flowGoal['id'] === $loopGoal['id'] && $flowGoal['id'] === 'g_1');
+check('Goal facts are shared', $flowGoal['target'] === $loopGoal['target'] && $flowGoal['baseline'] === 20000.0);
+check('Goal validates', domain_contract_validate('Goal', $flowGoal)['ok']);
+
+echo "\n── SkillDefinition contract ──\n";
+$skillSource = ['id'=>'skill_1','version'=>'1.2.0','type'=>'tool','title'=>'客户打标','status'=>'published','permissions'=>['members','db','members']];
+$flowSkill = domain_skill_view($skillSource, 'flow');
+$loopSkill = domain_skill_view($skillSource, 'loop');
+check('Skill identity and version are shared', $flowSkill['id'] === $loopSkill['id'] && $flowSkill['version'] === '1.2.0');
+check('Skill permissions are explicit and normalized', $flowSkill['permissions'] === ['db','members']);
+check('Skill validates', domain_contract_validate('SkillDefinition', $flowSkill)['ok']);
+$badSkill = $flowSkill; $badSkill['type'] = 'arbitrary_code';
+check('Unknown skill type is rejected', !domain_contract_validate('SkillDefinition', $badSkill)['ok']);
+
+echo "\n── FlowRun contract ──\n";
+$runSource = ['flow_id'=>'canvas_9','trigger'=>'form_submit','idempotency_key'=>'event_44','created_at'=>'2026-09-05 11:00:00'];
+$flowRun = domain_flow_run($runSource, 'flow');
+$loopRun = domain_flow_run($runSource, 'loop');
+check('FlowRun id is deterministic across modes', $flowRun['id'] === $loopRun['id'] && str_starts_with($flowRun['id'], 'run_'));
+check('FlowRun validates', domain_contract_validate('FlowRun', $flowRun)['ok']);
+$started = domain_flow_run_transition($flowRun, 'running');
+check('queued run can start without changing identity', $started['ok'] && $started['run']['id'] === $flowRun['id']);
+check('queued run cannot report success directly', !domain_flow_run_transition($flowRun, 'succeeded')['ok']);
+check('unverified run result is rejected', !domain_flow_run_record_result($started['run'], ['ok'=>true])['ok']);
+$completed = domain_flow_run_record_result($started['run'], ['ok'=>true,'executor'=>'CanvasSystem','result_ref'=>'log_88','completed_at'=>'2026-09-05 11:01:00']);
+check('verified run result succeeds', $completed['ok'] && $completed['run']['status'] === 'succeeded');
+check('FlowRun result remains traceable', $completed['run']['result']['result_ref'] === 'log_88');
+
 echo "\n" . ($fail === 0 ? "✅ 全部通过（{$pass}）\n" : "❌ 失败 {$fail} / 通过 {$pass}\n");
 exit($fail === 0 ? 0 : 1);
