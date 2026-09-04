@@ -64,6 +64,7 @@ function canvas_walk(string $nodeId, array $byId, array $edges, array $context, 
         case 'score':    canvas_action_score($node, $context); break;
         case 'stage':    canvas_action_stage($node, $context); break;
         case 'webhook':  canvas_action_webhook($node, $context); break;
+        case 'connection': canvas_action_connection($node, $context); break;
     }
 
     // 找下一个节点（普通顺序）
@@ -85,6 +86,7 @@ function canvas_action_types(): array {
         'score'      => ['icon' => '⭐', 'label' => '加分'],
         'stage'      => ['icon' => '📊', 'label' => '改 CRM 阶段'],
         'webhook'    => ['icon' => '🔗', 'label' => 'Webhook'],
+        'connection' => ['icon' => '🔌', 'label' => '连接动作'],
         'notify'     => ['icon' => '📢', 'label' => '通知'],
         'delay'      => ['icon' => '⏱', 'label' => '延迟'],
         'condition'  => ['icon' => '🔀', 'label' => '条件分支'],
@@ -141,6 +143,14 @@ function canvas_action_stage(array $node, array $context): void {
 }
 
 /** 动作：Webhook（把上下文 POST 出去）。 */
+/** 开放能力：走连接动作（鉴权、SSRF 防护、留痕都在连接层，这里只是转交） */
+function canvas_action_connection(array $node, array $context): void {
+    $aid = trim((string)($node['action_id'] ?? $node['value'] ?? ''));
+    if ($aid === '') return;
+    require_once __DIR__ . '/ConnectionActions.php';
+    action_run_safe($aid, $context);
+}
+
 function canvas_action_webhook(array $node, array $context): void {
     $url = trim((string)($node['url'] ?? $node['value'] ?? ''));
     if ($url === '' || !filter_var($url, FILTER_VALIDATE_URL)) return;
