@@ -65,9 +65,7 @@ if (!function_exists('shadow_run_observe')) {
 
         $projection = evidence_project([], array_column($completeRows, 'row'), []);
         foreach ($projection['gaps'] as $gap) {
-            if (str_starts_with((string)$gap['reason'], 'invalid_structured_run:')) {
-                $anomalies[] = ['type'=>'projection_failure', 'index'=>$gap['index'], 'reason'=>$gap['reason']];
-            }
+            $anomalies[] = ['type'=>'projection_failure', 'index'=>$gap['index'], 'reason'=>$gap['reason']];
         }
         $byType = array_count_values(array_column($anomalies, 'type'));
         ksort($byType);
