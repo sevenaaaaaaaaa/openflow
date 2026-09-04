@@ -64,3 +64,28 @@ baota-pseudostatic.txt
 # ─── 工具生成的备份文件 ───
 *.bak
 *.bak-*
+
+# ─── 安全：禁止提交私钥/凭据 ───
+.ssh/
+*.pem
+*.key
+id_ed25519*
+*.id_ed25519
+
+# ─── 备份/临时/试错残留 ───
+*.bak*
+*.bak_*
+*.bak_prehero
+*_backup*/
+.bak[0-9]*_*
+includes/
+
+# ─── 诊断/部署脚本(可能含服务器路径) ───
+check-articles.sh
+r2-diagnose.sh
+deploy-shell-unify.sh
+*.diagnose*
+
+# ─── 本地运行时数据(新迁移目录) ───
+/data/
+/uploads/
