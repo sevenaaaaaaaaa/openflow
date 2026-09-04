@@ -27,7 +27,7 @@ function automation_log(string $flowId, string $msg, string $level = 'info', arr
     $log = json_read(automation_log_file());
     $entry = ['time'=>date('Y-m-d H:i:s'),'flow'=>$flowId,'level'=>$level,'message'=>$msg];
     // Optional shadow fields. Existing readers keep consuming the four fields above.
-    foreach (['run_id','trigger','status','idempotency_key','tenant_id','result'] as $key) {
+    foreach (['run_id','trigger','status','idempotency_key','tenant_id','result','approval','execution'] as $key) {
         if (array_key_exists($key, $shadow)) $entry[$key] = $shadow[$key];
     }
     $log[] = $entry;
@@ -38,7 +38,7 @@ function automation_log(string $flowId, string $msg, string $level = 'info', arr
 /** Only a single low-risk add_tag flow with a stable event key enters shadow mode. */
 function automation_shadow_add_tag(array $flow, array $context): ?array {
     $steps = array_values((array)($flow['steps'] ?? []));
-    if (count($steps) !== 1 || ($steps[0]['action'] ?? '') !== 'add_tag') return null;
+    if (($flow['enabled'] ?? false) !== true || count($steps) !== 1 || ($steps[0]['action'] ?? '') !== 'add_tag') return null;
     $eventKey = trim((string)($context['idempotency_key'] ?? ($context['event_id'] ?? ($context['_event_id'] ?? ''))));
     $flowId = trim((string)($flow['id'] ?? ''));
     $uid = trim((string)($context['uid'] ?? ''));
@@ -51,18 +51,42 @@ function automation_shadow_add_tag(array $flow, array $context): ?array {
         'idempotency_key'=>$eventKey, 'tenant_id'=>$context['tenant_id'] ?? 'default',
         'created_at'=>date('Y-m-d H:i:s'),
     ]);
+    $actionId = 'act_' . substr(hash('sha256', $run['tenant_id'] . '|' . $flowId . '|0|add_tag|' . $tag), 0, 20);
     return [
         'run_id'=>$run['id'], 'trigger'=>$run['trigger'], 'status'=>'running',
         'idempotency_key'=>$run['idempotency_key'], 'tenant_id'=>$run['tenant_id'],
-        'uid'=>$uid, 'tag'=>$tag,
+        'uid'=>$uid, 'tag'=>$tag, 'action_id'=>$actionId,
+        'action_version'=>max(1, (int)($flow['version'] ?? 1)),
+        'approved_at'=>(string)($flow['updated_at'] ?? ($flow['created_at'] ?? $run['created_at'])),
+        'created_at'=>$run['created_at'],
     ];
 }
 
 function automation_shadow_log(array $shadow, string $status, array $result = []): void {
+    require_once __DIR__ . '/DomainContract.php';
+    $approval = domain_approval([
+        'action_id'=>$shadow['action_id'] ?? '', 'subject_version'=>$shadow['action_version'] ?? 1,
+        'tenant_id'=>$shadow['tenant_id'] ?? 'default', 'decision'=>'approved',
+        'actor_type'=>'policy', 'actor_id'=>'enabled_flow_configuration',
+        'policy_ref'=>'flow-definition:' . ($shadow['flow_id'] ?? '') . ':enabled',
+        'reason'=>'已启用的确定性 Flow 授权执行低风险 add_tag 节点',
+        'decided_at'=>$shadow['approved_at'] ?? '',
+    ]);
+    $execution = domain_execution([
+        'action_id'=>$shadow['action_id'] ?? '', 'approval_id'=>$approval['id'],
+        'flow_run_id'=>$shadow['run_id'] ?? '', 'tenant_id'=>$shadow['tenant_id'] ?? 'default',
+        'status'=>$status, 'executor'=>$result['executor'] ?? 'CdpSync::cdp_add_tag',
+        'idempotency_key'=>($shadow['idempotency_key'] ?? '') . ':add_tag:0',
+        'result_ref'=>$result['result_ref'] ?? '', 'error'=>$result['error'] ?? '',
+        'created_at'=>$shadow['created_at'] ?? date('Y-m-d H:i:s'),
+        'completed_at'=>in_array($status, ['succeeded','failed','cancelled'], true) ? date('Y-m-d H:i:s') : '',
+    ]);
     $meta = $shadow;
-    unset($meta['uid'], $meta['tag']);
+    unset($meta['uid'], $meta['tag'], $meta['flow_id'], $meta['action_id'], $meta['action_version'], $meta['approved_at'], $meta['created_at']);
     $meta['status'] = $status;
     if ($result) $meta['result'] = $result;
+    $meta['approval'] = $approval;
+    $meta['execution'] = $execution;
     automation_log(
         (string)($shadow['flow_id'] ?? ''),
         '影子运行：' . $status,
