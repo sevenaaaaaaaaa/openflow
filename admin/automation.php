@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
             'coupon_type' => $_POST['step_coupon_type'][$i] ?? 'fixed',
             'coupon_value' => (float)($_POST['step_coupon_value'][$i] ?? 0),
             'coupon_min' => (float)($_POST['step_coupon_min'][$i] ?? 0),
+            'action_id' => preg_replace('/[^a-z0-9_]/', '', (string)($_POST['step_action_id'][$i] ?? '')),
         ];
     }
     $data = [
@@ -204,7 +205,7 @@ admin_header('营销自动化');
           <tr>
             <td><strong><?=htmlspecialchars($f['name'])?></strong></td>
             <td class="text-sm text-muted"><?=$triggerLabels[$f['trigger']] ?? $f['trigger']?></td>
-            <td class="text-sm text-muted"><?php $__names=['send_email'=>'邮件','delay'=>'延迟','notify'=>'通知','inbox'=>'站内信','add_tag'=>'标签','award_points'=>'积分','send_coupon'=>'优惠券']; echo htmlspecialchars(implode(' → ', array_map(fn($st)=>$__names[$st['action']??'']??($st['action']??'?'), $f['steps'] ?? []))) ?: '—'; ?></td>
+            <td class="text-sm text-muted"><?php $__names=['send_email'=>'邮件','delay'=>'延迟','notify'=>'通知','inbox'=>'站内信','add_tag'=>'标签','award_points'=>'积分','send_coupon'=>'优惠券','connection_action'=>'连接动作']; echo htmlspecialchars(implode(' → ', array_map(fn($st)=>$__names[$st['action']??'']??($st['action']??'?'), $f['steps'] ?? []))) ?: '—'; ?></td>
             <td><span class="badge <?=($f['enabled']??false)?'badge-green':'badge-gray'?>"><?=($f['enabled']??false)?'运行中':'已停用'?></span></td>
             <td style="white-space:nowrap">
               <a href="?toggle=<?=urlencode($f['id'])?>" class="btn btn-ghost btn-sm"><?=($f['enabled']??false)?'停用':'启用'?></a>
@@ -256,8 +257,11 @@ var AU_ACTIONS = {
   inbox:        {label:'站内信',   fields:['title','content','link']},
   add_tag:      {label:'打标签',   fields:['tag']},
   award_points: {label:'加积分',   fields:['points']},
-  send_coupon:  {label:'发优惠券', fields:['coupon_name','coupon_type','coupon_value','coupon_min']}
+  send_coupon:  {label:'发优惠券', fields:['coupon_name','coupon_type','coupon_value','coupon_min']},
+  connection_action: {label:'连接动作（外部服务）', fields:['action_id']}
 };
+// 开放能力：可用的连接动作（连接名 · 动作名）
+var AU_CONN_ACTIONS = <?php require_once __DIR__ . '/../lib/ConnectionActions.php'; echo json_encode(action_options(), JSON_UNESCAPED_UNICODE); ?>;
 function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function stepHTML(st, i) {
   st = st || {}; var act = st.action || 'send_email';
@@ -281,6 +285,10 @@ function stepHTML(st, i) {
       '<label class="au-f" data-f="coupon_type"><span>类型</span><select name="step_coupon_type[]"><option value="fixed"'+((st.coupon_type||'fixed')==='fixed'?' selected':'')+'>满减 ¥</option><option value="percent"'+(st.coupon_type==='percent'?' selected':'')+'>折扣 %</option></select></label>' +
       '<label class="au-f" data-f="coupon_value"><span>面值</span><input type="number" name="step_coupon_value[]" value="'+esc(st.coupon_value==null?0:st.coupon_value)+'"></label>' +
       '<label class="au-f" data-f="coupon_min"><span>满额门槛</span><input type="number" name="step_coupon_min[]" value="'+esc(st.coupon_min==null?0:st.coupon_min)+'"></label>' +
+      '<label class="au-f wide" data-f="action_id"><span>连接动作 <em>在「连接」里定义；事件字段会代入动作模板</em></span><select name="step_action_id[]">' +
+        '<option value="">请选择…</option>' + Object.keys(AU_CONN_ACTIONS).map(function(k){ return '<option value="'+esc(k)+'"'+((st.action_id||'')===k?' selected':'')+'>'+esc(AU_CONN_ACTIONS[k])+'</option>'; }).join('') +
+        (Object.keys(AU_CONN_ACTIONS).length ? '' : '<option value="" disabled>还没有启用的连接动作，先到「连接」里建一个</option>') +
+      '</select></label>' +
     '</div></div>';
 }
 function stepAction(sel) { var row = sel.closest('.au-step'); row.dataset.action = sel.value; stepSummary(row); }
@@ -293,6 +301,7 @@ function stepSummary(row) {
   else if (a === 'add_tag') s = v('step_tag') ? '#' + v('step_tag') : '（未填标签）';
   else if (a === 'award_points') s = '+' + v('step_points') + ' 分';
   else if (a === 'send_coupon') s = (v('step_coupon_name') || '券') + ' · ' + (v('step_coupon_type') === 'percent' ? v('step_coupon_value') + '%' : '¥' + v('step_coupon_value'));
+  else if (a === 'connection_action') s = AU_CONN_ACTIONS[v('step_action_id')] || '未选择动作';
   row.querySelector('.au-step-sum').textContent = s;
 }
 function stepRenumber() { document.querySelectorAll('#stepList .au-step').forEach(function (r, i) { r.querySelector('.au-n').textContent = i + 1; }); }
