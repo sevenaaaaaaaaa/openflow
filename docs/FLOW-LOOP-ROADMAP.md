@@ -43,7 +43,7 @@
 
 当前进展：`ActionProposal`、`Goal`、`SkillDefinition`、`FlowRun`、`Approval`、`Execution`、`Evaluation` 兼容契约和测试已落地，不接管存储、不改变现有 Flow 写路径；其余对象仍需逐个核查后进入契约。
 
-只读 `EvidenceProjection` 已用于验证现有数据可投影范围，并把缺少运行边界、执行回执和逐笔归因明确报告为 gap；ADR-002 已开始实施，当前只覆盖带稳定事件键的单节点 `add_tag` Flow 影子日志。
+只读 `EvidenceProjection` 已用于验证现有数据可投影范围，并把缺少运行边界、执行回执和逐笔归因明确报告为 gap；ADR-002 已开始实施，当前只覆盖带稳定事件键的单节点 `add_tag` Flow 影子日志，并提供只读观测报告跟踪结构字段完整率、终态率、生命周期完整率和投影异常。在获得足够真实样本前不扩展第二个动作。
 
 最小对象：
 
