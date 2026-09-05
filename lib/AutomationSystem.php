@@ -35,6 +35,41 @@ function automation_log(string $flowId, string $msg, string $level = 'info', arr
     json_write(automation_log_file(), $log);
 }
 
+/** 线B：单流程统计（进入/步骤执行/各渠道触达/成功失败），供洞察 */
+function automation_flow_stats(string $flowId): array {
+    $log = json_read(automation_log_file());
+    $stats = ['entered'=>0, 'steps'=>[], 'channels'=>['email'=>0,'wecom'=>0,'wechat'=>0,'inbox'=>0,'notify'=>0,'coupon'=>0], 'sent'=>0, 'failed'=>0, 'events'=>0];
+    foreach ($log as $e) {
+        if (($e['flow'] ?? '') !== $flowId) continue;
+        if (($e['level'] ?? '') === 'error' || str_contains((string)($e['message'] ?? ''), '失败')) { $stats['failed']++; continue; }
+        $msg = (string)($e['message'] ?? '');
+        if (str_contains($msg, '进入')) $stats['entered']++;
+        if (str_contains($msg, '发送邮件')) $stats['channels']['email']++;
+        if (str_contains($msg, '企业微信')) $stats['channels']['wecom']++;
+        if (str_contains($msg, '公众号')) $stats['channels']['wechat']++;
+        if (str_contains($msg, '站内信')) $stats['channels']['inbox']++;
+        if (str_contains($msg, '发券')) $stats['channels']['coupon']++;
+        if (str_contains($msg, '任务触发')) $stats['sent']++;
+    }
+    return $stats;
+}
+
+/** 线B：全部流程漏斗（每流程：进入/成功/失败/转化率） */
+function automation_flows_stats(): array {
+    $flows = automation_get();
+    $out = [];
+    foreach ($flows as $f) {
+        $fid = (string)($f['id'] ?? '');
+        $stats = automation_flow_stats($fid);
+        $out[] = ['id'=>$fid, 'name'=>(string)($f['name'] ?? $fid), 'trigger'=>(string)($f['trigger'] ?? ''),
+            'status'=>(string)($f['enabled'] ?? 0) ? 'enabled' : 'disabled',
+            'entered'=>$stats['entered'], 'sent'=>$stats['sent'], 'failed'=>$stats['failed'],
+            'channels'=>$stats['channels'],
+            'conversion'=>$stats['entered'] > 0 ? round($stats['sent'] / $stats['entered'] * 100, 1) : 0];
+    }
+    return $out;
+}
+
 /** Only a single low-risk add_tag flow with a stable event key enters shadow mode. */
 function automation_shadow_add_tag(array $flow, array $context): ?array {
     $steps = array_values((array)($flow['steps'] ?? []));
