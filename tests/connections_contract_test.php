@@ -168,7 +168,7 @@ ok(str_contains($au, "case 'connection_action'") && str_contains($au, 'action_ru
 ok(str_contains($cv, "case 'connection'") && str_contains($cv, 'action_run_safe('), '画布没有接连接动作');
 ok(str_contains(file_get_contents("$root/admin/automation.php"), 'connection_action'), '自动化编辑界面选不到连接动作');
 ok(str_contains(file_get_contents("$root/admin/canvas.php"), "addNode('connection')"), '画布界面加不了连接节点');
-ok(preg_match("/\\['tag','score','stage','webhook','connection'\\]/", file_get_contents("$root/admin/canvas.php")) === 1, '画布 JS 隐藏占位漏了 connection，POST 下标会错位');
+ok(preg_match("/\\['tag','score','stage','webhook','connection','split'\\]/", file_get_contents("$root/admin/canvas.php")) === 1, '画布 JS 隐藏占位漏了 connection/split，POST 下标会错位');
 ok(is_file("$root/admin/connections.php"), '缺少连接后台页');
 ok(str_contains(file_get_contents("$root/includes/admin-nav.php"), "'id' => 'connections'"), '侧栏没有连接入口');
 
