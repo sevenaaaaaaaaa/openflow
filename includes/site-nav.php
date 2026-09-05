@@ -80,6 +80,32 @@ if (!function_exists('of_shell')) {
         of_nav_boot();
         echo '<script src="/assets/site-shell.js?v=' . OF_SHELL_VER . '" data-cfasync="false" data-page="'
             . htmlspecialchars($page, ENT_QUOTES, 'UTF-8') . '"></script>' . "\n";
+        // ② 登录态→前台快速编辑入口：已登录且有编辑权限时，页角浮出「编辑此页」
+        echo of_edit_bar_html($page);
+    }
+
+    /**
+     * 前台「编辑此页」入口 —— 检测后台登录态，按当前 URL 映射到对应后台编辑器。
+     * 只在已登录且有 pages/settings 权限时输出；访客/未登录不输出，零影响。
+     */
+    function of_edit_bar_html(string $page = 'home'): string {
+        if (empty($_SESSION['admin_user'])) return '';
+        $role = $_SESSION['admin_role'] ?? 'admin';
+        $editable = ['admin','marketing','sales'];
+        if (!in_array($role, $editable, true)) return '';
+        // 按当前请求 URL 判断页面类型 → 后台编辑 URL
+        $uri = (string)($_SERVER['REQUEST_URI'] ?? '/');
+        $path = parse_url($uri, PHP_URL_PATH) ?: '/';
+        $edit = '';
+        if (preg_match('#^/b/([^/]+)#', $path, $m)) $edit = '/xmp/page-builder?edit=' . urlencode($m[1]);
+        elseif (preg_match('#^/(article|articles)/([^/]+)#', $path, $m)) $edit = '/xmp/article-edit?id=' . urlencode($m[2]);
+        elseif (preg_match('#^/c/([^/]+)#', $path, $m)) $edit = '/xmp/cpt?type=' . urlencode($m[1]);
+        elseif ($path === '/' || $path === '') $edit = '/xmp/studio';
+        elseif (preg_match('#^/(about|product|capability|courses|docs|academy|community|marketplace)#', $path, $m)) $edit = '/xmp/pages-list';
+        if ($edit === '') return '';
+        $label = '✏️ 编辑此页';
+        return '<a href="' . htmlspecialchars($edit, ENT_QUOTES) . '" style="position:fixed;bottom:16px;left:16px;z-index:99990;background:#1e1e1e;color:#ddff0e;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.22);font-family:system-ui,-apple-system,sans-serif">' . $label . '</a>';
     }
 }
+
 
