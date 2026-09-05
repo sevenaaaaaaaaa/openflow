@@ -34,7 +34,7 @@ admin_header('OpenFlow Studio');
   <div class="v-head">
     <div><h1>OpenFlow Studio <span class="st st-ok">增长操作系统</span></h1>
       <p class="v-sub">TIPS 视角的编排与洞察聚合台 · 画布/Flow/Loop/自动化/模块工厂 单一入口 · 全端复用（web / mac / win / linux / CLI）</p></div>
-    <div class="v-actions"><a class="btn btn-primary btn-sm" href="/xmp/canvas">打开画布</a></div>
+    <div class="v-actions"><button type="button" class="btn btn-s btn-sm" id="installBtn" onclick="ofInstall()" style="display:none">📲 安装到桌面</button><a class="btn btn-primary btn-sm" href="/xmp/canvas">打开画布</a></div>
   </div>
 
   <!-- KPI 概览 -->
@@ -115,3 +115,17 @@ admin_header('OpenFlow Studio');
   </div>
 </div></div>
 <?php admin_footer(); ?>
+<script>
+// PWA 安装到桌面（mac/win/linux/iPad/安卓pad/鸿蒙：浏览器「添加到主屏幕/程序坞」）
+var ofDeferred = null;
+window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); ofDeferred = e; document.getElementById('installBtn').style.display = 'inline-block'; });
+function ofInstall() {
+  if (ofDeferred) { ofDeferred.prompt(); ofDeferred.userChoice.then(function() { ofDeferred = null; document.getElementById('installBtn').style.display = 'none'; }); }
+  else {
+    var b = document.getElementById('installBtn');
+    if (b) b.textContent = '用浏览器菜单「添加到主屏幕 / 安装应用」';
+    setTimeout(function(){ if (b) { b.textContent = '📲 安装到桌面'; } }, 4000);
+  }
+}
+if (window.matchMedia('(display-mode: standalone)').matches) { var b = document.getElementById('installBtn'); if (b) b.style.display = 'none'; }
+</script>
