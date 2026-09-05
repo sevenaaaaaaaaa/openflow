@@ -87,6 +87,7 @@ RewriteRule ^podcasts/?$ podcasts.php [L,QSA]
 RewriteRule ^survey/?$ survey.php [L,QSA]
 RewriteRule ^reviews/?$ reviews.php [L,QSA]
 RewriteRule ^topics/?$ topics.php [L,QSA]
+RewriteRule ^newsletter/?$ newsletter.php [L,QSA]
 RewriteRule ^consultation/?$ consultation.php [L,QSA]
 # 会员中心：前台壳子与 7 个页面都链到 /account（以前没有这条规则，全部 404）
 RewriteRule ^account/?$ member.php [L,QSA]
