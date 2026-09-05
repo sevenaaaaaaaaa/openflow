@@ -1283,8 +1283,25 @@ $name = $_SESSION['admin_name'] ?? '';
 $roleLabels = ['admin' => '超管', 'marketing' => '市场', 'sales' => '销售'];
 $roleLabel = $roleLabels[$role] ?? $role;
 ?>
- </head>
- <body>
+  <link rel="manifest" href="/assets/pwa/manifest.webmanifest">
+  <meta name="theme-color" content="#1e1e1e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OpenFlow">
+  <meta name="application-name" content="OpenFlow Studio">
+  <link rel="apple-touch-icon" href="/assets/pwa/icon-192.png">
+  <link rel="icon" type="image/png" href="/assets/pwa/icon-192.png">
+  <script>
+  // PWA Service Worker 注册（支持 mac/win/linux/iPad/安卓pad/鸿蒙 桌面安装）
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/assets/pwa/sw.js').catch(function(){});
+    });
+  }
+  </script>
+  </head>
+  <body>
 <header id="chrome" data-od-id="chrome">
   <div class="bar">
     <div class="bar-start">
