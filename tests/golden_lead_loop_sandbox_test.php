@@ -20,7 +20,7 @@ gl('same fixture produces same result',$repeat===$r);
 echo "\n── dataset isolation ──\n";
 $unsafe=golden_lead_sandbox_fixture();$unsafe['dataset']['kind']='production';$unsafe['dataset']['production_data']=true;
 $rejected=golden_lead_sandbox_run($unsafe);
-gl('production-labelled input rejected',!$rejected['ok'] && $rejected['error']==='synthetic_dataset_required');
+gl('production-labelled input rejected',!$rejected['ok'] && $rejected['error']==='isolated_dataset_required');
 $missingConsent=golden_lead_sandbox_fixture();$missingConsent['leads'][0]['consent']='unknown';
 $blocked=golden_lead_sandbox_run($missingConsent);
 gl('missing consent prevents proposal',!$blocked['subjects'][0]['predicted_high_intent'] && $blocked['subjects'][0]['blocked_reason']==='consent_missing');
