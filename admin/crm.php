@@ -436,9 +436,10 @@ admin_header('CRM 线索管理');
             <td><b style="color:<?=($l['score']??0)>=60?'var(--ok)':(($l['score']??0)>=30?'var(--warn)':'var(--danger)')?>"><?=$l['score'] ?? 0?></b></td>
             <td><?=($l['value'] ?? 0) ? '¥'.number_format($l['value'],0) : '—'?></td>
             <td class="text-sm text-muted"><?=!empty($l['follow_ups']) ? htmlspecialchars($l['follow_ups'][count($l['follow_ups'])-1]['time'] ?? '') : '—'?></td>
-            <td>
-              <a href="?tab=pipeline&focus=<?=urlencode($l['email'])?>" class="btn btn-ghost btn-sm">👁 认领并跟进</a>
-            </td>
+             <td>
+               <a href="crm-lead-detail.php?email=<?=urlencode($l['email'])?>" class="btn btn-s btn-sm">👁 详情</a>
+               <a href="?tab=pipeline&focus=<?=urlencode($l['email'])?>" class="btn btn-ghost btn-sm">认领跟进</a>
+             </td>
           </tr>
           <?php endforeach; ?>
         </tbody>
