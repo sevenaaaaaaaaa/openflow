@@ -27,7 +27,7 @@ const ADMIN_NAV_ALIAS = [
     // 编辑 / 详情 / 历史页 → 所属条目
     'article-edit' => 'content-hub', 'revisions' => 'content-hub', 'collaborators' => 'content-hub', 'articles' => 'content-hub', 'pages-list' => 'content-hub', 'downloads' => 'content-hub', 'download-edit' => 'content-hub',
     'podcasts' => 'content-hub', 'page-categories' => 'content-hub', 'tags' => 'content-hub', 'page-builder' => 'pages', 'page-editor-config' => 'pages',
-    'course-edit' => 'courses', 'customer-detail' => 'crm', 'profile-detail' => 'profiling', 'user-profile' => 'profiling',
+    'course-edit' => 'courses', 'customer-detail' => 'crm', 'profile-detail' => 'profiling', 'user-profile' => 'profiling', 'crm-lead-detail' => 'crm',
     'abtests-stats' => 'abtests', 'survey-agent' => 'survey', 'survey-org' => 'survey', 'sentiment-report' => 'sentiment',
     'media-upload' => 'media', 'export' => 'data-export', 'export-all' => 'data-export', 'onboarding' => 'workspace', 'debug' => 'devops',
     'notion-sync' => 'data-sync', 'languages' => 'settings', 'storage' => 'health-check', 'activity' => 'audit-log', 'footer-links' => 'site-builder',
@@ -59,6 +59,7 @@ function admin_nav_pinned(): array {
     $I = admin_nav_icons();
     $all = [
         ['id' => 'workspace',        'label' => '工作台',    'tag' => '默认',   'perm' => 'dashboard', 'icon' => $I['home']],
+        ['id' => 'studio',           'label' => 'OpenFlow Studio', 'tag' => '编排', 'perm' => 'settings', 'icon' => $I['ai']],
         ['id' => 'dashboard',        'label' => '经营驾驶舱', 'tag' => '大屏',   'perm' => 'dashboard', 'icon' => $I['gauge']],
         ['id' => 'content-calendar', 'label' => '内容日历',   'tag' => '排期',   'perm' => 'tasks',     'icon' => $I['cal']],
         ['id' => 'evolution',        'label' => '系统体检',   'tag' => '建议',   'perm' => 'evolution', 'icon' => $I['eve']],
@@ -221,6 +222,7 @@ function admin_nav_tree(): array {
             ['label' => '触达渠道', 'items' => [
                 ['label' => '邮件与短信', 'hint' => 'EDM · SMTP · 短信', 'subs' => [
                     ['id' => 'email', 'label' => '邮件', 'perm' => 'email'],
+                    ['id' => 'newsletter-editor', 'label' => 'Newsletter 编辑器', 'perm' => 'email', 'hint' => 'Revue 式排版·预览·定时'],
                     ['id' => 'sms', 'label' => '短信', 'perm' => 'sms'],
                 ]],
                 ['label' => '表单与提交', 'hint' => '表单 · 提交记录', 'subs' => [
