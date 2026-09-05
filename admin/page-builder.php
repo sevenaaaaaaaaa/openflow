@@ -217,7 +217,7 @@ admin_header('落地页构建器');
         <!-- Blocks Editor -->
         <div class="card" style="margin:16px 0;padding:16px">
           <h2>🧱 页面区块</h2>
-          <p class="text-sm text-muted mb-4">从上到下排列 · 按住 ☰ 拖拽排序 · 添加区块后填写内容</p>
+          <p class="text-sm text-muted mb-4">从上到下排列 · 按住 ☰ 拖拽排序 · 每个区块下方有实时预览 · <button type="button" class="btn btn-s btn-sm" id="ofLivePrev">👁 整页实时预览</button></p>
           <div id="blocksList">
             <?php foreach (($editPage['blocks'] ?? []) as $bi => $blk): ?>
             <div class="block-item" draggable="true" ondragstart="blkDragStart(event)" ondragover="blkDragOver(event)" ondrop="blkDrop(event)" ondragend="this.classList.remove('dragging')" style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--surface);cursor:grab">
@@ -262,6 +262,11 @@ admin_header('落地页构建器');
                   <input type="text" name="block_button_url[]" value="<?=htmlspecialchars($blk['button_url']??'')?>" placeholder="按钮链接">
                 </div>
                 <?php endif; ?>
+                <?php /* 可视化所见即所得：每个块显示真实渲染预览（builder_render_block），随编辑实时更新 */ ?>
+                <div class="block-preview-wrap" data-k="<?=htmlspecialchars($bkKey)?>" style="border:1.5px dashed var(--border);border-radius:10px;margin-top:8px;background:var(--bg)">
+                  <div style="padding:6px 12px;font-size:11px;color:var(--faint);display:flex;justify-content:space-between"><span>👁 实时预览</span><button type="button" class="btn btn-ghost btn-sm" onclick="this.closest('.block-preview-wrap').classList.toggle('collapsed')">收起</button></div>
+                  <div class="block-preview" style="padding:14px;overflow:auto;max-height:360px"><?php echo builder_render_block($blk); ?></div>
+                </div>
                 <?php $ba = $blk['audience'] ?? []; $bopts = blocktarget_options(); ?>
                 <details <?=blocktarget_has_rules($blk)?'open':''?> style="border:1px dashed var(--border);border-radius:6px;padding:8px 10px">
                   <summary style="cursor:pointer;font-size:12px;color:var(--faint)">🎯 只给特定人群看<?=blocktarget_has_rules($blk)?'（已定向）':'（默认所有人）'?></summary>
@@ -418,6 +423,7 @@ function addBlock(type, label) {
       '</details>' +
     '</div>';
   document.getElementById('blocksList').appendChild(div);
+  setTimeout(function(){ bindPreview(div); var pv = div.querySelector('.block-preview'); if (pv) refreshBlockPreview(div); }, 50);
 }
 
 function renameBlock(sel) {
@@ -444,5 +450,51 @@ function blkDragOver(e) {
   }
 }
 function blkDrop(e) { e.preventDefault(); blkDragEl = null; }
+
+/* ── 可视化所见即所得：块输入实时刷新预览 ── */
+function collectBlockValues(item) {
+  var b = { _type: '', _key: '' };
+  item.querySelectorAll('input,textarea,select').forEach(function(el) {
+    if (!el.name) return;
+    var m = el.name.match(/^block_(\w+)\[\]$/);
+    if (m) { b[m[1]] = el.value; }
+  });
+  var t = item.querySelector('select[name="block_type[]"]'); if (t) b._type = t.value;
+  var k = item.querySelector('input[name="block_key[]"]'); if (k) b._key = k.value;
+  return b;
+}
+function refreshBlockPreview(item) {
+  var pv = item.querySelector('.block-preview'); if (!pv) return;
+  var b = collectBlockValues(item);
+  clearTimeout(item._pvTimer);
+  item._pvTimer = setTimeout(function() {
+    fetch('/api/builder-preview.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({block:b}) })
+      .then(function(r){ return r.text(); }).then(function(h){ pv.innerHTML = h || '<div class="of-empty">预览为空</div>'; })
+      .catch(function(){ pv.innerHTML = '<div class="of-empty" style="padding:10px">预览加载失败</div>'; });
+  }, 250);
+}
+function bindPreview(item) {
+  item.addEventListener('input', function(e){ if (e.target.closest('input,textarea,select')) refreshBlockPreview(item); });
+  item.addEventListener('change', function(e){ if (e.target.name === 'block_type[]') setTimeout(function(){ refreshBlockPreview(item); }, 10); });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('#blocksList .block-item').forEach(function(it){ bindPreview(it); });
+  // 主视图「实时预览」按钮：切换整页预览（仅展示，不含表单操作）
+  var prog = document.getElementById('ofLivePrev');
+  if (prog) prog.addEventListener('click', function(){
+    var list = document.getElementById('blocksList');
+    list.classList.toggle('live-prev');
+    prog.textContent = list.classList.contains('live-prev') ? '回到编辑' : '👁 整页实时预览';
+    if (list.classList.contains('live-prev')) document.querySelectorAll('#blocksList .block-item').forEach(function(it){ refreshBlockPreview(it); });
+  });
+});
 </script>
+<style>
+/* 整页实时预览：隐藏编辑表单项，只展示预览，形成所见即所得画布 */
+#blocksList.live-prev .block-fields{display:none}
+#blocksList.live-prev .block-preview-wrap{border:1px solid var(--border);margin:0 0 16px}
+#blocksList.live-prev .block-preview{max-height:none;padding:24px 18px}
+#blocksList.live-prev .block-item{cursor:default;border:0;padding:0;background:transparent}
+#blocksList.live-prev .block-item .del,#blocksList.live-prev .block-item .block-ctrl{display:none}
+</style>
 <?php admin_footer(); ?>
