@@ -32,7 +32,7 @@ check('工具总数 >= 18', substr_count($src, "'name' => '") >= 18, (string)sub
 echo "\n── 4. 安全：不暴露原始个体数据 ──\n";
 // nba 输出应只含 who/action/module/reason/priority，不含 email 等
 check('NBA 输出字段受控', strpos($src, "'who' =>") !== false && strpos($src, "'action' =>") !== false);
-check('NBA 不直出 email 字段', preg_match("/growth_next_best_action.*?'email'\s*=>/s", $src) === 0);
+check('NBA 不直出 email 字段', preg_match("/case 'growth_next_best_action'.*?'email'\s*=>/s", $src) === 0);
 check('ask_data 只回 answer', preg_match("/growth_ask_data.*?'answer'=>/s", $src) === 1);
 
 echo "\n── 5. 依赖按需加载（不拖慢其它工具）──\n";

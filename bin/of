@@ -31,26 +31,23 @@ require_once __DIR__ . '/../lib/MemberSystem.php';
 require_once __DIR__ . '/../lib/SentimentSystem.php';
 require_once __DIR__ . '/../lib/Database.php';
 
-function of_out(string $msg): void { echo $msg . "\n"; }
+function of_out(string $msg): void {
+    global $OF_JSON;
+    echo $OF_JSON ? json_encode(['message'=>$msg], JSON_UNESCAPED_UNICODE) . "\n" : $msg . "\n";
+}
 function of_json($data): void { echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n"; }
 
+// 全局 --json：让所有命令输出结构化 JSON（agent 友好，可被 shell 捕获）
+$OF_JSON = false;
+foreach ($argv as $a) if ($a === '--json') { $OF_JSON = true; break; }
+
 $args = array_slice($argv, 1);
+$args = array_values(array_filter($args, fn($a) => $a !== '--json'));
 $cmd = $args[0] ?? 'list';
 $params = array_slice($args, 1);
 
 switch ($cmd) {
-    // ─── articles ───
-    case 'articles':
-        $sub = $params[0] ?? 'list';
-        $articles = get_articles();
-        if ($sub === 'list') {
-            of_out("共 " . count($articles) . " 篇文章:");
-            foreach (array_slice($articles, 0, 20) as $a) of_out("  [{$a['id']}] {$a['title']} ({$a['status']})");
-        } elseif ($sub === 'count') {
-            of_json(['total' => count($articles)]);
-        }
-        break;
-
+    // ─── articles（list/count/create，见下方完整实现）───
     case 'article':
         $sub = $params[0] ?? '';
         $id = $params[1] ?? '';
@@ -144,6 +141,50 @@ switch ($cmd) {
         foreach (get_articles() as $a) {
             if (mb_strpos($a['title'] ?? '', $q) !== false) of_out("  文章: {$a['title']} [{$a['id']}]");
         }
+        break;
+
+    // ─── articles create（修复文档声明 vs 实现不一致；agent 常用写命令）───
+    case 'articles':
+        $sub = $params[0] ?? 'list';
+        $articles = get_articles();
+        if ($sub === 'create') {
+            $title = $params[1] ?? '';
+            if (!$title) { of_out("用法: php bin/of articles create <标题> [--json]"); break; }
+            $id = 'article_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 8);
+            $slug = preg_replace('/[^a-z0-9\x{4e00}-\x{9fff}-]/u', '-', $title);
+            $all = $articles; $all[] = ['id'=>$id,'title'=>$title,'slug'=>$slug,'content'=>'','status'=>'draft',
+                'category'=>'insight','created_at'=>date('Y-m-d H:i:s'),'updated_at'=>date('Y-m-d H:i:s')];
+            json_write(ARTICLES_DIR . '/index.json', $all);
+            of_json(['ok'=>true,'id'=>$id,'title'=>$title]);
+        } elseif ($sub === 'list') {
+            if ($OF_JSON) { of_json(['total'=>count($articles)]); }
+            else { of_out("共 " . count($articles) . " 篇文章:"); foreach (array_slice($articles, 0, 20) as $a) of_out("  [{$a['id']}] {$a['title']} ({$a['status']})"); }
+        } elseif ($sub === 'count') { of_json(['total' => count($articles)]); }
+        break;
+
+    // ─── cdp tag（给画像打标签）───
+    case 'cdp':
+        $sub = $params[0] ?? '';
+        if ($sub === 'tag') {
+            $uid = $params[1] ?? ''; $tag = $params[2] ?? '';
+            if (!$uid || !$tag) { of_out("用法: php bin/of cdp tag <visitor_id> <标签>"); break; }
+            require_once __DIR__ . '/../lib/CdpSystem.php';
+            $profiles = CdpSystem::allProfiles();
+            if (isset($profiles[$uid])) { $profiles[$uid]['tags'][$tag] = ['type'=>'manual','by'=>'cli','at'=>date('Y-m-d H:i:s')]; CdpSystem::saveProfiles($profiles); of_json(['ok'=>true,'tagged'=>$uid,'tag'=>$tag]); }
+            else of_json(['error'=>'not found','visitor_id'=>$uid]);
+        } else { of_out("用法: php bin/of cdp tag <visitor_id> <标签>"); }
+        break;
+
+    // ─── flow run（触发流程事件，驱动自动化/画布）───
+    case 'flow':
+        $sub = $params[0] ?? '';
+        if ($sub === 'run') {
+            $ev = $params[1] ?? '';
+            if (!$ev) { of_out("用法: php bin/of flow run <event>"); break; }
+            require_once __DIR__ . '/../lib/FlowSystem.php';
+            flow_handle($ev, []);
+            of_json(['ok'=>true,'event'=>$ev]);
+        } else { of_out("用法: php bin/of flow run <event>"); }
         break;
 
     default:
