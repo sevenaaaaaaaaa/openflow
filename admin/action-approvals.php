@@ -3,10 +3,12 @@ require_once __DIR__.'/config.php';
 require_once __DIR__.'/../lib/GrowthAction.php';
 require_once __DIR__.'/../lib/GrowthSignal.php';
 require_once __DIR__.'/../lib/ActionApprovalView.php';
+require_once __DIR__.'/../lib/DemoGrowthWorkspace.php';
 require_login();
 require_perm('brain');
 $view=action_approval_view(evidence_project_current());
 $labels=['proposed'=>'待提交审批','approved'=>'已批准待执行','executing'=>'执行中','completed'=>'执行已结束','evaluated'=>'业务结果已评估','rejected'=>'已拒绝'];
+$demo=demo_growth_read(); $demoSim=demo_loop_state($demo['data']); $demoPhase=$demoSim['loop_run']['status']??'not_started';
 admin_header('行动审批中心');
 ?>
 <div class="admin-layout">
@@ -35,6 +37,21 @@ admin_header('行动审批中心');
         </div>
         <?php endforeach; ?>
         <p class="text-xs text-muted" style="margin-top:14px">后续只有在独立 Approval 写入、现有领域权限复核和 Action Gateway 生产开关均通过后，才会增加批准按钮。</p>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><h3>沙盘审计样例</h3><span class="p-sub mono">DEMO · SYNTHETIC · NO PRODUCTION WRITE</span></div>
+      <div class="p-body">
+        <?php if($demoPhase==='not_started'): ?><div class="of-empty" style="border:0">尚未运行沙盘审计样例。可在“发送到 Demo 陪跑”启动，或在 Demo 陪跑页手动推进 生成→批准→执行。</div>
+          <div class="v-actions" style="margin-top:12px"><a class="btn btn-primary btn-sm" href="/xmp/demo-growth">运行完整 Demo 闭环</a></div>
+        <?php else: $a=$demoSim['action']??[]; $ap=$demoSim['approval']??null; $ex=$demoSim['execution']??null; $ev=$demoSim['evaluation']??null; $mem=$demoSim['memory']??null; ?>
+          <div class="todo-row" style="align-items:flex-start"><span class="t-b"><span class="t-t"><?=htmlspecialchars($a['action']??'—')?></span><span class="t-d">对象 <?=htmlspecialchars($a['subject_id']??'未指定')?> · 来源 <?=htmlspecialchars($a['module']??'未标注')?></span>
+            <span class="t-d">审批：<?=htmlspecialchars($ap?($ap['actor_type'].' / '.$ap['actor_id'].' / '.$ap['decision']):'尚无')?> · 执行：<?=htmlspecialchars($ex?($ex['executor'].' / '.$ex['status']):'尚无')?> · 结果：<?=htmlspecialchars($ev?($ev['metric'].' Δ'.$ev['delta']):'尚未评估')?></span>
+            <?php if($mem): ?><div class="text-xs text-muted" style="margin-top:4px">已回流 Memory：<?=htmlspecialchars($mem['fact'])?></div><?php endif; ?>
+          </span><span class="st <?=(($ex['status']??'')==='succeeded'?'st-ok':'st-warn')?>"><?=htmlspecialchars($demoPhase)?></span></div>
+          <div class="v-actions" style="margin-top:12px"><a class="btn btn-s btn-sm" href="/xmp/demo-growth">查看/推进 Demo 闭环</a></div>
+        <?php endif; ?>
+        <p class="text-xs text-muted" style="margin-top:12px">样例仅使用 <span class="mono">DEMO-*</span> 合成身份与 <span class="mono">.example</span> 保留域，隔离在 <span class="mono">data/demo/</span>；生产批准与 Action Gateway 执行保持关闭。</p>
       </div>
     </div>
   </div>
