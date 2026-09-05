@@ -79,6 +79,13 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
     </div>
 
     <div class="panels">
+      <div class="panel" style="width:100%">
+        <div class="p-head"><h3>🤖 AI 洞察</h3><span class="p-sub mono">AI · 兜底解读 · 发现异常</span>
+          <button type="button" class="btn btn-s btn-sm" onclick="ofLoadInsights(true)" style="margin-left:auto">✨ 生成洞察</button></div>
+        <div class="p-body" id="ofAiInsight" style="min-height:64px">
+          <div class="text-sm text-muted" style="padding:14px;text-align:center">点击「✨ 生成洞察」，AI 会解读当前关键指标、发现异常并给出建议。</div>
+        </div>
+      </div>
       <div class="panel">
         <div class="p-head"><h3>访问趋势</h3><span class="p-sub mono">近 14 天 UV</span></div>
         <div class="p-body">
@@ -248,3 +255,32 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
   </div>
 </div>
 <?php admin_footer(); ?>
+<script>
+// AI 洞察兜底：读当前关键指标 → CdpInsight::generate 解读异常与建议
+function ofLoadInsights(force) {
+  var box = document.getElementById('ofAiInsight'); if (!box) return;
+  if (force) box.innerHTML = '<div class="text-sm text-muted" style="padding:20px;text-align:center">AI 正在解读当前数据…</div>';
+  fetch('/api/cdp-insight.php?action=insights&days=30', {credentials:'include'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d.ok) { box.innerHTML = '<div class="text-sm text-muted">洞察生成失败</div>'; return; }
+      var h = '';
+      if (d.summary) h += '<div style="padding:12px 14px;background:var(--surface);border-radius:10px;margin-bottom:12px;font-size:13.5px;line-height:1.7">📌 ' + d.summary + '</div>';
+      if (d.insights && d.insights.length) {
+        h += '<div style="font-size:12px;font-weight:700;color:var(--text-3);margin:10px 0 6px">✨ 洞察</div>';
+        d.insights.forEach(function(i){ h += '<div style="display:flex;gap:8px;padding:8px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:13px"><span>💡</span><div><strong>'+(i.title||'')+'</strong><div class="text-sm text-muted" style="font-size:12px">'+(i.detail||'')+'</div></div></div>'; });
+      }
+      if (d.anomalies && d.anomalies.length) {
+        h += '<div style="font-size:12px;font-weight:700;color:var(--danger);margin:10px 0 6px">⚠️ 异常</div>';
+        d.anomalies.forEach(function(a){ h += '<div style="display:flex;gap:8px;padding:8px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:13px"><span>🚨</span><div><strong>'+(a.title||'')+'</strong><div class="text-sm text-muted" style="font-size:12px">'+(a.detail||'')+'</div></div></div>'; });
+      }
+      if (d.actions && d.actions.length) {
+        h += '<div style="font-size:12px;font-weight:700;color:var(--accent);margin:10px 0 6px">🎯 建议</div>';
+        d.actions.forEach(function(a){ h += '<div style="display:flex;gap:8px;padding:8px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:13px"><span>→</span><div><strong>'+(a.title||'')+'</strong><div class="text-sm text-muted" style="font-size:12px">'+(a.detail||'')+'</div></div></div>'; });
+      }
+      if (!h) h = '<div class="text-sm text-muted">暂无洞察，先积累数据。</div>';
+      box.innerHTML = h;
+    })
+    .catch(function(){ box.innerHTML = '<div class="text-sm text-muted">网络异常，稍后再试</div>'; });
+}
+</script>
