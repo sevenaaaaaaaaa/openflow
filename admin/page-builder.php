@@ -38,8 +38,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         $postedKey = trim((string)($_POST['block_key'][$bi] ?? ''));
         if (!preg_match('/^[A-Za-z0-9_-]{1,64}$/', $postedKey)) $postedKey = block_new_key();
         $block = ['_key' => $postedKey, '_type' => $bt];
-        foreach (['title','subtitle','content','image','bg_color','button_text','button_url','video_url','icon','columns','count','items','form_slug','layout','module_id'] as $fk) {
-            if (isset($_POST['block_' . $fk][$bi])) $block[$fk] = $_POST['block_' . $fk][$bi];
+        // 模块工厂：自定义模块按它的 schema 字段名动态收集（含 repeat 列表）
+        if (function_exists('blockschema_is_custom') && blockschema_is_custom($bt)) {
+            $schema = blockschema_get($bt);
+            foreach (($schema['fields'] ?? []) as $sf) {
+                $sk = (string)$sf['key'];
+                if (($sf['type'] ?? '') === 'repeat') {
+                    // repeat: POST 形如 block_{key}[{sub}][][][]; 用下标 bi 过滤
+                    $rows = [];
+                    foreach ((array)($_POST['block_' . $sk][$bi] ?? []) as $typeTag => $subVals) {
+                        // $_POST['block_{k}'][$bi] 是 [ '0' => [ 'sub1'=>..., 'sub2'=>... ] ] 加 bsAddRepeat 新增行
+                        if (!is_array($subVals)) continue;
+                        $row = [];
+                        foreach ((array)($sf['children'] ?? []) as $cf) {
+                            $ck = (string)$cf['key'];
+                            if (isset($subVals[$ck])) $row[$ck] = $subVals[$ck];
+                        }
+                        if ($row) $rows[] = $row;
+                    }
+                    $block[$sk] = $rows;
+                } else {
+                    if (isset($_POST['block_' . $sk][$bi])) $block[$sk] = $_POST['block_' . $sk][$bi];
+                }
+            }
+        } else {
+            foreach (['title','subtitle','content','image','bg_color','button_text','button_url','video_url','icon','columns','count','items','form_slug','layout','module_id'] as $fk) {
+                if (isset($_POST['block_' . $fk][$bi])) $block[$fk] = $_POST['block_' . $fk][$bi];
+            }
         }
         // 区块级人群定向（BACKLOG T1-8）：全为不限/空则不写 audience，保持默认全员可见
         $aud = [
@@ -125,6 +150,8 @@ if (isset($_GET['edit'])) {
 // 类型表来自注册表，别再各抄一份（此前这里 13 种、模块库 17 种、前台渲染器 13 种，三份对不上）
 $blockTypes = block_types();
 $moduleLib  = block_modules();
+// 自定义模块（模块工厂）：编辑器按 schema 动态生成字段；JS 也用它渲染新块输入框
+$customSchemas = function_exists('blockschema_all') ? blockschema_all() : [];
 
 admin_header('落地页构建器');
 ?>
@@ -220,6 +247,9 @@ admin_header('落地页构建器');
                     <?php endforeach; ?>
                   </select>
                 </label>
+                <?php if (blockschema_is_custom($bkType)): /* 模块工厂：按 schema 动态渲染字段 */ ?>
+                <?php echo blockschema_editor_fields($customSchemas[$bkType] ?? [], $blk); ?>
+                <?php else: /* 内置块：原有统一 15 字段 */ ?>
                 <input type="text" name="block_title[]" value="<?=htmlspecialchars($blk['title']??'')?>" placeholder="标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">
                 <input type="text" name="block_subtitle[]" value="<?=htmlspecialchars($blk['subtitle']??'')?>" placeholder="副标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">
                 <textarea name="block_content[]" rows="2" placeholder="内容 (支持 HTML)" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--mono)"><?=htmlspecialchars($blk['content']??'')?></textarea>
@@ -231,6 +261,7 @@ admin_header('落地页构建器');
                   <input type="text" name="block_button_text[]" value="<?=htmlspecialchars($blk['button_text']??'')?>" placeholder="按钮文字">
                   <input type="text" name="block_button_url[]" value="<?=htmlspecialchars($blk['button_url']??'')?>" placeholder="按钮链接">
                 </div>
+                <?php endif; ?>
                 <?php $ba = $blk['audience'] ?? []; $bopts = blocktarget_options(); ?>
                 <details <?=blocktarget_has_rules($blk)?'open':''?> style="border:1px dashed var(--border);border-radius:6px;padding:8px 10px">
                   <summary style="cursor:pointer;font-size:12px;color:var(--faint)">🎯 只给特定人群看<?=blocktarget_has_rules($blk)?'（已定向）':'（默认所有人）'?></summary>
@@ -292,6 +323,45 @@ function aiGenerate() {
 }
 var blockIdx = <?=count($editPage['blocks'] ?? [])?>;
 
+// 模块工厂：自定义模块的 schema 数据，JS 端按它生成新块输入框
+var CUSTOM_SCHEMAS = <?=json_encode($customSchemas, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?>;
+
+// 按 schema 生成一个自定义模块的字段输入框 HTML（JS 版，与 PHP blockschema_editor_fields 对齐）
+function schemaFieldsHtml(schema, vals) {
+  vals = vals || {};
+  var h = '';
+  (schema.fields || []).forEach(function(f) {
+    var k = f.key, v = vals[k] != null ? (Array.isArray(vals[k]) ? '' : vals[k]) : '';
+    var vv = (v === true || v === 1) ? '1' : (v || '');
+    if (f.type === 'title') h += '<label class="text-xs text-muted" style="margin-top:4px">' + (f.label||k) + '</label><input type="text" name="block_' + k + '[]" value="' + vv + '" placeholder="' + (f.placeholder||'') + '" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">';
+    else if (f.type === 'richtext' || f.type === 'text') h += '<textarea name="block_' + k + '[]" rows="2" placeholder="' + (f.placeholder||'') + '" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' + vv + '</textarea>';
+    else if (f.type === 'image' || f.type === 'color' || f.type === 'url' || f.type === 'number' || f.type === 'form') h += '<label class="text-xs text-muted" style="margin-top:4px">' + (f.label||k) + '</label><input type="' + (f.type==='number'?'number':'text') + '" name="block_' + k + '[]" value="' + vv + '" placeholder="' + (f.placeholder||'') + '" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">';
+    else if (f.type === 'select') { var ops = '<option value="">—</option>'; (f.options||[]).forEach(function(o){ ops += '<option value="'+o+'"'+(vv===o?' selected':'')+'>'+o+'</option>'; }); h += '<label class="text-xs text-muted" style="margin-top:4px">' + (f.label||k) + '</label><select name="block_' + k + '[]" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' + ops + '</select>'; }
+    else if (f.type === 'bool') h += '<label class="text-xs text-muted" style="display:flex;align-items:center;gap:6px;margin-top:4px"><input type="checkbox" name="block_' + k + '[]" value="1" ' + (vv?'checked':'') + ' style="width:16px;height:16px">' + (f.label||k) + '</label>';
+    else if (f.type === 'repeat') { var rows = vals[k] || []; h += '<div class="bs-repeat" data-key="'+k+'" style="border:1px dashed var(--border);border-radius:6px;padding:8px 10px;margin-top:4px"><div class="text-xs text-muted" style="margin-bottom:6px">' + (f.label||k) + '（可加多条）</div><div class="bs-rows" data-children="' + JSON.stringify(f.children||[]) + '">'; rows.forEach(function(r){ h += schemaRepeatRowHtml(k, f.children||[], r, true); }); h += '</div><button type="button" class="btn btn-ghost btn-sm" onclick="bsAddRepeat(this)">+ 添加一条</button></div>'; }
+  });
+  return h;
+}
+function schemaRepeatRowHtml(baseK, children, row, fromServer) {
+  var tag = fromServer ? '<div class="bs-row" style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-bottom:6px">' : '<div class="bs-row" style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-bottom:6px">';
+  var h = tag;
+  children.forEach(function(c) {
+    var cv = (row && row[c.key]) || '';
+    var name = 'block_' + baseK + '[' + c.key + ']';
+    h += '<input type="text" name="' + name + '" value="' + cv + '" placeholder="' + (c.label||c.key) + '" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">';
+  });
+  h += '<button type="button" class="btn btn-ghost btn-sm" onclick="this.closest(\'.bs-row\').remove()">✕</button></div>';
+  return h;
+}
+function bsAddRepeat(btn) {
+  var rep = btn.closest('.bs-repeat');
+  var k = rep.getAttribute('data-key');
+  var rowsEl = rep.querySelector('.bs-rows');
+  var children = rowsEl.getAttribute('data-children') ? JSON.parse(rowsEl.getAttribute('data-children')) : [];
+  var r = document.createElement('div'); r.innerHTML = schemaRepeatRowHtml(k, children, {}, false);
+  rowsEl.appendChild(r.firstElementChild);
+}
+
 function addBlock(type, label) {
   var div = document.createElement('div');
   div.className = 'block-item';
@@ -300,6 +370,24 @@ function addBlock(type, label) {
   div.ondragend = function(){ this.classList.remove('dragging'); };
   div.style.cssText = 'border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--surface);cursor:grab';
   var idx = blockIdx++;
+  // 模块工厂：自定义模块用 schema 动态字段，内置块走通用 15 框
+  var isCustom = !!(CUSTOM_SCHEMAS[type]);
+  var fieldsHtml;
+  if (isCustom) {
+    fieldsHtml = schemaFieldsHtml(CUSTOM_SCHEMAS[type], {});
+  } else {
+    fieldsHtml = '<input type="text" name="block_title[]" placeholder="标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' +
+      '<input type="text" name="block_subtitle[]" placeholder="副标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' +
+      '<textarea name="block_content[]" rows="2" placeholder="内容 (支持 HTML)" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--mono)"></textarea>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+        '<input type="text" name="block_image[]" placeholder="图片路径">' +
+        '<input type="text" name="block_bg_color[]" placeholder="背景色">' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+        '<input type="text" name="block_button_text[]" placeholder="按钮文字">' +
+        '<input type="text" name="block_button_url[]" placeholder="按钮链接">' +
+      '</div>';
+  }
   div.innerHTML =
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">' +
       '<span style="cursor:grab;color:var(--faint)" title="拖拽排序">☰</span>' +
@@ -317,17 +405,7 @@ function addBlock(type, label) {
         '<option value="">不引用（用下面的字段自己填）</option>' +
         '<?php foreach ($moduleLib as $mid => $mod): ?><option value="<?=htmlspecialchars($mid)?>"><?=htmlspecialchars(($mod['name'] ?? $mid) . ' · ' . block_type_label(block_type_of($mod)))?></option><?php endforeach; ?>' +
       '</select></label>' +
-      '<input type="text" name="block_title[]" placeholder="标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' +
-      '<input type="text" name="block_subtitle[]" placeholder="副标题" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' +
-      '<textarea name="block_content[]" rows="2" placeholder="内容 (支持 HTML)" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--mono)"></textarea>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-        '<input type="text" name="block_image[]" placeholder="图片路径">' +
-        '<input type="text" name="block_bg_color[]" placeholder="背景色">' +
-      '</div>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-        '<input type="text" name="block_button_text[]" placeholder="按钮文字">' +
-        '<input type="text" name="block_button_url[]" placeholder="按钮链接">' +
-      '</div>' +
+      fieldsHtml +
       // 区块级人群定向（T1-8）：与 PHP 渲染保持同样的 4 个字段，确保并行数组下标对齐
       '<details style="border:1px dashed var(--border);border-radius:6px;padding:8px 10px">' +
         '<summary style="cursor:pointer;font-size:12px;color:var(--faint)">🎯 只给特定人群看（默认所有人）</summary>' +
