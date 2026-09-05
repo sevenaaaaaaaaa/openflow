@@ -36,6 +36,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: /xmp/cdp?tab=segments');
         exit;
     }
+    // P2：把当前画像筛选一键存为分群 / 批量打标签
+    if ($action === 'save_filter_segment') {
+        $rules = [];
+        $q = trim((string)($_POST['q'] ?? ''));
+        $tag = trim((string)($_POST['tag'] ?? ''));
+        $seg = trim((string)($_POST['segment'] ?? ''));
+        $life = trim((string)($_POST['lifecycle'] ?? ''));
+        if ($q !== '') $rules[] = ['type'=>'matches', 'value'=>$q];
+        if ($tag !== '') $rules[] = ['type'=>'tag', 'field'=>$tag, 'operator'=>'eq', 'value'=>$tag];
+        if ($seg !== '') $rules[] = ['type'=>'segment', 'value'=>$seg, 'operator'=>'eq'];
+        if ($life !== '') $rules[] = ['type'=>'lifecycle', 'value'=>$life, 'operator'=>'eq'];
+        if (!$rules) { flash('error','请先设置筛选条件'); header('Location: /xmp/cdp?tab=profiles'); exit; }
+        $segName = trim((string)($_POST['seg_name'] ?? ''));
+        if ($segName === '') $segName = '筛选：' . ($q !== '' ? $q : ($tag !== '' ? $tag : ($life !== '' ? $life : '组合')));
+        CdpSystem::createSegment(['name'=>$segName, 'description'=>'由画像筛选一键生成', 'rules'=>$rules, 'operator'=>'and']);
+        flash('success', "已存为分群：{$segName}");
+        header('Location: /xmp/cdp?tab=segments'); exit;
+    }
+    if ($action === 'save_filter_tag') {
+        $tagName = trim((string)($_POST['tag_name'] ?? ''));
+        if ($tagName === '') { flash('error','请输入标签名'); header('Location: /xmp/cdp?tab=profiles'); exit; }
+        $filter = ['q'=>$_POST['q']??'', 'tag'=>$_POST['tag']??'', 'segment'=>$_POST['segment']??'', 'lifecycle'=>$_POST['lifecycle']??''];
+        $profiles = CdpSystem::allProfiles();
+        $count = 0;
+        foreach ($profiles as $vid => &$p) {
+            if (CdpSystem::matchFilter($p, $filter)) { $p['tags'][$tagName] = ['type'=>'manual','by'=>$_SESSION['admin_name']??'admin','at'=>date('Y-m-d H:i:s')]; $count++; }
+        }
+        unset($p);
+        CdpSystem::saveProfiles($profiles);
+        flash('success', "已给 {$count} 人打标签：{$tagName}");
+        header('Location: /xmp/cdp?tab=profiles'); exit;
+    }
 }
 
 $profiles = CdpSystem::allProfiles();
@@ -374,6 +406,8 @@ admin_header('CDP 客户数据中台');
           </select>
           <button class="btn btn-ghost btn-sm" type="submit">筛选</button>
           <?php if ($fq||$ftag||$fseg||$flife): ?><a class="btn btn-ghost btn-sm" href="cdp.php?tab=profiles">清空</a><?php endif; ?>
+          <button type="button" class="btn btn-s btn-sm" onclick="openSaveSeg()">存为分群</button>
+          <button type="button" class="btn btn-s btn-sm" onclick="openSaveTag()">存为标签</button>
         </form>
       </div>
       <table class="lst-table">
@@ -883,7 +917,7 @@ admin_header('CDP 客户数据中台');
         <div class="seg-rule" style="display:grid;grid-template-columns:1fr 90px 90px 1fr;gap:6px">
           <select name="rule_type[]" class="rule-type" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">
             <option value="property">属性</option><option value="event">事件</option><option value="summary">行为摘要</option>
-            <option value="lifecycle">生命周期</option><option value="tag">标签</option>
+            <option value="lifecycle">生命周期</option><option value="tag">标签</option><option value="matches">关键词</option>
             <option value="last_seen">最近活跃(天)</option><option value="first_seen">首次活跃(天)</option>
           </select>
           <input type="text" name="rule_field[]" class="rule-field" placeholder="字段" value="" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">
@@ -951,5 +985,46 @@ function loadAiInsights(force) {
     });
 }
 document.addEventListener('DOMContentLoaded', function(){ loadAiInsights(false); });
+</script>
+<!-- P2：画像筛选 → 存为分群 / 存为标签 弹窗 -->
+<div id="saveSegDialog" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:16px;padding:24px;width:90%;max-width:420px">
+    <h2 style="margin-bottom:12px">存为分群</h2>
+    <form method="post">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="save_filter_segment">
+      <input type="hidden" name="q" value="<?=htmlspecialchars($fq ?? '')?>">
+      <input type="hidden" name="tag" value="<?=htmlspecialchars($ftag ?? '')?>">
+      <input type="hidden" name="segment" value="<?=htmlspecialchars($fseg ?? '')?>">
+      <input type="hidden" name="lifecycle" value="<?=htmlspecialchars($flife ?? '')?>">
+      <div class="field"><label>分群名称</label><input class="inp" type="text" name="seg_name" value="筛选：<?=htmlspecialchars($fq ?: $ftag ?: $flife ?: '组合')?>" required></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+        <button type="button" class="btn btn-ghost" onclick="this.closest('#saveSegDialog').style.display='none'">取消</button>
+        <button type="submit" class="btn btn-primary">创建分群</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="saveTagDialog" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:16px;padding:24px;width:90%;max-width:420px">
+    <h2 style="margin-bottom:12px">批量打标签</h2>
+    <form method="post">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="save_filter_tag">
+      <input type="hidden" name="q" value="<?=htmlspecialchars($fq ?? '')?>">
+      <input type="hidden" name="tag" value="<?=htmlspecialchars($ftag ?? '')?>">
+      <input type="hidden" name="segment" value="<?=htmlspecialchars($fseg ?? '')?>">
+      <input type="hidden" name="lifecycle" value="<?=htmlspecialchars($flife ?? '')?>">
+      <div class="field"><label>标签名</label><input class="inp" type="text" name="tag_name" placeholder="如：高意向-9月" required></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+        <button type="button" class="btn btn-ghost" onclick="this.closest('#saveTagDialog').style.display='none'">取消</button>
+        <button type="submit" class="btn btn-primary">打标签</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+function openSaveSeg(){ document.getElementById('saveSegDialog').style.display='flex'; }
+function openSaveTag(){ document.getElementById('saveTagDialog').style.display='flex'; }
 </script>
 <?php admin_footer(); ?>

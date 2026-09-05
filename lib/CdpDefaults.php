@@ -82,6 +82,33 @@ function cdp_default_scoring_rules(): array {
                 ['tag'=>'重度用户', 'points'=>10],
             ]],
         ],
+        // RFM 评分（修「恒=1」的 bug：此前无 rfm 键，scoreRecency/Frequency/Monetary 全走 else→1）
+        'rfm' => [
+            // R：近度（lte_days 越小分越高）
+            'r' => [
+                ['lte_days'=>1,  'score'=>5],
+                ['lte_days'=>7,  'score'=>4],
+                ['lte_days'=>30, 'score'=>3],
+                ['lte_days'=>90, 'score'=>2],
+                ['else'=>1],
+            ],
+            // F：频率（累计事件数 gte 越大分越高）
+            'f' => [
+                ['gte'=>100, 'score'=>5],
+                ['gte'=>50,  'score'=>4],
+                ['gte'=>20,  'score'=>3],
+                ['gte'=>5,   'score'=>2],
+                ['else'=>1],
+            ],
+            // M：金额（累计消费 gte 越大分越高）
+            'm' => [
+                ['gte'=>1000, 'score'=>5],
+                ['gte'=>500,  'score'=>4],
+                ['gte'=>100,  'score'=>3],
+                ['gte'=>10,   'score'=>2],
+                ['else'=>1],
+            ],
+        ],
     ];
 }
 
