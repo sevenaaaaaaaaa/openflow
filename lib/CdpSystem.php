@@ -612,6 +612,17 @@ class CdpSystem {
                 if (is_array($tags)) return isset($tags[$field]) || in_array($field, $tags, true);
                 return in_array($field, $tags, true);
 
+            case 'matches':
+                // 自由关键词：匹配 name/email/visitor_id/标签（画像tab筛选共用口径）
+                $q = (string)$rule['value'];
+                if ($q === '') return true;
+                $n = (string)($profile['properties']['name'] ?? '');
+                $em = (string)($profile['properties']['email'] ?? '');
+                $vd = (string)($profile['visitor_id'] ?? '');
+                $tagKeys = array_merge(array_keys((array)($profile['tags'] ?? [])), array_values((array)($profile['tags'] ?? [])));
+                $tk = implode(' ', array_map(fn($t) => is_string($t) ? $t : '', $tagKeys));
+                return stripos($n . ' ' . $em . ' ' . $vd . ' ' . $tk, $q) !== false;
+
             case 'last_seen':
                 $days = (int)$value;
                 $lastSeen = strtotime($profile['last_seen'] ?? '2000-01-01');
@@ -629,6 +640,26 @@ class CdpSystem {
                 return !empty($profile['segment_memberships'][$segId]);
         }
         return false;
+    }
+
+    /** 画像 tab 筛选匹配（q/tag/segment/lifecycle），存分群/存标签/画像tab 共用 */
+    public static function matchFilter(array $profile, array $f): bool {
+        $q = trim((string)($f['q'] ?? ''));
+        $tag = trim((string)($f['tag'] ?? ''));
+        $seg = trim((string)($f['segment'] ?? ''));
+        $life = trim((string)($f['lifecycle'] ?? ''));
+        $tagKeys = array_merge(array_keys((array)($profile['tags'] ?? [])), array_values((array)($profile['tags'] ?? [])));
+        if ($q !== '') {
+            $n = (string)($profile['properties']['name'] ?? '');
+            $em = (string)($profile['properties']['email'] ?? '');
+            $vd = (string)($profile['visitor_id'] ?? '');
+            $tk = implode(' ', array_map(fn($t) => is_string($t) ? $t : '', $tagKeys));
+            if (stripos($n . ' ' . $em . ' ' . $vd . ' ' . $tk, $q) === false) return false;
+        }
+        if ($tag !== '' && !in_array($tag, $tagKeys, true)) return false;
+        if ($seg !== '' && empty($profile['segment_memberships'][$seg])) return false;
+        if ($life !== '' && ($profile['lifecycle']['stage'] ?? '') !== $life) return false;
+        return true;
     }
 
     private static function compare($actual, string $operator, $expected): bool {
@@ -1360,6 +1391,52 @@ class CdpSystem {
         if ($r <= 2 && $f <= 2) return '流失用户';
         if ($r >= 3 && $f <= 2) return '新用户';
         return '一般用户';
+    }
+
+    /** 单用户 RFM/LTV/倾向分（P2：画像页 360°，O(1)，不扫全量事件） */
+    public static function getRFMForUser(string $visitorId): array {
+        $p = self::getProfile($visitorId);
+        if (!$p) return [];
+        $now = time();
+        $recency = ($now - strtotime($p['last_seen'] ?? $p['first_seen'] ?? 'now')) / 86400;
+        $frequency = (int)($p['events_count'] ?? 0);
+        $monetary = (float)($p['summaries']['purchase_amount_total'] ?? 0);
+        $r = self::scoreRecency((float)$recency);
+        $f = self::scoreFrequency($frequency);
+        $m = self::scoreMonetary($monetary);
+        return [
+            'recency'    => round($recency, 1),
+            'frequency'  => $frequency,
+            'monetary'   => round($monetary, 2),
+            'r_score'    => $r,
+            'f_score'    => $f,
+            'm_score'    => $m,
+            'segment'    => self::getRFMSegment($r, $f, $m),
+            'ltv_tier'   => self::ltvTier($monetary),
+            'propensity' => self::propensity($p),
+            'health'     => (int)($p['scores']['health'] ?? 0),
+        ];
+    }
+
+    /** LTV 档位（按累计消费） */
+    private static function ltvTier(float $amount): string {
+        if ($amount <= 0) return '未消费';
+        if ($amount <= 50) return '1-50 低价值';
+        if ($amount <= 200) return '51-200 中价值';
+        if ($amount <= 500) return '201-500 高价值';
+        return '500+ 核心';
+    }
+
+    /** 购买意向倾向分（启发式，0-100；阈值待真实数据定标） */
+    private static function propensity(array $p): int {
+        $s = 0;
+        $s += (int)($p['summaries']['form_submits'] ?? 0) * 15;
+        $s += (int)($p['summaries']['courses_completed'] ?? 0) * 10;
+        $s += (int)($p['summaries']['purchase_count'] ?? 0) * 20;
+        $s += ((int)($p['summaries']['page_views_30d'] ?? 0) >= 20) ? 15 : 0;
+        $s += (($p['lifecycle']['stage'] ?? '') === 'active') ? 10 : 0;
+        $s += count($p['tags'] ?? []) * 5;
+        return min(100, $s);
     }
 
     /**
