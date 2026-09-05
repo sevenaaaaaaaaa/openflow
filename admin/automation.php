@@ -120,6 +120,8 @@ admin_header('营销自动化');
 .au-step[data-action="add_tag"] [data-f="tag"],
 .au-step[data-action="award_points"] [data-f="points"],
 .au-step[data-action="send_coupon"] [data-f^="coupon_"]{display:flex}
+.au-step[data-action="send_wecom"] [data-f="content"],[data-action="send_wecom"] [data-f="mode"],[data-action="send_wecom"] [data-f="title"],[data-action="send_wecom"] [data-f="url"]{display:flex}
+.au-step[data-action="send_wechat"] [data-f="content"],[data-action="send_wechat"] [data-f="mode"],[data-action="send_wechat"] [data-f="template_id"],[data-action="send_wechat"] [data-f="tag_id"],[data-action="send_wechat"] [data-f="title"],[data-action="send_wechat"] [data-f="url"]{display:flex}
 @media(max-width:840px){.au-fields{grid-template-columns:1fr}}
 </style>
 <div class="admin-layout">
@@ -205,7 +207,7 @@ admin_header('营销自动化');
           <tr>
             <td><strong><?=htmlspecialchars($f['name'])?></strong></td>
             <td class="text-sm text-muted"><?=$triggerLabels[$f['trigger']] ?? $f['trigger']?></td>
-            <td class="text-sm text-muted"><?php $__names=['send_email'=>'邮件','delay'=>'延迟','notify'=>'通知','inbox'=>'站内信','add_tag'=>'标签','award_points'=>'积分','send_coupon'=>'优惠券','connection_action'=>'连接动作']; echo htmlspecialchars(implode(' → ', array_map(fn($st)=>$__names[$st['action']??'']??($st['action']??'?'), $f['steps'] ?? []))) ?: '—'; ?></td>
+            <td class="text-sm text-muted"><?php $__names=['send_email'=>'邮件','delay'=>'延迟','notify'=>'通知','inbox'=>'站内信','add_tag'=>'标签','award_points'=>'积分','send_coupon'=>'优惠券','send_wecom'=>'企业微信','send_wechat'=>'公众号','connection_action'=>'连接动作']; echo htmlspecialchars(implode(' → ', array_map(fn($st)=>$__names[$st['action']??'']??($st['action']??'?'), $f['steps'] ?? []))) ?: '—'; ?></td>
             <td><span class="badge <?=($f['enabled']??false)?'badge-green':'badge-gray'?>"><?=($f['enabled']??false)?'运行中':'已停用'?></span></td>
             <td style="white-space:nowrap">
               <a href="?toggle=<?=urlencode($f['id'])?>" class="btn btn-ghost btn-sm"><?=($f['enabled']??false)?'停用':'启用'?></a>
@@ -258,6 +260,8 @@ var AU_ACTIONS = {
   add_tag:      {label:'打标签',   fields:['tag']},
   award_points: {label:'加积分',   fields:['points']},
   send_coupon:  {label:'发优惠券', fields:['coupon_name','coupon_type','coupon_value','coupon_min']},
+  send_wecom:   {label:'企业微信', fields:['content','title','url','mode']},
+  send_wechat:  {label:'公众号/服务号', fields:['content','title','url','template_id','tag_id','mode']},
   connection_action: {label:'连接动作（外部服务）', fields:['action_id']}
 };
 // 开放能力：可用的连接动作（连接名 · 动作名）
@@ -285,6 +289,20 @@ function stepHTML(st, i) {
       '<label class="au-f" data-f="coupon_type"><span>类型</span><select name="step_coupon_type[]"><option value="fixed"'+((st.coupon_type||'fixed')==='fixed'?' selected':'')+'>满减 ¥</option><option value="percent"'+(st.coupon_type==='percent'?' selected':'')+'>折扣 %</option></select></label>' +
       '<label class="au-f" data-f="coupon_value"><span>面值</span><input type="number" name="step_coupon_value[]" value="'+esc(st.coupon_value==null?0:st.coupon_value)+'"></label>' +
       '<label class="au-f" data-f="coupon_min"><span>满额门槛</span><input type="number" name="step_coupon_min[]" value="'+esc(st.coupon_min==null?0:st.coupon_min)+'"></label>' +
+      // 线A：企业微信 / 公众号 触达动作字段（复用已通 API）
+      '<label class="au-f" data-f="mode"><span>触达方式</span><select name="step_mode[]">' +
+        '<option value="text"'+((st.mode||'text')==='text'?' selected':'')+'>企业微信-文本</option>' +
+        '<option value="news"'+(st.mode==='news'?' selected':'')+'>企业微信-图文</option>' +
+        '<option value="textcard"'+(st.mode==='textcard'?' selected':'')+'>企业微信-文本卡片</option>' +
+        '<option value="template"'+(st.mode==='template'?' selected':'')+'>公众号-模板消息</option>' +
+        '<option value="kf"'+(st.mode==='kf'?' selected':'')+'>公众号-客服消息</option>' +
+        '<option value="mass_tag"'+(st.mode==='mass_tag'?' selected':'')+'>公众号-按标签群发</option>' +
+      '</select></label>' +
+      '<label class="au-f" data-f="title"><span>标题<em>图文/卡片</em></span><input type="text" name="step_title[]" value="'+esc(st.title)+'"></label>' +
+      '<label class="au-f" data-f="url"><span>链接 <em>可选</em></span><input type="text" name="step_url[]" value="'+esc(st.url)+'" placeholder="https:// 或 /path"></label>' +
+      '<label class="au-f" data-f="template_id"><span>模板ID<em>公众号模板消息</em></span><input type="text" name="step_template_id[]" value="'+esc(st.template_id)+'" placeholder="TM/模板ID"></label>' +
+      '<label class="au-f" data-f="tag_id"><span>标签ID<em>群发</em></span><input type="number" name="step_tag_id[]" value="'+esc(st.tag_id==null?0:st.tag_id)+'"></label>' +
+      '<label class="au-f wide" data-f="content"><span>内容 <em>支持 {name} {email} 等变量</em></span><textarea name="step_content[]" rows="3">'+esc(st.content)+'</textarea></label>' +
       '<label class="au-f wide" data-f="action_id"><span>连接动作 <em>在「连接」里定义；事件字段会代入动作模板</em></span><select name="step_action_id[]">' +
         '<option value="">请选择…</option>' + Object.keys(AU_CONN_ACTIONS).map(function(k){ return '<option value="'+esc(k)+'"'+((st.action_id||'')===k?' selected':'')+'>'+esc(AU_CONN_ACTIONS[k])+'</option>'; }).join('') +
         (Object.keys(AU_CONN_ACTIONS).length ? '' : '<option value="" disabled>还没有启用的连接动作，先到「连接」里建一个</option>') +
