@@ -83,6 +83,14 @@ admin_header('营销洞察');
       <div class="metric-card"><div class="lab">NPS 项目</div><div class="val"><?=count($npsProjects)?></div></div>
     </div>
 
+    <div class="card" style="margin-bottom:16px">
+      <div class="p-head"><h3>🤖 AI 洞察</h3><span class="p-sub mono">AI · 解读表单/NPS/线索</span>
+        <button type="button" class="btn btn-s btn-sm" onclick="ofInsLoad(true)" style="margin-left:auto">✨ 生成洞察</button></div>
+      <div class="p-body" id="ofInsight" style="min-height:64px">
+        <div class="text-sm text-muted" style="padding:14px;text-align:center">点击「✨ 生成洞察」，AI 解读表单提交、NPS 与线索获取的异常与建议。</div>
+      </div>
+    </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="insight-grid">
       <!-- 提交趋势 -->
       <div class="card">
@@ -178,3 +186,20 @@ admin_header('营销洞察');
 </div>
 <style>@media(max-width:900px){.insight-grid{grid-template-columns:1fr!important}}</style>
 <?php admin_footer(); ?>
+<script>
+// AI 解读营销洞察（表单/NPS/线索），复用 CdpInsight::generate
+function ofInsLoad(force) {
+  var box = document.getElementById('ofInsight'); if (!box) return;
+  if (force) box.innerHTML = '<div class="text-sm text-muted" style="padding:20px;text-align:center">AI 正在解读营销数据…</div>';
+  fetch('/api/cdp-insight.php?action=insights&days=30', {credentials:'include'})
+    .then(function(r){ return r.json(); }).then(function(d){
+      if (!d.ok) { box.innerHTML = '<div class="text-sm text-muted">解读失败</div>'; return; }
+      var h = '';
+      if (d.summary) h += '<div style="padding:12px 14px;background:var(--surface);border-radius:10px;margin-bottom:12px;font-size:13.5px;line-height:1.7">📌 ' + d.summary + '</div>';
+      if (d.actions && d.actions.length) { h += '<div style="font-size:12px;font-weight:700;color:var(--accent);margin:10px 0 6px">🎯 建议</div>'; d.actions.forEach(function(a){ h += '<div style="display:flex;gap:8px;padding:8px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:13px"><span>→</span><div><strong>'+(a.title||'')+'</strong><div class="text-sm text-muted" style="font-size:12px">'+(a.detail||'')+'</div></div></div>'; }); }
+      if (d.insights && d.insights.length) h += '<div style="font-size:12px;font-weight:700;color:var(--text-3);margin:10px 0 6px">✨ 洞察</div>' + d.insights.map(function(i){ return '<div style="font-size:13px;padding:8px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px">💡 '+i.title+' — '+i.detail+'</div>'; }).join('');
+      if (!h) h = '<div class="text-sm text-muted">暂无数据。</div>';
+      box.innerHTML = h;
+    }).catch(function(){ box.innerHTML = '<div class="text-sm text-muted">网络异常</div>'; });
+}
+</script>
