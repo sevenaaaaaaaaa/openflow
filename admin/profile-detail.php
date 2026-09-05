@@ -55,6 +55,8 @@ $tags = $profile['tags'] ?? [];
 $segments = json_read(DATA_DIR . '/cdp/segments.json');
 if (!is_array($segments)) $segments = [];
 $health = CdpSystem::getHealthScore($vid);
+// P2：单用户 RFM/LTV/倾向分（360°）
+$rfm = CdpSystem::getRFMForUser($vid);
 
 $scopeNames = ['identity'=>'身份','business'=>'业务','device'=>'设备','attribution'=>'渠道归因','preference'=>'偏好'];
 
@@ -88,6 +90,18 @@ admin_header('用户画像详情');
           <div style="padding:12px;border-radius:12px;background:var(--bg);text-align:center"><div style="font-size:20px;font-weight:800"><?=$summaries['purchase_count'] ?? 0?></div><div style="font-size:11px;color:var(--muted)">购买次数</div></div>
           <div style="padding:12px;border-radius:12px;background:var(--bg);text-align:center"><div style="font-size:20px;font-weight:800"><?=$summaries['courses_completed'] ?? 0?></div><div style="font-size:11px;color:var(--muted)">完课数</div></div>
         </div>
+        <?php if ($rfm): ?>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px">
+          <div style="padding:12px;border-radius:12px;background:var(--bg);text-align:center"><div style="font-size:20px;font-weight:800"><?=$rfm['segment']?></div><div style="font-size:11px;color:var(--muted)">RFM 分段</div></div>
+          <div style="padding:12px;border-radius:12px;background:var(--bg);text-align:center"><div style="font-size:20px;font-weight:800"><?=$rfm['ltv_tier']?></div><div style="font-size:11px;color:var(--muted)">LTV 档位</div></div>
+          <div style="padding:12px;border-radius:12px;background:var(--bg);text-align:center"><div style="font-size:20px;font-weight:800;color:<?=$rfm['propensity']>=60?'var(--ok)':($rfm['propensity']>=30?'var(--warn)':'var(--muted)')?>"><?=$rfm['propensity']?>%</div><div style="font-size:11px;color:var(--muted)">倾向分</div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <span style="font-size:11px;padding:3px 8px;border-radius:999px;background:var(--bg)">R <b><?=$rfm['r_score']?></b>(<?=htmlspecialchars((string)($rfm['recency']??''))?>天)</span>
+          <span style="font-size:11px;padding:3px 8px;border-radius:999px;background:var(--bg)">F <b><?=$rfm['f_score']?></b>(<?=htmlspecialchars((string)($rfm['frequency']??''))?>次)</span>
+          <span style="font-size:11px;padding:3px 8px;border-radius:999px;background:var(--bg)">M <b><?=$rfm['m_score']?></b>(¥<?=htmlspecialchars((string)($rfm['monetary']??''))?>)</span>
+        </div>
+        <?php endif; ?>
         <div style="margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--bg);font-size:12.5px;color:var(--muted)">
           活跃偏好：<b><?=htmlspecialchars($props['channel'] ?? '—')?></b> 渠道 · <b><?=htmlspecialchars($props['os'] ?? '—')?></b> 设备 · <b><?=htmlspecialchars($props['language'] ?? '—')?></b> 语言
         </div>
