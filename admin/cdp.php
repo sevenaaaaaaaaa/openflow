@@ -335,20 +335,7 @@ admin_header('CDP 客户数据中台');
     $fseg = trim((string)($_GET['segment'] ?? ''));
     $flife = trim((string)($_GET['lifecycle'] ?? ''));
     if ($fq !== '' || $ftag !== '' || $fseg !== '' || $flife !== '') {
-        $profiles = array_filter($profiles, function ($p) use ($fq, $ftag, $fseg, $flife) {
-            $name = (string)($p['properties']['name'] ?? '');
-            $email = (string)($p['properties']['email'] ?? '');
-            $vid = (string)($p['visitor_id'] ?? '');
-            $tagKeys = array_keys((array)($p['tags'] ?? []));
-            $tagKeys = array_merge($tagKeys, array_values((array)($p['tags'] ?? [])));
-            $stage = (string)($p['lifecycle']['stage'] ?? '');
-            $segMembers = (array)($p['segment_memberships'] ?? []);
-            if ($fq !== '' && stripos($name . ' ' . $email . ' ' . $vid . ' ' . implode(' ', $tagKeys), $fq) === false) return false;
-            if ($ftag !== '' && !in_array($ftag, $tagKeys, true)) return false;
-            if ($fseg !== '' && !isset($segMembers[$fseg])) return false;
-            if ($flife !== '' && $stage !== $flife) return false;
-            return true;
-        });
+        $profiles = array_filter($profiles, fn ($p) => CdpSystem::matchFilter($p, ['q'=>$fq, 'tag'=>$ftag, 'segment'=>$fseg, 'lifecycle'=>$flife]));
     }
     ?>
     <?php $tags = CdpSystem::getTagDistribution(); ?>
@@ -824,6 +811,7 @@ admin_header('CDP 客户数据中台');
             <div style="height:100%;width:<?=round($v / max(1, array_sum($channelDist)) * 100)?>%;background:var(--accent);border-radius:4px"></div>
           </div>
           <span style="font-size:12px;color:var(--muted);min-width:40px;text-align:right"><?=$v?></span>
+          <a href="cdp.php?tab=profiles&q=<?=urlencode($k)?>" title="查看该渠道的人" style="font-size:11px;color:var(--accent);text-decoration:none">人👥</a>
         </div>
         <?php endforeach; ?>
         <?php if (empty($channelDist)): ?><p class="text-sm text-muted" style="padding:20px;text-align:center">暂无渠道数据</p><?php endif; ?>
@@ -837,6 +825,7 @@ admin_header('CDP 客户数据中台');
             <div style="height:100%;width:<?=round($v / max(1, array_sum($deviceDist)) * 100)?>%;background:var(--ok);border-radius:4px"></div>
           </div>
           <span style="font-size:12px;color:var(--muted);min-width:40px;text-align:right"><?=$v?></span>
+          <a href="cdp.php?tab=profiles&q=<?=urlencode($k)?>" title="查看该设备的人" style="font-size:11px;color:var(--accent);text-decoration:none">人👥</a>
         </div>
         <?php endforeach; ?>
         <?php if (empty($deviceDist)): ?><p class="text-sm text-muted" style="padding:20px;text-align:center">暂无设备数据</p><?php endif; ?>
