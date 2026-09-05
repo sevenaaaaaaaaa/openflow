@@ -10,6 +10,8 @@
  *            不要加到 CdpInsight（那是 AI 洞察）或 CdpSync（那是落库）。
  */
 require_once __DIR__ . '/../admin/config.php';
+// P0：深引擎开箱即用 —— 空/缺配置回退到内置默认（data/cdp/*.json 可覆盖）
+require_once __DIR__ . '/CdpDefaults.php';
 
 class CdpSystem {
     private static string $eventsFile = DATA_DIR . '/cdp/events.json';
@@ -419,6 +421,7 @@ class CdpSystem {
         $dFirst = ($now - $first) / 86400;
         $dLast = ($now - $last) / 86400;
         $cfg = json_read(DATA_DIR . '/cdp/lifecycle.json');
+        if (empty($cfg) && function_exists('cdp_default_lifecycle')) $cfg = cdp_default_lifecycle();
         $newDays = (int)($cfg['new_days'] ?? 7);
         $activeDays = (int)($cfg['active_days'] ?? 7);
         $dormantDays = (int)($cfg['dormant_days'] ?? 30);
@@ -437,8 +440,9 @@ class CdpSystem {
      * 自动打标签
      */
     private static function autoTag(array &$profile, string $event, array $data): void {
-        // 规则驱动的自动标签（tag_rules.json）
+        // 规则驱动的自动标签（tag_rules.json；空则回退内置默认，保证开箱即用）
         $rules = json_read(DATA_DIR . '/cdp/tag_rules.json');
+        if (empty($rules) && function_exists('cdp_default_tag_rules')) $rules = cdp_default_tag_rules();
         if (is_array($rules)) {
             $tags = &$profile['tags'];
             foreach ($rules as $rid => $rule) {
@@ -489,7 +493,9 @@ class CdpSystem {
      * 获取所有分群
      */
     public static function allSegments(): array {
-        return json_read(self::$segmentsFile);
+        $segments = json_read(self::$segmentsFile);
+        if (empty($segments) && function_exists('cdp_default_segments')) return cdp_default_segments();
+        return $segments;
     }
 
     /**
@@ -1071,6 +1077,7 @@ class CdpSystem {
         $profile = self::getProfile($visitorId);
         if (!$profile) return 0;
         $rules = json_read(DATA_DIR . '/cdp/scoring_rules.json');
+        if (empty($rules) && function_exists('cdp_default_scoring_rules')) $rules = cdp_default_scoring_rules();
         $hcfg = $rules['health'] ?? [];
         if (empty($hcfg)) { // 回退默认
             $now = time();
