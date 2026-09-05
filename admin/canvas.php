@@ -20,6 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     foreach (($_POST['node_type'] ?? []) as $i => $nt) {
         if (empty($nt)) continue;
         $node = ['id' => 'n' . $i, 'type' => $nt];
+        // 真花布：节点坐标（前端拖拽更新）
+        $node['x'] = (int)($_POST['node_x'][$i] ?? 0);
+        $node['y'] = (int)($_POST['node_y'][$i] ?? 0);
         switch ($nt) {
             case 'trigger':
                 $node['trigger'] = $_POST['node_trigger'][$i] ?? 'form_submit';
@@ -145,8 +148,11 @@ if (isset($_GET['edit'])) {
 admin_header('画布编辑器');
 ?>
 <style>
-.canvas-flow{display:flex;gap:12px;overflow-x:auto;padding:24px 8px;align-items:flex-start}
-.canvas-node{min-width:220px;max-width:260px;background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:14px;position:relative;flex-shrink:0}
+.canvas-flow{position:relative;width:100%;min-height:520px;height:560px;overflow:auto;background:var(--bg);border:1.5px dashed var(--border);border-radius:14px;padding:20px}
+.canvas-flow .canvas-node{position:absolute;min-width:220px;max-width:260px;background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:14px;cursor:grab;z-index:2}
+.canvas-graph-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.canvas-graph-svg path{stroke:var(--accent);stroke-width:2;fill:none;opacity:.7}
+.canvas-graph-svg text{font-size:10px;fill:var(--text-3);pointer-events:none}
 .canvas-node.trigger{border-color:var(--ok)}
 .canvas-node.send_email{border-color:var(--accent)}
 .canvas-node.condition{border-color:var(--warn)}
@@ -155,9 +161,8 @@ admin_header('画布编辑器');
 .canvas-node .node-head{font-size:12px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .canvas-node .node-body input,.canvas-node .node-body select{width:100%;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;margin-bottom:6px;box-sizing:border-box}
 .canvas-node .node-body textarea{width:100%;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box}
-.canvas-arrow{display:flex;align-items:center;color:var(--text-3);font-size:20px;padding-top:30px;flex-shrink:0}
 .canvas-node .del{position:absolute;top:6px;right:8px;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:14px}
-.canvas-node.dragging{opacity:.5;border-style:dashed}
+.canvas-node.dragging{opacity:.6;border-style:dashed;z-index:9}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('canvas'); ?>
@@ -198,16 +203,17 @@ admin_header('画布编辑器');
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('connection')">🔌 连接动作</button>
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('split')">🧪 A/B 分流</button>
         </div>
-        <div class="canvas-flow" id="canvasFlow">
+        <div class="canvas-flow" id="canvasFlow" data-edges="<?=htmlspecialchars(json_encode($edit['edges'] ?? [], JSON_UNESCAPED_UNICODE))?>">
+          <svg class="canvas-graph-svg" id="canvasLinks"></svg>
           <?php $editNodes = $edit['nodes'] ?? []; foreach ($editNodes as $ni => $n): ?>
           <?php canvas_render_node($n, $ni, $forms); ?>
-          <?php if ($ni < count($editNodes) - 1): ?><div class="canvas-arrow">→</div><?php endif; ?>
           <?php endforeach; ?>
         </div>
         <div style="margin-top:16px"><button type="submit" name="save" class="btn btn-primary">保存画布</button>
         <a href="canvas.php" class="btn btn-ghost">取消</a></div>
       </div>
     </form>
+    <script src="/assets/canvas-graph.js?v=20260906a" defer></script>
 
     <?php else: ?>
     <div class="card" style="padding:0;overflow:auto">
@@ -242,7 +248,9 @@ function canvas_render_node(array $n, int $i, array $forms): void {
     if ($CANVAS_CONN_ACTIONS === null) { require_once __DIR__ . '/../lib/ConnectionActions.php'; $CANVAS_CONN_ACTIONS = action_options(); }
     $icons = ['trigger'=>'🔔','send_email'=>'📧','condition'=>'🔀','delay'=>'⏱','notify'=>'📢','tag'=>'🏷','score'=>'⭐','stage'=>'📊','webhook'=>'🔗','connection'=>'🔌','split'=>'🧪'];
     $labels = ['trigger'=>'触发器','send_email'=>'发送邮件','condition'=>'条件分支','delay'=>'延迟','notify'=>'通知','tag'=>'打标签','score'=>'加分','stage'=>'改CRM阶段','webhook'=>'Webhook','connection'=>'连接动作','split'=>'A/B 分流'];
-    echo '<div class="canvas-node ' . $type . '" draggable="true" ondragstart="nodeDragStart(event)" ondragover="event.preventDefault()" ondrop="nodeDrop(event)">';
+    $x = (int)($n['x'] ?? 0); $y = (int)($n['y'] ?? 0);
+    echo '<div class="canvas-node ' . $type . '" data-id="n' . $i . '" data-x="' . $x . '" data-y="' . $y . '" draggable="true" ondragstart="nodeDragStart(event)" ondragover="event.preventDefault()" ondrop="nodeDrop(event)" style="position:absolute;left:' . $x . 'px;top:' . $y . 'px">';
+    echo '<input type="hidden" name="node_x[]" value="' . $x . '"><input type="hidden" name="node_y[]" value="' . $y . '">';
     echo '<button type="button" class="del" onclick="this.closest(\'.canvas-node\').remove()">✕</button>';
     echo '<div class="node-head">' . $icons[$type] . ' ' . $labels[$type] . '</div>';
     echo '<div class="node-body">';
@@ -340,6 +348,8 @@ function addNode(type) {
   var icons = {trigger:'🔔',send_email:'📧',condition:'🔀',delay:'⏱',notify:'📢',tag:'🏷',score:'⭐',stage:'📊',webhook:'🔗',connection:'🔌',split:'🧪'};
   var labels = {trigger:'触发器',send_email:'发送邮件',condition:'条件分支',delay:'延迟',notify:'通知',tag:'打标签',score:'加分',stage:'改CRM阶段',webhook:'Webhook',connection:'连接动作',split:'A/B 分流'};
   var body = '<input type="hidden" name="node_type[]" value="' + type + '">';
+  body += '<input type="hidden" name="node_x[]" value="0"><input type="hidden" name="node_y[]" value="0">';
+  d.setAttribute('data-x','0'); d.setAttribute('data-y','0');
   if (type === 'trigger') {
     body += '<select name="node_trigger[]"><option value="form_submit">表单提交</option><option value="member_register">用户注册</option><option value="nps_submit">NPS评分</option></select>';
     body += '<select name="node_form[]"><option value="">全部表单</option>' + FORMS.map(function(f){return '<option value="' + f.slug + '">' + f.title + '</option>';}).join('') + '</select>';
@@ -372,11 +382,7 @@ function addNode(type) {
   // 为非当前类型的动作补隐藏占位，保证 node_type[] 与各 node_xxx[] 下标对齐
   ['tag','score','stage','webhook','connection','split'].forEach(function(t){ if(t!==type){ var f={tag:'node_tag',score:'node_score',stage:'node_stage',webhook:'node_url',connection:'node_action_id',split:'node_rollout'}[t]; var extra = t==='split' ? '<input type="hidden" name="node_variant_a[]" value=""><input type="hidden" name="node_a_next[]" value=""><input type="hidden" name="node_b_next[]" value="">' : ''; body += '<input type="hidden" name="'+f+'[]" value="">'+extra; }});
   d.innerHTML = '<button type="button" class="del" onclick="this.closest(\'.canvas-node\').remove()">✕</button><div class="node-head">' + icons[type] + ' ' + labels[type] + '</div><div class="node-body">' + body + '</div>';
-  // 加箭头
-  var arrow = document.createElement('div');
-  arrow.className = 'canvas-arrow';
-  arrow.textContent = '→';
-  flow.appendChild(arrow);
+  // 真流程图：节点直接放画布（无旧箭头），canvas-graph.js 负责画 SVG 连线 + 拖拽
   flow.appendChild(d);
 }
 function nodeDragStart(e) { dragNode = e.target.closest('.canvas-node'); if (dragNode) dragNode.classList.add('dragging'); }
