@@ -15,11 +15,15 @@
  * 之后再谈 Portable Text 形状与块编辑器，而不是再造第五套模型。
  */
 
+require_once __DIR__ . '/BlockSchema.php';
+
+// 内置类型表（模块工厂生态：用户自定义模块由此合并进来，见 block_types()）
 if (!function_exists('block_types')) {
 
-/** 唯一的类型表：type => 中文名。渲染器必须认得这里的每一种。 */
+/** 唯一的类型表：type => 中文名。渲染器必须认得这里的每一种。
+ *  内置类型 + 用户自定义模块（schema）合并；自定义模块标记为可渲染。 */
 function block_types(): array {
-    return [
+    $builtin = [
         'hero' => 'Hero 大标题', 'features' => '功能列表', 'cta' => 'CTA 行动号召',
         'text' => '文本段落', 'image-text' => '图文混排', 'stats' => '数据指标',
         'testimonials' => '客户证言', 'logo-wall' => 'Logo 墙', 'faq' => 'FAQ',
@@ -28,6 +32,15 @@ function block_types(): array {
         'timeline' => '时间线', 'comparison' => '对比表',
         'module' => '引用模块库',
     ];
+    // 合并用户自定义模块（模块工厂）：key 不与内置冲突时加入
+    if (function_exists('blockschema_all')) {
+        foreach (blockschema_all() as $key => $mod) {
+            if (isset($builtin[$key])) continue;
+            if (($mod['status'] ?? '') !== 'active') continue;
+            $builtin[$key] = $mod['name'] ?? $key;
+        }
+    }
+    return $builtin;
 }
 
 function block_type_label(string $t): string { return block_types()[$t] ?? $t; }
@@ -79,6 +92,11 @@ function builder_render_block(array $b): string {
     $btn = $btnText && $btnUrl ? '<div class="cta-row"><a class="btn primary" href="' . $btnUrl . '">' . $btnText . '</a></div>' : '';
     $head = fn(string $tag = 'h2', bool $center = true) => '<div class="sec-head' . ($center ? ' center' : '') . '">' . ($sub && $tag === 'h1' ? '<span class="kicker">' . $sub . '</span>' : '') . '<' . $tag . '>' . $title . '</' . $tag . '>' . ($sub && $tag !== 'h1' ? '<p class="lead">' . $sub . '</p>' : '') . '</div>';
     $muted = fn(string $html) => '<div class="prose" style="color:var(--muted)">' . $html . '</div>';
+    // 用户自定义模块（模块工厂 schema）：非内置类型且能取到 schema → 走通用渲染
+    if (blockschema_is_custom($t)) {
+        $custom = builder_render_schema_module($b);
+        if ($custom !== null) return $custom;
+    }
     // 引用模块库：把「定义一次、到处插入」真正接通（此前 page-modules.json 无人读取）
     if ($t === 'module') {
         static $depth = 0;
@@ -130,5 +148,166 @@ function builder_render_block(array $b): string {
         default:
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? $muted($content) : '<div class="empty">区块内容</div>') . '</section>';
     }
+}
+
+/** 该类型是否为用户自定义模块（模块工厂 schema） */
+function blockschema_is_custom(string $type): bool {
+    if (!function_exists('blockschema_all')) return false;
+    $all = blockschema_all();
+    return isset($all[$type]);
+}
+
+/**
+ * 通用 schema 渲染引擎 —— 模块工厂的核心。
+ * 按模块的 schema（字段列表 + 样式）把块值渲染成 HTML；支持：
+ *   - 字段映射模板变量：{{title}} {{items.name}} 等（代码模式）
+ *   - style 定义：bg/radius/align/padding 等 CSS 变量
+ *   - custom_html：开发者直接给整段 HTML，{block} 占位符替回渲染结果
+ *   - repeat 列表：子字段逐条渲染
+ * 非用户自定义模块返回 null，交回内置渲染。
+ */
+function builder_render_schema_module(array $b): ?string {
+    require_once __DIR__ . '/BlockContract.php';
+    $type = block_type_of($b);
+    if ($type === '') return null;
+    $schema = blockschema_get($type);
+    if ($schema === null) return null;
+
+    // 代码模式：custom_html 非空 → 用模板变量映射渲染
+    $customHtml = (string)($schema['custom_html'] ?? '');
+    $fields = (array)($schema['fields'] ?? []);
+
+    // 组装字段值（单值 + repeat 子项）
+    $values = [];
+    foreach ($fields as $f) {
+        $k = (string)$f['key'];
+        if ($f['type'] === 'repeat') {
+            // 子字段 schema
+            $children = (array)($f['children'] ?? []);
+            $rows = [];
+            foreach ((array)($b[$k] ?? []) as $row) {
+                if (!is_array($row)) continue;
+                $r = [];
+                foreach ($children as $cf) $r[(string)$cf['key']] = $row[(string)$cf['key']] ?? '';
+                $rows[] = $r;
+            }
+            $values[$k] = $rows;
+        } else {
+            $values[$k] = $b[$k] ?? '';
+        }
+    }
+
+    // 样式（CSS 变量映射到 style 内联）
+    $styleCss = '';
+    $style = (array)($schema['style'] ?? []);
+    $styleCss .= !empty($style['bg']) ? 'background:' . blockschema_safe_color((string)$style['bg']) . ';' : '';
+    $styleCss .= !empty($style['radius']) ? 'border-radius:' . (preg_match('/^\d+$/',(string)$style['radius'])?(string)$style['radius'].'px':(string)$style['radius']) . ';' : '';
+    $styleCss .= !empty($style['align']) ? 'text-align:' . (in_array($style['align'], ['left','center','right'], true)?$style['align']:'left') . ';' : '';
+    $styleCss .= !empty($style['padding']) ? 'padding:' . (preg_match('/^\d+$/',(string)$style['padding'])?(string)$style['padding'].'px':(string)$style['padding']) . ';' : '';
+    $styleAttr = $styleCss ? ' style="' . htmlspecialchars($styleCss, ENT_QUOTES) . '"' : '';
+
+    // [A] 代码模式：custom_html + 模板变量 → 用 {block} 包裹，{field} 逐个替换
+    if ($customHtml !== '') {
+        $rendered = blockschema_tpl_render($customHtml, $values, $fields);
+        // custom_html 可包含外层区块骨架；无则套统一 shell
+        if (preg_match('/<(section|div|article)[\s>]/', $rendered)) {
+            return $rendered;
+        }
+        return '<section class="sec reveal"' . $styleAttr . '>' . $rendered . '</section>';
+    }
+
+    // [B] 默认渲染：单个字段 + repeat 列表，套用共享 archetype 壳
+    $inner = '';
+    foreach ($fields as $f) {
+        $k = (string)$f['key'];
+        $v = $values[$k] ?? '';
+        if ($f['type'] === 'repeat') {
+            if (!empty($v)) {
+                $rows = [];
+                foreach ($v as $row) {
+                    $cols = '';
+                    foreach ((array)($f['children'] ?? []) as $cf) {
+                        $ck = (string)$cf['key'];
+                        if (($row[$ck] ?? '') === '') continue;
+                        $colType = $cf['type'] ?? 'text';
+                        $val = $row[$ck];
+                        if ($colType === 'image') $cols .= '<img src="' . htmlspecialchars((string)$val, ENT_QUOTES) . '" style="width:48px;height:48px;border-radius:12px;object-fit:cover">';
+                        elseif ($colType === 'richtext') $cols .= '<p class="lead" style="color:var(--muted)">' . $val . '</p>';
+                        else $cols .= '<div style="font-size:13px;color:var(--muted)">' . htmlspecialchars((string)$val, ENT_QUOTES) . '</div>';
+                    }
+                    $rows[] = '<div class="c-item" style="display:flex;flex-direction:column;gap:6px">' . $cols . '</div>';
+                }
+                $inner .= '<div class="cols n' . max(1, min(4, count((array)($style['cols'] ?? [])))) . '">' . implode('', $rows) . '</div>';
+            }
+        } elseif ($f['type'] === 'image') {
+            if ($v !== '') $inner .= '<img src="' . htmlspecialchars((string)$v, ENT_QUOTES) . '" loading="lazy" style="width:100%;border-radius:12px;object-fit:cover">';
+        } elseif ($f['type'] === 'form') {
+            // 表单嵌入：读表单配置，输出真实可提交表单
+            $inner .= blockschema_render_form((string)$v);
+        } else {
+            $label = (string)($f['label'] ?? $k);
+            $cls = in_array($f['type'], ['title','subtitle'], true) ? 'style="font-size:18px;font-weight:800"' : '';
+            $inner .= '<div class="s-field"><div class="text-xs" style="color:var(--faint)">' . htmlspecialchars($label, ENT_QUOTES) . '</div>' . ($v !== '' ? '<div ' . $cls . '>' . (in_array($f['type'], ['richtext'], true) ? $v : htmlspecialchars((string)$v, ENT_QUOTES)) . '</div>' : '') . '</div>';
+        }
+    }
+    if ($inner === '') {
+        $inner = '<div class="empty">配置模块内容</div>';
+    }
+    return '<section class="sec reveal"' . $styleAttr . '>' . $inner . '</section>';
+}
+
+/**
+ * 代码模式模板渲染：把 {{field}} / {{repeat.#.sub}} 替换成字段值。
+ * unknown 字段保留 {{name}} 原文（让开发者看见可用的占位符，避免静默丢值）。
+ */
+function blockschema_tpl_render(string $tpl, array $values, array $fields): string {
+    $out = $tpl;
+    foreach ($fields as $f) {
+        $k = (string)$f['key'];
+        if ($f['type'] === 'repeat') {
+            // 整段重复：{{#items}}…{{/items}} 内的子字段逐条展开
+            $rows = (array)($values[$k] ?? []);
+            if (preg_match_all('/\{\{#(' . preg_quote($k, '/') . ')\}\}(.*?)\{\{\/\1\}\}/s', $out, $ms, PREG_SET_ORDER)) {
+                foreach ($ms as $m) {
+                    $block = $m[2]; $repl = '';
+                    foreach ($rows as $row) {
+                        $r = $block;
+                        foreach ((array)($f['children'] ?? []) as $cf) {
+                            $ck = (string)$cf['key'];
+                            $r = str_replace('{{' . $ck . '}}', (string)($row[$ck] ?? ''), $r);
+                        }
+                        $repl .= $r;
+                    }
+                    $out = str_replace($m[0], $repl, $out);
+                }
+            }
+        } else {
+            $v = (string)($values[$k] ?? '');
+            // 标量字段，富文本/图片原样，其余做 HTML 转义防注入
+            if (in_array($f['type'], ['richtext','image','html'], true)) {
+                $out = str_replace('{{' . $k . '}}', $v, $out);
+            } else {
+                $out = str_replace('{{' . $k . '}}', htmlspecialchars($v, ENT_QUOTES), $out);
+            }
+        }
+    }
+    return $out;
+}
+
+/** 表单块：读 forms 配置渲染真实可提交表单（连上 api/form-submit） */
+function blockschema_render_form(string $formId): string {
+    $forms = json_read(DATA_DIR . '/forms/index.json');
+    $form = null;
+    foreach ((array)$forms as $f) if (($f['id'] ?? '') === $formId || ($f['slug'] ?? '') === $formId) { $form = $f; break; }
+    if (!$form) return '<div class="note" style="text-align:center">选择表单</div>';
+    $fields = '';
+    foreach ((array)($form['fields'] ?? []) as $fld) {
+        $fkey = (string)($fld['key'] ?? $fld['name'] ?? '');
+        $flabel = (string)($fld['label'] ?? $fkey);
+        $ftype = (string)($fld['type'] ?? 'text');
+        if ($ftype === 'textarea') $fields .= '<textarea name="' . htmlspecialchars($fkey, ENT_QUOTES) . '" placeholder="' . htmlspecialchars($flabel, ENT_QUOTES) . '" class="inp" rows="3" style="height:auto"></textarea>';
+        else $fields .= '<input class="inp" type="' . ($ftype === 'email' ? 'email' : 'text') . '" name="' . htmlspecialchars($fkey, ENT_QUOTES) . '" placeholder="' . htmlspecialchars($flabel, ENT_QUOTES) . '">';
+    }
+    return '<form class="form-card" method="post" action="/api/form-submit.php"><input type="hidden" name="form_id" value="' . htmlspecialchars((string)$form['id'], ENT_QUOTES) . '">' . $fields . '<button class="btn primary" type="submit">提交</button></form>';
 }
 }
