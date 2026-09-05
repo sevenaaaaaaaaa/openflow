@@ -118,6 +118,17 @@ $tools = [
         'description' => '用一句自然语言问站点数据，基于已算好的真实指标作答（不编造）',
         'inputSchema' => ['type'=>'object','properties'=>['question'=>['type'=>'string']],'required'=>['question']],
     ],
+    // ── 动作类工具（线B：agent 可执行） ──
+    ['name'=>'flow_run', 'description'=>'触发一个流程事件（flow_handle），驱动自动化/画布',
+     'inputSchema'=>['type'=>'object','properties'=>['event'=>['type'=>'string'],'context'=>['type'=>'object']],'required'=>['event']]],
+    ['name'=>'automation_run', 'description'=>'按触发器手动运行一条自动化流程',
+     'inputSchema'=>['type'=>'object','properties'=>['trigger'=>['type'=>'string'],'context'=>['type'=>'object']],'required'=>['trigger']]],
+    ['name'=>'cdp_add_tag', 'description'=>'给 CDP 用户画像打一个标签',
+     'inputSchema'=>['type'=>'object','properties'=>['visitor_id'=>['type'=>'string'],'tag'=>['type'=>'string']],'required'=>['visitor_id','tag']]],
+    ['name'=>'email_send', 'description'=>'发送一封邮件（走已配置邮件渠道）',
+     'inputSchema'=>['type'=>'object','properties'=>['email'=>['type'=>'string'],'subject'=>['type'=>'string'],'content'=>['type'=>'string']],'required'=>['email']]],
+    ['name'=>'lead_create', 'description'=>'创建一条 CRM 线索（lead）',
+     'inputSchema'=>['type'=>'object','properties'=>['email'=>['type'=>'string'],'name'=>['type'=>'string']],'required'=>['email']]],
 ];
 
 // ─── 工具执行 ───
@@ -231,6 +242,49 @@ function mcp_call(string $name, array $args): array {
             return ['content'=>[['type'=>'text','text'=>json_encode(
                 ['ok'=>$r['ok'] ?? false, 'answer'=>$r['answer'] ?? ($r['error'] ?? '')], JSON_UNESCAPED_UNICODE)]]];
         }
+
+        // ── 动作类工具（线B：让 agent 能"执行"而非只"查"，全部走 McpGuard write 登记） ──
+        case 'flow_run':
+            require_once __DIR__ . '/lib/FlowSystem.php';
+            require_once __DIR__ . '/lib/AutomationSystem.php';
+            $ev = (string)($args['event'] ?? '');
+            $ctx = (array)($args['context'] ?? []);
+            if ($ev === '') return ['content'=>[['type'=>'text','text'=>json_encode(['error'=>'event required'])]]];
+            flow_handle($ev, $ctx);
+            return ['content'=>[['type'=>'text','text'=>json_encode(['ok'=>true,'event'=>$ev], JSON_UNESCAPED_UNICODE)]]];
+
+        case 'automation_run':
+            require_once __DIR__ . '/lib/AutomationSystem.php';
+            $flows = automation_get();
+            $flow = null; foreach ($flows as $fl) if (($fl['trigger'] ?? '') === ($args['trigger'] ?? '')) { $flow = $fl; break; }
+            if (!$flow) return ['content'=>[['type'=>'text','text'=>json_encode(['error'=>'no flow for trigger'])]]];
+            automation_execute_flow($flow, (array)($args['context'] ?? []));
+            return ['content'=>[['type'=>'text','text'=>json_encode(['ok'=>true,'flow'=>$flow['id'] ?? ''], JSON_UNESCAPED_UNICODE)]]];
+
+        case 'cdp_add_tag':
+            require_once __DIR__ . '/lib/CdpSystem.php';
+            $uid = (string)($args['visitor_id'] ?? $args['uid'] ?? '');
+            $tag = (string)($args['tag'] ?? '');
+            if ($uid === '' || $tag === '') return ['content'=>[['type'=>'text','text'=>json_encode(['error'=>'visitor_id+tag required'])]]];
+            $profiles = CdpSystem::allProfiles();
+            if (isset($profiles[$uid])) { $profiles[$uid]['tags'][$tag] = ['type'=>'manual','by'=>'mcp-agent','at'=>date('Y-m-d H:i:s')]; CdpSystem::saveProfiles($profiles); }
+            return ['content'=>[['type'=>'text','text'=>json_encode(['ok'=>true,'tagged'=>$uid])]]];
+
+        case 'email_send':
+            require_once __DIR__ . '/lib/AutomationSystem.php';
+            $to = (string)($args['to'] ?? $args['email'] ?? '');
+            $subject = (string)($args['subject'] ?? '');
+            $content = (string)($args['content'] ?? '');
+            if ($to === '') return ['content'=>[['type'=>'text','text'=>json_encode(['error'=>'email required'])]]];
+            automation_send_email(['subject'=>$subject,'content'=>$content], ['addr'=>$to], 'mcp_email');
+            return ['content'=>[['type'=>'text','text'=>json_encode(['ok'=>true,'to'=>$to])]]];
+
+        case 'lead_create':
+            require_once __DIR__ . '/lib/CrmSystem.php';
+            $email = (string)($args['email'] ?? '');
+            if ($email === '') return ['content'=>[['type'=>'text','text'=>json_encode(['error'=>'email required'])]]];
+            $r = crm_ensure_lead($email, (string)($args['name'] ?? ''));
+            return ['content'=>[['type'=>'text','text'=>json_encode(['ok'=>true,'lead'=>$email], JSON_UNESCAPED_UNICODE)]]];
     }
     return ['content'=>[['type'=>'text','text'=>json_encode(['error'=>'unknown tool'])]]];
 }

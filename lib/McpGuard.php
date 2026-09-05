@@ -48,6 +48,12 @@ function mcp_tool_meta(): array {
         'article_publish'          => ['write', 'articles',  '发布文章'],
         'skill_execute'            => ['write', 'marketplace','执行技能'],
         'sentiment_scan'           => ['write', 'sentiment', '发起舆情扫描'],
+        // ── 动作类工具（agent 可执行；写操作必须 write + 逐次留痕） ──
+        'flow_run'                 => ['write', 'flow',        '触发流程事件'],
+        'automation_run'           => ['write', 'flow',        '手动运行自动化'],
+        'cdp_add_tag'              => ['write', 'cdp',         '给画像打标签'],
+        'email_send'               => ['write', 'email',       '发送邮件'],
+        'lead_create'              => ['write', 'crm',         '创建线索'],
     ];
 }
 
