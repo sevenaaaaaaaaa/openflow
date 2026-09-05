@@ -2,6 +2,10 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/GoldenLeadLoopSandbox.php';
 require_once __DIR__ . '/../lib/LoopLifecycle.php';
+require_once __DIR__ . '/../lib/WorkflowLibrary.php';
+require_once __DIR__ . '/../lib/FlowWorkspace.php';
+require_once __DIR__ . '/../lib/AutomationSystem.php';
+require_once __DIR__ . '/../lib/CanvasSystem.php';
 require_login();
 require_perm('dashboard');
 $command=(string)($_POST['command']??'');
@@ -17,6 +21,12 @@ $lifecycle=loop_lifecycle_read(); $runtimeRuns=array_values($lifecycle['runs']);
 $sandbox = golden_lead_sandbox_run();
 $metrics = $sandbox['metrics'];
 $selected = array_values(array_filter($sandbox['subjects'], fn($row) => !empty($row['predicted_high_intent'])));
+$loopDef = array_values($lifecycle['definitions'])[0] ?? null;
+$flowWs = function_exists('flow_workspace_current') ? flow_workspace_current() : [];
+$flowDef = $flowWs['definition'] ?? null;
+$promoted = null;
+if ($loopDef && $flowDef) { $promoted = workflow_library_promote_loop($loopDef, $flowDef, 'Demo 高意向闭环'); }
+$exported = ($promoted && !empty($promoted['ok'])) ? workflow_library_export_template($promoted['template']) : null;
 admin_header('Loop 工作台 · 实验');
 ?>
 <div class="admin-layout">
@@ -42,8 +52,22 @@ admin_header('Loop 工作台 · 实验');
     <div class="panel">
       <div class="p-head"><h3>高意向候选</h3><span class="p-sub mono">SYNTHETIC · REVIEW ONLY</span></div>
       <div class="p-body">
-        <?php foreach ($selected as $row): ?><div class="todo-row"><span class="t-b"><span class="t-t"><?=htmlspecialchars($row['subject_id'])?> · 意向分 <?=$row['score']?></span><span class="t-d"><?=count($row['evidence'])?> 条可解释信号 · 建议添加“高意向”标签</span></span><span class="st st-warn">沙盘待审核</span></div><?php endforeach; ?>
+        <?php foreach ($selected as $row): ?><div class="todo-row" style="align-items:flex-start"><span class="t-b"><span class="t-t"><?=htmlspecialchars($row['subject_id'])?> · 意向分 <?=$row['score']?></span><span class="t-d"><?=count($row['evidence'])?> 条可解释信号 · 阈值 <?=$row['threshold']?> · 建议：<?=htmlspecialchars(($row['proposed_action']['action_type'] ?? '无') . (($row['proposed_action']['requires_review'] ?? false) ? '（需审批）' : '沙盘'))?></span>
+            <div class="text-xs text-muted" style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap"><?php foreach ($row['evidence'] as $ev): ?><span class="st st-faint"><?=htmlspecialchars($ev['signal'])?> ×<?=(int)$ev['count']?> <span class="text-muted">+<?=$ev['contribution']?>分</span></span><?php endforeach; ?><?php if($row['blocked_reason']): ?><span class="st st-danger">阻断：<?=htmlspecialchars($row['blocked_reason'])?></span><?php endif; ?></div>
+          </span><span class="st <?=$row['blocked_reason']?'st-danger':'st-warn'?>"><?=$row['blocked_reason']?'已阻断':'沙盘待审核'?></span></div><?php endforeach; ?>
         <p class="text-xs text-muted" style="margin-top:14px">当前没有“批准并执行”按钮。生产 Action Gateway 仍然关闭；真实数据陪跑和行动审批中心将作为后续独立阶段接入。</p>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><h3>Loop → Flow 固化</h3><span class="p-sub mono">PROMOTE · SANDBOX TEMPLATE</span></div>
+      <div class="p-body">
+        <?php if(!$promoted || !$promoted['ok']): ?><div class="of-empty" style="border:0">尚未可固化。需要至少一条已保存的 Loop 定义和一条现有 Flow（可从“查看 Flow 工作台”选择），才能把经过验证的 Loop 固化为版本化 Flow 模板。</div><?php else: ?>
+          <div class="todo-row" style="align-items:flex-start"><span class="t-b"><span class="t-t"><?=htmlspecialchars($promoted['template']['name'])?></span><span class="t-d">来源 Loop：<?=htmlspecialchars($promoted['template']['loop_definition_id'])?> · 关联 Flow：<?=htmlspecialchars($promoted['template']['flow_id'])?> v<?=$promoted['template']['flow_version']?></span><span class="t-d">风险：<?=htmlspecialchars($promoted['template']['risk_level'])?> · 权限：<?=htmlspecialchars(implode(', ',$promoted['template']['permissions'])?:'无')?></span>
+              <?php if($exported): ?><div class="text-xs text-muted" style="margin-top:6px">已脱敏导出：<?=htmlspecialchars(($exported['share_safety']['credentials_removed']?'凭据已移除':'未脱敏'))?> · 分享于 <?=htmlspecialchars($exported['shared_at'])?></div>
+              <details style="margin-top:6px"><summary class="text-xs text-muted">查看脱敏模板（JSON）</summary><pre class="mono" style="font-size:11px;white-space:pre-wrap;margin-top:6px"><?=htmlspecialchars(json_encode($exported,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES))?></pre></details><?php endif; ?>
+          </span><span class="st st-ok">模板已生成</span></div>
+        <?php endif; ?>
+        <p class="text-xs text-muted" style="margin-top:14px">固化模板为只读沙盘演示，不创建真实 Flow、不写入存储。经真实业务验证后，才会把 Loop 固化进正式 Flow 工作台。</p>
       </div>
     </div>
   </div>
