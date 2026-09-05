@@ -286,6 +286,14 @@ function automation_execute_flow(array $flow, array $context): void {
                     } catch (Exception $e) { automation_log($flow['id'], '发券失败: ' . $e->getMessage(), 'error'); }
                 }
                 break;
+            // 线A：触达渠道接入 MA —— 企业微信（复用已通 qyapi API）
+            case 'send_wecom':
+                automation_send_wecom($step, $context, $flow['id']);
+                break;
+            // 线A：触达渠道接入 MA —— 公众号/服务号（复用已通 api.weixin.qq.com API）
+            case 'send_wechat':
+                automation_send_wechat($step, $context, $flow['id']);
+                break;
         }
     }
 }
