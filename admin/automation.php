@@ -128,7 +128,31 @@ admin_header('营销自动化');
   <?php admin_sidebar('automation'); ?>
   <div class="main">
     <h1>营销自动化</h1>
-    <p class="sub">自动化邮件流程 · 触发条件 → 动作（发邮件/通知/延迟）</p>
+    <p class="sub">自动化邮件流程 · 触发条件 → 动作（发邮件/通知/延迟/企业微信/公众号）</p>
+    <?php if (function_exists('automation_flows_stats')): $allStats = automation_flows_stats(); ?>
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">📊 流程漏斗洞察</h3>
+      <table class="lst-table">
+        <thead><tr><th>流程</th><th>触发</th><th>状态</th><th>进入</th><th>触达</th><th>各渠道</th><th>失败</th><th>转化</th></tr></thead>
+        <tbody>
+        <?php if (!$allStats): ?><tr><td colspan="8" class="empty">暂无流程。运行后这里显示每流程的进入/触达/转化漏斗。</td></tr>
+        <?php else: foreach ($allStats as $s): ?>
+          <tr>
+            <td class="c-title"><div class="lst-item"><div class="lst-body"><div class="lst-title"><?=htmlspecialchars($s['name'])?></div><div class="lst-sub mono"><?=htmlspecialchars($s['id'])?></div></div></div></td>
+            <td class="text-sm"><?=htmlspecialchars($s['trigger'] ?: '—')?></td>
+            <td><span class="st <?=$s['status']==='enabled'?'st-ok':'st-faint'?>"><?=$s['status']==='enabled'?'启用':'停用'?></span></td>
+            <td class="text-sm"><b><?=$s['entered']?></b></td>
+            <td class="text-sm"><?=$s['sent']?></td>
+            <td class="text-xs text-muted">邮<?=$s['channels']['email']?> 企微<?=$s['channels']['wecom']?> 公<?=$s['channels']['wechat']?> 券<?=$s['channels']['coupon']?></td>
+            <td class="text-sm"><?=$s['failed']?></td>
+            <td class="text-sm" style="color:var(--accent)"><?=$s['conversion']?>%</td>
+          </tr>
+        <?php endforeach; endif; ?>
+        </tbody>
+      </table>
+      <p class="text-xs text-muted" style="margin-top:8px">基于自动化日志聚合；使用 {flow 变量} 或接入企微/公众号后各渠道触达会显示。</p>
+    </div>
+    <?php endif; ?>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
     <div class="flex items-center gap-4 mb-4">
