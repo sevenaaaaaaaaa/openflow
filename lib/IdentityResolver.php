@@ -7,6 +7,8 @@
  */
 require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/CdpSystem.php';
+// P1-1：身份图谱迁 SQLite（优先走行级存储，失败回退 JSON 图）
+require_once __DIR__ . '/CdpIdentityStore.php';
 
 class IdentityResolver {
     private static string $graphFile = DATA_DIR . '/cdp/identity.json';
@@ -38,6 +40,23 @@ class IdentityResolver {
 
     private static function saveGraph(array $g): void {
         json_write(self::$graphFile, $g);
+        // P1-1：同步到 SQLite，供 resolve/unifiedProfile/stats 走行级读（读热路径受益，JSON 作回滚备份）
+        try {
+            if (function_exists('cid_identity_ensure')) {
+                cid_identity_ensure();
+                $conn = Database::conn();
+                $own = !$conn->inTransaction();
+                if ($own) $conn->beginTransaction();
+                foreach ((array)($g['identities'] ?? []) as $key => $canonical) {
+                    $memberId = ($g['profile'][$canonical]['member_id'] ?? '');
+                    cid_identity_put((string)$key, (string)$canonical, (string)$memberId);
+                }
+                foreach ((array)($g['profile'] ?? []) as $cid => $p) {
+                    if (is_array($p)) cid_canonical_put((string)$cid, $p);
+                }
+                if ($own) $conn->commit();
+            }
+        } catch (\Throwable $e) {}
     }
 
     /**
@@ -58,8 +77,19 @@ class IdentityResolver {
      * 解析身份：根据任意已知标识返回主身份 canonical_id
      */
     public static function resolve(string $visitorId = '', string $memberId = '', string $email = '', string $phone = '', string $openid = ''): ?string {
-        $g = self::graph();
         $keys = self::knownKeys($visitorId, $memberId, $email, $phone, $openid);
+        // P1-1：优先 SQLite 点查（热路径，不再整读图谱）
+        try {
+            if (function_exists('cid_identity_ensure')) {
+                cid_identity_ensure();
+                $found = cid_identity_get_many($keys);
+                foreach ($keys as $k => $_) {
+                    if (!empty($found[$k])) return $found[$k];
+                }
+            }
+        } catch (\Throwable $e) {}
+        // 回退：原 JSON 图
+        $g = self::graph();
         foreach ($keys as $k => $_) {
             if (isset($g['identities'][$k])) {
                 return $g['identities'][$k];
@@ -248,6 +278,10 @@ class IdentityResolver {
      * 全量统计
      */
     public static function stats(): array {
+        // P1-1：优先 SQLite 统计（行级），失败回退 JSON 图
+        try {
+            if (function_exists('cid_stats')) return cid_stats();
+        } catch (\Throwable $e) {}
         $g = self::graph();
         $profiles = $g['profile'] ?? [];
         $merged = 0;
