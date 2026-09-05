@@ -76,6 +76,8 @@ RewriteRule ^community/?$ community.php [L,QSA]
 RewriteRule ^tools/?$ tools.php [L,QSA]
 RewriteRule ^marketplace/?$ marketplace.php [L,QSA]
 RewriteRule ^articles/?$ articles.php [L,QSA]
+# 标签归档：/tag/{slug} 归一化到文章列表的 ?tag= 筛选（SEO 友好、无 JS 可分享）
+RewriteRule ^tag/([^/]+)/?$ /articles?tag=$1 [R=301,L,NE]
 RewriteRule ^courses/?$ courses.php [L,QSA]
 RewriteRule ^about/?$ about.php [L,QSA]
 RewriteRule ^product/?$ product.php [L,QSA]

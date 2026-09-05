@@ -612,3 +612,136 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
   else run();
 })();
+
+/* ─── SiteAgent 客服挂件（全站）─────────────────────────────
+ * 浮动按钮 + 聊天面板，调公开 api/site-agent.php（ask）。仅调 agent 不强制转人工，
+ * 回答末尾给"转人工"入口（POST handoff）。样式全部内联，不依赖外部 CSS。 */
+(function () {
+  if (document.querySelector('.of-agent-widget')) return;
+
+  var state = { open: false };
+  var SITE = window.OF_SITE_AGENT || { enabled: true, button: '💬' };
+
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+
+  function toggleFn() {
+    state.open = !state.open;
+    panel.style.display = state.open ? 'flex' : 'none';
+    btnSet.textContent = state.open ? '×' : SITE.button;
+  }
+
+  function send() {
+    var q = inp.value.trim();
+    if (!q) return;
+    appendMsg(q, 'user');
+    inp.value = '';
+    appendMsg('思考中…', 'agent', true);
+    fetch('/api/site-agent.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'action=ask&q=' + encodeURIComponent(q)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var typing = panel.querySelector('.of-agent-loading');
+        if (typing) typing.remove();
+        if (!d || !d.ok) {
+          appendMsg(d && d.error ? d.error : '暂时联系不上，稍后再试', 'agent', false);
+          return;
+        }
+        appendMsg(d.answer || '', 'agent', false);
+        (d.sources || []).slice(0, 3).forEach(function (s) {
+          var a = '\n📄 ' + (s.title || '') + (s.url ? ' → ' + s.url : '');
+          appendMsg(a, 'agent', false);
+        });
+        if (d.handoff) appendMsg('\n没能帮到你？点下方"转人工"，我们直接联系你。', 'agent', false);
+      })
+      .catch(function () {
+        var typing = panel.querySelector('.of-agent-loading');
+        if (typing) typing.remove();
+        appendMsg('网络异常，请稍后再试', 'agent', false);
+      });
+  }
+
+  function appendMsg(text, who, loading) {
+    var b = body;
+    if (loading) {
+      var l = el('div', 'of-agent-msg of-agent-agent' + (loading ? ' of-agent-loading' : ''), text);
+      b.appendChild(l);
+      b.scrollTop = b.scrollHeight;
+      return;
+    }
+    var m = el('div', 'of-agent-msg ' + (who === 'user' ? 'of-agent-user' : 'of-agent-agent'), text);
+    b.appendChild(m);
+    b.scrollTop = b.scrollHeight;
+  }
+
+  function handoffBtn() {
+    if (!SITE.enabled) return;
+    var hb = el('button', 'of-agent-handoff', '转人工');
+    hb.onclick = function () {
+      var email = prompt('留下你的邮箱，我们尽快联系你', '');
+      if (!email) return;
+      fetch('/api/site-agent.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=handoff&q=' + encodeURIComponent(state.lastQ || '') + '&email=' + encodeURIComponent(email)
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        hb.textContent = d && d.ok ? '✅ 已收到' : '⚠️ ' + (d && d.error || '失败');
+      });
+    };
+    return hb;
+  }
+
+  var wrap = el('div', 'of-agent-widget');
+  wrap.innerHTML =
+    '<style>' +
+    '.of-agent-widget{position:fixed;right:20px;bottom:20px;z-index:99990;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}' +
+    '.of-agent-btn{width:52px;height:52px;border-radius:50%;border:0;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#6b5cff,#4b3fd4)}' +
+    '.of-agent-btn:hover{transform:translateY(-1px)}' +
+    '.of-agent-panel{position:absolute;bottom:66px;right:0;width:320px;max-width:88vw;height:440px;max-height:72vh;background:var(--surface-strong,#fff);color:var(--fg,#111);border:1px solid var(--border,#e5e5e5);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.22);display:none;flex-direction:column;overflow:hidden}' +
+    '.of-agent-head{padding:13px 16px;font-weight:700;font-size:14.5px;background:var(--surface-2,#f5f5f7);border-bottom:1px solid var(--border,#e5e5e5);display:flex;align-items:center;justify-content:space-between}' +
+    '.of-agent-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;line-height:1.65}' +
+    '.of-agent-msg{max-width:86%;padding:8px 12px;border-radius:12px;white-space:pre-wrap;word-break:break-word}' +
+    '.of-agent-user{align-self:flex-end;background:var(--accent,#4b3fd4);color:#fff;border-bottom-right-radius:3px}' +
+    '.of-agent-agent{align-self:flex-start;background:var(--surface-2,#f0f0f2);border-bottom-left-radius:3px}' +
+    '.of-agent-loading{color:var(--faint,#999);font-style:italic}' +
+    '.of-agent-foot{padding:10px;border-top:1px solid var(--border,#e5e5e5);display:flex;gap:8px;align-items:center}' +
+    '.of-agent-foot input{flex:1;height:38px;border:1px solid var(--border,#ddd);border-radius:10px;padding:0 12px;font-size:13.5px;outline:none}' +
+    '.of-agent-foot button{height:38px;border:0;border-radius:10px;padding:0 15px;font-size:13.5px;cursor:pointer;background:var(--accent,#4b3fd4);color:#fff;flex:none}' +
+    '.of-agent-handoff{margin:4px auto 0;display:block;border:1px solid var(--border,#ccc);border-radius:8px;padding:6px 14px;font-size:12.5px;cursor:pointer;background:transparent;color:var(--accent,#4b3fd4)}' +
+    '</style>';
+
+  var btn = el('button', 'of-agent-btn', SITE.button);
+  var panel = el('div', 'of-agent-panel');
+  var head = el('div', 'of-agent-head', '<span>客服 Agent</span>');
+  var body = el('div', 'of-agent-body', '<div class="of-agent-msg of-agent-agent">你好，我是站内客服。想了解课程、内容或产品？可以直接问我。</div>');
+  var foot = el('div', 'of-agent-foot');
+  var inp = el('input');
+  inp.placeholder = '输入你的问题…';
+  inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+  var sendBtn = el('button', '', '发送');
+  sendBtn.onclick = send;
+  var btnSet = el('div', 'of-agent-head', '');
+  btnSet.appendChild(el('span', '', '客服 Agent'));
+  var close = el('button', 'of-agent-btn', '');
+  close.style.cssText = 'position:relative;top:0;right:0;width:28px;height:28px;font-size:16px;box-shadow:none;background:transparent;color:var(--faint,#999)';
+  close.textContent = '×';
+  close.onclick = toggleFn;
+  panel.appendChild(btnSet);
+  panel.appendChild(body);
+  foot.appendChild(inp);
+  foot.appendChild(sendBtn);
+  var hb = handoffBtn();
+  if (hb) panel.appendChild(hb);
+  panel.appendChild(foot);
+  wrap.appendChild(panel);
+  wrap.appendChild(btn);
+  btn.onclick = toggleFn;
+  document.body.appendChild(wrap);
+})();
