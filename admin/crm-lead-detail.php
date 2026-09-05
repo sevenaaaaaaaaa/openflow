@@ -130,6 +130,52 @@ admin_header('线索详情');
       <?php endforeach; endif; ?>
     </div>
   </div>
+
+  <!-- 订单记录 -->
+  <?php
+  $orders = [];
+  try { $orders = Database::query("SELECT * FROM orders WHERE member_email = ? OR member_id = ? ORDER BY created_at DESC LIMIT 20", [$lead['email'] ?? '', $lead['member_id'] ?? '']); } catch (Exception $e) {}
+  ?>
+  <div class="card" style="padding:20px;margin-top:20px">
+    <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">订单记录</h3>
+    <?php if (empty($orders)): ?><p style="color:var(--faint);font-size:13px">暂无订单</p>
+    <?php else: ?>
+    <div style="overflow:auto"><table style="width:100%;font-size:13px">
+      <thead><tr style="text-align:left;color:var(--muted);border-bottom:1px solid var(--border)"><th style="padding:8px">订单号</th><th>商品</th><th>金额</th><th>状态</th><th>时间</th></tr></thead>
+      <tbody>
+        <?php foreach ($orders as $o): $st = ['paid'=>'已支付','pending'=>'待支付','shipped'=>'已发货','refunded'=>'已退款','cancelled'=>'已取消'][$o['status']] ?? $o['status']; ?>
+        <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:8px;color:var(--muted)"><?=htmlspecialchars(substr($o['id']??'',-12))?></td><td><?=htmlspecialchars(mb_substr($o['course_title'] ?? '',0,24))?></td><td style="color:var(--ok);font-weight:600">¥<?=number_format($o['amount']??0,2)?></td><td style="color:<?=$o['status']==='paid'?'var(--ok)':'var(--warn)'?>"><?=$st?></td><td style="color:var(--faint);font-size:12px"><?=substr($o['created_at']??'',0,10)?></td></tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table></div>
+    <?php endif; ?>
+  </div>
+
+  <!-- 历史活动（CDP 行为时间线） -->
+  <div class="card" style="padding:20px;margin-top:20px">
+    <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">历史活动</h3>
+    <?php
+    $timeline = [];
+    try {
+      foreach (array_slice(array_reverse(CdpSystem::allEvents()), 0, 1000) as $e) {
+        $evEmail = (string)($e['properties']['email'] ?? '');
+        if (mb_strtolower($evEmail) === mb_strtolower($lead['email'] ?? '') || ($e['visitor_id'] ?? '') === ($profile['visitor_id'] ?? '')) $timeline[] = $e;
+        if (count($timeline) >= 30) break;
+      }
+    } catch (Throwable $e) {}
+    ?>
+    <?php if (empty($timeline)): ?><p style="color:var(--faint);font-size:13px">暂无行为记录（此邮箱无埋点事件）</p>
+    <?php else: ?>
+    <div style="max-height:360px;overflow:auto">
+      <?php foreach ($timeline as $e): ?>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border-soft);font-size:12.5px">
+        <span class="st st-faint" style="flex-shrink:0"><?=htmlspecialchars(substr($e['event'] ?? '',0,24))?></span>
+        <span style="flex:1;color:var(--muted)"><?=htmlspecialchars(substr($e['timestamp'] ?? '',0,16))?> · <?=htmlspecialchars($e['properties']['page'] ?? $e['properties']['channel'] ?? '—')?></span>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+  </div>
 </div></div>
 <style>@media(max-width:900px){.lead-grid{grid-template-columns:1fr!important}}</style>
 <?php admin_footer(); ?>
