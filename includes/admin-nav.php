@@ -292,6 +292,7 @@ function admin_nav_tree(): array {
                     ['id' => 'brain', 'label' => '增长大脑', 'perm' => 'brain'],
                     ['id' => 'decision-trace', 'label' => '决策轨道', 'perm' => 'brain'],
                 ]],
+                ['id' => 'action-approvals', 'label' => '行动审批', 'perm' => 'brain', 'hint' => '只读审计链'],
                 ['label' => '系统体检', 'hint' => '建议 · 协同修复', 'subs' => [
                     ['id' => 'evolution', 'label' => '系统体检', 'perm' => 'evolution'],
                     ['id' => 'safefix', 'label' => '协同修复', 'perm' => 'evolution'],
