@@ -3,6 +3,7 @@
 require_once __DIR__ . '/GrowthBrain.php';
 require_once __DIR__ . '/GrowthSignal.php';
 require_once __DIR__ . '/GoldenLeadLoopSandbox.php';
+require_once __DIR__ . '/DemoLoopSandbox.php';
 
 if (!function_exists('demo_growth_default_dataset')) {
     function demo_growth_default_dataset(): array {
@@ -53,6 +54,20 @@ if (!function_exists('demo_growth_default_dataset')) {
         $ok = file_put_contents($tmp, json_encode($data, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), LOCK_EX) !== false && @rename($tmp, $file);
         if (!$ok) { @unlink($tmp); return ['ok'=>false,'error'=>'demo_write_failed']; }
         return ['ok'=>true,'file'=>$file,'profiles'=>count($data['profiles'])];
+    }
+
+    function demo_growth_save(array $data): array {
+        $check=demo_growth_validate($data); if(!$check['ok']) return $check;
+        $file=demo_growth_file(); @mkdir(dirname($file),0775,true);
+        $tmp=$file.'.tmp-'.bin2hex(random_bytes(4)); $ok=file_put_contents($tmp,json_encode($data,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT),LOCK_EX)!==false&&@rename($tmp,$file);
+        if(!$ok){@unlink($tmp);return ['ok'=>false,'error'=>'demo_write_failed'];} return ['ok'=>true];
+    }
+
+    function demo_growth_command(string $command): array {
+        $state=demo_growth_read(); $data=$state['data'];
+        $result=match($command){'start'=>demo_loop_start($data),'approve'=>demo_loop_approve($data),'execute'=>demo_loop_execute($data),default=>['ok'=>false,'error'=>'unknown_demo_command','data'=>$data]};
+        if(!$result['ok']) return $result;
+        $save=demo_growth_save($result['data']); return $save['ok'] ? $result : $save;
     }
 
     /** Run both decision engines over the exact same demo profiles. Pure after input validation. */
