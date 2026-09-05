@@ -293,6 +293,7 @@ function admin_nav_tree(): array {
                     ['id' => 'decision-trace', 'label' => '决策轨道', 'perm' => 'brain'],
                 ]],
                 ['id' => 'action-approvals', 'label' => '行动审批', 'perm' => 'brain', 'hint' => '只读审计链'],
+                ['id' => 'demo-growth', 'label' => 'Demo 陪跑', 'perm' => 'dashboard', 'hint' => '隔离测试场景'],
                 ['label' => '系统体检', 'hint' => '建议 · 协同修复', 'subs' => [
                     ['id' => 'evolution', 'label' => '系统体检', 'perm' => 'evolution'],
                     ['id' => 'safefix', 'label' => '协同修复', 'perm' => 'evolution'],

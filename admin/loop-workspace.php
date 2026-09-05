@@ -13,7 +13,7 @@ admin_header('Loop 工作台 · 实验');
   <div class="main">
     <div class="v-head">
       <div><h1>Loop 工作台 <span class="st st-warn">实验 · 只读沙盘</span></h1><p class="v-sub">TIPS Agent 的受控验证入口。当前只运行合成数据，不调用模型、不执行生产动作、不计入真实经营指标。</p></div>
-      <div class="v-actions"><a class="btn btn-s btn-sm" href="/xmp/flow">查看 Flow 业务链路</a></div>
+      <div class="v-actions"><a class="btn btn-primary btn-sm" href="/xmp/demo-growth">运行 Demo 陪跑</a><a class="btn btn-s btn-sm" href="/xmp/flow">查看 Flow 业务链路</a></div>
     </div>
     <div class="kpi-grid">
       <div class="kpi"><div class="k-label">运行模式</div><div class="k-val" style="font-size:20px">只读</div><div class="k-sub">单轮 · 零生产写入</div></div>

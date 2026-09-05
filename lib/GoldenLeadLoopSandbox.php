@@ -42,8 +42,9 @@ if (!function_exists('golden_lead_sandbox_run')) {
     /** Deterministic scenario evaluation. No reads or writes outside the passed fixture. */
     function golden_lead_sandbox_run(?array $fixture = null, int $threshold = 70): array {
         $fixture = $fixture ?? golden_lead_sandbox_fixture();
-        if (($fixture['dataset']['kind'] ?? '') !== 'synthetic' || ($fixture['dataset']['production_data'] ?? true) !== false) {
-            return ['ok'=>false, 'mode'=>'sandbox', 'error'=>'synthetic_dataset_required', 'side_effects'=>false];
+        $kind = (string)($fixture['dataset']['kind'] ?? '');
+        if (!in_array($kind, ['synthetic', 'demo'], true) || ($fixture['dataset']['production_data'] ?? true) !== false) {
+            return ['ok'=>false, 'mode'=>'sandbox', 'error'=>'isolated_dataset_required', 'side_effects'=>false];
         }
         $threshold = max(1, min(100, $threshold));
         $rows=[]; $tp=0;$fp=0;$fn=0;$tn=0;$sales=0;$eligibleHigh=0;
