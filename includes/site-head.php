@@ -14,5 +14,47 @@ if (!function_exists('of_head_assets')) {
         echo '<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=' . $v . '">' . "\n";
         echo '<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=' . $v . '">' . "\n";
         echo '<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=' . $v . '">' . "\n";
+        // 全局 SEO 兜底（不破坏已有 title/meta/canonical —— 只补缺失）：
+        // 用输出缓冲监听 </head>，页面已写的 title/description/canonical 保留，
+        // 缺了的自动补站点默认，保证 46 页全站不再裸奔。
+        if (function_exists('of_seo_bootstrap')) of_seo_bootstrap();
     }
+}
+
+function of_seo_bootstrap(): void {
+    if (defined('OF_SEO_BOOTSTRAPPED')) return;
+    define('OF_SEO_BOOTSTRAPPED', true);
+    // 启动一个输出缓冲，把本页其余输出收进来；脚本结束 flush 时回调拿到**整个页面**，
+    // 只补缺失的 SEO meta（title/description/canonical/og 页面已有则保留），对现有 46 页零侵入。
+    ob_start(function (string $html): string {
+        if (stripos($html, '</head>') === false) return $html;
+        $siteUrl = function_exists('site_config_get') ? rtrim(site_config_get('site_url', ''), '/') : '';
+        $req = preg_replace('/\?.*$/', '', preg_replace('/#.*$/', '', (string)($_SERVER['REQUEST_URI'] ?? '/')));
+        // canonical：两种引号形式都没有才补，用当前请求 URL + 站点域名（修 example.com bug）
+        $hasCanonical = (stripos($html, 'rel="canonical"') !== false || stripos($html, "rel='canonical'") !== false);
+        if (!$hasCanonical && $siteUrl !== '') {
+            $html = str_ireplace('</head>', '<link rel="canonical" href="' . htmlspecialchars($siteUrl . $req, ENT_QUOTES) . '">' . "\n</head>", $html);
+        }
+        // description：页面没写就补站点默认
+        $hasDesc = (stripos($html, 'name="description"') !== false || stripos($html, "name='description'") !== false);
+        if (!$hasDesc) {
+            $desc = function_exists('site_config_get') ? site_config_get('site_desc', '') : '';
+            if ($desc !== '') $html = str_ireplace('</head>', '<meta name="description" content="' . htmlspecialchars($desc, ENT_QUOTES) . '">' . "\n</head>", $html);
+        }
+        // OG title：页面没写 og:title 就补（优先取已捕获的 <title>，否则用站点默认名）
+        $hasOg = (stripos($html, 'property="og:title"') !== false || stripos($html, "property='og:title'") !== false);
+        if (!$hasOg) {
+            $ogTitle = '';
+            if (preg_match('/<title>(.*?)<\/title>/s', $html, $tm)) $ogTitle = trim(strip_tags($tm[1]));
+            if ($ogTitle === '') {
+                $ogTitle = function_exists('site_config_get') ? site_config_get('site_name', '') : '';
+                $desc2   = function_exists('site_config_get') ? site_config_get('site_desc', '') : '';
+                if ($ogTitle !== '' && $desc2 !== '') $ogTitle .= ' - ' . $desc2;
+            }
+            if ($ogTitle !== '') {
+                $html = str_ireplace('</head>', '<meta property="og:title" content="' . htmlspecialchars($ogTitle, ENT_QUOTES) . '">' . "\n</head>", $html);
+            }
+        }
+        return $html;
+    });
 }
