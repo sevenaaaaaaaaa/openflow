@@ -18,11 +18,26 @@ if (empty($data)) {
     json_out(['ok' => false, 'message' => 'No data received'], 400);
 }
 
+// ─── 第三方数据源导入（P1-2）：Segment / GA4 / 神策 格式感知 ───
+// 不配 Inbound connector、但 payload 是已知第三方格式 → 归一化落 CDP（幂等）
+if (!empty($data)) {
+    $fmt = function_exists('ingest_detect_format') ? ingest_detect_format($data) : 'generic';
+    if ($fmt !== 'generic') {
+        require_once __DIR__ . '/../lib/IngestAdapters.php';
+        // 兼容：预留一条空白连接器路径，格式自动识别走 ingest
+        $r = ingest_handle_formatted($data);
+        if ($r['ok']) {
+            json_out(['ok' => true, 'message' => 'Formatted ingest processed', 'detail' => $r]);
+        } else {
+            json_out(['ok' => false, 'message' => $r['error'] ?? 'ingest failed'], 400);
+        }
+    }
+}
+
 // ─── 入站连接器处理（InboundReceiver） ───
 // 通过 header X-Inbound-Id 指定连接器，X-Inbound-Signature 携带 HMAC 签名
 $inboundId = $_SERVER['HTTP_X_INBOUND_ID'] ?? '';
-if ($inboundId !== '') {
-    $conn = inbound_connector($inboundId);
+if ($inboundId !== '') {    $conn = inbound_connector($inboundId);
     if (!$conn) json_out(['ok' => false, 'message' => 'Inbound connector not found'], 404);
     if (!empty($conn['secret'])) {
         $sig = $_SERVER['HTTP_X_INBOUND_SIGNATURE'] ?? '';
