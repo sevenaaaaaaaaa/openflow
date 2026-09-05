@@ -125,6 +125,7 @@ function addPreset(kind) {
     hotjar: { name: 'Hotjar', content: '<script>\n(function(h,o,t,j,a,r){h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};h._hjSettings={hjid:YOUR_ID,hjsv:6};a=o.getElementsByTagName("head")[0];r=o.createElement("script");r.async=1;r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;a.appendChild(r);})(window,document,"https://static.hotjar.com/c/hotjar-","%2F","|");\n<\/script>' },
     tencent: { name: '腾讯分析', content: '<script>\nvar _mtac = {};\n(function() {\nvar mta = document.createElement("script");\nmta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";\nmta.setAttribute("name", "MTAH5");\nmta.setAttribute("sid", "YOUR_SID");\nvar s = document.getElementsByTagName("script")[0];\ns.parentNode.insertBefore(mta, s);\n})();\n<\/script>' },
     openflow_cdp: { name: 'OpenFlow CDP 埋点', content: '/assets/cdp-track.js' },
+    openflow_ga_bridge: { name: 'GA4/Segment→CDP 数据桥（P1-2）', content: '<script>(function(){var dl=window.dataLayer=window.dataLayer||[],op=dl.push||function(){};dl.push=function(){var a=Array.prototype.slice.call(arguments);try{var e=a[0];if(e&&e.event&&!String(e.event).slice(0,5)!=="gtm."){var t=new Date().getTime();fetch("/api/track.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({event:e.event,props:Object.assign({},e,{event_time:t}),message_id:("ga_"+t+"_"+Math.random().toString(36).slice(2,8))})});}}catch(_){}}return op.apply(dl,a);};})();<\/script>' },
     custom: { name: '自定义脚本', content: '' }
   };
   var p = presets[kind];
