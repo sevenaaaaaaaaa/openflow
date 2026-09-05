@@ -201,14 +201,15 @@ function automation_match_trigger(array $flow, string $trigger, array $context):
 }
 
 // 执行一个流程（按步骤）
-function automation_execute_flow(array $flow, array $context): void {
+function automation_execute_flow(array $flow, array $context, int $startAt = 0): void {
     $steps = $flow['steps'] ?? [];
     $shadow = automation_shadow_add_tag($flow, $context);
-    if ($shadow) {
+    if ($shadow && $startAt === 0) {
         $shadow['flow_id'] = (string)$flow['id'];
         automation_shadow_log($shadow, 'running');
     }
-    foreach ($steps as $step) {
+    foreach ($steps as $si => $step) {
+        if ($si < $startAt) continue;   // 线B：真延时续流，从 delay 后的步骤继续
         switch ($step['action'] ?? '') {
             case 'send_email':
                 // 频控检查（疲劳度管理）
@@ -223,8 +224,8 @@ function automation_execute_flow(array $flow, array $context): void {
                 if ($midCtx !== '') { try { require_once __DIR__ . '/FrequencyCap.php'; freq_log($midCtx, 'email', $step['subject'] ?? ''); } catch (Exception $e) {} }
                 break;
             case 'delay':
-                // 简化：记录待延迟动作，由 cron 处理
-                automation_schedule_delay($step, $context, $flow['id']);
+                // 线B：真延时续流 — 记录 flow_id + 下一个步骤索引，cron 到点从该处继续
+                automation_schedule_delay($step, $context, $flow['id'], $si + 1, $flow['name'] ?? '');
                 break;
             case 'notify':
                 $midCtx = $context['member_id'] ?? '';
@@ -382,20 +383,21 @@ function automation_send_email(array $step, array $context, string $flowId): voi
     automation_log($flowId, '无可用邮件服务，发送失败', 'error');
 }
 
-// 延迟动作（存入队列，cron 执行）
-function automation_schedule_delay(array $step, array $context, string $flowId): void {
+// 延迟动作（存入队列，cron 到点从该步骤之后续流，而非只补发一封邮件）
+function automation_schedule_delay(array $step, array $context, string $flowId, int $stepIndex = 0, string $flowName = ''): void {
     $delayMin = (int)($step['delay_minutes'] ?? 60);
     $queue = json_read(DATA_DIR . '/automation-queue.json');
     $queue[] = [
         'id' => 'aq_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6),
         'flow_id' => $flowId,
-        'step' => $step,
+        'flow_name' => $flowName,
+        'step_index' => $stepIndex,
         'context' => $context,
         'run_at' => date('Y-m-d H:i:s', time() + $delayMin * 60),
         'created_at' => date('Y-m-d H:i:s'),
     ];
     json_write(DATA_DIR . '/automation-queue.json', $queue);
-    automation_log($flowId, "延迟动作已排入队列（{$delayMin} 分钟后执行）");
+    automation_log($flowId, "延迟 {$delayMin} 分钟后继续流程（已缓存上下文）");
 }
 
 // cron 处理延迟队列
@@ -405,7 +407,16 @@ function automation_process_queue(): void {
     $remaining = [];
     foreach ($queue as $q) {
         if (strtotime($q['run_at']) <= $now) {
-            automation_send_email($q['step'], $q['context'], $q['flow_id']);
+            // 线B：真延时续流 —— 取回整个 flow，从 delay 后的步骤继续执行（不是只补发邮件）
+            $flows = automation_get();
+            $flow = null;
+            foreach ($flows as $fl) if (($fl['id'] ?? '') === ($q['flow_id'] ?? '')) { $flow = $fl; break; }
+            if ($flow) {
+                $startAt = max(0, (int)($q['step_index'] ?? 0));
+                automation_execute_flow($flow, (array)($q['context'] ?? []), $startAt);
+            } else {
+                automation_log((string)($q['flow_id'] ?? ''), '延迟续流失败：流程不存在', 'error');
+            }
         } else {
             $remaining[] = $q;
         }
