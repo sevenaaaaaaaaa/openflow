@@ -654,7 +654,10 @@ class CdpSystem {
             $em = (string)($profile['properties']['email'] ?? '');
             $vd = (string)($profile['visitor_id'] ?? '');
             $tk = implode(' ', array_map(fn($t) => is_string($t) ? $t : '', $tagKeys));
-            if (stripos($n . ' ' . $em . ' ' . $vd . ' ' . $tk, $q) === false) return false;
+            // 常见可筛属性（渠道/设备/城市/来源）也纳入 q 匹配，让维度分布下钻真正可用
+            $prop = (array)($profile['properties'] ?? []);
+            $attrs = implode(' ', array_filter([$prop['channel'] ?? '', $prop['device'] ?? '', $prop['city'] ?? '', $prop['source'] ?? '', $prop['os'] ?? '', $prop['language'] ?? '']));
+            if (stripos($n . ' ' . $em . ' ' . $vd . ' ' . $tk . ' ' . $attrs, $q) === false) return false;
         }
         if ($tag !== '' && !in_array($tag, $tagKeys, true)) return false;
         if ($seg !== '' && empty($profile['segment_memberships'][$seg])) return false;
