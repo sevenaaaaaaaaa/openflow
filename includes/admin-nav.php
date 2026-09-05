@@ -287,6 +287,7 @@ function admin_nav_tree(): array {
         ['id' => 'ai', 'label' => 'AI 与自动化', 'short' => 'AI', 'icon' => $I['ai'], 'desc' => '规则引擎、AI 辅助与 Loop 实验能力', 'groups' => [
             ['label' => '主动增长', 'items' => [
                 ['id' => 'flow', 'label' => '业务链路总览', 'perm' => 'flow', 'hint' => '三流联动'],
+                ['id' => 'flow-workspace', 'label' => 'Flow 工作台', 'perm' => 'settings', 'hint' => '定义 · 运行 · 结果'],
                 ['id' => 'driver', 'label' => '规则增长引擎', 'perm' => 'flow', 'hint' => '固定步骤'],
                 ['label' => '增长大脑', 'hint' => '决策 · 轨道回溯', 'subs' => [
                     ['id' => 'brain', 'label' => '增长大脑', 'perm' => 'brain'],

@@ -52,6 +52,7 @@ $urls = [
     ['platform-ops', ''],
     ['catalog',      ''],
     ['decision-trace', ''],
+    ['flow-workspace', ''],
     ['dev-docs',     ''],
     ['commission',   ''],
     ['destinations', ''],
