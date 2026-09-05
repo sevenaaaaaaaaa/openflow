@@ -58,6 +58,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
             case 'connection':
                 $node['action_id'] = preg_replace('/[^a-z0-9_]/', '', (string)($_POST['node_action_id'][$i] ?? ''));
                 break;
+            case 'split':
+                // 线B：A/B 分流 + 灰度
+                $node['rollout_percent'] = (int)($_POST['node_rollout'][$i] ?? 100);
+                $node['variant_a_percent'] = (int)($_POST['node_variant_a'][$i] ?? 50);
+                $node['a_next'] = ($_POST['node_a_next'][$i] ?? '') !== '' ? (int)$_POST['node_a_next'][$i] : null;
+                $node['b_next'] = ($_POST['node_b_next'][$i] ?? '') !== '' ? (int)$_POST['node_b_next'][$i] : null;
+                break;
         }
         $nodes[] = $node;
     }
@@ -74,6 +81,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
             if ($trueNext !== null && isset($nodes[$trueNext])) $edges[] = ['from' => $node['id'], 'to' => $nodes[$trueNext]['id'], 'condition' => 'true'];
             elseif ($trueNext === null) $edges[] = ['from' => $node['id'], 'to' => $nodes[$i+1]['id'], 'condition' => 'true'];
             if ($falseNext !== null && isset($nodes[$falseNext])) $edges[] = ['from' => $node['id'], 'to' => $nodes[$falseNext]['id'], 'condition' => 'false'];
+            continue;
+        }
+        // 线B：A/B 分流节点 → 生成 a/b/default 三条 variant 边
+        if (($node['type'] ?? '') === 'split') {
+            $aNext = ($node['a_next'] ?? null);
+            $bNext = ($node['b_next'] ?? null);
+            // default = 未放量 → 默认走下一步
+            $edges[] = ['from' => $node['id'], 'to' => $nodes[$i+1]['id'], 'variant' => 'default'];
+            if ($aNext !== null && isset($nodes[$aNext])) $edges[] = ['from' => $node['id'], 'to' => $nodes[$aNext]['id'], 'variant' => 'a'];
+            else $edges[] = ['from' => $node['id'], 'to' => $nodes[$i+1]['id'], 'variant' => 'a'];
+            if ($bNext !== null && isset($nodes[$bNext])) $edges[] = ['from' => $node['id'], 'to' => $nodes[$bNext]['id'], 'variant' => 'b'];
+            else $edges[] = ['from' => $node['id'], 'to' => $nodes[$i+1]['id'], 'variant' => 'b'];
             continue;
         }
         $edges[] = ['from' => $node['id'], 'to' => $nodes[$i+1]['id']];
@@ -177,6 +196,7 @@ admin_header('画布编辑器');
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('stage')">📊 改阶段</button>
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('webhook')">🔗 Webhook</button>
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('connection')">🔌 连接动作</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('split')">🧪 A/B 分流</button>
         </div>
         <div class="canvas-flow" id="canvasFlow">
           <?php $editNodes = $edit['nodes'] ?? []; foreach ($editNodes as $ni => $n): ?>
@@ -220,8 +240,8 @@ function canvas_render_node(array $n, int $i, array $forms): void {
     // 开放能力：可用的连接动作（连接名 · 动作名）
     static $CANVAS_CONN_ACTIONS = null;
     if ($CANVAS_CONN_ACTIONS === null) { require_once __DIR__ . '/../lib/ConnectionActions.php'; $CANVAS_CONN_ACTIONS = action_options(); }
-    $icons = ['trigger'=>'🔔','send_email'=>'📧','condition'=>'🔀','delay'=>'⏱','notify'=>'📢','tag'=>'🏷','score'=>'⭐','stage'=>'📊','webhook'=>'🔗','connection'=>'🔌'];
-    $labels = ['trigger'=>'触发器','send_email'=>'发送邮件','condition'=>'条件分支','delay'=>'延迟','notify'=>'通知','tag'=>'打标签','score'=>'加分','stage'=>'改CRM阶段','webhook'=>'Webhook','connection'=>'连接动作'];
+    $icons = ['trigger'=>'🔔','send_email'=>'📧','condition'=>'🔀','delay'=>'⏱','notify'=>'📢','tag'=>'🏷','score'=>'⭐','stage'=>'📊','webhook'=>'🔗','connection'=>'🔌','split'=>'🧪'];
+    $labels = ['trigger'=>'触发器','send_email'=>'发送邮件','condition'=>'条件分支','delay'=>'延迟','notify'=>'通知','tag'=>'打标签','score'=>'加分','stage'=>'改CRM阶段','webhook'=>'Webhook','connection'=>'连接动作','split'=>'A/B 分流'];
     echo '<div class="canvas-node ' . $type . '" draggable="true" ondragstart="nodeDragStart(event)" ondragover="event.preventDefault()" ondrop="nodeDrop(event)">';
     echo '<button type="button" class="del" onclick="this.closest(\'.canvas-node\').remove()">✕</button>';
     echo '<div class="node-head">' . $icons[$type] . ' ' . $labels[$type] . '</div>';
@@ -288,9 +308,19 @@ function canvas_render_node(array $n, int $i, array $forms): void {
             }
             echo '</select>';
             break;
+        case 'split':
+            // 线B：A/B 分流 + 灰度
+            echo '<label style="font-size:11px;color:var(--text-3)">放量 %（灰度）</label><input type="number" name="node_rollout[]" value="' . htmlspecialchars($n['rollout_percent'] ?? 100) . '" min="0" max="100" style="width:70px">';
+            echo '<label style="font-size:11px;color:var(--text-3)">变体A比例 %</label><input type="number" name="node_variant_a[]" value="' . htmlspecialchars($n['variant_a_percent'] ?? 50) . '" min="0" max="100" style="width:70px">';
+            echo '<div style="display:flex;gap:6px;align-items:center;margin-top:6px;font-size:11px;color:var(--text-3)">A→跳第 <input type="number" name="node_a_next[]" value="' . htmlspecialchars(($n['a_next'] ?? '') !== null ? $n['a_next'] : '') . '" placeholder="空=下一步" style="width:52px"> 步 / B→跳第 <input type="number" name="node_b_next[]" value="' . htmlspecialchars(($n['b_next'] ?? '') !== null ? $n['b_next'] : '') . '" placeholder="空=下一步" style="width:52px"> 步（节点从0数）</div>';
+            break;
     }
     // 与 JS addNode 对齐：为非当前类型的动作字段补隐藏占位，保证各 node_xxx[] 与 node_type[] 下标一致
-    foreach (['tag'=>'node_tag','score'=>'node_score','stage'=>'node_stage','webhook'=>'node_url','connection'=>'node_action_id'] as $t => $fname) {
+    foreach (['tag'=>'node_tag','score'=>'node_score','stage'=>'node_stage','webhook'=>'node_url','connection'=>'node_action_id','split'=>'node_rollout'] as $t => $fname) {
+        if ($t !== $type) {
+            echo '<input type="hidden" name="' . $fname . '[]" value="">';
+            if ($t === 'split') { echo '<input type="hidden" name="node_variant_a[]" value=""><input type="hidden" name="node_a_next[]" value=""><input type="hidden" name="node_b_next[]" value="">'; }
+        }
         if ($t !== $type) echo '<input type="hidden" name="' . $fname . '[]" value="">';
     }
     echo '</div></div>';
@@ -307,8 +337,8 @@ function addNode(type) {
   d.className = 'canvas-node ' + type;
   d.setAttribute('draggable', 'true');
   d.ondragstart = nodeDragStart; d.ondragover = function(e){e.preventDefault();}; d.ondrop = nodeDrop;
-  var icons = {trigger:'🔔',send_email:'📧',condition:'🔀',delay:'⏱',notify:'📢',tag:'🏷',score:'⭐',stage:'📊',webhook:'🔗'};
-  var labels = {trigger:'触发器',send_email:'发送邮件',condition:'条件分支',delay:'延迟',notify:'通知',tag:'打标签',score:'加分',stage:'改CRM阶段',webhook:'Webhook'};
+  var icons = {trigger:'🔔',send_email:'📧',condition:'🔀',delay:'⏱',notify:'📢',tag:'🏷',score:'⭐',stage:'📊',webhook:'🔗',connection:'🔌',split:'🧪'};
+  var labels = {trigger:'触发器',send_email:'发送邮件',condition:'条件分支',delay:'延迟',notify:'通知',tag:'打标签',score:'加分',stage:'改CRM阶段',webhook:'Webhook',connection:'连接动作',split:'A/B 分流'};
   var body = '<input type="hidden" name="node_type[]" value="' + type + '">';
   if (type === 'trigger') {
     body += '<select name="node_trigger[]"><option value="form_submit">表单提交</option><option value="member_register">用户注册</option><option value="nps_submit">NPS评分</option></select>';
@@ -334,9 +364,13 @@ function addNode(type) {
   } else if (type === 'connection') {
     body += '<select name="node_action_id[]"><option value="">请选择连接动作…</option>' +
       Object.keys(CANVAS_CONN_ACTIONS).map(function(k){ return '<option value="'+k+'">'+CANVAS_CONN_ACTIONS[k].replace(/[<>&"]/g,'')+'</option>'; }).join('') + '</select>';
+  } else if (type === 'split') {
+    body += '<label style="font-size:11px;color:var(--text-3)">放量%（灰度）</label><input type="number" name="node_rollout[]" value="100" min="0" max="100" style="width:70px">';
+    body += '<label style="font-size:11px;color:var(--text-3)">变体A比例%</label><input type="number" name="node_variant_a[]" value="50" min="0" max="100" style="width:70px">';
+    body += '<div style="display:flex;gap:6px;align-items:center;margin-top:6px;font-size:11px;color:var(--text-3)">A→跳第<input type="number" name="node_a_next[]" placeholder="空=下一步" style="width:52px">步 / B→跳第<input type="number" name="node_b_next[]" placeholder="空=下一步" style="width:52px">步（节点从0数）</div>';
   }
   // 为非当前类型的动作补隐藏占位，保证 node_type[] 与各 node_xxx[] 下标对齐
-  ['tag','score','stage','webhook','connection'].forEach(function(t){ if(t!==type){ var f={tag:'node_tag',score:'node_score',stage:'node_stage',webhook:'node_url',connection:'node_action_id'}[t]; body += '<input type="hidden" name="'+f+'[]" value="">'; }});
+  ['tag','score','stage','webhook','connection','split'].forEach(function(t){ if(t!==type){ var f={tag:'node_tag',score:'node_score',stage:'node_stage',webhook:'node_url',connection:'node_action_id',split:'node_rollout'}[t]; var extra = t==='split' ? '<input type="hidden" name="node_variant_a[]" value=""><input type="hidden" name="node_a_next[]" value=""><input type="hidden" name="node_b_next[]" value="">' : ''; body += '<input type="hidden" name="'+f+'[]" value="">'+extra; }});
   d.innerHTML = '<button type="button" class="del" onclick="this.closest(\'.canvas-node\').remove()">✕</button><div class="node-head">' + icons[type] + ' ' + labels[type] + '</div><div class="node-body">' + body + '</div>';
   // 加箭头
   var arrow = document.createElement('div');

@@ -49,13 +49,18 @@ function canvas_walk(string $nodeId, array $byId, array $edges, array $context, 
             canvas_schedule_delay($node, $context, $depth);
             break;
         case 'condition':
-            // 条件节点：根据条件决定走哪条边
+            // 条件节点：根据条件决定走哪条边（支持多条件 rules[] AND/OR）
             $ok = canvas_eval_condition($node, $context);
             foreach ($edges as $e) {
                 if ($e['from'] === $nodeId && ($e['condition'] ?? 'true') === ($ok ? 'true' : 'false')) {
                     canvas_walk($e['to'], $byId, $edges, $context, $visited, $depth + 1);
                 }
             }
+            return;
+        case 'split':
+            // A/B 分流 + 灰度：按 rollout 比例放量，未放量走 default；放量内按 variant_a 比例分 A/B
+            $path = canvas_split_next($node, $edges, $nodeId, $context);
+            if ($path) canvas_walk($path, $byId, $edges, $context, $visited, $depth + 1);
             return;
         case 'notify':
             notify('画布流程', $node['title'] ?? '流程通知', $context['email'] ?? '', $node['link'] ?? '');
@@ -90,6 +95,7 @@ function canvas_action_types(): array {
         'notify'     => ['icon' => '📢', 'label' => '通知'],
         'delay'      => ['icon' => '⏱', 'label' => '延迟'],
         'condition'  => ['icon' => '🔀', 'label' => '条件分支'],
+        'split'      => ['icon' => '🧪', 'label' => 'A/B 分流'],
     ];
 }
 
@@ -98,6 +104,37 @@ function canvas_ctx_customer_id(array $context): string {
     if (!function_exists('cdp_find')) return '';
     $c = cdp_find((string)($context['email'] ?? ''), (string)($context['member_id'] ?? ''), (string)($context['uid'] ?? ''));
     return $c['id'] ?? '';
+}
+
+/**
+ * A/B 分流 + 灰度决策：返回下一个要走的节点 id（按边上的 variant/condition）。
+ * 逻辑：
+ *   - rollout_percent：整体放量比例（灰度）。0-100；context 里没有稳定 key 则比 hash。
+ *   - variant_a_percent：在放量人群中，A 分支占比。
+ *   未放量者走 variant='default' 的边；A 走 variant='a'，B 走 variant='b'。
+ */
+function canvas_split_next(array $node, array $edges, string $nodeId, array $context): ?string {
+    $rollout = max(0, min(100, (int)($node['rollout_percent'] ?? 100)));
+    $aPct = max(0, min(100, (int)($node['variant_a_percent'] ?? 50)));
+    // 稳定 key：优先客户 id/邮箱/member/uid，否则随机（无稳定身份时不重复分流）
+    $key = (string)($context['email'] ?? $context['member_id'] ?? $context['uid'] ?? $context['customer_id'] ?? '');
+    $rolloutBucket = $key !== '' ? abs(crc32($key)) % 1000 : mt_rand(0, 999);
+    $path = null;
+    if ($rolloutBucket < $rollout * 10) {
+        // 进入放量人群：A/B 用另一维度哈希，避免与放量判断同源（否则<rollout全落A）
+        $abBucket = $key !== '' ? abs(crc32($key . ':ab')) % 1000 : mt_rand(0, 999);
+        $path = $abBucket < $aPct * 10 ? 'a' : 'b';
+    } else {
+        $path = 'default';
+    }
+    // 找匹配的边；找不到则回退到默认顺序
+    foreach ($edges as $e) {
+        if ($e['from'] === $nodeId && ($e['variant'] ?? '') === $path) return $e['to'];
+    }
+    foreach ($edges as $e) {
+        if ($e['from'] === $nodeId && empty($e['variant']) && empty($e['condition'])) return $e['to'];
+    }
+    return null;
 }
 
 /** 动作：打标签（CDP + 尽力同步 CRM 线索）。 */
@@ -236,9 +273,39 @@ function canvas_resolve_field(string $field, array $context) {
 
 // 条件评估（事件上下文 + CRM 实时字段）
 function canvas_eval_condition(array $node, array $context): bool {
+    // 线B：多条件分支 —— 支持 rules[] (AND/OR)；保持单函数自含（测试从源码抽取此函数）
+    if (isset($node['rules']) && is_array($node['rules']) && $node['rules']) {
+        $operator = ($node['rules_operator'] ?? 'and') === 'or' ? 'or' : 'and';
+        foreach ($node['rules'] as $r) {
+            $ok = canvas_eval_single_cond($r['field'] ?? '', $r['op'] ?? 'eq', $r['value'] ?? '', $context);
+            if ($operator === 'and' && !$ok) return false;
+            if ($operator === 'or' && $ok) return true;
+        }
+        return $operator === 'and';
+    }
     $field = $node['field'] ?? '';
     $op = $node['op'] ?? 'eq';
     $value = $node['value'] ?? '';
+    $actual = canvas_resolve_field($field, $context);
+    switch ($op) {
+        case 'eq': return $actual == $value;
+        case 'neq': return $actual != $value;
+        case 'gt': return (float)$actual > (float)$value;
+        case 'gte': return (float)$actual >= (float)$value;
+        case 'lt': return (float)$actual < (float)$value;
+        case 'lte': return (float)$actual <= (float)$value;
+        case 'contains': return $value !== '' && strpos((string)$actual, (string)$value) !== false;
+        case 'in':
+            $list = array_map('trim', explode(',', (string)$value));
+            return in_array((string)$actual, $list, true);
+        case 'empty': return $actual === '' || $actual === null;
+        case 'not_empty': return !($actual === '' || $actual === null);
+        default: return true;
+    }
+}
+
+// 单条件判定（多条件 rules 用；保持独立以便复用）
+function canvas_eval_single_cond(string $field, string $op, string $value, array $context): bool {
     $actual = canvas_resolve_field($field, $context);
     switch ($op) {
         case 'eq': return $actual == $value;
