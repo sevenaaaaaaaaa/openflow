@@ -1,0 +1,29 @@
+{
+  "name": "OpenFlow Studio",
+  "short_name": "OpenFlow",
+  "description": "OpenFlow 增长操作系统 · TIPS 触达/洞察/个性化/销售 四力合一 · 画布/Flow/Loop/自动化/模块工厂",
+  "start_url": "/xmp/studio",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1e1e1e",
+  "theme_color": "#1e1e1e",
+  "lang": "zh-CN",
+  "id": "/xmp/studio",
+  "icons": [
+    { "src": "/assets/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/pwa/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/assets/pwa/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "画布编排", "url": "/xmp/canvas", "icons": [{ "src": "/assets/pwa/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Flow 工作台", "url": "/xmp/flow-workspace", "icons": [{ "src": "/assets/pwa/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Loop 工作台", "url": "/xmp/loop-workspace", "icons": [{ "src": "/assets/pwa/icon-192.png", "sizes": "192x192" }] },
+    { "name": "模块工厂", "url": "/xmp/modules", "icons": [{ "src": "/assets/pwa/icon-192.png", "sizes": "192x192" }] }
+  ],
+  "categories": ["business", "productivity", "developer"],
+  "prefer_related_applications": false,
+  "launch_handler": { "client_mode": "navigate-existing" },
+  "edge_side_panel": { "preferred_width": "400px" }
+}
