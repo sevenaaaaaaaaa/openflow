@@ -10,6 +10,11 @@ dg('high intent path produces review-only action',$a['rows'][0]['brain']!==null 
 dg('suppression remains effective',$a['rows'][2]['loop']['blocked_reason']==='suppressed' && !$a['rows'][2]['loop']['predicted_high_intent']);
 dg('comparison is deterministic',$a===$b);
 dg('runtime reports zero production writes',!$a['side_effects'] && $a['production_write_attempts']===0);
+$start=demo_loop_start($d); dg('demo Loop creates an approval-bound plan',$start['ok'] && $start['data']['simulation']['loop_run']['status']==='awaiting_approval');
+$approved=demo_loop_approve($start['data']); dg('demo approval moves the Loop to execution',$approved['ok'] && $approved['data']['simulation']['approval']['actor_type']==='human' && $approved['data']['simulation']['loop_run']['status']==='executing');
+$executed=demo_loop_execute($approved['data']); $sim=$executed['data']['simulation'];
+dg('demo executor only mutates the demo profile',$executed['ok'] && in_array('高意向',$executed['data']['profiles'][0]['tags'],true));
+dg('execution evaluation and memory form one auditable chain',$sim['action']['status']==='succeeded' && $sim['execution']['status']==='succeeded' && $sim['evaluation']['sample_size']===1 && $sim['memory']['kind']==='result' && $sim['loop_run']['status']==='succeeded');
 $install=demo_growth_install(); dg('one-click install writes isolated file',$install['ok'] && is_file($root.'/demo/growth-workspace.json'));
 dg('install does not create production stores',!is_file($root.'/growth/conversions.json') && !is_file($root.'/growth/actions.json'));
 $bad=$d;$bad['dataset']['kind']='production';dg('production dataset rejected',demo_growth_compare($bad)['error']==='demo_dataset_required');
