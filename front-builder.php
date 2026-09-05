@@ -16,6 +16,13 @@ foreach ((array)$pages as $p) if (($p['slug'] ?? '') === $slug && ($p['status'] 
 if (!$page) { http_response_code(404); echo '<h1 style="padding:80px;text-align:center;font-family:sans-serif">页面不存在</h1>'; exit; }
 
 $blocks = $page['blocks'] ?? [];
+// ①b/③ 性能：无区块级人群定向的落地页走整页 PageCache（300s）；有 audience 的页面跳过缓存，
+// 避免给不同访客缓存出错误内容。登录管理员不缓存（保证「编辑此页」按钮实时 + 编辑后立即可见）。
+$hasAudience = false;
+foreach ($blocks as $b) if (!empty($b['audience'])) { $hasAudience = true; break; }
+if (!$hasAudience && empty($_SESSION['admin_user']) && class_exists('PageCache')) {
+    PageCache::begin('b:' . $slug, 300);   // 命中则直接输出并 exit
+}
 // 区块级人群定向（BACKLOG T1-8）：按访客画像过滤区块；无定向的区块照常显示。
 try {
     require_once __DIR__ . '/lib/BlockTargeting.php';
