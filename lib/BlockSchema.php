@@ -203,4 +203,69 @@ function blockschema_validate_values(array $schema, array $values): array {
     return $errors;
 }
 
+/**
+ * 编辑器字段 HTML —— 落地页构建器按 schema 动态生成输入框。
+ * 供 admin/page-builder.php 使用（自定义模块走这里，内置块仍走原15框）。
+ * 输入框 name 前缀用 block_{key}[]（与内置一致，保存循环存取）。
+ */
+function blockschema_editor_fields(array $schema, array $values = []): string {
+    $vals = $values ?? [];
+    $html = '';
+    foreach (($schema['fields'] ?? []) as $f) {
+        $k = (string)$f['key'];
+        $label = (string)($f['label'] ?? $k);
+        $v = (string)($vals[$k] ?? '');
+        $type = (string)$f['type'];
+        $ph = (string)($f['placeholder'] ?? '');
+        $nameBase = 'block_' . $k;
+        if ($type === 'title') {
+            $html .= '<label class="text-xs text-muted">' . htmlspecialchars($label, ENT_QUOTES) . '</label><input type="text" name="' . htmlspecialchars($nameBase, ENT_QUOTES) . '[]" value="' . htmlspecialchars($v, ENT_QUOTES) . '" placeholder="' . htmlspecialchars($ph, ENT_QUOTES) . '" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">';
+        } elseif ($type === 'richtext' || $type === 'text') {
+            $html .= '<textarea name="' . htmlspecialchars($nameBase, ENT_QUOTES) . '[]" rows="2" placeholder="' . htmlspecialchars($ph, ENT_QUOTES) . '" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">' . htmlspecialchars($v, ENT_QUOTES) . '</textarea>';
+        } elseif ($type === 'image') {
+            $html .= '<label class="text-xs text-muted">' . htmlspecialchars($label, ENT_QUOTES) . '</label><input type="text" name="' . htmlspecialchars($nameBase, ENT_QUOTES) . '[]" value="' . htmlspecialchars($v, ENT_QUOTES) . '" placeholder="/uploads/xxx.jpg" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">';
+        } elseif ($type === 'select') {
+            $ops = '';
+            foreach (($f['options'] ?? []) as $o) $ops .= '<option value="' . htmlspecialchars($o, ENT_QUOTES) . '" ' . ($v === $o ? 'selected' : '') . '>' . htmlspecialchars($o, ENT_QUOTES) . '</option>';
+            $html .= '<label class="text-xs text-muted">' . htmlspecialchars($label, ENT_QUOTES) . '</label><select name="' . htmlspecialchars($nameBase, ENT_QUOTES) . '[]" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px"><option value="">—</option>' . $ops . '</select>';
+        } elseif ($type === 'color') {
+            $html .= '<label class="text-xs text-muted">' . htmlspecialchars($label, ENT_QUOTES) . '</label><input type="text" name="' . htmlspecialchars($nameBase, ENT_QUOTES) . '[]" value="' . htmlspecialchars($v, ENT_QUOTES) . '" placeholder="#f4f3e9" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">';
+        } elseif ($type === 'number') {
+            $html .= '<label class="text-xs text-muted">' . htmlspecialchars($label, ENT_QUOTES) . '</label><input type="number" name="' . htmlspecialchars($nameBase, ENT_QUOTES) . '[]" value="' . htmlspecialchars($v, ENT_QUOTES) . '" placeholder="' . htmlspecialchars($ph, ENT_QUOTES) . '" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">';
+        } elseif ($type === 'bool') {
+            $html .= '<label class="text-xs text-muted" style="display:flex;align-items:center;gap:6px"><input type="checkbox" name="' . htmlspecialchars($nameBase, ENT_QUOTES) . '[]" value="1" style="width:16px;height:16px" ' . ($v ? 'checked' : '') . '>' . htmlspecialchars($label, ENT_QUOTES) . '</label>';
+        } elseif ($type === 'repeat') {
+            $rows = (array)($vals[$k] ?? []);
+            $html .= '<div class="bs-repeat" data-key="' . htmlspecialchars($k, ENT_QUOTES) . '" style="border:1px dashed var(--border);border-radius:6px;padding:8px 10px">';
+            $html .= '<div class="text-xs text-muted" style="margin-bottom:6px">' . htmlspecialchars($label, ENT_QUOTES) . '（可加多条）</div>';
+            $html .= '<div class="bs-rows">';
+            foreach ($rows as $row) if (is_array($row)) $html .= blockschema_editor_repeat_row($f, $row, $k);
+            $html .= '</div>';
+            $html .= '<button type="button" class="btn btn-ghost btn-sm" onclick="bsAddRepeat(this)">+ 添加一条</button>';
+            $html .= '</div>';
+        } elseif ($type === 'form') {
+            $html .= '<label class="text-xs text-muted">' . htmlspecialchars($label, ENT_QUOTES) . '（表单 id）</label><input type="text" name="' . htmlspecialchars($nameBase, ENT_QUOTES) . '[]" value="' . htmlspecialchars($v, ENT_QUOTES) . '" placeholder="form_xxx" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">';
+        } elseif ($type === 'url') {
+            $html .= '<label class="text-xs text-muted">' . htmlspecialchars($label, ENT_QUOTES) . '</label><input type="text" name="' . htmlspecialchars($nameBase, ENT_QUOTES) . '[]" value="' . htmlspecialchars($v, ENT_QUOTES) . '" placeholder="/xxx 或 https://" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">';
+        } else {
+            $html .= '<input type="text" name="' . htmlspecialchars($nameBase, ENT_QUOTES) . '[]" value="' . htmlspecialchars($v, ENT_QUOTES) . '" placeholder="' . htmlspecialchars($label, ENT_QUOTES) . '" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px">';
+        }
+    }
+    return $html;
+}
+
+/** repeat 单行子字段（编辑器） */
+function blockschema_editor_repeat_row(array $f, array $row, string $k): string {
+    $html = '<div class="bs-row" style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-bottom:6px">';
+    foreach ((array)($f['children'] ?? []) as $cf) {
+        $ck = (string)$cf['key'];
+        $cv = (string)($row[$ck] ?? '');
+        $name = 'block_' . $k . '[' . $ck . ']';
+        $html .= '<input type="text" name="' . htmlspecialchars($name, ENT_QUOTES) . '" value="' . htmlspecialchars($cv, ENT_QUOTES) . '" placeholder="' . htmlspecialchars($cf['label'] ?? $ck, ENT_QUOTES) . '" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">';
+    }
+    $html .= '<button type="button" class="btn btn-ghost btn-sm" onclick="this.closest(\'.bs-row\').remove()">✕</button>';
+    $html .= '</div>';
+    return $html;
+}
+
 }
