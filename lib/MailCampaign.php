@@ -241,3 +241,51 @@ function mailc_render(string $html, array $vars, string $campaign, string $email
     }, $html);
     return $html;
 }
+
+/** ④ 定时发送：保存 newsletter 定时任务（send_at 到点后自动发给订阅者/测试） */
+function nl_schedule_save(array $task): array {
+    $file = DATA_DIR . '/newsletter-schedule.json';
+    $all = json_read($file);
+    if (!is_array($all)) $all = [];
+    $t = ['id' => 'nlsch_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6),
+        'subject' => (string)($task['subject'] ?? ''), 'html' => (string)($task['html'] ?? ''),
+        'article_id' => (string)($task['article_id'] ?? ''), 'mode' => ($task['mode'] ?? 'subscribers') === 'test' ? 'test' : 'subscribers',
+        'send_at' => (string)($task['send_at'] ?? ''), 'created_at' => date('Y-m-d H:i:s'), 'status' => 'scheduled'];
+    if ($t['send_at'] === '') return ['ok' => false, 'error' => '请设置发送时间'];
+    if ($t['subject'] === '') return ['ok' => false, 'error' => '请填写主题'];
+    $all[] = $t;
+    json_write($file, $all);
+    return ['ok' => true, 'task' => $t];
+}
+
+/** cron 到点处理：发送到期的 newsletter，移除已完成任务 */
+function nl_process_schedule(): array {
+    $file = DATA_DIR . '/newsletter-schedule.json';
+    $all = json_read($file);
+    if (!is_array($all)) return ['ok'=>true, 'sent'=>0];
+    $now = date('Y-m-d H:i:s');
+    $remaining = []; $sent = 0;
+    foreach ($all as $t) {
+        if (($t['status'] ?? '') !== 'scheduled') continue;
+        if (($t['send_at'] ?? '') > $now) { $remaining[] = $t; continue; }
+        // 到点发送
+        try {
+            $bm = BillionMail::fromConfig();
+            $campaign = 'nl_' . ($t['article_id'] ?? $t['id']);
+            $subscribers = json_read(DATA_DIR . '/newsletter/subscribers.json');
+            $recipients = [];
+            if (($t['mode'] ?? '') === 'test') $recipients[] = ['email' => 'hello@openflow.dev', 'name' => '测试'];
+            else foreach ((array)$subscribers as $s) if (($s['status'] ?? 'subscribed') === 'subscribed' && !empty($s['email'])) $recipients[] = $s;
+            foreach ($recipients as $r) {
+                $html = mailc_render((string)$t['html'], ['title'=>($t['subject'] ?? '')], $campaign, $r['email']);
+                if ($bm) $bm->send($r['email'], '📬 ' . ($t['subject'] ?? ''), $html, ['title' => $t['subject'] ?? '']);
+                $sent++;
+            }
+        } catch (\Throwable $e) {}
+        $t['status'] = 'sent'; $t['sent_at'] = $now;
+    }
+    // 保留未到期 + 已发送记录(截断)
+    array_splice($remaining, 0, 0, []);
+    json_write($file, $remaining);
+    return ['ok' => true, 'sent' => $sent];
+}
