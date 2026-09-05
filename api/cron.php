@@ -51,6 +51,8 @@ foreach (get_articles() as $a) {
 
 // 处理自动化延迟队列
 automation_process_queue();
+// ④ 定时 newsletter 发送（Revue 式定时）
+try { require_once __DIR__ . '/../lib/MailCampaign.php'; require_once __DIR__ . '/../lib/BillionMail.php'; nl_process_schedule(); } catch (\Throwable $e) {}
 
 // CRM 未跟进提醒（每天最多跑一次；线索超过 N 天没跟进就提醒负责人）
 try {
