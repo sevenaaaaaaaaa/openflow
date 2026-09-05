@@ -11,7 +11,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $action = $_POST['action'] ?? '';
     if ($action === 'create_segment') {
-        CdpSystem::createSegment($_POST);
+        // P0：创建分群支持深规则（type: property/event/summary/lifecycle/tag/last_seen + AND/OR）
+        $seg = ['name' => $_POST['name'] ?? '', 'description' => $_POST['description'] ?? '', 'rules' => []];
+        $rules = $_POST['rule_type'] ?? [];
+        foreach ($rules as $i => $rt) {
+            if (trim((string)$rt) === '') continue;
+            $rule = ['type' => trim((string)$rt), 'field' => $_POST['rule_field'][$i] ?? '',
+                     'operator' => $_POST['rule_op'][$i] ?? 'equals', 'value' => $_POST['rule_value'][$i] ?? ''];
+            if ($rt === 'event') {
+                // 事件规则：event 名用「事件名:值」或单独 event 字段；简单起见 field 存事件名
+                $rule['event'] = trim((string)($_POST['rule_event'][$i] ?? ($_POST['rule_field'][$i] ?? '')));
+                $rule['window'] = (int)($_POST['rule_window'][$i] ?? 0);
+                $rule['value'] = (int)($_POST['rule_value'][$i] ?? 1);
+                if ($rule['event'] === '') continue;
+            }
+            if ($rt === 'last_seen' || $rt === 'first_seen') $rule['value'] = (int)($_POST['rule_value'][$i] ?? 0);
+            if (trim((string)($rule['value'] ?? '')) === '' && $rt !== 'tag') continue;
+            $seg['rules'][] = $rule;
+        }
+        $seg['operator'] = ($_POST['rule_operator_top'] ?? 'and') === 'or' ? 'or' : 'and';
+        $seg['id'] = 'seg_' . bin2hex(random_bytes(6));
+        $seg['created_at'] = $seg['updated_at'] = date('Y-m-d H:i:s');
+        CdpSystem::createSegment($seg);
         header('Location: /xmp/cdp?tab=segments');
         exit;
     }
@@ -803,13 +824,33 @@ admin_header('CDP 客户数据中台');
 
 <?php if ($tab === 'segments'): ?>
 <div id="segmentDialog" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
-  <div style="background:var(--surface);border-radius:16px;padding:28px;width:90%;max-width:500px">
+  <div style="background:var(--surface);border-radius:16px;padding:28px;width:92%;max-width:640px">
     <h2 style="margin-bottom:16px">创建分群</h2>
-    <form method="post">
+    <form method="post" id="segmentForm">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="create_segment">
       <div class="field"><label>分群名称</label><input type="text" name="name" required placeholder="如：高价值用户"></div>
       <div class="field"><label>描述</label><textarea name="description" rows="2" placeholder="可选"></textarea></div>
+      <div class="field" style="margin-top:10px"><label>规则组合方式</label>
+        <select name="rule_operator_top" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+          <option value="and">满足全部条件（AND）</option><option value="or">满足任一条件（OR）</option>
+        </select>
+      </div>
+      <div class="field"><label>规则</label></div>
+      <div id="segRules" style="display:flex;flex-direction:column;gap:8px">
+        <div class="seg-rule" style="display:grid;grid-template-columns:1fr 90px 90px 1fr;gap:6px">
+          <select name="rule_type[]" class="rule-type" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">
+            <option value="property">属性</option><option value="event">事件</option><option value="summary">行为摘要</option>
+            <option value="lifecycle">生命周期</option><option value="tag">标签</option>
+            <option value="last_seen">最近活跃(天)</option><option value="first_seen">首次活跃(天)</option>
+          </select>
+          <input type="text" name="rule_field[]" class="rule-field" placeholder="字段" value="" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">
+          <input type="text" name="rule_op[]" class="rule-op" placeholder="操作符" value="gte" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">
+          <input type="text" name="rule_value[]" class="rule-value" placeholder="值" value="1" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">
+        </div>
+      </div>
+      <div style="margin-top:8px"><button type="button" class="btn btn-ghost btn-sm" onclick="addSegRule()">+ 添加规则</button>
+        <span class="text-xs text-muted" style="margin-left:6px">属性：channel/role · 摘要：page_views_30d/purchase_amount_total · 事件选 event+window(天)</span></div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
         <button type="button" class="btn btn-ghost" onclick="this.closest('[style]').style.display='none'">取消</button>
         <button type="submit" class="btn btn-primary">创建</button>
@@ -819,6 +860,22 @@ admin_header('CDP 客户数据中台');
 </div>
 <?php endif; ?>
 <script>
+function addSegRule() {
+  var row = document.createElement('div');
+  row.className = 'seg-rule';
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 90px 90px 1fr;gap:6px';
+  row.innerHTML =
+    '<select name="rule_type[]" class="rule-type" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">' +
+      '<option value="property">属性</option><option value="event">事件</option><option value="summary">行为摘要</option>' +
+      '<option value="lifecycle">生命周期</option><option value="tag">标签</option>' +
+      '<option value="last_seen">最近活跃(天)</option><option value="first_seen">首次活跃(天)</option>' +
+    '</select>' +
+    '<input type="text" name="rule_field[]" class="rule-field" placeholder="字段/事件名" value="" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">' +
+    '<input type="text" name="rule_op[]" class="rule-op" placeholder="操作符" value="gte" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">' +
+    '<input type="text" name="rule_value[]" class="rule-value" placeholder="值(事件选次数/天)" value="1" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px">' +
+    '<button type="button" class="btn btn-ghost btn-sm" style="grid-column:1/-1;justify-self:end" onclick="this.closest(\'.seg-rule\').remove()">移除</button>';
+  document.getElementById('segRules').appendChild(row);
+}
 function loadAiInsights(force) {
   var box = document.getElementById('aiInsightBox');
   if (!box) return;
