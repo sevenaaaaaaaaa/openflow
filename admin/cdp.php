@@ -296,6 +296,29 @@ admin_header('CDP 客户数据中台');
     </div>
 
     <?php elseif ($tab === 'profiles'): ?>
+    <?php
+    // P0：画像筛选（按 ID/姓名/邮箱/标签/分群/生命周期），替代硬切前200 —— 让「按条件建画像」真正可用
+    $fq = trim((string)($_GET['q'] ?? ''));
+    $ftag = trim((string)($_GET['tag'] ?? ''));
+    $fseg = trim((string)($_GET['segment'] ?? ''));
+    $flife = trim((string)($_GET['lifecycle'] ?? ''));
+    if ($fq !== '' || $ftag !== '' || $fseg !== '' || $flife !== '') {
+        $profiles = array_filter($profiles, function ($p) use ($fq, $ftag, $fseg, $flife) {
+            $name = (string)($p['properties']['name'] ?? '');
+            $email = (string)($p['properties']['email'] ?? '');
+            $vid = (string)($p['visitor_id'] ?? '');
+            $tagKeys = array_keys((array)($p['tags'] ?? []));
+            $tagKeys = array_merge($tagKeys, array_values((array)($p['tags'] ?? [])));
+            $stage = (string)($p['lifecycle']['stage'] ?? '');
+            $segMembers = (array)($p['segment_memberships'] ?? []);
+            if ($fq !== '' && stripos($name . ' ' . $email . ' ' . $vid . ' ' . implode(' ', $tagKeys), $fq) === false) return false;
+            if ($ftag !== '' && !in_array($ftag, $tagKeys, true)) return false;
+            if ($fseg !== '' && !isset($segMembers[$fseg])) return false;
+            if ($flife !== '' && $stage !== $flife) return false;
+            return true;
+        });
+    }
+    ?>
     <?php $tags = CdpSystem::getTagDistribution(); ?>
     <div class="cdp-g" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
       <div class="card">
@@ -333,7 +356,26 @@ admin_header('CDP 客户数据中台');
       </div>
     </div>
     <div class="card lst-card">
-      <div style="display:flex;align-items:center;gap:10px;padding:16px 18px 4px"><h2 style="margin:0">用户</h2><span class="hint" style="font-size:12px;color:var(--faint)">· 按最近活跃排序，前 200 个；筛选框可按 ID / 姓名 / 邮箱 / 标签搜</span></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:16px 18px 4px;flex-wrap:wrap"><h2 style="margin:0">用户</h2><span class="hint" style="font-size:12px;color:var(--faint)">· <?=count($profiles)?> 个匹配<?=($fq||$ftag||$fseg||$flife)?'（已筛选）':''?></span>
+        <form method="get" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px">
+          <input type="hidden" name="tab" value="profiles">
+          <input class="inp" type="text" name="q" value="<?=htmlspecialchars($fq)?>" placeholder="ID/姓名/邮箱/标签搜" style="width:150px;height:32px;font-size:12.5px">
+          <select name="tag" style="height:32px;padding:0 6px;border:1px solid var(--border);border-radius:6px;font-size:12.5px;max-width:110px">
+            <option value="">全部标签</option>
+            <?php foreach (array_keys($tags) as $tk): ?><option value="<?=htmlspecialchars($tk)?>" <?=$ftag===$tk?'selected':''?>><?=htmlspecialchars($tk)?></option><?php endforeach; ?>
+          </select>
+          <select name="segment" style="height:32px;padding:0 6px;border:1px solid var(--border);border-radius:6px;font-size:12.5px;max-width:130px">
+            <option value="">全部分群</option>
+            <?php $allSeg = CdpSystem::allSegments(); foreach ($allSeg as $as): ?><option value="<?=htmlspecialchars($as['id'])?>" <?=$fseg===$as['id']?'selected':''?>><?=htmlspecialchars($as['name'])?></option><?php endforeach; ?>
+          </select>
+          <select name="lifecycle" style="height:32px;padding:0 6px;border:1px solid var(--border);border-radius:6px;font-size:12.5px;max-width:100px">
+            <option value="">全部阶段</option>
+            <?php foreach (['new'=>'新客','active'=>'活跃','dormant'=>'沉睡','at_risk'=>'流失风险','churned'=>'流失'] as $lv=>$ll): ?><option value="<?=$lv?>" <?=$flife===$lv?'selected':''?>><?=$ll?></option><?php endforeach; ?>
+          </select>
+          <button class="btn btn-ghost btn-sm" type="submit">筛选</button>
+          <?php if ($fq||$ftag||$fseg||$flife): ?><a class="btn btn-ghost btn-sm" href="cdp.php?tab=profiles">清空</a><?php endif; ?>
+        </form>
+      </div>
       <table class="lst-table">
         <thead><tr><th class="c-title">用户</th><th style="width:220px">标签</th><th style="width:90px">健康分</th><th style="width:80px">事件</th><th style="width:90px">首访</th><th style="width:90px">最近</th><th class="c-act" style="width:90px"></th></tr></thead>
         <tbody>
