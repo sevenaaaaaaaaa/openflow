@@ -421,6 +421,12 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
             <button type="button" onclick="aiArticle('continue')">续写</button>
             <button type="button" onclick="aiArticle('title')">生成标题</button>
             <button type="button" onclick="aiArticle('summary')">生成摘要</button>
+            <span class="sep"></span>
+            <span style="font-size:11px;color:var(--ok);font-weight:700">🔄 一键复用</span>
+            <button type="button" onclick="aiRepurpose('outline')">提纲</button>
+            <button type="button" onclick="aiRepurpose('social')">社媒</button>
+            <button type="button" onclick="aiRepurpose('email')">邮件</button>
+            <button type="button" onclick="aiRepurpose('script')">口播脚本</button>
             <span id="aiArtMsg" style="font-size:11px;color:var(--faint);align-self:center"></span>
           </div>
           <div class="rt-content" contenteditable="true" id="rtContent"><?=$editorMode==='richtext'?$article['content']:''?></div>
@@ -1589,4 +1595,31 @@ function aiArticle(action) {
     }).catch(function(){ if (msg) msg.textContent = '⚠️ 网络异常'; });
 }
 function setAiMsg(t){ var m=document.getElementById('aiArtMsg'); if(m) m.textContent=t; }
+// 一键复用：文章 → 提纲/社媒/邮件/口播脚本（blockmodel_repurpose 确定性生成，非 AI）
+function aiRepurpose(target) {
+  var c = document.getElementById('rtContent'); if (!c) return;
+  var content = c.innerHTML;
+  var labels = {outline:'提纲',social:'社媒',email:'邮件',script:'口播脚本'};
+  setAiMsg('🔄 生成' + labels[target] + '…');
+  fetch('/api/ai-repurpose.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({content:content, target:target}) })
+    .then(function(r){ return r.json(); }).then(function(d){
+      setAiMsg('');
+      if (!d.ok) { setAiMsg('⚠️ ' + (d.error || '失败')); return; }
+      showRepurpose(d.text, target);
+    }).catch(function(){ setAiMsg('⚠️ 网络异常'); });
+}
+function showRepurpose(text, target) {
+  var targetName = {outline:'内容提纲',social:'社媒文案',email:'邮件内容',script:'口播脚本'}[target] || target;
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99999;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML = '<div style="background:var(--surface);border-radius:16px;padding:24px;width:90%;max-width:640px;max-height:80vh;display:flex;flex-direction:column">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="font-size:15px">🔄 ' + targetName + '</b><button class="btn btn-ghost btn-sm" onclick="this.closest(\'div\').remove()">✕</button></div>' +
+    '<pre style="flex:1;overflow:auto;background:var(--bg);border-radius:10px;padding:14px;font-size:13px;line-height:1.8;white-space:pre-wrap;font-family:var(--font-mono)">' + text.replace(/</g,'&lt;') + '</pre>' +
+    '<div style="margin-top:12px;display:flex;gap:8px"><button class="btn btn-primary btn-sm" onclick="copyRepurpose(this)">复制</button></div></div>';
+  document.body.appendChild(overlay);
+}
+function copyRepurpose(btn) {
+  var pre = btn.closest('div').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(function(){ btn.textContent = '✅ 已复制'; setTimeout(function(){ btn.textContent='复制'; }, 1500); });
+}
 </script>
