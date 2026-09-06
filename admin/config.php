@@ -125,6 +125,22 @@ define('ARTICLES_DIR', DATA_DIR . '/articles');
 define('LEADS_CSV', DATA_DIR . '/leads.csv');
 define('SITE_URL', '//' . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
 
+// ─── A1 可用化：redirects.json 301 拦截（死配置变生效） ───
+// 请求期命中 redirects.json 的 from → 301 到 to。仅 Web GET、非后台、精确匹配 path。
+if (PHP_SAPI !== 'cli' && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
+    $__reqPath = parse_url(($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
+    $__redirects = @json_decode((string)@file_get_contents(DATA_DIR . '/redirects.json'), true);
+    if (is_array($__redirects) && $__redirects) {
+        foreach ($__redirects as $__r) {
+            $__from = '/' . trim((string)($__r['from'] ?? ''), '/');
+            if ($__from === $__reqPath) {
+                $__to = (string)($__r['to'] ?? '');
+                if ($__to !== '') { header('Location: ' . $__to, true, 301); exit; }
+            }
+        }
+    }
+}
+
 /**
  * 绝对 URL —— 站点设置里配了就用配的，否则按当前请求推断。
  * 之前 lib/QuoteSystem.php 里有一份同样的实现；外部协作链接也要用，

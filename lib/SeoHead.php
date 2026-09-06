@@ -17,6 +17,16 @@ if (!function_exists('seo_head')) {
         $siteDesc = site_config_get('site_desc', '');
         $siteKeywords = site_config_get('site_keywords', '');
         $siteUrl = site_config_get('site_url', '');
+        // A2 可用化：seo.json 页面级 SEO 优先（后台可配、前台生效）
+        if (function_exists('_json_read_file')) $__seo = _json_read_file(DATA_DIR . '/seo.json');
+        else $__seo = (function_exists('json_read') ? json_read(DATA_DIR . '/seo.json') : (is_file(DATA_DIR . '/seo.json') ? (json_decode((string)file_get_contents(DATA_DIR . '/seo.json'), true) ?: []) : []));
+        $__page = trim(preg_replace('#^/|\.php$#', '', parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'), '/');
+        $__pageSeo = is_array($__seo) ? ($__seo[$__page] ?? ($__seo['/' . $__page] ?? null)) : null;
+        if (is_array($__pageSeo)) {
+            if (!empty($__pageSeo['title'])) $opts['title'] = $__pageSeo['title'];
+            if (!empty($__pageSeo['description'])) $opts['description'] = $__pageSeo['description'];
+            if (!empty($__pageSeo['keywords'])) $opts['keywords'] = $__pageSeo['keywords'];
+        }
 
         $title = $opts['title'] ?? ($siteName . ' - ' . $siteDesc);
         $desc = $opts['description'] ?? $siteDesc;
@@ -48,6 +58,17 @@ if (!function_exists('seo_head')) {
                     echo '<link rel="alternate" hreflang="' . htmlspecialchars($loc) . '" href="' . htmlspecialchars($altUrl, ENT_QUOTES) . '">' . "\n";
                 }
             } catch (Throwable $e) {}
+        }
+        // A3 可用化：seo-settings.json 站点级 meta 注入（后台可配、前台真正生效）
+        $__ss = is_file(DATA_DIR . '/seo-settings.json') ? (json_decode((string)file_get_contents(DATA_DIR . '/seo-settings.json'), true) ?: []) : [];
+        if (is_array($__ss)) {
+            if (empty($image) && !empty($__ss['og_image'])) $image = $__ss['og_image'];
+            $__robots = [];
+            if (!empty($__ss['meta_robots_index']) && $__ss['meta_robots_index'] === 'noindex') $__robots[] = 'noindex';
+            if (!empty($__ss['meta_robots_follow']) && $__ss['meta_robots_follow'] === 'nofollow') $__robots[] = 'nofollow';
+            if ($__robots) echo '<meta name="robots" content="' . htmlspecialchars(implode(',', $__robots), ENT_QUOTES) . '">' . "\n";
+            if (!empty($__ss['google_verify'])) echo '<meta name="google-site-verification" content="' . htmlspecialchars($__ss['google_verify'], ENT_QUOTES) . '">' . "\n";
+            if (!empty($__ss['baidu_verify'])) echo '<meta name="baidu-site-verification" content="' . htmlspecialchars($__ss['baidu_verify'], ENT_QUOTES) . '">' . "\n";
         }
         // favicon（SVG data URI，兼容所有浏览器）
         echo '<link rel="icon" type="image/svg+xml" href="' . $faviconData . '">' . "\n";
