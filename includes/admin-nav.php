@@ -100,6 +100,7 @@ function admin_nav_tree(): array {
                     ['id' => 'pages', 'href' => '/xmp/pages?page=index', 'label' => '页面编辑', 'perm' => 'pages'],
                     ['id' => 'cluster', 'label' => 'Cluster 管理', 'perm' => 'pages'],
                     ['id' => 'landing-pages', 'label' => '落地页', 'perm' => ['landing', 'conversion']],
+                    ['id' => 'modules', 'label' => '模块工厂', 'perm' => ['pages', 'settings'], 'hint' => '可视化定义新模块'],
                     ['id' => 'page-modules', 'label' => '落地页模块', 'perm' => ['landing', 'conversion']],
                     ['id' => 'conversion', 'label' => '转化组件', 'perm' => ['landing', 'conversion']],
                 ]],
