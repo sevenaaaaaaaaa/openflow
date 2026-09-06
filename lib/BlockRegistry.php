@@ -301,13 +301,41 @@ function blockschema_render_form(string $formId): string {
     foreach ((array)$forms as $f) if (($f['id'] ?? '') === $formId || ($f['slug'] ?? '') === $formId) { $form = $f; break; }
     if (!$form) return '<div class="note" style="text-align:center">选择表单</div>';
     $fields = '';
-    foreach ((array)($form['fields'] ?? []) as $fld) {
+    $fieldIds = '';
+    foreach ((array)($form['fields'] ?? []) as $i => $fld) {
         $fkey = (string)($fld['key'] ?? $fld['name'] ?? '');
         $flabel = (string)($fld['label'] ?? $fkey);
         $ftype = (string)($fld['type'] ?? 'text');
-        if ($ftype === 'textarea') $fields .= '<textarea name="' . htmlspecialchars($fkey, ENT_QUOTES) . '" placeholder="' . htmlspecialchars($flabel, ENT_QUOTES) . '" class="inp" rows="3" style="height:auto"></textarea>';
-        else $fields .= '<input class="inp" type="' . ($ftype === 'email' ? 'email' : 'text') . '" name="' . htmlspecialchars($fkey, ENT_QUOTES) . '" placeholder="' . htmlspecialchars($flabel, ENT_QUOTES) . '">';
+        // GAP P1-5：表单条件逻辑（show_if 格式 field_key:value；前面字段满足此值才显示）
+        $showIf = trim((string)($fld['show_if'] ?? ''));
+        $showAttr = $showIf !== '' ? ' data-show-if="' . htmlspecialchars($showIf, ENT_QUOTES) . '" data-field="' . htmlspecialchars($fkey, ENT_QUOTES) . '"' : '';
+        $fieldIds .= $showIf !== '' ? ';" . htmlspecialchars($fkey, ENT_QUOTES) . "' : '';
+        if ($ftype === 'textarea') $fields .= '<div class="of-field"' . $showAttr . '><textarea name="' . htmlspecialchars($fkey, ENT_QUOTES) . '" placeholder="' . htmlspecialchars($flabel, ENT_QUOTES) . '" class="inp" rows="3" style="height:auto"></textarea></div>';
+        else {
+            $typeAttr = $ftype === 'email' ? 'email' : ($ftype === 'tel' ? 'tel' : ($ftype === 'number' ? 'number' : ($ftype === 'date' ? 'date' : 'text')));
+            $options = '';
+            if ($ftype === 'select' && !empty($fld['options'])) {
+                $options = '<select class="inp" name="' . htmlspecialchars($fkey, ENT_QUOTES) . '"><option value="">请选择</option>';
+                foreach ((array)$fld['options'] as $o) $options .= '<option value="' . htmlspecialchars($o, ENT_QUOTES) . '">' . htmlspecialchars($o, ENT_QUOTES) . '</option>';
+                $options .= '</select>';
+                $fields .= '<div class="of-field"' . $showAttr . '>' . $options . '</div>';
+            } else {
+                $fields .= '<div class="of-field"' . $showAttr . '><input class="inp" type="' . $typeAttr . '" name="' . htmlspecialchars($fkey, ENT_QUOTES) . '" placeholder="' . htmlspecialchars($flabel, ENT_QUOTES) . '"></div>';
+            }
+        }
     }
-    return '<form class="form-card" method="post" action="/api/form-submit.php"><input type="hidden" name="form_id" value="' . htmlspecialchars((string)$form['id'], ENT_QUOTES) . '">' . $fields . '<button class="btn primary" type="submit">提交</button></form>';
+    // 表单条件逻辑 JS：根据 show_if (前面字段=值) 控制显隐（全局委托）
+    $showIfJs = <<<'JS'
+<script>(function(){document.addEventListener('input',function(e){
+  var f=(e.target&&e.target.form)?e.target.form:document.currentScript&&document.currentScript.closest('form');if(!f)return;
+  var rows=f.querySelectorAll('[data-show-if]');
+  for(var i=0;i<rows.length;i++){var r=rows[i],cond=r.getAttribute('data-show-if'),eq=cond.split(':');
+    var src=f.querySelector('[name="'+eq[0]+'"]');var val=src?src.value:'';
+    var ok=val===eq[1];r.style.display=ok?'':'none';
+    var inp=r.querySelector('input,select,textarea');if(inp)inp.required=ok&&inp.getAttribute('data-of-req')==='1';
+  }
+});})();</script>
+JS;
+    return '<form class="form-card" method="post" action="/api/form-submit.php"><input type="hidden" name="form_id" value="' . htmlspecialchars((string)$form['id'], ENT_QUOTES) . '">' . $fields . '<button class="btn primary" type="submit">提交</button>' . $showIfJs . '</form>';
 }
 }
