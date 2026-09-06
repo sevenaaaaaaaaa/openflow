@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send'])) {
             'phone' => $phone,
             'content' => $content,
             'provider' => $sms['provider'] ?? '',
-            'status' => 'sent',
+            'status' => 'demo',
             'sent_at' => date('Y-m-d H:i:s'),
         ];
         json_write($historyFile, $history);
