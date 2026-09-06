@@ -118,9 +118,9 @@ class SocialPublisher {
             }
         }
 
-        // 其他平台：无开放 API → 生成带链接的分享文案（mark as manual）
-        $msg = "已生成「{$platform}」分享内容，请手动发布：" . $var['title'] . "\n" . $var['excerpt'];
-        return ['ok' => true, 'message' => $msg, 'platform_id' => 'manual_' . substr(bin2hex(random_bytes(4)), 0, 6), 'variant' => $var];
+        // 其他平台：无开放 API → 生成带链接的分享文案（B2可用化：明确「仅生成文案需手动发布」非假成功）
+        $msg = "「{$platform}」仅生成分享文案（该平台未接 API，需手动发布）：" . $var['title'] . "\n" . $var['excerpt'];
+        return ['ok' => false, 'manual' => true, 'message' => $msg, 'platform_id' => 'manual_' . substr(bin2hex(random_bytes(4)), 0, 6), 'variant' => $var];
     }
 
     /**
