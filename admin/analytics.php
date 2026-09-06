@@ -37,6 +37,7 @@ admin_header('运营分析');
   <?php admin_sidebar('analytics'); ?>
   <div class="main">
     <h1>运营分析</h1>
+    <p class="sub">预设固定指标（漏斗/RFM/流失/路径）· 当前内置指标，自定义维度/钻取后续开放</p>
     <p class="sub">转化漏斗 · RFM 用户分层 · 流失预警与挽回</p>
     <?php if ($winbackMsg): ?><?=msg('success', $winbackMsg)?><?php endif; ?>
 

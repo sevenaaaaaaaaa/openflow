@@ -64,7 +64,7 @@ admin_header('投放管理');
   <?php admin_sidebar('ad-campaigns'); ?>
   <div class="main">
     <div class="v-head">
-      <div><h1>投放管理</h1><p class="v-sub">投放计划 · 素材创意 · 平台指标 · ROI 归因（转化对账 CAPI）</p></div>
+      <div><h1>投放计划台账</h1><p class="v-sub">手动记录投放计划 · 素材 · 平台指标 · ROI 估算（B3：当前为手动录入台账，未接广告平台自动投放）</p></div>
       <?php if (!$edit): ?><div class="v-actions"><a href="?edit=new" class="btn btn-s btn-sm">+ 新建计划</a></div><?php endif; ?>
     </div>
     <?php if ($message): ?><?=msg($message === '投放计划已保存' ? 'success' : 'error', $message)?><?php endif; ?>
@@ -135,7 +135,7 @@ admin_header('投放管理');
         <div style="padding:16px;border-radius:12px;background:var(--bg)"><div class="text-2xl font-bold mono" style="color:var(--ok)">¥<?=number_format($tRev, 0)?></div><div class="text-sm text-muted">估算收入（转化×客单价）</div></div>
         <div style="padding:16px;border-radius:12px;background:var(--bg)"><div class="text-2xl font-bold mono" style="color:<?=($tCost > 0 && $tRev >= $tCost) ? 'var(--ok)' : 'var(--warn)'?>"><?=$tCost > 0 ? round(($tRev - $tCost) / $tCost * 100, 0) . '%' : '—'?></div><div class="text-sm text-muted">整体 ROI</div></div>
       </div>
-      <p class="text-sm text-muted" style="margin-top:12px">💡 数据闭环：转化数录入后，叠加 CAPI 回传（购买/线索）到广告平台自动优化；素材在「数字资产管理 DAM」维护，落地页用 UTM 归因。</p>
+      <p class="text-sm text-muted" style="margin-top:12px">💡 说明：当前是手动录入投放计划与指标做 ROI 估算（未接广告平台 API 自动投放）；素材在「数字资产管理 DAM」维护，落地页用 UTM 归因。</p>
     </div>
     <?php endif; ?>
     <?php endif; ?>
