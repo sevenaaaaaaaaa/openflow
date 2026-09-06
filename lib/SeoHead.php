@@ -85,7 +85,15 @@ if (!function_exists('seo_head')) {
         echo '<meta name="twitter:title" content="' . htmlspecialchars($title, ENT_QUOTES) . '">' . "\n";
         echo '<meta name="twitter:description" content="' . htmlspecialchars($desc, ENT_QUOTES) . '">' . "\n";
         // 结构化数据（Organization / WebSite / 自定义）
-        $jsonLd = $opts['json_ld'] ?? [
+        // A4 可用化：接后台「结构化数据」(data/structured/{type}/{id}.json)
+        $__type = preg_match('#^/(article|articles)/([^/]+)#', $_SERVER['REQUEST_URI'] ?? '/', $__m) ? 'article' : 'page';
+        $__id = isset($__m[2]) ? $__m[2] : (trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/') ?: 'index');
+        $__structFile = DATA_DIR . '/structured/' . $__type . '/' . $__id . '.json';
+        if (is_file($__structFile)) {
+            $__struct = json_decode((string)file_get_contents($__structFile), true);
+            if (is_array($__struct) && !empty($__struct)) $jsonLd = $__struct;
+        }
+        $jsonLd = $jsonLd ?? $opts['json_ld'] ?? [
             '@context' => 'https://schema.org',
             '@type' => 'WebSite',
             'name' => $siteName,
