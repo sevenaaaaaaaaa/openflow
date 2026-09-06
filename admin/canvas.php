@@ -203,6 +203,12 @@ admin_header('画布编辑器');
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('connection')">🔌 连接动作</button>
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('split')">🧪 A/B 分流</button>
         </div>
+        <div style="padding:10px 12px;background:var(--surface-2);border-radius:10px;margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:700;color:var(--accent)">🤖 AI 生成流程</span>
+          <input type="text" id="aiCanvasDesc" placeholder="如：访问产品页→收集线索→A/B测试两版欢迎邮件→打高意向标签→通知销售" style="flex:1;min-width:280px;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+          <button type="button" class="btn btn-s btn-sm" onclick="aiGenCanvas()">✨ 生成</button>
+          <span id="aiCanvasMsg" style="font-size:11px;color:var(--faint)"></span>
+        </div>
         <div class="canvas-flow" id="canvasFlow" data-edges="<?=htmlspecialchars(json_encode($edit['edges'] ?? [], JSON_UNESCAPED_UNICODE))?>">
           <svg class="canvas-graph-svg" id="canvasLinks"></svg>
           <?php $editNodes = $edit['nodes'] ?? []; foreach ($editNodes as $ni => $n): ?>
@@ -396,5 +402,25 @@ function nodeDrop(e) {
   dragNode.classList.remove('dragging');
   dragNode = null;
 }
-</script>
+// AI 生成画布流程：描述 → 节点序列 → 逐个 addNode
+function aiGenCanvas() {
+  var d = document.getElementById('aiCanvasDesc'); if (!d || !d.value.trim()) { acm('请先描述流程需求'); return; }
+  var msg = document.getElementById('aiCanvasMsg'); if (msg) msg.textContent = '🤖 正在生成流程…';
+  var btn = document.querySelector('#aiCanvasDesc ~ button'); if (btn) btn.disabled = true;
+  fetch('/api/ai-canvas.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({desc: d.value.trim()}) })
+    .then(function(r){ return r.json(); }).then(function(res){
+      if (msg) msg.textContent = '';
+      if (!res.ok || !res.nodes || !res.nodes.length) { if (msg) msg.textContent = '⚠️ ' + (res.error || '生成失败'); return; }
+      var labels = {trigger:'触发器',send_email:'发送邮件',condition:'条件分支',delay:'延迟',notify:'通知',tag:'打标签',score:'加分',stage:'改阶段',webhook:'Webhook',split:'A/B 分流'};
+      res.nodes.forEach(function(t, i) {
+        setTimeout(function() {
+          if (typeof window.addNode === 'function') window.addNode(t, labels[t] || t);
+          else if (typeof addNode === 'function') addNode(t, labels[t] || t);
+        }, i * 120);
+      });
+      if (msg) msg.textContent = '✅ 已生成 ' + res.nodes.length + ' 个节点';
+    }).catch(function(){ if (msg) msg.textContent = '⚠️ 网络异常'; }).then(function(){ var b=document.querySelector('#aiCanvasDesc ~ button'); if (b) b.disabled=false; });
+}
+function acm(t){ var m=document.getElementById('aiCanvasMsg'); if(m) m.textContent=t; }
+ </script>
 <?php admin_footer(); ?>
