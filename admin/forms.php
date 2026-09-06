@@ -115,6 +115,14 @@ admin_header('表单管理');
           <div class="field"><label>表单名称</label><input type="text" name="title" value="<?=htmlspecialchars($editForm['title'] ?? '')?>" required></div>
           <div class="field"><label>Slug</label><input type="text" name="slug" value="<?=htmlspecialchars($editForm['slug'] ?? '')?>" placeholder="自动生成"></div>
         </div>
+        <div style="padding:10px 12px;background:var(--surface-2);border-radius:8px;margin-bottom:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px">🤖 AI 生成表单字段</div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="aiFormDesc" placeholder="如：高意向线索收集，包含姓名、公司、职位、预算范围、联系方式，预算用下拉" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <button type="button" class="btn btn-s btn-sm" onclick="aiGenForm()">✨ 生成字段</button>
+          </div>
+          <span id="aiFormMsg" style="font-size:11px;color:var(--faint)"></span>
+        </div>
         <div class="field-row">
           <div class="field"><label>类型</label>
             <select name="type" id="formType" onchange="toggleType()">
@@ -222,5 +230,37 @@ function addPresetField(key, label) {
 function copy(el) {
   navigator.clipboard.writeText(el.textContent).then(function() { ofAlert('已复制嵌入代码'); });
 }
+// AI 生成表单字段：描述 → 字段建议 → 填充到 fieldsList
+function aiGenForm() {
+  var d = document.getElementById('aiFormDesc'); if (!d || !d.value.trim()) { setFm('请先描述表单需求'); return; }
+  var msg = document.getElementById('aiFormMsg'); if (msg) msg.textContent = '🤖 正在生成字段…';
+  fetch('/api/ai-form.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({desc:d.value.trim()}) })
+    .then(function(r){ return r.json(); }).then(function(res){
+      if (msg) msg.textContent = '';
+      if (!res.ok || !res.fields || !res.fields.length) { if (msg) msg.textContent = '⚠️ ' + (res.error || '生成失败'); return; }
+      var list = document.getElementById('fieldsList'); if (!list) return;
+      list.innerHTML = '';
+      res.fields.forEach(function(f) {
+        var div = document.createElement('div'); div.className='field-row';
+        div.style.cssText='align-items:end;padding:8px 0;border-bottom:1px solid var(--border)';
+        var type = f.type; if (type === 'textarea') type = 'textarea'; else if (type === 'tel') type='tel';
+        var typeLabel = {text:'文本',email:'邮箱',textarea:'多行',select:'下拉',number:'数字',date:'日期',tel:'电话'}[type] || '文本';
+        var params = 'key="'+(f.key||'')+'" label="'+(f.label||'')+'" type="'+(type||'text')+'" placeholder="'+(f.placeholder||'')+'" required="'+(f.required?'1':'')+'"';
+        div.innerHTML =
+          '<div class="field" style="margin-bottom:0;flex:1"><input type="text" name="field_key[]" value="'+(f.key||'')+'" style="font-family:var(--mono)"></div>' +
+          '<div class="field" style="margin-bottom:0;flex:1.5"><input type="text" name="field_label[]" value="'+(f.label||'')+'"></div>' +
+          '<div class="field" style="margin-bottom:0;width:100px"><select name="field_type[]"><option value="text">文本</option><option value="email">邮箱</option><option value="tel">电话</option><option value="select">下拉</option><option value="textarea">多行</option><option value="number">数字</option><option value="date">日期</option></select></div>' +
+          '<div class="field" style="margin-bottom:0;width:120px"><input type="text" name="field_placeholder[]" value="'+(f.placeholder||'')+'" placeholder="占位文字"></div>' +
+          '<div class="field" style="margin-bottom:0;width:80px"><label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" name="field_required[]" value="1"'+(f.required?' checked':'')+'>必填</label></div>' +
+          '<button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button>';
+        list.appendChild(div);
+        // 填充 select options(占位：加一个 options 隐藏说明)
+        var sel = div.querySelector('select[name="field_type[]"]');
+        if (sel && type && type !== 'text') sel.value = type;
+      });
+      if (msg) msg.textContent = '✅ 已生成 ' + res.fields.length + ' 个字段';
+    }).catch(function(){ if (msg) msg.textContent = '⚠️ 网络异常'; });
+}
+function setFm(t){ var m=document.getElementById('aiFormMsg'); if(m) m.textContent=t; }
 </script>
 <?php admin_footer(); ?>
