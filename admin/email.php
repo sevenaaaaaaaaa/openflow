@@ -334,6 +334,11 @@ if ($__sub === 'self'):
         <div class="msg msg-info">当前订阅者：<strong><?=$subCount?></strong> 人（来自前台 Newsletter 订阅）</div>
         <form method="post">
           <?= csrf_field() ?>
+          <div style="padding:12px;background:var(--ok-soft);border:1px solid var(--ok);border-radius:10px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:13px;font-weight:600;color:var(--ok)">💡 推荐使用可视化 Newsletter 编辑器</span>
+            <a href="/xmp/newsletter-editor" class="btn btn-primary btn-sm">🎨 打开可视化编辑器（排版+预览+定时）</a>
+            <span style="font-size:11px;color:var(--muted)">下方为简化版发送（裸模板），建议优先用编辑器。</span>
+          </div>
           <div class="field"><label>选择文章</label>
             <select name="newsletter_article" required>
               <option value="">— 选择 —</option>
