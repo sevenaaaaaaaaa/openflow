@@ -1678,6 +1678,22 @@ window.fcMarkErrors = function(errors) {
     --h-suggest-hover:#86efac;
     --h-focus:#2e6b4f;
   }
+  /* 主题：花嫁（二次元花嫁造型） */
+  [data-helper-theme="bride"]{
+    --h-head-grad:linear-gradient(135deg,#3b1f47,#c46a8a,#f7d3e0);
+    --h-head-text:#fff8fb;
+    --h-body-bg:#fff5f9;
+    --h-user-bg:#d98bb0;
+    --h-user-text:#fff;
+    --h-bot-bg:#fff;
+    --h-bot-border:#f2d3e2;
+    --h-accent:linear-gradient(135deg,#e8a6c8,#f7d3e0);
+    --h-accent-text:#7a3b5c;
+    --h-btn-bg:#fbe3ee;
+    --h-btn-text:#8b4a6b;
+    --h-suggest-hover:#f7d3e0;
+    --h-focus:#d98bb0;
+  }
   .fc-helper-fab{position:fixed;right:22px;bottom:22px;width:60px;height:60px;border-radius:50%;border:none;cursor:pointer;z-index:9990;background:linear-gradient(135deg,var(--accent),#0284c7 60%,#7dd3fc);box-shadow:0 8px 24px rgba(30,30,30,.28);display:grid;place-items:center;transition:transform .2s,box-shadow .2s;padding:0}
   .fc-helper-fab:hover{transform:scale(1.08);box-shadow:0 12px 32px rgba(30,30,30,.34)}
   .fc-helper-fab img{width:42px;height:42px;border-radius:50%;object-fit:cover}
@@ -1712,7 +1728,7 @@ window.fcMarkErrors = function(errors) {
 <div class="fc-helper-window" id="fcHelperWin">
   <div class="fc-helper-head">
     <img id="fcHelperAvatarWin" src="" alt="小福" style="display:none">
-    <svg id="fcHelperAvatarSvgWin" viewBox="0 0 64 64" width="40" height="40" style="border-radius:50%;background:linear-gradient(160deg,#0284c7,#38bdf8 55%,#7dd3fc);border:2px solid #7dd3fc"><circle cx="32" cy="26" r="15" fill="#1e1e1e"/><path d="M12 50c3-12 9-17 20-17s17 5 20 17" fill="#1e1e1e"/><circle cx="26" cy="26" r="2.4" fill="#fff"/><circle cx="38" cy="26" r="2.4" fill="#fff"/><circle cx="26" cy="26" r="1" fill="#1e1e1e"/><circle cx="38" cy="26" r="1" fill="#1e1e1e"/><path d="M28 33c2.6 1.6 5.4 1.6 8 0" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="32" cy="14" r="2.6" fill="#fff" opacity=".9"/></svg>
+    <svg id="fcHelperAvatarSvgWin" viewBox="0 0 64 64" width="40" height="40" style="border-radius:50%;background:linear-gradient(160deg,#0284c7,#38bdf8 55%,#7dd3fc);border:2px solid #7dd3fc"><defs><radialGradient id="bhair" cx="50%" cy="40%"><stop offset="0" stop-color="#ffe3a8"/><stop offset="1" stop-color="#e8b46a"/></radialGradient></defs><path d="M14 34 C10 20 20 8 32 8 C44 8 54 20 50 34 L50 40 H14 Z" fill="url(#bhair)"/><path d="M14 30 C8 16 22 6 32 6 C42 6 56 16 50 30 L50 36 H14 Z" fill="#fff" opacity=".55"/><circle cx="32" cy="30" r="13" fill="#ffd9c2"/><path d="M19 30 C18 20 26 13 32 13 C38 13 46 20 45 30 C46 18 38 10 32 10 C26 10 18 18 19 30 Z" fill="url(#bhair)"/><circle cx="27" cy="30" r="2.2" fill="#8a5a44"/><circle cx="37" cy="30" r="2.2" fill="#8a5a44"/><circle cx="27" cy="31" r="1" fill="#fff"/><circle cx="37" cy="31" r="1" fill="#fff"/><path d="M29 36 c2 1.4 4 1.4 6 0" stroke="#c46a8a" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M27 25 q5 -3 10 0" stroke="#c46a8a" stroke-width="1.2" fill="none" opacity=".7"/><path d="M10 52 C14 42 22 36 32 36 C42 36 50 42 54 52 Z" fill="#fff" stroke="#f2d3e2" stroke-width="1.5"/><path d="M18 44 l4 6 m8 -9 l0 8 m8 -5 l4 6" stroke="#fbe3ee" stroke-width="2" opacity=".8"/><circle cx="14" cy="36" r="2.4" fill="#f7a8c8"/><circle cx="50" cy="36" r="2.4" fill="#f7a8c8"/></svg>
     <div>
       <div class="name">小福 · 后台助手</div>
       <div class="status">🟢 在线 · 随时提问</div>
@@ -1731,7 +1747,7 @@ window.fcMarkErrors = function(errors) {
 <button class="fc-helper-fab" id="fcHelperFab" onclick="fcHelperToggle()" title="小福助手">
   <span class="pulse"></span>
   <img id="fcHelperAvatarImgFab" src="" alt="小福" style="display:none">
-  <svg id="fcHelperAvatarSvgFab" viewBox="0 0 64 64" width="44" height="44" style="border-radius:50%"><circle cx="32" cy="26" r="15" fill="#1e1e1e"/><path d="M12 50c3-12 9-17 20-17s17 5 20 17" fill="#1e1e1e"/><circle cx="26" cy="26" r="2.4" fill="#fff"/><circle cx="38" cy="26" r="2.4" fill="#fff"/><circle cx="26" cy="26" r="1" fill="#1e1e1e"/><circle cx="38" cy="26" r="1" fill="#1e1e1e"/><path d="M28 33c2.6 1.6 5.4 1.6 8 0" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="32" cy="14" r="2.6" fill="#fff" opacity=".9"/></svg>
+  <svg id="fcHelperAvatarSvgFab" viewBox="0 0 64 64" width="44" height="44" style="border-radius:50%"><defs><radialGradient id="bhair" cx="50%" cy="40%"><stop offset="0" stop-color="#ffe3a8"/><stop offset="1" stop-color="#e8b46a"/></radialGradient></defs><path d="M14 34 C10 20 20 8 32 8 C44 8 54 20 50 34 L50 40 H14 Z" fill="url(#bhair)"/><path d="M14 30 C8 16 22 6 32 6 C42 6 56 16 50 30 L50 36 H14 Z" fill="#fff" opacity=".55"/><circle cx="32" cy="30" r="13" fill="#ffd9c2"/><path d="M19 30 C18 20 26 13 32 13 C38 13 46 20 45 30 C46 18 38 10 32 10 C26 10 18 18 19 30 Z" fill="url(#bhair)"/><circle cx="27" cy="30" r="2.2" fill="#8a5a44"/><circle cx="37" cy="30" r="2.2" fill="#8a5a44"/><circle cx="27" cy="31" r="1" fill="#fff"/><circle cx="37" cy="31" r="1" fill="#fff"/><path d="M29 36 c2 1.4 4 1.4 6 0" stroke="#c46a8a" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M27 25 q5 -3 10 0" stroke="#c46a8a" stroke-width="1.2" fill="none" opacity=".7"/><path d="M10 52 C14 42 22 36 32 36 C42 36 50 42 54 52 Z" fill="#fff" stroke="#f2d3e2" stroke-width="1.5"/><path d="M18 44 l4 6 m8 -9 l0 8 m8 -5 l4 6" stroke="#fbe3ee" stroke-width="2" opacity=".8"/><circle cx="14" cy="36" r="2.4" fill="#f7a8c8"/><circle cx="50" cy="36" r="2.4" fill="#f7a8c8"/></svg>
 </button>
 <script>
 var FC_HELPER_AVATAR = '<?=htmlspecialchars(json_read(DATA_DIR . "/ai-config.json")['assistant_avatar'] ?? '', ENT_QUOTES)?>';
@@ -1747,8 +1763,8 @@ if (FC_HELPER_AVATAR) {
 var FC_HELPER = {
   open: false,
   history: [],
-  themes: ['default', 'dark', 'fresh', 'jade'],
-  themeNames: { 'default': '默认', 'dark': '暗夜', 'fresh': '清新', 'jade': '玉石' },
+  themes: ['default', 'dark', 'fresh', 'jade', 'bride'],
+  themeNames: { 'default': '默认', 'dark': '暗夜', 'fresh': '清新', 'jade': '玉石', 'bride': '花嫁' },
   suggestions: ['怎么发布一篇文章？','公司知识库里有什么？','如何批量导入文章？','写个公众号标题','看看运营数据','怎么配置微信公众号？','如何添加一个表单？','SEO 标题怎么批量设置？','健康检测怎么用？','去管理线索','生态市场有什么技能？']
 };
 // 小助手皮肤
