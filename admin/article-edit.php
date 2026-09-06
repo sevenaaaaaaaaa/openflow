@@ -415,6 +415,13 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
             <button type="button" onclick="openMediaPicker()">媒体库</button>
             <span class="sep"></span>
             <button type="button" onclick="rtCmd('removeFormat')">清除格式</button>
+            <span class="sep"></span>
+            <span style="font-size:11px;color:var(--accent);font-weight:700">🤖 AI</span>
+            <button type="button" onclick="aiArticle('rewrite')">润色</button>
+            <button type="button" onclick="aiArticle('continue')">续写</button>
+            <button type="button" onclick="aiArticle('title')">生成标题</button>
+            <button type="button" onclick="aiArticle('summary')">生成摘要</button>
+            <span id="aiArtMsg" style="font-size:11px;color:var(--faint);align-self:center"></span>
           </div>
           <div class="rt-content" contenteditable="true" id="rtContent"><?=$editorMode==='richtext'?$article['content']:''?></div>
         </div>
@@ -1562,3 +1569,24 @@ function addTag(tag) {
 }
 </script>
 <?php admin_footer(); ?>
+<script>
+// AI 助手：润色/续写/标题/摘要（结果回填到编辑器）
+function aiArticle(action) {
+  var c = document.getElementById('rtContent');
+  if (!c) return;
+  var content = c.innerHTML.replace(/<[^>]+>/g, ' ').trim();
+  if (action !== 'title' && content.length < 30) { setAiMsg('内容太短，先写一些正文'); return; }
+  var title = '';
+  var t = document.querySelector('input[name="title"]'); if (t) title = t.value;
+  var msg = document.getElementById('aiArtMsg'); if (msg) msg.textContent = action === 'title' ? '🤖 生成标题中…' : '🤖 AI 处理中…';
+  fetch('/api/ai-article.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:action, content:content, title:title}) })
+    .then(function(r){ return r.json(); }).then(function(d){
+      if (msg) msg.textContent = '';
+      if (!d.ok) { (msg || {}).textContent = '⚠️ ' + (d.error || 'AI 失败'); return; }
+      if (action === 'title') { if (t) t.value = d.text.split('\n')[0].trim(); }
+      else if (action === 'summary') { var s = document.querySelector('textarea[name="excerpt"]'); if (s) s.value = d.text.trim(); }
+      else { c.innerHTML = c.innerHTML + (action === 'continue' ? '<p>' + d.text.replace(/\n/g,'</p><p>') + '</p>' : '<div>' + d.text.replace(/\n/g,'<br>') + '</div>'); }
+    }).catch(function(){ if (msg) msg.textContent = '⚠️ 网络异常'; });
+}
+function setAiMsg(t){ var m=document.getElementById('aiArtMsg'); if(m) m.textContent=t; }
+</script>
