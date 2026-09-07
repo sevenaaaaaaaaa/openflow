@@ -28,12 +28,13 @@ const ADMIN_NAV_ALIAS = [
     'article-edit' => 'content-hub', 'revisions' => 'content-hub', 'collaborators' => 'content-hub', 'articles' => 'content-hub', 'pages-list' => 'content-hub', 'downloads' => 'content-hub', 'download-edit' => 'content-hub',
     'podcasts' => 'content-hub', 'page-categories' => 'content-hub', 'tags' => 'content-hub', 'page-builder' => 'pages', 'page-editor-config' => 'pages',
     'course-edit' => 'courses', 'customer-detail' => 'crm', 'profile-detail' => 'profiling', 'user-profile' => 'profiling', 'crm-lead-detail' => 'crm',
-    'abtests-stats' => 'abtests', 'survey-agent' => 'survey', 'survey-org' => 'survey', 'sentiment-report' => 'sentiment',
-    'media-upload' => 'media', 'export' => 'data-export', 'export-all' => 'data-export', 'onboarding' => 'workspace', 'debug' => 'devops',
+    'abtests-stats' => 'abtests', 'sentiment-report' => 'sentiment', 'survey-agent' => 'survey', 'survey-org' => 'survey',
+    'brain' => 'studio', 'decision-trace' => 'studio', 'ai-config' => 'studio', 'ai-usage' => 'studio', 'knowledge' => 'studio', 'driver' => 'deck', 'action-approvals' => 'deck', 'demo-growth' => 'deck', 'flow' => 'deck', 'safefix' => 'deck', 'evolution' => 'deck', 'workspace' => 'deck',
+    'media-upload' => 'media', 'export' => 'data-export', 'export-all' => 'data-export', 'onboarding' => 'deck', 'debug' => 'devops',
     'notion-sync' => 'data-sync', 'languages' => 'settings', 'storage' => 'health-check', 'activity' => 'audit-log', 'footer-links' => 'site-builder',
     'mail-settings' => 'email', 'connections' => 'settings', 'payment-settings' => 'shop-settings', 'seo' => 'seo-center', 'seo-tools' => 'seo-center', 'seo-batch' => 'seo-center',
     'seo-console' => 'seo-center', 'redirects' => 'seo-center', 'structured-data' => 'seo-center', 'structured' => 'seo-center', 'landing' => 'landing-pages',
-    'image-seo' => 'seo-center', 'index' => 'workspace',
+    'image-seo' => 'seo-center', 'index' => 'deck',
 ];
 
 function admin_nav_icons(): array {
@@ -52,18 +53,21 @@ function admin_nav_icons(): array {
     ];
 }
 
-/** 置顶：跨区常用入口，永远显示在侧栏最上面。3 个聚合入口，各自带子 tab 条。 */
+/** 置顶：跨区常用入口，永远显示在侧栏最上面。2 个聚合入口，各自带子 tab 条。 */
 function admin_nav_pinned(): array {
     static $pins = null;
     if ($pins !== null) return $pins;
     $I = admin_nav_icons();
     $all = [
         [
-            'id' => 'workspace', 'label' => '工作台', 'tag' => '默认', 'icon' => $I['home'],
+            'id' => 'deck', 'label' => 'Deck', 'tag' => '运营', 'icon' => $I['home'], 'href' => '/xmp/workspace',
             'subs' => [
-                ['id' => 'workspace',        'label' => '工作台',   'href' => '/xmp/workspace'],
-                ['id' => 'dashboard',        'label' => '经营驾驶舱', 'href' => '/xmp/dashboard'],
-                ['id' => 'evolution',        'label' => '系统体检',  'href' => '/xmp/evolution'],
+                ['id' => 'deck',            'label' => 'Deck',        'href' => '/xmp/workspace'],
+                ['id' => 'dashboard',       'label' => '经营驾驶舱',   'href' => '/xmp/dashboard'],
+                ['id' => 'evolution',       'label' => '系统体检',     'href' => '/xmp/evolution'],
+                ['id' => 'driver',          'label' => '规则增长引擎', 'href' => '/xmp/driver'],
+                ['id' => 'action-approvals','label' => '行动审批',     'href' => '/xmp/action-approvals'],
+                ['id' => 'demo-growth',     'label' => 'Demo 陪跑',   'href' => '/xmp/demo-growth'],
             ],
         ],
         [
@@ -75,6 +79,9 @@ function admin_nav_pinned(): array {
                 ['id' => 'studio',          'label' => 'OpenFlow Studio', 'href' => '/xmp/studio'],
                 ['id' => 'flow-workspace',  'label' => 'Flow 工作台',     'href' => '/xmp/flow-workspace'],
                 ['id' => 'loop-workspace',  'label' => 'Loop 工作台',     'href' => '/xmp/loop-workspace'],
+                ['id' => 'brain',           'label' => '增长大脑',        'href' => '/xmp/brain'],
+                ['id' => 'ai-config',       'label' => '模型与 AI',      'href' => '/xmp/ai-config'],
+                ['id' => 'knowledge',       'label' => '知识库',          'href' => '/xmp/knowledge'],
             ],
         ],
     ];
@@ -125,6 +132,11 @@ function admin_nav_tree(): array {
                     ['id' => 'content-i18n', 'label' => '内容多语言', 'perm' => 'articles'],
                     ['id' => 'community-config', 'label' => '学院首页配置', 'perm' => ['community-config', 'articles']],
                 ]],
+                ['label' => '数据进出', 'hint' => '导入 · 导出 · 迁移', 'subs' => [
+                    ['id' => 'ingest', 'label' => '外部导入', 'perm' => 'ingest'],
+                    ['id' => 'data-export', 'label' => '数据导出', 'perm' => 'export'],
+                    ['id' => 'migrate', 'label' => '数据迁移', 'perm' => 'settings'],
+                ]],
                 ['label' => '素材库', 'hint' => '资产 · 多媒体 · 图库', 'subs' => [
                     ['id' => 'dam', 'label' => '数字资产', 'perm' => ['dam', 'media']],
                     ['id' => 'media', 'label' => '多媒体', 'perm' => ['dam', 'media']],
@@ -159,8 +171,20 @@ function admin_nav_tree(): array {
                     ['id' => 'review-settings', 'label' => '审核规则', 'perm' => 'reviews'],
                 ]],
             ]],
+            ['label' => 'SEO 与 GEO', 'items' => [
+                ['id' => 'seo-center', 'label' => 'SEO 中心', 'perm' => ['seo', 'seo-tools', 'redirects'], 'hint' => '页面 · 工具 · 重定向'],
+                ['label' => '舆情与 GEO', 'hint' => '口碑 · 话题监控', 'subs' => [
+                    ['id' => 'sentiment', 'label' => '舆情监测', 'perm' => 'sentiment'],
+                    ['id' => 'geo', 'label' => 'GEO 话题监控', 'perm' => 'geo'],
+                ]],
+                ['label' => '问卷与 NPS', 'hint' => '问卷 · 统计 · NPS', 'subs' => [
+                    ['id' => 'survey', 'label' => '问卷调研', 'perm' => 'survey'],
+                    ['id' => 'survey-stats', 'label' => '问卷统计', 'perm' => 'survey'],
+                    ['id' => 'nps', 'label' => 'NPS', 'perm' => 'nps'],
+                ]],
+            ]],
         ]],
-        ['id' => 'insight', 'label' => '洞察 Insight', 'short' => '洞察', 'icon' => $I['insight'], 'desc' => '分析 · 数据 · SEO：看清发生了什么', 'groups' => [
+        ['id' => 'insight', 'label' => '洞察 Insight', 'short' => '洞察', 'icon' => $I['insight'], 'desc' => '分析 · 数据：看清发生了什么', 'groups' => [
             ['label' => '分析', 'items' => [
                 ['label' => '运营分析', 'hint' => '实时 · 路径 · 传播 · 订阅', 'subs' => [
                     ['id' => 'analytics', 'label' => '运营分析', 'perm' => 'analytics'],
@@ -175,9 +199,10 @@ function admin_nav_tree(): array {
                     ['id' => 'attribution', 'label' => '增长归因', 'perm' => 'analytics'],
                     ['id' => 'attribution-model', 'label' => '多触点归因', 'perm' => 'analytics'],
                 ]],
-                ['label' => '营销洞察', 'hint' => '洞察 · 问数据', 'subs' => [
+                ['label' => '营销洞察', 'hint' => '洞察 · 问数据 · 画像', 'subs' => [
                     ['id' => 'insights', 'label' => '营销洞察', 'perm' => 'insights'],
                     ['id' => 'ask-data', 'label' => '问数据', 'perm' => 'insights'],
+                    ['id' => 'profiling', 'label' => '用户画像', 'perm' => 'profiling'],
                 ]],
                 ['id' => 'abtests', 'label' => 'A/B 测试', 'perm' => 'abtests'],
             ]],
@@ -200,38 +225,24 @@ function admin_nav_tree(): array {
                     ['id' => 'session-replay', 'label' => '会话回放', 'perm' => 'cdp'],
                     ['id' => 'funnel-guard', 'label' => '漏斗巡检', 'perm' => 'cdp'],
                 ]],
-            ]],
-            ['label' => '声音与搜索', 'items' => [
-                ['label' => '问卷与 NPS', 'hint' => '问卷 · 统计 · NPS', 'subs' => [
-                    ['id' => 'survey', 'label' => '问卷调研', 'perm' => 'survey'],
-                    ['id' => 'survey-stats', 'label' => '问卷统计', 'perm' => 'survey'],
-                    ['id' => 'nps', 'label' => 'NPS', 'perm' => 'nps'],
-                ]],
-                ['id' => 'seo-center', 'label' => 'SEO 中心', 'perm' => ['seo', 'seo-tools', 'redirects'], 'hint' => '页面 · 工具 · 重定向'],
-                ['label' => '舆情与 GEO', 'hint' => '口碑 · 话题监控', 'subs' => [
-                    ['id' => 'sentiment', 'label' => '舆情监测', 'perm' => 'sentiment'],
-                    ['id' => 'geo', 'label' => 'GEO 话题监控', 'perm' => 'geo'],
-                ]],
-            ]],
-        ]],
-        ['id' => 'personalize', 'label' => '个性化 Personalize', 'short' => '个性化', 'icon' => $I['person'], 'desc' => '自动化 · 分群 · 触达：对的人看对的东西', 'groups' => [
+             ]],
+         ]],
+         ['id' => 'personalize', 'label' => '个性化 Personalize', 'short' => '个性化', 'icon' => $I['person'], 'desc' => '自动化 · 分群 · 触达：对的人看对的东西', 'groups' => [
             ['label' => '自动化', 'items' => [
-                ['label' => '营销自动化', 'hint' => '旅程 · 画布', 'subs' => [
+                ['label' => '营销自动化', 'hint' => '旅程 · 画布 · MA同步', 'subs' => [
                     ['id' => 'automation', 'label' => '营销自动化', 'perm' => 'automation'],
                     ['id' => 'canvas', 'label' => '画布流程', 'perm' => 'canvas'],
+                    ['id' => 'ma-sync', 'label' => 'MA 融合同步', 'perm' => 'ma-sync'],
                 ]],
                 ['label' => '活动与 CRO', 'hint' => '活动 · 动态内容', 'subs' => [
                     ['id' => 'campaigns', 'label' => '活动 / CRO', 'perm' => 'campaigns'],
                     ['id' => 'dynamic-content', 'label' => 'Dynamic Engine', 'perm' => 'settings'],
                 ]],
-                ['id' => 'ma-sync', 'label' => 'MA 融合同步', 'perm' => 'ma-sync'],
             ]],
             ['label' => '人群', 'items' => [
-                ['label' => '分群与画像', 'hint' => '分群 · 激活 · 画像', 'subs' => [
-                    ['id' => 'segments', 'label' => '用户分群', 'perm' => 'segments'],
-                    ['id' => 'destinations', 'label' => '人群激活', 'perm' => 'segments'],
-                    ['id' => 'profiling', 'label' => '用户画像', 'perm' => 'profiling'],
-                ]],
+                ['id' => 'segments', 'label' => '用户分群', 'perm' => 'segments'],
+                ['id' => 'destinations', 'label' => '人群激活', 'perm' => 'segments'],
+                ['id' => 'tag-rules', 'label' => '标签体系', 'perm' => 'segments'],
             ]],
             ['label' => '触达渠道', 'items' => [
                 ['label' => '邮件与短信', 'hint' => 'EDM · SMTP · 短信', 'subs' => [
@@ -302,30 +313,6 @@ function admin_nav_tree(): array {
                 ]],
             ]],
         ]],
-        ['id' => 'ai', 'label' => 'AI 与自动化', 'short' => 'AI', 'icon' => $I['ai'], 'desc' => '规则引擎、AI 辅助与 Loop 实验能力', 'groups' => [
-            ['label' => '主动增长', 'items' => [
-                ['id' => 'flow', 'label' => '业务链路总览', 'perm' => 'flow', 'hint' => '三流联动'],
-                ['id' => 'flow-workspace', 'label' => 'Flow 工作台', 'perm' => 'settings', 'hint' => '定义 · 运行 · 结果'],
-                ['id' => 'driver', 'label' => '规则增长引擎', 'perm' => 'flow', 'hint' => '固定步骤'],
-                ['label' => '增长大脑', 'hint' => '决策 · 轨道回溯', 'subs' => [
-                    ['id' => 'brain', 'label' => '增长大脑', 'perm' => 'brain'],
-                    ['id' => 'decision-trace', 'label' => '决策轨道', 'perm' => 'brain'],
-                ]],
-                ['id' => 'action-approvals', 'label' => '行动审批', 'perm' => 'brain', 'hint' => '只读审计链'],
-                ['id' => 'demo-growth', 'label' => 'Demo 陪跑', 'perm' => 'dashboard', 'hint' => '隔离测试场景'],
-                ['label' => '系统体检', 'hint' => '建议 · 协同修复', 'subs' => [
-                    ['id' => 'evolution', 'label' => '系统体检', 'perm' => 'evolution'],
-                    ['id' => 'safefix', 'label' => '协同修复', 'perm' => 'evolution'],
-                ]],
-            ]],
-            ['label' => 'Agent 与知识', 'items' => [
-                ['label' => '模型与 AI', 'hint' => '供应商 · 用量与预算', 'subs' => [
-                    ['id' => 'ai-config', 'label' => '模型配置', 'perm' => 'ai-config'],
-                    ['id' => 'ai-usage', 'label' => 'AI 用量与预算', 'perm' => 'ai-config'],
-                ]],
-                ['id' => 'knowledge', 'label' => '知识库', 'perm' => 'knowledge'],
-            ]],
-        ]],
         ['id' => 'system', 'label' => '系统', 'short' => '系统', 'icon' => $I['gear'], 'desc' => '设置 · 用户 · 运维', 'groups' => [
             ['label' => '站点', 'items' => [
                 ['id' => 'settings', 'label' => '系统设置', 'perm' => 'settings'],
@@ -366,11 +353,6 @@ function admin_nav_tree(): array {
                     ['id' => 'backup', 'label' => '备份', 'perm' => 'settings'],
                     ['id' => 'cloudflare', 'label' => 'Cloudflare', 'perm' => 'settings'],
                     ['id' => 'sdk-versions', 'label' => 'SDK 版本', 'perm' => 'settings'],
-                ]],
-                ['label' => '数据进出', 'hint' => '导入 · 导出 · 迁移', 'subs' => [
-                    ['id' => 'ingest', 'label' => '外部导入', 'perm' => 'ingest'],
-                    ['id' => 'data-export', 'label' => '数据导出', 'perm' => 'export'],
-                    ['id' => 'migrate', 'label' => '数据迁移', 'perm' => 'settings'],
                 ]],
             ]],
         ]],
