@@ -71,17 +71,6 @@ function admin_nav_pinned(): array {
             ],
         ],
         [
-            'id' => 'system', 'label' => '系统', 'tag' => '设置', 'icon' => $I['gear'], 'href' => '/xmp/settings',
-            'subs' => [
-                ['id' => 'settings',       'label' => '系统设置',  'href' => '/xmp/settings'],
-                ['id' => 'users',          'label' => '后台用户',  'href' => '/xmp/users'],
-                ['id' => 'roles',          'label' => '角色权限',  'href' => '/xmp/roles'],
-                ['id' => 'connections',    'label' => '连接',      'href' => '/xmp/connections'],
-                ['id' => 'health-check',   'label' => '健康检测',  'href' => '/xmp/health-check'],
-                ['id' => 'audit-log',      'label' => '审计日志',  'href' => '/xmp/audit-log'],
-            ],
-        ],
-        [
             'id' => 'content-calendar', 'label' => '内容日历', 'tag' => '排期', 'perm' => 'tasks', 'icon' => $I['cal'],
         ],
         [
@@ -471,8 +460,8 @@ function admin_nav_render(string $current, string $script = ''): void {
     <button type="button" class="sb-area<?=$on ? ' on' : ''?>" role="tab" aria-selected="<?=$on ? 'true' : 'false'?>" data-area="<?=$area['id']?>" title="<?=htmlspecialchars($area['label'] . ' · ' . $area['desc'])?>"><?=$svg($area['icon'])?><span><?=htmlspecialchars($area['short'] ?? $area['label'])?></span></button>
     <?php endforeach; ?>
   </div>
-  <div class="sb-area-title" id="sbAreaTitle"><?=htmlspecialchars(($loc['areaLabel'] ?? '') ?: '触达 Touch')?></div>
   <div class="sb-panels">
+    <div class="sb-area-title" id="sbAreaTitle"><?=htmlspecialchars(($loc['areaLabel'] ?? '') ?: '触达 Touch')?></div>
     <?php if ($pins): ?>
     <div class="sb-pins">
       <?php foreach ($pins as $p): $act = $loc['sub'] === $p['id'] || in_array($loc['sub'], array_column($p['subs'] ?? [], 'id')); ?>
