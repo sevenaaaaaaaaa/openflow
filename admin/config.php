@@ -1727,14 +1727,15 @@ window.fcMarkErrors = function(errors) {
 </style>
 <div class="fc-helper-window" id="fcHelperWin">
   <div class="fc-helper-head">
-    <img id="fcHelperAvatarWin" src="" alt="小福" style="display:none">
+    <img id="fcHelperAvatarWin" src="" alt="OFOR" style="display:none">
     <svg id="fcHelperAvatarSvgWin" viewBox="0 0 64 64" width="40" height="40" style="border-radius:50%;background:linear-gradient(160deg,#0284c7,#38bdf8 55%,#7dd3fc);border:2px solid #7dd3fc"><defs><radialGradient id="bhair" cx="50%" cy="40%"><stop offset="0" stop-color="#ffe3a8"/><stop offset="1" stop-color="#e8b46a"/></radialGradient></defs><path d="M14 34 C10 20 20 8 32 8 C44 8 54 20 50 34 L50 40 H14 Z" fill="url(#bhair)"/><path d="M14 30 C8 16 22 6 32 6 C42 6 56 16 50 30 L50 36 H14 Z" fill="#fff" opacity=".55"/><circle cx="32" cy="30" r="13" fill="#ffd9c2"/><path d="M19 30 C18 20 26 13 32 13 C38 13 46 20 45 30 C46 18 38 10 32 10 C26 10 18 18 19 30 Z" fill="url(#bhair)"/><circle cx="27" cy="30" r="2.2" fill="#8a5a44"/><circle cx="37" cy="30" r="2.2" fill="#8a5a44"/><circle cx="27" cy="31" r="1" fill="#fff"/><circle cx="37" cy="31" r="1" fill="#fff"/><path d="M29 36 c2 1.4 4 1.4 6 0" stroke="#c46a8a" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M27 25 q5 -3 10 0" stroke="#c46a8a" stroke-width="1.2" fill="none" opacity=".7"/><path d="M10 52 C14 42 22 36 32 36 C42 36 50 42 54 52 Z" fill="#fff" stroke="#f2d3e2" stroke-width="1.5"/><path d="M18 44 l4 6 m8 -9 l0 8 m8 -5 l4 6" stroke="#fbe3ee" stroke-width="2" opacity=".8"/><circle cx="14" cy="36" r="2.4" fill="#f7a8c8"/><circle cx="50" cy="36" r="2.4" fill="#f7a8c8"/></svg>
     <div>
-      <div class="name">小福 · 后台助手</div>
+      <div class="name">OFOR · 后台助手</div>
       <div class="status">🟢 在线 · 随时提问</div>
     </div>
+    <button id="fcModeBtn" onclick="fcHelperToggleMode()" title="切换 Copilot 模式" style="background:none;border:1px solid rgba(255,255,255,.3);color:var(--h-head-text);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;margin-left:auto">🧭 Copilot</button>
     <button class="theme-btn" onclick="fcHelperCycleTheme()" title="切换皮肤">🎨</button>
-    <button class="close" onclick="fcHelperReset()" title="清空会话" style="font-size:12px;margin-left:auto">↺</button>
+    <button class="close" onclick="fcHelperReset()" title="清空会话" style="font-size:12px">↺</button>
     <button class="close" onclick="fcHelperToggle(false)">✕</button>
   </div>
   <div class="fc-helper-body" id="fcHelperBody"></div>
@@ -1744,9 +1745,9 @@ window.fcMarkErrors = function(errors) {
     <button id="fcHelperBtn" onclick="fcHelperSend()">发送</button>
   </div>
 </div>
-<button class="fc-helper-fab" id="fcHelperFab" onclick="fcHelperToggle()" title="小福助手">
+<button class="fc-helper-fab" id="fcHelperFab" onclick="fcHelperToggle()" title="OFOR助手">
   <span class="pulse"></span>
-  <img id="fcHelperAvatarImgFab" src="" alt="小福" style="display:none">
+  <img id="fcHelperAvatarImgFab" src="" alt="OFOR" style="display:none">
   <svg id="fcHelperAvatarSvgFab" viewBox="0 0 64 64" width="44" height="44" style="border-radius:50%"><defs><radialGradient id="bhair" cx="50%" cy="40%"><stop offset="0" stop-color="#ffe3a8"/><stop offset="1" stop-color="#e8b46a"/></radialGradient></defs><path d="M14 34 C10 20 20 8 32 8 C44 8 54 20 50 34 L50 40 H14 Z" fill="url(#bhair)"/><path d="M14 30 C8 16 22 6 32 6 C42 6 56 16 50 30 L50 36 H14 Z" fill="#fff" opacity=".55"/><circle cx="32" cy="30" r="13" fill="#ffd9c2"/><path d="M19 30 C18 20 26 13 32 13 C38 13 46 20 45 30 C46 18 38 10 32 10 C26 10 18 18 19 30 Z" fill="url(#bhair)"/><circle cx="27" cy="30" r="2.2" fill="#8a5a44"/><circle cx="37" cy="30" r="2.2" fill="#8a5a44"/><circle cx="27" cy="31" r="1" fill="#fff"/><circle cx="37" cy="31" r="1" fill="#fff"/><path d="M29 36 c2 1.4 4 1.4 6 0" stroke="#c46a8a" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M27 25 q5 -3 10 0" stroke="#c46a8a" stroke-width="1.2" fill="none" opacity=".7"/><path d="M10 52 C14 42 22 36 32 36 C42 36 50 42 54 52 Z" fill="#fff" stroke="#f2d3e2" stroke-width="1.5"/><path d="M18 44 l4 6 m8 -9 l0 8 m8 -5 l4 6" stroke="#fbe3ee" stroke-width="2" opacity=".8"/><circle cx="14" cy="36" r="2.4" fill="#f7a8c8"/><circle cx="50" cy="36" r="2.4" fill="#f7a8c8"/></svg>
 </button>
 <script>
@@ -1762,11 +1763,65 @@ if (FC_HELPER_AVATAR) {
 }
 var FC_HELPER = {
   open: false,
+  mode: 'chat',  // chat | copilot
   history: [],
   themes: ['default', 'dark', 'fresh', 'jade', 'bride'],
   themeNames: { 'default': '默认', 'dark': '暗夜', 'fresh': '清新', 'jade': '玉石', 'bride': '花嫁' },
-  suggestions: ['怎么发布一篇文章？','公司知识库里有什么？','如何批量导入文章？','写个公众号标题','看看运营数据','怎么配置微信公众号？','如何添加一个表单？','SEO 标题怎么批量设置？','健康检测怎么用？','去管理线索','生态市场有什么技能？']
+  suggestions: ['怎么发布一篇文章？','公司知识库里有什么？','如何批量导入文章？','写个公众号标题','看看运营数据','怎么配置微信公众号？','如何添加一个表单？','SEO 标题怎么批量设置？','健康检测怎么用？','去管理线索','生态市场有什么技能？'],
+  // Copilot 模式：按当前页面注入上下文建议
+  pageHints: {
+    'dashboard':   ['生成 AI 洞察','看看收入趋势','检查月目标进度'],
+    'crm':         ['看看公海线索','跟进高意向线索','给线索打标签'],
+    'cdp':         ['生成分群','自动打标签','看看 RFM 分层'],
+    'automation':  ['新建自动化流程','用 AI 生成流程','看流程漏斗'],
+    'canvas':      ['用 AI 生成流程','加一个 A/B 分流','看画布全屏'],
+    'article-edit':['AI 润色','AI 续写','一键复用成社媒'],
+    'forms':       ['用 AI 生成表单','加条件逻辑字段','看提交统计'],
+    'email':       ['打开 Newsletter 编辑器','发测试邮件','看打开率'],
+    'segments':    ['从筛选创建分群','给分群打标签','推送到人群激活'],
+    'seo-center':  ['批量设置 SEO','看重定向','站点验证'],
+    'studio':      ['打开画布','看 Flow 运行','看 Loop 沙盘'],
+    'marketplace': ['浏览技能','看看贡献推荐','开发者文档'],
+    'inbox':       ['看未读消息','统一收件箱','转线索'],
+  },
+  copilotLabel: '🧭 Copilot 模式'
 };
+function fcHelperCurrentPage() {
+  var path = location.pathname.replace('/xmp/','').replace('.php','').split('?')[0];
+  if (path.indexOf('article-edit') > -1) return 'article-edit';
+  if (path.indexOf('crm-lead-detail') > -1) return 'crm';
+  if (path.indexOf('customer-detail') > -1) return 'crm';
+  if (path.indexOf('profile-detail') > -1) return 'cdp';
+  return path || 'dashboard';
+}
+function fcHelperToggleMode() {
+  FC_HELPER.mode = FC_HELPER.mode === 'chat' ? 'copilot' : 'chat';
+  try { localStorage.setItem('fc_helper_mode', FC_HELPER.mode); } catch(e) {}
+  var btn = document.getElementById('fcModeBtn');
+  if (btn) btn.textContent = FC_HELPER.mode === 'copilot' ? '💬 聊天' : '🧭 Copilot';
+  var win = document.getElementById('fcHelperWin');
+  win.classList.toggle('copilot', FC_HELPER.mode === 'copilot');
+  if (FC_HELPER.mode === 'copilot') fcCopilotRender();
+  fcToast(FC_HELPER.mode === 'copilot' ? '已切换 Copilot 模式：根据当前页面实时给建议' : '已切回聊天模式');
+}
+function fcCopilotRender() {
+  var body = document.getElementById('fcHelperBody');
+  var page = fcHelperCurrentPage();
+  var hints = FC_HELPER.pageHints[page] || ['生成 AI 洞察','去管理线索','看看运营数据'];
+  var html = '<div style="padding:10px 14px;background:var(--h-accent-bg,rgba(125,211,252,.12));border-radius:10px;margin-bottom:10px;font-size:12px;color:var(--h-accent-text,#0c4a6e);line-height:1.6">🧭 检测到你在 <b>' + fcEscape(page) + '</b> 页面，OFOR 建议：</div>';
+  html += hints.map(function(h) {
+    return '<div onclick="fcHelperAsk(\'' + h.replace(/'/g,"\\'") + '\')" style="padding:9px 12px;background:var(--h-btn-bg,#e2dfd2);border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px;font-weight:500;transition:background .15s" onmouseover="this.style.background=\'var(--h-suggest-hover)\'" onmouseout="this.style.background=\'var(--h-btn-bg)\'">→ ' + fcEscape(h) + '</div>';
+  }).join('');
+  html += '<div style="text-align:center;font-size:11px;color:var(--h-head-text,#fff);opacity:.5;margin-top:12px">点建议直接执行 · 切回聊天模式继续对话</div>';
+  body.innerHTML = html;
+  document.getElementById('fcHelperSuggest').innerHTML = '';
+  document.getElementById('fcHelperInput').style.display = 'none';
+  document.getElementById('fcHelperBtn').style.display = 'none';
+}
+function fcHelperChatModeRestore() {
+  document.getElementById('fcHelperInput').style.display = '';
+  document.getElementById('fcHelperBtn').style.display = '';
+}
 // 小助手皮肤
 function fcHelperApplyTheme(t) {
   var win = document.getElementById('fcHelperWin');
@@ -1789,6 +1844,8 @@ function fcHelperCycleTheme() {
   try {
     var t = localStorage.getItem('fc_helper_theme') || 'default';
     fcHelperApplyTheme(t);
+    var m = localStorage.getItem('fc_helper_mode');
+    if (m === 'copilot') { FC_HELPER.mode = 'copilot'; var mb = document.getElementById('fcModeBtn'); if (mb) mb.textContent = '💬 聊天'; }
   } catch(e) {}
 })();
 function fcHelperReset() {
@@ -1805,7 +1862,8 @@ function fcHelperToggle(force) {
   win.classList.toggle('open', open);
   try { localStorage.setItem('fc_helper_open', open ? '1' : '0'); } catch(e) {}
   if (open && !document.getElementById('fcHelperBody').innerHTML) fcHelperBoot();
-  if (open) setTimeout(function(){ document.getElementById('fcHelperInput').focus(); }, 100);
+  if (open && FC_HELPER.mode === 'chat') { fcHelperChatModeRestore(); setTimeout(function(){ document.getElementById('fcHelperInput').focus(); }, 100); }
+  if (open && FC_HELPER.mode === 'copilot') fcCopilotRender();
 }
 // 记住上次打开状态（常驻体验）
 (function(){
@@ -1813,7 +1871,7 @@ function fcHelperToggle(force) {
 })();
 function fcHelperBoot() {
   var body = document.getElementById('fcHelperBody');
-  var greet = '嗨，我是「小福」✨ 后台小助手！\n\n有什么不会用的地方尽管问我，比如：\n• 怎么发布一篇文章\n• 如何配置微信公众号\n• 怎么批量导入 100 篇旧文章\n• 健康检测 / SEO 工具怎么用\n\n也可以让我帮你写标题、摘要或文案～';
+  var greet = '嗨，我是「OFOR」✨ 后台小助手！\n\n有什么不会用的地方尽管问我，比如：\n• 怎么发布一篇文章\n• 如何配置微信公众号\n• 怎么批量导入 100 篇旧文章\n• 健康检测 / SEO 工具怎么用\n\n也可以让我帮你写标题、摘要或文案～';
   body.innerHTML = fcMsgHtml('bot', greet);
   renderSuggestions();
 }
@@ -1844,7 +1902,7 @@ function fcHelperSend() {
   body.scrollTop = body.scrollHeight;
   input.value = '';
   document.getElementById('fcHelperBtn').disabled = true;
-  var thinking = '<div class="fc-msg bot" id="fcThinking"><span class="thinking">小福正在思考…</span></div>';
+  var thinking = '<div class="fc-msg bot" id="fcThinking"><span class="thinking">OFOR正在思考…</span></div>';
   body.insertAdjacentHTML('beforeend', thinking);
   body.scrollTop = body.scrollHeight;
   fetch('/api/assistant', {
