@@ -71,6 +71,17 @@ function admin_nav_pinned(): array {
             ],
         ],
         [
+            'id' => 'system', 'label' => '系统', 'tag' => '设置', 'icon' => $I['gear'], 'href' => '/xmp/settings',
+            'subs' => [
+                ['id' => 'settings',       'label' => '系统设置',  'href' => '/xmp/settings'],
+                ['id' => 'users',          'label' => '后台用户',  'href' => '/xmp/users'],
+                ['id' => 'roles',          'label' => '角色权限',  'href' => '/xmp/roles'],
+                ['id' => 'connections',    'label' => '连接',      'href' => '/xmp/connections'],
+                ['id' => 'health-check',   'label' => '健康检测',  'href' => '/xmp/health-check'],
+                ['id' => 'audit-log',      'label' => '审计日志',  'href' => '/xmp/audit-log'],
+            ],
+        ],
+        [
             'id' => 'content-calendar', 'label' => '内容日历', 'tag' => '排期', 'perm' => 'tasks', 'icon' => $I['cal'],
         ],
         [
@@ -311,53 +322,41 @@ function admin_nav_tree(): array {
                     ['id' => 'commerce', 'label' => '商业中心', 'perm' => 'commerce'],
                     ['id' => 'platform-ops', 'label' => '平台运营', 'perm' => 'commerce'],
                 ]],
-            ]],
+             ]],
         ]],
         ['id' => 'system', 'label' => '系统', 'short' => '系统', 'icon' => $I['gear'], 'desc' => '设置 · 用户 · 运维', 'groups' => [
-            ['label' => '站点', 'items' => [
+            ['label' => '站点与安全', 'items' => [
                 ['id' => 'settings', 'label' => '系统设置', 'perm' => 'settings'],
                 ['id' => 'site-builder', 'label' => '站点结构', 'perm' => 'site-builder'],
-                ['label' => '主题与插件', 'hint' => '外观 · 扩展', 'subs' => [
-                    ['id' => 'themes', 'label' => '主题', 'perm' => 'themes'],
-                    ['id' => 'plugins', 'label' => '插件', 'perm' => 'plugins'],
-                ]],
+                ['id' => 'themes', 'label' => '主题', 'perm' => 'themes'],
+                ['id' => 'plugins', 'label' => '插件', 'perm' => 'plugins'],
+                ['id' => 'users', 'label' => '后台用户', 'perm' => 'users'],
+                ['id' => 'roles', 'label' => '角色与权限', 'perm' => 'users'],
+                ['id' => 'security', 'label' => '账号安全（2FA）', 'perm' => ['themes', 'plugins', 'users', 'settings']],
+                ['id' => 'api-permissions', 'label' => 'API 权限矩阵', 'perm' => ['themes', 'plugins', 'users', 'settings']],
             ]],
-            ['label' => '用户与安全', 'items' => [
-                ['label' => '用户与权限', 'hint' => '账号 · 角色 · 2FA', 'subs' => [
-                    ['id' => 'users', 'label' => '后台用户', 'perm' => 'users'],
-                    ['id' => 'roles', 'label' => '角色与权限', 'perm' => 'users'],
-                    ['id' => 'security', 'label' => '账号安全（2FA）', 'perm' => ['themes', 'plugins', 'users', 'settings']],
-                    ['id' => 'api-permissions', 'label' => 'API 权限矩阵', 'perm' => ['themes', 'plugins', 'users', 'settings']],
-                ]],
-                ['label' => '合规与审计', 'hint' => '同意 · 保留期 · 日志', 'subs' => [
-                    ['id' => 'consent', 'label' => '同意与数据保留', 'perm' => 'settings'],
-                    ['id' => 'audit-log', 'label' => '审计日志', 'perm' => 'settings'],
-                ]],
+            ['label' => '接口与集成', 'items' => [
+                ['id' => 'connections', 'label' => '连接', 'perm' => 'settings'],
+                ['id' => 'api-keys', 'label' => 'API Key', 'perm' => 'settings'],
+                ['id' => 'webhooks', 'label' => 'Webhook', 'perm' => 'settings'],
+                ['id' => 'api-docs', 'label' => 'API 文档', 'perm' => 'settings'],
+                ['id' => 'api-batch', 'label' => '批量接口', 'perm' => 'articles'],
+                ['id' => 'notify-channels', 'label' => '通知渠道', 'perm' => 'notify-channels'],
+                ['id' => 'messages', 'label' => '站内信', 'perm' => 'messages'],
+                ['id' => 'inbox', 'label' => '统一收件箱', 'perm' => 'messages'],
+                ['id' => 'consent', 'label' => '同意与数据保留', 'perm' => 'settings'],
+                ['id' => 'audit-log', 'label' => '审计日志', 'perm' => 'settings'],
             ]],
-            ['label' => '集成与运维', 'items' => [
-                ['label' => '开放接口', 'hint' => '连接 · Key · Webhook · 文档', 'subs' => [
-                    ['id' => 'connections', 'label' => '连接（外部服务）', 'perm' => 'settings'],
-                    ['id' => 'api-keys', 'label' => 'API Key', 'perm' => 'settings'],
-                    ['id' => 'webhooks', 'label' => 'Webhook', 'perm' => 'settings'],
-                    ['id' => 'api-docs', 'label' => 'API 文档', 'perm' => 'settings'],
-                    ['id' => 'api-batch', 'label' => '批量接口', 'perm' => 'articles'],
-                ]],
-                ['label' => '通知与站内信', 'hint' => '渠道 · 站内信 · 收件箱', 'subs' => [
-                    ['id' => 'notify-channels', 'label' => '通知渠道', 'perm' => 'notify-channels'],
-                    ['id' => 'messages', 'label' => '站内信', 'perm' => 'messages'],
-                    ['id' => 'inbox', 'label' => '统一收件箱', 'perm' => 'messages'],
-                ]],
-                ['label' => '运维与部署', 'hint' => '运维 · 健康 · 备份 · CDN', 'subs' => [
-                    ['id' => 'devops', 'label' => '运维工具', 'perm' => 'settings'],
-                    ['id' => 'health-check', 'label' => '健康检测', 'perm' => 'settings'],
-                    ['id' => 'backup', 'label' => '备份', 'perm' => 'settings'],
-                    ['id' => 'cloudflare', 'label' => 'Cloudflare', 'perm' => 'settings'],
-                    ['id' => 'sdk-versions', 'label' => 'SDK 版本', 'perm' => 'settings'],
-                ]],
+            ['label' => '运维', 'items' => [
+                ['id' => 'devops', 'label' => '运维工具', 'perm' => 'settings'],
+                ['id' => 'health-check', 'label' => '健康检测', 'perm' => 'settings'],
+                ['id' => 'backup', 'label' => '备份', 'perm' => 'settings'],
+                ['id' => 'cloudflare', 'label' => 'Cloudflare', 'perm' => 'settings'],
+                ['id' => 'sdk-versions', 'label' => 'SDK 版本', 'perm' => 'settings'],
+                ['id' => 'footer-links', 'label' => '页脚链接', 'perm' => 'settings'],
             ]],
         ]],
     ];
-
     // 归一化 + 权限过滤：sub → item → group → area，空的整层去掉
     $tree = [];
     foreach ($all as $area) {
@@ -472,6 +471,7 @@ function admin_nav_render(string $current, string $script = ''): void {
     <button type="button" class="sb-area<?=$on ? ' on' : ''?>" role="tab" aria-selected="<?=$on ? 'true' : 'false'?>" data-area="<?=$area['id']?>" title="<?=htmlspecialchars($area['label'] . ' · ' . $area['desc'])?>"><?=$svg($area['icon'])?><span><?=htmlspecialchars($area['short'] ?? $area['label'])?></span></button>
     <?php endforeach; ?>
   </div>
+  <div class="sb-area-title" id="sbAreaTitle"><?=htmlspecialchars(($loc['areaLabel'] ?? '') ?: '触达 Touch')?></div>
   <div class="sb-panels">
     <?php if ($pins): ?>
     <div class="sb-pins">
@@ -482,8 +482,6 @@ function admin_nav_render(string $current, string $script = ''): void {
     <?php endif; ?>
     <?php foreach ($tree as $area): $on = $area['id'] === $loc['area']; ?>
     <div class="sb-panel<?=$on ? ' on' : ''?>" data-area="<?=$area['id']?>" role="tabpanel">
-      <div class="sb-panel-h"><?=htmlspecialchars($area['label'])?><span class="sb-count"><?=array_sum(array_map(fn($g) => count($g['items']), $area['groups']))?></span></div>
-      <div class="sb-desc"><?=htmlspecialchars($area['desc'])?></div>
       <?php foreach ($area['groups'] as $g): ?>
       <?php if ($g['label'] !== ''): ?><div class="sb-group"><?=htmlspecialchars($g['label'])?></div><?php endif; ?>
       <?php foreach ($g['items'] as $it): $act = $on && $it['id'] === $loc['item']; ?>

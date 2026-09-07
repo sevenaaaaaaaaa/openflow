@@ -1342,7 +1342,7 @@ $roleLabel = $roleLabels[$role] ?? $role;
         <?php endforeach; ?>
         <?php if ($unreadCount === 0): ?><div class="notif-item"><div class="msg" style="text-align:center;padding:12px">暂无新通知</div></div><?php endif; ?>
       </div>
-      <span class="who" title="<?=htmlspecialchars($name)?> · <?=htmlspecialchars($roleLabel)?>"><span class="ava"><?=htmlspecialchars(mb_substr($name,0,1))?></span><span><?=htmlspecialchars($name)?><em><?=htmlspecialchars($roleLabel)?></em></span></span>
+      <span class="who" title="<?=htmlspecialchars($name)?> · <?=htmlspecialchars($roleLabel)?>"><span class="ava"><?=htmlspecialchars(mb_substr($name,0,1))?></span></span>
       <a href="/xmp/logout" class="cbtn" aria-label="退出登录" title="退出登录"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="m10 8-4 4 4 4M6 12h11"/></svg></a>
     </div>
   </div>
