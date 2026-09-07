@@ -52,18 +52,31 @@ function admin_nav_icons(): array {
     ];
 }
 
-/** 置顶：跨区常用入口，永远显示在侧栏最上面 */
+/** 置顶：跨区常用入口，永远显示在侧栏最上面。3 个聚合入口，各自带子 tab 条。 */
 function admin_nav_pinned(): array {
     static $pins = null;
     if ($pins !== null) return $pins;
     $I = admin_nav_icons();
     $all = [
-        ['id' => 'workspace',        'label' => '工作台',    'tag' => '默认',   'perm' => 'dashboard', 'icon' => $I['home']],
-        ['id' => 'studio',           'label' => 'OpenFlow Studio', 'tag' => '编排', 'perm' => 'settings', 'icon' => $I['ai']],
-        ['id' => 'dashboard',        'label' => '经营驾驶舱', 'tag' => '大屏',   'perm' => 'dashboard', 'icon' => $I['gauge']],
-        ['id' => 'content-calendar', 'label' => '内容日历',   'tag' => '排期',   'perm' => 'tasks',     'icon' => $I['cal']],
-        ['id' => 'evolution',        'label' => '系统体检',   'tag' => '建议',   'perm' => 'evolution', 'icon' => $I['eve']],
-        ['id' => 'loop-workspace',   'label' => 'Loop 工作台', 'tag' => '实验',  'perm' => 'dashboard', 'icon' => $I['ai']],
+        [
+            'id' => 'workspace', 'label' => '工作台', 'tag' => '默认', 'icon' => $I['home'],
+            'subs' => [
+                ['id' => 'workspace',        'label' => '工作台',   'href' => '/xmp/workspace'],
+                ['id' => 'dashboard',        'label' => '经营驾驶舱', 'href' => '/xmp/dashboard'],
+                ['id' => 'evolution',        'label' => '系统体检',  'href' => '/xmp/evolution'],
+            ],
+        ],
+        [
+            'id' => 'content-calendar', 'label' => '内容日历', 'tag' => '排期', 'perm' => 'tasks', 'icon' => $I['cal'],
+        ],
+        [
+            'id' => 'studio', 'label' => 'Studio 模式', 'tag' => '编排', 'icon' => $I['ai'],
+            'subs' => [
+                ['id' => 'studio',          'label' => 'OpenFlow Studio', 'href' => '/xmp/studio'],
+                ['id' => 'flow-workspace',  'label' => 'Flow 工作台',     'href' => '/xmp/flow-workspace'],
+                ['id' => 'loop-workspace',  'label' => 'Loop 工作台',     'href' => '/xmp/loop-workspace'],
+            ],
+        ],
     ];
     $pins = [];
     foreach ($all as $p) {
@@ -428,9 +441,16 @@ function admin_nav_locate(string $current, string $script = ''): array {
     foreach ([$script, $current] as $cand) {
         if ($cand === '') continue;
         $id = ADMIN_NAV_ALIAS[$cand] ?? $cand;
-        foreach (admin_nav_pinned() as $p) if ($p['id'] === $id) {
-            return ['area' => 'touch', 'item' => null, 'sub' => $p['id'], 'pinned' => true, 'label' => $p['label'],
-                    'areaLabel' => '', 'subs' => [], 'clusterLabel' => ''];
+        foreach (admin_nav_pinned() as $p) {
+            $subs = $p['subs'] ?? [];
+            $subIds = array_column($subs, 'id');
+            $isSub = in_array($id, $subIds, true);
+            // 匹配聚合入口本身，或聚合入口的任一子页
+            if ($p['id'] === $id || $isSub) {
+                $sub = $isSub ? $id : $p['id'];
+                return ['area' => 'touch', 'item' => null, 'sub' => $sub, 'pinned' => true, 'label' => $p['label'],
+                        'areaLabel' => '', 'subs' => $subs, 'clusterLabel' => $p['label']];
+            }
         }
     }
     return $miss;
@@ -471,15 +491,9 @@ function admin_nav_render(string $current, string $script = ''): void {
     <?php endforeach; ?>
   </div>
   <div class="sb-panels">
-    <?php $mode = function_exists('workspace_mode_current') ? workspace_mode_current() : 'flow'; ?>
-    <form method="post" action="/xmp/workspace-mode" style="display:flex;gap:4px;padding:8px 10px 10px">
-      <?=function_exists('csrf_field') ? csrf_field() : ''?>
-      <button class="btn btn-sm <?=$mode==='flow'?'btn-primary':'btn-ghost'?>" name="mode" value="flow" formaction="/xmp/workspace-mode" style="flex:1">Flow</button>
-      <button class="btn btn-sm <?=$mode==='loop'?'btn-primary':'btn-ghost'?>" name="mode" value="loop" formaction="/xmp/workspace-mode" style="flex:1">Loop 实验</button>
-    </form>
     <?php if ($pins): ?>
     <div class="sb-pins">
-      <?php foreach ($pins as $p): $act = $loc['sub'] === $p['id']; ?>
+      <?php foreach ($pins as $p): $act = $loc['sub'] === $p['id'] || in_array($loc['sub'], array_column($p['subs'] ?? [], 'id')); ?>
       <a href="<?=htmlspecialchars($p['href'])?>" class="sb-pin<?=$act ? ' active' : ''?>"<?=$act ? ' aria-current="page"' : ''?>><?=$svg($p['icon'])?><span><?=htmlspecialchars($p['label'])?></span><span class="tag"><?=htmlspecialchars($p['tag'])?></span></a>
       <?php endforeach; ?>
     </div>
