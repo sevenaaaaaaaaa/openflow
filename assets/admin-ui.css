@@ -21,10 +21,9 @@
 #sidebar .sb-area:hover{background:var(--hover);color:var(--fg)}
 #sidebar .sb-area.on{background:var(--accent-soft);color:var(--accent)}
 #sidebar .sb-panels{grid-row:1;overflow-y:auto;scrollbar-width:thin;padding:2px 2px 8px 8px;min-width:0}
+#sidebar .sb-area-title{padding:10px 12px 4px;font-size:13.5px;font-weight:800;letter-spacing:-.01em;color:var(--fg);user-select:none;pointer-events:none}
 #sidebar .sb-panel{display:none;flex-direction:column;gap:1px}
 #sidebar .sb-panel.on{display:flex}
-#sidebar .sb-panel-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:-.01em;color:var(--fg);padding:8px 10px 6px}
-#sidebar .sb-count{font-family:var(--font-mono);font-size:10.5px;font-weight:700;color:var(--faint);background:var(--hover);border-radius:999px;padding:1px 7px}
 #sidebar .sb-group{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:12px 10px 4px}
 #sidebar .sb-link{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 10px;border-radius:10px;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;position:relative}
 #sidebar .sb-link small{font-size:11px;color:var(--faint);font-weight:400}
