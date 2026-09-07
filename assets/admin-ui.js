@@ -29,6 +29,9 @@
       areas.forEach(function (a) { var on = a.dataset.area === id; a.classList.toggle('on', on); a.setAttribute('aria-selected', on ? 'true' : 'false'); });
       panels.forEach(function (p) { p.classList.toggle('on', p.dataset.area === id); });
       sb.dataset.area = id;
+      // 动态更新区域标题
+      var titleEl = document.getElementById('sbAreaTitle');
+      if (titleEl) { var btn = $$('[data-area="' + id + '"]', sb).find(function(b){ return b.classList.contains('sb-area'); }); if (btn) titleEl.textContent = btn.getAttribute('title').split(' · ')[0] || btn.textContent.trim(); }
     }
     areas.forEach(function (a) {
       a.addEventListener('click', function () {
