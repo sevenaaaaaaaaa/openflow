@@ -163,6 +163,8 @@ admin_header('画布编辑器');
 .canvas-node .node-body textarea{width:100%;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;box-sizing:border-box}
 .canvas-node .del{position:absolute;top:6px;right:8px;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:14px}
 .canvas-node.dragging{opacity:.6;border-style:dashed;z-index:9}
+.canvas-fs{position:fixed;inset:0;z-index:999;background:var(--bg);padding:24px;overflow:auto}
+.canvas-fs .canvas-flow{height:calc(100vh - 120px);min-height:0}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('canvas'); ?>
@@ -188,7 +190,9 @@ admin_header('画布编辑器');
       </div>
 
       <div class="card">
-        <h2>🔄 流程画布</h2>
+        <h2 style="display:flex;align-items:center;gap:10px">🔄 流程画布
+          <button type="button" id="canvasFullscreen" class="btn btn-ghost btn-sm" style="margin-left:auto" title="全屏编辑画布">⛶ 全屏</button>
+        </h2>
         <p class="text-sm text-muted mb-4">点击"添加节点"构建流程 · 第一个节点必须是触发器 · 拖拽节点调整顺序</p>
         <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
           <button type="button" class="btn btn-ghost btn-sm" onclick="addNode('trigger')">🔔 触发器</button>
@@ -219,7 +223,7 @@ admin_header('画布编辑器');
         <a href="canvas.php" class="btn btn-ghost">取消</a></div>
       </div>
     </form>
-    <script src="/assets/canvas-graph.js?v=20260906a" defer></script>
+
 
     <?php else: ?>
     <div class="card" style="padding:0;overflow:auto">
@@ -423,4 +427,5 @@ function aiGenCanvas() {
 }
 function acm(t){ var m=document.getElementById('aiCanvasMsg'); if(m) m.textContent=t; }
  </script>
+<script src="/assets/canvas-graph.js?v=20260907b"></script>
 <?php admin_footer(); ?>
