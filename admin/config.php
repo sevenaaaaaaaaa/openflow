@@ -407,6 +407,8 @@ function require_login(): void {
     // 整类「某个 POST 处理器忘了校验」的漏洞就结构性消失了，而不是逐页去补。
     // 公开页 / API 不调用 require_login()，所以不受影响（它们有各自的鉴权）。
     csrf_guard_auto();
+    // 删除防护：非 admin 角色（内测/受限账号）可查看、新增、编辑，但禁止删除/清空/恢复已删内容。
+    delete_guard_auto();
     // 同一个闸口顺带把「谁在什么时候改了什么」记下来——审计从此是结构性覆盖，
     // 而不是指望每个处理器记得手写。具体处理器仍可再补更详细的 audit()。
     audit_auto();
@@ -452,6 +454,51 @@ function audit_write_verb(): string {
         if (isset($_GET[$k]) && $_GET[$k] !== '') return $k;
     }
     return '';
+}
+
+/**
+ * 删除防护：内测/受限角色可查看、新增、编辑，但禁止任何删除/清空/恢复已删内容的动作。
+ *
+ * 设计意图：
+ * -「能看所有、能用所有，但不能删东西」——这是给同事/内测用户的安全边界。
+ * - 只在「会改状态」的删除类动作上拦截，不影响新增/编辑/审核等非破坏性操作。
+ * - admin 角色不受限；所有其他角色（operator / marketing / sales 等）一律拦截，
+ *   避免某些模块没在角色白名单里挂删除权限而漏网。
+ */
+function delete_guard_auto(): void {
+    if (defined('OF_NO_DELETE_GUARD')) return;                 // 逃生舱
+    if (!is_logged_in()) return;
+    if (($_SESSION['admin_role'] ?? '') === 'admin') return;   // 管理员不受限
+
+    $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    $action = '';
+
+    // POST/PUT/PATCH：读 action 字段（动作语义），忽略纯新增/编辑
+    if ($method !== 'GET') {
+        $a = isset($_POST['action']) ? strtolower(trim((string)$_POST['action'])) : '';
+        $batch = isset($_POST['batch_action']) ? strtolower(trim((string)$_POST['batch_action'])) : '';
+        $action = ($a !== '' ? $a : $batch);
+    } else {
+        // 破坏性 GET 参数
+        foreach (['delete','del','remove','uninstall','purge','clear','reset','drop','destroy','revoke','trash','restore','empty'] as $k) {
+            if (isset($_GET[$k]) && $_GET[$k] !== '') { $action = $k; break; }
+        }
+    }
+
+    // 删除语义词表：只要动作名命中即拦截（new/save/update/edit/approve 等不在列）
+    static $destructive = ['delete','del','remove','purge','clear','reset','drop','destroy','revoke',
+                           'trash','restore','empty','permanent_delete','bulk_delete','batch_delete',
+                           'clear_all','clear_trash','empty_trash','restore_trash','clear_cache','delete_all'];
+    $hit = '';
+    foreach ($destructive as $k) {
+        if (strpos($action, $k) !== false) { $hit = $k; break; }
+    }
+    if ($hit === '') return;
+
+    http_response_code(403);
+    $role = $_SESSION['admin_role'] ?? '未设置';
+    $user = $_SESSION['admin_user'] ?? '未登录';
+    die("删除防护：当前账号（{$user}，角色：{$role}）仅可查看与编辑，无法执行删除/清空/恢复操作。如需删除，请联系管理员。");
 }
 
 function audit_auto(): void {
