@@ -17,6 +17,9 @@ $activity = dash_activity();
 $paths = dash_paths();
 $prefs = dash_preferences();
 $utmAttr = dash_utm_attribution();
+require_once __DIR__ . '/../lib/GrowthEngine.php';
+$funnel = dash_funnel();
+$growthSuggestions = GrowthEngine::scan();
 
 admin_header('经营驾驶舱');
 ?>
@@ -222,6 +225,54 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
         </div>
       </div>
     </div>
+
+    <!-- 转化漏斗 -->
+    <div class="panels">
+      <div class="panel" style="width:100%">
+        <div class="p-head"><h3>  转化漏斗</h3><span class="p-sub mono">访客→注册→加购→支付→复购 · 近30天</span></div>
+        <div class="p-body">
+          <div style="display:flex;gap:6px;align-items:flex-end;margin-bottom:12px">
+            <?php foreach ($funnel['stages'] as $i => $s): ?>
+            <div style="flex:1;text-align:center">
+              <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:4px"><?=$s['count']?></div>
+              <div style="height:<?php echo max(12, round(($s['count'] / max($funnel['total_visitors'],1)) * 200)); ?>px;background:<?=$s['color']?>;border-radius:6px 6px 0 0;opacity:0.85;display:flex;align-items:flex-end;justify-content:center;padding:4px 0">
+                <span style="font-size:11px;font-weight:700;color:#fff"><?=$s['step_rate']?>%</span>
+              </div>
+              <div style="font-size:11px;font-weight:600;color:var(--fg);margin-top:6px"><?=$s['label']?></div>
+            </div>
+            <?php endforeach; ?>
+          </div>
+          <div style="text-align:center;font-size:12px;color:var(--muted)">
+            总转化率：<b style="color:var(--ok)"> <?=$funnel['conversion_rate']?>%</b>（支付/访客）
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 增长规则引擎建议 -->
+    <?php if (!empty($growthSuggestions)): ?>
+    <div class="panels">
+      <div class="panel" style="width:100%">
+        <div class="p-head"><h3>⚙️ 增长建议</h3><span class="p-sub mono">WHEN × WHAT × HOW · 实时扫描</span></div>
+        <div class="p-body">
+          <?php foreach (array_slice($growthSuggestions, 0, 5) as $sg): ?>
+          <div style="padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:<?=($sg['priority']==='critical')?'var(--danger-soft)':'var(--accent-soft)'?>;color:<?=($sg['priority']==='critical')?'var(--danger)':'var(--accent)'?>"><?=strtoupper($sg['priority'])?></span>
+              <span style="font-size:12px;font-weight:700;color:var(--fg)"><?=$sg['what']?></span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px">
+              <b>WHEN：</b><?=json_encode($sg['when'], JSON_UNESCAPED_UNICODE)?>
+            </div>
+            <div style="font-size:12px;color:var(--ok)">
+              <b>HOW：</b><?=$sg['how']?>
+            </div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    </div>
+    <?php endif; ?>
 
     <!-- 偏好洞察 -->
     <div class="panels">
