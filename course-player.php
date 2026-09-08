@@ -136,6 +136,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
 
           <div id="playerPanel" style="display:<?=empty($resume)?'none':'block'?>">
             <div class="player">
+              <video id="playerVideo" controls preload="metadata" playsinline style="display:none;width:100%;height:100%;object-fit:contain;background:#000"></video>
               <div class="ph" id="playerEmpty">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5L10 9.5Z" fill="currentColor" stroke="none"/></svg>
                 <b id="playerLessonTitle"><?=htmlspecialchars($resume ? ($lessonsFlat[$resume['lesson_id']]['title'] ?? '') : '')?></b>
@@ -323,10 +324,23 @@ function openLesson(id) {
   if (!HAS_ACCESS) return;
   currentLesson = id;
   document.getElementById('playerPanel').style.display = 'block';
-  document.getElementById('playerEmpty').style.display = 'flex';
-  document.getElementById('playerLessonTitle').textContent = LESSONS[id].title || '';
-  document.getElementById('playerStatus').textContent = '学习「' + (LESSONS[id].title||'') + '」…';
-  document.getElementById('playBtn').textContent = '▶ 开始播放';
+  // 课时视频：有 video URL 时渲染真实 <video>，否则保留占位
+  var vid = LESSONS[id] && (LESSONS[id].video || LESSONS[id].video_url);
+  var pv = document.getElementById('playerVideo');
+  var pe = document.getElementById('playerEmpty');
+  pe.style.display = vid ? 'none' : 'flex';
+  pv.style.display = vid ? 'block' : 'none';
+  if (vid) {
+    if (pv.getAttribute('src') !== vid) { pv.setAttribute('src', vid); }
+    pv.load();
+    document.getElementById('playerStatus').textContent = '';
+    var playP = pv.play(); if (playP && playP.catch) playP.catch(function(){});
+  } else {
+    pv.pause(); pv.removeAttribute('src'); 
+    document.getElementById('playerLessonTitle').textContent = LESSONS[id].title || '';
+    document.getElementById('playerStatus').textContent = '已就绪 · 点击开始学习';
+  }
+  document.getElementById('playBtn').textContent = vid ? '▶ 开始播放' : '▶ 开始播放';
   // quiz 课时：渲染测验
   var isQuiz = LESSONS[id] && LESSONS[id].type === 'quiz' && LESSONS[id].questions && LESSONS[id].questions.length;
   var quizArea = document.getElementById('quizArea');
@@ -348,10 +362,14 @@ function openLesson(id) {
 }
 function togglePlay() {
   if (!currentLesson) return;
+  var pv = document.getElementById('playerVideo');
+  var playing = pv.style.display !== 'none' && !pv.paused;
+  if (pv.style.display !== 'none') {
+    if (playing) { pv.pause(); } else { var p = pv.play(); if (p && p.catch) p.catch(function(){}); }
+    document.getElementById('playerStatus').textContent = playing ? '已暂停' : '正在学习：' + (LESSONS[currentLesson].title||'');
+  }
   var btn = document.getElementById('playBtn');
-  var playing = btn.textContent.indexOf('暂停') >= 0;
   btn.textContent = playing ? '▶ 继续播放' : '⏸ 暂停';
-  document.getElementById('playerStatus').textContent = playing ? '已暂停' : '正在学习：' + (LESSONS[currentLesson].title||'');
 }
 function markCurrentDone() {
   if (!currentLesson) { alert('请先选择一节课'); return; }

@@ -13,45 +13,14 @@ require_once __DIR__ . '/lib/CoverRenderer.php';
 if (PageCache::begin('academy', 1800)) exit;
 
 $cfg = json_read(DATA_DIR . '/community.json');
-$floors = $cfg['floors'] ?? [];
 $hotReadCount = (int)($cfg['hot_read_count'] ?? 5);
 $showReport = $cfg['show_report_section'] ?? true;
 
-// 文章（已发布 + 有标题的草稿作为预告）
+// 文章（已发布）
 $allArticles = get_articles_list();
 $published = array_values(array_filter($allArticles, fn($a) => ($a['status'] ?? '') === 'published'));
-// 有标题的草稿（预告内容，无正文）
-$drafts = array_values(array_filter($allArticles, fn($a) => ($a['status'] ?? '') !== 'published' && !empty(trim($a['title'] ?? ''))));
 $catNames = [];
 foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
-
-// 楼层定义（分类聚合）
-$floorDefs = [
-    'insight'    => ['label' => '增长洞察', 'desc' => '增长方法论 · 案例拆解 · 数据驱动', 'cats' => ['insight', 'report']],
-    'ai'         => ['label' => 'AI 工具与实践', 'desc' => 'AI 工具推荐 · 设计 · 视频 · Agent · 副业', 'cats' => ['ai-tools', 'ai-design', 'ai-video', 'ai-image', 'ai-agent', 'ai-business', 'ai-trend']],
-    'content'    => ['label' => '内容与 SEO 实践', 'desc' => '内容策略 · SEO · 分发 · 自动化', 'cats' => ['content', 'productivity']],
-    'industry'   => ['label' => '行业实践', 'desc' => '行业深度案例 · 组织与领导力', 'cats' => ['industry', 'news']],
-];
-// 合并后台配置楼层
-foreach ($floors as $fk => $fv) {
-    if (!isset($floorDefs[$fk]) || empty($fv['categories'])) continue;
-    if (isset($fv['enabled']) && !$fv['enabled']) continue;
-    $floorDefs[$fk]['title'] = $fv['title'] ?? $floorDefs[$fk]['label'];
-    $floorDefs[$fk]['desc'] = $fv['desc'] ?? $floorDefs[$fk]['desc'];
-    $floorDefs[$fk]['cats'] = $fv['categories'];
-    $floorDefs[$fk]['label'] = $floorDefs[$fk]['title'];
-}
-
-function floor_articles(array $articles, array $cats, int $limit = 4): array {
-    $out = [];
-    foreach ($articles as $a) {
-        $aCats = array_map('strtolower', $a['tags'] ?? []);
-        $aCat = strtolower($a['category'] ?? '');
-        $hit = in_array($aCat, $cats) || count(array_intersect($cats, $aCats)) > 0;
-        if ($hit) $out[] = $a;
-    }
-    return array_slice($out, 0, $limit);
-}
 
 // 资料下载
 $allDls = json_read(DATA_DIR . '/downloads.json');
@@ -77,6 +46,42 @@ $hot = $published;
 usort($hot, fn($a, $b) => (($b['views'] ?? 0) <=> ($a['views'] ?? 0)));
 $hot = array_slice($hot, 0, $hotReadCount);
 
+/* ─── 专题/聚合：把文章按「顶层分类」分组，构建专题入口 + 瀑布流 ─── */
+$catTree = json_read(DATA_DIR . '/article-categories.json');   // 顶层段 → {name,icon,desc,sub}
+$topCats = [];
+foreach ($catTree as $top => $meta) {
+    $topCats[$top] = [
+        'top' => $top,
+        'name' => $meta['name'] ?? ucfirst($top),
+        'icon' => $meta['icon'] ?? '📚',
+        'desc' => $meta['description'] ?? '',
+        'count' => 0,
+        'articles' => [],
+    ];
+}
+foreach ($published as $a) {
+    $top = explode('/', $a['category'] ?? '')[0] ?: 'trend';
+    if (!isset($topCats[$top])) continue;
+    $topCats[$top]['count']++;
+    if (!isset($a['published_ts']) && !empty($a['created_at'])) $a['published_ts'] = strtotime($a['created_at']);
+    $topCats[$top]['articles'][] = $a;
+}
+// 有内容的专题，按文章数降序
+$topCats = array_values(array_filter($topCats, fn($t) => $t['count'] > 0));
+usort($topCats, fn($a, $b) => $b['count'] <=> $a['count']);
+
+// 瀑布流：取每个专题前若干篇文章，组成带分类名的列表
+$catexplode = function (string $c): string {
+    return explode('/', $c)[0];
+};
+$water = [];
+foreach ($topCats as $t) { foreach (array_slice($t['articles'], 0, 4) as $a) $water[] = $a; }
+
+// 轮播：置顶优先，其次最新
+$carousel = array_values(array_filter($published, fn($a) => !empty($a['is_pinned'])));
+if (empty($carousel)) { $carousel = $published; usort($carousel, fn($a,$b) => strcmp($b['created_at']??'', $a['created_at']??'')); }
+$carousel = array_slice($carousel, 0, 4);
+
 $siteName = site_config_get('site_name', 'OpenFlow');
 $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
 $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
@@ -100,6 +105,34 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 .hero .trust{gap:18px}
 .hero .trust span{display:inline-flex;align-items:center;gap:6px}
 .hero .trust svg{width:14px;height:14px}
+/* ── 轮播 carousel ── */
+.carousel{position:relative;overflow:hidden;border-radius:var(--r-lg);border:1px solid var(--border);background:var(--surface)}
+.car-track{display:flex;transition:transform .5s cubic-bezier(.22,.61,.36,1)}
+.car-slide{flex:0 0 100%;position:relative;min-height:300px}
+.car-slide img{width:100%;height:300px;object-fit:cover;display:block}
+.car-slide .ov{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,color-mix(in oklab,#05060a,transparent 25%));display:flex;align-items:flex-end;padding:26px}
+.car-slide .ov h3{color:#fff;font-size:clamp(20px,2.4vw,28px);font-weight:800;letter-spacing:-.01em;max-width:640px;line-height:1.3}
+.car-slide .ov .cat{display:inline-block;margin-bottom:10px;background:color-mix(in oklab,var(--accent),transparent 10%);color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.car-btn{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;background:color-mix(in oklab,var(--fg),transparent 70%);color:var(--fg);border:none;cursor:pointer;font-size:18px;display:grid;place-items:center;z-index:2;transition:background .2s}
+.car-btn:hover{background:color-mix(in oklab,var(--fg),transparent 40%)}
+.car-btn.prev{left:12px}.car-btn.next{right:12px}
+.car-dots{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:2}
+.car-dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.5);cursor:pointer;transition:background .2s}
+.car-dots i.on{background:#fff}
+/* ── 专题入口 ── */
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.topic-card{display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface);transition:border-color .2s,transform .2s;text-decoration:none}
+.topic-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.topic-card .tc-ic{font-size:24px}
+.topic-card .tc-name{font-weight:700;font-size:14.5px;color:var(--fg)}
+.topic-card .tc-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.topic-card .tc-n{font-size:11px;color:var(--accent);font-weight:700;margin-top:auto}
+/* ── 瀑布流 masonry ── */
+.masonry{columns:3 300px;column-gap:16px}
+.masonry .m-it{break-inside:avoid;margin-bottom:16px}
+/* ── 分类聚合楼层（复用 a-card，标题行加说明） ── */
+.floor-topics .sec-head .desc-l{font-size:13px;color:var(--muted);max-width:560px}
+@media (max-width:760px){.masonry{columns:2 160px}.car-slide .ov h3{font-size:18px}}
 </style>
 <script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
@@ -157,14 +190,38 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
   </section>
 
   <!-- ══ 精选内容 ══ -->
-  <?php $featured = array_slice($published, 0, 3);
-        $docIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg>';
+  <?php $docIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6"/></svg>';
         $eye = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>';
         $cover = function(array $a) use ($baseUrl) { $cv = $a['cover'] ?? ''; return $cv ? (strpos($cv,'http')===0 ? $cv : $baseUrl.'/'.ltrim($cv,'/')) : ''; };
   ?>
+  <!-- ══ 轮播：置顶/最新精华 ══ -->
+  <section id="featured" class="sec reveal" data-od-anchor data-od-id="academy-carousel">
+    <?php if (!empty($carousel)): ?>
+    <div class="carousel" id="acCarousel">
+      <div class="car-track">
+        <?php foreach ($carousel as $a): $cvUrl = $cover($a); ?>
+        <a class="car-slide" href="/articles/<?=htmlspecialchars($a['slug'])?>">
+          <?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="" loading="lazy"><?php else: ?><?=CoverRenderer::renderCard($a)?><?php endif; ?>
+          <div class="ov"><div>
+            <span class="cat"><?=htmlspecialchars($catNames[$a['category'] ?? ''] ?? '文章')?></span>
+            <h3><?=htmlspecialchars($a['title'])?></h3>
+          </div></div>
+        </a>
+        <?php endforeach; ?>
+      </div>
+      <button type="button" class="car-btn prev" onclick="acCarouselGo(-1)" aria-label="上一张">‹</button>
+      <button type="button" class="car-btn next" onclick="acCarouselGo(1)" aria-label="下一张">›</button>
+      <div class="car-dots" id="acDots"></div>
+    </div>
+    <?php endif; ?>
+  </section>
+
+  <!-- ══ 最新发布 → 精选 Grid ══ -->
+  <?php $featured = array_slice($published, 0, 6); ?>
   <section id="articles" class="sec reveal" data-od-anchor data-od-id="academy-featured">
     <div class="sec-head row">
       <div><span class="kicker">精选内容</span><h2>最新发布的深度文章</h2></div>
+      <a class="more" href="/articles">全部文章 →</a>
     </div>
     <?php if (empty($featured)): ?>
     <div class="empty">内容准备中，敬请期待</div>
@@ -184,44 +241,52 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
     <?php endif; ?>
   </section>
 
-  <!-- ══ 四个楼层 ══ -->
-  <?php foreach ($floorDefs as $fk => $fd):
-    $arts = floor_articles($published, $fd['cats']);
-    $previews = floor_articles($drafts, $fd['cats'], 3);
-    $hasContent = !empty($arts) || !empty($previews);
-    // 「从 New-1 开始」占位链接：课稿文章存在就直达，否则落到文章列表（以前写死 slug，文章不存在时 404）
-    $startHref = '/articles';
-    foreach ($published as $__a) if (($__a['slug'] ?? '') === 'ai-bonus-opc-cold-start') { $startHref = '/articles/ai-bonus-opc-cold-start'; break; }
-  ?>
-  <section id="floor-<?=htmlspecialchars($fk)?>" class="sec reveal" data-od-anchor data-od-id="academy-floor-<?=htmlspecialchars($fk)?>">
+  <!-- ══ 专题入口：顶级分类 → 文章列表筛选 ══ -->
+  <?php if (!empty($topCats)): ?>
+  <section id="topics" class="sec reveal" data-od-anchor data-od-id="academy-topics">
     <div class="sec-head row">
-      <div><span class="kicker"><?=htmlspecialchars($fd['label'])?></span><h2><?=htmlspecialchars($fd['desc'])?></h2></div>
-      <?php if (!$hasContent): ?><span class="sub">即将上线</span><?php endif; ?>
+      <div><span class="kicker">专题</span><h2>按方向逛，更快找到想要的</h2></div>
+      <a class="more" href="/articles">浏览全部 →</a>
     </div>
-    <?php if (!$hasContent): ?>
-    <div class="link-grid">
-      <a class="link-it dashed" href="<?=$startHref?>"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8-.8-.7-2-.7-3 0Z"/><path d="M12 15l-3-3c2-5.5 5-9 9-9s3 6-1 11l-5 1Z"/><path d="M9 12c-2.5 1-4 3-4.5 5"/></svg></span><span class="lt"><b>从 New-1 开始</b><span>一人公司冷启动，免费课稿</span></span></a>
-      <a class="link-it dashed" href="/courses"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span><span class="lt"><b>学方法论</b><span>利润公式 + 四引擎，边学边用</span></span></a>
-      <a class="link-it dashed" href="/community"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span><span class="lt"><b>进门派聊聊</b><span>提问、交作业、晒增长数据</span></span></a>
-    </div>
-    <?php else: ?>
-    <div class="a-grid">
-      <?php foreach (array_merge($arts, $previews) as $a):
-        $isPreview = ($a['status'] ?? '') !== 'published'; $cvUrl = $cover($a);
-        $link = $isPreview ? '/academy' : '/articles/'.htmlspecialchars($a['slug']); ?>
-      <a class="a-card" href="<?=$link?>">
-        <div class="cov"><?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="" loading="lazy"><?php elseif ($isPreview): ?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><?php else: ?><?=CoverRenderer::renderCard($a)?><?php endif; ?></div>
-        <div class="bd">
-          <span class="cat<?=$isPreview?' dim':''?>"><?=$isPreview?'即将发布':htmlspecialchars($catNames[$a['category'] ?? ''] ?? '文章')?></span>
-          <h3><?=htmlspecialchars($a['title'])?></h3>
-          <div class="meta"><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?> · <?=$eye?><?=$a['views'] ?? 0?></div>
-        </div>
+    <div class="topic-grid">
+      <?php foreach ($topCats as $t): ?>
+      <a class="topic-card" href="/articles?cat=<?=htmlspecialchars($t['top'])?>">
+        <span class="tc-ic"><?=htmlspecialchars($t['icon'])?></span>
+        <span class="tc-name"><?=htmlspecialchars($t['name'])?></span>
+        <span class="tc-desc"><?=htmlspecialchars($t['desc'] ?: $t['name'] . '方向')?></span>
+        <span class="tc-n"><?=$t['count']?> 篇</span>
       </a>
       <?php endforeach; ?>
     </div>
-    <?php endif; ?>
   </section>
-  <?php endforeach; ?>
+  <?php endif; ?>
+
+  <!-- ══ 瀑布流：跨专题聚合 ══ -->
+  <?php if (!empty($water)): ?>
+  <section id="waterfall" class="sec reveal" data-od-anchor data-od-id="academy-waterfall">
+    <div class="sec-head row">
+      <div><span class="kicker">瀑布流</span><h2>按专题聚合，一篇接一篇</h2></div>
+    </div>
+    <div class="masonry">
+      <?php foreach ($water as $a):
+        $topa = explode('/', $a['category'] ?? '')[0];
+        $topMeta = $catTree[$topa] ?? null;
+        $cvUrl = $cover($a);
+      ?>
+      <div class="m-it">
+        <a class="a-card" href="/articles/<?=htmlspecialchars($a['slug'])?>">
+          <div class="cov"><?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="" loading="lazy"><?php else: ?><?=CoverRenderer::renderCard($a)?><?php endif; ?></div>
+          <div class="bd">
+            <span class="cat"><?=htmlspecialchars($catNames[$a['category'] ?? ''] ?? ($topMeta['name'] ?? '文章'))?></span>
+            <h3><?=htmlspecialchars($a['title'])?></h3>
+            <div class="meta"><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?> · <?=$eye?><?=$a['views'] ?? 0?></div>
+          </div>
+        </a>
+      </div>
+      <?php endforeach; ?>
+    </div>
+  </section>
+  <?php endif; ?>
 
   <!-- ══ 资料 / 播客 / 视频 + 侧栏 ══ -->
   <section id="library" class="reveal" data-od-anchor data-od-id="academy-library">
@@ -338,6 +403,22 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 <?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
 <button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
+<script>
+(function(){
+  var track = document.querySelector('#acCarousel .car-track');
+  if (!track) return;
+  var slides = track.querySelectorAll('.car-slide');
+  var n = slides.length; var idx = 0;
+  var dotsBox = document.getElementById('acDots');
+  for (var i = 0; i < n; i++) { var d = document.createElement('i'); d.dataset.i = i; d.onclick = function(){ go(+this.dataset.i); }; dotsBox.appendChild(d); }
+  function go(i){ idx = (i + n) % n; track.style.transform = 'translateX(' + (-idx*100) + '%)'; dotsBox.querySelectorAll('i').forEach(function(d, di){ d.classList.toggle('on', di===idx); }); }
+  window.acCarouselGo = function(dir){ go(idx + dir); };
+  var t = setInterval(function(){ go(idx + 1); }, 6000);
+  var box = document.getElementById('acCarousel');
+  if (box) { box.addEventListener('mouseenter', function(){ clearInterval(t); }); box.addEventListener('mouseleave', function(){ t = setInterval(function(){ go(idx+1); }, 6000); }); }
+  go(0);
+})();
+</script>
 </body>
 </html>
 <?php PageCache::end('academy', 1800); ?>
