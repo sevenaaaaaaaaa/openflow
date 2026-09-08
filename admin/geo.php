@@ -22,6 +22,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
     $settings['trends_enabled'] = isset($_POST['trends_enabled']);
     $settings['trends_provider'] = $_POST['trends_provider'] ?? '';
     $settings['trends_api_key'] = trim($_POST['trends_api_key'] ?? '');
+    $settings['search_api_enabled'] = isset($_POST['search_api_enabled']);
+    // 搜索 API 供应商配置
+    $providers = [];
+    foreach (($_POST['sp_type'] ?? []) as $i => $st) {
+        if (empty(trim($st))) continue;
+        $providers[] = [
+            'id' => ($_POST['sp_id'][$i] ?? '') ?: 'sp_' . substr(bin2hex(random_bytes(3)), 0, 5),
+            'name' => trim($_POST['sp_name'][$i] ?? ''),
+            'type' => trim($st),
+            'api_key' => trim($_POST['sp_key'][$i] ?? ''),
+            'base_url' => trim($_POST['sp_url'][$i] ?? ''),
+            'search_engine_id' => trim($_POST['sp_seid'][$i] ?? ''),
+            'enabled' => isset($_POST['sp_enabled'][$i]),
+        ];
+    }
+    $settings['search_providers'] = $providers;
     $settings['auto_submit'] = isset($_POST['auto_submit']);
     $settings['bing_api_key'] = trim($_POST['bing_api_key'] ?? '');
     $settings['baidu_token'] = trim($_POST['baidu_token'] ?? '');
@@ -120,7 +136,7 @@ admin_header('GEO 话题监控');
   <?php admin_sidebar('geo'); ?>
   <div class="main">
     <h1>GEO 话题监控</h1>
-    <p class="sub">RSS 聚合行业动态 → AI 提炼热点话题 → 生成文章 → 自动提交搜索引擎</p>
+    <p class="sub">RSS / 搜索 API 聚合 → AI 提炼热点话题 → 生成文章 → 自动提交搜索引擎</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>
 
@@ -132,6 +148,7 @@ admin_header('GEO 话题监控');
         <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" name="enabled" value="1" <?=$settings['enabled']?'checked':''?> style="width:16px;height:16px"> 启用 GEO</label>
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" name="rss_enabled" value="1" <?=$settings['rss_enabled']?'checked':''?> style="width:16px;height:16px"> RSS 聚合</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" name="search_api_enabled" value="1" <?=!empty($settings['search_api_enabled'])?'checked':''?> style="width:16px;height:16px"> 搜索 API 聚合</label>
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" name="ai_enabled" value="1" <?=$settings['ai_enabled']?'checked':''?> style="width:16px;height:16px"> AI 提炼/生成</label>
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" name="auto_submit" value="1" <?=$settings['auto_submit']?'checked':''?> style="width:16px;height:16px"> 发布后自动提交</label>
         </div>
@@ -171,6 +188,41 @@ admin_header('GEO 话题监控');
         <div style="margin-top:12px">
           <a href="?extract=1" class="btn btn-primary">⚡ 抓取并 AI 提炼话题</a>
         </div>
+      </div>
+    </form>
+
+    <!-- 搜索 API 供应商 -->
+    <form method="post">
+      <?= csrf_field() ?>
+      <div class="card">
+        <h2>  搜索 API 供应商</h2>
+        <p class="text-sm text-muted mb-4">配置搜索 API，采集全网渠道数据并输出结构化结论。支持 SerpAPI / Google Custom Search / Bing Search API / 百度 / 自定义。</p>
+        <div id="spList">
+          <?php $searchProviders = $settings['search_providers'] ?? []; foreach ($searchProviders as $si => $sp): ?>
+          <div style="padding:12px;margin-bottom:8px;background:var(--surface-2);border-radius:10px">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+              <input type="hidden" name="sp_id[]" value="<?=htmlspecialchars($sp['id'] ?? '')?>">
+              <input type="text" name="sp_name[]" value="<?=htmlspecialchars($sp['name'] ?? '')?>" placeholder="供应商名称" style="width:140px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+              <select name="sp_type[]" style="padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+                <option value="serpapi" <?=($sp['type'] ?? '')==='serpapi'?'selected':''?>>SerpAPI</option>
+                <option value="google_custom_search" <?=($sp['type'] ?? '')==='google_custom_search'?'selected':''?>>Google Custom Search</option>
+                <option value="bing_search" <?=($sp['type'] ?? '')==='bing_search'?'selected':''?>>Bing Search API</option>
+                <option value="baidu_search" <?=($sp['type'] ?? '')==='baidu_search'?'selected':''?>>百度搜索 API</option>
+                <option value="custom" <?=($sp['type'] ?? '')==='custom'?'selected':''?>>自定义 API</option>
+              </select>
+              <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" name="sp_enabled[]" value="1" <?=!empty($sp['enabled'])?'checked':''?> style="width:15px;height:15px">启用</label>
+              <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('div.card').querySelector('#spList').removeChild(this.closest('div[style*=background]'))">✕</button>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <input type="password" name="sp_key[]" value="<?=htmlspecialchars($sp['api_key'] ?? '')?>" placeholder="API Key" style="flex:1;min-width:200px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+              <input type="text" name="sp_url[]" value="<?=htmlspecialchars($sp['base_url'] ?? '')?>" placeholder="自定义 API 地址（custom 类型必填）" style="flex:1;min-width:200px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+              <input type="text" name="sp_seid[]" value="<?=htmlspecialchars($sp['search_engine_id'] ?? '')?>" placeholder="Google CSE ID（仅 Google Custom Search 必填）" style="width:220px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px">
+            </div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addSearchProvider()">+ 添加供应商</button>
+        <button type="submit" name="save_settings" class="btn btn-ghost btn-sm">保存供应商配置</button>
       </div>
     </form>
 
@@ -220,6 +272,12 @@ function addSource() {
   d.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap';
   d.innerHTML = '<input type="hidden" name="src_id[]" value="src_' + Date.now() + '"><input type="text" name="src_name[]" placeholder="源名称" style="width:130px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><input type="text" name="src_url[]" placeholder="RSS URL" style="flex:1;min-width:200px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" name="src_enabled[]" value="1" checked style="width:15px;height:15px">启用</label><button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'div\').remove()">✕</button>';
   document.getElementById('srcList').appendChild(d);
+}
+function addSearchProvider() {
+  var d = document.createElement('div');
+  d.style.cssText = 'padding:12px;margin-bottom:8px;background:var(--surface-2);border-radius:10px';
+  d.innerHTML = '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><input type="hidden" name="sp_id[]" value="sp_' + Date.now() + '"><input type="text" name="sp_name[]" placeholder="供应商名称" style="width:140px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><select name="sp_type[]" style="padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><option value="serpapi">SerpAPI</option><option value="google_custom_search">Google Custom Search</option><option value="bing_search">Bing Search API</option><option value="baidu_search">百度搜索 API</option><option value="custom">自定义 API</option></select><label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" name="sp_enabled[]" value="1" checked style="width:15px;height:15px">启用</label><button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'div[style*=padding]\').remove()">✕</button></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="password" name="sp_key[]" placeholder="API Key" style="flex:1;min-width:200px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><input type="text" name="sp_url[]" placeholder="自定义 API 地址（custom 类型必填）" style="flex:1;min-width:200px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"><input type="text" name="sp_seid[]" placeholder="Google CSE ID（仅 Google Custom Search 必填）" style="width:220px;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px"></div>';
+  document.getElementById('spList').appendChild(d);
 }
 </script>
 <?php admin_footer(); ?>
