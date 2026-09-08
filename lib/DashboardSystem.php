@@ -251,6 +251,52 @@ function dash_activity(): array {
     return $out;
 }
 
+// ─── A6: 转化漏斗（访客→注册→加购→支付→复购）───
+function dash_funnel(string $days = '30'): array {
+    $since = date('Y-m-d', strtotime("-{$days} days"));
+    $funnel = [
+        'stages' => [
+            ['key' => 'visitor',    'label' => '访客',  'count' => 0, 'color' => '#3b82f6'],
+            ['key' => 'register',   'label' => '注册',  'count' => 0, 'color' => '#22c55e'],
+            ['key' => 'add_cart',   'label' => '加购',  'count' => 0, 'color' => '#f59e0b'],
+            ['key' => 'pay',        'label' => '支付',  'count' => 0, 'color' => '#ef4444'],
+            ['key' => 'repurchase', 'label' => '复购',  'count' => 0, 'color' => '#8b5cf6'],
+        ],
+        'total_visitors' => 0,
+        'conversion_rate' => 0,
+    ];
+    try {
+        // 访客（唯一 uid）
+        $visitors = Database::query("SELECT COUNT(DISTINCT uid) c FROM events WHERE event='page_view' AND created_at >= ?", [$since]);
+        $funnel['stages'][0]['count'] = (int)($visitors[0]['c'] ?? 0);
+        $funnel['total_visitors'] = $funnel['stages'][0]['count'];
+        // 注册
+        $regs = Database::query("SELECT COUNT(DISTINCT uid) c FROM events WHERE event='member_register' AND created_at >= ?", [$since]);
+        $funnel['stages'][1]['count'] = (int)($regs[0]['c'] ?? 0);
+        // 加购
+        $carts = Database::query("SELECT COUNT(DISTINCT uid) c FROM events WHERE event='cart_add' AND created_at >= ?", [$since]);
+        $funnel['stages'][2]['count'] = (int)($carts[0]['c'] ?? 0);
+        // 支付
+        $pays = Database::query("SELECT COUNT(DISTINCT uid) c FROM events WHERE event IN ('payment_success','order_paid') AND created_at >= ?", [$since]);
+        $funnel['stages'][3]['count'] = (int)($pays[0]['c'] ?? 0);
+        // 复购（同一 uid 2+ 次支付）
+        $repays = Database::query("SELECT uid, COUNT(*) cnt FROM events WHERE event IN ('payment_success','order_paid') AND created_at >= ? GROUP BY uid HAVING cnt >= 2", [$since]);
+        $funnel['stages'][4]['count'] = count($repays);
+        // 总转化率
+        if ($funnel['total_visitors'] > 0) {
+            $funnel['conversion_rate'] = round($funnel['stages'][3]['count'] / $funnel['total_visitors'] * 100, 2);
+        }
+    } catch (Exception $e) {}
+    // 阶段间转化率
+    for ($i = 1; $i < count($funnel['stages']); $i++) {
+        $prev = $funnel['stages'][$i-1]['count'];
+        $curr = $funnel['stages'][$i]['count'];
+        $funnel['stages'][$i]['step_rate'] = $prev > 0 ? round($curr / $prev * 100, 1) : 0;
+    }
+    $funnel['stages'][0]['step_rate'] = 100;
+    return $funnel;
+}
+
 // ─── 行为路径（Top 落地页 + 来源 + 转化） ───
 function dash_paths(): array {
     $out = ['pages'=>[], 'referrers'=>[], 'conversions'=>0];
