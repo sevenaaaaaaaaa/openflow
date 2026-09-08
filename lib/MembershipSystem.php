@@ -238,3 +238,117 @@ function member_grant_shop_plan(string $memberId, string $planId): array {
     member_save($member);
     return ['ok' => true, 'plan' => $planId];
 }
+
+// ─── A4: 订阅→会员等级联动 ───
+
+/**
+ * 订阅状态变更时同步会员等级
+ * 由 SubscriptionSystem 在 sub_create/sub_cancel/sub_expire_check 后调用
+ */
+function mem_sync_from_subscription(string $memberId): void {
+    if (!function_exists('sub_is_active') || !function_exists('sub_get_member')) return;
+    $member = member_get($memberId);
+    if (!$member) return;
+
+    $sub = sub_get_member($memberId);
+    if (!$sub) return;
+
+    $planId = $sub['plan_id'] ?? '';
+    if (sub_is_active($memberId) && $planId) {
+        // 订阅有效 → 更新会员等级
+        $member['membership_plan'] = $planId;
+        $member['membership_expires'] = $sub['expires_at'] ?? '';
+    } elseif (($sub['status'] ?? '') === 'expired' || ($sub['status'] ?? '') === 'cancelled') {
+        // 订阅过期/取消 → 降级为 free（但保留已购课程等其他权益）
+        if (($member['membership_plan'] ?? '') === $planId) {
+            $member['membership_plan'] = 'free';
+            $member['membership_expires'] = '';
+        }
+    }
+    member_save($member);
+}
+
+/**
+ * 付费墙 HTML 渲染
+ * 当会员等级不足时显示升级引导
+ */
+function mem_paywall_html(string $requiredTier, ?array $member = null): string {
+    if (!function_exists('paid_can_view') || paid_can_view($member, $requiredTier)) return '';
+
+    $preview = '';
+    $hint = function_exists('paid_upgrade_hint') ? paid_upgrade_hint($requiredTier) : '升级会员即可阅读全文';
+
+    // 推荐升级路径
+    $recommendations = [];
+    $plans = mem_plans();
+    $currentTier = $member ? (string)($member['membership_plan'] ?? 'free') : '';
+    foreach ($plans as $p) {
+        $pid = $p['id'] ?? '';
+        if ($pid === 'free' || $pid === $currentTier) continue;
+        // 只推荐高于当前且满足门槛的
+        $order = function_exists('paid_tier_order') ? paid_tier_order() : [];
+        $currentIdx = array_search($currentTier, $order, true) ?: 0;
+        $planIdx = array_search($pid, $order, true);
+        if ($planIdx !== false && $planIdx > $currentIdx) {
+            $recommendations[] = [
+                'id' => $pid,
+                'name' => $p['name'] ?? $pid,
+                'icon' => $p['icon'] ?? '',
+                'price' => $p['price'] ?? 0,
+                'period' => $p['period'] ?? '',
+            ];
+        }
+    }
+
+    $html = '<div class="paywall-box" style="text-align:center;padding:40px 24px;background:var(--surface);border:2px solid var(--border);border-radius:var(--r-lg);margin:24px 0">';
+    $html .= '<h3 style="margin:0 0 8px">   ' . htmlspecialchars($hint) . '</h3>';
+
+    if ($recommendations) {
+        $html .= '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:20px 0">';
+        foreach (array_slice($recommendations, 0, 3) as $rec) {
+            $priceText = ($rec['price'] > 0) ? '¥' . number_format($rec['price']) . ($rec['period'] === 'year' ? '/年' : ($rec['period'] === 'month' ? '/月' : '')) : '免费';
+            $html .= '<a href="/xmp/subscription?tab=plans" class="btn btn-primary" style="min-width:120px">';
+            $html .= ($rec['icon'] ? $rec['icon'] . ' ' : '') . htmlspecialchars($rec['name']) . '<br><small>' . $priceText . '</small></a>';
+        }
+        $html .= '</div>';
+    }
+
+    $html .= '<p style="font-size:13px;color:var(--muted);margin:12px 0 0">已有账号？<a href="/login">登录</a></p>';
+    $html .= '</div>';
+    return $html;
+}
+
+/**
+ * AI 升级推荐（基于会员行为数据推荐最适合的升级路径）
+ * 返回推荐的 plan_id 或 null
+ */
+function mem_ai_upgrade_recommend(?array $member): ?string {
+    if (!$member) return null;
+    $currentTier = (string)($member['membership_plan'] ?? 'free');
+    if ($currentTier === 'lifetime') return null; // 永久会员无需升级
+
+    // 简单规则：有订阅且即将到期 → 推荐年付；无订阅 → 推荐月度
+    $subActive = function_exists('sub_is_active') && sub_is_active($member['id']);
+    if ($subActive) {
+        $sub = function_exists('sub_get_member') ? sub_get_member($member['id']) : null;
+        $expires = $sub['expires_at'] ?? '';
+        if ($expires && strtotime($expires) < strtotime('+14 days')) {
+            return 'yearly'; // 即将到期 → 推荐年付（更划算）
+        }
+        return null; // 还没到推荐时机
+    }
+
+    // 无订阅，但有行为数据（文章阅读/课程参与）→ 推荐入门计划
+    $activityScore = 0;
+    if (function_exists('json_read')) {
+        $events = json_read(DATA_DIR . '/cdp/events.json');
+        $recentEvents = array_filter($events, function($e) {
+            return isset($e['created_at']) && $e['created_at'] >= date('Y-m-d', strtotime('-30 days'));
+        });
+        $activityScore = count($recentEvents);
+    }
+
+    if ($activityScore > 50) return 'annual';   // 高活跃 → 推荐年度
+    if ($activityScore > 10) return 'monthly';  // 中活跃 → 推荐月度
+    return null; // 低活跃不推荐
+}
