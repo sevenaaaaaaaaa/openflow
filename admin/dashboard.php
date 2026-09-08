@@ -19,7 +19,6 @@ $prefs = dash_preferences();
 $utmAttr = dash_utm_attribution();
 require_once __DIR__ . '/../lib/GrowthEngine.php';
 $funnel = dash_funnel();
-$growthSuggestions = GrowthEngine::scan();
 
 admin_header('经营驾驶舱');
 ?>
@@ -248,31 +247,6 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
         </div>
       </div>
     </div>
-
-    <!-- 增长规则引擎建议 -->
-    <?php if (!empty($growthSuggestions)): ?>
-    <div class="panels">
-      <div class="panel" style="width:100%">
-        <div class="p-head"><h3>⚙️ 增长建议</h3><span class="p-sub mono">WHEN × WHAT × HOW · 实时扫描</span></div>
-        <div class="p-body">
-          <?php foreach (array_slice($growthSuggestions, 0, 5) as $sg): ?>
-          <div style="padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface)">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:<?=($sg['priority']==='critical')?'var(--danger-soft)':'var(--accent-soft)'?>;color:<?=($sg['priority']==='critical')?'var(--danger)':'var(--accent)'?>"><?=strtoupper($sg['priority'])?></span>
-              <span style="font-size:12px;font-weight:700;color:var(--fg)"><?=$sg['what']?></span>
-            </div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:6px">
-              <b>WHEN：</b><?=json_encode($sg['when'], JSON_UNESCAPED_UNICODE)?>
-            </div>
-            <div style="font-size:12px;color:var(--ok)">
-              <b>HOW：</b><?=$sg['how']?>
-            </div>
-          </div>
-          <?php endforeach; ?>
-        </div>
-      </div>
-    </div>
-    <?php endif; ?>
 
     <!-- 偏好洞察 -->
     <div class="panels">
