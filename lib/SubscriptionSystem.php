@@ -96,6 +96,8 @@ function sub_create(string $memberId, string $planId, array $opts = []): array {
         'history'        => [['ts' => $now, 'action' => 'created', 'plan' => $planId]],
     ];
     sub_set_member($memberId, $sub);
+    // 同步会员等级
+    if (function_exists('mem_sync_from_subscription')) mem_sync_from_subscription($memberId);
     // 触发事件（旁路）
     if (function_exists('plugin_hook')) plugin_hook('subscription_created', $sub);
     return ['ok' => true, 'subscription' => $sub];
@@ -135,7 +137,8 @@ function sub_cancel(string $memberId, string $reason = '', bool $immediate = fal
     $s['cancel_reason'] = $reason;
     $s['history'][] = ['ts' => $now, 'action' => 'cancelled', 'reason' => $reason, 'immediate' => $immediate];
     sub_set_member($memberId, $s);
-
+    // 同步会员等级
+    if (function_exists('mem_sync_from_subscription')) mem_sync_from_subscription($memberId);
     // 发送取消确认（旁路）
     if (function_exists('sub_send_cancellation_email')) sub_send_cancellation_email($memberId, $s, $immediate);
     if (function_exists('plugin_hook')) plugin_hook('subscription_cancelled', $s);
@@ -155,6 +158,8 @@ function sub_resume(string $memberId): array {
     $s['cancel_reason'] = '';
     $s['history'][] = ['ts' => date('Y-m-d H:i:s'), 'action' => 'resumed'];
     sub_set_member($memberId, $s);
+    // 同步会员等级
+    if (function_exists('mem_sync_from_subscription')) mem_sync_from_subscription($memberId);
     return ['ok' => true];
 }
 
@@ -308,11 +313,13 @@ function sub_send_reminders(): array {
 function sub_expire_check(): void {
     $state = sub_get_state();
     $changed = false;
+    $changedMembers = [];
     foreach ($state as $mid => &$s) {
         if (($s['status'] ?? '') === 'active' && !empty($s['expires_at']) && $s['expires_at'] < date('Y-m-d')) {
             $s['status'] = 'expired';
             $s['history'][] = ['ts' => date('Y-m-d H:i:s'), 'action' => 'expired'];
             $changed = true;
+            $changedMembers[] = $mid;
             // 到期事件（旁路）
             if (function_exists('plugin_hook')) plugin_hook('subscription_expired', $s);
         }
@@ -321,10 +328,17 @@ function sub_expire_check(): void {
             $s['status'] = 'cancelled';
             $s['history'][] = ['ts' => date('Y-m-d H:i:s'), 'action' => 'cancelled_by_expiry'];
             $changed = true;
+            $changedMembers[] = $mid;
         }
     }
     unset($s);
-    if ($changed) sub_save_state($state);
+    if ($changed) {
+        sub_save_state($state);
+        // 同步会员等级
+        foreach ($changedMembers as $mid) {
+            if (function_exists('mem_sync_from_subscription')) mem_sync_from_subscription($mid);
+        }
+    }
 }
 
 // ─── 查询 / 统计 ───
