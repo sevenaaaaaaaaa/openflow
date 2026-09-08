@@ -176,6 +176,150 @@ function mkt_asset_cover(array $a, array $typeNames = []): string {
     return '<div class="gcov h-' . $m['hue'] . '"><span class="gc-code" aria-hidden="true">' . $m['code'] . '</span><span class="gc-k">' . mkt_type_icon($t) . $label . '</span></div>';
 }
 
+/**
+ * 在资产目录里查找资产（支持 plugin/skill/theme 等类型）
+ */
+function mkt_find_asset(string $type, string $id): ?array {
+    foreach (mkt_assets() as $a) {
+        if (($a['type'] ?? '') === $type && ($a['id'] ?? '') === $id) return $a;
+    }
+    return null;
+}
+
+// ═══ C1：市场上架定价 ═══
+
+function mkt_prices_file(): string { return DATA_DIR . '/marketplace/prices.json'; }
+function mkt_purchases_file(): string { return DATA_DIR . '/marketplace/purchases.json'; }
+
+/**
+ * 获取资产定价（market JSON 里的 price 字段）
+ */
+function mkt_asset_price(string $type, string $id): ?array {
+    $prices = json_read(mkt_prices_file());
+    $key = $type . ':' . $id;
+    return $prices[$key] ?? null;
+}
+
+/**
+ * 设置资产定价（后台操作）
+ */
+function mkt_set_price(string $type, string $id, float $price, string $currency = 'CNY', string $period = ''): array {
+    $prices = json_read(mkt_prices_file());
+    $key = $type . ':' . $id;
+    $prices[$key] = [
+        'type' => $type,
+        'id' => $id,
+        'price' => max(0, $price),
+        'currency' => $currency,
+        'period' => $period, // lifetime / month / year，空=一次性
+        'enabled' => true,
+        'updated_at' => date('Y-m-d H:i:s'),
+    ];
+    if (!is_dir(dirname(mkt_prices_file()))) @mkdir(dirname(mkt_prices_file()), 0755, true);
+    json_write(mkt_prices_file(), $prices);
+    return ['ok' => true, 'price' => $prices[$key]];
+}
+
+/**
+ * 批量上架定价（后台批量操作）
+ */
+function mkt_bulk_price(array $items): int {
+    $prices = json_read(mkt_prices_file());
+    $n = 0;
+    foreach ($items as $item) {
+        $key = ($item['type'] ?? '') . ':' . ($item['id'] ?? '');
+        if (empty($key) || $key === ':') continue;
+        $prices[$key] = [
+            'type' => $item['type'] ?? '',
+            'id' => $item['id'] ?? '',
+            'price' => max(0, (float)($item['price'] ?? 0)),
+            'currency' => $item['currency'] ?? 'CNY',
+            'period' => $item['period'] ?? '',
+            'enabled' => true,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ];
+        $n++;
+    }
+    json_write(mkt_prices_file(), $prices);
+    return $n;
+}
+
+// ═══ C2：市场购买 ═══
+
+/**
+ * 购买资产（复用 ShopSystem 订单 + 支付通道）
+ */
+function mkt_purchase(string $memberId, string $type, string $id, string $method = ''): array {
+    $asset = mkt_find_asset($type, $id);
+    if (!$asset) return ['ok' => false, 'error' => '资产不存在'];
+
+    $priceInfo = mkt_asset_price($type, $id);
+    if (!$priceInfo || ($priceInfo['price'] ?? 0) <= 0) {
+        // 免费资产，直接交付
+        return mkt_deliver_asset($memberId, $type, $id);
+    }
+
+    // 创建订单（复用 ShopSystem 订单格式）
+    $orderId = 'mkt_' . $memberId . '_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(3)), 0, 6);
+    $order = [
+        'id' => $orderId,
+        'member_id' => $memberId,
+        'type' => 'marketplace',
+        'asset_type' => $type,
+        'asset_id' => $id,
+        'amount' => $priceInfo['price'],
+        'currency' => $priceInfo['currency'] ?? 'CNY',
+        'status' => 'pending',
+        'payment_method' => $method,
+        'created_at' => date('Y-m-d H:i:s'),
+    ];
+
+    // 持久化订单
+    $ordersFile = DATA_DIR . '/shop/orders.json';
+    $orders = json_read($ordersFile);
+    $orders[] = $order;
+    json_write($ordersFile, $orders);
+
+    // 发起支付
+    if ($method && function_exists('payment_channel_create')) {
+        $payResult = payment_channel_create($method, $order);
+        if (!empty($payResult['pay_url'])) {
+            return ['ok' => true, 'order_id' => $orderId, 'pay_url' => $payResult['pay_url']];
+        }
+    }
+
+    return ['ok' => true, 'order_id' => $orderId, 'amount' => $priceInfo['price']];
+}
+
+/**
+ * 交付资产（安装/记录购买）
+ */
+function mkt_deliver_asset(string $memberId, string $type, string $id): array {
+    $purchases = json_read(mkt_purchases_file());
+    // 检查是否已购买
+    foreach ($purchases as $p) {
+        if ($p['member_id'] === $memberId && $p['type'] === $type && $p['id'] === $id) {
+            return ['ok' => true, 'message' => '已拥有'];
+        }
+    }
+    $purchases[] = [
+        'member_id' => $memberId,
+        'type' => $type,
+        'id' => $id,
+        'purchased_at' => date('Y-m-d H:i:s'),
+    ];
+    if (!is_dir(dirname(mkt_purchases_file()))) @mkdir(dirname(mkt_purchases_file()), 0755, true);
+    json_write(mkt_purchases_file(), $purchases);
+    return ['ok' => true, 'message' => '已交付'];
+}
+
+/**
+ * 查询用户已购买资产
+ */
+function mkt_purchases(string $memberId): array {
+    return array_values(array_filter(json_read(mkt_purchases_file()), fn($p) => $p['member_id'] === $memberId));
+}
+
 // ═══ 远程市场同步 ═══
 function mkt_remote_url(): string {
     return json_read(DATA_DIR . '/marketplace-settings.json')['remote_url'] ?? '';

@@ -79,4 +79,118 @@ if (!function_exists('commission_policy')) {
             'author_amount' => $author,
         ];
     }
+
+    // ─── B3: 佣金结算（成交→累计→到门槛→可提现→确认打款）───
+
+    function commission_ledger_file(): string { return DATA_DIR . '/commission/ledger.json'; }
+    function commission_payouts_file(): string { return DATA_DIR . '/commission/payouts.json'; }
+
+    /**
+     * 记录一笔佣金（成交时调用）
+     */
+    function commission_record(string $memberId, string $orderId, float $amount, float $rate, string $source = 'order'): array {
+        $ledger = json_read(commission_ledger_file());
+        $entry = [
+            'id' => 'comm_' . bin2hex(random_bytes(6)),
+            'member_id' => $memberId,
+            'order_id' => $orderId,
+            'amount' => round($amount, 2),
+            'rate' => $rate,
+            'source' => $source,
+            'status' => 'pending', // pending → settled → paid
+            'created_at' => date('Y-m-d H:i:s'),
+            'settled_at' => '',
+        ];
+        $ledger[] = $entry;
+        if (!is_dir(dirname(commission_ledger_file()))) @mkdir(dirname(commission_ledger_file()), 0755, true);
+        json_write(commission_ledger_file(), $ledger);
+        return ['ok' => true, 'entry' => $entry];
+    }
+
+    /**
+     * 批量结算佣金（pending → settled，可按时间/金额筛选）
+     */
+    function commission_settle(array $filter = []): array {
+        $ledger = json_read(commission_ledger_file());
+        $changed = 0;
+        foreach ($ledger as &$e) {
+            if ($e['status'] !== 'pending') continue;
+            if (!empty($filter['member_id']) && $e['member_id'] !== $filter['member_id']) continue;
+            $e['status'] = 'settled';
+            $e['settled_at'] = date('Y-m-d H:i:s');
+            $changed++;
+        }
+        unset($e);
+        json_write(commission_ledger_file(), $ledger);
+        return ['ok' => true, 'settled' => $changed];
+    }
+
+    /**
+     * 获取成员的待提现余额
+     */
+    function commission_balance(string $memberId): float {
+        $settled = 0; $paid = 0;
+        foreach (json_read(commission_ledger_file()) as $e) {
+            if ($e['member_id'] !== $memberId) continue;
+            if ($e['status'] === 'settled') $settled += (float)$e['amount'];
+            if ($e['status'] === 'paid') $paid += (float)$e['amount'];
+        }
+        return round(max(0, $settled - $paid), 2);
+    }
+
+    /**
+     * 申请提现
+     */
+    function commission_request_payout(string $memberId, float $amount, string $method = '', string $account = ''): array {
+        $balance = commission_balance($memberId);
+        $minWithdraw = commission_min_withdraw();
+        if ($balance < $amount) return ['ok' => false, 'error' => '余额不足（可提现: ¥' . $balance . '）'];
+        if ($amount < $minWithdraw) return ['ok' => false, 'error' => '最低提现 ¥' . $minWithdraw];
+
+        $payouts = json_read(commission_payouts_file());
+        $payout = [
+            'id' => 'pay_' . bin2hex(random_bytes(6)),
+            'member_id' => $memberId,
+            'amount' => round($amount, 2),
+            'method' => $method ?: 'manual',
+            'account' => $account,
+            'status' => 'requested', // requested → approved → paid
+            'created_at' => date('Y-m-d H:i:s'),
+            'paid_at' => '',
+        ];
+        $payouts[] = $payout;
+        if (!is_dir(dirname(commission_payouts_file()))) @mkdir(dirname(commission_payouts_file()), 0755, true);
+        json_write(commission_payouts_file(), $payouts);
+        return ['ok' => true, 'payout' => $payout];
+    }
+
+    /**
+     * 确认打款（人工确认）
+     */
+    function commission_confirm_payout(string $payoutId): array {
+        $payouts = json_read(commission_payouts_file());
+        foreach ($payouts as &$p) {
+            if ($p['id'] === $payoutId && $p['status'] === 'requested') {
+                $p['status'] = 'paid';
+                $p['paid_at'] = date('Y-m-d H:i:s');
+                // 同步标记 ledger 为 paid
+                $ledger = json_read(commission_ledger_file());
+                foreach ($ledger as &$e) {
+                    if ($e['member_id'] === $p['member_id'] && $e['status'] === 'settled') {
+                        $e['status'] = 'paid';
+                    }
+                }
+                unset($e);
+                json_write(commission_ledger_file(), $ledger);
+                break;
+            }
+        }
+        unset($p);
+        json_write(commission_payouts_file(), $payouts);
+        return ['ok' => true];
+    }
+
+    function commission_payouts_for(string $memberId): array {
+        return array_values(array_filter(json_read(commission_payouts_file()), fn($p) => $p['member_id'] === $memberId));
+    }
 }
