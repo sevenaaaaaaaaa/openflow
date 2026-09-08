@@ -76,9 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_csv'])) {
                     'location' => $data['location'] ?? '',
                     'location_url' => '',
                     'speakers' => [], 'gallery' => [], 'video_url' => '', 'cover' => '',
-                    'registration_form' => '', 'registration_url' => '',
-                    'status' => $data['status'] ?? 'draft',
-                    'seo_title' => '', 'seo_desc' => '',
+                     'registration_form' => '', 'registration_url' => '',
+                     'status' => $data['status'] ?? 'draft',
+                     'pinned' => false,
+                     'seo_title' => '', 'seo_desc' => '',
                     'created_at' => date('Y-m-d H:i:s'),
                     'updated_at' => date('Y-m-d H:i:s'),
                 ];
@@ -120,6 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         'registration_form' => $_POST['registration_form'] ?? '',
         'registration_url' => $_POST['registration_url'] ?? '',
         'status' => $_POST['status'] ?? 'draft',
+        'pinned' => !empty($_POST['pinned']) ? true : false,
         'seo_title' => $_POST['seo_title'] ?? '',
         'seo_desc' => $_POST['seo_desc'] ?? '',
         'updated_at' => date('Y-m-d H:i:s'),
@@ -324,6 +326,7 @@ admin_header('活动管理');
         <div class="field-row">
           <div class="field"><label>封面图</label><input type="text" name="cover" value="<?=htmlspecialchars($editEvent['cover']??'')?>" placeholder="uploads/..."></div>
           <div class="field"><label>状态</label><select name="status"><option value="draft" <?=($editEvent['status']??'')==='draft'?'selected':''?>>草稿</option><option value="published" <?=($editEvent['status']??'')==='published'?'selected':''?>>已发布</option></select></div>
+          <div class="field"><label>置顶展示</label><label style="display:flex;align-items:center;gap:6px;margin-top:6px"><input type="checkbox" name="pinned" value="1" <?=!empty($editEvent['pinned'])?'checked':''?>> 在列表顶部优先展示</label></div>
         </div>
 
         <!-- Registration -->
