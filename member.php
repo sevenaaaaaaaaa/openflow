@@ -130,6 +130,14 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
           <div class="field"><label for="r_email">邮箱</label><div style="display:flex;gap:8px"><input class="inp" type="email" name="email" id="r_email" required placeholder="you@example.com" style="flex:1"><?php if ($__needCaptcha): ?><button type="button" class="btn ghost" style="flex:0 0 auto" onclick="memberSendCaptcha(document.getElementById('r_email').value)">发验证码</button><?php endif; ?></div></div>
           <?php if ($__needCaptcha): ?><div class="field"><label for="r_captcha">邮箱验证码</label><input class="inp" type="text" name="captcha" id="r_captcha" required inputmode="numeric" placeholder="6 位验证码"></div><?php endif; ?>
           <div class="field"><label for="r_phone">手机号 <span class="hint">· 选填</span></label><input class="inp" type="tel" name="phone" id="r_phone" placeholder="11 位手机号"></div>
+          <?php $goalOpts = [
+              '自动获取内容与选题' => '想解决「内容产出跟不上」，AI 自动爬热点、生成选题',
+              '把访客变成客户' => '想解决「有流量没转化」，打通触达与转化链路',
+              '看清增长数据' => '想解决「不知道谁有效」，数据洞察与归因',
+              '自动化重复工作' => '想解决「时间被重复动作吃掉」，流程自动化',
+              '设计一套增长系统' => '想从方法到工具，搭起一套能自转的增长系统',
+          ]; ?>
+          <div class="field"><label for="r_goal">想解决的问题</label><select class="inp" name="goal" id="r_goal"><option value="">请选择（帮助我们给你更合适的建议）</option><?php foreach ($goalOpts as $gv => $gt): ?><option value="<?=htmlspecialchars($gv)?>"><?=htmlspecialchars($gv)?></option><?php endforeach; ?></select></div>
           <div class="field"><label for="r_password">密码</label><input class="inp" type="password" name="password" id="r_password" required minlength="6" placeholder="至少 6 位"></div>
           <?php if (!empty($_GET['ref'])): ?><input type="hidden" name="referral" value="<?=htmlspecialchars($_GET['ref'])?>"><?php endif; ?>
           <button type="submit" class="btn primary" style="width:100%">注册</button>
