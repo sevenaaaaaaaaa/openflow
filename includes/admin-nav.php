@@ -225,7 +225,12 @@ function admin_nav_tree(): array {
                     ['id' => 'session-replay', 'label' => '会话回放', 'perm' => 'cdp'],
                     ['id' => 'funnel-guard', 'label' => '漏斗巡检', 'perm' => 'cdp'],
                 ]],
-             ]],
+            ]],
+            ['label' => '人群', 'items' => [
+                ['id' => 'segments', 'label' => '用户分群', 'perm' => 'segments'],
+                ['id' => 'destinations', 'label' => '人群激活', 'perm' => 'segments'],
+                ['id' => 'tag-rules', 'label' => '标签体系', 'perm' => 'segments'],
+            ]],
          ]],
          ['id' => 'personalize', 'label' => '个性化 Personalize', 'short' => '个性化', 'icon' => $I['person'], 'desc' => '自动化 · 分群 · 触达：对的人看对的东西', 'groups' => [
             ['label' => '自动化', 'items' => [
@@ -238,11 +243,6 @@ function admin_nav_tree(): array {
                     ['id' => 'campaigns', 'label' => '活动 / CRO', 'perm' => 'campaigns'],
                     ['id' => 'dynamic-content', 'label' => 'Dynamic Engine', 'perm' => 'settings'],
                 ]],
-            ]],
-            ['label' => '人群', 'items' => [
-                ['id' => 'segments', 'label' => '用户分群', 'perm' => 'segments'],
-                ['id' => 'destinations', 'label' => '人群激活', 'perm' => 'segments'],
-                ['id' => 'tag-rules', 'label' => '标签体系', 'perm' => 'segments'],
             ]],
             ['label' => '触达渠道', 'items' => [
                 ['label' => '邮件与短信', 'hint' => 'EDM · SMTP · 短信', 'subs' => [
