@@ -291,10 +291,11 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
       </div>
 
       <?php
-      $recPref = class_exists('GrowthEngine') ? GrowthEngine::recommendPreferences() : ['shape_type'=>'seedling','shape_label'=>'综合','prefs'=>['categories'=>[],'tags'=>[]]];
+      // 推荐偏好：GrowthEngine 已精简，推荐改为 Personalizer 默认（游客无偏好）
+      $recPref = ['shape_type'=>'seedling','shape_label'=>'综合','prefs'=>['categories'=>[],'tags'=>[]]];
       $recArticles = [];
       if (class_exists('Personalizer')) {
-          $pref = ['categories' => array_fill_keys($recPref['prefs']['categories'] ?? [], 2), 'tags' => array_fill_keys($recPref['prefs']['tags'] ?? [], 1), 'member_level' => 'guest'];
+          $pref = ['categories' => [], 'tags' => [], 'member_level' => 'guest'];
           $recArticles = Personalizer::recommendArticles($pref, 3);
       }
       if (!empty($recArticles)): ?>
