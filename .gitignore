@@ -90,3 +90,7 @@ deploy-shell-unify.sh
 # ─── 本地运行时数据(新迁移目录) ───
 /data/
 /uploads/
+
+# ─── 内部整改/临时方案文档(仅本地) ───
+lovart-art-google-内部整改方案.md
+*内部整改方案.md
