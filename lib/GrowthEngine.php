@@ -1,20 +1,14 @@
 <?php
 /**
- * 生长引擎 GrowthEngine
- * 让每个部署实例从"出厂形态"开始，随着使用者的行为逐渐长出独一无二的形态。
+ * GrowthEngine — 增长规则引擎（实用性重写）
  *
- * 核心理念：
- *  - 不是客制化（从预设选项里挑选），而是生长（从行为中涌现结果）
- *  - 部署后的第一天，系统就开始记录使用者的每一次使用、采纳、忽略、偏好
- *  - 每个实例因为使用方式不同，最终长成不同的形态
+ * 旧设计：信号→形态→泛化建议（链条太长，建议空泛）
+ * 新设计：触发条件 → 具体建议 → 一键执行
  *
- * 实现：
- *  1. 行为信号采集 —— 记录"使用指纹"（模块热度、建议采纳/忽略、前台行为）
- *  2. 个性权重 —— 用行为信号调整建议优先级（用得多的优先，被忽略的降权）
- *  3. 进化轨迹 —— 记录"出生→现在"的成长里程碑
- *  4. 形态画像 —— 根据行为总结实例"长成了什么样"
+ * 核心理念：每条规则 = WHEN（何时触发）× WHAT（建议什么）× HOW（怎么执行）
+ *
+ * 规则来源：绑定真实业务数据（CDP/CRM/订单/内容），而非页面访问计数
  */
-require_once __DIR__ . '/../admin/config.php';
 
 class GrowthEngine {
     private static string $file = DATA_DIR . '/growth.json';
@@ -25,32 +19,23 @@ class GrowthEngine {
         $s = json_read(self::$file);
         if (empty($s)) {
             $s = [
-                'born_at' => time(),           // 出生时间（首次记录）
-                'signals' => [],                // 行为信号计数
-                'weights' => [],                // 个性权重（模块→优先级加成）
-                'ignored' => [],                // 被忽略的建议
-                'milestones' => [],             // 进化里程碑
-                'shape' => null,                // 形态画像（后置计算）
+                'born_at' => time(),
+                'signals' => [],
+                'weights' => [],
+                'milestones' => [],
+                'shape' => null,
                 'last_shaped' => 0,
             ];
-            json_write(self::$file, $s);
         }
         return $s;
     }
 
-    /* ── 行为信号采集 ── */
+    /* ─── 信号采集（保留兼容，但权重更新）─── */
 
-    /**
-     * 记录一个行为信号
-     * @param string $type signal 类型：view_page / resolve_suggestion / ignore_suggestion / use_module / visit
-     * @param string $key  信号对象（页面/模块/建议 id）
-     * @param int    $weight 权重（默认 1）
-     */
     public static function signal(string $type, string $key, int $weight = 1): void {
         $s = self::state();
         $k = $type . ':' . $key;
         $s['signals'][$k] = ($s['signals'][$k] ?? 0) + $weight;
-        // 限制信号数量（保留高频）
         if (count($s['signals']) > 800) {
             arsort($s['signals']);
             $s['signals'] = array_slice($s['signals'], 0, 600, true);
@@ -58,295 +43,228 @@ class GrowthEngine {
         json_write(self::$file, $s);
     }
 
-    /** 记录建议被采纳 */
     public static function suggestionResolved(string $id, string $category): void {
         self::signal('resolve', $category, 2);
         $s = self::state();
-        $s['milestones'][] = [
-            'ts' => time(), 'type' => 'resolved', 'key' => $id, 'category' => $category,
-        ];
+        $s['milestones'][] = ['ts' => time(), 'type' => 'resolved', 'key' => $id, 'category' => $category];
         if (count($s['milestones']) > 200) $s['milestones'] = array_slice($s['milestones'], -150);
         json_write(self::$file, $s);
     }
 
-    /** 记录一次进化事件（统一时间线） */
     public static function timeline(string $type, string $title, string $detail = ''): void {
         $s = self::state();
-        $s['milestones'][] = [
-            'ts' => time(), 'type' => $type, 'key' => $title, 'detail' => $detail,
-        ];
-        if (count($s['milestones']) > 300) $s['milestones'] = array_slice($s['milestones'], -250);
+        $s['milestones'][] = ['ts' => time(), 'type' => $type, 'title' => $title, 'detail' => $detail];
+        if (count($s['milestones']) > 200) $s['milestones'] = array_slice($s['milestones'], -150);
         json_write(self::$file, $s);
     }
 
-    /** 获取进化时间线（倒序） */
     public static function timelineGet(int $limit = 50): array {
-        $s = self::state();
-        return array_reverse(array_slice(array_reverse($s['milestones'] ?? []), 0, $limit));
+        return array_slice(array_reverse(self::state()['milestones'] ?? []), 0, $limit);
     }
 
-    /** 记录建议被忽略（降权） */
     public static function suggestionIgnored(string $id, string $category): void {
-        $s = self::state();
-        $s['ignored'][$id] = ($s['ignored'][$id] ?? 0) + 1;
-        json_write(self::$file, $s);
+        self::signal('ignore', $category, 1);
     }
 
-    /* ── 个性权重 ── */
-
-    /**
-     * 计算某类建议的个性权重加成（-1 ~ +2）
-     * 基于：该类建议的采纳率、相关模块的使用热度、被忽略次数
-     */
-    public static function weightFor(string $category): float {
-        $s = self::state();
-        $signals = $s['signals'] ?? [];
-        $w = 0.0;
-
-        // 1. 采纳信号 → 该类更被看重
-        $resolved = $signals['resolve:' . $category] ?? 0;
-        if ($resolved > 0) $w += min(1.0, $resolved * 0.3);
-
-        // 2. 相关模块使用热度（view_page:xxx）→ 用得多的优先
-        $viewTotal = 0;
-        foreach ($signals as $k => $v) {
-            if (strpos($k, 'view_page:') === 0) $viewTotal += $v;
-        }
-        if ($viewTotal > 0) {
-            $viewCat = 0;
-            foreach ($signals as $k => $v) {
-                if (strpos($k, 'view_page:') === 0 && self::pageBelongsTo($k, $category)) $viewCat += $v;
-            }
-            $w += min(1.0, ($viewCat / max(1, $viewTotal)) * 2);
-        }
-
-        // 3. 被忽略 → 降权
-        $ignoredCount = 0;
-        foreach (($s['ignored'] ?? []) as $id => $c) {
-            // 忽略 id 前缀匹配 category
-            if (strpos($id, $category) !== false || strpos($category, $id) !== false) $ignoredCount += $c;
-        }
-        if ($ignoredCount > 0) $w -= min(1.0, $ignoredCount * 0.5);
-
-        return max(-1, min(2, $w));
-    }
-
-    /** 页面信号是否属于某类建议 */
-    private static function pageBelongsTo(string $signalKey, string $category): bool {
-        $map = [
-            'content' => ['academy', 'articles', 'downloads', 'podcasts', 'courses', 'topic'],
-            'bug' => ['article', 'course', 'download', 'community', 'marketplace'],
-            'perf' => ['home', 'docs', 'tools'],
-            'routing' => ['category', 'detail'],
-        ];
-        $pages = $map[$category] ?? [];
-        foreach ($pages as $p) if (strpos($signalKey, $p) !== false) return true;
-        return false;
-    }
-
-    /* ── 形态画像 ── */
-
-    /**
-     * 计算当前实例的"形态画像" —— 它长成了什么样
-     * @return array ['type'=>, 'label'=>, 'strengths'=>[], 'advice'=>]
-     */
-    public static function shape(): array {
-        $s = self::state();
-        $now = time();
-        // 每 6 小时重算一次
-        if (($s['last_shaped'] ?? 0) > $now - 6 * 3600 && !empty($s['shape'])) return $s['shape'];
-
-        $signals = $s['signals'] ?? [];
-        $viewByCat = ['content' => 0, 'growth' => 0, 'sales' => 0, 'community' => 0, 'dev' => 0];
-        foreach ($signals as $k => $v) {
-            if (strpos($k, 'view_page:') !== 0) continue;
-            $key = str_replace('view_page:', '', $k);
-            if (preg_match('/academy|articles|downloads|podcasts|courses/', $key)) $viewByCat['content'] += $v;
-            elseif (preg_match('/tools|docs|capability|product/', $key)) $viewByCat['growth'] += $v;
-            elseif (preg_match('/marketplace|shop|member/', $key)) $viewByCat['sales'] += $v;
-            elseif (preg_match('/community/', $key)) $viewByCat['community'] += $v;
-            elseif (preg_match('/api|developer|md-docs/', $key)) $viewByCat['dev'] += $v;
-        }
-        $total = array_sum($viewByCat);
-        if ($total < 5) {
-            $shape = ['type' => 'seedling', 'label' => '🌱 新生', 'strengths' => [], 'advice' => '还在孕育形态，多使用各模块让系统认识你'];
-        } else {
-            arsort($viewByCat);
-            $top = array_key_first($viewByCat);
-            $labels = [
-                'content' => '📚 内容中心型', 'growth' => '🚀 增长驱动型',
-                'sales' => '💰 商业转化型', 'community' => '💬 社区运营型', 'dev' => '🔧 开发者友好型',
-            ];
-            $top2 = array_slice($viewByCat, 0, 2, true);
-            $strengths = array_map(fn($k) => $labels[$k] ?? $k, array_keys($top2));
-            $shape = [
-                'type' => $top, 'label' => $labels[$top] ?? '综合型',
-                'strengths' => $strengths,
-                'advice' => '你的站正在向「' . ($labels[$top] ?? $top) . '」生长，建议重点完善相关模块',
-            ];
-        }
-        $shape['born_at'] = $s['born_at'] ?? $now;
-        $shape['days_alive'] = (int)(($now - ($s['born_at'] ?? $now)) / 86400);
-        $s['shape'] = $shape;
-        $s['last_shaped'] = $now;
-        json_write(self::$file, $s);
-        return $shape;
-    }
-
-    /** 出生以来的天数 */
     public static function daysAlive(): int {
         $s = self::state();
         return (int)((time() - ($s['born_at'] ?? time())) / 86400);
     }
 
-    /**
-     * 形态 → 推荐偏好（供前台"为你推荐"使用）
-     * 根据当前站点形态，动态调整推荐的内容倾向
-     */
-    public static function recommendPreferences(): array {
-        $shape = self::shape();
-        $type = $shape['type'] ?? 'seedling';
-        // 形态 → 偏好的分类/标签关键词
-        $map = [
-            'content' => ['categories' => ['insight', 'article', 'case'], 'tags' => ['内容', '文章', '方法论']],
-            'growth' => ['categories' => ['growth', 'seo', 'tool'], 'tags' => ['增长', 'SEO', '获客']],
-            'sales' => ['categories' => ['commerce', 'product'], 'tags' => ['商业', '转化', '付费']],
-            'community' => ['categories' => ['community', 'event'], 'tags' => ['社区', '活动', '运营']],
-            'dev' => ['categories' => ['dev', 'api'], 'tags' => ['开发', 'API', '技术']],
-        ];
-        return [
-            'shape_type' => $type,
-            'shape_label' => $shape['label'] ?? '综合',
-            'prefs' => $map[$type] ?? ['categories' => [], 'tags' => []],
-        ];
-    }
+    /* ─── 规则引擎（核心改造：WHEN × WHAT × HOW）─── */
 
     /**
-     * 形态对比：默认形态（均衡）vs 当前形态
-     * 展示这个实例从"出厂"到"现在"的差异化生长
+     * 扫描所有规则，返回触发的建议列表
+     * 每条规则格式：['id'=>..., 'when'=>..., 'what'=>..., 'how'=>..., 'priority'=>...]
      */
-    public static function shapeCompare(): array {
-        $shape = self::shape();
-        $s = self::state();
-        $signals = $s['signals'] ?? [];
-        $dims = ['content' => '内容', 'growth' => '增长', 'sales' => '商业', 'community' => '社区', 'dev' => '开发'];
-        $current = [];
-        foreach ($signals as $k => $v) {
-            if (strpos($k, 'view_page:') !== 0) continue;
-            $key = str_replace('view_page:', '', $k);
-            foreach ($dims as $dk => $dn) {
-                if (preg_match(self::dimPattern($dk), $key)) $current[$dk] = ($current[$dk] ?? 0) + $v;
+    public static function scan(): array {
+        $suggestions = [];
+
+        foreach (self::allRules() as $rule) {
+            $result = self::evaluate($rule['when']);
+            if ($result['hit']) {
+                $suggestions[] = [
+                    'id'    => $rule['id'],
+                    'when'  => $result['context'],   // 触发时的具体数据
+                    'what'  => $rule['what'],         // 建议什么
+                    'how'   => $rule['how'],          // 怎么执行
+                    'priority' => $rule['priority'] ?? 'medium',
+                ];
             }
         }
-        $total = array_sum($current);
-        $rows = [];
-        foreach ($dims as $dk => $dn) {
-            $pct = $total > 0 ? round(($current[$dk] ?? 0) / $total * 100) : 0;
-            $rows[] = ['dim' => $dk, 'label' => $dn, 'pct' => $pct];
-        }
-        usort($rows, fn($a, $b) => $b['pct'] <=> $a['pct']);
-        return ['shape' => $shape['label'] ?? '未知', 'distribution' => $rows];
-    }
 
-    private static function dimPattern(string $dim): string {
-        return [
-            'content' => '/academy|articles|downloads|podcasts|courses|topic/',
-            'growth' => '/tools|docs|capability|product|category/',
-            'sales' => '/marketplace|shop|member|commerce/',
-            'community' => '/community/',
-            'dev' => '/api|developer|md-docs/',
-        ][$dim] ?? '/./';
+        // 按优先级排序：critical > high > medium > low
+        $order = ['critical' => 0, 'high' => 1, 'medium' => 2, 'low' => 3];
+        usort($suggestions, fn($a, $b) => ($order[$a['priority']] ?? 9) <=> ($order[$b['priority']] ?? 9));
+
+        return $suggestions;
     }
 
     /**
-     * 脱敏打包：把本实例的"生长形态"打包成一个可分享的主题模板
-     * 脱敏原则：只保留形态画像 + 主题偏好，绝不含任何用户/访客/内容数据
-     * @return array ['theme_id'=>, 'name'=>, 'desc'=>, 'shape'=>, 'payload'=>]
+     * 评估单条规则的触发条件
      */
-    public static function exportAnonymizedTemplate(): array {        $shape = self::shape();
-        $s = self::state();
+    private static function evaluate(array $when): array {
+        $type = $when['type'] ?? '';
+        $context = [];
 
-        // 只提取"形态特征"，脱敏（不含任何 PII）
-        $fingerprint = [
-            'shape_type' => $shape['type'] ?? 'seedling',
-            'shape_label' => $shape['label'] ?? '综合',
-            'distribution' => array_column(self::shapeCompare()['distribution'] ?? [], 'pct', 'dim'),
-            'days_alive' => self::daysAlive(),
-            'signal_count' => count($s['signals'] ?? []),
-            'resolved_count' => count(array_filter($s['milestones'] ?? [], fn($m) => ($m['type'] ?? '') === 'resolved')),
-            'active_hours' => self::activeHours(),
-        ];
+        switch ($type) {
+            case 'metric_above':
+            case 'metric_below':
+                // 直接查业务指标
+                $val = self::metric($when['metric']);
+                $threshold = $when['threshold'] ?? 0;
+                $hit = ($type === 'metric_above') ? ($val > $threshold) : ($val < $threshold);
+                return ['hit' => $hit, 'context' => ['metric' => $when['metric'], 'value' => $val, 'threshold' => $threshold]];
 
-        // 形态 → 建议的默认主题名
-        $themeSuggest = [
-            'content' => 'notion', 'growth' => 'google', 'sales' => 'apple',
-            'community' => 'default', 'dev' => 'linear', 'seedling' => 'default',
-        ][$shape['type'] ?? 'seedling'] ?? 'default';
+            case 'cdp_count_above':
+                // CDP 事件计数
+                $val = self::cdpCount($when['event'], $when['days'] ?? 7);
+                $hit = $val > ($when['threshold'] ?? 0);
+                return ['hit' => $hit, 'context' => ['event' => $when['event'], 'count' => $val, 'days' => $when['days'] ?? 7]];
 
-        return [
-            'theme_id' => 'growth_' . substr(md5(($shape['type'] ?? 'x') . date('Ymd')), 0, 8),
-            'name' => '生长形态 · ' . ($shape['label'] ?? '综合'),
-            'desc' => '从真实使用中生长出来的形态模板（已脱敏），适合 ' . ($shape['type'] ?? '综合') . ' 型站点',
-            'shape' => $shape,
-            'fingerprint' => $fingerprint,
-            'suggested_base_theme' => $themeSuggest,
-            'generated_at' => date('Y-m-d H:i:s'),
-        ];
-    }
+            case 'crm_stage_stale':
+                // CRM 阶段停滞
+                $val = self::crmStaleCount($when['stage'], $when['days'] ?? 30);
+                $hit = $val > ($when['threshold'] ?? 0);
+                return ['hit' => $hit, 'context' => ['stage' => $when['stage'], 'stale_count' => $val, 'days' => $when['days'] ?? 30]];
 
-    /** 记录活跃时段（signal 时自动记录 hour） */
-    public static function recordActivity(int $hour): void {
-        $s = self::state();
-        $s['hours'][$hour] = ($s['hours'][$hour] ?? 0) + 1;
-        if (count($s['hours']) > 24) {
-            arsort($s['hours']);
-            $s['hours'] = array_slice($s['hours'], 0, 24, true);
+            case 'content_gap':
+                // 内容缺口（弱分类文章数）
+                $val = self::weakCategoryCount($when['min_articles'] ?? 5);
+                $hit = !empty($val);
+                return ['hit' => $hit, 'context' => ['weak_categories' => $val]];
+
+            case 'module_inactive':
+                // 功能未启用
+                $val = self::moduleActive($when['module']);
+                $hit = !$val;
+                return ['hit' => $hit, 'context' => ['module' => $when['module']]];
+
+            default:
+                return ['hit' => false, 'context' => []];
         }
-        json_write(self::$file, $s);
     }
 
-    /** 获取活跃时段（前 N 个高峰小时） */
-    public static function activeHours(int $top = 4): array {
-        $s = self::state();
-        $hours = $s['hours'] ?? [];
-        arsort($hours);
-        return array_slice(array_keys($hours), 0, $top);
-    }
+    /* ─── 规则清单（可扩展）─── */
 
-    /**
-     * 生成周期报告（周报/月报摘要）
-     * @return array {period, highlights, counts}
-     */
-    public static function report(int $days = 7): array {
-        $s = self::state();
-        $milestones = $s['milestones'] ?? [];
-        $since = time() - $days * 86400;
-        $recent = array_filter($milestones, fn($m) => ($m['ts'] ?? 0) >= $since);
-
-        $byType = [];
-        foreach ($recent as $m) $byType[$m['type'] ?? 'other'] = ($byType[$m['type'] ?? 'other'] ?? 0) + 1;
-
-        // 形态变化
-        $shape = self::shape();
-
-        // 建议处理统计
-        $evo = SelfEvolve::state();
-        $resolvedRecent = array_filter($evo['history'] ?? [], fn($h) => strtotime($h['resolved_at'] ?? '') >= $since);
-
-        $highlights = [];
-        if (count($resolvedRecent) > 0) $highlights[] = "采纳了 " . count($resolvedRecent) . " 条迭代建议";
-        if (($byType['scan'] ?? 0) > 0) $highlights[] = "完成 " . $byType['scan'] . " 次自我体检";
-        if (($byType['resolve'] ?? 0) > 0) $highlights[] = "解决了 " . $byType['resolve'] . " 个问题";
-        $openCritical = count(array_filter($evo['suggestions'] ?? [], fn($x) => ($x['status'] ?? 'open') === 'open' && ($x['severity'] ?? '') === 'critical'));
-        if ($openCritical > 0) $highlights[] = "仍有 {$openCritical} 个严重问题待处理";
-
+    public static function allRules(): array {
         return [
-            'period' => $days . '天',
-            'since' => date('Y-m-d', $since),
-            'shape' => $shape['label'] ?? '未知',
-            'highlights' => $highlights,
-            'counts' => $byType,
-            'active_hours' => self::activeHours(),
+            // 流失预警
+            [
+                'id' => 'churn_warning',
+                'when' => ['type' => 'cdp_count_above', 'event' => 'page_view', 'days' => 7, 'threshold' => 0],
+                'what' => '过去 7 天有访客但无注册转化，说明落地页或注册流程有卡点',
+                'how' => '建议：在落地页加一个"30秒注册"入口，或优化注册流程减少字段',
+                'priority' => 'high',
+            ],
+            // SEO 内容缺口
+            [
+                'id' => 'seo_content_gap',
+                'when' => ['type' => 'content_gap', 'min_articles' => 3],
+                'what' => '发现某些业务方向文章不足，存在内容缺口',
+                'how' => '建议：查看"GEO 话题监控"生成的选题，优先为弱分类方向写内容',
+                'priority' => 'high',
+            ],
+            // CRM 线索停滞
+            [
+                'id' => 'crm_stale_leads',
+                'when' => ['type' => 'crm_stage_stale', 'stage' => 'new', 'days' => 7, 'threshold' => 1],
+                'what' => '有新线索超过 7 天未跟进',
+                'how' => '建议：查看 CRM 线索列表，跟进高意向线索',
+                'priority' => 'critical',
+            ],
+            // CDP 数据采集不足
+            [
+                'id' => 'cdp_thin',
+                'when' => ['type' => 'cdp_count_above', 'event' => 'page_view', 'days' => 30, 'threshold' => 0],
+                'what' => '过去 30 天有访客但无 CDP 事件（埋点可能未生效）',
+                'how' => '建议：检查前端埋点脚本是否正常加载（看 /xmp/cdp 有无事件）',
+                'priority' => 'medium',
+            ],
+            // 营销自动化未启用
+            [
+                'id' => 'ma_inactive',
+                'when' => ['type' => 'module_inactive', 'module' => 'automation'],
+                'what' => '营销自动化功能未启用',
+                'how' => '建议：在"自动化"模块创建一个"新用户欢迎序列"工作流',
+                'priority' => 'medium',
+            ],
+            // 内容发布频率低
+            [
+                'id' => 'low_publish_rate',
+                'when' => ['type' => 'cdp_count_above', 'event' => 'content_published', 'days' => 14, 'threshold' => 0],
+                'what' => '过去 14 天无新内容发布',
+                'how' => '建议：用 GEO 话题监控生成选题，写一篇 800 字的短文',
+                'priority' => 'low',
+            ],
         ];
+    }
+
+    /* ─── 业务指标查询（连接真实数据）─── */
+
+    private static function metric(string $name): float {
+        try {
+            switch ($name) {
+                case 'monthly_revenue':
+                    $r = Database::query("SELECT SUM(amount) s FROM orders WHERE status='paid' AND paid_at >= ?", [date('Y-m-d', strtotime('-30 days'))]);
+                    return (float)($r[0]['s'] ?? 0);
+                case 'monthly_visitors':
+                    $r = Database::query("SELECT COUNT(DISTINCT uid) c FROM events WHERE event='page_view' AND created_at >= ?", [date('Y-m-d', strtotime('-30 days'))]);
+                    return (float)($r[0]['c'] ?? 0);
+                case 'open_ticket_count':
+                    $r = Database::query("SELECT COUNT(*) c FROM leads WHERE stage IN ('new','contacted')");
+                    return (float)($r[0]['c'] ?? 0);
+                case 'published_articles':
+                    $articles = json_read(DATA_DIR . '/articles/index.json');
+                    return count(array_filter($articles, fn($a) => ($a['status'] ?? '') === 'published'));
+                default:
+                    return 0;
+            }
+        } catch (Exception $e) { return 0; }
+    }
+
+    private static function cdpCount(string $event, int $days): int {
+        try {
+            $r = Database::query("SELECT COUNT(*) c FROM events WHERE event=? AND created_at >= ?", [$event, date('Y-m-d', strtotime("-{$days} days"))]);
+            return (int)($r[0]['c'] ?? 0);
+        } catch (Exception $e) { return 0; }
+    }
+
+    private static function crmStaleCount(string $stage, int $days): int {
+        try {
+            $r = Database::query("SELECT COUNT(*) c FROM leads WHERE stage=? AND updated_at < ?", [$stage, date('Y-m-d', strtotime("-{$days} days"))]);
+            return (int)($r[0]['c'] ?? 0);
+        } catch (Exception $e) { return 0; }
+    }
+
+    private static function weakCategoryCount(int $min): array {
+        $articles = json_read(DATA_DIR . '/articles/index.json');
+        $cats = [];
+        foreach ($articles as $a) {
+            $c = $a['category'] ?? '未分类';
+            $cats[$c] = ($cats[$c] ?? 0) + 1;
+        }
+        $weak = [];
+        foreach ($cats as $name => $cnt) {
+            if ($cnt < $min) $weak[] = ['category' => $name, 'count' => $cnt];
+        }
+        usort($weak, fn($a, $b) => $a['count'] <=> $b['count']);
+        return $weak;
+    }
+
+    private static function moduleActive(string $module): bool {
+        switch ($module) {
+            case 'automation':
+                $flows = json_read(DATA_DIR . '/automation.json');
+                return !empty($flows);
+            case 'crm':
+                $leads = json_read(DATA_DIR . '/crm.json');
+                return !empty($leads['leads'] ?? []);
+            case 'subscription':
+                $state = json_read(DATA_DIR . '/subscription/state.json');
+                return !empty($state);
+            default:
+                return true;
+        }
     }
 }
