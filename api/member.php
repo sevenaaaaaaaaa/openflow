@@ -43,6 +43,7 @@ switch ($action) {
         $password = $_POST['password'] ?? '';
         $captcha = trim($_POST['captcha'] ?? '');
         $referral = trim($_POST['referral'] ?? ''); // 推荐人（大使）code
+        $goal = trim($_POST['goal'] ?? ''); // 想解决的问题
 
         if (empty($name) || empty($email) || empty($password)) {
             http_response_code(400);
@@ -84,6 +85,7 @@ switch ($action) {
             'ambassador' => false,
             'teacher_status' => 'none',   // none / pending / approved / rejected
             'points' => 0,
+            'goal' => $goal,              // 想解决的问题
             'created_at' => date('Y-m-d H:i:s'),
         ];
         // 处理推荐关系
