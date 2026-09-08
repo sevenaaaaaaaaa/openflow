@@ -96,7 +96,10 @@ function brain_badge(string $m): string {
 
 admin_header('增长大脑');
 ?>
-<div style="max-width:1080px">
+<div class="admin-layout">
+  <?php admin_sidebar('brain'); ?>
+  <div class="main">
+  <div style="max-width:1080px">
   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
     <div>
       <h1 style="margin:0 0 4px">🧠 增长大脑 <span style="font-size:12px;font-weight:600;color:var(--faint);border:1px solid var(--border);padding:1px 8px;border-radius:999px;vertical-align:middle">胚胎 · 只读建议</span></h1>
@@ -285,5 +288,7 @@ admin_header('增长大脑');
     采纳箱，并带这个人的上下文去对应模块（报价单自动预填）；本页不代执行客户侧动作，
     发出由模块自己的确认步把关。下一步给它接上跨模块的共享记忆（AUDIT-07 P1）。
   </p>
+  </div>
+</div>
 </div>
 <?php admin_footer(); ?>
