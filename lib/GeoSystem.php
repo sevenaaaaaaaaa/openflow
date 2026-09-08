@@ -13,12 +13,14 @@ function geo_settings(): array {
         'enabled' => false,
         'rss_enabled' => true,
         'ai_enabled' => false,
-        'trends_enabled' => false,    // 百度指数/Google Trends 选配
-        'trends_provider' => '',      // baidu / google
+        'search_api_enabled' => false,    // 搜索 API 三方供应商开关
+        'search_providers' => [],         // [{name, type, api_key, base_url, enabled}]
+        'trends_enabled' => false,
+        'trends_provider' => '',
         'trends_api_key' => '',
-        'auto_submit' => false,       // 发布后自动提交搜索引擎
-        'bing_api_key' => '',         // Bing Webmaster API key（选配）
-        'baidu_token' => '',          // 百度站长 token（选配）
+        'auto_submit' => false,
+        'bing_api_key' => '',
+        'baidu_token' => '',
     ], json_read(geo_settings_file()));
 }
 function geo_save_settings(array $s): bool {
@@ -66,17 +68,157 @@ function geo_fetch_rss(string $url, int $limit = 20): array {
     return $items;
 }
 
-// ─── 抓取所有启用的 RSS 源 ───
+// ─── 搜索 API 三方供应商抓取（SerpAPI / Google Custom Search / Bing Search API / 自定义）───
+function geo_fetch_search_api(string $query, array $provider, int $limit = 20): array {
+    $items = [];
+    $type = $provider['type'] ?? '';
+    $apiKey = $provider['api_key'] ?? '';
+    $baseUrl = $provider['base_url'] ?? '';
+    if (empty($type) || empty($apiKey)) return $items;
+
+    $url = '';
+    $headers = ['Content-Type: application/json'];
+
+    switch ($type) {
+        case 'serpapi':
+            // SerpAPI: https://serpapi.com/search-api
+            $url = "https://serpapi.com/search.json?q=" . urlencode($query) . "&api_key={$apiKey}&num={$limit}&hl=zh-CN&gl=cn";
+            break;
+        case 'google_custom_search':
+            // Google Custom Search JSON API
+            $cx = $provider['search_engine_id'] ?? '';
+            $url = "https://www.googleapis.com/customsearch/v1?key={$apiKey}&cx={$cx}&q=" . urlencode($query) . "&num={$limit}";
+            break;
+        case 'bing_search':
+            // Bing Search API v7
+            $url = "https://api.bing.microsoft.com/v7.0/search?q=" . urlencode($query) . "&count={$limit}";
+            $headers['Ocp-Apim-Subscription-Key'] = $apiKey;
+            break;
+        case 'baidu_search':
+            // 百度搜索 API（第三方封装）
+            $url = $baseUrl ?: "https://api.baidu.com/s";
+            $url .= "?q=" . urlencode($query) . "&limit={$limit}&apikey={$apiKey}";
+            break;
+        case 'custom':
+            // 自定义搜索 API（通用 HTTP GET + JSON 响应）
+            $url = $baseUrl . (str_contains($baseUrl, '?') ? '&' : '?') . "q=" . urlencode($query) . "&limit={$limit}&api_key={$apiKey}";
+            break;
+        default:
+            return $items;
+    }
+
+    if (empty($url)) return $items;
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 20,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_HTTPHEADER => $headers,
+    ]);
+    $resp = json_decode(curl_exec($ch), true);
+    if (!is_array($resp)) return $items;
+
+    // 标准化各供应商响应格式
+    $rows = [];
+    switch ($type) {
+        case 'serpapi':
+            foreach ($resp['organic_results'] ?? [] as $r) {
+                $rows[] = [
+                    'title' => $r['title'] ?? '',
+                    'link' => $r['link'] ?? '',
+                    'description' => $r['snippet'] ?? '',
+                    'pubDate' => $r['date'] ?? '',
+                ];
+            }
+            break;
+        case 'google_custom_search':
+            foreach ($resp['items'] ?? [] as $r) {
+                $rows[] = [
+                    'title' => $r['title'] ?? '',
+                    'link' => $r['link'] ?? '',
+                    'description' => $r['snippet'] ?? '',
+                    'pubDate' => '',
+                ];
+            }
+            break;
+        case 'bing_search':
+            foreach ($resp['webPages']['value'] ?? [] as $r) {
+                $rows[] = [
+                    'title' => $r['name'] ?? '',
+                    'link' => $r['url'] ?? '',
+                    'description' => $r['snippet'] ?? '',
+                    'pubDate' => $r['dateLastCrawled'] ?? '',
+                ];
+            }
+            break;
+        default:
+            // baidu_search / custom：尝试通用字段
+            foreach ($resp['results'] ?? $resp['data'] ?? $resp['items'] ?? [] as $r) {
+                $rows[] = [
+                    'title' => $r['title'] ?? $r['name'] ?? '',
+                    'link' => $r['url'] ?? $r['link'] ?? '',
+                    'description' => $r['description'] ?? $r['snippet'] ?? '',
+                    'pubDate' => $r['date'] ?? $r['pubDate'] ?? '',
+                ];
+            }
+            break;
+    }
+
+    return array_slice($rows, 0, $limit);
+}
+
+// ─── 抓取所有启用的源（RSS + 搜索 API）────
 function geo_fetch_all(int $limit = 8): array {
     $all = [];
-    foreach (geo_sources() as $src) {
-        if (empty($src['enabled']) || empty($src['url'])) continue;
-        $items = geo_fetch_rss($src['url'], $limit);
-        foreach ($items as $it) $all[] = ['source' => $src['name'] ?? '', 'item' => $it];
+    $settings = geo_settings();
+
+    // 1. RSS 源
+    if (!empty($settings['rss_enabled'])) {
+        foreach (geo_sources() as $src) {
+            if (empty($src['enabled']) || empty($src['url'])) continue;
+            $items = geo_fetch_rss($src['url'], $limit);
+            foreach ($items as $it) $all[] = ['source' => $src['name'] ?? 'RSS', 'item' => $it, 'channel' => 'rss'];
+        }
     }
+
+    // 2. 搜索 API 供应商（SerpAPI / Google / Bing / 百度 / 自定义）
+    if (!empty($settings['search_api_enabled'])) {
+        // 采集关键词：从站点设置/文章标题/关键词库提取
+        $queries = geo_collect_queries($settings);
+        foreach (($settings['search_providers'] ?? []) as $prov) {
+            if (empty($prov['enabled'])) continue;
+            foreach (array_slice($queries, 0, 3) as $q) {
+                $items = geo_fetch_search_api($q, $prov, 5);
+                foreach ($items as $it) $all[] = ['source' => ($prov['name'] ?? $prov['type'] ?? '搜索API') . " [{$q}]", 'item' => $it, 'channel' => 'search_api', 'query' => $q];
+            }
+        }
+    }
+
     // 按时间倒序
     usort($all, fn($a,$b) => strcmp($b['item']['pubDate'] ?? '', $a['item']['pubDate'] ?? ''));
     return $all;
+}
+
+// ─── 采集关键词（供搜索 API 用）───
+function geo_collect_queries(array $settings = []): array {
+    $queries = [];
+    // 1. 站点核心主题词
+    $siteKeywords = [
+        '一人公司增长', 'AI 自动化营销', 'CDP 用户画像',
+        '营销自动化工作流', 'SEO 内容策略', '小团队增长系统',
+    ];
+    $queries = array_merge($queries, $siteKeywords);
+    // 2. 从近期热门文章标题提取关键词（前10篇）
+    if (file_exists(DATA_DIR . '/articles/index.json')) {
+        $articles = json_read(DATA_DIR . '/articles/index.json');
+        foreach (array_slice($articles, 0, 10) as $a) {
+            $title = $a['title'] ?? '';
+            if ($title) $queries[] = mb_substr($title, 0, 20);
+        }
+    }
+    // 3. 去重并限制
+    return array_values(array_unique(array_slice($queries, 0, 15)));
 }
 
 // ─── AI 提炼热点话题 ───
