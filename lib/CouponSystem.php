@@ -38,7 +38,10 @@ function coupon_save(array $d): array {
             'status' => ($d['status'] ?? 'active') === 'active' ? 'active' : 'inactive',
         ];
         if ($id !== '') {
-            Database::execute("UPDATE coupons SET code=?, name=?, type=?, value=?, min_amount=?, max_uses=?, start_time=?, end_time=?, status=? WHERE id=?", [$fields['code'],$fields['name'],$fields['type'],$fields['value'],$fields['min_amount'],$fields['max_uses'],$fields['start_time'],$fields['end_time'],$fields['status'],$id]);
+            // INSERT OR REPLACE —— 有 id 时直接 upsert，不存在则插入，存在则更新
+            $db = Database::conn();
+            $db->prepare("INSERT OR REPLACE INTO coupons (id,code,name,type,value,min_amount,max_uses,used_count,start_time,end_time,status,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
+               ->execute([$id,$fields['code'],$fields['name'],$fields['type'],$fields['value'],$fields['min_amount'],$fields['max_uses'],0,$fields['start_time'],$fields['end_time'],$fields['status'],date('Y-m-d H:i:s')]);
             return ['ok'=>true, 'id'=>$id];
         }
         $newId = 'c' . date('YmdHis') . substr(bin2hex(random_bytes(3)), 0, 5);
