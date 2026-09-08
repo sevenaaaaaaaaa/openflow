@@ -267,4 +267,89 @@ class GrowthEngine {
                 return true;
         }
     }
+
+    /* ─── 兼容旧版：形态画像 / 周报 / 形态对比 / 脱敏模板 / 权重 ─── */
+
+    /** 生长形态画像（由规则权重与里程碑推导） */
+    public static function shape(): array {
+        $s = self::state();
+        $sig = $s['signals'] ?? [];
+        $strengths = [];
+        foreach (['bug'=>'修复', 'content'=>'内容', 'perf'=>'性能', 'routing'=>'路由', 'interaction'=>'交互'] as $k=>$label) {
+            $cnt = 0;
+            foreach ($sig as $key=>$v) if (str_contains($key, $k)) $cnt += $v;
+            if ($cnt > 0) $strengths[] = $label . '×' . $cnt;
+        }
+        if (empty($strengths)) $strengths[] = '新生';
+        return [
+            'label'    => count($sig) > 30 ? '茁壮' : (count($sig) > 10 ? '成长' : '新生'),
+            'born_at'  => $s['born_at'] ?? time(),
+            'strengths' => array_slice($strengths, 0, 3),
+            'advice'   => count($sig) > 30 ? '建议进入优化期，逐条采纳体检建议。' : '持续积累信号后，生长形态会自然升级。',
+        ];
+    }
+
+    /** 按类别计算规则权重 */
+    public static function weightFor(string $category): int {
+        $s = self::state();
+        $w = 0;
+        foreach ($s['signals'] ?? [] as $key=>$v) {
+            if (str_contains($key, $category) || str_contains($key, ':' . $category)) $w += $v;
+        }
+        return max(1, min(5, 1 + (int)floor($w / 4)));
+    }
+
+    /** 近 N 日概览周报 */
+    public static function report(int $days = 7): array {
+        $s = self::state();
+        $highlights = [];
+        $milestones = $s['milestones'] ?? [];
+        $cut = time() - $days * 86400;
+        $recent = array_filter($milestones, fn($m) => ($m['ts'] ?? 0) > $cut);
+        $resolved = array_filter($recent, fn($m) => ($m['type'] ?? '') === 'resolved');
+        if ($resolved) $highlights[] = '采纳并解决了 ' . count($resolved) . ' 项改进建议';
+        if (!empty($highlights)) $highlights[] = '系统已累计 ' . count($milestones) . ' 个成长里程碑';
+        if (empty($highlights)) $highlights[] = '近 ' . $days . ' 天暂无新动态，持续扫描会有发现';
+        return ['period' => $days, 'highlights' => array_slice($highlights, 0, 5), 'active_hours' => self::activeHours()];
+    }
+
+    /** 形态对比分布 */
+    public static function shapeCompare(): array {
+        $s = self::state();
+        $sig = $s['signals'] ?? [];
+        $dist = [];
+        foreach (['bug','content','perf','routing','interaction'] as $k=>$label) {
+            $cnt = 0;
+            foreach ($sig as $key=>$v) if (str_contains($key, $k)) $cnt += $v;
+            if ($cnt > 0) $dist[] = ['cat' => $label, 'n' => $cnt];
+        }
+        usort($dist, fn($a, $b) => $b['n'] <=> $a['n']);
+        return ['shape' => count($sig) > 30 ? '茁壮' : '新生', 'distribution' => array_slice($dist, 0, 5)];
+    }
+
+    /** 脱敏导出模板（用于市场上架打包） */
+    public static function exportAnonymizedTemplate(): array {
+        $s = self::state();
+        $sig = $s['signals'] ?? [];
+        $sig = array_map(fn($v) => 1, $sig);
+        return [
+            'name' => '增长体检包 v' . date('ymd'),
+            'version' => '1.0',
+            'signals' => $sig,
+            'milestones' => count($s['milestones'] ?? []),
+            'shipped_at' => time(),
+        ];
+    }
+
+    /** 活跃时段（小时分布） */
+    private static function activeHours(): array {
+        $milestones = self::state()['milestones'] ?? [];
+        $hours = [];
+        foreach ($milestones as $m) {
+            $h = (int)date('G', $m['ts'] ?? time());
+            $hours[$h] = ($hours[$h] ?? 0) + 1;
+        }
+        arsort($hours);
+        return array_slice(array_keys($hours), 0, 3);
+    }
 }
