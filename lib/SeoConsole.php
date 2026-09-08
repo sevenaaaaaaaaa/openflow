@@ -115,12 +115,43 @@ function seo_fetch_baidu(): array {
     return is_array($resp) ? $resp : [];
 }
 
+// ─── 拉取 Yandex Webmaster 数据 ───
+function seo_fetch_yandex(): array {
+    $s = seo_console_settings();
+    $token = $s['yandex_token'] ?? '';
+    $host = $s['yandex_host'] ?? '';
+    if (empty($token) || empty($host)) return [];
+    $url = 'https://api.webmaster.yandex.net/v4/user/' . ($s['yandex_user_id'] ?? 'self') . '/hosts/' . urlencode($host) . '/search-queries/popular?limit=25&query_indicator=ALL';
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 20,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_HTTPHEADER => ["Authorization: OAuth $token", "Content-Type: application/json"],
+    ]);
+    $resp = json_decode(curl_exec($ch), true);
+    if (!is_array($resp)) return [];
+    // 统一成 [{query, clicks, impressions, ctr, position}] 格式
+    $rows = [];
+    foreach ($resp['queries'] ?? [] as $q) {
+        $rows[] = [
+            'query' => $q['query_text'] ?? '',
+            'clicks' => (int)($q['clicks'] ?? 0),
+            'impressions' => (int)($q['impressions'] ?? 0),
+            'ctr' => round(($q['ctr'] ?? 0) * 100, 2),
+            'position' => round(($q['position'] ?? 0), 1),
+        ];
+    }
+    return $rows;
+}
+
 // ─── 统一拉取 + 缓存 ───
 function seo_console_pull(): array {
     $data = ['fetched_at'=>date('Y-m-d H:i:s')];
     $data['gsc'] = seo_fetch_gsc();
     $data['bing'] = seo_fetch_bing();
     $data['baidu'] = seo_fetch_baidu();
+    $data['yandex'] = seo_fetch_yandex();
     seo_cache_save($data);
     return $data;
 }
