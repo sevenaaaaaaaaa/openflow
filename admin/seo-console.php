@@ -21,6 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     $settings['bing_site'] = trim($_POST['bing_site'] ?? '');
     $settings['baidu_token'] = trim($_POST['baidu_token'] ?? '');
     $settings['baidu_site'] = trim($_POST['baidu_site'] ?? '');
+    $settings['yandex_token'] = trim($_POST['yandex_token'] ?? '');
+    $settings['yandex_host'] = trim($_POST['yandex_host'] ?? '');
+    $settings['yandex_user_id'] = trim($_POST['yandex_user_id'] ?? 'self');
     $settings['public_enabled'] = isset($_POST['public_enabled']);
     $settings['public_slug'] = trim($_POST['public_slug'] ?? '') ?: 'seo-board';
     // 广告平台
@@ -52,7 +55,7 @@ if (!defined('OF_EMBED')) admin_header('SEO 站长工具');
   <div class="main">
 <?php endif; ?>
     <h1> SEO 站长工具</h1>
-    <p class="sub">接入 Google Search Console / Bing / 百度 · 公开看板 · 广告回传</p>
+    <p class="sub">接入 Google Search Console / Bing / 百度 / Yandex · 公开看板 · 广告回传</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
     <!-- 公开看板 -->
@@ -87,6 +90,16 @@ if (!defined('OF_EMBED')) admin_header('SEO 站长工具');
         <div class="field-row">
           <div class="field"><label>百度 Token</label><input type="password" name="baidu_token" value="<?=htmlspecialchars($settings['baidu_token'])?>"></div>
           <div class="field"><label>百度站点</label><input type="text" name="baidu_site" value="<?=htmlspecialchars($settings['baidu_site'])?>" placeholder="example.com"></div>
+        </div>
+
+        <h3 style="font-size:14px;margin:16px 0 8px;color:#2b5f7e">  Yandex Webmaster</h3>
+        <p class="text-sm text-muted mb-2">在 <a href="https://webmaster.yandex.com" target="_blank">Yandex Webmaster</a> 获取 OAuth Token，然后填写主机名（含协议）。</p>
+        <div class="field-row">
+          <div class="field"><label>OAuth Token</label><input type="password" name="yandex_token" value="<?=htmlspecialchars($settings['yandex_token'] ?? '')?>"></div>
+          <div class="field"><label>主机名</label><input type="text" name="yandex_host" value="<?=htmlspecialchars($settings['yandex_host'] ?? '')?>" placeholder="https://yourdomain.com"></div>
+        </div>
+        <div class="field-row" style="margin-top:8px">
+          <div class="field"><label>用户ID（默认 self）</label><input type="text" name="yandex_user_id" value="<?=htmlspecialchars($settings['yandex_user_id'] ?? 'self')?>" placeholder="self"></div>
         </div>
 
         <h3 style="font-size:14px;margin:16px 0 8px;color:#2b5f7e">🌍 公开看板</h3>
