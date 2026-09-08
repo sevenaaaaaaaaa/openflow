@@ -172,8 +172,10 @@ foreach ($wxMass as $task) {
 }
 if (count($wxMass) > 0) json_write($wxMassFile, $wxMassRemaining);
 
-// 订阅过期检查
+// 订阅过期检查 + 自动续费 + 到期提醒
 sub_expire_check();
+if (function_exists('sub_attempt_renewals')) sub_attempt_renewals();
+if (function_exists('sub_send_reminders')) sub_send_reminders();
 
 // 每日存储维护（每 6 小时一次的频率保护）
 $lastMaintain = (int)(json_read(DATA_DIR . '/storage-maintain.json')['ts'] ?? 0);
