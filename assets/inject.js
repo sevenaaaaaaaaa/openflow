@@ -6,6 +6,33 @@
 (function () {
   var SCRIPT_URL = '/api/scripts.php?path=' + encodeURIComponent(location.pathname);
   var SCRIPT_ID = 'fc-site-injected';
+  var topInsetObserver = null;
+
+  /* 动态顶部条与共享外壳的占位协议：多条时依次堆叠，并把总高度暴露给 shell。 */
+  function syncExternalTopInset() {
+    if (!document.body) return;
+    var top = 0;
+    Array.prototype.slice.call(document.querySelectorAll('[data-of-top-inset]')).forEach(function (bar) {
+      bar.style.top = top + 'px';
+      top += bar.offsetHeight;
+    });
+    document.body.style.setProperty('--external-top-inset', top + 'px');
+  }
+  function registerTopInsetBar(bar) {
+    bar.setAttribute('data-of-top-inset', '');
+    if ('ResizeObserver' in window) {
+      if (!topInsetObserver) topInsetObserver = new ResizeObserver(syncExternalTopInset);
+      topInsetObserver.observe(bar);
+    }
+    syncExternalTopInset();
+    requestAnimationFrame(syncExternalTopInset);
+  }
+  function removeTopInsetBar(bar) {
+    if (topInsetObserver) topInsetObserver.unobserve(bar);
+    bar.remove();
+    syncExternalTopInset();
+  }
+  window.addEventListener('resize', syncExternalTopInset);
 
   function injectScript(s) {
     if (s.type === 'url') {
@@ -166,10 +193,11 @@
         var x = document.createElement('span');
         x.textContent = '✕';
         x.style.cssText = 'position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:.7';
-        x.addEventListener('click', function(e){ e.preventDefault(); bar.remove(); });
+        x.addEventListener('click', function(e){ e.preventDefault(); removeTopInsetBar(bar); });
         bar.appendChild(x);
       }
       document.body.appendChild(bar);
+      registerTopInsetBar(bar);
       fcTrack('component_view', { label: 'top_bar' });
     }
     // 2) 底部 CTA
@@ -299,10 +327,11 @@
     if (p.dismissible) {
       var x = document.createElement('span');
       x.textContent = '✕'; x.style.cssText = 'position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:.7';
-      x.addEventListener('click', function(e){ e.preventDefault(); bar.remove(); promoHit(p.id, 'dismiss'); });
+      x.addEventListener('click', function(e){ e.preventDefault(); removeTopInsetBar(bar); promoHit(p.id, 'dismiss'); });
       bar.appendChild(x);
     }
     document.body.appendChild(bar);
+    if (!atBottom) registerTopInsetBar(bar);
     promoHit(p.id, 'impression');
   }
   function showPromoPopup(p) {

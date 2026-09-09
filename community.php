@@ -59,11 +59,11 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260903a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260909a">
 <style>
 /* 社区页独有：话题侧栏项、帖子卡与投票列、发帖框。其余全部来自 modules.css。 */
 .g-main-aside.aside-left{grid-template-columns:minmax(0,240px) minmax(0,1fr)}
-.g-main-aside.aside-left>aside{position:sticky;top:calc(var(--chrome-h) + 24px)}
+.g-main-aside.aside-left>aside{position:sticky;top:var(--shell-sticky-top)}
 .topic-nav{display:flex;flex-direction:column;gap:2px}
 .topic-nav a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;font-size:14px;color:var(--muted);transition:background .15s,color .15s}
 .topic-nav a:hover{background:var(--hover);color:var(--fg)}

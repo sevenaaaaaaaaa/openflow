@@ -95,7 +95,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
 .lesson .chk.done{background:var(--ok);border-color:var(--ok)}
 .lesson .chk.playing{background:var(--warn);border-color:var(--warn)}
 .lesson .lock{width:14px;height:14px;color:var(--warn)}
-.buy-card{position:sticky;top:20px;display:flex;flex-direction:column;gap:12px}
+.buy-card{position:sticky;top:var(--shell-sticky-top);display:flex;flex-direction:column;gap:12px}
 .buy-card .price{font-family:var(--font-display);font-size:32px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .buy-card .price s{font-size:16px;font-weight:400;color:var(--faint)}
 .buy-card .btn{width:100%}

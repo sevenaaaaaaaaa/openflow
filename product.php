@@ -33,7 +33,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。 -->
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260903a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260909a">
 <style>
 /* 产品页独有：四个演示部件。其余全部来自 modules.css。 */
 .mock-canvas{position:relative;border-radius:14px;background:var(--bg-soft);border:1px solid var(--border);height:190px;overflow:hidden;margin:18px}

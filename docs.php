@@ -148,7 +148,7 @@ if ($inlineCta['enabled'] ?? false) {
 <style>
 /* 文档中心独有：目录侧栏、API 行。markdown 输出的 .md-* 类映射到 .prose 的排版。 */
 .g-main-aside.aside-left{grid-template-columns:minmax(0,230px) minmax(0,1fr)}
-.g-main-aside.aside-left>aside{position:sticky;top:calc(var(--chrome-h) + 24px);max-height:calc(100vh - 120px);overflow-y:auto}
+.g-main-aside.aside-left>aside{position:sticky;top:var(--shell-sticky-top);max-height:calc(100vh - var(--shell-sticky-top) - 24px);overflow-y:auto}
 .cat-nav{display:flex;flex-direction:column;gap:2px}
 .cat-nav a{display:block;padding:8px 12px;border-radius:10px;font-size:13.5px;color:var(--muted);transition:background .15s,color .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cat-nav a:hover{background:var(--hover);color:var(--fg)}
