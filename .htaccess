@@ -65,6 +65,8 @@ RewriteRule ^xmp/image-seo/?$      /xmp/seo-center?tab=images     [R=301,L,NE]
 RewriteRule ^xmp/redirects/?$      /xmp/seo-center?tab=redirects  [R=301,L,NE]
 
 RewriteRule ^xmp/?$ admin/index.php [L]
+# 插件设置页：/xmp/plugin/{插件ID} → admin/plugin-page.php（必须在通用 xmp 规则之前）
+RewriteRule ^xmp/plugin/([a-z0-9-]+)/?$ admin/plugin-page.php?plugin=$1 [L,QSA]
 RewriteRule ^xmp/([a-z0-9-]+)/?$ admin/$1.php [L,QSA]
 RewriteRule ^xmp/(.+)$ admin/$1 [L,QSA]
 
@@ -107,6 +109,8 @@ RewriteRule ^community-post/(.+)$ community-post.php?id=$1 [L,QSA]
 # 生态资产详情伪静态（asset.php 头部注释里承诺了这条路径，但一直没有规则；个人中心「为你推荐」链到这里 → 404）
 RewriteRule ^(skill|plugin|theme)/([^/]+)/?$ asset.php?type=$1&id=$2 [L,QSA,B]
 
+# 插件 API 路由：/api/plugin/{插件ID}/{路径} → api/plugin.php（必须在通用 API 规则之前）
+RewriteRule ^api/plugin/([a-z0-9-]+)(?:/(.*))?$ api/plugin.php?plugin=$1&path=$2 [L,QSA]
 # API：前台脚本用无后缀形式请求（/api/member?action=login）。以前没有这条规则，
 # 服务器不开 MultiViews 时全部 404 —— 登录 / 注册弹窗提交后直接失败。
 RewriteCond %{REQUEST_FILENAME}.php -f

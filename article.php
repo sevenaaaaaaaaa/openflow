@@ -371,6 +371,7 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
     </div>
 
     <?php if (function_exists('ads_render')): ?><div style="margin-top:24px"><?=ads_render('article_bottom')?></div><?php endif; ?>
+    <?php if (class_exists('PluginSystem')) PluginSystem::render_front_slot('article_after', ['article' => $article]); ?>
 
     <div class="actions">
       <button class="act" id="likeBtn"><?=htmlspecialchars((int)($artStats['likes'] ?? 0))?> 赞</button>

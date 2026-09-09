@@ -480,10 +480,18 @@ function admin_nav_render(string $current, string $script = ''): void {
     <?php endforeach; ?>
     <div class="sb-panel-h" style="margin-top:14px">最近打开</div>
     <div id="sbRecent" class="sb-recent" data-current="<?=htmlspecialchars($current)?>" data-current-label="<?=htmlspecialchars($loc['label'])?>"></div>
-    <?php if (class_exists('PluginSystem')): ob_start(); PluginSystem::do_action('admin_sidebar_menu', $current); $__plug = trim((string)ob_get_clean()); if ($__plug !== ''): ?>
+    <?php
+    // 插件菜单：结构化注册（register_admin_menu）优先渲染为原生导航项；旧的 admin_sidebar_menu 原始 HTML 钩子保留兼容
+    $__plugMenus = class_exists('PluginSystem') ? PluginSystem::get_admin_menus() : [];
+    $__plugRaw = '';
+    if (class_exists('PluginSystem')) { ob_start(); PluginSystem::do_action('admin_sidebar_menu', $current); $__plugRaw = trim((string)ob_get_clean()); }
+    if ($__plugMenus || $__plugRaw !== ''): ?>
     <div class="sb-panel-h" style="margin-top:14px">插件</div>
-    <div class="sb-plugins"><?=$__plug?></div>
-    <?php endif; endif; ?>
+    <?php foreach ($__plugMenus as $__pm): $pmAct = ($current === 'plugin-' . $__pm['id']); ?>
+    <a href="<?=htmlspecialchars($__pm['href'])?>" class="sb-link<?=$pmAct ? ' active' : ''?>"<?=$pmAct ? ' aria-current="page"' : ''?>><span><?=htmlspecialchars($__pm['label'])?></span></a>
+    <?php endforeach; ?>
+    <?php if ($__plugRaw !== ''): ?><div class="sb-plugins"><?=$__plugRaw?></div><?php endif; ?>
+    <?php endif; ?>
   </div>
   <div class="sb-foot mono">OpenFlow</div>
 </nav>

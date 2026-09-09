@@ -272,6 +272,10 @@ try {
     $webhookRetry = wh_process_queue(50);
 } catch (Throwable $e) { $webhookRetry = ['error' => $e->getMessage()]; }
 
+// ── 插件定时任务（PluginSystem::register_schedule 注册的到点执行）──
+$pluginCron = ['ran' => 0];
+try { $pluginCron = PluginSystem::run_schedules(); } catch (Throwable $e) { $pluginCron = ['error' => $e->getMessage()]; }
+
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge,
-                  'webhook_retry' => $webhookRetry, 'time' => date('Y-m-d H:i:s')]);
+                  'webhook_retry' => $webhookRetry, 'plugin_cron' => $pluginCron, 'time' => date('Y-m-d H:i:s')]);

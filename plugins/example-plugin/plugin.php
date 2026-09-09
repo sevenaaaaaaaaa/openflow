@@ -45,8 +45,35 @@ PluginSystem::add_action('form_submitted', function ($formId, $formType, $formDa
     }
 });
 
-// 4. 侧边栏菜单
+// 4. 侧边栏菜单（旧式原始 HTML 钩子，仍兼容；新插件建议用下方 register_admin_menu）
 PluginSystem::add_action('admin_sidebar_menu', function ($current) {
     $active = ($current === 'example-plugin') ? 'active' : '';
     echo '<a href="../plugins/example-plugin/view.php" class="' . $active . '">示例插件</a>';
+});
+
+// ═══════════ 以下为 v2 插件 API（推荐用法）═══════════
+
+// 5. 注册 API 端点：GET /api/plugin/example-plugin/stats
+PluginSystem::register_api_route('example-plugin', 'GET', 'stats', function () {
+    return PluginApiResponse::json([
+        'articles' => count(json_read(DATA_DIR . '/articles.json')['items'] ?? []),
+        'time'     => date('c'),
+    ]);
+});
+
+// 6. 注册后台菜单 + 设置页：/xmp/plugin/example-plugin
+PluginSystem::register_admin_menu(['id' => 'example-plugin', 'label' => '示例插件', 'order' => 50]);
+PluginSystem::register_admin_page('example-plugin', function ($pluginId) {
+    echo '<div class="card"><h2>示例插件设置</h2>'
+       . '<p class="hint">这是用 <code>register_admin_page()</code> 注册的设置页，外壳（登录/侧栏）由系统提供。</p></div>';
+});
+
+// 7. 前台插槽：文章正文后追加一行署名
+PluginSystem::register_front_slot('article_after', function ($ctx) {
+    echo '<p style="font-size:12px;color:var(--faint);margin-top:20px">— 由示例插件注入（article_after 插槽）</p>';
+});
+
+// 8. 定时任务：每小时写一行心跳日志（由 api/cron.php 驱动）
+PluginSystem::register_schedule('example-heartbeat', 'hourly', function () {
+    @file_put_contents(DATA_DIR . '/plugins/example-plugin/heartbeat.log', date('c') . "\n", FILE_APPEND);
 });
