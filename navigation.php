@@ -60,7 +60,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260903a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260909a">
 <style>
 /* 导航站独有：搜索框、热搜、分类侧栏项、站点卡评分。其余全部来自 modules.css。 */
 .search{display:flex;gap:10px;width:min(560px,100%);margin:0 auto}
@@ -75,7 +75,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 .cat-nav .em{width:16px;height:16px;flex:0 0 auto;color:var(--faint)}.cat-nav .em svg{width:16px;height:16px}.cat-nav a.active .em,.cat-nav a:hover .em{color:var(--accent)}
 .fl-h{display:flex;align-items:center;gap:10px}.fl-h .em{width:30px;height:30px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}.fl-h .em svg{width:16px;height:16px}
 .g-main-aside.aside-left{grid-template-columns:minmax(0,220px) minmax(0,1fr)}
-.g-main-aside.aside-left>aside{position:sticky;top:calc(var(--chrome-h) + 24px)}
+.g-main-aside.aside-left>aside{position:sticky;top:var(--shell-sticky-top)}
 .site-card{display:flex;flex-direction:column;gap:8px;padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);backdrop-filter:blur(16px) saturate(150%);transition:transform .3s var(--ease-spring),box-shadow .3s,border-color .3s}
 .site-card:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:var(--shadow)}
 .site-card .hd{display:flex;align-items:center;gap:10px}

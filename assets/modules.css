@@ -24,7 +24,7 @@ button{font:inherit;background:none;border:none;color:inherit;cursor:pointer}
 input,textarea,select{font:inherit}
 ::selection{background:var(--accent-soft);color:var(--accent)}
 a:focus-visible,button:focus-visible,[role="switch"]:focus-visible,[role="button"]:focus-visible{outline:none;box-shadow:0 0 0 3px oklch(52% .17 258/.55);border-radius:9px}
-[data-od-anchor]{scroll-margin-top:calc(var(--chrome-h) + 16px)}
+[data-od-anchor]{scroll-margin-top:var(--anchor-offset,calc(var(--chrome-h) + 16px))}
 .skip{position:fixed;top:-60px;left:14px;z-index:130;display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:10px;background:var(--accent);color:var(--on-accent);font-size:13.5px;font-weight:700;box-shadow:var(--shadow-sm);transition:top .2s var(--ease-out)}
 .skip:focus-visible{top:12px}
 .mono{font-family:var(--font-mono);font-size:.92em}
@@ -37,14 +37,33 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   radial-gradient(40% 34% at 55% 108%,var(--blob-c),transparent 70%)}
 
 /* ── chrome 外壳（SSR） ── */
-/* ── 外壳几何：单坐标系（v8，2026-09-02）──
-   侧栏 fixed 在左列；顶栏与正文都在右列，用同一个 --content-l 左让位、同一个 --gx 内边距，
-   所以顶栏宽度 == 正文内容宽度、导航中心 == 正文中心，任何侧栏状态 / 滚动位置下都成立。
-   顶栏是 sticky 而不是 fixed：它占据文档流、随正文列变宽变窄；滚动只改表面（背景 / 阴影 / 边框），
-   永远不改几何（top / left / width / height / 字号），所以不会再有「滑动时缩放漂移」。 */
-body{--gx:clamp(16px,4vw,40px);--content-l:calc(var(--sb-w) + 34px);--chrome-top:10px}
+/* ── 外壳几何：双阶段、单状态源（v9，2026-09-09）──
+   top：顶栏横向通栏，侧栏从顶栏下方开始；docked：顶栏左边界让开侧栏并成为药丸，
+   侧栏只把 top 向上延伸。正文始终留在右列，不随滚动移动；侧栏 full/rail/closed 也只管宽度。
+   两阶段只改变外框几何，顶栏高度、字号与内部三栏网格不变。 */
+body{
+  --gx:clamp(16px,4vw,40px);
+  --content-l:calc(var(--sb-w) + 34px);
+  --chrome-top:10px;
+  --external-top-inset:0px;
+  --shell-gap:10px;
+  --chrome-y:var(--external-top-inset);
+  --chrome-left:0px;
+  --chrome-right:0px;
+  --chrome-radius:0px;
+  --sidebar-top:calc(var(--external-top-inset) + var(--chrome-h) + var(--shell-gap));
+  --shell-sticky-top:calc(var(--external-top-inset) + var(--chrome-top) + var(--chrome-h) + 14px);
+  --anchor-offset:calc(var(--external-top-inset) + var(--chrome-top) + var(--chrome-h) + 16px);
+}
+body[data-shell-phase="docked"]{
+  --chrome-y:calc(var(--external-top-inset) + var(--chrome-top));
+  --chrome-left:calc(var(--content-l) + var(--gx));
+  --chrome-right:var(--gx);
+  --chrome-radius:999px;
+  --sidebar-top:calc(var(--external-top-inset) + var(--chrome-top));
+}
 body[data-sb="closed"],body[data-sb="drawer"]{--content-l:0px}
-#chrome{position:sticky;top:var(--chrome-top);z-index:60;height:var(--chrome-h);margin:var(--chrome-top) var(--gx) 0 calc(var(--content-l) + var(--gx));display:flex;align-items:center;padding:0 10px 0 12px;border-radius:999px;border:1px solid var(--border);background:color-mix(in oklab,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:inset 0 1px 0 color-mix(in oklab,var(--surface-strong),transparent 40%);transition:margin-left .45s var(--ease-spring),background .3s,box-shadow .3s,border-color .3s;container-type:inline-size;container-name:chrome}
+#chrome{position:sticky;top:var(--chrome-y);z-index:60;height:var(--chrome-h);margin:0 var(--chrome-right) 0 var(--chrome-left);display:flex;align-items:center;padding:0 10px 0 12px;border-radius:var(--chrome-radius);border:1px solid transparent;border-bottom-color:var(--border);background:color-mix(in oklab,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:inset 0 1px 0 color-mix(in oklab,var(--surface-strong),transparent 40%);transition:top .45s var(--ease-spring),margin-left .45s var(--ease-spring),margin-right .45s var(--ease-spring),border-radius .45s var(--ease-spring),background .3s,box-shadow .3s,border-color .3s;container-type:inline-size;container-name:chrome}
 #chrome.scrolled{background:color-mix(in oklab,var(--bg) 93%,transparent);border-color:var(--border-strong);box-shadow:var(--shadow-sm)}
 html.theme-switching,html.theme-switching *,html.theme-switching *::before,html.theme-switching *::after{transition:background-color .35s,color .35s,border-color .35s,fill .35s,stroke .35s,box-shadow .35s !important}
 #chrome .bar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;width:100%}
@@ -78,7 +97,7 @@ body[data-sb="drawer"] #sidebar{transform:translateX(0);left:10px;width:min(300p
 body[data-sb="drawer"] .scrim{opacity:1;pointer-events:auto}
 
 /* ── 侧栏 ── */
-#sidebar{position:fixed;top:var(--chrome-top);left:14px;bottom:14px;width:var(--sb-w);z-index:55;padding:14px 10px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;background:color-mix(in oklab,var(--bg-soft) 88%,transparent);border:1px solid var(--border);border-radius:var(--r-md);transition:width .45s var(--ease-spring),transform .45s var(--ease-spring),opacity .3s;scrollbar-width:thin}
+#sidebar{position:fixed;top:var(--sidebar-top);left:14px;bottom:14px;width:var(--sb-w);z-index:55;padding:14px 10px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;background:color-mix(in oklab,var(--bg-soft) 88%,transparent);border:1px solid var(--border);border-radius:var(--r-md);transition:top .45s var(--ease-spring),width .45s var(--ease-spring),transform .45s var(--ease-spring),opacity .3s;scrollbar-width:thin}
 .ws{display:flex;align-items:center;gap:10px;padding:8px 10px 14px;font-size:13px;font-weight:600}
 .ws .ic{width:18px;height:18px;color:var(--accent);flex:0 0 auto}
 .ws .ic svg{width:18px;height:18px}
@@ -113,8 +132,8 @@ body[data-sb="rail"] .s-item,body[data-sb="rail"] .ws,body[data-sb="rail"] .drop
 body[data-sb="closed"]{--sb-w:0px}
 body[data-sb="closed"] #btn-menu{display:grid}
 /* ── 主内容 ── */
-#main{margin-left:var(--content-l);padding:30px var(--gx) 64px;transition:margin-left .45s var(--ease-spring);overflow-x:clip}
-body.of-shell-body{margin-left:var(--content-l);padding:30px var(--gx) 64px;transition:margin-left .45s var(--ease-spring)}
+#main{margin-left:var(--content-l);padding:calc(30px + var(--external-top-inset)) var(--gx) 64px;transition:margin-left .45s var(--ease-spring);overflow-x:clip}
+body.of-shell-body{margin-left:var(--content-l);padding:calc(30px + var(--external-top-inset)) var(--gx) 64px;transition:margin-left .45s var(--ease-spring)}
 section{max-width:var(--container);margin:0 auto}
 section+section{margin-top:clamp(64px,8vw,110px)}
 .sec{display:flex;flex-direction:column;gap:28px}
@@ -386,7 +405,8 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7}
 @container chrome (max-width:920px){.tabs>.tab-pill .ic{display:none}.tabs>.tab-pill{padding:0 11px;font-size:12.5px}}
 @container chrome (max-width:700px){.tabs{display:none}#btn-menu{display:grid}}
 @media (max-width:960px){
-  body{--content-l:0px;--gx:14px}
+  body{--content-l:0px;--gx:14px;--anchor-offset:calc(var(--external-top-inset) + var(--chrome-top) + var(--chrome-h) + 16px)}
+  #chrome{top:calc(var(--external-top-inset) + var(--chrome-top));margin:var(--chrome-top) var(--gx) 0;border-radius:999px;border-color:var(--border)}
   .tabs,.topnav{display:none}
   #btn-menu{display:grid}
   #sidebar{top:auto;bottom:0;left:0;right:0;width:auto;max-height:74vh;overflow-y:auto;transform:translateY(105%);opacity:1;background:var(--bg-soft);border-radius:26px 26px 0 0;border:1px solid var(--border);border-bottom:0;margin:0 10px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}

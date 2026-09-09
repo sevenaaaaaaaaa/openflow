@@ -57,7 +57,7 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
 <style>
 /* 用户中心独有：账户导航、面板头、统计瓦片、简表、计划卡、消息条。其余全部来自 modules.css。 */
 .acct.g-main-aside{grid-template-columns:240px minmax(0,1fr)}
-.acct>aside .card{padding:12px;position:sticky;top:20px}
+.acct>aside .card{padding:12px;position:sticky;top:var(--shell-sticky-top)}
 .who{padding:10px 12px 14px;border-bottom:1px solid var(--border-soft);margin-bottom:8px;display:flex;flex-direction:column;gap:4px}
 .who b{font-size:15px;font-weight:800}.who .em{font-size:12.5px;color:var(--muted);word-break:break-all}.who .lv{font-size:13px;font-weight:600;margin-top:4px}.who .bd{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .an{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;color:var(--muted);transition:background .12s,color .12s}
