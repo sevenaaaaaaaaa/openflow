@@ -36,12 +36,20 @@ if (!function_exists('nav_cat_icon')) {
         return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $path . '</svg>';
     }
 
-    function nav_site_icon(array $site): string {
+    /** 站点图标 URL：优先后台配的 logo 字段，否则站点自己的 /favicon.ico */
+    function nav_site_icon_url(array $site): ?string {
+        $logo = trim((string)($site['logo'] ?? ''));
+        if ($logo !== '') return $logo;
         $url = (string)($site['url'] ?? '');
         $host = parse_url(strpos($url, '//') === false ? 'https://' . $url : $url, PHP_URL_HOST) ?: '';
+        return $host ? 'https://' . $host . '/favicon.ico' : null;
+    }
+
+    function nav_site_icon(array $site): string {
         $name = trim((string)($site['name'] ?? ''));
         $letter = $name !== '' ? mb_strtoupper(mb_substr($name, 0, 1)) : '?';
-        $img = $host ? '<img src="https://' . htmlspecialchars($host) . '/favicon.ico" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '';
+        $src = nav_site_icon_url($site);
+        $img = $src ? '<img src="' . htmlspecialchars($src) . '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '';
         return '<span class="fav" aria-hidden="true"><span class="ltr">' . htmlspecialchars($letter) . '</span>' . $img . '</span>';
     }
 

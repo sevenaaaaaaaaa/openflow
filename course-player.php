@@ -136,7 +136,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
 
           <div id="playerPanel" style="display:<?=empty($resume)?'none':'block'?>">
             <div class="player">
-              <video id="playerVideo" controls preload="metadata" playsinline style="display:none;width:100%;height:100%;object-fit:contain;background:#000"></video>
+              <video id="playerVideo" controls preload="metadata" playsinline style="display:none;width:100%;height:100%;object-fit:contain;background:oklch(0% 0 0)"></video>
               <div class="ph" id="playerEmpty">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5L10 9.5Z" fill="currentColor" stroke="none"/></svg>
                 <b id="playerLessonTitle"><?=htmlspecialchars($resume ? ($lessonsFlat[$resume['lesson_id']]['title'] ?? '') : '')?></b>
