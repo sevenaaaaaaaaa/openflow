@@ -25,7 +25,7 @@ if (is_array($subs)) $subsCount = count($subs);
 <meta name="description" content="订阅芭乐派增长系统的最新洞察与每周更新，了解内容增长、AI 运营与客户转化的一线实践。绝无打扰，随时可退订。">
 <link rel="canonical" href="/newsletter">
 <link rel="stylesheet" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" href="/assets/modules.css?v=20260903a">
+<link rel="stylesheet" href="/assets/modules.css?v=20260909a">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 订阅页独有：hero + 值点点。其余全部来自 modules.css。 */
