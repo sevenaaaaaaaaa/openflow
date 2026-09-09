@@ -3,6 +3,7 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/review-lib.php';
 require_once __DIR__ . '/../lib/GeoSystem.php';
 require_once __DIR__ . '/../lib/FlowSystem.php';
+require_once __DIR__ . '/../lib/CoverRenderer.php';
 require_login();
 require_perm('articles');
 
@@ -105,6 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $article['category'] = $_POST['category'] ?? '';
     $article['tags'] = array_filter(explode(',', $_POST['tags'] ?? ''));
     $article['cover'] = $_POST['cover'] ?? '';
+    $article['cover_seed'] = max(0, (int)($_POST['cover_seed'] ?? 0));      // 生成式封面种子（0=按标题自动）
+    $article['cover_motif'] = trim((string)($_POST['cover_motif'] ?? ''));  // 内容符号（空=自动识别）
     $article['author'] = $_POST['author'] ?? $_SESSION['admin_name'] ?? '';
     $article['status'] = $_POST['status'] ?? 'draft';
     $article['member_only'] = isset($_POST['member_only']) ? true : false;
@@ -567,6 +570,25 @@ body.zen-mode .mode-tabs .zen-exit{display:inline-flex}
             <div class="field"><label>图片路径</label><input type="text" name="cover" id="cover" value="<?=htmlspecialchars($article['cover'])?>" placeholder="uploads/articles/文件名.jpg"></div>
             <div class="field"><label>从媒体库选择</label><select onchange="pickCover(this)"><option value="">— 选择图片 —</option><?php foreach ($files as $fp): $n = basename($fp); $rel = 'uploads/articles/' . $n; ?><option value="<?=htmlspecialchars($rel)?>" <?=$article['cover']===$rel?'selected':''?>><?=htmlspecialchars($n)?></option><?php endforeach; ?></select></div>
             <button type="button" class="btn btn-ghost btn-sm" onclick="openStockPicker()">从免费图库搜索封面</button>
+
+            <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px">
+              <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:6px">生成式封面 <span class="hint">· 未设置图片时自动启用，列表与详情页同一张</span></label>
+              <div id="gcovPreview" style="max-width:340px;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:8px"><?=CoverRenderer::renderCard(array_merge($article, ['title' => $article['title'] ?: '未命名文章']), true)?></div>
+              <input type="hidden" name="cover_seed" id="coverSeed" value="<?=htmlspecialchars((string)($article['cover_seed'] ?? 0))?>">
+              <div class="field" style="margin-bottom:8px">
+                <label>内容符号 <span class="hint">· 从标题/标签自动识别，可手动指定</span></label>
+                <select name="cover_motif" id="coverMotif" onchange="gcovPreview()">
+                  <option value="">— 自动识别 —</option>
+                  <?php foreach (CoverRenderer::MOTIFS as $mk => $md): ?>
+                  <option value="<?=htmlspecialchars($mk)?>" <?=($article['cover_motif'] ?? '')===$mk?'selected':''?>><?=htmlspecialchars($mk . '（' . $md['kw'][0] . '）')?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button type="button" class="btn btn-ghost btn-sm" id="gcovRerollBtn" onclick="gcovReroll()">🎲 换一张</button>
+                <span class="hint" id="gcovSeedHint"><?=!empty($article['cover_seed'])?'种子 #' . (int)$article['cover_seed']:'按标题自动生成'?></span>
+              </div>
+            </div>
           </section>
 
           <details class="card ae-sec ae-fold" id="seo" <?=($article['seo_title']||$article['seo_desc']||$article['seo_keywords'])?'open':''?>>
@@ -1156,6 +1178,32 @@ function pickCover(sel) {
     preview.src = url;
   }
 }
+
+// ─── 生成式封面抽卡 ───
+function gcovParams(seed) {
+  var q = function(n){ var el = document.querySelector('[name="' + n + '"]'); return el ? el.value : ''; };
+  return new URLSearchParams({
+    seed: seed || document.getElementById('coverSeed').value || '0',
+    title: q('title'), category: q('category'), tags: q('tags'),
+    motif: document.getElementById('coverMotif').value
+  });
+}
+function gcovFetch(params) {
+  var btn = document.getElementById('gcovRerollBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '生成中…'; }
+  fetch('/api/cover-preview?' + params.toString())
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d.ok) return;
+      document.getElementById('gcovPreview').innerHTML = d.html;
+      document.getElementById('coverSeed').value = d.seed;
+      var hint = document.getElementById('gcovSeedHint');
+      if (hint) hint.textContent = '种子 #' + d.seed + (d.motif ? ' · 符号 ' + d.motif : ' · 分类图标');
+    })
+    .finally(function(){ if (btn) { btn.disabled = false; btn.textContent = '🎲 换一张'; } });
+}
+function gcovReroll() { gcovFetch(gcovParams(Math.floor(Math.random() * 100000) + 1)); }
+function gcovPreview() { gcovFetch(gcovParams(0)); }
 
 // ─── 免费图库选封面 ───
 var SP = { platform: 'pexels', page: 1, query: '' };
