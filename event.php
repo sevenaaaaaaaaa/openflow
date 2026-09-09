@@ -13,7 +13,16 @@ $event = null;
 foreach (json_read(DATA_DIR . '/events/index.json') as $e) {
     if (($e['slug'] ?? '') === $slug && ($e['status'] ?? 'draft') === 'published') { $event = $e; break; }
 }
-if (!$event) { http_response_code(404); header('Location: /'); exit; }
+if (!$event) {
+    http_response_code(404);
+    ?><!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>404 | <?=site_config_get('site_name')?></title><?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?></head>
+    <body style="display:grid;place-items:center;min-height:100vh;text-align:center;padding:20px"><div>
+    <p class="kicker" style="font-size:48px;letter-spacing:0">404</p>
+    <h1 style="margin-top:16px;font-size:28px;font-weight:700">活动不存在或未发布</h1>
+    <a href="/events" class="btn primary" style="margin-top:28px">返回活动列表</a>
+    </div></body></html><?php
+    exit;
+}
 
 $cover = $event['cover'] ?? '';
 $coverUrl = $cover ? (strpos($cover, 'http') === 0 ? $cover : '/' . ltrim($cover, '/')) : '';
