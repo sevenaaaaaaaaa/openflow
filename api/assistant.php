@@ -146,7 +146,7 @@ $parsedFlow = copilot_parse_flow($message);
 if ($parsedFlow) {
     $created = copilot_create_flow($parsedFlow);
     if ($created['ok']) {
-        $actions[] = ['label' => '⚡ 已创建流程：「' . $parsedFlow['name'] . '」', 'url' => 'admin/automation.php', 'icon' => '🤖'];
+        $actions[] = ['label' => '⚡ 已创建流程：「' . $parsedFlow['name'] . '」', 'url' => '/xmp/automation', 'icon' => '🤖'];
     }
 }
 // 快速数据问答

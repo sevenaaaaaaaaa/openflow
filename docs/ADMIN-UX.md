@@ -150,3 +150,23 @@ v1 的七个区（概览/内容/社区/增长/数据/商业/系统）把 148 条
 185 个页面量布局（175 个有 `.main`，其余是 lib / 需参数的子页）、41 个聚合入口 × 130 个兄弟页逐个验证子 tab 条在位、高亮不错位。
 
 顺带：窄屏 `input[type=file]` 撑出横向滚动（数字资产页）已修。
+
+## 十、设计地基统一 + Live2D 看板娘（v14 · 2026-09-09）
+
+**字阶（唯一合法集合，禁止新造 px 字号）**：`--fs-xs:10.5`（mono 标签/表头/徽标）· `--fs-sm:11.5`（辅助）· `--fs-md:12.5`（次级）·
+`--fs-lg:13.5`（正文/控件）· `--fs-xl:15`（面板标题）· `--fs-2xl:17`（卡片/对话框标题）· `--fs-3xl:clamp(21,2.2vw,26)`（页标题）·
+`--fs-metric:30`（KPI 大数字）。mono 数字（如 .param 19px）豁免。三套表头（table/.tbl/.lst-table）统一 mono/xs/600/.07em。
+
+**几何**：`--sb-w:268px` 唯一来源在 `config.php :root`（旧 240 是死声明；admin-ui.css 不再重复声明）。
+`.main` 顶距 20px——chrome 是 sticky 在文档流（56px），内容顶线 76px 与侧栏顶线对齐（旧 96px 是 fixed 顶栏时代遗留）。
+宽屏时 `.main` 在侧栏右侧可用区内居中（`max(0,(100vw - sb-w - 40 - main-max)/2)`），不再左贴边。
+断点只有三档：840（抽屉/堆叠）· 1100（密度：c-meta、KPI 4→2）· 1180（secnav、表格横滚）。
+
+**清掉的死代码**：第一套 `#chrome` 定稿前样式块（.search-bar/.user-drop 等）、`main` 元素选择器（后台没有 <main>）、
+`.sidebar a/.brand/.user-info/.global-search`（侧栏已是 sb-* 体系，#sidebar 优先级全覆盖）、重复的 .tag/.inp/.empty/code/工具类。
+
+**看板娘（admin-waifu.js）**：Live2D Hiyori（官方免费模型，自托管 `assets/vendor/live2d/`，cubism4 专用插件，
+不需要 cubism2 运行时）。懒加载（load + 900ms），全页视线跟随、待机动作、点击开聊+TapBody、右键会话级隐藏。
+聊天窗联动钩子 `window.OFWaifu.onSend/onReceive/onError/onChatToggle`。
+降级：≤840px / prefers-reduced-motion / 无 WebGL / 会话隐藏 → 旧圆形 FAB 兜底。
+助手默认皮肤改用后台 token（暗色模式自适应），其余四套显式皮肤保留。
