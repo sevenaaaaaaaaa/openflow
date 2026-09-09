@@ -110,15 +110,15 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 .car-track{display:flex;transition:transform .5s cubic-bezier(.22,.61,.36,1)}
 .car-slide{flex:0 0 100%;position:relative;min-height:300px}
 .car-slide img{width:100%;height:300px;object-fit:cover;display:block}
-.car-slide .ov{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,color-mix(in oklab,#05060a,transparent 25%));display:flex;align-items:flex-end;padding:26px}
-.car-slide .ov h3{color:#fff;font-size:clamp(20px,2.4vw,28px);font-weight:800;letter-spacing:-.01em;max-width:640px;line-height:1.3}
-.car-slide .ov .cat{display:inline-block;margin-bottom:10px;background:color-mix(in oklab,var(--accent),transparent 10%);color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.car-slide .ov{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,color-mix(in oklab,oklch(15% 0 0),transparent 25%));display:flex;align-items:flex-end;padding:26px}
+.car-slide .ov h3{color:oklch(100% 0 0);font-size:clamp(20px,2.4vw,28px);font-weight:800;letter-spacing:-.01em;max-width:640px;line-height:1.3}
+.car-slide .ov .cat{display:inline-block;margin-bottom:10px;background:color-mix(in oklab,var(--accent),transparent 10%);color:oklch(100% 0 0);padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700}
 .car-btn{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;background:color-mix(in oklab,var(--fg),transparent 70%);color:var(--fg);border:none;cursor:pointer;font-size:18px;display:grid;place-items:center;z-index:2;transition:background .2s}
 .car-btn:hover{background:color-mix(in oklab,var(--fg),transparent 40%)}
 .car-btn.prev{left:12px}.car-btn.next{right:12px}
 .car-dots{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:2}
-.car-dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.5);cursor:pointer;transition:background .2s}
-.car-dots i.on{background:#fff}
+.car-dots i{width:8px;height:8px;border-radius:50%;background:oklch(100% 0 0 / .5);cursor:pointer;transition:background .2s}
+.car-dots i.on{background:oklch(100% 0 0)}
 /* ── 专题入口 ── */
 .topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
 .topic-card{display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface);transition:border-color .2s,transform .2s;text-decoration:none}
