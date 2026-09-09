@@ -12,6 +12,12 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
+
+// 可核验的真实运营数字（现算，不写死）
+$articleCount = function_exists('get_articles_list') ? count(get_articles_list()) : 0;
+$navCount = count(json_read(DATA_DIR . '/navigation.json')['sites'] ?? []);
+$postCount = count(json_read(DATA_DIR . '/community-posts.json') ?: []);
+$courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
 ?>
 <!doctype html>
 <html lang="zh-CN" data-theme="light">
@@ -151,6 +157,27 @@ header('Cache-Control: no-cache, max-age=0');
         <div class="scn-row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg></span><div><h3>微观执行触达</h3><p>顾客为什么买：一个人怎么走、怎么看、为什么拿起又放下。宏观设计系统，微观执行触达。</p></div></div>
         <div class="scn-row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg></span><div><h3>利润公式与销转率</h3><p>销转率是唯一的小数因子。在乘式中，小数变动一个数量级，结果就塌缩或爆炸。</p></div></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ══ 可核验 ══ -->
+  <section id="proof" class="sec reveal" data-od-anchor data-od-id="about-proof">
+    <div class="sec-head center">
+      <span class="kicker">可核验</span>
+      <h2>我们做的，都在明处</h2>
+      <p class="lead">不讲包装故事。代码、内容、工具收录、社区讨论——全部公开，欢迎查验。</p>
+    </div>
+    <div class="stats">
+      <div class="st"><div class="st-n"><?=$articleCount?></div><span class="st-en">Articles</span><span class="st-t">方法论文库持续更新</span></div>
+      <div class="st"><div class="st-n"><?=$navCount?></div><span class="st-en">Tools curated</span><span class="st-t">导航站工具收录</span></div>
+      <div class="st"><div class="st-n"><?=$postCount?></div><span class="st-en">Discussions</span><span class="st-t">门派社区讨论</span></div>
+      <div class="st"><div class="st-n">99</div><span class="st-en">Open APIs</span><span class="st-t">全部代码在 GitHub</span></div>
+    </div>
+    <div class="link-grid" style="margin-top:22px">
+      <a class="link-it top" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener"><span class="lt"><b>GitHub 仓库</b><span>30 个 MCP 工具、35 个插件钩子、99 个 API——代码即证据。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+      <a class="link-it top" href="/academy"><span class="lt"><b>学院内容库</b><span>每一篇方法论都公开可读，十年操盘提炼其中。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+      <a class="link-it top" href="/navigation"><span class="lt"><b>增长导航站</b><span><?=$navCount?> 个工具逐个收录点评，含 GitHub 数据与同类对比。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+      <a class="link-it top" href="/community"><span class="lt"><b>门派社区</b><span>学员作业、增长数据、互相诊断——真实讨论不删帖。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
     </div>
   </section>
 

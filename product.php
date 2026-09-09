@@ -71,6 +71,15 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 .demo-log .t-dim{color:oklch(60% .01 140)}
 .demo-log::before{content:'执行日志 · 演示环境';position:absolute;top:12px;right:16px;font-size:9.5px;letter-spacing:.14em;color:oklch(55% .01 140)}
 @media (max-width:1080px){.demo-wrap{grid-template-columns:1fr}}
+/* 真实界面证据区 */
+.hero-shot{max-width:980px;margin:36px auto 0;text-align:left}
+.hero-shot img,.real-shot img{width:100%;height:auto;display:block;aspect-ratio:1520/950;object-fit:cover;object-position:top}
+.real-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.real-shot{display:flex;flex-direction:column}
+.real-shot .sp-win{overflow:hidden;flex:1}
+.real-shot figcaption{padding:12px 6px 0;font-size:13px;color:var(--muted);line-height:1.6}
+.real-shot figcaption b{color:var(--fg)}
+@media(max-width:900px){.real-grid{grid-template-columns:1fr}}
 </style>
 <script src="/assets/seo-inject.js?v=20260830b" defer></script>
 </head>
@@ -91,6 +100,10 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         <a class="btn ghost" href="#demo" data-od-id="product-cta-demo">运行演示</a>
       </div>
       <div class="trust"><span class="dot"></span>核心能力永久开源 · 鱼与渔相结合</div>
+      <div class="sp-win hero-shot">
+        <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">openflow · workspace</div></div>
+        <img src="/assets/images/product/workspace.png" alt="OpenFlow 工作台真实界面：KPI、待办与增长动态一览" loading="eager">
+      </div>
     </div>
   </section>
 
@@ -176,7 +189,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         <h3>开放连接器生态</h3>
         <p class="lead">不是封闭的私有集成，而是开放的连接标准。核心能力永久开源；飞书 / 企业微信 / Notion / Search Console 等常用系统已接好，私有系统用 OpenAPI 或 Webhook 自定义接入。每一项都能在代码里翻到。</p>
         <ul class="sp-list">
-          <li><?=$ck?><span>18 个 MCP 工具、32 个插件钩子、92 个 API，Agent 可直接调用</span></li>
+          <li><?=$ck?><span>30 个 MCP 工具、35 个插件钩子、99 个 API，Agent 可直接调用</span></li>
           <li><?=$ck?><span>核心能力永久开源 · 鱼与渔结合</span></li>
           <li><?=$ck?><span>Webhook 双向触发与回调</span></li>
         </ul>
@@ -209,6 +222,21 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
           <div class="flow-row"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span><div><div class="ft">主动触达转化</div><div class="fd">Convert</div></div><span class="badge ok">完成</span></div>
         </div>
       </div></div>
+    </div>
+  </section>
+
+  <!-- ══ 真实界面 ══ -->
+  <section id="real" class="sec reveal" data-od-anchor data-od-id="product-real">
+    <div class="sec-head center">
+      <span class="kicker">真实界面</span>
+      <h2>不是效果图，是正在跑的系统</h2>
+      <p class="lead">上面四张图全部截自 OpenFlow 真实后台，不是设计稿。你装上的就是这一套。</p>
+    </div>
+    <div class="real-grid">
+      <figure class="real-shot"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">workspace</div></div><img src="/assets/images/product/workspace.png" alt="工作台真实界面" loading="lazy"></div><figcaption><b>工作台</b> · KPI、待办、增长动态一屏掌握</figcaption></figure>
+      <figure class="real-shot"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">studio</div></div><img src="/assets/images/product/studio.png" alt="自动化编排画布真实界面" loading="lazy"></div><figcaption><b>编排画布</b> · 触发器、条件、动作拖拽成流</figcaption></figure>
+      <figure class="real-shot"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">audience</div></div><img src="/assets/images/product/audience.png" alt="CDP 用户画像真实界面" loading="lazy"></div><figcaption><b>CDP 画像</b> · 分群、标签、行为轨迹全记录</figcaption></figure>
+      <figure class="real-shot"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">content-hub</div></div><img src="/assets/images/product/content-hub.png" alt="内容中心真实界面" loading="lazy"></div><figcaption><b>内容中心</b> · 文章、专题、SEO 一站式管理</figcaption></figure>
     </div>
   </section>
 
@@ -293,7 +321,9 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <p class="lead">免费开始，无需信用卡。安装后 OpenFlow 自动开始爬取信号、主动洞察、主动转化——每个人都能改造成专属自己的增长系统。</p>
       <div class="cta-row">
         <button class="btn primary" data-act="start">免费开始</button>
+        <a class="btn ghost" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 源码</a>
         <a class="btn ghost" href="/capability">了解 TIPS 能力</a>
+        <a class="btn subtle" href="/about">预约演示 →</a>
       </div>
     </div>
   </section>

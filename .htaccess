@@ -132,6 +132,8 @@ RewriteRule ^topic/(.+)$ topics.php?slug=$1 [L,QSA,B]
 RewriteRule ^topics/(.+)$ topics.php?slug=$1 [L,QSA,B]
 RewriteRule ^navigation/?$ navigation.php [L,QSA]
 RewriteRule ^navigation-site/?$ navigation-site.php [L,QSA]
+# 增长导航提交收录页：必须在站点详情规则之前，否则 submit 被当成站点 id
+RewriteRule ^navigation/submit/?$ nav-submit.php [L,QSA]
 # 增长导航对比页：必须在站点详情规则之前，否则 compare 被当成站点 id
 RewriteRule ^navigation/compare/?$ navigation-compare.php [L,QSA]
 # 增长导航站点详情：导航页每张站点卡都链到 /navigation/{id}，此前没有规则 → 全部 404

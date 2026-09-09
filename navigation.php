@@ -73,6 +73,13 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 .cat-nav a:hover{background:var(--hover);color:var(--fg)}
 .cat-nav a.active{background:var(--accent-soft);color:var(--accent-strong);font-weight:600}
 .cat-nav .em{width:16px;height:16px;flex:0 0 auto;color:var(--faint)}.cat-nav .em svg{width:16px;height:16px}.cat-nav a.active .em,.cat-nav a:hover .em{color:var(--accent)}
+/* 热门榜 */
+.hot-list a{display:flex;align-items:center;gap:9px}
+.hot-list .rk{font-family:var(--font-mono);font-size:11px;font-weight:800;width:18px;height:18px;border-radius:6px;background:var(--hover);color:var(--faint);display:grid;place-items:center;flex:0 0 auto}
+.hot-list a:nth-child(1) .rk,.hot-list a:nth-child(2) .rk,.hot-list a:nth-child(3) .rk{background:var(--accent-soft);color:var(--accent-strong)}
+.hot-list .hits{margin-left:auto;font-family:var(--font-mono);font-size:10.5px;color:var(--faint)}
+.crit{font-size:12.5px;color:var(--muted);line-height:1.85;padding:2px 4px 0}
+.crit b{color:var(--fg)}
 .fl-h{display:flex;align-items:center;gap:10px}.fl-h .em{width:30px;height:30px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}.fl-h .em svg{width:16px;height:16px}
 .g-main-aside.aside-left{grid-template-columns:minmax(0,220px) minmax(0,1fr)}
 .g-main-aside.aside-left>aside{position:sticky;top:var(--shell-sticky-top)}
@@ -153,6 +160,26 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
             <a class="<?=$region==='cn'?'active':''?>" href="?region=cn"><span class="em"><?=nav_region_icon('cn')?></span>国内</a>
             <a class="<?=$region==='intl'?'active':''?>" href="?region=intl"><span class="em"><?=nav_region_icon('intl')?></span>海外</a>
           </nav>
+        </div>
+        <?php
+        // 热门榜：按点击量（hits）排序取前 8；无点击数据时按编辑推荐优先
+        $hotSites = $sites;
+        usort($hotSites, fn($a, $b) => ((int)($b['hits'] ?? 0) <=> (int)($a['hits'] ?? 0)) ?: ((int)($b['featured'] ?? 0) <=> (int)($a['featured'] ?? 0)));
+        $hotSites = array_slice($hotSites, 0, 8);
+        if ($hotSites):
+        ?>
+        <div class="aside-box">
+          <h3>热门工具</h3>
+          <nav class="cat-nav hot-list" aria-label="热门工具">
+            <?php foreach ($hotSites as $hi => $hs): ?>
+            <a href="/navigation/<?=urlencode($hs['id'])?>"><span class="rk"><?=$hi+1?></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($hs['name'])?></span><span class="hits"><?=(int)($hs['hits'] ?? 0)?></span></a>
+            <?php endforeach; ?>
+          </nav>
+        </div>
+        <?php endif; ?>
+        <div class="aside-box">
+          <h3>收录标准</h3>
+          <p class="crit">只收<b>一人公司真正在用</b>的工具：有真实用户、持续更新、定价透明。不接受付费置顶，推荐位由编辑评定。<a href="/navigation/submit" style="color:var(--accent)">提交收录 →</a></p>
         </div>
       </aside>
       <div>

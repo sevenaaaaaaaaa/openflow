@@ -8,6 +8,7 @@
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
+require_once __DIR__ . '/lib/CoverRenderer.php';
 
 $now = time();
 $events = array_values(array_filter(json_read(DATA_DIR . '/events/index.json'), fn($e) => ($e['status'] ?? '') === 'published'));
@@ -65,7 +66,14 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
 .ev-meta svg{width:13px;height:13px}
 .ev-go{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--accent);white-space:nowrap}
 .ev-go svg{width:15px;height:15px}
-@media (max-width:860px){.ev{grid-template-columns:72px 1fr}.ev-go{grid-column:2;justify-self:start}.ev-date b{font-size:24px}}
+/* 活动海报缩略图（生成式封面） */
+.ev{grid-template-columns:96px minmax(0,1fr) 150px auto}
+.ev-poster{width:150px;flex:0 0 auto;border-radius:12px;overflow:hidden;border:1px solid var(--border-soft)}
+.ev-poster .gcov{aspect-ratio:4/3;padding:10px 12px}
+.ev-poster .gcov .gc-t{display:none}
+.ev-poster .gcov .gc-k{font-size:9.5px}
+.ev.past .ev-poster{opacity:.55;filter:saturate(.4)}
+@media (max-width:860px){.ev{grid-template-columns:72px 1fr}.ev-go{grid-column:2;justify-self:start}.ev-date b{font-size:24px}.ev-poster{display:none}}
 </style>
 </head>
 <body data-of-main>
@@ -118,6 +126,7 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
             <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5a7 7 0 1 0-14 0C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg><?=htmlspecialchars($e['location'] ?? '')?></span>
           </div>
         </div>
+        <div class="ev-poster"><?=CoverRenderer::renderCard(['id' => $e['id'], 'title' => $e['title'], '_hue' => $online ? 'accent' : 'warn', '_kicker' => $online ? '线上活动' : '线下聚会'])?></div>
         <span class="ev-go"><?=$past?'看回顾':'查看并报名'?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
       </a>
       <?php endforeach; ?>
@@ -139,6 +148,7 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
             <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5a7 7 0 1 0-14 0C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg><?=htmlspecialchars($e['location'] ?? '')?></span>
           </div>
         </div>
+        <div class="ev-poster"><?=CoverRenderer::renderCard(['id' => $e['id'], 'title' => $e['title'], '_hue' => $online ? 'accent' : 'warn', '_kicker' => $online ? '线上活动' : '线下聚会'])?></div>
         <span class="ev-go"><?=$past?'看回顾':'查看并报名'?><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
       </a>
       <?php endforeach; ?>

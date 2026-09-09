@@ -92,6 +92,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 .newpost{display:flex;flex-direction:column;gap:12px}
 .newpost .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .newpost .row .btn{margin-left:auto}
+.hot-posts .hp-n{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);flex:0 0 auto}
 @media (max-width:1080px){.g-main-aside.aside-left{grid-template-columns:1fr}.g-main-aside.aside-left>aside{position:static}.topic-nav{flex-direction:row;flex-wrap:wrap}}
 @media (max-width:640px){.post{grid-template-columns:1fr}.vote{flex-direction:row;gap:8px}}
 </style>
@@ -127,6 +128,26 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
           </nav>
         </div>
         <button class="btn primary" onclick="showNewPost()" style="width:100%"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg>发帖</button>
+        <?php
+        // 热议榜：按票数+评论加权
+        $hotPosts = $posts;
+        usort($hotPosts, fn($a, $b) => (($b['votes'] ?? 0) + ($b['comments'] ?? 0) * 2) <=> (($a['votes'] ?? 0) + ($a['comments'] ?? 0) * 2));
+        $hotPosts = array_slice($hotPosts, 0, 5);
+        if ($hotPosts):
+        ?>
+        <div class="aside-box">
+          <h3>本周热议</h3>
+          <nav class="topic-nav hot-posts" aria-label="热议帖子">
+            <?php foreach ($hotPosts as $hp): ?>
+            <a href="community-post/<?=urlencode($hp['id'] ?? '')?>"><span class="em" style="color:var(--warn)">🔥</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"><?=htmlspecialchars($hp['title'] ?? '')?></span><span class="hp-n"><?=(int)($hp['votes'] ?? 0)?></span></a>
+            <?php endforeach; ?>
+          </nav>
+        </div>
+        <?php endif; ?>
+        <div class="aside-box">
+          <h3>门派公约</h3>
+          <p style="font-size:12.5px;color:var(--muted);line-height:1.85;padding:2px 4px 0">晒数据不吹牛，提问带上下文，诊断对事不对人。广告与割韭菜内容直接删除并移出门派。</p>
+        </div>
       </aside>
 
       <div class="stream">
