@@ -7,6 +7,7 @@
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
+require_once __DIR__ . '/lib/CoverRenderer.php';
 
 $slug = trim(req_str('slug'));
 $event = null;
@@ -48,8 +49,13 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
 <meta name="description" content="<?=htmlspecialchars($event['seo_desc'] ?? $event['description'] ?? '')?>">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-/* 活动详情页零私有 CSS */
-
+/* 活动详情页独有：海报头圆角 + 名额进度条 */
+.ev-hero{margin-bottom:26px}
+.ev-hero .gcov{border-radius:var(--r-lg)}
+.cap-bar{height:6px;border-radius:99px;background:var(--hover);overflow:hidden;margin-top:10px}
+.cap-fill{height:100%;border-radius:99px;background:var(--ok);transition:width .6s var(--ease-spring)}
+.cap-note{font-family:var(--font-mono);font-size:11.5px;color:var(--faint);margin-top:6px}
+</style>
 </style>
 <script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
@@ -61,11 +67,20 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
 
   <article class="reader reveal in" data-od-id="event">
     <nav class="art-meta" aria-label="面包屑" style="margin-bottom:18px"><a href="/events" style="color:var(--faint)">← 全部活动</a></nav>
-    <?php if ($coverUrl): ?><img class="art-cover" src="<?=htmlspecialchars($coverUrl)?>" alt="<?=htmlspecialchars($event['title'])?>"><?php endif; ?>
+    <?php
+    $online = ($event['event_type'] ?? '') === 'online';
+    $startTs = strtotime($event['start_date'] ?? '');
+    $daysLeft = $startTs && $startTs > time() ? (int)ceil(($startTs - time()) / 86400) : 0;
+    if ($coverUrl): ?>
+    <img class="art-cover" src="<?=htmlspecialchars($coverUrl)?>" alt="<?=htmlspecialchars($event['title'])?>">
+    <?php else: ?>
+    <div class="ev-hero"><?=CoverRenderer::renderCard(['id' => $event['id'], 'title' => $event['title'], '_hue' => $online ? 'accent' : 'warn', '_kicker' => ($online ? '线上活动' : '线下聚会') . ' · ' . substr($event['start_date'] ?? '', 0, 10)], true, 'lg')?></div>
+    <?php endif; ?>
     <div class="art-head">
       <div class="art-meta">
-        <span class="badge <?=($event['event_type']??'')==='online'?'ok':'warn'?>"><?=($event['event_type']??'')==='online'?'线上':'线下'?></span>
+        <span class="badge <?=$online?'ok':'warn'?>"><?=$online?'线上':'线下'?></span>
         <span><?=htmlspecialchars(substr($event['start_date'] ?? '', 0, 16))?></span><span class="sep"></span><span><?=htmlspecialchars($event['location'] ?? '')?></span>
+        <?php if ($daysLeft > 0): ?><span class="sep"></span><span class="badge warn">距开始 <?=$daysLeft?> 天</span><?php endif; ?>
       </div>
       <h1><?=htmlspecialchars($event['title'])?></h1>
       <p class="lead" style="color:var(--muted);font-size:16px;line-height:1.85"><?=htmlspecialchars($event['description'] ?? '')?></p>
@@ -75,6 +90,10 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
       <div><span class="w-tag">时间</span><h3><?=htmlspecialchars($event['start_date'] ?? '')?></h3></div>
       <div><span class="w-tag">地点</span><h3><?=htmlspecialchars($event['location'] ?? '')?></h3></div>
       <div><span class="w-tag">报名</span>
+        <?php if ($capacity > 0): $pct = min(100, (int)round($joinedCount / $capacity * 100)); ?>
+        <div class="cap-bar"><div class="cap-fill" style="width:<?=$pct?>%"></div></div>
+        <p class="cap-note">已报名 <?=$joinedCount?> / <?=$capacity?> 席</p>
+        <?php endif; ?>
         <?php if ($myReg): ?>
         <h3 style="color:var(--ok)"><?=['pending'=>'报名审核中','approved'=>'已报名','rejected'=>'报名未通过'][$myReg['status'] ?? 'approved'] ?? '已报名'?></h3>
         <button onclick="cancelReg()" class="btn subtle" style="align-self:flex-start;margin-left:-14px;color:var(--danger)">取消报名</button>

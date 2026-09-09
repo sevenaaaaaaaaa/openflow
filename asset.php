@@ -213,9 +213,13 @@ $emojiOrSvg = fn(string $e, string $fallback) => (preg_match('/^[\x{1F000}-\x{1F
           <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M8.5 8.5 12 12l3.5-3.5M4 14h16v6H4z"/></svg></span>资产信息</h3>
           <div class="kv">
             <span>类型</span><div><?=$typeLabel?></div>
-            <span>作者</span><div><?=htmlspecialchars($author)?></div>
+            <span>作者</span><div><?=htmlspecialchars($author)?><?=($asset['author_type'] ?? '') === 'user' ? ' <span class="pill neutral" style="font-size:10px">用户发布</span>' : ''?></div>
             <span>版本</span><div class="mono">v<?=htmlspecialchars($asset['version'] ?? '1.0.0')?></div>
             <span>安装量</span><div class="mono"><?=(int)($asset['installs'] ?? $asset['sales_count'] ?? 0)?></div>
+            <?php if (($asset['rating_count'] ?? 0) > 0): ?><span>评分</span><div class="mono" style="color:var(--warn)">★ <?=number_format((float)$asset['rating'], 1)?>（<?=(int)$asset['rating_count']?>）</div><?php endif; ?>
+            <?php if (!empty($asset['source'])): ?><span>来源</span><div><?=($asset['source'] ?? '') === 'remote' ? '远程仓库' : '本站发布'?></div><?php endif; ?>
+            <?php if (!empty($asset['created_at'])): ?><span>上架</span><div class="mono"><?=htmlspecialchars(substr($asset['created_at'], 0, 10))?></div><?php endif; ?>
+            <?php if (!empty($asset['updated_at'])): ?><span>更新</span><div class="mono"><?=htmlspecialchars(substr($asset['updated_at'], 0, 10))?></div><?php endif; ?>
           </div>
           <?php if (!empty($asset['tags'])): ?><div class="tags"><?php foreach (array_slice($asset['tags'], 0, 5) as $t): ?><span>#<?=htmlspecialchars($t)?></span><?php endforeach; ?></div><?php endif; ?>
         </div>

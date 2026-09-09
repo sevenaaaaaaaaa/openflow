@@ -8,6 +8,7 @@
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 require_once __DIR__ . '/lib/CoverRenderer.php';
+require_once __DIR__ . '/lib/Markdown.php';
 
 // 页面缓存（300 秒）
 if (PageCache::begin('academy', 1800)) exit;
@@ -99,6 +100,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 <link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260909a">
 <style>
 /* 学院页独有：首屏搜索框与统计行。其余全部来自 modules.css。 */
+.a-card .a-excerpt{font-size:13px;color:var(--muted);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0}
 .search{display:flex;gap:10px;max-width:520px}
 .search .inp{border-radius:999px;padding-left:20px}
 .search .btn{border-radius:999px;flex:0 0 auto}
@@ -227,13 +229,14 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
     <div class="empty">内容准备中，敬请期待</div>
     <?php else: ?>
     <div class="a-grid">
-      <?php foreach ($featured as $a): $cvUrl = $cover($a); ?>
+      <?php foreach ($featured as $a): $cvUrl = $cover($a); $plain = trim(strip_tags(Markdown::toHtml($a['content'] ?? ''))); $excerpt = trim((string)($a['excerpt'] ?? '')); if ($excerpt === '') $excerpt = mb_strimwidth($plain, 0, 90, '…'); $readMins = max(1, (int)ceil(mb_strlen($plain) / 400)); ?>
       <a class="a-card" href="/articles/<?=htmlspecialchars($a['slug'])?>">
         <div class="cov"><?php if ($cvUrl): ?><img src="<?=htmlspecialchars($cvUrl)?>" alt="" loading="lazy"><?php else: ?><?=CoverRenderer::renderCard($a)?><?php endif; ?></div>
         <div class="bd">
           <span class="cat"><?=htmlspecialchars($catNames[$a['category'] ?? ''] ?? '文章')?></span>
           <h3><?=htmlspecialchars($a['title'])?></h3>
-          <div class="meta"><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?> · <?=$eye?><?=$a['views'] ?? 0?></div>
+          <?php if ($excerpt !== ''): ?><p class="a-excerpt"><?=htmlspecialchars($excerpt)?></p><?php endif; ?>
+          <div class="meta"><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?> · <?=$readMins?> 分钟 · <?=$eye?><?=$a['views'] ?? 0?></div>
         </div>
       </a>
       <?php endforeach; ?>

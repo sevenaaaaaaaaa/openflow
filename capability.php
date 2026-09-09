@@ -20,12 +20,12 @@ $I = [
   'doc'    => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l4 4v14H7V3Z"/><path d="M17 3v4h4"/></svg>',
 ];
 $CAPS = [
-  ['bolt','触达 Touch','内容引擎 + 分发渠道 + 触达体系。正确的时间、渠道、内容，把信息递到用户面前。',[['内容引擎','文章/课程/资料/播客一站式生产'],['分发渠道','多平台自动分发'],['触达体系','强度 × 精度 × 温度']]],
-  ['users','洞察 Insight','数据、CDP、舆情、分析。从几百个指标捞出该看的那 3-5 个，把数据变成判断。',[['CDP 画像','统一身份与行为追踪'],['舆情爬取','行业信号自动抓取'],['数据分析','从洞察走到策略']]],
-  ['refresh','个性化 Personality','画像、分群、自动化。给对的人，在对的时刻，说对的话。',[['用户分群','行为驱动动态标签'],['营销自动化','行为触发工作流'],['动态内容','千人千面触达']]],
-  ['check','销售 Sales','CRM、转化、商城、订阅。从触达到成交，让支付能力流向你。',[['CRM 管道','线索评分与跟进'],['转化组件','落地页/表单/CTA'],['商城订阅','付费闭环与分销']]],
-  ['box','自生长 AI Engine','按你设的周期自动推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动转化。周期用 cron 自己定，装完即用。',[['主动爬取','舆情热点自动收集'],['AI 撰写','生成草稿待人工审核'],['主动转化','从 Marketing 到 Sales']]],
-  ['doc','永久开源','核心能力永久开源，Tools 和 Strategy 双向迭代，鱼与渔相结合。',[['Tools 开源','工具即渔具'],['Strategy 同步','最前沿增长策略'],['自托管','数据完全可控']]],
+  ['bolt','触达 Touch','内容引擎 + 分发渠道 + 触达体系。正确的时间、渠道、内容，把信息递到用户面前。',[['内容引擎','文章/课程/资料/播客一站式生产'],['分发渠道','多平台自动分发'],['触达体系','强度 × 精度 × 温度']],'content-hub','内容中心 · 真实后台界面'],
+  ['users','洞察 Insight','数据、CDP、舆情、分析。从几百个指标捞出该看的那 3-5 个，把数据变成判断。',[['CDP 画像','统一身份与行为追踪'],['舆情爬取','行业信号自动抓取'],['数据分析','从洞察走到策略']],'audience','CDP 用户画像 · 真实后台界面'],
+  ['refresh','个性化 Personality','画像、分群、自动化。给对的人，在对的时刻，说对的话。',[['用户分群','行为驱动动态标签'],['营销自动化','行为触发工作流'],['动态内容','千人千面触达']],'automation','营销自动化 · 真实后台界面'],
+  ['check','销售 Sales','CRM、转化、商城、订阅。从触达到成交，让支付能力流向你。',[['CRM 管道','线索评分与跟进'],['转化组件','落地页/表单/CTA'],['商城订阅','付费闭环与分销']],'crm','CRM 管道 · 真实后台界面'],
+  ['box','自生长 AI Engine','按你设的周期自动推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动转化。周期用 cron 自己定，装完即用。',[['主动爬取','舆情热点自动收集'],['AI 撰写','生成草稿待人工审核'],['主动转化','从 Marketing 到 Sales']],'studio','编排画布 · 真实后台界面'],
+  ['doc','永久开源','核心能力永久开源，Tools 和 Strategy 双向迭代，鱼与渔相结合。',[['Tools 开源','工具即渔具'],['Strategy 同步','最前沿增长策略'],['自托管','数据完全可控']],'github','GitHub 仓库 · 代码即证据'],
 ];
 $CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮件','Ghost','虎皮椒支付','Search Console','Webhook','OpenAPI','MCP']; // 与 product.php 同一份，全部在代码里核过
 $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>';
@@ -47,6 +47,21 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 .conn-chips{display:flex;flex-wrap:wrap;gap:8px;padding:22px}
 .conn-chips .cc{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-size:13px;font-weight:600}
 .conn-chips .cc .cd{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+/* 能力 Tab 的真实界面证据图（整行跨列） */
+.tab-panel .tp-vis{grid-column:1/-1;margin-top:6px}
+.tab-panel .tp-vis .sp-win{overflow:hidden}
+.tab-panel .tp-vis img{width:100%;height:auto;display:block;aspect-ratio:1520/950;object-fit:cover;object-position:top}
+.tab-panel .tp-vis figcaption{padding:10px 4px 0;font-size:12.5px;color:var(--faint);font-family:var(--font-mono)}
+/* 首屏证据数字条 */
+.proof-strip{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 26px;margin-top:22px;font-family:var(--font-mono);font-size:12.5px;color:var(--faint)}
+.proof-strip b{color:var(--accent-strong);font-size:15px;font-weight:800;margin-right:5px}
+/* 部署决策表 */
+.dep-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:22px}
+.dep-table th,.dep-table td{padding:13px 18px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.7}
+.dep-table tr:last-child th,.dep-table tr:last-child td{border-bottom:none}
+.dep-table thead th{background:var(--surface-2);font-size:14px}
+.dep-table tbody th{width:120px;color:var(--faint);font-weight:500;font-size:12.5px;background:var(--surface-2)}
+.dep-table td b{color:var(--accent-strong)}
 </style>
 <script src="/assets/seo-inject.js?v=20260830b" defer></script>
 </head>
@@ -66,6 +81,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
         <button class="btn primary" data-act="start" data-od-id="capability-cta-start">免费开始</button>
         <a class="btn ghost" href="/product" data-od-id="capability-cta-product">了解产品原理</a>
       </div>
+      <div class="proof-strip"><span><b>30</b>MCP 工具</span><span><b>35</b>插件钩子</span><span><b>99</b>API 端点</span><span><b>206</b>后台页面</span><span><b>186</b>功能模块</span></div>
     </div>
   </section>
 
@@ -89,6 +105,9 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
           <div class="tp-step"><span class="tp-n">0<?=$j+1?></span><div><b><?=htmlspecialchars($p[0])?></b><span><?=htmlspecialchars($p[1])?></span></div></div>
           <?php endforeach; ?>
         </div>
+        <?php if (!empty($c[4])): ?>
+        <figure class="tp-vis"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url"><?=htmlspecialchars($c[4])?></div></div><img src="/assets/images/product/<?=htmlspecialchars($c[4])?>.png" alt="<?=htmlspecialchars($c[5] ?? $c[1])?>" loading="lazy"></div><figcaption><?=htmlspecialchars($c[5] ?? '')?> · 截自正在运行的 OpenFlow，不是设计稿</figcaption></figure>
+        <?php endif; ?>
       </div>
       <?php endforeach; ?>
     </div>
@@ -136,6 +155,17 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
         <ul class="sp-list"><li><?=$ck?><span>核心引擎私有部署</span></li><li><?=$ck?><span>云端弹性扩缩容</span></li><li><?=$ck?><span>灰度发布与回滚</span></li></ul>
       </div>
     </div>
+    <table class="dep-table">
+      <thead><tr><th></th><th>云端 SaaS</th><th>私有化部署</th><th>混合架构</th></tr></thead>
+      <tbody>
+        <tr><th>上手时间</th><td><b>当天</b>，注册即用</td><td>1-3 天，含环境准备</td><td>3-7 天，含架构评审</td></tr>
+        <tr><th>运维成本</th><td><b>零</b>，平台托管</td><td>自己运维（或购买托管运维）</td><td>核心自控 + 云端弹性</td></tr>
+        <tr><th>数据归属</th><td>云端加密存储，可随时导出</td><td><b>完全出不了你的域</b></td><td>核心数据私有，匿名化上云</td></tr>
+        <tr><th>适合谁</th><td>想立刻跑起来的一人公司</td><td>重视自主可控的团队</td><td>既要安全又要弹性的成长型团队</td></tr>
+        <tr><th>起步价</th><td><b>免费</b></td><td>开源免费 · 支持服务另议</td><td>按需评估</td></tr>
+        <tr><th></th><td><button class="btn primary" data-act="start" style="font-size:12.5px;padding:8px 18px">免费开始</button></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 自取</a></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="/about">聊聊需求 →</a></td></tr>
+      </tbody>
+    </table>
   </section>
 
   <!-- ══ 开放生态 ══ -->

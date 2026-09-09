@@ -228,6 +228,35 @@ $typeNames = mkt_categories();
   </section>
   <?php endif; ?>
 
+  <?php
+  // 本周新上架：14 天内创建的最新资产；只在默认视图展示
+  $freshAssets = [];
+  if ($q === '' && $type === 'all') {
+      $freshAssets = array_values(array_filter(mkt_search('', 'all', 'new'), fn($a) => strtotime($a['created_at'] ?? '2000-01-01') >= time() - 14 * 86400));
+      $freshAssets = array_slice($freshAssets, 0, 4);
+  }
+  if (count($freshAssets) >= 2): ?>
+  <section id="fresh" class="sec reveal" data-od-anchor data-od-id="mkt-fresh">
+    <div class="sec-head row"><div><span class="kicker">FRESH THIS WEEK</span><h2>本周新上架</h2></div><a class="more" href="?sort=new">全部最新 →</a></div>
+    <div class="a-grid mk-grid">
+      <?php foreach ($freshAssets as $a): $tm = mkt_type_meta($a['type'] ?? ''); $price = (float)($a['price'] ?? 0); ?>
+      <article class="a-card mk">
+        <a href="<?=htmlspecialchars($a['url'])?>" class="cov"><?=mkt_asset_cover($a, $typeNames)?><span class="pill hl tag-r">NEW</span></a>
+        <div class="bd">
+          <span class="cat" style="color:var(--<?=$tm['hue']==='neutral'?'muted':$tm['hue']?>)"><?=htmlspecialchars($a['author'] ?? 'OpenFlow')?></span>
+          <h3><a href="<?=htmlspecialchars($a['url'])?>" style="color:inherit"><?=htmlspecialchars($a['title'])?></a></h3>
+          <p><?=htmlspecialchars($a['description'] ?? '')?></p>
+          <div class="meta">
+            <span><?=htmlspecialchars(substr($a['created_at'] ?? '', 0, 10))?> 上架</span>
+            <a href="<?=htmlspecialchars($a['url'])?>" class="go" style="margin-left:auto;color:var(--accent);font-weight:600;font-family:var(--font-body)">查看 →</a>
+          </div>
+        </div>
+      </article>
+      <?php endforeach; ?>
+    </div>
+  </section>
+  <?php endif; ?>
+
   <section id="browse" class="sec reveal" data-od-anchor data-od-id="mkt-browse">
     <div class="sec-head row"><div><span class="kicker">BROWSE</span><h2><?=$q !== '' ? '搜索「' . htmlspecialchars($q) . '」' : ($type === 'all' ? '全部资产' : ($typeNames[$type]['name'] ?? $type))?></h2></div><span class="sub"><?=count($assets)?> 个<?php if ($q !== '' || $type !== 'all'): ?> · <a href="/marketplace" style="color:var(--accent)">清除筛选</a><?php endif; ?></span></div>
     <div class="filters">
