@@ -10,6 +10,8 @@ if (!function_exists('of_footer')) {
     function of_footer(): void {
         $slogan = function_exists('site_config_get') ? site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统') : '帮一人公司设计 Agent 能跑的增长系统';
         $copy   = function_exists('site_copyright') ? site_copyright() : '© 2026 芭乐派 · OpenFlow 增长操作系统';
+        // 插件前台插槽：页脚上方（横幅/订阅框等）
+        if (class_exists('PluginSystem')) PluginSystem::render_front_slot('footer_before');
         ?>
   <footer class="foot" data-od-id="site-footer">
     <div class="fb">
@@ -33,5 +35,10 @@ if (!function_exists('of_footer')) {
     <div class="f-bottom"><span><?=htmlspecialchars($copy)?></span><?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><?=i18n_switcher()?><?php endif; ?><span><?=htmlspecialchars($slogan)?></span></div>
   </footer>
 <?php
+        // 插件前台插槽：body 末尾（脚本/浮层）+ 插件 JS 资产
+        if (class_exists('PluginSystem')) {
+            PluginSystem::render_front_slot('body_end');
+            PluginSystem::render_front_assets('js');
+        }
     }
 }
