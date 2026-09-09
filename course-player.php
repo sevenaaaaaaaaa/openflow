@@ -8,6 +8,7 @@ require_once __DIR__ . '/lib/ShopSystem.php';
 require_once __DIR__ . '/lib/ProgressSystem.php';
 require_once __DIR__ . '/lib/MembershipSystem.php';
 require_once __DIR__ . '/lib/CommentSystem.php';
+require_once __DIR__ . '/lib/CoverRenderer.php';
 
 $courseId = req_str('id', '', false);
 $courseKey = $courseId ?: req_str('course') ?: req_str('slug');
@@ -70,6 +71,11 @@ foreach ($course['chapters'] ?? [] as $ch) {
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 课程播放页独有：目录行、进度条、播放器画布、测验。其余全部来自 modules.css。 */
+.cp-stats{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.cp-stats>div{flex:1;min-width:100px;padding:13px 16px;display:flex;flex-direction:column;gap:3px;border-right:1px solid var(--border-soft);background:var(--surface-2)}
+.cp-stats>div:last-child{border-right:none}
+.cp-stats b{font-family:var(--font-display);font-size:17px;font-weight:800}
+.cp-stats span{font-size:11.5px;color:var(--faint);font-family:var(--font-mono)}
 .cp-title h1{font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.02em;line-height:1.25}
 .cp-title p{font-size:14.5px;color:var(--muted);line-height:1.8;margin-top:8px}
 .prog{display:flex;flex-direction:column;gap:8px}
@@ -124,8 +130,19 @@ foreach ($course['chapters'] ?? [] as $ch) {
     <div class="actions"><a href="/courses" class="act">← 全部课程</a></div>
     <div class="g-main-aside">
       <div>
-        <div class="card" style="display:flex;flex-direction:column;gap:22px">
+        <div class="card" style="display:flex;flex-direction:column;gap:22px;padding:0;overflow:hidden">
+          <?=CoverRenderer::renderCard(['id' => $course['id'] ?? '', 'title' => $course['title'], 'tags' => $course['tags'] ?? [], '_hue' => ($course['type'] ?? '') === '训练营' ? 'warn' : 'accent', '_kicker' => ($course['type'] ?? '课程') . ($course['difficulty'] ?? '' ? ' · ' . ['beginner'=>'入门','intermediate'=>'进阶','advanced'=>'高级'][$course['difficulty'] ?? ''] ?? $course['difficulty'] : '')], false, 'lg')?>
+          <div style="display:flex;flex-direction:column;gap:22px;padding:0 24px 24px">
           <div class="cp-title"><h1><?=htmlspecialchars($course['title'])?></h1><p><?=htmlspecialchars($course['description'] ?? '')?></p></div>
+
+          <div class="cp-stats">
+            <div><b><?=count($course['chapters'] ?? [])?></b><span>章节</span></div>
+            <div><b><?=array_sum(array_map(fn($ch) => count($ch['lessons'] ?? []), $course['chapters'] ?? []))?></b><span>课时</span></div>
+            <div><b><?=htmlspecialchars($course['duration'] ?? '—')?></b><span>总时长</span></div>
+            <div><b><?=htmlspecialchars($course['instructor'] ?? 'OpenFlow')?></b><span>讲师</span></div>
+            <?php if (($course['rating'] ?? 0) > 0): ?><div><b style="color:var(--warn)">★ <?=number_format((float)$course['rating'], 1)?></b><span><?=(int)($course['students'] ?? 0)?> 人在学</span></div><?php endif; ?>
+          </div>
+          <?php if (!empty($course['tags'])): ?><div class="chips" style="display:flex;gap:7px;flex-wrap:wrap"><?php foreach ($course['tags'] as $t): ?><span class="pill neutral"><?=htmlspecialchars($t)?></span><?php endforeach; ?></div><?php endif; ?>
 
           <?php if ($hasAccess): ?>
           <div class="prog">
@@ -200,6 +217,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
           <?php if ($member): ?>
           <button type="button" onclick="toggleFav(<?=htmlspecialchars(json_encode($courseId), ENT_QUOTES)?>, this)" class="btn ghost<?=$isFav?' fav-on':''?>" style="height:40px;font-size:14px"><?=$isFav?'★ 已收藏':'☆ 收藏课程'?></button>
           <?php endif; ?>
+          </div>
         </div>
 
         <?php

@@ -266,6 +266,37 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 .art-tags a{font-size:12.5px;color:var(--muted);padding:6px 14px;border-radius:999px;border:1px solid var(--border);transition:border-color .2s,color .2s}
 .art-tags a:hover{border-color:var(--accent);color:var(--accent)}
 .not-found{text-align:center;padding:60px 0;display:flex;flex-direction:column;align-items:center;gap:12px}
+/* 阅读进度条 */
+.read-progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--accent),var(--ok));z-index:9999;transition:width .12s linear}
+/* 桌面目录轨（≥1320px 才不压正文） */
+.toc-rail{position:fixed;right:max(20px,calc(50% - 690px));top:calc(var(--chrome-h,72px) + 44px);width:224px;z-index:5;display:none}
+@media(min-width:1320px){.toc-rail{display:block}}
+.toc-rail .toc-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 12px;backdrop-filter:blur(14px) saturate(150%);max-height:60vh;overflow:auto}
+.toc-rail h4{font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:0 8px 8px}
+.toc-rail a{display:block;font-size:12.5px;color:var(--muted);padding:5px 9px;border-radius:8px;border-left:2px solid transparent;line-height:1.5;transition:color .15s,background .15s}
+.toc-rail a:hover{color:var(--fg);background:var(--hover)}
+.toc-rail a.on{color:var(--accent-strong);border-left-color:var(--accent);background:var(--accent-soft);font-weight:600}
+.toc-rail a.lv3{padding-left:22px;font-size:12px;color:var(--faint)}
+/* 相关阅读封面卡 */
+.rel-grid{display:grid;gap:16px;grid-template-columns:repeat(3,1fr);margin-top:18px}
+@media(max-width:720px){.rel-grid{grid-template-columns:1fr}}
+.rel-grid .a-card .cov{aspect-ratio:16/8}
+/* 发现更多：Top10 + 标签云 */
+.disc-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:18px}
+@media(max-width:720px){.disc-grid{grid-template-columns:1fr}}
+.disc-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:18px 20px;backdrop-filter:blur(16px) saturate(150%)}
+.disc-box h3{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:0 0 10px}
+.disc-box ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.disc-box ol a{display:flex;gap:10px;align-items:baseline;padding:7px 0;font-size:13.5px;color:var(--muted);border-bottom:1px dashed var(--border-soft);transition:color .15s}
+.disc-box ol li:last-child a{border-bottom:none}
+.disc-box ol a:hover{color:var(--accent)}
+.disc-box .rn{font-family:var(--font-mono);font-size:11px;font-weight:800;color:var(--faint);width:18px;flex:0 0 auto}
+.disc-box ol li:nth-child(-n+3) .rn{color:var(--accent-strong)}
+.disc-box ol a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag-cloud{display:flex;flex-wrap:wrap;gap:7px}
+.tag-cloud a{font-size:12px;color:var(--muted);padding:5px 12px;border-radius:999px;border:1px solid var(--border);transition:border-color .2s,color .2s}
+.tag-cloud a:hover{border-color:var(--accent);color:var(--accent)}
+.tag-cloud a b{font-family:var(--font-mono);font-size:10px;color:var(--faint);margin-left:3px}
 </style>
 <script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
@@ -284,6 +315,17 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
     </div>
   </section>
   <?php else: ?>
+  <div class="read-progress" id="readProg" aria-hidden="true"></div>
+  <?php if (count($toc) >= 3): ?>
+  <nav class="toc-rail" aria-label="本文目录">
+    <div class="toc-box">
+      <h4>本文目录</h4>
+      <?php foreach ($toc as $t): ?>
+      <a href="#<?=$t['id']?>" class="lv<?=$t['level']?>" data-toc="<?=$t['id']?>"><?=htmlspecialchars($t['text'])?></a>
+      <?php endforeach; ?>
+    </div>
+  </nav>
+  <?php endif; ?>
   <article class="reader reveal in" data-od-id="article">
     <?php if (CoverRenderer::usesCssCover($article)): ?>
     <?php $article['_read_mins'] = $readMins; ?>
@@ -335,23 +377,64 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
       <button class="act" id="favBtn">收藏</button>
       <button class="act" id="shareBtn">分享</button>
       <button class="act" id="posterBtn" title="生成分享海报">生成海报</button>
+      <button class="act" id="cmtBtn" onclick="document.querySelector('[data-od-id=article-comments]').scrollIntoView({behavior:'smooth',block:'start'})"><?=(int)$commentCount?> 评论</button>
       <button class="act" id="viewBtn"><?=number_format((int)($artStats['views'] ?? 0))?> 阅读</button>
     </div>
 
     <?php if (!empty($article['tags'])): ?>
-    <div class="art-tags"><?php foreach ($article['tags'] as $t): ?><a href="/articles"># <?=htmlspecialchars($t)?></a><?php endforeach; ?></div>
+    <div class="art-tags"><?php foreach ($article['tags'] as $t): ?><a href="/articles?tag=<?=urlencode($t)?>"># <?=htmlspecialchars($t)?></a><?php endforeach; ?></div>
     <?php endif; ?>
   </article>
+
+  <section class="reader reveal" data-od-id="article-comments">
+    <?php fc_comment_widget('article', (string)($article['id'] ?? $slug), ['title' => '评论']); ?>
+  </section>
 
   <?php if (!empty($related)): ?>
   <section class="reader reveal" data-od-id="article-related">
     <div class="sec-head row"><div><span class="kicker">相关阅读</span><h2>接着看</h2></div></div>
-    <div class="link-grid" style="margin-top:18px;grid-template-columns:repeat(2,1fr)">
-      <?php foreach ($related as $r): ?>
-      <a class="link-it" href="/article/<?=htmlspecialchars($r['a']['slug'])?>"><span class="lt"><b><?=htmlspecialchars($r['a']['title'])?></b><span><?=htmlspecialchars(substr($r['a']['created_at'] ?? '', 0, 10))?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+    <div class="rel-grid">
+      <?php foreach ($related as $r): $ra = $r['a']; ?>
+      <a class="a-card" href="/article/<?=htmlspecialchars($ra['slug'])?>">
+        <div class="cov"><?=CoverRenderer::renderCard($ra)?></div>
+        <div class="bd" style="padding:14px 16px">
+          <h3 style="font-size:14.5px;line-height:1.5"><?=htmlspecialchars($ra['title'])?></h3>
+          <div class="meta" style="margin-top:8px"><?=htmlspecialchars(substr($ra['created_at'] ?? '', 0, 10))?></div>
+        </div>
+      </a>
       <?php endforeach; ?>
     </div>
   </section>
+  <?php endif; ?>
+
+  <?php if (!empty($top10) || !empty($tagCloud)): ?>
+  <section class="reader reveal" data-od-id="article-discover">
+    <div class="disc-grid">
+      <?php if (!empty($top10)): ?>
+      <div class="disc-box">
+        <h3>最新文章 Top 10</h3>
+        <ol>
+          <?php foreach ($top10 as $ti => $ta): if (($ta['id'] ?? '') === ($article['id'] ?? '')) continue; ?>
+          <li><a href="/article/<?=htmlspecialchars($ta['slug'])?>"><span class="rn"><?=str_pad((string)($ti+1), 2, '0', STR_PAD_LEFT)?></span><span><?=htmlspecialchars($ta['title'])?></span></a></li>
+          <?php endforeach; ?>
+        </ol>
+      </div>
+      <?php endif; ?>
+      <?php if (!empty($tagCloud)): ?>
+      <div class="disc-box">
+        <h3>标签云</h3>
+        <div class="tag-cloud">
+          <?php foreach ($tagCloud as $tag => $cnt): ?>
+          <a href="/articles?tag=<?=urlencode($tag)?>"><?=htmlspecialchars($tag)?><b><?=$cnt?></b></a>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <?php endif; ?>
+    </div>
+  </section>
+  <?php endif; ?>
+
+  <?php if (!empty($related)): ?>
   <section class="reader reveal" id="personalizedRecs" hidden data-od-id="article-recs">
     <div class="sec-head row"><div><span class="kicker">猜你喜欢</span><h2>为你挑的</h2></div></div>
     <div class="link-grid" id="personalizedRecsGrid" style="margin-top:18px;grid-template-columns:repeat(2,1fr)"></div>
@@ -429,6 +512,19 @@ document.getElementById('posterBtn').addEventListener('click',function(){
 });
 document.getElementById('viewBtn').addEventListener('click',function(){ofStat('view');});
 }
+/* 阅读进度条 + 目录滚动高亮 */
+(function(){
+  var prog=document.getElementById('readProg');
+  var links=Array.prototype.slice.call(document.querySelectorAll('.toc-rail a[data-toc]'));
+  var heads=[];
+  links.forEach(function(l){var h=document.getElementById(l.getAttribute('data-toc'));if(h)heads.push({h:h,l:l});});
+  if(!prog&&!heads.length)return;
+  function onScroll(){
+    if(prog){var max=document.documentElement.scrollHeight-window.innerHeight;prog.style.width=(max>0?Math.min(100,window.scrollY/max*100):0)+'%';}
+    if(heads.length){var cur=null;heads.forEach(function(o){if(o.h.getBoundingClientRect().top<150)cur=o;});links.forEach(function(l){l.classList.remove('on');});if(cur)cur.l.classList.add('on');}
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+})();
 </script>
 </body>
 </html>

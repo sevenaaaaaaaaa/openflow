@@ -8,6 +8,7 @@
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
+require_once __DIR__ . '/lib/CoverRenderer.php';
 // 页面缓存：命中直接输出（跳过登录态/爬虫），减少重复渲染
 if (PageCache::begin('courses', 1800)) exit;
 $siteName = site_config_get('site_name', 'OpenFlow');
@@ -44,6 +45,8 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <style>
 /* 课程页独有：课程卡（大纲可展开 · 加入学习）。其余全部来自 modules.css。 */
 .course{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.course .c-cov .gcov{aspect-ratio:21/6}
+.course .c-cov .gcov .gc-t{display:none}
 .course[hidden]{display:none}
 .c-top{padding:30px 32px 10px;display:flex;flex-direction:column;gap:10px;cursor:pointer}
 .c-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--font-mono);font-size:11.5px;color:var(--faint)}
@@ -119,6 +122,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="grid g2" id="courseGrid" style="gap:18px">
       <?php foreach ($COURSES as $c): ?>
       <article class="card course" data-lv="<?=htmlspecialchars($c[1])?>" data-id="<?=$c[0]?>" data-od-id="course-<?=$c[0]?>">
+        <div class="c-cov"><?=CoverRenderer::renderCard(['id' => $c[0], 'title' => $c[2], '_hue' => $c[1] === '训练营' ? 'warn' : 'accent', '_kicker' => $c[1] . ' · ' . $c[3]])?></div>
         <div class="c-top" data-open>
           <div class="c-meta"><span class="badge <?=$c[1]==='训练营'?'warn':'ok'?>"><?=htmlspecialchars($c[1])?></span><span><?=htmlspecialchars($c[3])?></span><span><?=$c[0]?></span></div>
           <h3><?=htmlspecialchars($c[2])?></h3>

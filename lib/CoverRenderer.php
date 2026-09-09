@@ -128,9 +128,10 @@ class CoverRenderer {
         return $h;
     }
 
-    /** gcov 容器通用属性（class + 种子变量 inline style） */
+    /** gcov 容器通用属性（class + 种子变量 inline style）。_hue 可强制色相（课程/资产等非文章分类用） */
     private static function frame(array $item, string $extraClass = ''): array {
         $p = self::palette($item['category'] ?? '');
+        if (!empty($item['_hue'])) $p['hue'] = $item['_hue'];
         $seed = self::seed($item);
         $vars = self::variantVars($seed);
         [$gx, $gy] = self::glowPos($vars['gx']);
@@ -139,8 +140,9 @@ class CoverRenderer {
         return [$p, $vars, $class, $style];
     }
 
-    /** 分类名：优先站点分类表里的名字，没有再用内置名 */
+    /** 分类名：_kicker 强制指定 > 站点分类表 > 内置名 */
     private static function catName(array $item, array $p): string {
+        if (!empty($item['_kicker'])) return (string)$item['_kicker'];
         $key = $item['category'] ?? '';
         if ($key !== '' && function_exists('get_categories')) {
             foreach (get_categories('article') as $c) if (($c['key'] ?? '') === $key) return (string)$c['name'];
@@ -148,9 +150,9 @@ class CoverRenderer {
         return $p['name'];
     }
 
-    /** 列表卡封面（16:9）。卡片正文已有标题，默认不重复；独立使用（无正文）时传 $withTitle = true */
-    public static function renderCard(array $item, bool $withTitle = false): string {
-        [$p, $vars, $class, $style] = self::frame($item);
+    /** 列表卡封面（16:9）。卡片正文已有标题，默认不重复；独立使用（无正文）时传 $withTitle = true。$extraClass 如 'lg'（详情页大海报） */
+    public static function renderCard(array $item, bool $withTitle = false, string $extraClass = ''): string {
+        [$p, $vars, $class, $style] = self::frame($item, $extraClass);
         $title = htmlspecialchars(mb_substr($item['title'] ?? '', 0, 48));
         return '<div class="' . $class . '" style="' . $style . '">'
             . self::symbolLayer(self::motif($item), $p, $vars)
