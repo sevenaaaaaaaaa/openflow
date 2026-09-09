@@ -38,32 +38,32 @@ includes/site-footer.php  of_footer()       全站同一个 .foot（4 列 + 版�
 外壳由 `includes/site-nav.php` 的 `of_shell('<page>')` 在 `<body>` 第一行注入，
 渲染全部在 `assets/site-shell.js`，几何全部在 `modules.css` 开头的「外壳几何」段。
 
-### 单坐标系（v8，2026-09-02 重写）
+### 双阶段、单状态源（v9，2026-09-09）
 
-2026-09-02 之前的外壳有两套坐标系：顶栏 y=0 时横跨视口，滚动后变成避让侧栏的 fixed 胶囊，
-导航"居中"的参照系在滚动一瞬间从视口切到内容区（1280 宽时跳 ~120px），mega 又嵌在 `<a>` 里
-继承了导航 pill 样式、`position:fixed` 的包含块随滚动改变……7 次"修导航"都在这个错误模型里改参数。
-v8 换成**单坐标系**：
+外壳保留 v8 建立的共享坐标变量，但恢复产品要求的两阶段形态。`body[data-shell-phase]` 是唯一滚动阶段：
 
 ```
-侧栏  position:fixed  left:14px  top:var(--chrome-top)  width:var(--sb-w)        ← 左列
-顶栏  position:sticky top:var(--chrome-top)  margin-left:calc(var(--content-l) + var(--gx))  margin-right:var(--gx)   ← 右列
-正文  #main            margin-left:var(--content-l)  padding: … var(--gx) …                                          ← 右列
+top     顶栏横向通栏；侧栏 top = 顶栏高度 + 间距
+docked  顶栏左边界 = 正文左边界，右侧保留 gx，形成药丸；侧栏 top = chrome-top
+正文    始终 margin-left:var(--content-l)，滚动前后不移动
 ```
 
-顶栏与正文用同一个 `--content-l`（侧栏宽 + 34px；关闭 / 抽屉时 0）和同一个 `--gx`，
-所以 **顶栏宽度 ≡ 正文内容宽度，导航中心 ≡ 正文中心**，任何侧栏状态、任何滚动位置都成立；
-侧栏三态只改 `--sb-w`（248 / 76 / 0），两列各自过渡同一个属性。
+`data-shell-phase` 只控制顶栏横向外框和侧栏纵向起点；`data-sb=full|rail|closed` 只控制侧栏宽度，
+两套状态正交。顶栏高度、字号、内部三栏网格和侧栏内部内容均不得随滚动改变。≤960px 不启用双阶段几何，
+继续使用顶部胶囊和底部抽屉。
 
-五条硬约束，任何迭代不得移除或简化（`tests/visual/shell_geom.py` 会量）：
+动态顶部通知条通过 `--external-top-inset` 向外壳报告总高度；`--shell-sticky-top` 和
+`--anchor-offset` 是页面内 sticky 元件与锚点的统一安全顶距，页面不得再写 `top:20px` 一类魔法数字。
+
+六条硬约束，任何迭代不得移除或简化（`tests/visual/shell_geom.py` 会量）：
 
 1. **红绿灯永远在导航最左侧**（`.lights` 三个 `.light-r/.light-y/.light-g`）。
-2. **导航居中于正文，且保持浏览器标签页形态**：`#chrome .bar` 是 `minmax(0,1fr) auto minmax(0,1fr)` 三栏网格
-   （两侧必须能缩到 0，否则不是真居中），`|导航中心 − 正文中心| ≤ 2px`。
-3. **滚动只改表面，不改几何**：`#chrome.scrolled` 只允许动 background / border-color / box-shadow。
-   top / left / width / height / 字号一律不动；状态由 1px 哨兵 + IntersectionObserver 切换，没有阈值抖动。
-4. **侧栏三态** `body[data-sb=full|rail|closed]`，窄屏变底部抽屉 `drawer`。
-5. **所有动效走 `--ease-spring`**（Arc 原版弹簧 `cubic-bezier(.32,.72,0,1)`）。
+2. **内部对齐不变**：`#chrome .bar` 始终是 `minmax(0,1fr) auto minmax(0,1fr)`；top 导航居中于视口，
+   docked 导航居中于正文列，外框过渡期间不改字号或控件高度。
+3. **正文不动**：滚动前后 `#main` 的横向位置与宽度必须完全相同。
+4. **侧栏只纵向延伸**：滚动前后宽度不变，top 从顶栏下方过渡到页面顶端。
+5. **侧栏三态** `body[data-sb=full|rail|closed]`，窄屏变底部抽屉 `drawer`。
+6. **所有动效走 `--ease-spring`**；`html.rm` 下阶段即时切换。
 
 顶栏按**自身宽度**用容器查询（`@container chrome`）分级收缩：搜索胶囊 → 品牌副标 → 品牌文字 → 导航图标 → 导航进抽屉。
 不要再用视口断点管顶栏——它的可用宽度取决于侧栏状态，视口宽度说明不了任何问题。
@@ -198,7 +198,8 @@ python3 tests/visual/snap.py --diff /tmp/before /tmp/after
 ```
 
 `snap.py` 用真 Chromium 在 **亮 / 暗 × 桌面 1280 / 手机 390** 四种状态下拍整页，逐像素比。
-`tests/visual/shell_geom.py` 量外壳几何契约（第二节五条 + mega 定位 / hover 桥 / 键盘 + 窄屏抽屉），改外壳必跑。
+`tests/visual/shell_geom.py` 量外壳几何契约（第二节六条 + 动态顶部占位 + 自然过渡 / 减少动效 +
+mega 定位 / hover 桥 / 键盘 + 窄屏抽屉），改外壳必跑。
 它会关掉动效、预置角色浮层已选、固定主题，所以两次结果可复现（不改任何东西连拍两次 = 8/8 一致）。
 
 约定：**改共享层时首页必须逐像素不变**（除非就是在修首页 bug，那要在提交说明里写清哪一节变了）。

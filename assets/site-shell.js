@@ -1,8 +1,11 @@
 /**
- * OpenFlow · site-shell.js v8 — 全站共享外壳注入器
- * v8（2026-09-02）单坐标系外壳：
- *   - #chrome 改 sticky 胶囊，几何全由 modules.css 的 --content-l / --gx 决定，与 #main 同源；滚动只切 .scrolled（表面）
- *   - 滚动状态用 IntersectionObserver 哨兵，不再 scroll 事件阈值；删掉 capsule-mode 缩档
+ * OpenFlow · site-shell.js v9 — 全站共享外壳注入器
+ * v9（2026-09-09）双阶段外壳：
+ *   - 页面顶部为横向通栏，滚动后 #chrome 收成右列药丸；#sidebar 只同步向上纵向延伸
+ *   - body[data-shell-phase] 是唯一阶段状态；正文几何、侧栏宽度与内部控件尺寸不随滚动改变
+ * v8（2026-09-02）单坐标系基础：
+ *   - #chrome 改 sticky，几何由 modules.css 的 --content-l / --gx 决定，与 #main 同源
+ *   - 滚动状态使用 IntersectionObserver 哨兵，不用逐帧 scroll 计算
  *   - mega 菜单改为 body 级单例 #mega，JS 锚到当前 tab 中心，hover 意图延迟 + 键盘可达；不再嵌在 <a> 里
  *   - 侧栏去 backdrop-filter（它下面没有内容滚过）；顶栏按自身宽度用容器查询收缩
  * 升级记录（2026-08-16）：
@@ -52,17 +55,17 @@
   /* ── 共享资产：tokens.css + modules.css（终版契约，与 index.php 同源） ── */
   if (!document.getElementById('of-fonts-css')) {
     var lf = document.createElement('link');
-    lf.id = 'of-fonts-css'; lf.rel = 'stylesheet'; lf.href = '/assets/fonts/fonts.css?v=20260903a';
+    lf.id = 'of-fonts-css'; lf.rel = 'stylesheet'; lf.href = '/assets/fonts/fonts.css?v=20260909a';
     document.head.appendChild(lf);
   }
   if (!document.getElementById('of-tokens-css')) {
     var l1 = document.createElement('link');
-    l1.id = 'of-tokens-css'; l1.rel = 'stylesheet'; l1.href = '/assets/tokens.css?v=20260903a';
+    l1.id = 'of-tokens-css'; l1.rel = 'stylesheet'; l1.href = '/assets/tokens.css?v=20260909a';
     document.head.appendChild(l1);
   }
   if (!document.getElementById('of-modules-css')) {
     var l2 = document.createElement('link');
-    l2.id = 'of-modules-css'; l2.rel = 'stylesheet'; l2.href = '/assets/modules.css?v=20260903a';
+    l2.id = 'of-modules-css'; l2.rel = 'stylesheet'; l2.href = '/assets/modules.css?v=20260909a';
     document.head.appendChild(l2);
   }
   /* ── 图标库 ── */
@@ -478,7 +481,7 @@
         st.id = 'of-shell-body-fallback';
         st.textContent =
           'body.of-shell-body{margin-left:var(--content-l,calc(var(--sb-w,248px) + 34px));' +
-          'padding:30px var(--gx,clamp(16px,4vw,40px)) 64px;' +
+          'padding:calc(30px + var(--external-top-inset,0px)) var(--gx,clamp(16px,4vw,40px)) 64px;' +
           'transition:margin-left .45s var(--ease-spring)}' +
           '@media(max-width:960px){body.of-shell-body{margin-left:0;padding-left:14px;padding-right:14px}}';
         document.head.appendChild(st);
@@ -489,7 +492,7 @@
       window.addEventListener('load', guard);
     }
 
-    /* ── 状态：主题 / 侧栏 / 胶囊 ── */
+    /* ── 状态：主题 / 侧栏 / 双阶段外壳 ── */
     var LS = 'openflow-site-v3', SK = 'of_session_v3';
     var S;
     try { S = JSON.parse(localStorage.getItem(LS) || '{}'); } catch (e) { S = {}; }
@@ -533,19 +536,29 @@
     scrim.addEventListener('click', function () { sbOpen(false); });
     sbNav.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { sbOpen(false); }); });
 
-    /* 滚动状态：只切表面（.scrolled），不改几何。用 1px 哨兵 + IntersectionObserver，没有阈值抖动 */
+    /* 双阶段外壳：一个状态同步顶栏横向收缩与侧栏纵向延伸。
+       正文和侧栏宽度不参与；窄屏仍走原来的底部抽屉。 */
     var chrome = g('chrome');
     (function mountScrollState() {
+      var DOCK_AT = 72;
       var sentinel = document.createElement('div');
       sentinel.id = 'of-top-sentinel'; sentinel.setAttribute('aria-hidden', 'true');
-      sentinel.style.cssText = 'position:absolute;top:8px;left:0;width:1px;height:1px;pointer-events:none';
+      sentinel.style.cssText = 'position:absolute;top:' + DOCK_AT + 'px;left:0;width:1px;height:1px;pointer-events:none';
       document.body.insertBefore(sentinel, document.body.firstChild);
-      if ('IntersectionObserver' in window) {
-        new IntersectionObserver(function (en) { chrome.classList.toggle('scrolled', !en[0].isIntersecting); }).observe(sentinel);
-      } else {
-        var onScroll = function () { chrome.classList.toggle('scrolled', (window.scrollY || 0) > 8); };
-        window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+      function setPhase(docked) {
+        var desktop = !matchMedia('(max-width:960px)').matches;
+        document.body.dataset.shellPhase = desktop && docked ? 'docked' : 'top';
+        chrome.classList.toggle('scrolled', docked);
       }
+      function syncPhase() { setPhase((window.scrollY || document.documentElement.scrollTop || 0) > DOCK_AT); }
+      syncPhase();
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (en) { setPhase(!en[0].isIntersecting); }).observe(sentinel);
+      } else {
+        window.addEventListener('scroll', syncPhase, { passive: true });
+      }
+      window.addEventListener('resize', syncPhase);
+      window.addEventListener('pageshow', syncPhase);
     })();
 
     /* ── 账户（真实 API /api/member） ── */
