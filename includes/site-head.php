@@ -18,6 +18,11 @@ if (!function_exists('of_head_assets')) {
         // 用输出缓冲监听 </head>，页面已写的 title/description/canonical 保留，
         // 缺了的自动补站点默认，保证 46 页全站不再裸奔。
         if (function_exists('of_seo_bootstrap')) of_seo_bootstrap();
+        // 插件前台插槽：head（统计代码/meta/自定义样式）+ 插件 CSS 资产
+        if (class_exists('PluginSystem')) {
+            PluginSystem::render_front_slot('head');
+            PluginSystem::render_front_assets('css');
+        }
     }
 }
 

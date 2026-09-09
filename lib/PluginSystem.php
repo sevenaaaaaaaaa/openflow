@@ -219,4 +219,249 @@ class PluginSystem {
         json_write(__DIR__ . '/../data/plugins.json', $registry);
         return true;
     }
+
+    /* ════════════════════════════════════════════════════════════════
+     * 插件开放 API（批C）：路由 / 后台菜单 / 前台插槽 / 定时任务
+     * 让第三方开发者不改核心代码就能扩展四套能力。
+     * ════════════════════════════════════════════════════════════════ */
+
+    // ─── C1. API 路由：/api/plugin/{插件ID}/{路径} ───
+    private static array $apiRoutes = [];   // pluginId => [ "METHOD path" => ['cb'=>, 'auth'=>] ]
+
+    /**
+     * 注册插件 API 端点。
+     *   PluginSystem::register_api_route('my-plugin', 'GET', 'stats', fn($req) => ['n' => 42]);
+     *   → GET /api/plugin/my-plugin/stats 返回 {"ok":true,"data":{"n":42}}
+     *
+     * @param string $pluginId 插件 ID（必须与 plugin.json 一致）
+     * @param string $method   GET / POST / PUT / DELETE / ANY
+     * @param string $path     端点路径（不含插件 ID），支持 {param} 占位：'report/{id}'
+     * @param callable $cb     function (array $req): mixed
+     *                         $req = ['params'=>路径参数, 'query'=>GET, 'body'=>POST/JSON, 'member'=>当前会员|null]
+     *                         返回数组 → JSON data；返回 ApiResponse 可自定义状态码
+     * @param array  $opts     ['auth' => 'admin'|'member'|'none'(默认)]  'admin' 需后台登录，'member' 需前台会员登录
+     */
+    public static function register_api_route(string $pluginId, string $method, string $path, callable $cb, array $opts = []): void {
+        $path = trim($path, '/');
+        self::$apiRoutes[$pluginId][strtoupper($method) . ' ' . $path] = [
+            'cb' => $cb,
+            'auth' => $opts['auth'] ?? 'none',
+        ];
+    }
+
+    /** 分发插件 API 请求（由 api/plugin.php 调用）。返回 false 表示无此路由。 */
+    public static function dispatch_api_route(string $pluginId, string $method, string $path): bool {
+        $routes = self::$apiRoutes[$pluginId] ?? [];
+        $path = trim($path, '/');
+        $method = strtoupper($method);
+        foreach ($routes as $key => $route) {
+            [$rm, $rp] = explode(' ', $key, 2);
+            if ($rm !== 'ANY' && $rm !== $method) continue;
+            // 路径匹配：支持 {param} 段
+            $params = [];
+            $rSegs = $rp === '' ? [] : explode('/', $rp);
+            $aSegs = $path === '' ? [] : explode('/', $path);
+            if (count($rSegs) !== count($aSegs)) continue;
+            $match = true;
+            foreach ($rSegs as $i => $seg) {
+                if (preg_match('/^\{([a-z_]+)\}$/i', $seg, $m)) $params[$m[1]] = urldecode($aSegs[$i]);
+                elseif ($seg !== $aSegs[$i]) { $match = false; break; }
+            }
+            if (!$match) continue;
+
+            // 鉴权
+            if ($route['auth'] === 'admin' && !(function_exists('is_logged_in') && is_logged_in())) {
+                http_response_code(401); echo json_encode(['ok' => false, 'error' => '需要管理员登录']); return true;
+            }
+            $member = null;
+            if ($route['auth'] === 'member') {
+                if (function_exists('member_current')) $member = member_current();
+                if (!$member) { http_response_code(401); echo json_encode(['ok' => false, 'error' => '需要会员登录']); return true; }
+            } elseif (function_exists('member_current')) {
+                try { $member = member_current(); } catch (\Throwable $e) {}
+            }
+
+            $req = [
+                'params' => $params,
+                'query'  => $_GET,
+                'body'   => $_POST ?: (json_decode(file_get_contents('php://input'), true) ?: []),
+                'member' => $member,
+                'method' => $method,
+            ];
+            try {
+                $result = call_user_func($route['cb'], $req);
+                if ($result instanceof PluginApiResponse) { $result->send(); return true; }
+                echo json_encode(['ok' => true, 'data' => $result], JSON_UNESCAPED_UNICODE);
+            } catch (\Throwable $e) {
+                self::hook_error("api:{$pluginId}/{$path}", $e);
+                http_response_code(500);
+                echo json_encode(['ok' => false, 'error' => '插件内部错误（已记录）']);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // ─── C2. 后台菜单：主导航注册 ───
+    private static array $adminMenus = [];  // id => item
+
+    /**
+     * 注册后台主导航项（渲染在侧栏「插件」区）。
+     *   PluginSystem::register_admin_menu([
+     *     'id'    => 'my-plugin',            // 必填
+     *     'label' => '我的插件',              // 必填
+     *     'icon'  => 'bolt',                 // 选填，图标名（见 includes/nav-icons.php），默认 puzzle
+     *     'href'  => '/xmp/plugin/my-plugin',// 选填；不填则自动指向插件设置页
+     *     'sort'  => 50,                     // 选填，数字小的排前
+     *   ]);
+     */
+    public static function register_admin_menu(array $item): void {
+        if (empty($item['id']) || empty($item['label'])) return;
+        $item['icon'] = $item['icon'] ?? 'puzzle';
+        $item['sort'] = (int)($item['sort'] ?? 50);
+        $item['href'] = $item['href'] ?? ('/xmp/plugin/' . $item['id']);
+        self::$adminMenus[$item['id']] = $item;
+    }
+
+    /** 排序后的后台插件菜单（admin-nav.php 渲染用） */
+    public static function get_admin_menus(): array {
+        $items = array_values(self::$adminMenus);
+        usort($items, fn($a, $b) => $a['sort'] <=> $b['sort']);
+        return $items;
+    }
+
+    // ─── C2b. 插件设置页：/xmp/plugin/{id} ───
+    private static array $adminPages = [];  // pluginId => callable
+
+    /**
+     * 注册插件后台设置页（在 /xmp/plugin/{id} 渲染，已带后台外壳与登录保护）。
+     *   PluginSystem::register_admin_page('my-plugin', function () {
+     *       echo '<div class="card">…设置表单…</div>';
+     *   });
+     */
+    public static function register_admin_page(string $pluginId, callable $cb): void {
+        self::$adminPages[$pluginId] = $cb;
+    }
+
+    /** 渲染插件设置页（admin/plugin-page.php 调用）。无注册返回 false。 */
+    public static function render_admin_page(string $pluginId): bool {
+        if (empty(self::$adminPages[$pluginId])) return false;
+        try { call_user_func(self::$adminPages[$pluginId]); }
+        catch (\Throwable $e) {
+            self::hook_error("admin-page:{$pluginId}", $e);
+            echo '<div class="card" style="color:var(--danger)">插件页面渲染出错（已记录到 plugin-errors.log）</div>';
+        }
+        return true;
+    }
+
+    // ─── C3. 前台插槽与资产 ───
+    private static array $frontSlots = [];   // slot => [priority => cb[]]
+    private static array $frontAssets = [];  // ['css'=>[url...], 'js'=>[url...]]
+
+    /**
+     * 注册前台插槽内容。可用插槽：
+     *   'head'          <head> 内（meta/样式/统计代码）
+     *   'body_end'      </body> 前（脚本/浮层）
+     *   'footer_before' 页脚上方（横幅/订阅框）
+     *   'article_after' 文章正文后（相关推荐/作者卡）
+     *   PluginSystem::register_front_slot('footer_before', fn() => print '<div>…</div>');
+     */
+    public static function register_front_slot(string $slot, callable $cb, int $priority = 10): void {
+        self::$frontSlots[$slot][$priority][] = $cb;
+    }
+
+    /** 渲染插槽（前台外壳在对应位置调用）。$ctx 为页面上下文（如 ['article'=>…]）。 */
+    public static function render_front_slot(string $slot, array $ctx = []): void {
+        if (empty(self::$frontSlots[$slot])) return;
+        ksort(self::$frontSlots[$slot]);
+        foreach (self::$frontSlots[$slot] as $cbs) {
+            foreach ($cbs as $cb) {
+                try { call_user_func($cb, $ctx); }
+                catch (\Throwable $e) { self::hook_error("slot:{$slot}", $e); }
+            }
+        }
+    }
+
+    /**
+     * 注册前台资产（全站页面自动加载）。
+     *   PluginSystem::register_front_asset('css', '/plugins/my-plugin/assets/style.css');
+     *   PluginSystem::register_front_asset('js',  '/plugins/my-plugin/assets/app.js', ['defer' => true]);
+     */
+    public static function register_front_asset(string $type, string $url, array $opts = []): void {
+        if (!in_array($type, ['css', 'js'], true) || $url === '') return;
+        self::$frontAssets[$type][] = ['url' => $url, 'opts' => $opts];
+    }
+
+    /** 输出某类资产标签（of_head_assets/of_footer 调用） */
+    public static function render_front_assets(string $type): void {
+        foreach (self::$frontAssets[$type] ?? [] as $a) {
+            $url = htmlspecialchars($a['url'], ENT_QUOTES);
+            if ($type === 'css') echo '<link rel="stylesheet" href="' . $url . '">' . "\n";
+            elseif ($type === 'js') echo '<script src="' . $url . '"' . (!empty($a['opts']['defer']) ? ' defer' : '') . '></script>' . "\n";
+        }
+    }
+
+    // ─── C4. 插件定时任务 ───
+    private static array $schedules = [];   // name => ['interval'=>秒, 'cb'=>, 'plugin'=>]
+
+    /**
+     * 注册定时任务（由 api/cron.php 每分钟驱动，按间隔到点执行）。
+     *   PluginSystem::register_schedule('my-plugin.daily-report', 'daily', function () { … });
+     *
+     * @param string $name     任务名（建议带插件前缀，全局唯一）
+     * @param string $interval 'every'|'5min'|'15min'|'hourly'|'6hours'|'daily'|'weekly'
+     */
+    public static function register_schedule(string $name, string $interval, callable $cb): void {
+        $secs = ['every' => 0, '5min' => 300, '15min' => 900, 'hourly' => 3600, '6hours' => 21600, 'daily' => 86400, 'weekly' => 604800][$interval] ?? null;
+        if ($secs === null || $name === '') return;
+        self::$schedules[$name] = ['interval' => $secs, 'cb' => $cb];
+    }
+
+    /** 执行到点的插件任务（api/cron.php 末尾调用）。返回执行摘要。 */
+    public static function run_schedules(): array {
+        if (empty(self::$schedules)) return ['ran' => 0];
+        $stateFile = (defined('DATA_DIR') ? DATA_DIR : __DIR__ . '/../data') . '/plugin-schedule.json';
+        $state = function_exists('json_read') ? json_read($stateFile) : [];
+        $now = time();
+        $ran = 0; $errors = 0;
+        foreach (self::$schedules as $name => $task) {
+            $last = (int)($state[$name] ?? 0);
+            if ($task['interval'] > 0 && $now - $last < $task['interval']) continue;
+            try {
+                call_user_func($task['cb']);
+                $ran++;
+            } catch (\Throwable $e) {
+                $errors++;
+                self::hook_error("schedule:{$name}", $e);
+            }
+            $state[$name] = $now;
+        }
+        if (function_exists('json_write')) json_write($stateFile, $state);
+        return ['ran' => $ran, 'errors' => $errors, 'registered' => count(self::$schedules)];
+    }
+}
+
+/**
+ * 插件 API 自定义响应（需要非 200 状态码或原始输出时 return 它）。
+ *   return new PluginApiResponse(['x' => 1], 201);
+ *   return PluginApiResponse::error('参数缺失', 422);
+ */
+class PluginApiResponse {
+    public function __construct(
+        public mixed $data = null,
+        public int $status = 200,
+        public bool $isError = false,
+    ) {}
+    /** 成功响应：PluginApiResponse::json(['count' => 42]) */
+    public static function json(mixed $data, int $status = 200): self {
+        return new self($data, $status, false);
+    }
+    public static function error(string $msg, int $status = 400): self {
+        return new self(['error' => $msg], $status, true);
+    }
+    public function send(): void {
+        http_response_code($this->status);
+        if ($this->isError) echo json_encode(['ok' => false, 'error' => $this->data['error'] ?? 'error'], JSON_UNESCAPED_UNICODE);
+        else echo json_encode(['ok' => true, 'data' => $this->data], JSON_UNESCAPED_UNICODE);
+    }
 }
