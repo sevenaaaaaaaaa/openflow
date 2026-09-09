@@ -115,7 +115,7 @@ live → `events`，consultation → `enterprise`，course-player → `courses`�
 | 主栏 + 侧栏 | `.g-main-aside`(`.aside-left`) › `div` + `aside`(`.aside-box` `.rank`) | academy、navigation、community、asset、course-player、live 直播间、member（左导航） |
 | 正文阅读 | `.reader` › `.art-head` `.art-meta` `.art-cover` `.prose` `.actions`(`.act`) `.gate`(`.gate-box`) | article、community-post、event、asset 介绍 |
 | 弹层 | `.modal`(`.open`) › `.mbox` `.mhead`(`.mx`) `.mbody` | downloads 门禁表单、marketplace 安装 |
-| 生成式封面 | `.gcov`(`.h-accent/.h-ok/.h-warn/.h-danger/.h-neutral` `.lg`) › `.gc-code` `.gc-k` `.gc-t` | 无图的文章卡（`lib/CoverRenderer.php`）、生态资产卡（`mkt_asset_cover()`） |
+| 生成式封面 | `.gcov`(`.h-accent/.h-ok/.h-warn/.h-danger/.h-neutral` `.lg` `.v1-.v4`) › `.gc-code` `.gc-k` `.gc-t` `.gc-sym` `.gc-orbit` | 无图的文章卡（`lib/CoverRenderer.php`）、生态资产卡（`mkt_asset_cover()`）。v9 起：统一框架 + 内容符号（`MOTIFS` 从标题/标签抽象）+ 种子版式（`cover_seed` 决定 v1 标志 / v2 水印 / v3 回响 / v4 轨道、旋转角、光晕落点、网格密度）；编辑在文章编辑页「🎲 换一张」抽卡（`api/cover-preview`），`cover_motif` 可手动指定符号 |
 | 空状态 | `.empty` | 所有列表页 |
 | 页脚 | `.foot` › `.fb`(`.brand` `.f-about` `.note` `h4` `a`) `.f-bottom` | 所有页 |
 
