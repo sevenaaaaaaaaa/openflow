@@ -66,10 +66,21 @@ $shopSettings = shop_settings();
         <div class="sp-win">
           <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">live · <?=htmlspecialchars($room['id'])?></div></div>
           <div class="player">
-            <?php if ($st === 'live' && !empty($room['hls_url'])): ?>
+            <?php
+            // YouTube 链接 → embed（优先；海外平台同步直播时私域观看页直接内嵌）
+            $ytEmbed = '';
+            if (!empty($room['youtube_url']) && preg_match('~(?:youtube\.com/(?:watch\?v=|live/)|youtu\.be/)([\w-]{6,})~', $room['youtube_url'], $m)) {
+                $ytEmbed = 'https://www.youtube.com/embed/' . $m[1] . '?autoplay=1&rel=0';
+            }
+            ?>
+            <?php if ($st === 'live' && $ytEmbed): ?>
+            <iframe src="<?=htmlspecialchars($ytEmbed)?>" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+            <?php elseif ($st === 'live' && !empty($room['hls_url'])): ?>
             <video id="livePlayer" controls autoplay muted playsinline src="<?=htmlspecialchars($room['hls_url'])?>"></video>
             <?php elseif ($st === 'live' && empty($room['hls_url'])): ?>
             <div class="ph"><span class="live-dot"></span>直播进行中<small>播放地址待配置</small></div>
+            <?php elseif ($st === 'replay' && $ytEmbed): ?>
+            <iframe src="<?=htmlspecialchars(str_replace('autoplay=1', 'autoplay=0', $ytEmbed))?>" style="width:100%;height:100%;border:0" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>
             <?php elseif ($st === 'replay' && !empty($room['replay_url'])): ?>
             <video controls playsinline src="<?=htmlspecialchars($room['replay_url'])?>"></video>
             <?php elseif ($st === 'scheduled'): ?>
@@ -86,6 +97,56 @@ $shopSettings = shop_settings();
         </div>
         <p class="lead" style="font-size:15px;line-height:1.85;color:var(--muted)"><?=nl2br(htmlspecialchars($room['desc'] ?? ''))?></p>
         <?php if (!empty($room['start_at'])): ?><div class="note mono" style="margin-top:0"><?=htmlspecialchars(substr($room['start_at'], 0, 16))?> — <?=htmlspecialchars(substr($room['end_at'] ?? '', 0, 16))?></div><?php endif; ?>
+
+        <?php if ($st === 'scheduled'): ?>
+        <!-- 预约提醒（E3）：会员一键预约，游客留邮箱；开播自动通知 -->
+        <div class="strip" id="subStrip">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+          <div class="tx"><b>开播提醒我</b><span>已有 <b id="subCount"><?=live_sub_count($room['id'])?></b> 人预约 · 开播时通过<?=$member ? '站内信' : '邮件'?>通知</span></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <?php if (!$member): ?><input id="subEmail" class="inp" type="email" placeholder="你的邮箱" style="height:40px;min-width:200px"><?php endif; ?>
+            <button class="btn primary" id="subBtn" style="height:40px;padding:0 18px;font-size:14px">预约</button>
+          </div>
+        </div>
+        <script>
+        document.getElementById('subBtn').onclick = function() {
+          var body = new FormData();
+          body.append('room_id', <?=json_encode($room['id'])?>);
+          var em = document.getElementById('subEmail');
+          if (em) body.append('email', em.value.trim());
+          fetch('/api/live?action=subscribe', {method:'POST', body:body}).then(function(r){return r.json()}).then(function(d){
+            if (d.ok) {
+              document.getElementById('subCount').textContent = d.count;
+              document.getElementById('subStrip').querySelector('.tx b').textContent = d.dup ? '你已预约过' : '✅ 预约成功';
+              document.getElementById('subBtn').disabled = true;
+            } else alert(d.error || '预约失败');
+          });
+        };
+        </script>
+        <?php endif; ?>
+
+        <?php
+        // 多商品卡（E3）：课程/插件/咨询/定制服务，每行 "标题|链接|价格文案"
+        $liveProducts = [];
+        foreach ((array)($room['products'] ?? []) as $line) {
+            $parts = array_map('trim', explode('|', $line));
+            if ($parts[0] ?? '') $liveProducts[] = ['title' => $parts[0], 'link' => $parts[1] ?? '#', 'price' => $parts[2] ?? ''];
+        }
+        ?>
+        <?php if ($liveProducts): ?>
+        <div style="display:grid;gap:12px;margin-top:16px">
+          <?php foreach ($liveProducts as $lp): ?>
+          <div class="strip">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5M12 22V12"/></svg></span>
+            <div class="tx"><span class="kicker" style="font-size:11px">直播间专属</span><b><?=htmlspecialchars($lp['title'])?></b></div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <?php if ($lp['price'] !== ''): ?><b style="font-family:var(--font-display);font-size:20px;color:var(--ok)"><?=htmlspecialchars($lp['price'])?></b><?php endif; ?>
+              <a href="<?=htmlspecialchars($lp['link'])?>" class="btn primary" style="height:40px;padding:0 18px;font-size:14px">去看看 →</a>
+            </div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
 
         <?php if ($sellCourse): $price = $shopSettings['course_prices'][$sellCourse['id']] ?? 0; ?>
         <div class="strip">

@@ -94,6 +94,7 @@ RewriteRule ^consultation/?$ consultation.php [L,QSA]
 # 导航 / 个人中心 / 直播页都链到这些美化 URL；没有规则时会掉进末尾 landing.php 兜底 → 真页在、美化路径 404
 RewriteRule ^enterprise/?$ enterprise.php [L,QSA]
 RewriteRule ^live/?$ live.php [L,QSA]
+RewriteRule ^live-overlay/?$ live-overlay.php [L,QSA]
 RewriteRule ^messages/?$ messages.php [L,QSA]
 RewriteRule ^nps/?$ nps.php [L,QSA]
 # 会员中心：前台壳子与 7 个页面都链到 /account（以前没有这条规则，全部 404）

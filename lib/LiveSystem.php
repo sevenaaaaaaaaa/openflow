@@ -171,6 +171,46 @@ function live_status(array $room): string {
     return 'off';
 }
 
+/* ═══ 直播预约（E3）：未开播时观众留资，开播/开播前提醒 ═══ */
+function live_subs_file(): string { return DATA_DIR . '/live/subs.json'; }
+
+/** 预约某场直播。$contact = 会员ID 或邮箱。同一场同一 contact 只记一次。 */
+function live_subscribe(string $roomId, string $contact): array {
+    $roomId = trim($roomId); $contact = trim($contact);
+    if ($roomId === '' || $contact === '') return ['ok' => false, 'error' => '参数缺失'];
+    $subs = json_read(live_subs_file());
+    $subs[$roomId] = $subs[$roomId] ?? [];
+    if (in_array($contact, array_column($subs[$roomId], 'contact'), true)) {
+        return ['ok' => true, 'dup' => true];
+    }
+    $subs[$roomId][] = ['contact' => $contact, 'ts' => time(), 'reminded' => false];
+    json_write(live_subs_file(), $subs);
+    return ['ok' => true];
+}
+
+function live_subs(string $roomId): array {
+    $subs = json_read(live_subs_file());
+    return array_values((array)($subs[$roomId] ?? []));
+}
+
+function live_sub_count(string $roomId): int { return count(live_subs($roomId)); }
+
+/** 开播时通知所有预约者（站内信优先，邮箱走通知渠道） */
+function live_notify_subs(string $roomId, string $title): int {
+    $subs = live_subs($roomId);
+    $n = 0;
+    foreach ($subs as $s) {
+        $c = (string)$s['contact'];
+        if (str_contains($c, '@')) {
+            if (function_exists('notify_channels_send')) notify_channels_send('直播开播提醒', "你预约的《{$title}》开播了", '/live?room=' . $roomId);
+        } else {
+            if (function_exists('inbox_send')) inbox_send($c, '直播开播提醒', "你预约的《{$title}》开播了，点击进入直播间", ['link' => '/live?room=' . $roomId]);
+        }
+        $n++;
+    }
+    return $n;
+}
+
 function live_status_label(string $s): string {
     $map = ['live' => '直播中', 'upcoming' => '即将开播', 'scheduled' => '已预告', 'replay' => '可回放', 'off' => '未开播'];
     return $map[$s] ?? $s;
