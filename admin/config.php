@@ -1308,6 +1308,17 @@ $roleLabel = $roleLabels[$role] ?? $role;
       <button class="searchbox" onclick="fcFocusSearch()" aria-label="全局搜索（⌘K）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>搜索模块、内容、订单、线索…</span><kbd>⌘K</kbd></button>
     </div>
     <div class="bar-end">
+      <div style="position:relative">
+        <button class="cbtn" onclick="fcQuickCreate(event)" aria-label="快速新建" title="快速新建" style="font-size:17px;font-weight:700">＋</button>
+        <div id="fcQuickMenu" style="display:none;position:absolute;right:0;top:calc(100% + 8px);min-width:200px;background:var(--surface-strong);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:6px;z-index:9980">
+          <div style="padding:8px 12px 4px;font-size:var(--fs-xs);color:var(--faint);font-weight:600">快速新建</div>
+          <a href="/xmp/article-edit" style="display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:9px;text-decoration:none;color:inherit;font-size:var(--fs-lg)" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background=''">✍️ 写文章</a>
+          <a href="/xmp/create?tab=slides" style="display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:9px;text-decoration:none;color:inherit;font-size:var(--fs-lg)" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background=''">📊 生成 PPT</a>
+          <a href="/xmp/create?tab=script" style="display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:9px;text-decoration:none;color:inherit;font-size:var(--fs-lg)" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background=''">🎬 视频脚本</a>
+          <a href="/xmp/live" style="display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:9px;text-decoration:none;color:inherit;font-size:var(--fs-lg)" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background=''">📡 开播</a>
+          <a href="/xmp/landing-pages" style="display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:9px;text-decoration:none;color:inherit;font-size:var(--fs-lg)" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background=''">🎯 落地页</a>
+        </div>
+      </div>
       <button class="cbtn" onclick="fcToggleTheme()" aria-label="切换明暗主题" title="切换明暗主题">🌙</button>
       <button class="cbtn notification-bell" onclick="toggleNotif(event)" aria-label="通知" title="通知"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><i class="dot" style="display:<?=$unreadCount > 0?'block':'none'?>"></i></button>
       <div class="notif-dropdown" id="notifDropdown">
@@ -1386,6 +1397,14 @@ function fcToggleSidebar() {
 }
 // ─── 聚焦顶栏搜索框（打开命令面板） ───
 function fcFocusSearch() { var b = document.getElementById('fcPalette'); if (b) { b.classList.add('open'); var i = document.getElementById('fcPaletteInput'); if (i) { i.focus(); i.select(); } } }
+function fcQuickCreate(e) {
+  e.stopPropagation();
+  var m = document.getElementById('fcQuickMenu');
+  if (!m) return;
+  var open = m.style.display !== 'none';
+  m.style.display = open ? 'none' : 'block';
+  if (!open) setTimeout(function(){ document.addEventListener('click', function h(){ m.style.display = 'none'; document.removeEventListener('click', h); }); }, 0);
+}
 // ─── 主题切换：早绑定脚本读的是 of_theme，这里也写 of_theme（原先写 fc_theme，刷新就丢）───
 function fcToggleTheme() {
   var html = document.documentElement;
@@ -1993,8 +2012,68 @@ var FC_PALETTE_ITEMS = <?=json_encode(cp_items(), JSON_UNESCAPED_UNICODE)?>;
   var input = document.getElementById('fcPaletteInput');
   var list = document.getElementById('fcPaletteList');
   var items = [], sel = -1, allItems = FC_PALETTE_ITEMS || [];
-  function open(){ box.classList.add('open'); items = allItems.slice(0, 14); sel = -1; render(); input.value=''; input.focus(); }
+  var RECENT_KEY = 'of_pal_recent';
+
+  /* ── 最近使用 ── */
+  function getRecent(){ try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e){ return []; } }
+  function pushRecent(it){
+    if (!it.url) return;
+    try {
+      var r = getRecent().filter(function(u){ return u !== it.url; });
+      r.unshift(it.url); r = r.slice(0, 5);
+      localStorage.setItem(RECENT_KEY, JSON.stringify(r));
+    } catch(e){}
+  }
+  function recentItems(){
+    var urls = getRecent(), out = [];
+    urls.forEach(function(u){
+      var it = allItems.find(function(x){ return x.url === u; });
+      if (it) out.push(Object.assign({}, it, {section: '🕘 最近使用'}));
+    });
+    return out;
+  }
+
+  /* ── 动作执行（不跳页，原地完成 + toast 反馈）── */
+  function runAction(it){
+    close();
+    switch (it.action) {
+      case 'theme':
+        if (window.fcToggleTheme) fcToggleTheme();
+        var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (window.fcToast) fcToast(dark ? '🌙 已切到深色' : '☀️ 已切到浅色', 'success');
+        break;
+      case 'copy-site':
+        var url = <?=json_encode(rtrim(site_config_get('site_url', ''), '/') ?: '')?> || location.origin;
+        navigator.clipboard && navigator.clipboard.writeText(url).then(function(){
+          if (window.fcToast) fcToast('🔗 已复制：' + url, 'success');
+        });
+        break;
+      case 'purge-cache':
+        if (window.fcToast) fcToast('☁️ 正在清理缓存…');
+        fetch('/admin/cloudflare.php?purge=1&csrf_token=' + encodeURIComponent(window.OF_CSRF || ''), { credentials: 'same-origin' })
+          .then(function(r){ if (window.fcToast) fcToast(r.ok ? '☁️ 缓存已清理' : '清理失败（' + r.status + '）', r.ok ? 'success' : 'error'); })
+          .catch(function(){ if (window.fcToast) fcToast('清理请求失败', 'error'); });
+        break;
+      case 'ask':
+        if (window.fcHelperToggle) {
+          fcHelperToggle(true);
+          var ta = document.getElementById('fcHelperInput');
+          if (ta) { ta.value = it.query || ''; }
+          setTimeout(function(){ if (window.fcHelperSend && ta && ta.value.trim()) fcHelperSend(); }, 350);
+        }
+        break;
+    }
+  }
+
+  function exec(it){
+    if (!it) return;
+    if (it.action) { if (it.action === 'ask') it.query = input.value.trim(); runAction(it); return; }
+    if (it.url) { pushRecent(it); location.href = it.url; }
+  }
+
+  function open(){ box.classList.add('open'); input.value=''; render(); input.focus(); }
   function close(){ box.classList.remove('open'); }
+
   function render(){
     var q = input.value.trim().toLowerCase();
     if (q) {
@@ -2007,9 +2086,13 @@ var FC_PALETTE_ITEMS = <?=json_encode(cp_items(), JSON_UNESCAPED_UNICODE)?>;
           return all;
         }
         return false;
-      }).slice(0, 14);
+      }).slice(0, 12);
+      /* 自然语言兜底：没命中或命中少时，让 AI 助手直接处理这句话 */
+      items.push({ label: '让 AI 助手处理「' + input.value.trim() + '」', icon: '✨', section: '🤖 AI', action: 'ask', url: '' });
     } else {
-      items = allItems.slice(0, 14);
+      var rec = recentItems();
+      var acts = allItems.filter(function(it){ return it.section.indexOf('快捷动作') >= 0; });
+      items = rec.concat(acts).concat(allItems.filter(function(it){ return it.section.indexOf('快捷动作') < 0; })).slice(0, 14);
     }
     sel = items.length ? 0 : -1;
     var html = '', lastSec = '';
@@ -2017,12 +2100,15 @@ var FC_PALETTE_ITEMS = <?=json_encode(cp_items(), JSON_UNESCAPED_UNICODE)?>;
       var it = items[i];
       var sec = it.section || '';
       if (sec !== lastSec){ html += '<div class="fc-palette-grp">' + fcEscape(sec) + '</div>'; lastSec = sec; }
-      html += '<div class="fc-palette-item" data-i="' + i + '" onclick="location.href=\'' + it.url + '\'">' +
+      html += '<div class="fc-palette-item" data-i="' + i + '">' +
         '<span class="p-ic">' + (it.icon||'') + '</span><span>' + fcEscape(it.label) + '</span>' +
-        '<span class="p-sec">' + fcEscape(it.url) + '</span></div>';
+        '<span class="p-sec">' + fcEscape(it.action ? (it.action === 'ask' ? 'AI 执行' : '直接执行') : it.url) + '</span></div>';
     }
     list.innerHTML = html || '<div class="fc-palette-empty">没有找到匹配的功能</div>';
     var els = list.querySelectorAll('.fc-palette-item');
+    els.forEach(function(el){
+      el.addEventListener('click', function(){ exec(items[parseInt(el.dataset.i, 10)]); });
+    });
     if (els[sel]) els[sel].classList.add('sel');
   }
   document.addEventListener('keydown', function(e){
@@ -2031,7 +2117,7 @@ var FC_PALETTE_ITEMS = <?=json_encode(cp_items(), JSON_UNESCAPED_UNICODE)?>;
     if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
     if (e.key === 'ArrowDown'){ e.preventDefault(); sel = Math.min(sel+1, items.length-1); mark(); return; }
     if (e.key === 'ArrowUp'){ e.preventDefault(); sel = Math.max(sel-1, 0); mark(); return; }
-    if (e.key === 'Enter' && sel >= 0 && items[sel]){ location.href = items[sel].url; }
+    if (e.key === 'Enter' && sel >= 0 && items[sel]){ e.preventDefault(); exec(items[sel]); }
   });
   function mark(){
     var els = list.querySelectorAll('.fc-palette-item');
