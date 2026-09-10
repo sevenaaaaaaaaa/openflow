@@ -66,6 +66,55 @@
   body{padding-bottom:0}
 }
 
+/* ═══ 沉浸式直播间（stream_mode=immersive，抖音式全屏 9:16）═══ */
+body.live-immersive #chrome, body.live-immersive #backtop, body.live-immersive .skip{display:none}
+body.live-immersive main{padding:0!important;max-width:none!important}
+.imm-frame{position:relative;margin:0 auto;background:oklch(0.08 0.01 260);overflow:hidden}
+.imm-frame .player{position:absolute;inset:0;aspect-ratio:auto;max-height:none;width:100%;height:100%}
+.imm-frame .player video,.imm-frame .player iframe{width:100%;height:100%;object-fit:cover}
+.imm-frame .player .ph{color:oklch(0.95 0.01 260)}
+/* 顶部：返回 + 标题 + 状态（渐变遮罩保证可读） */
+.imm-top{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:10px;
+  padding:calc(10px + env(safe-area-inset-top)) 14px 22px;color:oklch(0.97 0.01 260);
+  background:linear-gradient(oklch(0 0 0 / .55), transparent)}
+.imm-top b{flex:1;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.imm-back{color:oklch(0.97 0.01 260);text-decoration:none;font-size:20px;width:34px;height:34px;display:grid;place-items:center;
+  border-radius:50%;background:oklch(0 0 0 / .35)}
+/* 弹幕浮层：浮在画面下三分之一，气泡式，渐隐遮罩 */
+.imm-chat{position:absolute;left:12px;right:88px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:5;
+  max-height:32vh;overflow:hidden;mask-image:linear-gradient(transparent, oklch(0 0 0) 22%);-webkit-mask-image:linear-gradient(transparent, oklch(0 0 0) 22%)}
+.imm-chat .chat-box{height:auto;max-height:32vh;padding:0;gap:6px;overflow:hidden;justify-content:flex-end}
+.imm-chat .chat-msg{background:oklch(0 0 0 / .45);color:oklch(0.97 0.01 260);border-radius:12px;padding:5px 10px;width:fit-content;max-width:100%}
+.imm-chat .chat-msg .u{color:oklch(0.85 0.12 250)}
+.imm-chat .chat-msg .t{color:oklch(0.97 0.01 260)}
+/* 右侧操作轨：点赞 / 商品 */
+.imm-rail{position:absolute;right:12px;bottom:calc(120px + env(safe-area-inset-bottom));z-index:6;display:grid;gap:14px}
+.imm-rail .act-btn{width:48px;height:48px;border-radius:50%;border:0;background:oklch(0 0 0 / .4);color:oklch(0.97 0.01 260);
+  display:grid;place-items:center;cursor:pointer;position:relative}
+.imm-rail .act-btn svg{width:24px;height:24px}
+.imm-rail #likeBtn{color:oklch(0.7 0.22 15)}
+.imm-rail .like-n{position:absolute;top:-4px;right:-4px;background:oklch(0.6 0.22 25);color:oklch(1 0 0);font-size:10px;font-weight:700;border-radius:999px;padding:1px 5px}
+/* 底部评论条：悬浮于画面 */
+.imm-bar{position:absolute!important;left:0;right:0;bottom:0;background:transparent!important;border-top:0!important;backdrop-filter:none!important}
+.imm-bar .inp{background:oklch(0 0 0 / .45);border:1px solid oklch(1 0 0 / .18);color:oklch(0.97 0.01 260)}
+.imm-bar .inp::placeholder{color:oklch(1 0 0 / .5)}
+/* 预约卡（预告态浮层） */
+.imm-sub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7;width:min(86vw,320px)}
+/* 手机：全屏铺满 */
+@media (max-width:860px){
+  .imm-frame{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;z-index:40}
+  body.live-immersive{overflow:hidden}
+}
+/* 桌面/平板：居中手机框 */
+@media (min-width:861px){
+  body.live-immersive{background:oklch(0.1 0.02 260)}
+  .imm-frame{height:min(92vh,900px);aspect-ratio:9/16;border-radius:24px;margin-top:calc((100vh - min(92vh,900px))/2);
+    box-shadow:0 32px 90px oklch(0 0 0 / .5), 0 0 0 1px oklch(1 0 0 / .08)}
+  .imm-frame .push-pop{bottom:90px}
+}
+/* 沉浸模式下商品浮层不需要小窗（画面本就是背景） */
+body.live-immersive.shop-open .player{position:absolute;right:auto;bottom:auto;width:100%;border-radius:0;box-shadow:none}
+
 /* ── 点赞飘心动画 ── */
 .fly-heart{position:fixed;z-index:70;pointer-events:none;font-size:22px;animation:heartFly 1.4s ease-out forwards;will-change:transform,opacity}
 @keyframes heartFly{0%{opacity:1;transform:translateY(0) scale(.6)}70%{opacity:1}100%{opacity:0;transform:translateY(-140px) translateX(var(--hx,20px)) scale(1.3)}}
