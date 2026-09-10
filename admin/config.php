@@ -1051,7 +1051,7 @@ code{font-family:var(--font-mono); font-size:var(--fs-md); background:var(--hove
 .pagination .active{background:var(--accent); border-color:var(--accent); color:var(--on-accent); font-weight:700}
 .pagination .disabled{opacity:.4; pointer-events:none}
 .pagination .info{font-size:var(--fs-md); color:var(--faint); border:none; padding:6px 0}
-.ml-auto{margin-left:auto}.flex{display:flex}.items-center{align-items:center}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.mb-4{margin-bottom:16px}.mt-4{margin-top:16px}.mt-6{margin-top:24px}.text-sm{font-size:var(--fs-md)}.text-muted{color:var(--muted)}
+.ml-auto{margin-left:auto}.flex{display:flex}.items-center{align-items:center}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.mb-4{margin-bottom:16px}.mt-4{margin-top:16px}.mt-6{margin-top:24px}.text-sm{font-size:var(--fs-md)}.text-xs{font-size:var(--fs-sm,12px)}.text-muted{color:var(--muted)}.surface-2{background:var(--surface-2,var(--hover))}
 
 /* ── login page ── */
 .login-page{display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg)}

@@ -10,18 +10,30 @@ $result = null;
 // 手动触发同步
 if (isset($_GET['sync'])) {
     csrf_verify();
-    $result = DataConnector::syncAll();
-    $message = '数据同步完成';
+    try {
+        $t0 = microtime(true);
+        $result = DataConnector::syncAll();
+        $elapsed = round(microtime(true) - $t0, 1);
+        $total = array_sum(array_map(fn($r) => (int)($r['count'] ?? 0), $result));
+        $errors = array_filter(array_map(fn($r) => $r['error'] ?? '', $result));
+        json_write(DATA_DIR . '/cdp/last-sync.json', ['ts' => time(), 'total' => $total, 'elapsed' => $elapsed]);
+        $message = $errors
+            ? '同步完成但有 ' . count($errors) . ' 个数据源报错：' . implode('；', $errors)
+            : "同步完成：{$total} 条记录入库，用时 {$elapsed}s";
+    } catch (Throwable $e) {
+        $message = '同步失败：' . $e->getMessage();
+    }
 }
+$lastSync = json_read(DATA_DIR . '/cdp/last-sync.json');
 
 // 身份解析统计
 $idStats = IdentityResolver::stats();
 
-// 最近合并的画像
+// 最近合并的画像（按最近活跃排序）
 $identity = json_read(DATA_DIR . '/cdp/identity.json');
 $profiles = $identity['profile'] ?? [];
-arsort($profiles); // 按最近活跃排序
-$recentMerged = array_slice($profiles, 0, 20);
+uasort($profiles, fn($a, $b) => strcmp((string)($b['last_seen'] ?? ''), (string)($a['last_seen'] ?? '')));
+$recentMerged = array_slice($profiles, 0, 20, true);
 
 admin_header('数据连接器');
 ?>
@@ -34,7 +46,8 @@ admin_header('数据连接器');
         <a href="?sync=1&csrf_token=<?=csrf_token()?>" class="btn btn-primary">🔄 立即同步全部</a>
       </div>
     </div>
-    <p class="sub">把 CRM 线索 · 商城订单 · 课程进度 · 会员资料 自动回填到 CDP 画像 · 跨设备身份合并</p>
+    <p class="sub">把 CRM 线索 · 商城订单 · 课程进度 · 会员资料 自动回填到 CDP 画像 · 跨设备身份合并
+      <?php if (!empty($lastSync['ts'])): ?>· 上次同步 <b><?=date('m-d H:i', $lastSync['ts'])?></b>（<?=$lastSync['total']?> 条 · <?=$lastSync['elapsed']?>s）<?php endif; ?></p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
 
     <!-- 同步结果 -->
