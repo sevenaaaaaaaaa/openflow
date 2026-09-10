@@ -276,6 +276,11 @@ try {
 $pluginCron = ['ran' => 0];
 try { $pluginCron = PluginSystem::run_schedules(); } catch (Throwable $e) { $pluginCron = ['error' => $e->getMessage()]; }
 
+// ── 产品发现 Loop：每天跑一次（内部自判当天是否已跑）──
+$scout = ['status' => 'skipped'];
+try { $scout = ProductScout::dailyRun(); } catch (Throwable $e) { $scout = ['status' => 'error', 'detail' => $e->getMessage()]; }
+
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge,
-                  'webhook_retry' => $webhookRetry, 'plugin_cron' => $pluginCron, 'time' => date('Y-m-d H:i:s')]);
+                  'webhook_retry' => $webhookRetry, 'plugin_cron' => $pluginCron, 'product_scout' => $scout,
+                  'time' => date('Y-m-d H:i:s')]);

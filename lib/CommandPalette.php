@@ -18,6 +18,7 @@ function cp_items(): array {
     $add('pages', '页面管理', '/xmp/pages', '📄', $sec, 'page 页面 首页 编辑');
     $add('articles', '文章管理', '/xmp/articles', '📝', $sec, 'article 文章 发布');
     $add('articles', '写一篇新文章', '/xmp/article-edit', '✍️', $sec, '新文章 创建 编辑');
+    $add('articles', '产品发现 Loop', '/xmp/product-scout', '🔭', $sec, 'scout 产品发现 每日 新产品');
     $add('ingest', '外部内容导入（飞书/Notion/Obsidian）', '/xmp/ingest', '🔌', $sec, 'ingest 导入 飞书 notion obsidian');
     $add('articles', '批量导入文章', '/xmp/api-batch', '📦', $sec, '批量 导入 api');
     $add('articles', '文章分类', '/xmp/categories', '🗂️', $sec, 'category 分类');
