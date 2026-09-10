@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>body{margin:0;background:#1a1d2e;display:flex;gap:10px;padding:10px}canvas{border-radius:12px}</style></head>
+<body>
+<script src="/assets/vendor/live2d/live2dcubismcore.min.js"></script>
+<script src="/assets/vendor/live2d/pixi.min.js"></script>
+<script src="/assets/vendor/live2d/pixi-live2d-display.min.js"></script>
+<script>
+(async () => {
+  const models = (new URLSearchParams(location.search).get('m') || 'rice/Rice.model3.json').split(',');
+  for (const file of models) {
+    const app = new PIXI.Application({ width: 360, height: 560, backgroundAlpha: 0 });
+    document.body.appendChild(app.view);
+    try {
+      const m = await PIXI.live2d.Live2DModel.from('/assets/vendor/live2d/model/' + file, { autoInteract: false });
+      const s = Math.min(330 / m.width, 540 / m.height);
+      m.scale.set(s); m.x = 180 - m.width * s / 2; m.y = 10;
+      app.stage.addChild(m);
+    } catch (e) { console.error(file, e); }
+  }
+})();
+</script>
+</body></html>

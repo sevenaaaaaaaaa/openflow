@@ -2042,7 +2042,7 @@ var FC_PALETTE_ITEMS = <?=json_encode(cp_items(), JSON_UNESCAPED_UNICODE)?>;
 })();
 </script>
 <script src="/assets/admin-ui.js?v=<?= OF_ADMIN_UI_VER ?>"></script>
-<script>window.OF_WAIFU_CONFIG = { default: <?=json_encode(site_config_get('waifu_model', 'mao'))?> };</script>
+<script>window.OF_WAIFU_CONFIG = { default: <?=json_encode(site_config_get('waifu_model', 'rice'))?> };</script>
 <script src="/assets/admin-waifu.js?v=<?= OF_ADMIN_UI_VER ?>"></script>
 </body></html>
 <?php }

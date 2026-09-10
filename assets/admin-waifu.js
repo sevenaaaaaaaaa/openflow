@@ -1,8 +1,9 @@
 /* ─────────────────────────────────────────────────────────────────────────
  * OpenFlow · admin-waifu.js v2 — 后台看板娘「衣橱系统」（Live2D）
  *
- * 五位可换形象（均为 Live2D 官方免费示例模型，Free Material License）：
- *   mao     玛奥 —— 成熟御姐 · 魔女（默认。语气：干练自信）
+ * 六位可换形象（均为 Live2D 官方免费示例模型，Free Material License）：
+ *   rice    璃丝 —— 成熟御姐 · 黑裙（默认。语气：从容撩人、干练自信）
+ *   mao     玛奥 —— 猫娘少女（语气：慵懒俏皮）
  *   ren     莲   —— 中性青年（语气：冷静简洁）
  *   natori  名取 —— 西装男性（语气：商务专业）
  *   mark    马克 —— 休闲男性（语气：随和直爽）
@@ -22,15 +23,21 @@
   window.__OF_WAIFU__ = true;
 
   var BASE = '/assets/vendor/live2d';
-  var W = 210, H = 300;
+  var W = 230, H = 330;
 
   /* ── 衣橱注册表 ── */
   var WARDROBE = {
+    rice: {
+      name: '璃丝', file: 'rice/Rice.model3.json', tag: '御姐 · 黑裙',
+      hello: '回来了？我刚好泡了咖啡，说吧，今天想做成什么。', tapChat: '我在，慢慢说。', tapOnly: '嗯？光看不说话，可不像你。',
+      thinking: '让我看看…别急。', done: '做好了。还不错吧？', fail: '出了点小状况，我陪你看看。',
+      hidden: '想我了，右键叫我回来。'
+    },
     mao: {
-      name: '玛奥', file: 'mao/Mao.model3.json', tag: '御姐 · 魔女',
-      hello: '嗯，来了就好好干活。', tapChat: '说吧，什么事。', tapOnly: '有事直说，别光戳。',
-      thinking: '我看看…', done: '好了，过目。', fail: '出了点状况，检查一下。',
-      hidden: '需要我时，右键菜单随时叫回来。'
+      name: '玛奥', file: 'mao/Mao.model3.json', tag: '猫娘 · 少女',
+      hello: '喵～来干活啦。', tapChat: '说吧说吧，什么事。', tapOnly: '喵？别光戳呀。',
+      thinking: '我瞅瞅…', done: '好啦，过目～', fail: '呜，出了点状况。',
+      hidden: '需要我时，右键菜单随时叫回来喵。'
     },
     ren: {
       name: '莲', file: 'ren/Ren.model3.json', tag: '中性 · 青年',
@@ -57,12 +64,12 @@
       hidden: '那我先躲起来啦～'
     }
   };
-  var ORDER = ['mao', 'ren', 'natori', 'mark', 'hiyori'];
+  var ORDER = ['rice', 'mao', 'ren', 'natori', 'mark', 'hiyori'];
 
   function currentId() {
     try { var v = localStorage.getItem('of_waifu_model'); if (v && WARDROBE[v]) return v; } catch (e) {}
-    var d = (window.OF_WAIFU_CONFIG && window.OF_WAIFU_CONFIG.default) || 'mao';
-    return WARDROBE[d] ? d : 'mao';
+    var d = (window.OF_WAIFU_CONFIG && window.OF_WAIFU_CONFIG.default) || 'rice';
+    return WARDROBE[d] ? d : 'rice';
   }
   var persona = WARDROBE[currentId()];
 
