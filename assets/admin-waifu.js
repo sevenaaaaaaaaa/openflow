@@ -1,28 +1,70 @@
 /* ─────────────────────────────────────────────────────────────────────────
- * OpenFlow · admin-waifu.js v1 — 后台二次元看板娘（Live2D）
+ * OpenFlow · admin-waifu.js v2 — 后台看板娘「衣橱系统」（Live2D）
  *
- * 造型：Live2D 官方免费示例模型 Hiyori（Live2D Free Material License），
- * 运行时：Cubism SDK for Web（© Live2D Inc.）+ pixi.js@6 + pixi-live2d-display，
- * 全部自托管于 assets/vendor/live2d/，无外部 CDN 依赖。
+ * 五位可换形象（均为 Live2D 官方免费示例模型，Free Material License）：
+ *   mao     玛奥 —— 成熟御姐 · 魔女（默认。语气：干练自信）
+ *   ren     莲   —— 中性青年（语气：冷静简洁）
+ *   natori  名取 —— 西装男性（语气：商务专业）
+ *   mark    马克 —— 休闲男性（语气：随和直爽）
+ *   hiyori  日和 —— 经典少女（语气：活泼可爱）
  *
- * 交互：
- *   - 视线/头部实时跟随鼠标（全页面范围，不只在角色上）
- *   - 待机随机动作 + 自动眨眼/呼吸（模型物理）
- *   - 点击角色 → 打开/收起 OFOR 聊天窗，并播放 TapBody 动作 + 气泡吐槽
- *   - 气泡提示：首次进入按时段问候；随后按当前页面给出 Copilot 建议
- *   - 聊天联动：发消息=思考动作，收到回复=开心动作，出错=委屈气泡
- *   - 右键角色 → 本次会话隐藏（sessionStorage），旧圆形按钮兜底
+ * 换装：右键角色 → 衣橱菜单（换人 / 本次隐藏）；选择记 localStorage，
+ *       后台「设置 → waifu_model」可改全站默认（config.php 注入 OF_WAIFU_CONFIG）。
  *
- * 降级（任一命中则不加载模型，保留旧圆形 FAB）：
- *   ≤840px 窄屏 / prefers-reduced-motion / 无 WebGL / 会话内被隐藏
+ * 想换成真正的「黑丝女武神」等定制造型：把任何 Cubism 4.x 模型目录放进
+ * assets/vendor/live2d/model/ 并在下方 WARDROBE 注册一行即可（Booth/nizima 有售）。
+ *
+ * 交互：视线跟随鼠标 / 待机动作 / 点击开聊天 / 气泡按性格出文案 / 聊天联动。
+ * 降级：窄屏 / 减少动态 / 无 WebGL / 会话内隐藏 → 保留旧圆形 FAB。
  * ─────────────────────────────────────────────────────────────────────── */
 (function () {
   if (window.__OF_WAIFU__) return;
   window.__OF_WAIFU__ = true;
 
   var BASE = '/assets/vendor/live2d';
-  var MODEL_URL = BASE + '/model/hiyori/Hiyori.model3.json';
-  var W = 210, H = 300; // 画布 CSS 尺寸
+  var W = 210, H = 300;
+
+  /* ── 衣橱注册表 ── */
+  var WARDROBE = {
+    mao: {
+      name: '玛奥', file: 'mao/Mao.model3.json', tag: '御姐 · 魔女',
+      hello: '嗯，来了就好好干活。', tapChat: '说吧，什么事。', tapOnly: '有事直说，别光戳。',
+      thinking: '我看看…', done: '好了，过目。', fail: '出了点状况，检查一下。',
+      hidden: '需要我时，右键菜单随时叫回来。'
+    },
+    ren: {
+      name: '莲', file: 'ren/Ren.model3.json', tag: '中性 · 青年',
+      hello: '你好，我在。', tapChat: '请讲。', tapOnly: '嗯？',
+      thinking: '处理中…', done: '完成了。', fail: '出错了，重试一下。',
+      hidden: '好的，稍后见。'
+    },
+    natori: {
+      name: '名取', file: 'natori/Natori.model3.json', tag: '男性 · 西装',
+      hello: '欢迎回来，今天也按计划推进吧。', tapChat: '请指示。', tapOnly: '我在听。',
+      thinking: '稍等，我确认一下…', done: '已完成，请查收。', fail: '似乎出了点问题。',
+      hidden: '明白，我先退下。'
+    },
+    mark: {
+      name: '马克', file: 'mark/Mark.model3.json', tag: '男性 · 休闲',
+      hello: '哟，来啦！', tapChat: '说吧兄弟！', tapOnly: '哈哈，别闹。',
+      thinking: '让我想想哈…', done: '搞定！', fail: '哎呀，翻车了…',
+      hidden: '行，我先溜了！'
+    },
+    hiyori: {
+      name: '日和', file: 'hiyori/Hiyori.model3.json', tag: '经典 · 少女',
+      hello: '今天也想高效下班！', tapChat: '来啦～有什么想让我做的？', tapOnly: '戳我干嘛啦～',
+      thinking: '让我想想…', done: '搞定 ✨ 还有别的吗？', fail: '呜…网络好像出问题了',
+      hidden: '那我先躲起来啦～'
+    }
+  };
+  var ORDER = ['mao', 'ren', 'natori', 'mark', 'hiyori'];
+
+  function currentId() {
+    try { var v = localStorage.getItem('of_waifu_model'); if (v && WARDROBE[v]) return v; } catch (e) {}
+    var d = (window.OF_WAIFU_CONFIG && window.OF_WAIFU_CONFIG.default) || 'mao';
+    return WARDROBE[d] ? d : 'mao';
+  }
+  var persona = WARDROBE[currentId()];
 
   function reducedMotion() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
   function narrow() { return matchMedia('(max-width:840px)').matches; }
@@ -32,6 +74,7 @@
     catch (e) { return false; }
   }
   function fallback() { return reducedMotion() || narrow() || hiddenThisSession() || !webglOk(); }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
   /* ── 气泡 ── */
   var bubbleEl = null, bubbleTimer = 0;
@@ -43,7 +86,7 @@
     if (ms !== 0) bubbleTimer = setTimeout(function () { bubbleEl.classList.remove('show'); }, ms || 4200);
   }
 
-  /* ── 聊天联动（config.php 的助手在关键节点调用这些钩子） ── */
+  /* ── 聊天联动钩子 ── */
   var model = null;
   function react(group) {
     if (!model) return;
@@ -52,27 +95,22 @@
   window.OFWaifu = {
     say: say,
     onChatToggle: function (open) {
-      if (open) { react('TapBody'); say(pick(['来啦～有什么想让我做的？', '我在呢，尽管问 ✨', '今天也想高效下班！']), 3600); }
+      if (open) { react('TapBody'); say(persona.tapChat, 3600); }
     },
-    onSend: function () { say('让我想想…', 0); },
-    onReceive: function () { react('TapBody'); say(pick(['回复好啦，看看有没有用～', '搞定 ✨ 还有别的吗？']), 3000); },
-    onError: function () { say('呜…网络好像出问题了', 3600); }
+    onSend: function () { say(persona.thinking, 0); },
+    onReceive: function () { react('TapBody'); say(persona.done, 3000); },
+    onError: function () { say(persona.fail, 3600); }
   };
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
   if (fallback()) return; // 旧 FAB 保持可见，到此为止
 
-  /* ── 懒加载运行库（后台首屏优先，模型延后） ── */
+  /* ── 懒加载运行库 ── */
   function loadScript(src) {
     return new Promise(function (res, rej) {
       var s = document.createElement('script');
       s.src = src; s.onload = res; s.onerror = rej;
       document.head.appendChild(s);
     });
-  }
-  function boot() {
-    if (!window.PIXI || !window.PIXI.live2d) return;
-    buildStage();
   }
   function schedule() {
     setTimeout(function () {
@@ -83,6 +121,72 @@
         .catch(function () { /* 加载失败 → 静默退回 FAB */ });
     }, 900);
   }
+  function boot() {
+    if (!window.PIXI || !window.PIXI.live2d) return;
+    buildStage();
+  }
+
+  /* ── 衣橱菜单（右键）── */
+  var menuEl = null;
+  function closeMenu() { if (menuEl) { menuEl.remove(); menuEl = null; } }
+  document.addEventListener('pointerdown', function (e) {
+    if (menuEl && !menuEl.contains(e.target)) closeMenu();
+  }, true);
+  function openMenu(x, y, box) {
+    closeMenu();
+    menuEl = document.createElement('div');
+    menuEl.className = 'of-waifu-menu';
+    var html = '<div class="m-head">换装 · 衣橱</div>';
+    ORDER.forEach(function (id) {
+      var w = WARDROBE[id];
+      html += '<button class="m-item' + (id === currentId() ? ' on' : '') + '" data-id="' + id + '">'
+            + '<b>' + w.name + '</b><small>' + w.tag + '</small></button>';
+    });
+    html += '<button class="m-item m-hide" data-act="hide">本次会话隐藏</button>';
+    menuEl.innerHTML = html;
+    document.body.appendChild(menuEl);
+    // 定位：优先出现在角色上方，防出屏
+    var mw = 180, mh = menuEl.offsetHeight || 260;
+    menuEl.style.left = Math.max(8, Math.min(x - mw / 2, innerWidth - mw - 8)) + 'px';
+    menuEl.style.top = Math.max(8, y - mh - 12) + 'px';
+    menuEl.addEventListener('click', function (e) {
+      var btn = e.target.closest('.m-item');
+      if (!btn) return;
+      if (btn.dataset.act === 'hide') {
+        try { sessionStorage.setItem('of_waifu_off', '1'); } catch (err) {}
+        document.body.classList.remove('waifu-on');
+        closeMenu(); box.remove();
+        if (window.fcToast) fcToast(persona.hidden + '（新开标签页会回来）');
+        return;
+      }
+      var id = btn.dataset.id;
+      if (id && WARDROBE[id] && id !== currentId()) {
+        try { localStorage.setItem('of_waifu_model', id); } catch (err) {}
+        closeMenu();
+        swapModel(id, box);
+      } else closeMenu();
+    });
+  }
+
+  /* ── 换装：销毁旧模型，加载新模型（不刷新页面）── */
+  var appRef = null, canvasRef = null, boxRef = null;
+  function swapModel(id, box) {
+    persona = WARDROBE[id];
+    try { localStorage.setItem('of_waifu_model', id); } catch (e) {}
+    if (model) { try { appRef.stage.removeChild(model); model.destroy(); } catch (e) {} model = null; }
+    say('换装中…', 0);
+    PIXI.live2d.Live2DModel.from(BASE + '/model/' + persona.file, { autoInteract: false }).then(function (m) {
+      model = m;
+      var ow = m.width, oh = m.height;
+      var s = (H * 0.98) / oh;
+      m.scale.set(s);
+      m.x = (W - ow * s) / 2;
+      m.y = H - oh * s;
+      appRef.stage.addChild(m);
+      react('Idle');
+      say(persona.name + '：' + persona.hello, 3600);
+    }).catch(function () { say('这个形象加载失败了…', 3000); });
+  }
 
   /* ── 舞台 ── */
   function buildStage() {
@@ -90,7 +194,7 @@
     box.className = 'of-waifu';
     box.innerHTML =
       '<div class="of-waifu-bubble" role="status"></div>' +
-      '<canvas class="of-waifu-canvas" width="' + W + '" height="' + H + '" aria-label="OFOR 看板娘，点击打开助手"></canvas>';
+      '<canvas class="of-waifu-canvas" width="' + W + '" height="' + H + '" aria-label="OFOR 助手，点击聊天，右键换装"></canvas>';
     document.body.appendChild(box);
     bubbleEl = box.querySelector('.of-waifu-bubble');
 
@@ -99,8 +203,9 @@
       view: canvas, transparent: true, autoStart: true,
       width: W, height: H, resolution: window.devicePixelRatio || 1, autoDensity: true
     });
+    appRef = app; canvasRef = canvas; boxRef = box;
 
-    PIXI.live2d.Live2DModel.from(MODEL_URL, { autoInteract: false }).then(function (m) {
+    PIXI.live2d.Live2DModel.from(BASE + '/model/' + persona.file, { autoInteract: false }).then(function (m) {
       model = m;
       var ow = m.width, oh = m.height;
       var s = (H * 0.98) / oh;
@@ -108,9 +213,9 @@
       m.x = (W - ow * s) / 2;
       m.y = H - oh * s;
       app.stage.addChild(m);
-      document.body.classList.add('waifu-on'); // 隐藏旧 FAB、让出底条
+      document.body.classList.add('waifu-on');
 
-      // 视线跟随（全页面）：把鼠标位置换算进画布坐标
+      // 视线跟随（全页面）
       var raf = 0;
       document.addEventListener('pointermove', function (e) {
         if (raf) return;
@@ -121,7 +226,6 @@
         });
       }, { passive: true });
 
-      // 待机动作：模型会循环播放 Idle 组，这里定时换一个，避免一直是同一个
       react('Idle');
       setInterval(function () { if (!document.hidden) react('Idle'); }, 32000);
 
@@ -132,22 +236,20 @@
     canvas.addEventListener('pointerdown', function () {
       react('TapBody');
       if (window.fcHelperToggle) window.fcHelperToggle();
-      else say(pick(['戳我干嘛啦～', '再戳要害羞了！', '嘿嘿，痒痒的']));
+      else say(persona.tapOnly);
     });
-    // 右键 = 本次会话隐藏
+    // 右键 = 衣橱菜单
     box.addEventListener('contextmenu', function (e) {
       e.preventDefault();
-      try { sessionStorage.setItem('of_waifu_off', '1'); } catch (err) {}
-      document.body.classList.remove('waifu-on');
-      box.remove();
-      if (window.fcToast) fcToast('OFOR 看板娘本次会话已隐藏，新开标签页会回来');
+      var r = canvas.getBoundingClientRect();
+      openMenu(r.left + r.width / 2, r.top, box);
     });
   }
 
-  /* ── 问候：时段 + 当前页面建议（复用助手的 Copilot 页面地图） ── */
+  /* ── 问候：时段 + 当前页面建议 ── */
   function greet() {
     var h = new Date().getHours();
-    var hello = h < 6 ? '夜深了，注意休息呀' : h < 12 ? '早上好呀' : h < 14 ? '中午好，吃饭了吗' : h < 19 ? '下午好呀' : '晚上好呀';
+    var hello = h < 6 ? '夜深了' : h < 12 ? '早上好' : h < 14 ? '中午好' : h < 19 ? '下午好' : '晚上好';
     var page = '', hints = null;
     try {
       if (window.fcHelperCurrentPage && window.FC_HELPER) {
@@ -155,8 +257,8 @@
         hints = FC_HELPER.pageHints[page];
       }
     } catch (e) {}
-    var tip = hints && hints.length ? '在「' + page + '」可以试试：' + hints[0] : '点我可以聊天，右键我会暂时消失';
-    setTimeout(function () { say(hello + '～' + tip, 6500); }, 1200);
+    var tip = hints && hints.length ? '在「' + page + '」可以试试：' + hints[0] : '点我聊天，右键换装';
+    setTimeout(function () { say(persona.hello + ' ' + hello + '。' + tip, 6500); }, 1200);
   }
 
   if (document.readyState === 'complete') schedule();
