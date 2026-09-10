@@ -39,7 +39,7 @@ function cp_items(): array {
 
     // ── 营销获客 ──
     $sec = '营销获客';
-    $add('leads', '线索管理', '/xmp/leads', '👥', $sec, 'lead 线索 潜客');
+    $add('leads', '线索管理', '/xmp/crm?tab=raw', '👥', $sec, 'lead 线索 潜客');
     $add('survey', '调研问卷', '/xmp/survey', '📋', $sec, 'survey 问卷 调研');
     $add('nps', 'NPS 调研', '/xmp/nps', '📈', $sec, 'nps 满意度');
     $add('forms', '表单管理', '/xmp/forms', '🧾', $sec, 'form 表单');

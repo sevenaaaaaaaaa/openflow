@@ -53,6 +53,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $users = get_users();
 
+    // ── 忘记密码：用户名 + 绑定邮箱双因子核验 → 发重置邮件 ──
+    // （此前 user_send_reset_email() 与 reset-password.php 均已存在，但登录页没有入口，
+    //    令牌永远无法生成 —— 典型的「开发了没接通」。此处接通，并做防枚举与防滥发。）
+    if (($_POST['forgot'] ?? '') === '1') {
+        if ($ipAttempts['count'] >= 5) {
+            $error = '尝试次数过多，请 15 分钟后再试。';
+        } else {
+            $fuser = trim($_POST['username'] ?? '');
+            $femail = trim($_POST['email'] ?? '');
+            $ipAttempts['count']++; $ipAttempts['last'] = $now;
+            $rateData[$ip] = $ipAttempts; json_write($rateFile, $rateData);
+            $matched = isset($users[$fuser]) && !empty($users[$fuser]['email'])
+                && hash_equals(strtolower((string)$users[$fuser]['email']), strtolower($femail));
+            if ($matched) {
+                $r = user_send_reset_email($fuser);
+                audit('请求密码重置', 'auth', ['user' => $fuser, 'sent' => !empty($r['ok'])]);
+                if (!empty($r['ok'])) {
+                    $resetMsg = '重置邮件已发送到该账号绑定的邮箱，1 小时内有效。';
+                } elseif (!empty($r['token_url'])) {
+                    // SMTP 未配置：用户名+邮箱已双因子核验通过，直接给链接（仅此情形势必直给）
+                    $resetMsg = 'SMTP 未配置无法发邮件。身份已核验，请直接打开此链接重置（1 小时内有效）：' . $r['token_url'];
+                } else {
+                    $resetMsg = '发送失败：' . ($r['error'] ?? '未知错误');
+                }
+            } else {
+                audit('密码重置请求被拒（用户名/邮箱不匹配）', 'auth', ['user' => $fuser]);
+                $resetMsg = '如果用户名与绑定邮箱匹配，重置邮件将会发出。';   // 模糊提示防枚举
+            }
+        }
+    }
     // ── 第二步：两步验证 ──
     // 密码已在上一步验过，用 session 里的 pending_2fa 承接，避免重输密码。
     $pending = $_SESSION['pending_2fa'] ?? null;
@@ -160,6 +190,24 @@ admin_header('登录');
       <button type="submit" class="btn primary" style="width:100%;margin-top:8px">验证并登录</button>
       <a href="/xmp/login" class="sub" style="display:block;text-align:center;margin-top:10px;font-size:13px">← 重新登录</a>
     </form>
+    <?php elseif (isset($_GET['forgot']) || isset($resetMsg)): ?>
+    <!-- 忘记密码：用户名 + 绑定邮箱双因子核验 -->
+    <p class="sub" style="margin-top:-6px">输入用户名和该账号绑定的邮箱，核验后发送重置链接。</p>
+    <?php if (!empty($resetMsg)): ?><div class="msg msg-success" style="word-break:break-all"><?=htmlspecialchars($resetMsg)?></div><?php endif; ?>
+    <form method="post">
+      <?= csrf_field() ?>
+      <input type="hidden" name="forgot" value="1">
+      <div class="fld">
+        <label>用户名</label>
+        <input type="text" name="username" class="inp" placeholder="输入用户名" required autofocus autocomplete="username">
+      </div>
+      <div class="fld">
+        <label>绑定邮箱</label>
+        <input type="email" name="email" class="inp" placeholder="账号资料里设置的邮箱" required autocomplete="email">
+      </div>
+      <button type="submit" class="btn primary" style="width:100%;margin-top:8px">发送重置邮件</button>
+      <a href="/xmp/login" class="sub" style="display:block;text-align:center;margin-top:10px;font-size:13px">← 返回登录</a>
+    </form>
     <?php else: ?>
     <form method="post">
       <?= csrf_field() ?>
@@ -176,6 +224,7 @@ admin_header('登录');
         <input type="text" name="captcha" class="inp" placeholder="输入计算结果" required inputmode="numeric" autocomplete="off">
       </div>
       <button type="submit" class="btn primary" style="width:100%;margin-top:8px">登录</button>
+      <a href="/xmp/login?forgot=1" class="sub" style="display:block;text-align:center;margin-top:10px;font-size:13px">忘记密码？</a>
     </form>
     <?php endif; ?>
   </div>
