@@ -124,18 +124,44 @@ admin_header('创作台');
         </div>
         <div class="field"><label>观众（可选）</label><input type="text" id="sl-audience" placeholder="如：潜在客户 / 开发者"></div>
       </div>
+      <div class="field"><label>设计风格</label>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px" id="sl-themes">
+          <?php foreach (DeckThemes::all() as $tid => $t): $v = $t['vars']; ?>
+          <label class="sl-theme" style="cursor:pointer;border:2px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .15s">
+            <input type="radio" name="sl-theme" value="<?=$tid?>" <?=$tid==='stage'?'checked':''?> style="position:absolute;opacity:0">
+            <div style="height:64px;background:<?=$v['--stage-bg']?>;display:flex;align-items:center;justify-content:center">
+              <span style="color:<?=$v['--stage-fg']?>;font-weight:800;font-size:15px">Aa <span style="color:<?=$v['--stage-accent']?>">●</span></span>
+            </div>
+            <div style="padding:7px 10px;font-size:12px"><b><?=$t['name']?></b><br><span class="hint"><?=$t['desc']?></span></div>
+          </label>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <details style="margin-bottom:14px">
+        <summary style="cursor:pointer;font-size:13px;color:var(--muted)">品牌契约 design.md（本套覆盖全局，可选）</summary>
+        <div class="field" style="margin-top:10px">
+          <textarea id="sl-brand" rows="5" placeholder="主色: oklch(0.25 0.08 250)&#10;强调色: oklch(0.75 0.18 95)&#10;Logo: /assets/images/logo.png&#10;语气: 专业但不失锐度&#10;禁忌: 不用「赋能」「抓手」"><?=htmlspecialchars(DeckThemes::globalBrand())?></textarea>
+          <span class="hint">识别键：主色/文字色/强调色/标题字体/正文字体/Logo/语气/禁忌；其余文本作为品牌背景注入 AI。保存全局默认值见下方。</span>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="sl-brand-save">存为全局默认品牌契约</button>
+        <span class="hint" id="sl-brand-msg"></span>
+      </details>
       <button class="btn btn-primary" id="sl-btn" <?=$aiReady?'':'disabled'?>>生成幻灯片 →</button>
     </div>
+    <style>
+    .sl-theme:has(input:checked){border-color:var(--accent)!important}
+    </style>
 
     <div class="card" id="sl-done" style="display:none;margin-bottom:24px"></div>
 
     <div class="card">
       <h2>历史幻灯片（<?=count($decks)?>）</h2>
       <?php if (!$decks): ?><p class="hint">暂无。</p><?php else: ?>
-      <table class="tbl"><thead><tr><th>标题</th><th>页数</th><th>创建时间</th><th></th></tr></thead><tbody>
+      <table class="tbl"><thead><tr><th>标题</th><th>风格</th><th>页数</th><th>创建时间</th><th></th></tr></thead><tbody>
       <?php foreach (array_slice($decks, 0, 20) as $d): ?>
         <tr>
           <td><strong><?=htmlspecialchars($d['title'])?></strong><br><span class="hint"><?=htmlspecialchars($d['topic'])?></span></td>
+          <td><span class="badge"><?=htmlspecialchars(DeckThemes::get((string)($d['theme'] ?? 'stage'))['name'])?></span></td>
           <td><?=count((array)$d['slides'])?> 页</td>
           <td class="nowrap"><?=htmlspecialchars($d['created_at'])?></td>
           <td class="nowrap"><a href="/deck/<?=urlencode($d['id'])?>" target="_blank" class="btn btn-sm btn-primary">放映</a>
@@ -217,12 +243,21 @@ if (scBtn) scBtn.onclick = async () => {
 };
 
 /* ── 幻灯片 ── */
+const slBrandSave = document.getElementById('sl-brand-save');
+if (slBrandSave) slBrandSave.onclick = async () => {
+  try {
+    await createCall({action: 'save_brand', brand_md: document.getElementById('sl-brand').value}, slBrandSave);
+    document.getElementById('sl-brand-msg').textContent = '已存为全局默认';
+  } catch (e) { ofAlert(e.message); }
+};
 const slBtn = document.getElementById('sl-btn');
 if (slBtn) slBtn.onclick = async () => {
   const topic = document.getElementById('sl-topic').value.trim();
   if (!topic) return ofAlert('先填主题');
+  const theme = (document.querySelector('input[name=sl-theme]:checked') || {}).value || 'stage';
   try {
-    const j = await createCall({action: 'slides', topic,
+    const j = await createCall({action: 'slides', topic, theme,
+      brand_md: document.getElementById('sl-brand').value,
       pages: document.getElementById('sl-pages').value, audience: document.getElementById('sl-audience').value.trim()}, slBtn);
     const box = document.getElementById('sl-done');
     box.innerHTML = `<h2>✅ 《${esc(j.title)}》已生成（${j.pages} 页）</h2>

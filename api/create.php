@@ -105,13 +105,19 @@ try {
     case 'slides': {
         $pages    = max(5, min(15, (int)($_POST['pages'] ?? 8)));
         $audience = trim((string)($_POST['audience'] ?? ''));
+        $theme    = preg_replace('/[^a-z]/', '', (string)($_POST['theme'] ?? 'stage'));
+        $brandMd  = trim((string)($_POST['brand_md'] ?? '')) ?: DeckThemes::globalBrand();
+        $brandCtx = DeckThemes::brandPrompt($brandMd);
         $r = AiCenter::json(
-            "你是顶级发布会 keynote 设计师。做一套 {$pages} 页幻灯片，每页只讲一件事。"
-            . '输出 JSON：{"title":"整套标题","subtitle":"副标题","slides":[{"kind":"cover|point|list|quote|end",'
-            . '"heading":"本页标题(短)","body":"本页正文(60字内)","points":["要点1","要点2"],"quote":"金句(仅quote页)"}]}'
-            . '规则：第1页cover，最后1页end(行动号召)；list页给points；quote页给quote；其余point页。',
+            "你是顶级发布会 keynote 设计师。做一套 {$pages} 页幻灯片，每页只讲一件事，版式要多样。"
+            . '输出 JSON：{"title":"整套标题","subtitle":"副标题","slides":[{"kind":"cover|agenda|point|list|split|stat|chart|quote|image|end",'
+            . '"heading":"本页标题(短)","body":"本页正文(60字内)","points":["要点"],"num":"大数字(仅stat页,如 87%)",'
+            . '"quote":"金句(仅quote页)","image":"图片URL(仅image页,可留空)"}]}'
+            . '规则：第1页cover，第2页agenda(议程)，最后1页end(行动号召)；至少1页stat(大数字)和1页split(左右分栏)；'
+            . 'chart页points格式["标签|数值",...]；list页给points；quote页给quote；image页image留空即可。'
+            . $brandCtx,
             "主题：{$topic}" . ($audience ? "\n观众：{$audience}" : ''),
-            ['max_tokens' => 3000, 'feature' => 'create_slides', 'tier' => 'standard']
+            ['max_tokens' => 3200, 'feature' => 'create_slides', 'tier' => 'standard']
         );
         if (empty($r['ok']) || empty($r['data']['slides'])) throw new RuntimeException($r['error'] ?? 'AI 生成失败');
 
@@ -122,10 +128,20 @@ try {
             'title' => (string)($r['data']['title'] ?? $topic),
             'subtitle' => (string)($r['data']['subtitle'] ?? ''),
             'slides' => array_values((array)$r['data']['slides']),
+            'theme' => $theme, 'brand_md' => $brandMd,
             'created_at' => date('Y-m-d H:i:s'),
         ];
         json_write(DATA_DIR . '/slide-decks.json', $decks);
         echo json_encode(['ok' => true, 'id' => $id, 'title' => $decks[$id]['title'], 'pages' => count($decks[$id]['slides'])], JSON_UNESCAPED_UNICODE);
+        break;
+    }
+
+    /* ── 4. 全局品牌契约（design.md）── */
+    case 'save_brand': {
+        $md = trim((string)($_POST['brand_md'] ?? ''));
+        if (strlen($md) > 8000) throw new RuntimeException('品牌契约过长（≤8000 字符）');
+        file_put_contents(DeckThemes::brandFile(), $md);
+        echo json_encode(['ok' => true]);
         break;
     }
 
