@@ -1302,7 +1302,7 @@ $roleLabel = $roleLabels[$role] ?? $role;
     <div class="bar-start">
       <span class="lights" aria-hidden="true"><i class="light light-r"></i><i class="light light-y"></i><i class="light light-g"></i></span>
       <button class="cbtn" onclick="fcToggleSidebar()" aria-label="切换侧栏" title="切换侧栏（full / rail / closed）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg></button>
-      <span class="brand">OpenFlow<span class="bn-sub">运营台</span></span>
+      <span class="brand" style="align-items:center"><img src="/favicon.svg" alt="" width="24" height="24" style="border-radius:6px;margin-right:2px">OpenFlow<span class="bn-sub">运营台</span></span>
     </div>
     <div class="bar-center">
       <button class="searchbox" onclick="fcFocusSearch()" aria-label="全局搜索（⌘K）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>搜索模块、内容、订单、线索…</span><kbd>⌘K</kbd></button>
