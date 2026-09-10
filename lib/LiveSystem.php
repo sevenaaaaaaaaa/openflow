@@ -18,7 +18,7 @@ function live_settings(): array {
         'rtmp_url' => 'rtmp://your-server.com/live',   // OBS 推流地址
         'rtmp_key_prefix' => '',                        // stream key 前缀（如子域）
         'page_title' => 'OpenFlow 直播',
-        'page_desc' => '网站增长 / AI 运营 线上直播',
+        'page_desc' => '内容、答疑与新品发布 · 支持沉浸竖屏观看、弹幕互动与直播带货，开播可预约提醒',
     ], json_read(live_settings_file()));
 }
 
