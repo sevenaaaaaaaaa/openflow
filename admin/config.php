@@ -911,15 +911,6 @@ function save_categories(string $type, array $data): bool {
     $all[$type] = $data;
     return json_write(DATA_DIR . '/categories.json', $all);
 }
-function get_category_options(string $type): array {
-    $cats = get_categories($type);
-    $opts = ['' => '未分类'];
-    foreach ($cats as $c) {
-        $prefix = empty($c['parent']) ? '' : '— ';
-        $opts[$c['key']] = $prefix . $c['name'];
-    }
-    return $opts;
-}
 function get_tags(): array {
     return json_read(DATA_DIR . '/tags.json');
 }

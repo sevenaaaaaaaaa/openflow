@@ -115,6 +115,12 @@ admin_header('工作台');
             <a href="driver.php" class="btn btn-s btn-sm">查看日志</a>
             <a href="driver.php" class="btn btn-p btn-sm">立即运行</a>
           </div>
+          <div class="m-actions" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <a href="flow.php" class="btn btn-ghost btn-sm" title="Flow/Loop/自动化/事件 全链路总览">业务链路总览</a>
+            <a href="evolution.php" class="btn btn-ghost btn-sm" title="系统演进路线与规模档位">演进路线</a>
+            <a href="safefix.php" class="btn btn-ghost btn-sm" title="安全修复与自愈">安全自愈</a>
+            <a href="demo-growth.php" class="btn btn-ghost btn-sm" title="隔离演示增长工作区">演示沙盘</a>
+          </div>
         </div>
       </div>
 
