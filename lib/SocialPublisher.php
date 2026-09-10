@@ -76,6 +76,23 @@ class SocialPublisher {
     }
 
     /**
+     * 各平台创作中心 / 发布入口链接（手动平台「去发布」跳转用）
+     */
+    public static function platformHome(string $platform): string {
+        return [
+            'zhihu'       => 'https://www.zhihu.com/writes',
+            'xiaohongshu' => 'https://creator.xiaohongshu.com/publish/publish',
+            'linkedin'    => 'https://www.linkedin.com/feed/',
+            'twitter'     => 'https://x.com/compose/post',
+            'facebook'    => 'https://www.facebook.com/pages/creation/',
+            'bilibili'    => 'https://member.bilibili.com/platform/upload',
+            'video'       => 'https://channels.weixin.qq.com/platform/post/create',
+            'douyin'      => 'https://creator.douyin.com/creator-micro/content/upload',
+            'wechat'      => 'https://mp.weixin.qq.com/',
+        ][$platform] ?? '';
+    }
+
+    /**
      * 发布内容到平台
      * @return array ['ok'=>bool, 'message'=>string, 'platform_id'=>string]
      */
@@ -94,7 +111,8 @@ class SocialPublisher {
                     : $var['title'] . "\n\n" . $var['excerpt'];
                 $r = WechatMp::massSendByTag(['content' => $content], 'text', 0);
             }
-            return ['ok' => ($r['errcode'] ?? 1) === 0, 'message' => $r['errmsg'] ?? '', 'platform_id' => $r['msg_id'] ?? ''];
+            $ok = ($r['errcode'] ?? 1) === 0;
+            return ['ok' => $ok, 'message' => ($r['errmsg'] ?? '') ?: ($ok ? '已群发' : '未知错误'), 'platform_id' => $r['msg_id'] ?? '', 'url' => $var['url']];
         }
 
         if ($platform === 'email') {
@@ -112,15 +130,16 @@ class SocialPublisher {
                         }
                     }
                 }
-                return ['ok' => $sent > 0, 'message' => "已推送 {$sent} 位订阅者", 'platform_id' => ''];
+                return ['ok' => $sent > 0, 'message' => "已推送 {$sent} 位订阅者", 'platform_id' => '', 'url' => $var['url']];
             } catch (Exception $e) {
                 return ['ok' => false, 'message' => $e->getMessage(), 'platform_id' => ''];
             }
         }
 
-        // 其他平台：无开放 API → 生成带链接的分享文案（B2可用化：明确「仅生成文案需手动发布」非假成功）
-        $msg = "「{$platform}」仅生成分享文案（该平台未接 API，需手动发布）：" . $var['title'] . "\n" . $var['excerpt'];
-        return ['ok' => false, 'manual' => true, 'message' => $msg, 'platform_id' => 'manual_' . substr(bin2hex(random_bytes(4)), 0, 6), 'variant' => $var];
+        // 其他平台：无开放 API → 生成带链接的分享文案（明确「仅生成文案需手动发布」非假成功）
+        $pname = (self::platforms()[$platform]['name'] ?? $platform);
+        $msg = "已生成「{$pname}」平台文案，复制后到创作中心手动发布";
+        return ['ok' => false, 'manual' => true, 'message' => $msg, 'platform_id' => 'manual_' . substr(bin2hex(random_bytes(4)), 0, 6), 'variant' => $var, 'publish_url' => self::platformHome($platform)];
     }
 
     /**
