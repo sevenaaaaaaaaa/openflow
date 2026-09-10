@@ -75,6 +75,12 @@ h2{font-family:var(--stage-heading-font);font-size:clamp(28px,4vw,54px);line-hei
 .hud .bar i{display:block;height:100%;background:var(--stage-accent);transition:width .3s}
 .navbtn{position:fixed;top:50%;transform:translateY(-50%);z-index:6;width:46px;height:46px;border-radius:50%;border:1px solid var(--stage-soft);background:var(--stage-soft);color:var(--stage-fg);font-size:18px;cursor:pointer;backdrop-filter:blur(8px)}
 .navbtn:hover{opacity:.8}
+/* 性能与无障碍降级：低功耗/减弱动效时关毛玻璃与过渡 */
+@media (prefers-reduced-motion: reduce){
+  .slide{transition:none}
+  .chart .fill{transition:none}
+  .navbtn{backdrop-filter:none}
+}
 #prev{left:20px}#next{right:20px}
 .brand{position:fixed;top:22px;left:28px;z-index:5;display:flex;align-items:center;gap:10px;font-family:var(--font-mono,monospace);font-size:12px;letter-spacing:.14em;opacity:.5}
 .brand img{height:22px;width:auto;opacity:.9}
