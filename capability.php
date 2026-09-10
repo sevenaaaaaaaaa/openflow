@@ -81,7 +81,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
         <button class="btn primary" data-act="start" data-od-id="capability-cta-start">免费开始</button>
         <a class="btn ghost" href="/product" data-od-id="capability-cta-product">了解产品原理</a>
       </div>
-      <div class="proof-strip"><span><b>30</b>MCP 工具</span><span><b>35</b>插件钩子</span><span><b>99</b>API 端点</span><span><b>206</b>后台页面</span><span><b>186</b>功能模块</span></div>
+      <div class="proof-strip"><span><b>30</b>MCP 工具</span><span><b>v2</b>插件平台</span><span><b>101</b>API 端点</span><span><b>209</b>后台页面</span><span><b>188</b>功能模块</span></div>
     </div>
   </section>
 
