@@ -52,44 +52,107 @@ $shopSettings = shop_settings();
 <link rel="stylesheet" href="/assets/live.css?v=20260910c">
 <script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
-<body data-of-main>
+<body data-of-main<?=$room && ($room['stream_mode'] ?? '') === 'immersive' ? ' class="live-immersive"' : ''?>>
 <?php of_shell('events'); ?>
 
 <a class="skip" href="#main">跳到主要内容</a>
 <main id="main" data-od-id="main">
 <?php if ($room): ?>
-<?php $st = live_status($room); $sellCourse = !empty($room['sell_course']) ? ($courseMap[$room['sell_course']] ?? null) : null; ?>
-  <!-- ═══ 直播间 ═══ -->
+<?php
+$st = live_status($room);
+$sellCourse = !empty($room['sell_course']) ? ($courseMap[$room['sell_course']] ?? null) : null;
+$streamMode = $room['stream_mode'] ?? 'landscape';
+
+// 播放器内容抽成可复用块（沉浸/常规两种形态共用同一套源逻辑）
+$ytEmbed = '';
+if (!empty($room['youtube_url']) && preg_match('~(?:youtube\.com/(?:watch\?v=|live/)|youtu\.be/)([\w-]{6,})~', $room['youtube_url'], $m)) {
+    $ytEmbed = 'https://www.youtube.com/embed/' . $m[1] . '?autoplay=1&rel=0';
+}
+ob_start();
+if ($st === 'live' && $ytEmbed): ?>
+<iframe src="<?=htmlspecialchars($ytEmbed)?>" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+<?php elseif ($st === 'live' && !empty($room['hls_url'])): ?>
+<video id="livePlayer" controls autoplay muted playsinline src="<?=htmlspecialchars($room['hls_url'])?>"></video>
+<?php elseif ($st === 'live' && empty($room['hls_url'])): ?>
+<div class="ph"><span class="live-dot"></span>直播进行中<small>播放地址待配置</small></div>
+<?php elseif ($st === 'replay' && $ytEmbed): ?>
+<iframe src="<?=htmlspecialchars(str_replace('autoplay=1', 'autoplay=0', $ytEmbed))?>" style="width:100%;height:100%;border:0" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>
+<?php elseif ($st === 'replay' && !empty($room['replay_url'])): ?>
+<video controls playsinline src="<?=htmlspecialchars($room['replay_url'])?>"></video>
+<?php elseif ($st === 'scheduled'): ?>
+<div class="ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>直播预告<small><?=htmlspecialchars(substr($room['start_at'] ?? '', 0, 16))?> 开播</small></div>
+<?php else: ?>
+<div class="ph">暂未开播</div>
+<?php endif;
+$playerHtml = ob_get_clean();
+
+// 多商品卡数据（两种形态共用）
+$liveProducts = [];
+foreach ((array)($room['products'] ?? []) as $line) {
+    $parts = array_map('trim', explode('|', $line));
+    if ($parts[0] ?? '') $liveProducts[] = ['title' => $parts[0], 'link' => $parts[1] ?? '#', 'price' => $parts[2] ?? ''];
+}
+?>
+
+<?php if ($streamMode === 'immersive'): ?>
+  <!-- ═══ 沉浸式直播间（抖音式全屏 9:16）：视频铺满，弹幕/操作浮于画面 ═══ -->
+  <div class="imm-frame">
+    <div class="player player-v"><?=$playerHtml?></div>
+    <div class="imm-top">
+      <a href="/live" class="imm-back" aria-label="返回直播列表">←</a>
+      <b><?=htmlspecialchars($room['title'])?></b>
+      <?php if ($st === 'live'): ?><span class="badge live"><span class="live-dot"></span>直播中</span><?php else: ?><span class="pill neutral"><?=live_status_label($st)?></span><?php endif; ?>
+    </div>
+    <?php if ($st === 'scheduled'): ?>
+    <div class="imm-sub card" style="padding:16px">
+      <b>开播提醒我</b>
+      <div class="text-sm" style="margin:6px 0 10px">已有 <b id="subCount"><?=live_sub_count($room['id'])?></b> 人预约</div>
+      <div style="display:flex;gap:8px">
+        <?php if (!$member): ?><input id="subEmail" class="inp" type="email" placeholder="你的邮箱" style="height:40px"><?php endif; ?>
+        <button class="btn primary" id="subBtn" style="height:40px;padding:0 18px;font-size:14px">预约</button>
+      </div>
+    </div>
+    <?php endif; ?>
+    <div class="imm-chat"><div class="chat-box" id="chatBox"></div></div>
+    <div class="imm-rail">
+      <button class="act-btn" id="likeBtn" aria-label="点赞">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <span class="like-n" id="likeN"><?=live_likes($room['id'])?></span>
+      </button>
+      <?php if ($liveProducts || $sellCourse): ?>
+      <button class="act-btn" id="shopBtn" aria-label="商品">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+      </button>
+      <?php endif; ?>
+    </div>
+    <div class="live-actions imm-bar">
+      <input class="inp" id="chatInputM" placeholder="说点什么…" maxlength="100">
+    </div>
+    <!-- 兼容 JS 的隐藏元素（桌面端输入回退 / 推品 / 商品浮层） -->
+    <div style="display:none"><input id="chatInput"><a class="prod-link" id="immProdAnchor" href="<?=htmlspecialchars($liveProducts[0]['link'] ?? ($sellCourse ? '/courses/' . $sellCourse['id'] : ''))?>" data-title="<?=htmlspecialchars($liveProducts[0]['title'] ?? $sellCourse['title'] ?? '')?>"></a></div>
+    <div class="push-pop" id="pushPop">
+      <button class="x" id="pushX" aria-label="关闭">✕</button>
+      <div class="k">🔴 主播推荐</div>
+      <b id="pushTitle"></b>
+      <div class="row"><em id="pushPrice"></em><button class="btn primary" id="pushGo" style="height:38px;padding:0 16px;font-size:13px">去看看</button></div>
+    </div>
+    <div class="shop-modal" id="shopModal">
+      <div class="sheet">
+        <div class="sheet-h"><b id="sheetTitle">商品详情</b><button id="sheetClose">← 返回直播</button></div>
+        <iframe id="sheetFrame" src="about:blank"></iframe>
+      </div>
+    </div>
+  </div>
+  <style>body{padding-bottom:0!important}</style>
+<?php else: ?>
+  <!-- ═══ 直播间（常规形态） ═══ -->
   <section id="top" class="sec reveal in" data-od-anchor data-od-id="live-room">
     <div class="actions"><a href="/live" class="act">← 返回直播列表</a></div>
     <div class="g-main-aside">
       <div>
         <div class="sp-win">
           <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">live · <?=htmlspecialchars($room['id'])?></div></div>
-          <div class="player<?=($room['stream_mode'] ?? 'landscape') === 'vertical' ? ' player-v' : ''?>">
-            <?php
-            // YouTube 链接 → embed（优先；海外平台同步直播时私域观看页直接内嵌）
-            $ytEmbed = '';
-            if (!empty($room['youtube_url']) && preg_match('~(?:youtube\.com/(?:watch\?v=|live/)|youtu\.be/)([\w-]{6,})~', $room['youtube_url'], $m)) {
-                $ytEmbed = 'https://www.youtube.com/embed/' . $m[1] . '?autoplay=1&rel=0';
-            }
-            ?>
-            <?php if ($st === 'live' && $ytEmbed): ?>
-            <iframe src="<?=htmlspecialchars($ytEmbed)?>" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-            <?php elseif ($st === 'live' && !empty($room['hls_url'])): ?>
-            <video id="livePlayer" controls autoplay muted playsinline src="<?=htmlspecialchars($room['hls_url'])?>"></video>
-            <?php elseif ($st === 'live' && empty($room['hls_url'])): ?>
-            <div class="ph"><span class="live-dot"></span>直播进行中<small>播放地址待配置</small></div>
-            <?php elseif ($st === 'replay' && $ytEmbed): ?>
-            <iframe src="<?=htmlspecialchars(str_replace('autoplay=1', 'autoplay=0', $ytEmbed))?>" style="width:100%;height:100%;border:0" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>
-            <?php elseif ($st === 'replay' && !empty($room['replay_url'])): ?>
-            <video controls playsinline src="<?=htmlspecialchars($room['replay_url'])?>"></video>
-            <?php elseif ($st === 'scheduled'): ?>
-            <div class="ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>直播预告<small><?=htmlspecialchars(substr($room['start_at'] ?? '', 0, 16))?> 开播</small></div>
-            <?php else: ?>
-            <div class="ph">暂未开播</div>
-            <?php endif; ?>
-          </div>
+          <div class="player<?=$streamMode === 'vertical' ? ' player-v' : ''?>"><?=$playerHtml?></div>
         </div>
 
         <div class="room-head">
@@ -127,12 +190,7 @@ $shopSettings = shop_settings();
         <?php endif; ?>
 
         <?php
-        // 多商品卡（E3）：课程/插件/咨询/定制服务，每行 "标题|链接|价格文案"
-        $liveProducts = [];
-        foreach ((array)($room['products'] ?? []) as $line) {
-            $parts = array_map('trim', explode('|', $line));
-            if ($parts[0] ?? '') $liveProducts[] = ['title' => $parts[0], 'link' => $parts[1] ?? '#', 'price' => $parts[2] ?? ''];
-        }
+        // 多商品卡（E3）：课程/插件/咨询/定制服务，每行 "标题|链接|价格文案"（$liveProducts 已在上方统一解析）
         ?>
         <?php if ($liveProducts): ?>
         <div style="display:grid;gap:12px;margin-top:16px">
@@ -200,6 +258,7 @@ $shopSettings = shop_settings();
       </div>
     </div>
   </section>
+<?php endif; ?>
 <script>
   var ROOM_ID = <?=json_encode($room['id'])?>;
   var LAST_COUNT = 0, LAST_MSG_ID = '';
