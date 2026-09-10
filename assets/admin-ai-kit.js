@@ -164,6 +164,7 @@
       document.body.appendChild(ind);
       return ind;
     }
+    function waifuSay(text, ms) { try { if (window.OFWaifu && window.OFWaifu.say) window.OFWaifu.say(text, ms); } catch (e) {} }
     function show() {
       pending++;
       if (pending > 1) return;
@@ -171,6 +172,7 @@
       t0 = Date.now();
       el.classList.remove('hide');
       el.querySelector('.ai-ind-label').textContent = 'AI 处理中';
+      waifuSay('🤔 让我想想…', 0);
       clock = setInterval(function () {
         var t = el.querySelector('.ai-ind-t');
         if (t) t.textContent = ((Date.now() - t0) / 1000).toFixed(1) + 's';
@@ -182,6 +184,7 @@
       clearInterval(clock);
       var el = ind, total = ((Date.now() - t0) / 1000).toFixed(1);
       el.querySelector('.ai-ind-label').textContent = '✅ 完成 · ' + total + 's';
+      waifuSay('搞定啦，用了 ' + total + 's ✨', 2600);
       setTimeout(function () { el.classList.add('hide'); }, 900);
     }
     var ofFetch = window.fetch;

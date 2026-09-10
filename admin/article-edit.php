@@ -1670,4 +1670,91 @@ function copyRepurpose(btn) {
   var pre = btn.closest('div').querySelector('pre');
   navigator.clipboard.writeText(pre.textContent).then(function(){ btn.textContent = '✅ 已复制'; setTimeout(function(){ btn.textContent='复制'; }, 1500); });
 }
+
+/* ── 划词 AI 工具栏：选中正文片段 → 润色/扩写/缩写 ── */
+(function () {
+  var bar = null, savedRange = null, savedTa = null, taStart = 0, taEnd = 0, busy = false;
+
+  function ensureBar() {
+    if (bar) return bar;
+    bar = document.createElement('div');
+    bar.className = 'ai-sel-toolbar';
+    bar.innerHTML = '<button data-act="rewrite">✨ 润色</button><button data-act="expand">扩写</button><button data-act="shorten">缩写</button>';
+    document.body.appendChild(bar);
+    bar.addEventListener('mousedown', function (e) { e.preventDefault(); }); // 保住选区
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-act]');
+      if (b && !busy) runAction(b.dataset.act);
+    });
+    return bar;
+  }
+  function hideBar() { if (bar) bar.style.display = 'none'; savedRange = null; savedTa = null; }
+
+  function inEditor(node) {
+    var el = node && (node.nodeType === 1 ? node : node.parentElement);
+    return el && el.closest && el.closest('#rtContent');
+  }
+  function onSelect() {
+    if (busy) return;
+    var md = document.getElementById('mdInput');
+    var mdVisible = md && md.offsetParent !== null;
+    // Markdown 模式：textarea 选区
+    if (mdVisible && document.activeElement === md && md.selectionEnd > md.selectionStart) {
+      savedTa = md; taStart = md.selectionStart; taEnd = md.selectionEnd; savedRange = null;
+      var r = md.getBoundingClientRect();
+      showAt(r.left + 20, r.top - 46);
+      return;
+    }
+    // 富文本模式：Range 选区
+    var sel = window.getSelection();
+    if (sel && !sel.isCollapsed && sel.rangeCount && inEditor(sel.anchorNode)) {
+      savedRange = sel.getRangeAt(0).cloneRange(); savedTa = null;
+      var rect = savedRange.getBoundingClientRect();
+      showAt(rect.left + rect.width / 2 + window.scrollX, rect.top + window.scrollY - 46);
+      return;
+    }
+    hideBar();
+  }
+  function showAt(x, y) {
+    var b = ensureBar();
+    b.style.display = 'flex';
+    var w = b.offsetWidth;
+    b.style.left = Math.max(8, x - w / 2) + 'px';
+    b.style.top = Math.max(8, y) + 'px';
+  }
+  function selectedText() {
+    if (savedTa) return savedTa.value.substring(taStart, taEnd);
+    return savedRange ? savedRange.toString() : '';
+  }
+  function replaceSelection(text) {
+    if (savedTa) {
+      savedTa.setRangeText(text, taStart, taEnd, 'end');
+      savedTa.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (savedRange) {
+      savedRange.deleteContents();
+      savedRange.insertNode(document.createTextNode(text));
+      var rt = document.getElementById('rtContent');
+      if (rt) rt.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }
+  function runAction(act) {
+    var text = selectedText().trim();
+    if (!text) return hideBar();
+    busy = true;
+    var b = ensureBar();
+    b.classList.add('ai-sel-busy');
+    fetch('/api/ai-article.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: act, content: text }) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok || !d.text) { setAiMsg('⚠️ ' + (d.error || 'AI 失败')); return; }
+        replaceSelection(d.text.trim());
+        hideBar();
+      })
+      .catch(function () { setAiMsg('⚠️ 网络异常'); })
+      .then(function () { busy = false; b.classList.remove('ai-sel-busy'); });
+  }
+  document.addEventListener('mouseup', function () { setTimeout(onSelect, 10); });
+  document.addEventListener('keyup', function (e) { if (e.shiftKey || e.key === 'Escape') { if (e.key === 'Escape') hideBar(); else onSelect(); } });
+  document.addEventListener('mousedown', function (e) { if (bar && !bar.contains(e.target) && !inEditor(e.target) && e.target.id !== 'mdInput') hideBar(); });
+})();
 </script>
