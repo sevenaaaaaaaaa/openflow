@@ -48,6 +48,54 @@ $shopSettings = shop_settings();
 .a-card .cov .tag{position:absolute;top:12px;left:12px}
 .a-card .cov .tag.r{left:auto;right:12px;top:auto;bottom:12px}
 @media (max-width:860px){.chat-box{height:280px}}
+
+/* ═══ F2 竖屏直播（移动端重构）═══ */
+.live-actions{display:none}
+@media (max-width:860px){
+  /* 播放器贴顶，弹幕区铺满，底部固定操作条 */
+  .g-main-aside{display:block!important}
+  .g-main-aside>div:first-child{position:sticky;top:0;z-index:30;margin:0 -16px}
+  .sp-win{border-radius:0;border-left:0;border-right:0}
+  .sp-win .win-bar{display:none}
+  .player{aspect-ratio:16/9;max-height:38vh}
+  .room-head{padding:0 4px}
+  /* 底部操作条：评论 + 点赞 + 商品 */
+  .live-actions{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;gap:8px;align-items:center;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border);backdrop-filter:blur(16px)}
+  .live-actions .inp{flex:1;min-height:42px;padding:9px 14px;font-size:14px;border-radius:999px}
+  .live-actions .act-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--surface-2);display:grid;place-items:center;cursor:pointer;flex:none;position:relative}
+  .live-actions .act-btn svg{width:20px;height:20px}
+  .live-actions .like-n{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;border-radius:999px;padding:1px 5px;min-width:18px;text-align:center}
+  body{padding-bottom:70px}
+  /* 聊天卡内的输入行在移动端让给底栏 */
+  .chat-in{display:none}
+  .chat-box{height:32vh}
+}
+/* 点赞飘心动画 */
+.fly-heart{position:fixed;z-index:70;pointer-events:none;font-size:22px;animation:heartFly 1.4s ease-out forwards}
+@keyframes heartFly{0%{opacity:1;transform:translateY(0) scale(.6)}70%{opacity:1}100%{opacity:0;transform:translateY(-140px) translateX(var(--hx,20px)) scale(1.3)}}
+/* 主播推品弹窗 */
+.push-pop{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);z-index:65;width:min(92vw,380px);
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.25);
+  padding:16px;opacity:0;pointer-events:none;transition:opacity .3s,transform .35s cubic-bezier(.32,.72,0,1)}
+.push-pop.on{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.push-pop .k{font-size:11px;letter-spacing:.14em;color:var(--danger);font-weight:700;display:flex;align-items:center;gap:6px}
+.push-pop b{display:block;font-size:16px;margin:6px 0 2px}
+.push-pop .row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.push-pop .row em{font-style:normal;font-weight:800;color:var(--ok);font-size:18px}
+.push-pop .x{position:absolute;top:8px;right:10px;border:0;background:none;font-size:16px;cursor:pointer;color:var(--muted);padding:4px}
+/* 商品浮层（购买不离开直播）+ 小窗播放 */
+.shop-modal{position:fixed;inset:0;z-index:80;background:rgba(10,12,20,.55);backdrop-filter:blur(4px);display:none}
+.shop-modal.on{display:block}
+.shop-modal .sheet{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(94vw,880px);height:min(88vh,760px);
+  background:var(--bg);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.35)}
+.shop-modal .sheet-h{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
+.shop-modal .sheet-h b{flex:1;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shop-modal .sheet-h button{border:1px solid var(--border);background:var(--surface-2);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
+.shop-modal iframe{flex:1;border:0;width:100%}
+body.shop-open .player{position:fixed;right:12px;bottom:86px;width:200px;aspect-ratio:16/9;z-index:75;border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+body.shop-open .sp-win{position:static}
+@media(max-width:860px){body.shop-open .player{width:150px;bottom:76px}}
 </style>
 <script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
@@ -141,7 +189,7 @@ $shopSettings = shop_settings();
             <div class="tx"><span class="kicker" style="font-size:11px">直播间专属</span><b><?=htmlspecialchars($lp['title'])?></b></div>
             <div style="display:flex;align-items:center;gap:14px">
               <?php if ($lp['price'] !== ''): ?><b style="font-family:var(--font-display);font-size:20px;color:var(--ok)"><?=htmlspecialchars($lp['price'])?></b><?php endif; ?>
-              <a href="<?=htmlspecialchars($lp['link'])?>" class="btn primary" style="height:40px;padding:0 18px;font-size:14px">去看看 →</a>
+              <a href="<?=htmlspecialchars($lp['link'])?>" class="btn primary prod-link" data-title="<?=htmlspecialchars($lp['title'])?>" style="height:40px;padding:0 18px;font-size:14px">去看看 →</a>
             </div>
           </div>
           <?php endforeach; ?>
@@ -152,7 +200,7 @@ $shopSettings = shop_settings();
         <div class="strip">
           <?php if (!empty($sellCourse['cover'])): ?><img src="<?=htmlspecialchars($sellCourse['cover'])?>" alt="" style="width:120px;aspect-ratio:16/10;object-fit:cover;border-radius:10px" onerror="this.style.display='none'"><?php else: ?><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/></svg></span><?php endif; ?>
           <div class="tx"><span class="kicker" style="font-size:11px">直播间同款课程</span><b><?=htmlspecialchars($sellCourse['title'])?></b><span><?=htmlspecialchars($sellCourse['description'] ?? '')?></span></div>
-          <div style="text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end"><b style="font-family:var(--font-display);font-size:24px;color:var(--ok)"><?=$price > 0 ? '¥' . number_format($price, 0) : '限时'?></b><a href="/courses/<?=urlencode($sellCourse['id'])?>" class="btn primary" style="height:40px;padding:0 18px;font-size:14px">查看课程 →</a></div>
+          <div style="text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end"><b style="font-family:var(--font-display);font-size:24px;color:var(--ok)"><?=$price > 0 ? '¥' . number_format($price, 0) : '限时'?></b><a href="/courses/<?=urlencode($sellCourse['id'])?>" class="btn primary prod-link" data-title="<?=htmlspecialchars($sellCourse['title'])?>" style="height:40px;padding:0 18px;font-size:14px">查看课程 →</a></div>
         </div>
         <?php endif; ?>
       </div>
@@ -168,29 +216,79 @@ $shopSettings = shop_settings();
         </div>
       </aside>
     </div>
+
+    <!-- F2 移动端底部操作条：评论 + 点赞 + 商品 -->
+    <div class="live-actions">
+      <input class="inp" id="chatInputM" placeholder="说点什么…" maxlength="100">
+      <button class="act-btn" id="likeBtn" aria-label="点赞" title="点赞">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="color:var(--danger)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <span class="like-n" id="likeN"><?=live_likes($room['id'])?></span>
+      </button>
+      <?php if ($liveProducts || $sellCourse): ?>
+      <button class="act-btn" id="shopBtn" aria-label="商品" title="直播间商品">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+      </button>
+      <?php endif; ?>
+    </div>
+
+    <!-- F2 主播推品弹窗 -->
+    <div class="push-pop" id="pushPop">
+      <button class="x" id="pushX" aria-label="关闭">✕</button>
+      <div class="k">🔴 主播推荐</div>
+      <b id="pushTitle"></b>
+      <div class="row"><em id="pushPrice"></em><button class="btn primary" id="pushGo" style="height:38px;padding:0 16px;font-size:13px">去看看</button></div>
+    </div>
+
+    <!-- F2 商品浮层：购买不离开直播，播放器缩成小窗 -->
+    <div class="shop-modal" id="shopModal">
+      <div class="sheet">
+        <div class="sheet-h"><b id="sheetTitle">商品详情</b><button id="sheetClose">← 返回直播</button></div>
+        <iframe id="sheetFrame" src="about:blank"></iframe>
+      </div>
+    </div>
   </section>
 <script>
   var ROOM_ID = <?=json_encode($room['id'])?>;
   var LAST_COUNT = 0;
+  var LAST_PUSH_TS = +(localStorage.getItem('of_push_' + ROOM_ID) || 0);
+  var ESC_MAP = {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'};
+  function escH(s){ return (s||'').replace(/[<>&"]/g, function(c){ return ESC_MAP[c]; }); }
+
   function loadChat() {
     fetch('/api/live?action=chat&room_id=' + encodeURIComponent(ROOM_ID)).then(function(r){ return r.json(); }).then(function(d) {
       if (!d.ok) return;
       var box = document.getElementById('chatBox');
-      if (d.messages.length > LAST_COUNT) {
+      if (d.messages.length !== LAST_COUNT) {
         box.innerHTML = '';
         d.messages.forEach(function(m) {
           var el = document.createElement('div');
           el.className = 'chat-msg';
-          el.innerHTML = '<span class="u">' + (m.user||'游客').replace(/[<>&"]/g, function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}) + '：</span><span class="t">' + (m.text||'').replace(/[<>&"]/g, function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}) + '</span>';
+          el.innerHTML = '<span class="u">' + escH(m.user||'游客') + '：</span><span class="t">' + escH(m.text) + '</span>';
           box.appendChild(el);
         });
         LAST_COUNT = d.messages.length;
         box.scrollTop = box.scrollHeight;
       }
+      // 点赞数同步
+      var likeN = document.getElementById('likeN');
+      if (likeN && typeof d.likes === 'number') likeN.textContent = d.likes > 999 ? (d.likes/1000).toFixed(1)+'k' : d.likes;
+      // 主播推品：新推品自动弹出（12s 自动收起）
+      if (d.push && d.push.ts > LAST_PUSH_TS) {
+        LAST_PUSH_TS = d.push.ts;
+        localStorage.setItem('of_push_' + ROOM_ID, d.push.ts);
+        document.getElementById('pushTitle').textContent = d.push.title;
+        document.getElementById('pushPrice').textContent = d.push.price || '';
+        document.getElementById('pushGo').onclick = function(){ document.getElementById('pushPop').classList.remove('on'); openShop(d.push.link, d.push.title); };
+        document.getElementById('pushPop').classList.add('on');
+        setTimeout(function(){ document.getElementById('pushPop').classList.remove('on'); }, 12000);
+      }
     });
   }
+  document.getElementById('pushX').onclick = function(){ document.getElementById('pushPop').classList.remove('on'); };
+
   function sendChat() {
-    var input = document.getElementById('chatInput');
+    var m = document.getElementById('chatInputM');
+    var input = (m && m.offsetParent !== null) ? m : document.getElementById('chatInput');
     var text = input.value.trim();
     if (!text) return;
     var body = new FormData();
@@ -203,8 +301,56 @@ $shopSettings = shop_settings();
       });
   }
   document.getElementById('chatInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') sendChat(); });
+  var chatInputM = document.getElementById('chatInputM');
+  if (chatInputM) chatInputM.addEventListener('keydown', function(e){ if (e.key === 'Enter') sendChat(); });
   loadChat();
   setInterval(loadChat, 3000);
+
+  /* 点赞：飘心动画 + 计数（每会话 60 次/分钟限速） */
+  var HEARTS = ['❤️','🧡','💛','💜','💙','💖'];
+  var likeBtn = document.getElementById('likeBtn');
+  if (likeBtn) likeBtn.addEventListener('click', function() {
+    var h = document.createElement('div');
+    h.className = 'fly-heart';
+    h.textContent = HEARTS[Math.floor(Math.random()*HEARTS.length)];
+    var rect = likeBtn.getBoundingClientRect();
+    h.style.left = (rect.left + rect.width/2 - 11) + 'px';
+    h.style.top = (rect.top - 8) + 'px';
+    h.style.setProperty('--hx', (Math.random()*80-40) + 'px');
+    document.body.appendChild(h);
+    setTimeout(function(){ h.remove(); }, 1500);
+    var body = new FormData(); body.append('room_id', ROOM_ID);
+    fetch('/api/live?action=like', {method:'POST', body:body}).then(function(r){return r.json()}).then(function(d){
+      if (d.count !== undefined) { var n = document.getElementById('likeN'); n.textContent = d.count > 999 ? (d.count/1000).toFixed(1)+'k' : d.count; }
+    }).catch(function(){});
+  });
+
+  /* 商品浮层：购买不离开直播，播放器缩成小窗 */
+  var shopModal = document.getElementById('shopModal');
+  var sheetFrame = document.getElementById('sheetFrame');
+  window.openShop = function(link, title){
+    if (!link || link === '#') return;
+    document.cookie = 'of_live_room=' + encodeURIComponent(ROOM_ID) + ';path=/;max-age=86400';
+    var sep = link.indexOf('?') > -1 ? '&' : '?';
+    sheetFrame.src = link + sep + 'from=live&room=' + encodeURIComponent(ROOM_ID);
+    document.getElementById('sheetTitle').textContent = title || '商品详情';
+    shopModal.classList.add('on');
+    document.body.classList.add('shop-open');
+  };
+  function closeShop(){ shopModal.classList.remove('on'); document.body.classList.remove('shop-open'); sheetFrame.src = 'about:blank'; }
+  document.getElementById('sheetClose').onclick = closeShop;
+  shopModal.addEventListener('click', function(e){ if (e.target === shopModal) closeShop(); });
+  // 商品卡点击 → 浮层打开（不跳走）
+  document.querySelectorAll('.prod-link').forEach(function(a){
+    a.addEventListener('click', function(e){ e.preventDefault(); openShop(a.getAttribute('href'), a.getAttribute('data-title') || ''); });
+  });
+  var shopBtn = document.getElementById('shopBtn');
+  if (shopBtn) shopBtn.addEventListener('click', function(){
+    var first = document.querySelector('.prod-link');
+    if (first) openShop(first.getAttribute('href'), first.getAttribute('data-title') || '');
+  });
+  // 浮层内购买成功 → 返回直播（order-success 页 postMessage）
+  window.addEventListener('message', function(e){ if (e.data === 'of-back-to-live') closeShop(); });
 </script>
 
 <?php else: ?>

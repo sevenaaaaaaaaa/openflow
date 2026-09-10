@@ -153,7 +153,7 @@ function payment_xfpay_create(array $ch, array $order): array {
         'title' => $order['course_title'] ?? $order['goods_title'] ?? 'OpenFlow 订单',
         'time' => (string)time(),
         'notify_url' => payment_notify_url('xfpay'),
-        'return_url' => payment_return_url(),
+        'return_url' => payment_return_url($order),
         'nonce_str' => bin2hex(random_bytes(8)),
     ];
     // token（若配置了则加入）
@@ -201,6 +201,8 @@ function payment_notify_url(string $channel): string {
     return payment_site_base() . '/api/shop.php?action=notify&channel=' . $channel;
 }
 
-function payment_return_url(): string {
+function payment_return_url(array $order = []): string {
+    // F2d：支付成功落点统一为交付页（带订单号 → 交付动作 + 直播上下文返回）
+    if (!empty($order['id'])) return payment_site_base() . '/order-success?order=' . urlencode((string)$order['id']);
     return payment_site_base() . '/thank-you.php';
 }
