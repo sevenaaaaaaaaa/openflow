@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>OpenFlow Logo Concepts</title>
+<style>
+body{font-family:system-ui;background:#f5f6f8;margin:0;padding:40px}
+h2{font-size:14px;color:#666;margin:32px 0 12px}
+.row{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.cell{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.cell.dark{background:#0f1220;border-color:#222}
+.cell svg{display:block}
+.lockup{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.01em}
+.lockup small{display:block;font-size:9px;letter-spacing:.22em;color:#888;font-weight:600}
+.dark .lockup{color:#eef}
+.sizes{display:flex;gap:16px;align-items:flex-end}
+</style>
+</head>
+<body>
+
+<h2>A · 流环（飞轮 + 开放的环 + 箭头流出）</h2>
+<div class="row">
+<div class="cell">
+  <svg width="96" height="96" viewBox="0 0 64 64" fill="none">
+    <defs><linearGradient id="ag" x1="8" y1="52" x2="56" y2="12" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563eb"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs>
+    <!-- 环：从 200° 到 -20°，缺口在右上 -->
+    <path d="M14.3 45.3 A19 19 0 1 1 52 18" stroke="url(#ag)" stroke-width="6.5" stroke-linecap="round"/>
+    <!-- 流出箭头 -->
+    <path d="M46 12.5 L55 10 L52.5 19" stroke="url(#ag)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+  <div class="lockup" style="color:#111"><span>OpenFlow<small>GROWTH OS</small></span></div>
+</div>
+<div class="cell dark">
+  <svg width="96" height="96" viewBox="0 0 64 64" fill="none">
+    <defs><linearGradient id="ag2" x1="8" y1="52" x2="56" y2="12" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ea8ff"/><stop offset="1" stop-color="#a78bff"/></linearGradient></defs>
+    <path d="M14.3 45.3 A19 19 0 1 1 52 18" stroke="url(#ag2)" stroke-width="6.5" stroke-linecap="round"/>
+    <path d="M46 12.5 L55 10 L52.5 19" stroke="url(#ag2)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+  <div class="lockup"><span>OpenFlow<small>GROWTH OS</small></span></div>
+</div>
+</div>
+
+<h2>B · 双流汇箭（两条流汇合为一支箭）</h2>
+<div class="row">
+<div class="cell">
+  <svg width="96" height="96" viewBox="0 0 64 64" fill="none">
+    <defs><linearGradient id="bg1" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563eb"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs>
+    <path d="M10 20 C 26 20, 34 26, 44 32" stroke="url(#bg1)" stroke-width="6.5" stroke-linecap="round"/>
+    <path d="M10 44 C 26 44, 34 38, 44 32" stroke="url(#bg1)" stroke-width="6.5" stroke-linecap="round" opacity=".55"/>
+    <path d="M40 22 L54 32 L40 42" stroke="url(#bg1)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+  <div class="lockup" style="color:#111"><span>OpenFlow<small>GROWTH OS</small></span></div>
+</div>
+<div class="cell dark">
+  <svg width="96" height="96" viewBox="0 0 64 64" fill="none">
+    <defs><linearGradient id="bg2" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ea8ff"/><stop offset="1" stop-color="#a78bff"/></linearGradient></defs>
+    <path d="M10 20 C 26 20, 34 26, 44 32" stroke="url(#bg2)" stroke-width="6.5" stroke-linecap="round"/>
+    <path d="M10 44 C 26 44, 34 38, 44 32" stroke="url(#bg2)" stroke-width="6.5" stroke-linecap="round" opacity=".55"/>
+    <path d="M40 22 L54 32 L40 42" stroke="url(#bg2)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+  <div class="lockup"><span>OpenFlow<small>GROWTH OS</small></span></div>
+</div>
+</div>
+
+<h2>C · O 中环流（O 内一条 S 形流带）</h2>
+<div class="row">
+<div class="cell">
+  <svg width="96" height="96" viewBox="0 0 64 64" fill="none">
+    <defs><linearGradient id="cg1" x1="12" y1="52" x2="52" y2="12" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563eb"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs>
+    <circle cx="32" cy="32" r="21" stroke="url(#cg1)" stroke-width="6.5"/>
+    <path d="M20 38 C 26 30, 30 34, 34 30 C 38 26, 40 24, 45 24" stroke="url(#cg1)" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="46.5" cy="23.5" r="3.4" fill="url(#cg1)"/>
+  </svg>
+  <div class="lockup" style="color:#111"><span>OpenFlow<small>GROWTH OS</small></span></div>
+</div>
+<div class="cell dark">
+  <svg width="96" height="96" viewBox="0 0 64 64" fill="none">
+    <defs><linearGradient id="cg2" x1="12" y1="52" x2="52" y2="12" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ea8ff"/><stop offset="1" stop-color="#a78bff"/></linearGradient></defs>
+    <circle cx="32" cy="32" r="21" stroke="url(#cg2)" stroke-width="6.5"/>
+    <path d="M20 38 C 26 30, 30 34, 34 30 C 38 26, 40 24, 45 24" stroke="url(#cg2)" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="46.5" cy="23.5" r="3.4" fill="url(#cg2)"/>
+  </svg>
+  <div class="lockup"><span>OpenFlow<small>GROWTH OS</small></span></div>
+</div>
+</div>
+
+<h2>小尺寸可用性（16 / 24 / 32px）</h2>
+<div class="row">
+<div class="cell sizes">
+  <svg width="16" height="16" viewBox="0 0 64 64" fill="none"><path d="M14.3 45.3 A19 19 0 1 1 52 18" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round"/><path d="M46 12.5 L55 10 L52.5 19" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+  <svg width="24" height="24" viewBox="0 0 64 64" fill="none"><path d="M14.3 45.3 A19 19 0 1 1 52 18" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round"/><path d="M46 12.5 L55 10 L52.5 19" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+  <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><path d="M14.3 45.3 A19 19 0 1 1 52 18" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round"/><path d="M46 12.5 L55 10 L52.5 19" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+</div>
+<div class="cell sizes">
+  <svg width="16" height="16" viewBox="0 0 64 64" fill="none"><path d="M10 20 C 26 20, 34 26, 44 32" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round"/><path d="M10 44 C 26 44, 34 38, 44 32" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round" opacity=".55"/><path d="M40 22 L54 32 L40 42" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+  <svg width="24" height="24" viewBox="0 0 64 64" fill="none"><path d="M10 20 C 26 20, 34 26, 44 32" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round"/><path d="M10 44 C 26 44, 34 38, 44 32" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round" opacity=".55"/><path d="M40 22 L54 32 L40 42" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+  <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><path d="M10 20 C 26 20, 34 26, 44 32" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round"/><path d="M10 44 C 26 44, 34 38, 44 32" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round" opacity=".55"/><path d="M40 22 L54 32 L40 42" stroke="#2563eb" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+</div>
+<div class="cell sizes">
+  <svg width="16" height="16" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="21" stroke="#2563eb" stroke-width="6.5"/><path d="M20 38 C 26 30, 30 34, 34 30 C 38 26, 40 24, 45 24" stroke="#2563eb" stroke-width="5" stroke-linecap="round"/><circle cx="46.5" cy="23.5" r="3.4" fill="#2563eb"/></svg>
+  <svg width="24" height="24" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="21" stroke="#2563eb" stroke-width="6.5"/><path d="M20 38 C 26 30, 30 34, 34 30 C 38 26, 40 24, 45 24" stroke="#2563eb" stroke-width="5" stroke-linecap="round"/><circle cx="46.5" cy="23.5" r="3.4" fill="#2563eb"/></svg>
+  <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="21" stroke="#2563eb" stroke-width="6.5"/><path d="M20 38 C 26 30, 30 34, 34 30 C 38 26, 40 24, 45 24" stroke="#2563eb" stroke-width="5" stroke-linecap="round"/><circle cx="46.5" cy="23.5" r="3.4" fill="#2563eb"/></svg>
+</div>
+</div>
+
+</body>
+</html>

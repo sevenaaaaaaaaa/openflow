@@ -243,8 +243,8 @@
     return PAGE === 'home' ? '首页' : (PAGE === 'account' ? '个人中心' : PAGE);
   })();
 
-  /* ── O+F brand logo（终版） ── */
-  var BRAND_SVG = '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-b" x1="2" y1="16" x2="30" y2="16" gradientUnits="userSpaceOnUse"><stop stop-color="var(--accent)"/><stop offset="1" stop-color="oklch(58% .16 285)"/></linearGradient></defs><path d="M16 6.5a9.5 9.5 0 1 1-9.5 9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M11.5 10v13M11.5 13.5h8.2M11.5 18.5h8.2" stroke="url(#ofg-b)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M19.7 18.5c2.3 0 4.4-.7 6.1-2M25 14.3l1.6 2.2-2.9 1" stroke="url(#ofg-b)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+  /* ── 流环 brand logo：开放的 O（Open）缺口溢出成箭（Flow / 增长飞轮）── */
+  var BRAND_SVG = '<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-b" x1="10" y1="54" x2="56" y2="10" gradientUnits="userSpaceOnUse"><stop stop-color="var(--accent)"/><stop offset="1" stop-color="oklch(58% .16 285)"/></linearGradient></defs><path d="M13.8 45.8 A19.5 19.5 0 1 1 51.5 17.5" stroke="url(#ofg-b)" stroke-width="7" stroke-linecap="round"/><path d="M47.5 12.8 L56.8 10.2 L54.2 19.5" stroke="url(#ofg-b)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   function g(id) { return document.getElementById(id); }
 

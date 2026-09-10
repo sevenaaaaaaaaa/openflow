@@ -33,10 +33,12 @@ if (!function_exists('seo_head')) {
         $keywords = $opts['keywords'] ?? $siteKeywords;
         $canonical = $opts['canonical'] ?? ($siteUrl ? $siteUrl . ($_SERVER['REQUEST_URI'] ?? '/') : '');
         $image = $opts['image'] ?? site_config_get('site_logo', '');
+        // og:image 兜底：站点未配 logo 时用品牌应用图标（需绝对 URL）
+        if (!$image && $siteUrl) $image = $siteUrl . '/assets/images/logos/of-icon-512.png';
         $type = $opts['type'] ?? 'website';
 
-        // 默认 favicon（内联 SVG 生成，无需文件）
-        $faviconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#1e1e1e"/><text x="16" y="22" font-family="Arial" font-size="18" font-weight="bold" fill="#ddff0e" text-anchor="middle">O</text></svg>';
+        // 默认 favicon（流环 Logo 内联 SVG，无需文件）
+        $faviconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="g" x1="0" y1="64" x2="64" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#1d4ed8"/><stop offset="1" stop-color="#6d4aff"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#g)"/><path d="M18.6 44.2 A15.5 15.5 0 1 1 48.6 21.6" stroke="#fff" stroke-width="5.6" stroke-linecap="round"/><path d="M45.4 17.9 L52.8 15.8 L50.7 23.2" stroke="#fff" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         $faviconData = 'data:image/svg+xml;base64,' . base64_encode($faviconSvg);
 
         echo "\n";
