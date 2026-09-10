@@ -177,15 +177,26 @@ admin_header('创作台');
 
 <script>
 const CSRF = <?=json_encode(csrf_token())?>;
-async function createCall(payload, btn) {
-  btn.disabled = true; const old = btn.textContent; btn.textContent = '生成中…';
+/* 思考面板挂载点：每个生成按钮后面 */
+function thinkHost(btn) {
+  let host = btn.parentElement.querySelector('.ai-think-host');
+  if (!host) { host = document.createElement('div'); host.className = 'ai-think-host'; btn.insertAdjacentElement('afterend', host); }
+  return host;
+}
+async function createCall(payload, btn, steps) {
+  btn.disabled = true;
+  const think = window.AIThink ? AIThink.start(thinkHost(btn), steps || ['理解需求', '生成内容', '校对收尾']) : null;
   try {
     const body = new URLSearchParams({...payload, csrf_token: CSRF});
     const r = await fetch('/api/create.php', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body});
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || '生成失败');
+    if (think) think.done();
     return j;
-  } finally { btn.disabled = false; btn.textContent = old; }
+  } catch (e) {
+    if (think) think.fail(e.message);
+    throw e;
+  } finally { btn.disabled = false; }
 }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -195,11 +206,15 @@ if (colBtn) colBtn.onclick = async () => {
   const topic = document.getElementById('col-topic').value.trim();
   if (!topic) return ofAlert('先填主题');
   try {
-    const j = await createCall({action: 'outline', topic, angle: document.getElementById('col-angle').value.trim()}, colBtn);
+    const j = await createCall({action: 'outline', topic, angle: document.getElementById('col-angle').value.trim()}, colBtn,
+      ['理解主题与角度', '检索知识库语境', '构思大纲结构', '提炼核心论点']);
     document.getElementById('col-title').value = j.data.title || topic;
     document.getElementById('col-outline').value = (j.data.outline || []).join('\n');
-    document.getElementById('col-thesis').textContent = j.data.thesis ? '核心论点：' + j.data.thesis : '';
+    const thesisEl = document.getElementById('col-thesis');
     document.getElementById('col-step2').style.display = '';
+    document.getElementById('col-step2').classList.add('ai-result');
+    if (j.data.thesis && window.aiTypewriter) aiTypewriter(thesisEl, '核心论点：' + j.data.thesis, 14);
+    else thesisEl.textContent = j.data.thesis ? '核心论点：' + j.data.thesis : '';
   } catch (e) { ofAlert(e.message); }
 };
 const colWrite = document.getElementById('col-write-btn');
@@ -210,10 +225,11 @@ if (colWrite) colWrite.onclick = async () => {
       angle: document.getElementById('col-angle').value.trim(),
       title: document.getElementById('col-title').value.trim(),
       outline: JSON.stringify(document.getElementById('col-outline').value.split('\n').map(s => s.trim()).filter(Boolean)),
-    }, colWrite);
+    }, colWrite, ['解析大纲', '撰写引言', '逐节展开正文', '校对与润色', '存入草稿箱']);
     document.getElementById('col-done-title').textContent = '《' + j.title + '》';
     document.getElementById('col-edit-link').href = '/xmp/article-edit?id=' + encodeURIComponent(j.id);
     document.getElementById('col-done').style.display = '';
+    document.getElementById('col-done').classList.add('ai-result');
     window.scrollTo({top: document.getElementById('col-done').offsetTop - 80, behavior: 'smooth'});
   } catch (e) { ofAlert(e.message); }
 };
@@ -235,9 +251,11 @@ if (scBtn) scBtn.onclick = async () => {
   if (!topic) return ofAlert('先填主题');
   try {
     const j = await createCall({action: 'script', topic,
-      duration: document.getElementById('sc-duration').value, style: document.getElementById('sc-style').value}, scBtn);
+      duration: document.getElementById('sc-duration').value, style: document.getElementById('sc-style').value}, scBtn,
+      ['理解主题与时长', '设计开场钩子', '编排节奏与镜头', '写发布文案']);
     const box = document.getElementById('sc-result');
     box.innerHTML = renderScript(j.data); box.style.display = '';
+    box.classList.add('ai-result');
     window.scrollTo({top: box.offsetTop - 80, behavior: 'smooth'});
   } catch (e) { ofAlert(e.message); }
 };
@@ -258,12 +276,14 @@ if (slBtn) slBtn.onclick = async () => {
   try {
     const j = await createCall({action: 'slides', topic, theme,
       brand_md: document.getElementById('sl-brand').value,
-      pages: document.getElementById('sl-pages').value, audience: document.getElementById('sl-audience').value.trim()}, slBtn);
+      pages: document.getElementById('sl-pages').value, audience: document.getElementById('sl-audience').value.trim()}, slBtn,
+      ['理解主题与受众', '应用品牌契约 design.md', '规划页面结构', '设计每页版式']);
     const box = document.getElementById('sl-done');
     box.innerHTML = `<h2>✅ 《${esc(j.title)}》已生成（${j.pages} 页）</h2>
       <a href="/deck/${encodeURIComponent(j.id)}" target="_blank" class="btn btn-primary btn-sm">全屏放映 →</a>
       <span class="hint" style="margin-left:10px">← → 翻页 · F 全屏 · 支持触屏滑动</span>`;
     box.style.display = '';
+    box.classList.add('ai-result');
   } catch (e) { ofAlert(e.message); }
 };
 </script>
