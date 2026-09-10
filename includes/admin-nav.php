@@ -110,6 +110,7 @@ function admin_nav_tree(): array {
                 ['id' => 'content-hub', 'label' => '内容中心', 'perm' => 'pages', 'hint' => '文章 · 页面 · 下载 · 播客'],
                 ['label' => '内容生产', 'hint' => '任务 · 日历 · 分发', 'subs' => [
                     ['id' => 'tasks', 'label' => '生产任务', 'perm' => 'tasks'],
+                    ['id' => 'product-scout', 'label' => '产品发现', 'perm' => 'articles', 'hint' => '每日 Loop'],
                     ['id' => 'content-calendar', 'label' => '内容日历', 'perm' => 'tasks'],
                     ['id' => 'publish', 'label' => '内容分发', 'perm' => 'tasks'],
                     ['id' => 'channels', 'label' => '分发渠道', 'perm' => 'channels'],
