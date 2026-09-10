@@ -7,6 +7,7 @@ $platforms = SocialPublisher::platforms();
 $articles = array_values(array_filter(get_articles(), fn($a) => ($a['status'] ?? '') === 'published'));
 $message = '';
 $error = '';
+$results = [];
 
 // 发布文章
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['publish'])) {
@@ -50,6 +51,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel'])) {
 $log = SocialPublisher::recentLog();
 $queue = SocialPublisher::queue();
 
+/* 单平台结果单元格：状态 pill + 原因 + 可点击链接（查看原文 / 复制文案+去发布） */
+function pub_result_cell(string $p, array $r, array $platforms): string {
+    $pname = $platforms[$p]['name'] ?? $p;
+    $manual = !empty($r['manual']);
+    $ok = !empty($r['ok']);
+    $h = '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:3px 0">';
+    $h .= '<span class="pill ' . ($ok ? 'ok' : ($manual ? 'warn' : 'err')) . '" style="font-size:11px">' . ($ok ? '已发布' : ($manual ? '待手动' : '失败')) . '</span>';
+    $h .= '<b style="font-size:12px">' . htmlspecialchars($pname) . '</b>';
+    if (!$ok && !$manual && !empty($r['message'])) {
+        $h .= '<span class="text-muted" style="font-size:11px">' . htmlspecialchars(mb_substr($r['message'], 0, 50)) . '</span>';
+    }
+    if ($ok && !empty($r['url'])) {
+        $h .= '<a href="' . htmlspecialchars($r['url']) . '" target="_blank" rel="noopener" style="font-size:11.5px">查看原文 →</a>';
+    }
+    if ($manual) {
+        if (!empty($r['variant'])) {
+            $copy = ($r['variant']['title'] ?? '') . "\n\n" . ($r['variant']['excerpt'] ?? '') . "\n" . ($r['variant']['url'] ?? '');
+            $h .= '<button type="button" class="btn btn-ghost btn-sm pub-copy" data-copy="' . htmlspecialchars($copy, ENT_QUOTES) . '" style="font-size:11px;padding:2px 10px">📋 复制文案</button>';
+        }
+        if (!empty($r['publish_url'])) {
+            $h .= '<a href="' . htmlspecialchars($r['publish_url']) . '" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="font-size:11px;padding:2px 10px;color:var(--accent)">去发布 →</a>';
+        }
+    }
+    return $h . '</div>';
+}
+
 // 分发统计
 $publishStats = [];
 foreach ($log as $l) {
@@ -75,6 +102,19 @@ admin_header('内容分发');
     <p class="sub">一键发布文章到多平台 · 平台内容变体 · 定时分发 · 分发记录</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>
+
+    <!-- 发布结果明细（逐平台反馈 + 可点击链接） -->
+    <?php if (!empty($results)): ?>
+    <div class="card" style="margin-bottom:20px;border-left:3px solid var(--accent)">
+      <h2 style="margin-bottom:8px">📋 本次发布明细</h2>
+      <?php foreach ($results as $p => $r): ?>
+      <?=pub_result_cell($p, $r, $platforms)?>
+      <?php endforeach; ?>
+      <?php if (count(array_filter($results, fn($r) => !empty($r['manual'])))): ?>
+      <div class="msg msg-info" style="margin-top:10px;margin-bottom:0">带「待手动」的平台未开放 API：点「📋 复制文案」拿到按平台改写好的标题/摘要/链接，再点「去发布 →」跳到对应创作中心粘贴发布。</div>
+      <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
     <!-- 分发统计 -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;margin-bottom:20px">
@@ -181,7 +221,7 @@ admin_header('内容分发');
             </td>
             <td>
               <?php foreach ($l['results'] ?? [] as $p => $r): ?>
-              <span style="font-size:11px;margin-right:6px"><?=$platforms[$p]['name'] ?? $p?>: <?=$r['ok']?'✅':'❌'?></span>
+              <?=pub_result_cell($p, is_array($r) ? $r : ['ok' => false, 'message' => ''], $platforms)?>
               <?php endforeach; ?>
             </td>
           </tr>
@@ -192,4 +232,28 @@ admin_header('内容分发');
     <?php endif; ?>
   </div>
 </div>
+<script>
+/* 复制平台文案：剪贴板 + 按钮反馈 */
+document.addEventListener('click', function (e) {
+  var btn = e.target.closest('.pub-copy');
+  if (!btn) return;
+  var text = btn.dataset.copy || '';
+  function done() {
+    var old = btn.textContent;
+    btn.textContent = '✓ 已复制';
+    btn.style.color = 'var(--ok)';
+    setTimeout(function () { btn.textContent = old; btn.style.color = ''; }, 1800);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text, done); });
+  } else fallbackCopy(text, done);
+});
+function fallbackCopy(text, done) {
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) {}
+  ta.remove();
+}
+</script>
 <?php admin_footer(); ?>
