@@ -31,11 +31,12 @@ try {
 } catch (Exception $e) {}
 
 // 内容资产
-$artTotal = 0; $artPublished = 0;
+$artTotal = 0; $artPublished = 0; $aiDrafts = 0;
 try {
     $arts = json_read(ARTICLES_DIR . '/index.json');
     $artTotal = count($arts);
     $artPublished = count(array_filter($arts, fn($a) => ($a['status'] ?? '') === 'published'));
+    $aiDrafts = count(array_filter($arts, fn($a) => ($a['status'] ?? '') === 'draft' && in_array($a['source'] ?? '', ['product_scout', 'calendar_ai', 'creation_studio'], true)));
 } catch (Exception $e) {}
 
 // CDP 画像数
@@ -85,6 +86,17 @@ admin_header('工作台');
           <a href="payment-settings.php" class="btn btn-s btn-sm">② 支付 / 邮件</a>
           <a href="article-edit.php" class="btn btn-p btn-sm">③ 发第一篇内容</a>
         </div>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($aiDrafts > 0): ?>
+    <!-- AI 产出待审提醒：Loop/日历/创作台的草稿在等你拍板 -->
+    <div class="panel" style="margin-bottom:16px;border-color:oklch(0.72 0.15 85 / 0.5);background:linear-gradient(135deg,oklch(0.72 0.15 85 / 0.1),transparent 55%)">
+      <div class="p-body" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:18px">📬</span>
+        <div style="flex:1;min-width:200px;font-size:13.5px"><b><?=$aiDrafts?> 篇 AI 产出</b>在草稿箱等你审核——Loop 发现、日历补天、创作台的成果都在这。</div>
+        <a href="/xmp/product-scout" class="ai-chip">去审稿 →</a>
       </div>
     </div>
     <?php endif; ?>
