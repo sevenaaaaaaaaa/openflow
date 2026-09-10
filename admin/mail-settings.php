@@ -40,6 +40,36 @@ if (!defined('OF_EMBED')) admin_header('邮件设置');
     </div>
     <?php if ($message): ?><div class="msg msg-success" style="margin-bottom:16px"><?=htmlspecialchars($message)?></div><?php endif; ?>
 
+    <?php
+    // ── 发信域名 DNS 健康检查（SPF/A 记录，决定进箱率）──
+    $fromEmail = (string)($channels['smtp']['params']['from'] ?? '');
+    $fromDomain = str_contains($fromEmail, '@') ? substr(strrchr($fromEmail, '@'), 1) : '';
+    $dnsA = $fromDomain ? @dns_get_record($fromDomain, DNS_A) : [];
+    $dnsTxt = $fromDomain ? @dns_get_record($fromDomain, DNS_TXT) : [];
+    $hasA = !empty($dnsA);
+    $hasSpf = false;
+    foreach ($dnsTxt as $r) if (str_starts_with($r['txt'] ?? '', 'v=spf1')) $hasSpf = true;
+    $serverIp = '172.96.253.73';
+    ?>
+    <?php if ($fromDomain): ?>
+    <div class="card" style="padding:16px 20px;margin-bottom:16px;border-color:<?=($hasA && $hasSpf)?'oklch(from var(--ok) l c h / 0.4)':'oklch(0.72 0.15 85 / 0.5)'?>">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">📡 发信域名 DNS 健康（<?=htmlspecialchars($fromDomain)?>）</h3>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;margin-bottom:10px">
+        <span><?=$hasA?'✅':'❌'?> A 记录（<?=$hasA ? htmlspecialchars($dnsA[0]['ip'] ?? '') : '未解析'?>）</span>
+        <span><?=$hasSpf?'✅':'❌'?> SPF 记录<?=$hasSpf?'':'（未配置）'?></span>
+      </div>
+      <?php if (!$hasA || !$hasSpf): ?>
+      <div style="font-size:12px;color:var(--muted);line-height:1.8;background:var(--hover);border-radius:10px;padding:10px 14px">
+        <b style="color:var(--fg)">到 DNS 服务商（Cloudflare）添加这两条记录，邮件才不会进垃圾箱：</b><br>
+        ① <code>A &nbsp;<?=htmlspecialchars($fromDomain)?> → <?=$serverIp?></code>（如开 Cloudflare 代理须关闭，用「仅 DNS」）<br>
+        ② <code>TXT <?=htmlspecialchars($fromDomain)?> → v=spf1 ip4:<?=$serverIp?> ~all</code>
+      </div>
+      <?php else: ?>
+      <div style="font-size:12px;color:var(--ok)">DNS 配置完整，发信链路健康。</div>
+      <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
     <form method="post">
       <?= csrf_field() ?>
       <?php foreach ($defs as $key => $def): $ch = $channels[$key] ?? []; ?>

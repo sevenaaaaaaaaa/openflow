@@ -50,6 +50,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $__aiCta = !empty(json_read(DATA_DIR . '/settings.json')['personalize']['ai_cta']);
 $__aiReady = class_exists('AiCenter') && AiCenter::isConfigured();
 
+// ── 基础规则模板：一键创建（默认停用）──
+$DC_PRESETS = [
+    'guest_cta' => ['icon' => '👋', 'name' => '新访客引导', 'desc' => '非会员访客显示「注册引导」卡片（.dc-guest-cta）',
+        'rule' => ['name' => '新访客引导', 'target_type' => 'global',
+            'cond_param' => ['is_member'], 'cond_operator' => ['equals'], 'cond_value' => ['0'],
+            'action_type' => ['show_card'], 'action_selector' => ['.dc-guest-cta']]],
+    'member_hello' => ['icon' => '🎖️', 'name' => '会员专属问候', 'desc' => '登录会员显示会员专属卡片（.dc-member-hello）',
+        'rule' => ['name' => '会员专属问候', 'target_type' => 'global',
+            'cond_param' => ['is_member'], 'cond_operator' => ['equals'], 'cond_value' => ['1'],
+            'action_type' => ['show_card'], 'action_selector' => ['.dc-member-hello']]],
+    'vip_offer' => ['icon' => '💎', 'name' => 'VIP 专属优惠', 'desc' => 'VIP 会员显示专属优惠卡（.dc-vip-offer）',
+        'rule' => ['name' => 'VIP 专属优惠', 'target_type' => 'global',
+            'cond_param' => ['member_level'], 'cond_operator' => ['equals'], 'cond_value' => ['vip'],
+            'action_type' => ['show_card'], 'action_selector' => ['.dc-vip-offer']]],
+    'high_value' => ['icon' => '🏆', 'name' => '高消费客户关怀', 'desc' => '累计消费 ≥1000 的客户显示专属横幅（.dc-highvalue）',
+        'rule' => ['name' => '高消费客户关怀', 'target_type' => 'global',
+            'cond_param' => ['total_spent'], 'cond_operator' => ['matches'], 'cond_value' => ['^[1-9]\d{3,}(\.\d+)?$'],
+            'action_type' => ['show_card'], 'action_selector' => ['.dc-highvalue']]],
+    'utm_campaign' => ['icon' => '📣', 'name' => '活动来源横幅', 'desc' => '带 utm_campaign 的访问显示活动横幅（.dc-campaign-banner）',
+        'rule' => ['name' => '活动来源横幅', 'target_type' => 'global',
+            'cond_param' => ['utm_campaign'], 'cond_operator' => ['exists'], 'cond_value' => [''],
+            'action_type' => ['show_card'], 'action_selector' => ['.dc-campaign-banner']]],
+    'wechat_copy' => ['icon' => '💬', 'name' => '微信来源文案', 'desc' => '微信来源访客，把 .hero-title 的「欢迎」换成「微信朋友，欢迎」',
+        'rule' => ['name' => '微信来源文案', 'target_type' => 'page', 'target_page' => '/',
+            'cond_param' => ['utm_source'], 'cond_operator' => ['contains'], 'cond_value' => ['wechat'],
+            'action_type' => ['replace_text'], 'action_selector' => ['.hero-title'], 'action_find' => ['欢迎'], 'action_replace' => ['微信朋友，欢迎']]],
+];
+if (isset($_GET['preset']) && isset($DC_PRESETS[$_GET['preset']])) {
+    csrf_verify();
+    DynamicContent::create($DC_PRESETS[$_GET['preset']]['rule']); // create 默认停用
+    flash('success', '已从模板创建「' . $DC_PRESETS[$_GET['preset']]['name'] . '」（默认停用，确认选择器后启用）');
+    header('Location: /xmp/dynamic-content');
+    exit;
+}
+
 // 查看详情
 $viewId = $_GET['view'] ?? null;
 $viewRule = $viewId ? DynamicContent::get($viewId) : null;
@@ -105,6 +140,25 @@ admin_header('Dynamic Content 动态内容');
         <label style="font-size:13px;cursor:pointer"><input type="checkbox" name="ai_cta" <?=$__aiCta?'checked':''?> onchange="this.form.submit()"> 启用</label>
       </form>
     </div>
+
+    <?php if (!$viewRule): ?>
+    <!-- 基础规则模板 -->
+    <div class="card" style="padding:14px 16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <strong>🧩 基础规则模板</strong>
+        <span style="font-size:12px;color:var(--faint)">最常用的 6 条个性化规则，一键创建后默认停用，确认选择器匹配你的页面再启用</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px">
+        <?php foreach ($DC_PRESETS as $pid => $p): ?>
+        <div style="border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:var(--surface)">
+          <div style="font-size:13px;font-weight:700"><?=$p['icon']?> <?=htmlspecialchars($p['name'])?></div>
+          <div class="hint" style="font-size:11.5px;line-height:1.55;margin:5px 0 9px;min-height:34px"><?=htmlspecialchars($p['desc'])?></div>
+          <a href="?preset=<?=$pid?>&csrf_token=<?=csrf_token()?>" class="btn btn-ghost btn-sm">一键创建</a>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php endif; ?>
 
     <?php if ($viewRule): ?>
     <!-- ═══ 规则详情 + 数据分析 ═══ -->
