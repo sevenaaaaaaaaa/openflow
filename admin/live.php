@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_room'])) {
         'sell_course' => trim($_POST['sell_course'] ?? ''),   // 售卖课程（兼容旧字段）
         'products' => array_values(array_filter(array_map('trim', explode("\n", (string)($_POST['products'] ?? ''))))),  // 多商品卡：每行 "标题|链接|价格文案"
         'slow_mode' => max(0, min(60, (int)($_POST['slow_mode'] ?? 3))),   // 慢速模式：同一观众最少间隔秒数
-        'stream_mode' => in_array($_POST['stream_mode'] ?? '', ['landscape','vertical'], true) ? $_POST['stream_mode'] : 'landscape',  // 竖屏直播流（9:16）
+        'stream_mode' => in_array($_POST['stream_mode'] ?? '', ['landscape','vertical','immersive'], true) ? $_POST['stream_mode'] : 'landscape',  // 画面形态
         'push' => $isNew ? null : (live_room($id)['push'] ?? null),        // 推品状态不随编辑丢失
         'stream_key' => $isNew ? live_gen_key() : (live_room($id)['stream_key'] ?? live_gen_key()),
         'is_live' => isset($_POST['is_live']),
@@ -236,10 +236,11 @@ admin_header('直播管理');
           <div class="field"><label>慢速模式 <span class="hint">· 发言最少间隔秒数（0=不限）</span></label>
             <input type="number" name="slow_mode" value="<?=htmlspecialchars((string)($r['slow_mode'] ?? 3))?>" min="0" max="60">
           </div>
-          <div class="field"><label>画面比例 <span class="hint">· 竖屏=手机直拍 9:16</span></label>
+          <div class="field"><label>画面形态 <span class="hint">· 沉浸=抖音式全屏</span></label>
             <select name="stream_mode">
               <option value="landscape" <?=($r['stream_mode'] ?? 'landscape')==='landscape'?'selected':''?>>横屏 16:9（默认）</option>
-              <option value="vertical" <?=($r['stream_mode'] ?? '')==='vertical'?'selected':''?>>竖屏 9:16（手机直拍）</option>
+              <option value="vertical" <?=($r['stream_mode'] ?? '')==='vertical'?'selected':''?>>竖屏 9:16（贴顶布局）</option>
+              <option value="immersive" <?=($r['stream_mode'] ?? '')==='immersive'?'selected':''?>>全屏沉浸 9:16（抖音式）</option>
             </select>
           </div>
         </div>
