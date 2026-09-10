@@ -6,12 +6,23 @@
 
 function cp_items(): array {
     $items = [];
-    $add = function (string $perm, string $label, string $url, string $icon = '📄', string $section = '通用', string $keywords = '') use (&$items) {
+    $add = function (string $perm, string $label, string $url, string $icon = '📄', string $section = '通用', string $keywords = '', string $action = '') use (&$items) {
         if (has_perm($perm)) $items[] = [
             'label' => $label, 'url' => $url, 'icon' => $icon,
             'section' => $section, 'keywords' => $keywords . ' ' . $label,
+            'action' => $action,
         ];
     };
+
+    // ── 快捷动作（命令栏 2.0：直接执行，不只是跳转）──
+    $sec = '⚡ 快捷动作';
+    $add('articles', '生成 PPT 幻灯片', '/xmp/create?tab=slides', '📊', $sec, 'ppt 幻灯片 演示 slides deck 做ppt');
+    $add('articles', '写深度专栏（AI 大纲→成文）', '/xmp/create?tab=column', '✍️', $sec, '专栏 深度 文章 大纲 写作');
+    $add('articles', '写口播视频脚本', '/xmp/create?tab=script', '🎬', $sec, '脚本 视频 口播 短视频 script');
+    $add('live', '开播 / 直播间管理', '/xmp/live', '📡', $sec, '开播 直播 live obs');
+    $add('', '切换深色 / 浅色主题', '', '🌓', $sec, '主题 深色 浅色 暗黑 dark theme', 'theme');
+    $add('', '复制本站网址', '', '🔗', $sec, '复制 网址 url 链接 site', 'copy-site');
+    $add('settings', '清理 Cloudflare 缓存', '', '☁️', $sec, '缓存 清理 cdn cloudflare purge', 'purge-cache');
 
     // ── CMS 内容 ──
     $sec = 'CMS 内容';
