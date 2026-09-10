@@ -7,7 +7,7 @@
 function cp_items(): array {
     $items = [];
     $add = function (string $perm, string $label, string $url, string $icon = '📄', string $section = '通用', string $keywords = '', string $action = '') use (&$items) {
-        if (has_perm($perm)) $items[] = [
+        if ($perm === '' || has_perm($perm)) $items[] = [
             'label' => $label, 'url' => $url, 'icon' => $icon,
             'section' => $section, 'keywords' => $keywords . ' ' . $label,
             'action' => $action,
