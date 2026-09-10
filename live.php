@@ -97,8 +97,8 @@ foreach ((array)($room['products'] ?? []) as $line) {
 <?php if ($streamMode === 'immersive'): ?>
   <!-- ═══ 沉浸式直播间（抖音式全屏 9:16）：视频铺满，弹幕/操作浮于画面 ═══ -->
   <div class="imm-frame">
-    <div class="player player-v"><?=$playerHtml?></div>
-    <div class="imm-top">
+    <div class="player player-v live-enter"><?=$playerHtml?></div>
+    <div class="imm-top live-enter live-enter-1">
       <a href="/live" class="imm-back" aria-label="返回直播列表">←</a>
       <b><?=htmlspecialchars($room['title'])?></b>
       <?php if ($st === 'live'): ?><span class="badge live"><span class="live-dot"></span>直播中</span><?php else: ?><span class="pill neutral"><?=live_status_label($st)?></span><?php endif; ?>
@@ -113,8 +113,8 @@ foreach ((array)($room['products'] ?? []) as $line) {
       </div>
     </div>
     <?php endif; ?>
-    <div class="imm-chat"><div class="chat-box" id="chatBox"></div></div>
-    <div class="imm-rail">
+    <div class="imm-chat live-enter live-enter-2"><div class="chat-box" id="chatBox"></div></div>
+    <div class="imm-rail live-enter live-enter-3">
       <button class="act-btn" id="likeBtn" aria-label="点赞">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
         <span class="like-n" id="likeN"><?=live_likes($room['id'])?></span>
@@ -152,7 +152,7 @@ foreach ((array)($room['products'] ?? []) as $line) {
       <div>
         <div class="sp-win">
           <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">live · <?=htmlspecialchars($room['id'])?></div></div>
-          <div class="player<?=$streamMode === 'vertical' ? ' player-v' : ''?>"><?=$playerHtml?></div>
+          <div class="player live-enter<?=$streamMode === 'vertical' ? ' player-v' : ''?>"><?=$playerHtml?></div>
         </div>
 
         <div class="room-head">
@@ -339,23 +339,42 @@ foreach ((array)($room['products'] ?? []) as $line) {
   document.addEventListener('visibilitychange', function(){ document.hidden ? stopPoll() : (loadChat(), startPoll()); });
   startPoll();
 
-  /* 点赞：飘心动画 + 计数（每会话 60 次/分钟限速；低端机限量并发） */
+  /* 点赞：飘心动画 + 连击徽标 + 计数（每会话 60 次/分钟限速；低端机限量并发） */
   var HEARTS = ['❤️','🧡','💛','💜','💙','💖'];
   var heartsAlive = 0, HEART_CAP = LOW_POWER ? 4 : 12;
   var likeBtn = document.getElementById('likeBtn');
-  if (likeBtn) likeBtn.addEventListener('click', function() {
-    if (heartsAlive < HEART_CAP && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      heartsAlive++;
-      var h = document.createElement('div');
-      h.className = 'fly-heart';
-      h.textContent = HEARTS[Math.floor(Math.random()*HEARTS.length)];
-      var rect = likeBtn.getBoundingClientRect();
-      h.style.left = (rect.left + rect.width/2 - 11) + 'px';
-      h.style.top = (rect.top - 8) + 'px';
-      h.style.setProperty('--hx', (Math.random()*80-40) + 'px');
-      document.body.appendChild(h);
-      setTimeout(function(){ h.remove(); heartsAlive--; }, 1500);
+  var likeCombo = 0, likeComboTimer = 0, comboEl = null;
+  function spawnHeart(x, y) {
+    if (heartsAlive >= HEART_CAP || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    heartsAlive++;
+    var h = document.createElement('div');
+    h.className = 'fly-heart';
+    h.textContent = HEARTS[Math.floor(Math.random()*HEARTS.length)];
+    h.style.left = x + 'px';
+    h.style.top = y + 'px';
+    h.style.setProperty('--hx', (Math.random()*80-40) + 'px');
+    document.body.appendChild(h);
+    setTimeout(function(){ h.remove(); heartsAlive--; }, 1500);
+  }
+  function bumpCombo() {
+    likeCombo++;
+    clearTimeout(likeComboTimer);
+    likeComboTimer = setTimeout(function(){ likeCombo = 0; if (comboEl) { comboEl.remove(); comboEl = null; } }, 1400);
+    if (likeCombo >= 3 && likeBtn) {
+      if (!comboEl) { comboEl = document.createElement('span'); comboEl.className = 'like-combo'; likeBtn.appendChild(comboEl); }
+      comboEl.textContent = '🔥 连击 ×' + likeCombo;
+      comboEl.style.animation = 'none'; comboEl.offsetHeight; comboEl.style.animation = '';
     }
+  }
+  if (likeBtn) likeBtn.addEventListener('click', function() {
+    var rect = likeBtn.getBoundingClientRect();
+    var burst = likeCombo >= 5 && !LOW_POWER ? 3 : 1; // 连击 ≥5 一次飘 3 颗
+    for (var bi = 0; bi < burst; bi++) {
+      spawnHeart(rect.left + rect.width/2 - 11 + (Math.random()*24-12), rect.top - 8 - bi*6);
+    }
+    likeBtn.classList.add('like-tap');
+    setTimeout(function(){ likeBtn.classList.remove('like-tap'); }, 130);
+    bumpCombo();
     var body = new FormData(); body.append('room_id', ROOM_ID);
     fetch('/api/live?action=like', {method:'POST', body:body}).then(function(r){return r.json()}).then(function(d){
       if (d.count !== undefined) { var n = document.getElementById('likeN'); n.textContent = d.count > 999 ? (d.count/1000).toFixed(1)+'k' : d.count; }

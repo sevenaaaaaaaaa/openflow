@@ -119,6 +119,27 @@ body.live-immersive.shop-open .player{position:absolute;right:auto;bottom:auto;w
 .fly-heart{position:fixed;z-index:70;pointer-events:none;font-size:22px;animation:heartFly 1.4s ease-out forwards;will-change:transform,opacity}
 @keyframes heartFly{0%{opacity:1;transform:translateY(0) scale(.6)}70%{opacity:1}100%{opacity:0;transform:translateY(-140px) translateX(var(--hx,20px)) scale(1.3)}}
 
+/* ── 点赞连击：按钮按压回弹 + 连击徽标 ── */
+.act-btn{transition:transform .12s ease}
+.act-btn.like-tap{transform:scale(1.25)}
+.like-combo{position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,oklch(0.6 0.24 15),oklch(0.55 0.22 330));color:oklch(1 0 0);font-size:11px;font-weight:800;border-radius:999px;padding:2px 9px;white-space:nowrap;animation:comboPop .25s cubic-bezier(.22,1.4,.36,1);pointer-events:none;box-shadow:0 3px 12px oklch(0.6 0.22 15 / .4)}
+@keyframes comboPop{0%{transform:translateX(-50%) scale(.4)}100%{transform:translateX(-50%) scale(1)}}
+#likeBtn{position:relative}
+
+/* ── 聊天消息滑入 ── */
+.chat-msg{animation:chatIn .28s cubic-bezier(.22,.9,.3,1)}
+@keyframes chatIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── 直播间进场：元素错峰淡入 ── */
+.live-enter{animation:liveEnter .5s cubic-bezier(.22,.9,.3,1) backwards}
+.live-enter-1{animation-delay:.05s}.live-enter-2{animation-delay:.12s}.live-enter-3{animation-delay:.19s}
+@keyframes liveEnter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){
+  .chat-msg,.live-enter{animation:none}
+  .act-btn.like-tap{transform:none}
+  .like-combo{animation:none}
+}
+
 /* ── 性能分级降级（低端机自动加 body.low-power）── */
 .low-power .live-actions{backdrop-filter:none}
 .low-power .shop-modal{backdrop-filter:none}

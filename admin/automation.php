@@ -78,6 +78,61 @@ if (isset($_GET['toggle'])) {
     exit;
 }
 
+// ── 常用预设模板：一键创建（默认停用，进编辑器确认后再启用）──
+$FLOW_PRESETS = [
+    'welcome_lead' => ['icon' => '👋', 'name' => '新线索欢迎序列', 'desc' => '表单提交 → 立即欢迎邮件 → 打标签加分 → 2 天后跟进干货',
+        'flow' => ['name' => '新线索欢迎序列', 'trigger' => 'form_submit', 'steps' => [
+            ['action' => 'send_email', 'subject' => '欢迎！你的资料已备好', 'content' => "你好 {name}，\n\n感谢提交。我是 OpenFlow 主理人，这封邮件确认已收到你的信息。\n\n先看这三篇最受欢迎的内容：\n1. [入门指南]\n2. [案例拆解]\n3. [工具清单]\n\n有任何问题直接回复本邮件。"],
+            ['action' => 'add_tag', 'tag' => '新线索'],
+            ['action' => 'award_points', 'points' => 10],
+            ['action' => 'delay', 'delay_minutes' => 2880],
+            ['action' => 'send_email', 'subject' => '一个很多人踩过的坑', 'content' => "你好 {name}，\n\n两天过去了，分享一个我们观察到的最常见误区……\n\n（在这里写你的洞察，结尾放一个问题引导回复）"],
+        ]]],
+    'member_welcome' => ['icon' => '🎉', 'name' => '新会员欢迎', 'desc' => '注册会员 → 欢迎站内信+邮件 → 打标签 → 引导完善资料',
+        'flow' => ['name' => '新会员欢迎', 'trigger' => 'member_register', 'steps' => [
+            ['action' => 'send_email', 'subject' => '欢迎加入！先完成这三件事', 'content' => "欢迎加入 {name}！\n\n① 完善资料，让推荐更准\n② 逛逛学院，挑一门入门课\n③ 加入社区，介绍你自己\n\n开始探索吧。"],
+            ['action' => 'inbox', 'title' => '欢迎加入 🎉', 'content' => '先完善资料，再去学院挑一门入门课。', 'link' => '/account'],
+            ['action' => 'add_tag', 'tag' => '新会员'],
+        ]]],
+    'after_purchase' => ['icon' => '💝', 'name' => '购买后关怀', 'desc' => '支付成功 → 交付确认邮件 → 打标「已购」→ 7 天后回访要评价',
+        'flow' => ['name' => '购买后关怀', 'trigger' => 'purchase', 'steps' => [
+            ['action' => 'send_email', 'subject' => '订单确认与交付说明', 'content' => "感谢购买 {name}！\n\n你的订单已确认。交付内容请到这里查看：会员中心 → 我的订单。\n\n使用中遇到任何问题，直接回复本邮件。"],
+            ['action' => 'add_tag', 'tag' => '已购客户'],
+            ['action' => 'delay', 'delay_minutes' => 10080],
+            ['action' => 'send_email', 'subject' => '用了一周，感觉如何？', 'content' => "你好 {name}，\n\n一周了，东西用得上吗？\n\n如果方便，回复一句你的使用感受——好评或吐槽都欢迎，我们都会认真读。"],
+        ]]],
+    'course_graduate' => ['icon' => '🎓', 'name' => '课程结业进阶', 'desc' => '学完课程 → 祝贺邮件+进阶推荐 → 打标「结业学员」',
+        'flow' => ['name' => '课程结业进阶', 'trigger' => 'course_complete', 'steps' => [
+            ['action' => 'send_email', 'subject' => '恭喜结业！下一步学什么', 'content' => "恭喜 {name} 完成课程！\n\n结业不是终点。推荐你接着看：\n→ [进阶课程]\n→ [实战案例库]\n\n保持节奏。"],
+            ['action' => 'add_tag', 'tag' => '结业学员'],
+            ['action' => 'award_points', 'points' => 50],
+        ]]],
+    'nps_save' => ['icon' => '🚨', 'name' => 'NPS 贬损挽回', 'desc' => 'NPS ≤6 分 → 立即通知你 → 自动发安抚邮件',
+        'flow' => ['name' => 'NPS 贬损挽回', 'trigger' => 'nps_submit', 'nps_threshold' => 6, 'steps' => [
+            ['action' => 'notify', 'title' => 'NPS 低分预警', 'content' => '有用户打出贬损分，请尽快人工跟进。', 'link' => '/xmp/crm'],
+            ['action' => 'send_email', 'subject' => '抱歉让你失望了', 'content' => "你好 {name}，\n\n看到你的反馈，很抱歉体验没达到预期。\n\n我是主理人，想亲自了解一下哪里出了问题——直接回复这封邮件即可，我会认真看并跟进。"],
+        ]]],
+    'download_nurture' => ['icon' => '📥', 'name' => '资料下载培育', 'desc' => '下载资料 → 打标签 → 2 天后推送相关内容 → 加分',
+        'flow' => ['name' => '资料下载培育', 'trigger' => 'download', 'steps' => [
+            ['action' => 'add_tag', 'tag' => '资料下载'],
+            ['action' => 'delay', 'delay_minutes' => 2880],
+            ['action' => 'send_email', 'subject' => '那份资料，配上这篇一起看', 'content' => "你好 {name}，\n\n前几天你下载了我们的资料。这篇深度文章是它的最佳搭档：\n\n→ [相关文章链接]\n\n希望对你有帮助。"],
+            ['action' => 'award_points', 'points' => 5],
+        ]]],
+];
+if (isset($_GET['preset']) && isset($FLOW_PRESETS[$_GET['preset']])) {
+    csrf_verify();
+    $p = $FLOW_PRESETS[$_GET['preset']]['flow'];
+    $p['id'] = 'flow_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6);
+    $p['enabled'] = false;
+    $p['created_at'] = $p['updated_at'] = date('Y-m-d H:i:s');
+    $flows[] = $p;
+    automation_save($flows);
+    flash('success', '已从模板创建「' . $p['name'] . '」，默认停用——确认内容后手动启用');
+    header('Location: /xmp/automation?edit=' . urlencode($p['id']));
+    exit;
+}
+
 $edit = null;
 if (isset($_GET['edit'])) {
     if ($_GET['edit'] === 'new') {
@@ -222,6 +277,24 @@ admin_header('营销自动化');
     </form>
 
     <?php else: ?>
+    <!-- 常用预设模板 -->
+    <div class="card" style="margin-bottom:16px">
+      <h2 style="margin-bottom:4px">⚡ 常用模板</h2>
+      <p class="hint" style="margin-bottom:14px">覆盖 80% 营销场景的成熟流程，一键创建后按你的文案微调即可。创建后默认停用，确认无误再启用。</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+        <?php foreach ($FLOW_PRESETS as $pid => $p): ?>
+        <div style="border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:var(--surface);transition:all .18s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:14px;font-weight:700;margin-bottom:5px"><?=$p['icon']?> <?=htmlspecialchars($p['name'])?></div>
+          <div class="hint" style="font-size:12px;line-height:1.6;min-height:38px"><?=htmlspecialchars($p['desc'])?></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+            <span class="hint" style="font-size:11px"><?=count($p['flow']['steps'])?> 步</span>
+            <a href="?preset=<?=$pid?>&csrf_token=<?=csrf_token()?>" class="btn btn-primary btn-sm" style="margin-left:auto" data-confirm="从模板创建「<?=htmlspecialchars($p['name'])?>」？">一键创建 →</a>
+          </div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+
     <div class="card" style="padding:0;overflow:auto">
       <table>
         <thead><tr><th>流程</th><th>触发器</th><th>步骤</th><th>状态</th><th class="actions">操作</th></tr></thead>
