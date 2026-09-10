@@ -34,7 +34,7 @@ const ADMIN_NAV_ALIAS = [
     'notion-sync' => 'data-sync', 'languages' => 'settings', 'storage' => 'health-check', 'activity' => 'audit-log', 'footer-links' => 'site-builder',
     'mail-settings' => 'email', 'connections' => 'settings', 'payment-settings' => 'shop-settings', 'seo' => 'seo-center', 'seo-tools' => 'seo-center', 'seo-batch' => 'seo-center',
     'seo-console' => 'seo-center', 'redirects' => 'seo-center', 'structured-data' => 'seo-center', 'structured' => 'seo-center', 'landing' => 'landing-pages',
-    'image-seo' => 'seo-center', 'index' => 'deck',
+    'image-seo' => 'seo-center', 'index' => 'deck', 'plugin-page' => 'plugins',
 ];
 
 function admin_nav_icons(): array {

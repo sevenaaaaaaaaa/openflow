@@ -79,6 +79,22 @@ admin_header('OpenFlow Studio');
       <div style="font-size:22px">🧠</div><div style="font-weight:800;margin-top:8px">决策轨道</div>
       <div class="text-sm text-muted" style="margin-top:4px">Agent 决策可解释 · 理由/证据/结果</div>
       <div class="text-sm" style="color:var(--accent);margin-top:8px">打开 →</div></a>
+    <a class="card" style="padding:18px;text-decoration:none;color:inherit" href="/xmp/brain">
+      <div style="font-size:22px">🧬</div><div style="font-weight:800;margin-top:8px">增长大脑</div>
+      <div class="text-sm text-muted" style="margin-top:4px">NBA 提议器 · 目标加权 · 一键采纳</div>
+      <div class="text-sm" style="color:var(--accent);margin-top:8px">打开 →</div></a>
+    <a class="card" style="padding:18px;text-decoration:none;color:inherit" href="/xmp/ai-config">
+      <div style="font-size:22px">🤖</div><div style="font-weight:800;margin-top:8px">AI 配置</div>
+      <div class="text-sm text-muted" style="margin-top:4px">模型供应商 · 额度闸门 · 分档超时</div>
+      <div class="text-sm" style="color:var(--accent);margin-top:8px">打开 →</div></a>
+    <a class="card" style="padding:18px;text-decoration:none;color:inherit" href="/xmp/ai-usage">
+      <div style="font-size:22px">📊</div><div style="font-weight:800;margin-top:8px">AI 用量</div>
+      <div class="text-sm text-muted" style="margin-top:4px">用量记账 · 成本电表 · 调用明细</div>
+      <div class="text-sm" style="color:var(--accent);margin-top:8px">打开 →</div></a>
+    <a class="card" style="padding:18px;text-decoration:none;color:inherit" href="/xmp/knowledge">
+      <div style="font-size:22px">📚</div><div style="font-weight:800;margin-top:8px">知识库</div>
+      <div class="text-sm text-muted" style="margin-top:4px">内部知识回流 · 文章→站内知识</div>
+      <div class="text-sm" style="color:var(--accent);margin-top:8px">打开 →</div></a>
   </div>
 
   <!-- 画布流程列表 -->
