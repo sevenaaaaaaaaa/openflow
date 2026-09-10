@@ -19,13 +19,56 @@ $I = [
   'box'    => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 8v8l9 5 9-5V8"/></svg>',
   'doc'    => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l4 4v14H7V3Z"/><path d="M17 3v4h4"/></svg>',
 ];
+/* 每项能力：图标 / 名称 / 一句话主张 / 6 个真实模块（名称+一句说明）/ 后台截图 / 图注 / 前台体验链接 */
 $CAPS = [
-  ['bolt','触达 Touch','内容引擎 + 直播带货 + 分发渠道。正确的时间、渠道、内容，把信息递到用户面前。',[['内容引擎','文章/课程/直播/幻灯片一站式生产'],['直播带货','沉浸竖屏直播间，弹幕/点赞/推品/购买闭环'],['分发渠道','多平台自动分发 + YouTube 同步直播']],'content-hub','内容中心 · 真实后台界面'],
-  ['users','洞察 Insight','数据、CDP、舆情、分析。从几百个指标捞出该看的那 3-5 个，把数据变成判断。',[['CDP 画像','统一身份与行为追踪'],['舆情爬取','行业信号自动抓取'],['数据分析','从洞察走到策略']],'audience','CDP 用户画像 · 真实后台界面'],
-  ['refresh','个性化 Personality','画像、分群、自动化。给对的人，在对的时刻，说对的话。',[['用户分群','行为驱动动态标签'],['营销自动化','行为触发工作流'],['动态内容','千人千面触达']],'automation','营销自动化 · 真实后台界面'],
-  ['check','销售 Sales','CRM、转化、商城、订阅。从触达到成交，让支付能力流向你。',[['CRM 管道','线索评分与跟进'],['转化组件','落地页/表单/CTA'],['商城订阅','付费闭环与分销']],'crm','CRM 管道 · 真实后台界面'],
-  ['box','自生长 AI Engine','按你设的周期自动推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动转化。周期用 cron 自己定，装完即用。',[['主动爬取','舆情热点自动收集'],['AI 撰写','生成草稿待人工审核'],['主动转化','从 Marketing 到 Sales']],'studio','编排画布 · 真实后台界面'],
-  ['doc','永久开源','核心能力永久开源，Tools 和 Strategy 双向迭代，鱼与渔相结合。',[['Tools 开源','工具即渔具'],['Strategy 同步','最前沿增长策略'],['自托管','数据完全可控']],'github','GitHub 仓库 · 代码即证据'],
+  ['bolt','触达 Touch','内容引擎 + 直播带货 + 分发渠道。正确的时间、渠道、内容，把信息递到用户面前。',[
+    ['内容引擎','文章 / 课程 / 资料 / 播客，一站式生产与管理'],
+    ['创作台','深度专栏、口播脚本、品牌幻灯片，AI 结构化产出直达草稿'],
+    ['直播带货','横屏 / 竖屏 9:16 / 沉浸全屏直播间，弹幕、推品、下单闭环'],
+    ['SEO / GEO','四大搜索引擎接入，RSS + 搜索 API 双通道采集全网话题'],
+    ['多语言站群','一篇内容同步多语言版本，搜索可见性按语言独立优化'],
+    ['Newsletter 分发','选文章自动排版 → 可视化编辑 → 定时发送到订阅者'],
+  ],'content-hub','内容中心 · 真实后台界面','/academy','去学院看看内容形态 →'],
+  ['users','洞察 Insight','数据、CDP、舆情、分析。从几百个指标捞出该看的那 3-5 个，把数据变成判断。',[
+    ['CDP 画像','匿名访客与会员身份合并，一人一册行为时间线'],
+    ['分群与 RFM','行为驱动动态标签，生命周期自动流转'],
+    ['转化漏斗','访客→注册→加购→支付→复购，五阶段转化率可视化'],
+    ['驾驶舱','KPI 带月目标与 delta，异常由 AI 兜底解读'],
+    ['问数据 AskData','用自然语言直接问经营数据，不用学报表'],
+    ['归因与 A/B','路径归因 + 实验评估，知道钱和人从哪来'],
+  ],'audience','CDP 用户画像 · 真实后台界面','/product#demo','看数据怎么驱动决策 →'],
+  ['refresh','个性化 Personality','画像、分群、自动化。给对的人，在对的时刻，说对的话。',[
+    ['营销画布','SVG 贝塞尔真流程图：拖拽、A/B 分流、灰度、延时续流'],
+    ['动态内容','区块级定向，同一页面对不同人呈现不同内容'],
+    ['频控与审批','触达强度有闸门，高风险动作必须人工批准'],
+    ['增长规则引擎','WHEN × WHAT × HOW 框架，绑定真实数据给出可执行建议'],
+    ['Campaign 编排','跨渠道活动统一编排、统一复盘'],
+    ['人群激活','沉默唤醒、加购未付召回，自动化里带温度'],
+  ],'automation','营销自动化 · 真实后台界面','/product','看画布怎么跑 →'],
+  ['check','销售 Sales','CRM、转化、商城、订阅。从触达到成交，让支付能力流向你。',[
+    ['CRM 管道','线索评分、360° 详情、跟进任务与成交回流'],
+    ['统一收件箱','多渠道会话汇聚一处，销售话术 AI 辅助'],
+    ['商城与支付','购物车、优惠码、虎皮椒支付，下单即交付'],
+    ['订阅计费','自动续费、到期提醒、会员付费墙与升级引导'],
+    ['课程交付','报名 → 学习 → 结业，知识付费全链路'],
+    ['推荐分销','推荐码归因、佣金结算、提现，老客带新客'],
+  ],'crm','CRM 管道 · 真实后台界面','/courses','看课程商品形态 →'],
+  ['box','自生长 AI Engine','按你设的周期自动推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动转化。周期用 cron 自己定，装完即用。',[
+    ['产品发现 Loop','每天自动发现 GitHub 新产品，AI 成稿进入审核队列'],
+    ['GEO 话题采集','行业信号自动抓取，AI 结构化提炼选题'],
+    ['用户研究中心','JTBD / 用户旅程图 / VoC 等 6 大研究框架'],
+    ['决策轨道','每条建议可溯源、可采纳、可复盘，不黑箱'],
+    ['Demo 陪跑沙盘','与生产数据硬隔离的完整增长场景，可一键装载重置'],
+    ['多模型治理','统一入口、调用计量、预算限制、超时降级'],
+  ],'studio','编排画布 · 真实后台界面','/product#demo','看增长闭环演示 →'],
+  ['doc','永久开源','核心能力永久开源，Tools 和 Strategy 双向迭代，鱼与渔相结合。',[
+    ['MIT 开源','核心能力全部公开，代码即证据'],
+    ['插件平台 v2','钩子 / API 路由 / 后台菜单页面 / 前端插槽 / 定时任务'],
+    ['MCP Server','30+ 工具，外部 Agent 在权限与审计约束下调用'],
+    ['Skills 生态','prompt / tool / workflow 三类能力包，可分享可安装'],
+    ['连接器','飞书 / 企微 / Notion / Search Console 等开箱即用'],
+    ['数据自主','JSON + SQLite 起步零依赖，可平滑演进 MySQL'],
+  ],'github','GitHub 仓库 · 代码即证据','https://github.com/sevenaaaaaaaaa/openflow','去 GitHub 验证 →'],
 ];
 $CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮件','Ghost','虎皮椒支付','Search Console','Webhook','OpenAPI','MCP']; // 与 product.php 同一份，全部在代码里核过
 $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>';
@@ -37,7 +80,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <?php if (function_exists('seo_head')): seo_head(['title' => '产品能力 | OpenFlow', 'canonical' => site_config_get('site_url') . '/capability']); endif; ?>
 <title>能力 · TIPS 四力 | 芭乐派 · OpenFlow</title>
-<meta name="description" content="Open Flow 六大核心能力：可视化编排、AI 步骤、开放连接器、可观测与告警、企业级安全、多环境部署。">
+<meta name="description" content="OpenFlow 六大能力域：内容触达、数据洞察、个性化运营、销售增强、自生长 AI Engine 与永久开源生态，36 个真实模块全部可在代码与后台中核验。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
@@ -52,6 +95,22 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 .tab-panel .tp-vis .sp-win{overflow:hidden}
 .tab-panel .tp-vis img{width:100%;height:auto;display:block;aspect-ratio:1520/950;object-fit:cover;object-position:top}
 .tab-panel .tp-vis figcaption{padding:10px 4px 0;font-size:12.5px;color:var(--faint);font-family:var(--font-mono)}
+/* 6 模块时 tp-steps 双列网格，避免面板过高 */
+.tp-steps.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 34px;align-content:center}
+.tp-steps.grid .tp-step{padding:14px 0}
+.tp-steps.grid .tp-step:nth-last-child(2){border-bottom:none}
+.tp-link{grid-column:1/-1;justify-self:start;margin-top:10px}
+@media (max-width:900px){.tp-steps.grid{grid-template-columns:1fr}.tp-steps.grid .tp-step:nth-last-child(2){border-bottom:1px solid var(--border-soft)}}
+/* 能力索引 */
+.capidx{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}
+.capidx .ci{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 22px}
+.capidx .ci h3{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.capidx .ci h3 .ic{width:26px;height:26px}
+.capidx .ci .ci-n{font-family:var(--font-mono);font-size:11.5px;color:var(--faint);margin-bottom:10px}
+.capidx .ci ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.capidx .ci li{font-size:12.5px;padding:4px 10px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border-soft);color:var(--muted)}
+@media (max-width:1000px){.capidx{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.capidx{grid-template-columns:1fr}}
 /* 首屏证据数字条 */
 .proof-strip{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 26px;margin-top:22px;font-family:var(--font-mono);font-size:12.5px;color:var(--faint)}
 .proof-strip b{color:var(--accent-strong);font-size:15px;font-weight:800;margin-right:5px}
@@ -100,14 +159,35 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
           <h3><?=htmlspecialchars($c[2])?></h3>
           <div class="tags"><?php foreach ($c[3] as $p): ?><span><?=htmlspecialchars($p[0])?></span><?php endforeach; ?></div>
         </div>
-        <div class="tp-steps">
+        <div class="tp-steps grid">
           <?php foreach ($c[3] as $j => $p): ?>
-          <div class="tp-step"><span class="tp-n">0<?=$j+1?></span><div><b><?=htmlspecialchars($p[0])?></b><span><?=htmlspecialchars($p[1])?></span></div></div>
+          <div class="tp-step"><span class="tp-n"><?=$j+1<10?'0'.($j+1):$j+1?></span><div><b><?=htmlspecialchars($p[0])?></b><span><?=htmlspecialchars($p[1])?></span></div></div>
           <?php endforeach; ?>
         </div>
+        <?php if (!empty($c[6])): $__ext = strpos($c[6], 'http') === 0; ?>
+        <a class="btn subtle tp-link" href="<?=htmlspecialchars($c[6])?>" <?=$__ext?'target="_blank" rel="noopener"':''?>><?=htmlspecialchars($c[7] ?? '去看看 →')?></a>
+        <?php endif; ?>
         <?php if (!empty($c[4])): ?>
         <figure class="tp-vis"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url"><?=htmlspecialchars($c[4])?></div></div><img src="/assets/images/product/<?=htmlspecialchars($c[4])?>.png" alt="<?=htmlspecialchars($c[5] ?? $c[1])?>" loading="lazy"></div><figcaption><?=htmlspecialchars($c[5] ?? '')?> · 截自正在运行的 OpenFlow，不是设计稿</figcaption></figure>
         <?php endif; ?>
+      </div>
+      <?php endforeach; ?>
+    </div>
+  </section>
+
+  <!-- ══ 能力索引（全部模块一屏扫完） ══ -->
+  <section id="index" class="sec reveal" data-od-anchor data-od-id="capability-index">
+    <div class="sec-head center">
+      <span class="kicker">能力索引</span>
+      <h2>36 个模块，全部真实存在</h2>
+      <p class="lead">不写「规划中」、不写「敬请期待」。下面每一个名词，都能在后台界面或 GitHub 代码里找到对应实现。</p>
+    </div>
+    <div class="capidx">
+      <?php foreach ($CAPS as $c): ?>
+      <div class="ci">
+        <h3><span class="ic"><?=$I[$c[0]]?></span><?=htmlspecialchars($c[1])?></h3>
+        <div class="ci-n"><?=count($c[3])?> 个模块</div>
+        <ul><?php foreach ($c[3] as $p): ?><li><?=htmlspecialchars($p[0])?></li><?php endforeach; ?></ul>
       </div>
       <?php endforeach; ?>
     </div>
