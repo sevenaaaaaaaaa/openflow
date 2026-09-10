@@ -7,7 +7,8 @@
 
 | ID | 名字 | 风格 | 语气 |
 |---|---|---|---|
-| `mao`（默认） | 玛奥 | 成熟御姐 · 魔女 | 干练自信（"有事直说"） |
+| `rice`（默认） | 璃丝 | 成熟御姐 · 黑裙 | 从容撩人（"回来了？我刚好泡了咖啡"） |
+| `mao` | 玛奥 | 猫娘 · 少女 | 慵懒俏皮（"喵～来干活啦"） |
 | `ren` | 莲 | 中性青年 | 冷静简洁 |
 | `natori` | 名取 | 西装男性 | 商务专业 |
 | `mark` | 马克 | 休闲男性 | 随和直爽 |
@@ -54,6 +55,6 @@
 ## 文件清单
 
 - `assets/admin-waifu.js` — 衣橱注册表 + 换装逻辑 + 性格化气泡
-- `assets/vendor/live2d/model/{hiyori,mao,mark,natori,ren}/` — 模型文件
+- `assets/vendor/live2d/model/{hiyori,mao,mark,natori,ren,rice}/` — 模型文件
 - `admin/config.php` — `.of-waifu-menu` 菜单样式 + `OF_WAIFU_CONFIG` 默认值注入
 - `admin/settings.php` — 全站默认形象设置项
