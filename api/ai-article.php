@@ -1,7 +1,8 @@
 <?php
 /**
  * 文章编辑器 AI 助手 —— AiCenter::chat 统一调用（记账 + 额度闸门）
- * POST /api/ai-article.php  {action: rewrite|continue|title|summary, content, title}
+ * POST /api/ai-article.php  {action: rewrite|continue|title|summary|expand|shorten, content, title}
+ *   expand/shorten 供编辑器划词工具栏对「选中片段」扩写/缩写。
  */
 require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/../lib/AiCenter.php';
@@ -18,7 +19,7 @@ $action = trim((string)($input['action'] ?? ''));
 $content = trim((string)($input['content'] ?? ''));
 $title = trim((string)($input['title'] ?? ''));
 
-if (!in_array($action, ['rewrite','continue','title','summary'], true)) {
+if (!in_array($action, ['rewrite','continue','title','summary','expand','shorten'], true)) {
     echo json_encode(['ok'=>false,'error'=>'未知操作']); exit;
 }
 if (!AiCenter::isConfigured()) {
@@ -30,6 +31,8 @@ $prompts = [
     'continue' => '你是专业中文编辑。请接着下面的文章内容续写 2-3 段，风格一致，自然收束，输出续写部分（不要重复原文）。',
     'title'    => '你是标题优化专家。请基于文章内容给出 3 个吸引人、准确的中文标题，每行一个，直接输出标题。',
     'summary'  => '你是摘要专家。请为以下文章写一段 80 字以内的中文摘要，直接输出摘要。',
+    'expand'   => '你是专业中文编辑。请把以下片段扩写为原来的 2 倍左右：补充论据、例子或细节，保持语气一致，直接输出扩写后的文字（不要说明、不要重复原文之外的话）。',
+    'shorten'  => '你是专业中文编辑。请把以下片段压缩到原来的一半左右：保留核心信息与金句，删掉冗余，直接输出缩写后的文字（不要说明）。',
 ];
 $user = ($action === 'title' || $action === 'summary' ? ("原标题：" . ($title ?: '') . "\n") : '') . "内容：\n" . mb_substr($content, 0, 6000);
 
