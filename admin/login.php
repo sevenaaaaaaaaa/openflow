@@ -168,6 +168,7 @@ admin_header('登录');
 ?>
 <div class="login-page">
   <div class="login-box">
+    <div style="display:flex;justify-content:center;margin-bottom:6px"><img src="/favicon.svg" alt="OpenFlow" width="56" height="56" style="border-radius:14px"></div>
     <h1>OpenFlow</h1>
     <p class="sub">管理后台登录</p>
     <?php if ($error): ?><div class="msg msg-error"><?=htmlspecialchars($error)?></div><?php endif; ?>
