@@ -28,8 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_room'])) {
         'start_at' => trim($_POST['start_at'] ?? ''),
         'end_at' => trim($_POST['end_at'] ?? ''),
         'hls_url' => trim($_POST['hls_url'] ?? ''),
+        'youtube_url' => trim($_POST['youtube_url'] ?? ''),   // YouTube 直播/回放链接（优先于 HLS 播放）
         'replay_url' => trim($_POST['replay_url'] ?? ''),
-        'sell_course' => trim($_POST['sell_course'] ?? ''),   // 售卖课程
+        'sell_course' => trim($_POST['sell_course'] ?? ''),   // 售卖课程（兼容旧字段）
+        'products' => array_values(array_filter(array_map('trim', explode("\n", (string)($_POST['products'] ?? ''))))),  // 多商品卡：每行 "标题|链接|价格文案"
         'stream_key' => $isNew ? live_gen_key() : (live_room($id)['stream_key'] ?? live_gen_key()),
         'is_live' => isset($_POST['is_live']),
         'created_at' => date('Y-m-d H:i:s'),
@@ -55,6 +57,8 @@ if (isset($_GET['toggle_live'])) {
         live_room_save($r);
         if (!$wasLive && $r['is_live']) {
             inbox_notify_event('live_started', ['title' => $r['title'] ?? '', 'room_id' => $r['id'] ?? '']);
+            $notified = live_notify_subs($r['id'], $r['title'] ?? '');   // 通知预约者（E3）
+            if ($notified) flash('success', "已开播，并通知了 {$notified} 位预约观众");
         }
     }
     header('Location: /xmp/live');
@@ -94,13 +98,24 @@ admin_header('直播管理');
 
     <!-- OBS 推流说明 -->
     <div class="card" style="background:linear-gradient(135deg,var(--surface),rgba(221,255,14,.08));margin-bottom:20px">
-      <h2 style="font-size:15px">🎬 如何用 OBS 推流？</h2>
-      <ol style="font-size:13px;line-height:2;padding-left:20px;margin-top:8px">
-        <li>下载安装 OBS Studio → 设置 → 推流，选择「自定义」</li>
-        <li>服务器：<code style="background:var(--surface-2);padding:2px 8px;border-radius:6px"><?=htmlspecialchars($settings['rtmp_url'])?></code></li>
-        <li>推流密钥：使用下方每个房间生成的 <code style="background:var(--surface-2);padding:2px 8px;border-radius:6px">Stream Key</code>（含房间 ID，如 <code>live_xxx</code>）</li>
-        <li>服务器需启用 nginx-rtmp / SRS 收流，并把 HLS 播放地址填入房间「播放地址」</li>
-      </ol>
+      <h2 style="font-size:15px">🎬 开播两条路</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:8px;font-size:13px;line-height:2">
+        <div>
+          <b>A · 私域自播（自建收流）</b>
+          <ol style="padding-left:18px;margin:4px 0 0">
+            <li>OBS → 设置 → 推流 → 自定义，服务器填 <code style="background:var(--surface-2);padding:2px 8px;border-radius:6px"><?=htmlspecialchars($settings['rtmp_url'])?></code></li>
+            <li>推流密钥用房间的 Stream Key；服务器需 nginx-rtmp / SRS 收流，HLS 地址填进房间「播放地址」</li>
+          </ol>
+        </div>
+        <div>
+          <b>B · 推 YouTube，私域同步看（推荐 · 免自建收流）</b>
+          <ol style="padding-left:18px;margin:4px 0 0">
+            <li>OBS → 推流到 YouTube Studio 给的 RTMP + 密钥（也可用 restream.io 同时分发多平台）</li>
+            <li>把 YouTube 直播链接填进房间「YouTube 直播链接」→ 本站观看页自动内嵌播放，弹幕与商品卡照常用</li>
+          </ol>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:10px">💡 像 OBS 一样定制画面：把房间的「OBS 叠加层」地址加为浏览器源（宽 1280 高 720，透明背景），直播标题 / 商品卡 / 实时弹幕就会叠在画面上，后台改内容 OBS 里自动更新。</p>
     </div>
 
     <div class="tabs" style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
@@ -130,6 +145,12 @@ admin_header('直播管理');
           <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('<?=htmlspecialchars($r['stream_key'] ?? '')?>').then(()=>fcToast('密钥已复制'))">复制</button>
         </div>
         <?php if (!empty($r['replay_url'])): ?><div class="text-sm" style="margin-top:4px;color:var(--ok)">🎬 回放：<a href="<?=htmlspecialchars($r['replay_url'])?>" target="_blank">观看</a></div><?php endif; ?>
+        <div class="text-sm" style="margin-top:4px;word-break:break-all">
+          <b>OBS 叠加层：</b><code style="background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:12px"><?=htmlspecialchars(SITE_URL)?>/live-overlay?room=<?=urlencode($r['id'])?></code>
+          <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('<?=htmlspecialchars(SITE_URL)?>/live-overlay?room=<?=urlencode($r['id'])?>').then(()=>fcToast('叠加层地址已复制'))">复制</button>
+          <span class="hint">· 透明背景，OBS 浏览器源直接贴（宽 1280 高 720）</span>
+        </div>
+        <div class="text-sm" style="margin-top:4px"><b>预约：</b><?=live_sub_count($r['id'])?> 人 · <a href="/live?room=<?=urlencode($r['id'])?>" target="_blank">前台直播间 →</a></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;min-width:130px">
         <a href="?toggle_live=<?=urlencode($r['id'])?>" class="btn btn-sm <?=!empty($r['is_live']) ? 'btn-danger' : 'btn-success'?>" style="<?=!empty($r['is_live']) ? '' : 'background:var(--ok);color:#fff'?>"><?=!empty($r['is_live']) ? '🔴 结束直播' : '▶️ 标记开播'?></a>
@@ -168,7 +189,11 @@ admin_header('直播管理');
           <div class="field"><label>结束时间</label><input type="datetime-local" name="end_at" value="<?=htmlspecialchars(str_replace(' ', 'T', $r['end_at'] ?? ''))?>"></div>
         </div>
         <div class="field"><label>播放地址 <span class="hint">· HLS m3u8 或第三方直播链接</span></label><input type="text" name="hls_url" value="<?=htmlspecialchars($r['hls_url'] ?? '')?>" placeholder="https://your-server/live/xxx.m3u8"></div>
+        <div class="field"><label>YouTube 直播链接 <span class="hint">· 海外平台优先，观看页自动转 embed 播放</span></label><input type="text" name="youtube_url" value="<?=htmlspecialchars($r['youtube_url'] ?? '')?>" placeholder="https://www.youtube.com/watch?v=... 或 /live/..."></div>
         <div class="field"><label>回放地址 <span class="hint">· 结束后填写</span></label><input type="text" name="replay_url" value="<?=htmlspecialchars($r['replay_url'] ?? '')?>" placeholder="https://..."></div>
+        <div class="field"><label>直播间商品卡 <span class="hint">· 每行一条：标题|链接|价格文案（如 限时 ¥299）。课程/插件/咨询/定制服务都可以</span></label>
+          <textarea name="products" rows="3" placeholder="OpenFlow 增长实战课|/courses/xxx|限时 ¥299"><?=htmlspecialchars(implode("\n", (array)($r['products'] ?? [])))?></textarea>
+        </div>
         <?php if ($r): ?>
         <div class="field-row">
           <div class="field"><label>推流密钥</label><input type="text" value="<?=htmlspecialchars($r['stream_key'] ?? '')?>" readonly style="background:var(--surface-2);font-family:var(--mono)"></div>
