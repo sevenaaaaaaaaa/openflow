@@ -18,21 +18,37 @@ switch ($action) {
         echo json_encode(['ok'=>true, 'status'=>live_status($r), 'is_live'=>!empty($r['is_live'])], JSON_UNESCAPED_UNICODE);
         break;
 
-    // 拉取聊天记录
+    // 拉取聊天记录（顺带带回点赞数与主播推品，省一次轮询）
     case 'chat':
         $id = $_GET['room_id'] ?? '';
-        echo json_encode(['ok'=>true, 'messages'=>live_chat($id)], JSON_UNESCAPED_UNICODE);
+        $r = live_room($id);
+        $push = null;
+        if ($r && !empty($r['push']) && is_array($r['push']) && !empty($r['push']['title'])) {
+            $push = $r['push'];   // ['title','link','price','ts']
+        }
+        echo json_encode(['ok'=>true, 'messages'=>live_chat($id), 'likes'=>live_likes($id), 'push'=>$push], JSON_UNESCAPED_UNICODE);
         break;
 
-    // 发送消息
+    // 发送消息（带风控）
     case 'send':
         $member = member_current();
         $user = $member ? ($member['name'] ?? '用户') : '游客';
         $id = $_POST['room_id'] ?? '';
         $text = trim($_POST['text'] ?? '');
         if ($text === '') { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'消息不能为空']); exit; }
+        if (mb_strlen($text) > 100) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'最多 100 字']); exit; }
+        $reject = live_risk_check($id, $text);
+        if ($reject) { http_response_code(429); echo json_encode(['ok'=>false,'error'=>$reject]); exit; }
         $msg = live_chat_send($id, $user, $text);
         echo json_encode(['ok'=>true, 'message'=>$msg], JSON_UNESCAPED_UNICODE);
+        break;
+
+    // 点赞（连击限速，返回最新总数）
+    case 'like':
+        $id = trim((string)($_POST['room_id'] ?? ''));
+        if (!live_room($id)) { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'房间不存在']); exit; }
+        $r = live_like($id);
+        echo json_encode($r, JSON_UNESCAPED_UNICODE);
         break;
 
     // 预约直播提醒（会员记 member_id，游客留邮箱）

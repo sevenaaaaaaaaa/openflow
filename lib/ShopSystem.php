@@ -201,7 +201,7 @@ function shop_xfpay_create(array $order, array $member): array {
         'title' => $order['course_title'],
         'time' => time(),
         'notify_url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/api/shop.php?action=notify',
-        'return_url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/member.php?view=orders',
+        'return_url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/order-success?order=' . urlencode((string)$order['id']),
         'type' => $_GET['pay_type'] ?? 'wechat', // wechat / alipay
     ];
     ksort($params);
