@@ -113,6 +113,7 @@ function admin_nav_tree(): array {
                     ['id' => 'tasks', 'label' => '生产任务', 'perm' => 'tasks'],
                     ['id' => 'product-scout', 'label' => '产品发现', 'perm' => 'articles', 'hint' => '每日 Loop'],
                     ['id' => 'content-calendar', 'label' => '内容日历', 'perm' => 'tasks'],
+                    ['id' => 'help-center', 'label' => '帮助中心', 'perm' => 'articles', 'hint' => '指南 · 分类'],
                     ['id' => 'publish', 'label' => '内容分发', 'perm' => 'tasks'],
                     ['id' => 'channels', 'label' => '分发渠道', 'perm' => 'channels'],
                     ['id' => 'version-diff', 'label' => '版本对比', 'perm' => 'version-diff'],

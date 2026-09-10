@@ -197,6 +197,7 @@
     { id: 'community', label: '社区', href: '/community', icon: 'users' },
     { id: 'events', label: '活动', href: '/events', icon: 'bolt' },
     { id: 'navigation', label: '导航', href: '/navigation', icon: 'search' },
+    { id: 'help', label: '帮助', href: '/help', icon: 'info' },
     { id: 'about', label: '关于', href: '/about', icon: 'info' }
   ];
 
