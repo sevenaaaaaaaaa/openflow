@@ -189,7 +189,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         <h3>开放连接器生态</h3>
         <p class="lead">不是封闭的私有集成，而是开放的连接标准。核心能力永久开源；飞书 / 企业微信 / Notion / Search Console 等常用系统已接好，私有系统用 OpenAPI 或 Webhook 自定义接入。每一项都能在代码里翻到。</p>
         <ul class="sp-list">
-          <li><?=$ck?><span>30 个 MCP 工具、35 个插件钩子、99 个 API，Agent 可直接调用</span></li>
+          <li><?=$ck?><span>30 个 MCP 工具、插件 API v2（钩子/路由/菜单/前端插槽/定时任务）、99 个 API，Agent 可直接调用</span></li>
           <li><?=$ck?><span>核心能力永久开源 · 鱼与渔结合</span></li>
           <li><?=$ck?><span>Webhook 双向触发与回调</span></li>
         </ul>
