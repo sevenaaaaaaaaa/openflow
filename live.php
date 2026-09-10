@@ -49,7 +49,7 @@ $shopSettings = shop_settings();
 .a-card .cov .tag.r{left:auto;right:12px;top:auto;bottom:12px}
 @media (max-width:860px){.chat-box{height:280px}}
 </style>
-<link rel="stylesheet" href="/assets/live.css?v=20260910b">
+<link rel="stylesheet" href="/assets/live.css?v=20260910c">
 <script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
 <body data-of-main>
@@ -202,26 +202,43 @@ $shopSettings = shop_settings();
   </section>
 <script>
   var ROOM_ID = <?=json_encode($room['id'])?>;
-  var LAST_COUNT = 0;
+  var LAST_COUNT = 0, LAST_MSG_ID = '';
   var LAST_PUSH_TS = +(localStorage.getItem('of_push_' + ROOM_ID) || 0);
   var ESC_MAP = {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'};
   function escH(s){ return (s||'').replace(/[<>&"]/g, function(c){ return ESC_MAP[c]; }); }
+
+  /* ── 性能分级：低端机自动降级（关毛玻璃/飘心限量/轮询降频）── */
+  var LOW_POWER = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+    || (navigator.deviceMemory && navigator.deviceMemory <= 4)
+    || (navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType || '')))
+    || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (LOW_POWER) document.body.classList.add('low-power');
+  var POLL_MS = LOW_POWER ? 5000 : 3000;
+  var pollTimer = null;
 
   function loadChat() {
     fetch('/api/live?action=chat&room_id=' + encodeURIComponent(ROOM_ID)).then(function(r){ return r.json(); }).then(function(d) {
       if (!d.ok) return;
       var box = document.getElementById('chatBox');
-      if (d.messages.length !== LAST_COUNT) {
-        box.innerHTML = '';
-        d.messages.forEach(function(m) {
+      // 增量渲染：只追加新消息（按 id 定位），避免每 3s 全量重建 DOM
+      var msgs = d.messages, startIdx = 0;
+      if (LAST_MSG_ID) {
+        for (var k = msgs.length - 1; k >= 0; k--) { if (msgs[k].id === LAST_MSG_ID) { startIdx = k + 1; break; } }
+      }
+      if (msgs.length - startIdx > 60 || (msgs.length && msgs.length < LAST_COUNT)) {
+        box.innerHTML = ''; startIdx = 0;   // 缺口过大或被清理 → 全量重建一次
+      }
+      if (msgs.length > startIdx) {
+        for (var i = startIdx; i < msgs.length; i++) {
           var el = document.createElement('div');
           el.className = 'chat-msg';
-          el.innerHTML = '<span class="u">' + escH(m.user||'游客') + '：</span><span class="t">' + escH(m.text) + '</span>';
+          el.innerHTML = '<span class="u">' + escH(msgs[i].user||'游客') + '：</span><span class="t">' + escH(msgs[i].text) + '</span>';
           box.appendChild(el);
-        });
-        LAST_COUNT = d.messages.length;
+        }
+        LAST_MSG_ID = msgs[msgs.length-1].id;
         box.scrollTop = box.scrollHeight;
       }
+      LAST_COUNT = msgs.length;
       // 点赞数同步
       var likeN = document.getElementById('likeN');
       if (likeN && typeof d.likes === 'number') likeN.textContent = d.likes > 999 ? (d.likes/1000).toFixed(1)+'k' : d.likes;
@@ -257,21 +274,29 @@ $shopSettings = shop_settings();
   var chatInputM = document.getElementById('chatInputM');
   if (chatInputM) chatInputM.addEventListener('keydown', function(e){ if (e.key === 'Enter') sendChat(); });
   loadChat();
-  setInterval(loadChat, 3000);
+  // 页面切后台暂停轮询，回前台立即拉一次（省电省流量）
+  function startPoll(){ if (!pollTimer) pollTimer = setInterval(loadChat, POLL_MS); }
+  function stopPoll(){ clearInterval(pollTimer); pollTimer = null; }
+  document.addEventListener('visibilitychange', function(){ document.hidden ? stopPoll() : (loadChat(), startPoll()); });
+  startPoll();
 
-  /* 点赞：飘心动画 + 计数（每会话 60 次/分钟限速） */
+  /* 点赞：飘心动画 + 计数（每会话 60 次/分钟限速；低端机限量并发） */
   var HEARTS = ['❤️','🧡','💛','💜','💙','💖'];
+  var heartsAlive = 0, HEART_CAP = LOW_POWER ? 4 : 12;
   var likeBtn = document.getElementById('likeBtn');
   if (likeBtn) likeBtn.addEventListener('click', function() {
-    var h = document.createElement('div');
-    h.className = 'fly-heart';
-    h.textContent = HEARTS[Math.floor(Math.random()*HEARTS.length)];
-    var rect = likeBtn.getBoundingClientRect();
-    h.style.left = (rect.left + rect.width/2 - 11) + 'px';
-    h.style.top = (rect.top - 8) + 'px';
-    h.style.setProperty('--hx', (Math.random()*80-40) + 'px');
-    document.body.appendChild(h);
-    setTimeout(function(){ h.remove(); }, 1500);
+    if (heartsAlive < HEART_CAP && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      heartsAlive++;
+      var h = document.createElement('div');
+      h.className = 'fly-heart';
+      h.textContent = HEARTS[Math.floor(Math.random()*HEARTS.length)];
+      var rect = likeBtn.getBoundingClientRect();
+      h.style.left = (rect.left + rect.width/2 - 11) + 'px';
+      h.style.top = (rect.top - 8) + 'px';
+      h.style.setProperty('--hx', (Math.random()*80-40) + 'px');
+      document.body.appendChild(h);
+      setTimeout(function(){ h.remove(); heartsAlive--; }, 1500);
+    }
     var body = new FormData(); body.append('room_id', ROOM_ID);
     fetch('/api/live?action=like', {method:'POST', body:body}).then(function(r){return r.json()}).then(function(d){
       if (d.count !== undefined) { var n = document.getElementById('likeN'); n.textContent = d.count > 999 ? (d.count/1000).toFixed(1)+'k' : d.count; }

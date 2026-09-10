@@ -67,8 +67,20 @@
 }
 
 /* ── 点赞飘心动画 ── */
-.fly-heart{position:fixed;z-index:70;pointer-events:none;font-size:22px;animation:heartFly 1.4s ease-out forwards}
+.fly-heart{position:fixed;z-index:70;pointer-events:none;font-size:22px;animation:heartFly 1.4s ease-out forwards;will-change:transform,opacity}
 @keyframes heartFly{0%{opacity:1;transform:translateY(0) scale(.6)}70%{opacity:1}100%{opacity:0;transform:translateY(-140px) translateX(var(--hx,20px)) scale(1.3)}}
+
+/* ── 性能分级降级（低端机自动加 body.low-power）── */
+.low-power .live-actions{backdrop-filter:none}
+.low-power .shop-modal{backdrop-filter:none}
+.low-power .push-pop{box-shadow:0 4px 16px oklch(0 0 0 / .3);transition:opacity .2s}
+.low-power .shop-modal .sheet{box-shadow:0 4px 24px oklch(0 0 0 / .4)}
+.low-power .fly-heart{animation-duration:.9s}
+@media (prefers-reduced-motion: reduce){
+  .fly-heart{animation:none;opacity:0}
+  .push-pop{transition:none}
+  .live-dot{animation:none}
+}
 
 /* ── 主播推品弹窗 ── */
 .push-pop{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);z-index:65;width:min(92vw,380px);
