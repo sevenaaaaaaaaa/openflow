@@ -1691,6 +1691,17 @@ window.fcMarkErrors = function(errors) {
   .of-waifu-canvas{width:210px;height:300px;pointer-events:auto;cursor:pointer}
   .of-waifu-bubble{position:absolute;left:50%;bottom:292px;transform:translateX(-88%) translateY(6px);min-width:150px;max-width:230px;padding:9px 13px;border-radius:14px 14px 4px 14px;background:var(--surface-strong);-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);border:1px solid var(--border);box-shadow:var(--shadow-sm);font-size:var(--fs-md);line-height:1.55;color:var(--fg);opacity:0;pointer-events:none;transition:opacity .25s,transform .3s var(--ease-spring)}
   .of-waifu-bubble.show{opacity:1;transform:translateX(-88%) translateY(0)}
+  /* 衣橱菜单（右键） */
+  .of-waifu-menu{position:fixed;z-index:9999;width:180px;background:var(--surface-strong);-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg,0 12px 40px rgba(0,0,0,.18));padding:6px;animation:ofWaifuMenuIn .18s var(--ease-spring,ease)}
+  @keyframes ofWaifuMenuIn{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+  .of-waifu-menu .m-head{font-family:var(--font-mono,monospace);font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint,var(--muted));padding:7px 10px 5px}
+  .of-waifu-menu .m-item{display:flex;flex-direction:column;gap:1px;width:100%;text-align:left;border:0;background:transparent;padding:8px 10px;border-radius:9px;cursor:pointer;color:var(--fg);font-size:13px}
+  .of-waifu-menu .m-item:hover{background:var(--hover)}
+  .of-waifu-menu .m-item.on{background:var(--accent-soft)}
+  .of-waifu-menu .m-item.on b::after{content:" ✓";color:var(--accent)}
+  .of-waifu-menu .m-item b{font-weight:700}
+  .of-waifu-menu .m-item small{color:var(--muted);font-size:11px}
+  .of-waifu-menu .m-hide{margin-top:4px;border-top:1px dashed var(--border);border-radius:0 0 9px 9px;color:var(--muted)}
   .of-waifu-bubble::after{content:"";position:absolute;right:16px;bottom:-5px;width:10px;height:10px;background:inherit;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg)}
   @media(max-width:840px){.of-waifu{display:none}body.waifu-on .fc-helper-fab{display:grid}body.waifu-on .fc-helper-window{right:22px}body.waifu-on .fc-toast{right:22px}}
   /* Copilot 建议与消息附件（原先散落在 JS 里的内联样式） */
@@ -2031,6 +2042,7 @@ var FC_PALETTE_ITEMS = <?=json_encode(cp_items(), JSON_UNESCAPED_UNICODE)?>;
 })();
 </script>
 <script src="/assets/admin-ui.js?v=<?= OF_ADMIN_UI_VER ?>"></script>
+<script>window.OF_WAIFU_CONFIG = { default: <?=json_encode(site_config_get('waifu_model', 'mao'))?> };</script>
 <script src="/assets/admin-waifu.js?v=<?= OF_ADMIN_UI_VER ?>"></script>
 </body></html>
 <?php }
