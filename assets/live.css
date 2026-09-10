@@ -1,29 +1,76 @@
-/* ═══ 直播间 F2：竖屏布局 / 点赞飘心 / 推品弹窗 / 商品浮层小窗 ═══ */
+/* ═══ 直播间 F2+G：竖屏布局 / 点赞飘心 / 推品弹窗 / 商品浮层小窗 / 全机型与折叠屏适配 ═══
+   断点矩阵（CSS 像素）：
+     ≤374px        iPhone SE(375) 以下、小屏安卓
+     375–430px     iPhone 16 Pro(393) / Pro Max(430)、三星 S24(360)、华为 Mate(363)、小米(360)
+     600–920px     折叠屏展开竖屏（Z Fold ~717、Mate X ~720）→ 类平板体验
+     横屏低高度     折叠屏展开横屏 / 帐篷模式 → 左右分栏（播放器 | 弹幕）
+   通用：viewport-fit=cover + safe-area 四边 + dvh 动态视口（地址栏伸缩不跳动） */
+
 .live-actions{display:none}
+
+/* ── 竖屏直播流（房间级 9:16，G4）── */
+.player-v{aspect-ratio:9/16;max-height:min(72vh,720px);margin:0 auto}
+.player-v video,.player-v iframe{object-fit:cover}
+
+/* ═══ 手机竖屏（≤860px 共用基础）═══ */
 @media (max-width:860px){
-  /* 播放器贴顶，弹幕区铺满，底部固定操作条 */
   .g-main-aside{display:block!important}
-  .g-main-aside>div:first-child{position:sticky;top:0;z-index:30;margin:0 -16px}
+  .g-main-aside>div:first-child{position:sticky;top:0;z-index:30;margin:0 -16px;
+    padding-top:env(safe-area-inset-top);background:var(--bg)}   /* 刘海/灵动岛不压播放器 */
   .sp-win{border-radius:0;border-left:0;border-right:0}
   .sp-win .win-bar{display:none}
-  .player{aspect-ratio:16/9;max-height:38vh}
+  .player{aspect-ratio:16/9;max-height:38vh;max-height:38dvh}
+  .player-v{max-height:56vh;max-height:56dvh}                     /* 竖屏流给足高度 */
   .room-head{padding:0 4px}
-  /* 底部操作条：评论 + 点赞 + 商品 */
+  /* 底部操作条：评论 + 点赞 + 商品（home 指示条安全区） */
   .live-actions{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;gap:8px;align-items:center;
     padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border);backdrop-filter:blur(16px)}
   .live-actions .inp{flex:1;min-height:42px;padding:9px 14px;font-size:14px;border-radius:999px}
   .live-actions .act-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--surface-2);display:grid;place-items:center;cursor:pointer;flex:none;position:relative}
   .live-actions .act-btn svg{width:20px;height:20px}
   .live-actions .like-n{position:absolute;top:-6px;right:-6px;background:var(--danger);color:oklch(1 0 0);font-size:10px;font-weight:700;border-radius:999px;padding:1px 5px;min-width:18px;text-align:center}
-  body{padding-bottom:70px}
-  /* 聊天卡内的输入行在移动端让给底栏 */
+  body{padding-bottom:calc(70px + env(safe-area-inset-bottom))}
   .chat-in{display:none}
-  .chat-box{height:32vh}
+  .chat-box{height:32vh;height:32dvh}
 }
-/* 点赞飘心动画 */
+
+/* ═══ 小屏机（iPhone SE 375×667、折叠态 Z Fold 344px）═══ */
+@media (max-width:374px){
+  .player{max-height:32vh;max-height:32dvh}
+  .chat-box{height:28vh;height:28dvh}
+  .live-actions{gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+  .live-actions .act-btn{width:38px;height:38px}
+  .room-head h1{font-size:20px}
+  .sec{padding-left:12px;padding-right:12px}
+}
+
+/* ═══ 折叠屏展开 · 竖屏（600–920px 宽且竖向）：类平板，播放器加大 ═══ */
+@media (min-width:600px) and (max-width:920px) and (orientation:portrait){
+  .player{max-height:46vh;max-height:46dvh}
+  .player-v{max-height:60vh;max-height:60dvh}
+  .chat-box{height:38vh;height:38dvh;max-width:640px;margin:0 auto}
+  .room-head{max-width:640px;margin:0 auto}
+  .g-main-aside>div:first-child{margin:0}                         /* 展开屏不再出血贴边 */
+  .sp-win{border-radius:0 0 18px 18px;border:1px solid var(--border)}
+}
+
+/* ═══ 折叠屏展开 · 横屏 / 帐篷模式（宽≥600 且高度低）：左右分栏 ═══ */
+@media (min-width:600px) and (max-height:620px) and (orientation:landscape){
+  .g-main-aside{display:grid!important;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:14px}
+  .g-main-aside>div:first-child{position:static;margin:0;padding-top:0}
+  .player{aspect-ratio:auto;height:calc(100vh - 120px);height:calc(100dvh - 120px);max-height:none}
+  .player-v{aspect-ratio:9/16;height:calc(100vh - 120px);height:calc(100dvh - 120px);margin:0 auto}
+  .chat-box{height:calc(100vh - 220px);height:calc(100dvh - 220px)}
+  .chat-in{display:flex}                                          /* 横屏恢复卡内输入 */
+  .live-actions{display:none}                                     /* 横屏不需要底栏 */
+  body{padding-bottom:0}
+}
+
+/* ── 点赞飘心动画 ── */
 .fly-heart{position:fixed;z-index:70;pointer-events:none;font-size:22px;animation:heartFly 1.4s ease-out forwards}
 @keyframes heartFly{0%{opacity:1;transform:translateY(0) scale(.6)}70%{opacity:1}100%{opacity:0;transform:translateY(-140px) translateX(var(--hx,20px)) scale(1.3)}}
-/* 主播推品弹窗 */
+
+/* ── 主播推品弹窗 ── */
 .push-pop{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);z-index:65;width:min(92vw,380px);
   background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 16px 48px oklch(0 0 0 / .25);
   padding:16px;opacity:0;pointer-events:none;transition:opacity .3s,transform .35s cubic-bezier(.32,.72,0,1)}
@@ -33,7 +80,9 @@
 .push-pop .row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
 .push-pop .row em{font-style:normal;font-weight:800;color:var(--ok);font-size:18px}
 .push-pop .x{position:absolute;top:8px;right:10px;border:0;background:none;font-size:16px;cursor:pointer;color:var(--muted);padding:4px}
-/* 商品浮层（购买不离开直播）+ 小窗播放 */
+@media (max-width:374px){.push-pop{bottom:86px}}
+
+/* ── 商品浮层（购买不离开直播）+ 小窗播放 ── */
 .shop-modal{position:fixed;inset:0;z-index:80;background:oklch(0.15 0.02 260 / .55);backdrop-filter:blur(4px);display:none}
 .shop-modal.on{display:block}
 .shop-modal .sheet{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(94vw,880px);height:min(88vh,760px);
@@ -43,5 +92,10 @@
 .shop-modal .sheet-h button{border:1px solid var(--border);background:var(--surface-2);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
 .shop-modal iframe{flex:1;border:0;width:100%}
 body.shop-open .player{position:fixed;right:12px;bottom:86px;width:200px;aspect-ratio:16/9;z-index:75;border-radius:12px;overflow:hidden;box-shadow:0 12px 40px oklch(0 0 0 / .4)}
+body.shop-open .player.player-v{aspect-ratio:9/16;width:110px}
 body.shop-open .sp-win{position:static}
-@media(max-width:860px){body.shop-open .player{width:150px;bottom:76px}}
+@media(max-width:860px){
+  body.shop-open .player{width:150px;bottom:calc(76px + env(safe-area-inset-bottom))}
+  body.shop-open .player.player-v{width:96px}
+  .shop-modal .sheet{width:100vw;height:100dvh;border-radius:0}    /* 手机浮层全屏化 */
+}

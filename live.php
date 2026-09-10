@@ -25,7 +25,7 @@ $shopSettings = shop_settings();
 <html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><?=$room ? htmlspecialchars($room['title']) : htmlspecialchars($settings['page_title'])?> | <?=site_config_get("site_name")?></title>
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
@@ -49,7 +49,7 @@ $shopSettings = shop_settings();
 .a-card .cov .tag.r{left:auto;right:12px;top:auto;bottom:12px}
 @media (max-width:860px){.chat-box{height:280px}}
 </style>
-<link rel="stylesheet" href="/assets/live.css?v=20260910">
+<link rel="stylesheet" href="/assets/live.css?v=20260910b">
 <script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
 <body data-of-main>
@@ -66,7 +66,7 @@ $shopSettings = shop_settings();
       <div>
         <div class="sp-win">
           <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">live · <?=htmlspecialchars($room['id'])?></div></div>
-          <div class="player">
+          <div class="player<?=($room['stream_mode'] ?? 'landscape') === 'vertical' ? ' player-v' : ''?>">
             <?php
             // YouTube 链接 → embed（优先；海外平台同步直播时私域观看页直接内嵌）
             $ytEmbed = '';
