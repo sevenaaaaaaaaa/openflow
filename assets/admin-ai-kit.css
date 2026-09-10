@@ -62,6 +62,15 @@
 .ai-global-ind .ai-ind-t{font-family:var(--font-mono);font-size:11px;color:var(--faint);font-weight:400}
 .ai-global-ind.hide{opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
 
+/* ── 划词 AI 工具栏（编辑器选中文字浮出）── */
+.ai-sel-toolbar{position:absolute;z-index:9986;display:none;align-items:center;gap:2px;padding:4px;border-radius:11px;background:var(--fg,#1c1c1e);box-shadow:0 10px 34px oklch(0.15 0.02 262 / 0.35);animation:aiSelIn .16s cubic-bezier(.22,.9,.3,1)}
+@keyframes aiSelIn{from{opacity:0;transform:translateY(4px) scale(.95)}to{opacity:1;transform:none}}
+.ai-sel-toolbar button{border:0;background:transparent;color:oklch(0.92 0.01 262);font-size:12px;font-weight:600;padding:6px 11px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:background .15s}
+.ai-sel-toolbar button:hover{background:oklch(1 0 0 / 0.14);color:#fff}
+.ai-sel-toolbar button:disabled{opacity:.45;cursor:wait}
+.ai-sel-toolbar .ai-sel-sep{width:1px;height:16px;background:oklch(1 0 0 / 0.18);margin:0 3px}
+.ai-sel-toolbar.ai-sel-busy button{pointer-events:none;opacity:.5}
+
 /* ── 减少动效偏好：全部静下来 ── */
 @media (prefers-reduced-motion: reduce){
   .ai-orb,.ai-orb::before,.ai-step.active::before,.ai-chip .ai-spark{animation:none}

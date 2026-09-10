@@ -288,13 +288,16 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
 // AI 洞察兜底：读当前关键指标 → CdpInsight::generate 解读异常与建议
 function ofLoadInsights(force) {
   var box = document.getElementById('ofAiInsight'); if (!box) return;
-  if (force) box.innerHTML = '<div class="text-sm text-muted" style="padding:20px;text-align:center">AI 正在解读当前数据…</div>';
+  var think = null;
+  if (force && window.AIThink) think = AIThink.start(box, ['读取近 30 天关键指标', '比对上期找异常', '归因分析', '生成建议动作']);
+  else if (force) box.innerHTML = '<div class="text-sm text-muted" style="padding:20px;text-align:center">AI 正在解读当前数据…</div>';
   fetch('/api/cdp-insight.php?action=insights&days=30', {credentials:'include'})
     .then(function(r){ return r.json(); })
     .then(function(d){
-      if (!d.ok) { box.innerHTML = '<div class="text-sm text-muted">洞察生成失败</div>'; return; }
+      if (!d.ok) { if (think) think.fail('洞察生成失败'); else box.innerHTML = '<div class="text-sm text-muted">洞察生成失败</div>'; return; }
+      if (think) think.done();
       var h = '';
-      if (d.summary) h += '<div style="padding:12px 14px;background:var(--surface);border-radius:10px;margin-bottom:12px;font-size:13.5px;line-height:1.7">📌 ' + d.summary + '</div>';
+      if (d.summary) h += '<div id="insightSummary" style="padding:12px 14px;background:var(--surface);border-radius:10px;margin-bottom:12px;font-size:13.5px;line-height:1.7">📌 <span id="insightSummaryText"></span></div>';
       if (d.insights && d.insights.length) {
         h += '<div style="font-size:12px;font-weight:700;color:var(--text-3);margin:10px 0 6px">✨ 洞察</div>';
         d.insights.forEach(function(i){ h += '<div style="display:flex;gap:8px;padding:8px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:13px"><span>💡</span><div><strong>'+(i.title||'')+'</strong><div class="text-sm text-muted" style="font-size:12px">'+(i.detail||'')+'</div></div></div>'; });
@@ -308,8 +311,10 @@ function ofLoadInsights(force) {
         d.actions.forEach(function(a){ h += '<div style="display:flex;gap:8px;padding:8px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;font-size:13px"><span>→</span><div><strong>'+(a.title||'')+'</strong><div class="text-sm text-muted" style="font-size:12px">'+(a.detail||'')+'</div></div></div>'; });
       }
       if (!h) h = '<div class="text-sm text-muted">暂无洞察，先积累数据。</div>';
-      box.innerHTML = h;
+      box.innerHTML = '<div class="ai-stagger">' + h + '</div>';
+      var sumEl = document.getElementById('insightSummaryText');
+      if (sumEl && d.summary) { if (window.aiTypewriter) aiTypewriter(sumEl, d.summary, 14); else sumEl.textContent = d.summary; }
     })
-    .catch(function(){ box.innerHTML = '<div class="text-sm text-muted">网络异常，稍后再试</div>'; });
+    .catch(function(){ if (think) think.fail('网络异常'); else box.innerHTML = '<div class="text-sm text-muted">网络异常，稍后再试</div>'; });
 }
 </script>
