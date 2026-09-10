@@ -919,7 +919,7 @@ function save_tags(array $data): bool {
 }
 
 // ─── UI ───────────────────────────────────────────
-if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260910b');
+if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260910c');
 
 function admin_header(string $title): void {
 security_headers();

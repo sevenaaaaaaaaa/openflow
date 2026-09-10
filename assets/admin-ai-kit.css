@@ -53,6 +53,15 @@
 .ai-tl-item b{color:var(--fg)}
 .ai-tl-item .tl-t{font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-right:8px}
 
+/* ── 全局 AI 调用指示器：任何 AI 接口调用时右下角浮出 ── */
+.ai-global-ind{position:fixed;right:22px;bottom:22px;z-index:9990;display:flex;align-items:center;gap:10px;padding:10px 16px 10px 12px;border-radius:99px;background:var(--surface-strong,#fff);border:1px solid oklch(from var(--accent) l c h / 0.4);box-shadow:0 8px 30px oklch(0.2 0.02 262 / 0.18);font-size:12.5px;font-weight:600;color:var(--fg);animation:aiIndIn .25s cubic-bezier(.22,.9,.3,1)}
+@keyframes aiIndIn{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
+.ai-global-ind .ai-orb{width:20px;height:20px;box-shadow:none}
+.ai-global-ind .ai-orb::after{inset:3px}
+.ai-global-ind .ai-orb::before{inset:7px}
+.ai-global-ind .ai-ind-t{font-family:var(--font-mono);font-size:11px;color:var(--faint);font-weight:400}
+.ai-global-ind.hide{opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+
 /* ── 减少动效偏好：全部静下来 ── */
 @media (prefers-reduced-motion: reduce){
   .ai-orb,.ai-orb::before,.ai-step.active::before,.ai-chip .ai-spark{animation:none}
