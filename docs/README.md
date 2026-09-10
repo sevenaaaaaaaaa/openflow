@@ -61,6 +61,8 @@
 | `GTM-COPY.md` | **逐槽位文案替换表**——不动任何现有模块，只换词 |
 | `SECURITY-API.md` | API 权限矩阵：四档划分、默认取值与调整方式（后台 `/xmp/api-permissions`）|
 | `HOOKS.md` | 插件系统钩子清单（已实现的插入点；「尚无插入点」以下为规划） |
+| `PLUGIN-DEV.md` | **插件开发指南（v2）**——API 路由 / 后台菜单与设置页 / 前台插槽 / 定时任务，第三方开发者从这里开始 |
+| `../md-docs/CHANGELOG.md` | **版本变更日志**（v0.x → v2.2.0）——每个版本的主题、能力与演化路径 |
 | `PERFORMANCE.md` | 性能基线与优化记录（含 events 索引） |
 | `EVOLUTION.md` | 三档规模演进路线——已按实测修订：轴定为「细胞式」、第六章 DataStore 暂缓、第八章触发器重标 |
 | `DEPLOY.md` | 部署/发布流程参考 |
