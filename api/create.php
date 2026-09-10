@@ -7,6 +7,7 @@
  *   column   专栏成文   {topic, angle, outline}        → 存文章草稿
  *   script   口播脚本   {topic, duration, style}       → 存 scripts.json
  *   slides   幻灯片     {topic, pages, audience}       → 存 slide-decks.json（前台 /deck/{id} 放映）
+ *   calendar_fill 日历补内容 {date, topic?}            → AI 选题+大纲 → 定时草稿（publish_at=date）
  */
 require_once __DIR__ . '/../admin/config.php';
 header('Content-Type: application/json; charset=utf-8');
@@ -22,7 +23,7 @@ if (!AiCenter::isConfigured()) {
 $action = (string)($_POST['action'] ?? '');
 $topic  = trim((string)($_POST['topic'] ?? ''));
 
-if ($topic === '') { echo json_encode(['ok' => false, 'error' => '主题不能为空']); exit; }
+if ($topic === '' && $action !== 'calendar_fill') { echo json_encode(['ok' => false, 'error' => '主题不能为空']); exit; }
 
 try {
     switch ($action) {
@@ -142,6 +143,50 @@ try {
         if (strlen($md) > 8000) throw new RuntimeException('品牌契约过长（≤8000 字符）');
         file_put_contents(DeckThemes::brandFile(), $md);
         echo json_encode(['ok' => true]);
+        break;
+    }
+
+    /* ── 5. 内容日历「AI 补一天」：选题（可空→AI 自选）→ 大纲 → 定时草稿 ── */
+    case 'calendar_fill': {
+        $date = trim((string)($_POST['date'] ?? ''));
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) throw new RuntimeException('日期格式不正确');
+
+        // 近期文章标题作语境，避免选题重复
+        $recent = array_slice(array_reverse(json_read(ARTICLES_DIR . '/index.json')), 0, 12);
+        $recentTitles = implode('、', array_filter(array_map(fn($a) => $a['title'] ?? '', $recent)));
+
+        if ($topic === '') {
+            $r0 = AiCenter::json(
+                '你是内容主编。根据近期已发文章，提出一个尚未覆盖、有观点的专栏选题。输出 JSON：{"topic":"选题(20字内)"}',
+                "近期已发文章：{$recentTitles}",
+                ['max_tokens' => 300, 'feature' => 'calendar_topic', 'tier' => 'light']
+            );
+            $topic = trim((string)($r0['data']['topic'] ?? '')) ?: '增长方法论';
+        }
+
+        $r = AiCenter::json(
+            '你是资深专栏主编。输出 JSON：'
+            . '{"title":"专栏标题(有观点)","outline":["小节1","小节2",...5-7节],"thesis":"核心论点(50字内)","tags":["3个"]}',
+            "选题：{$topic}",
+            ['max_tokens' => 1000, 'feature' => 'calendar_fill', 'tier' => 'light']
+        );
+        if (empty($r['ok']) || empty($r['data']['title'])) throw new RuntimeException($r['error'] ?? 'AI 生成失败');
+        $d = $r['data'];
+
+        $articles = json_read(ARTICLES_DIR . '/index.json');
+        $id = 'calfill_' . date('Ymd_His') . '_' . substr(bin2hex(random_bytes(3)), 0, 5);
+        $outlineText = implode("\n", array_map(fn($s) => '## ' . $s, (array)($d['outline'] ?? [])));
+        $articles[] = [
+            'id' => $id, 'title' => (string)$d['title'], 'slug' => 'cal-' . date('YmdHis'),
+            'content' => "<p><em>核心论点：" . htmlspecialchars((string)($d['thesis'] ?? '')) . "</em></p>\n" . $outlineText . "\n<p>（AI 已备大纲，待成文）</p>",
+            'excerpt' => (string)($d['thesis'] ?? ''), 'status' => 'draft', 'author' => '日历 AI',
+            'category' => 'insight', 'tags' => array_values(array_filter((array)($d['tags'] ?? []))),
+            'seo_title' => '', 'seo_desc' => '', 'seo_keywords' => '', 'source' => 'calendar_ai',
+            'publish_at' => $date . ' 09:00:00',
+            'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'),
+        ];
+        json_write(ARTICLES_DIR . '/index.json', $articles);
+        echo json_encode(['ok' => true, 'id' => $id, 'title' => $d['title'], 'topic' => $topic, 'date' => $date], JSON_UNESCAPED_UNICODE);
         break;
     }
 

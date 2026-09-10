@@ -89,6 +89,18 @@ admin_header('工作台');
     </div>
     <?php endif; ?>
 
+    <!-- 今日 AI 简报：进入工作台第一眼看到「AI 认为今天该做什么」 -->
+    <div class="panel" id="wsBriefPanel" style="margin-bottom:16px;display:none;border-color:oklch(from var(--accent) l c h / 0.4);background:linear-gradient(135deg,var(--accent-soft,oklch(0.95 0.03 262)),transparent 55%)">
+      <div class="p-body" style="display:flex;gap:14px;align-items:flex-start">
+        <div style="flex:none;font-size:22px;line-height:1">🧠</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.04em;margin-bottom:4px">今日 AI 简报</div>
+          <div id="wsBriefText" style="font-size:13.5px;line-height:1.7"></div>
+          <div id="wsBriefActions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="kpi-grid">
       <div class="kpi"><div class="k-label">行为事件</div><div class="k-val mono"><?=(int)($local['events_24h'] ?? 0)?></div><div class="k-sub">24h 采集入库</div></div>
       <div class="kpi"><div class="k-label">活跃访客</div><div class="k-val mono"><?=(int)($local['active_visitors_5min'] ?? 0)?></div><div class="k-sub">5min 实时在线</div></div>
@@ -162,4 +174,32 @@ admin_header('工作台');
     </div>
   </div>
 </div>
+<script>
+/* 今日 AI 简报：复用 CDP 洞察端点，打字机呈现 + 建议动作直达 */
+(function () {
+  var panel = document.getElementById('wsBriefPanel');
+  if (!panel) return;
+  var ACTION_LINKS = { '内容': '/xmp/create', '文章': '/xmp/create', '直播': '/xmp/live', '分发': '/xmp/publish', '邮件': '/xmp/newsletter', '活动': '/xmp/events', '导航': '/xmp/navigation', '社区': '/xmp/community', '会员': '/xmp/members', '订单': '/xmp/orders', '自动化': '/xmp/automation', 'AI': '/xmp/studio' };
+  fetch('/api/cdp-insight.php?action=insights&days=7', { credentials: 'include' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d.ok || !d.summary) return;
+      panel.style.display = '';
+      var textEl = document.getElementById('wsBriefText');
+      if (window.aiTypewriter) aiTypewriter(textEl, d.summary, 16); else textEl.textContent = d.summary;
+      var acts = (d.actions || []).slice(0, 3);
+      var box = document.getElementById('wsBriefActions');
+      acts.forEach(function (a) {
+        var link = '/xmp/workspace';
+        Object.keys(ACTION_LINKS).some(function (k) { if ((a.title || '').indexOf(k) >= 0 || (a.detail || '').indexOf(k) >= 0) { link = ACTION_LINKS[k]; return true; } return false; });
+        var el = document.createElement('a');
+        el.className = 'ai-chip';
+        el.href = link;
+        el.innerHTML = '<span class="ai-spark">→</span> ' + String(a.title || '去处理').substring(0, 20);
+        box.appendChild(el);
+      });
+    })
+    .catch(function () { /* 静默失败，不影响工作台 */ });
+})();
+</script>
 <?php admin_footer(); ?>

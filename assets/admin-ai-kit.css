@@ -1,0 +1,61 @@
+/* ─────────────────────────────────────────────────────────────
+ * OpenFlow · admin-ai-kit.css — AI 原生交互套件
+ * 思考过程可视化 / 结果入场 / 打字机 / AI 操作点
+ * 颜色一律 oklch 变量，兼容深浅主题。
+ * ───────────────────────────────────────────────────────────── */
+
+/* ── AI 思考面板：生成过程中的「看得见的思考」── */
+.ai-think{display:flex;gap:16px;align-items:flex-start;padding:18px 20px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(135deg,var(--accent-soft,oklch(0.95 0.03 262)),transparent 60%);margin:14px 0;animation:aiThinkIn .3s ease}
+@keyframes aiThinkIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ai-orb{flex:none;width:34px;height:34px;border-radius:50%;background:conic-gradient(from 0deg,var(--accent),oklch(0.62 0.19 302),var(--accent));animation:aiOrbSpin 1.6s linear infinite;position:relative;box-shadow:0 0 0 4px oklch(from var(--accent) l c h / 0.12)}
+.ai-orb::after{content:'';position:absolute;inset:5px;border-radius:50%;background:var(--surface-strong,#fff)}
+.ai-orb::before{content:'';position:absolute;inset:11px;border-radius:50%;background:var(--accent);z-index:1;animation:aiOrbPulse 1.2s ease-in-out infinite}
+@keyframes aiOrbSpin{to{transform:rotate(360deg)}}
+@keyframes aiOrbPulse{0%,100%{transform:scale(.7);opacity:.7}50%{transform:scale(1);opacity:1}}
+.ai-steps{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.ai-step{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--faint);transition:color .3s}
+.ai-step::before{content:'';flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);transition:all .3s}
+.ai-step.active{color:var(--fg);font-weight:600}
+.ai-step.active::before{border-color:var(--accent);border-top-color:transparent;animation:aiOrbSpin .9s linear infinite}
+.ai-step.done{color:var(--muted)}
+.ai-step.done::before{content:'✓';border-color:var(--ok,#22c55e);background:var(--ok,#22c55e);color:#fff;font-size:10px;display:grid;place-items:center;animation:aiStepPop .25s ease}
+@keyframes aiStepPop{from{transform:scale(.4)}to{transform:scale(1)}}
+.ai-elapsed{flex:none;font-family:var(--font-mono);font-size:11.5px;color:var(--faint);padding-top:2px;white-space:nowrap}
+
+/* ── 结果入场：生成物不是「出现」，是「交付」── */
+.ai-result{animation:aiResultIn .45s cubic-bezier(.22,.9,.3,1)}
+@keyframes aiResultIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.ai-stagger > *{animation:aiResultIn .4s cubic-bezier(.22,.9,.3,1) backwards}
+.ai-stagger > *:nth-child(2){animation-delay:.06s}
+.ai-stagger > *:nth-child(3){animation-delay:.12s}
+.ai-stagger > *:nth-child(4){animation-delay:.18s}
+.ai-stagger > *:nth-child(5){animation-delay:.24s}
+.ai-stagger > *:nth-child(6){animation-delay:.3s}
+
+/* ── 打字机光标（关键生成文本用）── */
+.ai-typing::after{content:'▍';color:var(--accent);animation:aiCaret .8s steps(1) infinite;font-size:.9em}
+@keyframes aiCaret{50%{opacity:0}}
+
+/* ── AI 操作点：嵌入任何页面的「✨ 让 AI …」── */
+.ai-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;border:1px solid oklch(from var(--accent) l c h / 0.35);background:oklch(from var(--accent) l c h / 0.08);color:var(--accent-strong,var(--accent));font-size:12.5px;font-weight:600;cursor:pointer;transition:all .18s;text-decoration:none;white-space:nowrap}
+.ai-chip:hover{background:var(--accent);color:#fff;transform:translateY(-1px);box-shadow:0 4px 14px oklch(from var(--accent) l c h / 0.35)}
+.ai-chip:active{transform:none}
+.ai-chip .ai-spark{animation:aiSpark 2.2s ease-in-out infinite}
+@keyframes aiSpark{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.18) rotate(8deg)}}
+
+/* ── Loop 思考时间线（产品发现/增长 Loop 运行实况）── */
+.ai-timeline{position:relative;padding-left:22px;display:flex;flex-direction:column;gap:10px}
+.ai-timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:1.5px;background:var(--border)}
+.ai-tl-item{position:relative;font-size:13px;color:var(--muted);line-height:1.6}
+.ai-tl-item::before{content:'';position:absolute;left:-19px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--surface-strong,#fff);border:2px solid var(--border)}
+.ai-tl-item.ok::before{border-color:var(--ok,#22c55e);background:var(--ok,#22c55e)}
+.ai-tl-item.act::before{border-color:var(--accent);animation:aiOrbPulse 1.2s infinite}
+.ai-tl-item b{color:var(--fg)}
+.ai-tl-item .tl-t{font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-right:8px}
+
+/* ── 减少动效偏好：全部静下来 ── */
+@media (prefers-reduced-motion: reduce){
+  .ai-orb,.ai-orb::before,.ai-step.active::before,.ai-chip .ai-spark{animation:none}
+  .ai-result,.ai-stagger > *,.ai-think{animation:none}
+  .ai-typing::after{animation:none;opacity:1}
+}

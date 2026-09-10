@@ -127,6 +127,17 @@ admin_header('内容日历');
 .cal-legend .dashed{outline:2px dashed rgba(0,0,0,.3);outline-offset:-1px}
 .cal-tip{font-size:12px;color:var(--muted);background:var(--surface-strong);padding:10px 14px;border-radius:10px}
 .cal-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 22px;border-radius:10px;font-size:13px;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+/* 空日「AI 补一天」入口 */
+.cal-ai-add{position:absolute;right:6px;bottom:6px;width:24px;height:24px;border-radius:8px;border:1px dashed var(--border-strong);background:transparent;color:var(--faint);font-size:12px;cursor:pointer;opacity:0;transition:all .18s;display:grid;place-items:center;padding:0}
+.cal-day{position:relative}
+.cal-day:hover .cal-ai-add{opacity:1}
+.cal-ai-add:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:scale(1.1)}
+/* AI 补内容浮层 */
+.cal-ai-pop{position:fixed;z-index:9985;width:300px;background:var(--surface-strong);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:14px;animation:calPopIn .18s ease}
+@keyframes calPopIn{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+.cal-ai-pop h4{margin:0 0 8px;font-size:13.5px}
+.cal-ai-pop input{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface);color:var(--fg);outline:none}
+.cal-ai-pop input:focus{border-color:var(--accent)}
 @media(max-width:840px){.cal-grid{grid-template-columns:repeat(7,minmax(76px,1fr))}.main{overflow-x:auto}.cal-legend{margin-left:0}}
 </style>
 <div class="admin-layout">
@@ -259,14 +270,55 @@ function calRender() {
         (it.type === 'event' && it.end_date !== it.date ? '<span class="cal-handle cal-handle-r" onmousedown="startResize(event,\'end\')" title="拖动调整结束日">↔</span>' : '') +
         '</div>';
     }).join('');
+    var aiAdd = (chips === '' && ds >= CAL.today)
+      ? '<button class="cal-ai-add" onclick="calAiFill(\'' + ds + '\', event)" title="✨ AI 为这一天补一篇内容">✨</button>' : '';
     html += '<div class="cal-day' + (isToday ? ' today' : '') + '" data-date="' + ds + '" ondragover="calDragOver(event)" ondrop="calDrop(event)">' +
-      '<div class="dnum">' + d + (isToday ? ' ●' : '') + '</div>' + chips + '</div>';
+      '<div class="dnum">' + d + (isToday ? ' ●' : '') + '</div>' + chips + aiAdd + '</div>';
   }
   grid.innerHTML = html;
 }
 
 var calDragItem = null;
 var calResizeItem = null;
+
+/* ── AI 补一天：空日 ✨ → 浮层 → 生成定时草稿 ── */
+var calAiPop = null;
+function calAiFill(date, e) {
+  e.stopPropagation();
+  if (calAiPop) calAiPop.remove();
+  calAiPop = document.createElement('div');
+  calAiPop.className = 'cal-ai-pop';
+  calAiPop.innerHTML =
+    '<h4>✨ AI 为 ' + date.substring(5) + ' 补一篇内容</h4>' +
+    '<input id="calAiTopic" placeholder="主题（留空则 AI 自选选题）">' +
+    '<div style="display:flex;gap:8px;margin-top:10px">' +
+      '<button class="btn btn-primary btn-sm" onclick="calAiRun(\'' + date + '\')">生成定时草稿</button>' +
+      '<button class="btn btn-ghost btn-sm" onclick="calAiPop.remove()">取消</button>' +
+    '</div>' +
+    '<div class="ai-think-host"></div>';
+  document.body.appendChild(calAiPop);
+  var r = e.target.getBoundingClientRect();
+  calAiPop.style.left = Math.max(8, Math.min(r.left, innerWidth - 316)) + 'px';
+  calAiPop.style.top = Math.min(r.bottom + 8, innerHeight - 220) + 'px';
+  setTimeout(function(){ document.getElementById('calAiTopic').focus(); }, 50);
+  setTimeout(function(){ document.addEventListener('click', function h(ev){ if (calAiPop && !calAiPop.contains(ev.target)) { calAiPop.remove(); calAiPop = null; } document.removeEventListener('click', h); }); }, 0);
+}
+function calAiRun(date) {
+  var topic = (document.getElementById('calAiTopic').value || '').trim();
+  var host = calAiPop.querySelector('.ai-think-host');
+  var think = window.AIThink ? AIThink.start(host, ['分析近期内容缺口', topic ? '围绕「' + topic + '」构思' : 'AI 自选选题', '生成标题与大纲', '创建 ' + date.substring(5) + ' 定时草稿']) : null;
+  var body = new URLSearchParams({ action: 'calendar_fill', date: date, topic: topic, csrf_token: window.OF_CSRF || '' });
+  fetch('/api/create.php', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body, credentials: 'same-origin' })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if (!j.ok) throw new Error(j.error || '生成失败');
+      if (think) think.done();
+      CAL.items.push({ id: j.id, type: 'article', title: j.title, date: date, scheduled: true, color: 'var(--warn)' });
+      setTimeout(function(){ if (calAiPop) { calAiPop.remove(); calAiPop = null; } calRender(); }, 1200);
+      calToast('✅ 已排入 ' + date + '：' + j.title);
+    })
+    .catch(function(err){ if (think) think.fail(err.message); });
+}
 function calDragStart(e) {
   if (e.target.classList.contains('cal-handle')) return;
   var el = e.target.closest('.cal-chip');

@@ -112,6 +112,21 @@ admin_header('产品发现');
       </form>
     </div>
 
+    <!-- 最近一轮 Loop 思考时间线 -->
+    <?php if ($runs): $latest = $runs[0]; ?>
+    <div class="card" style="margin-bottom:20px">
+      <h2>🧠 最近一轮 Loop 实况 <span class="hint" style="font-weight:400"><?=date('m-d H:i', $latest['ts'] ?? 0)?></span></h2>
+      <div class="ai-timeline" style="margin-top:14px">
+        <div class="ai-tl-item ok"><span class="tl-t"><?=date('H:i', $latest['ts'] ?? 0)?></span><b>扫描发现</b> · 按 <?=count((array)$cfg['keywords'])?> 组关键词检索 GitHub，命中 <b><?=$latest['found'] ?? 0?></b> 个候选</div>
+        <div class="ai-tl-item ok"><b>过滤去重</b> · 跳过 <?=$latest['skipped_dup'] ?? 0?> 个（已覆盖 / 星数不足 / 超龄）</div>
+        <?php foreach (array_slice((array)($latest['items'] ?? []), 0, 8) as $it): ?>
+        <div class="ai-tl-item ok"><b>AI 撰写</b> · 《<?=htmlspecialchars($it['name'] ?? '')?>》→ 草稿入库待审</div>
+        <?php endforeach; ?>
+        <div class="ai-tl-item <?=($latest['made'] ?? 0) > 0 ? 'ok' : 'act'?>"><b><?=($latest['made'] ?? 0) > 0 ? '本轮产出 ' . $latest['made'] . ' 篇草稿，等待人工审核' : '本轮无新产出，明天再来'?></b></div>
+      </div>
+    </div>
+    <?php endif; ?>
+
     <!-- 运行日志 -->
     <div class="card">
       <h2>运行日志</h2>
