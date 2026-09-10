@@ -919,7 +919,7 @@ function save_tags(array $data): bool {
 }
 
 // ─── UI ───────────────────────────────────────────
-if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260909a');
+if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260910a');
 
 function admin_header(string $title): void {
 security_headers();
@@ -2042,7 +2042,7 @@ var FC_PALETTE_ITEMS = <?=json_encode(cp_items(), JSON_UNESCAPED_UNICODE)?>;
 })();
 </script>
 <script src="/assets/admin-ui.js?v=<?= OF_ADMIN_UI_VER ?>"></script>
-<script>window.OF_WAIFU_CONFIG = { default: <?=json_encode(site_config_get('waifu_model', 'rice'))?> };</script>
+<script>window.OF_WAIFU_CONFIG = { default: <?=json_encode(site_config_get('waifu_model', 'rice'))?>, ver: <?=json_encode(site_config_get('waifu_model_ver', '0'))?> };</script>
 <script src="/assets/admin-waifu.js?v=<?= OF_ADMIN_UI_VER ?>"></script>
 </body></html>
 <?php }

@@ -59,6 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $settings['staging_mode'] = isset($_POST['settings']['staging_mode']);
     $settings['multilang_enabled'] = isset($_POST['settings']['multilang_enabled']);
     $settingsBefore = json_read($settingsFile);
+    // 看板娘默认形象变更时提升版本号：各浏览器的个人换装（localStorage）随之失效，全站默认立即生效
+    if (($settingsBefore['waifu_model'] ?? 'rice') !== ($settings['waifu_model'] ?? 'rice')) {
+        $settings['waifu_model_ver'] = (string)time();
+    } else {
+        $settings['waifu_model_ver'] = (string)($settingsBefore['waifu_model_ver'] ?? '0');
+    }
     json_write($settingsFile, $settings);
     if (class_exists('PluginSystem')) {
         PluginSystem::do_action('settings_changed', $settings, $settingsBefore);
@@ -103,12 +109,13 @@ admin_header('系统设置');
         <div class="field-row">
           <div class="field"><label>站点标语 <span class="hint">· Slogan</span></label><input type="text" name="settings[site_slogan]" value="<?=htmlspecialchars($settings['site_slogan'] ?? 'AI 时代的网站增长操作系统')?>"></div>
           <div class="field"><label>Logo URL <span class="hint">· 空则用默认</span></label><input type="text" name="settings[site_logo]" value="<?=htmlspecialchars($settings['site_logo'] ?? '')?>" placeholder="assets/images/logo.png"></div>
-          <div class="field"><label>看板娘默认形象 <span class="hint">· 后台右下角 Live2D 助手，用户右键可换装</span></label>
+          <div class="field"><label>看板娘默认形象 <span class="hint">· 后台右下角 Live2D 助手</span></label>
             <select name="settings[waifu_model]">
               <?php foreach (['rice' => '璃丝 · 御姐黑裙（推荐）', 'mao' => '玛奥 · 猫娘少女', 'ren' => '莲 · 中性青年', 'natori' => '名取 · 西装男性', 'mark' => '马克 · 休闲男性', 'hiyori' => '日和 · 经典少女'] as $__wk => $__wl): ?>
               <option value="<?=$__wk?>" <?=($settings['waifu_model'] ?? 'rice') === $__wk ? 'selected' : ''?>><?=$__wl?></option>
               <?php endforeach; ?>
             </select>
+            <div class="hint" style="margin-top:6px">修改保存后全站立即生效（覆盖各浏览器的个人换装）；之后个人仍可通过右键看板娘换装，或选「跟随全站默认」恢复。</div>
           </div>
         </div>
         <div class="field"><label>站点描述 <span class="hint">· SEO meta description</span></label><input type="text" name="settings[site_desc]" value="<?=htmlspecialchars($settings['site_desc'] ?? '')?>"></div>

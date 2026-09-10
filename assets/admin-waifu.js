@@ -66,11 +66,25 @@
   };
   var ORDER = ['rice', 'mao', 'ren', 'natori', 'mark', 'hiyori'];
 
-  function currentId() {
-    try { var v = localStorage.getItem('of_waifu_model'); if (v && WARDROBE[v]) return v; } catch (e) {}
-    var d = (window.OF_WAIFU_CONFIG && window.OF_WAIFU_CONFIG.default) || 'rice';
-    return WARDROBE[d] ? d : 'rice';
+  /* 个人换装（localStorage）只在「全站默认版本」未变时生效；
+   * 后台设置改了默认形象 → ver 变化 → 所有浏览器回到新默认，之后可再右键个人换装 */
+  function cfgDefault() { var d = (window.OF_WAIFU_CONFIG && window.OF_WAIFU_CONFIG.default) || 'rice'; return WARDROBE[d] ? d : 'rice'; }
+  function cfgVer() { return String((window.OF_WAIFU_CONFIG && window.OF_WAIFU_CONFIG.ver) || '0'); }
+  function readChoice() {
+    try {
+      var raw = localStorage.getItem('of_waifu_model');
+      if (!raw) return null;
+      var c = JSON.parse(raw); // 新格式 {id, ver}
+      if (c && WARDROBE[c.id] && String(c.ver) === cfgVer()) return c.id;
+      localStorage.removeItem('of_waifu_model'); // 旧格式或版本已过期的个人选择，清除
+    } catch (e) { try { localStorage.removeItem('of_waifu_model'); } catch (e2) {} }
+    return null;
   }
+  function writeChoice(id) {
+    try { localStorage.setItem('of_waifu_model', JSON.stringify({ id: id, ver: cfgVer() })); } catch (e) {}
+  }
+  function clearChoice() { try { localStorage.removeItem('of_waifu_model'); } catch (e) {} }
+  function currentId() { return readChoice() || cfgDefault(); }
   var persona = WARDROBE[currentId()];
 
   function reducedMotion() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
@@ -149,6 +163,7 @@
       html += '<button class="m-item' + (id === currentId() ? ' on' : '') + '" data-id="' + id + '">'
             + '<b>' + w.name + '</b><small>' + w.tag + '</small></button>';
     });
+    html += '<button class="m-item" data-act="default">跟随全站默认（' + WARDROBE[cfgDefault()].name + '）</button>';
     html += '<button class="m-item m-hide" data-act="hide">本次会话隐藏</button>';
     menuEl.innerHTML = html;
     document.body.appendChild(menuEl);
@@ -166,9 +181,17 @@
         if (window.fcToast) fcToast(persona.hidden + '（新开标签页会回来）');
         return;
       }
+      if (btn.dataset.act === 'default') {
+        var cur = currentId();
+        clearChoice();
+        closeMenu();
+        if (cur !== cfgDefault()) swapModel(cfgDefault(), box);
+        else say('已跟随全站默认：' + WARDROBE[cfgDefault()].name, 2600);
+        return;
+      }
       var id = btn.dataset.id;
       if (id && WARDROBE[id] && id !== currentId()) {
-        try { localStorage.setItem('of_waifu_model', id); } catch (err) {}
+        writeChoice(id);
         closeMenu();
         swapModel(id, box);
       } else closeMenu();
@@ -179,7 +202,6 @@
   var appRef = null, canvasRef = null, boxRef = null;
   function swapModel(id, box) {
     persona = WARDROBE[id];
-    try { localStorage.setItem('of_waifu_model', id); } catch (e) {}
     if (model) { try { appRef.stage.removeChild(model); model.destroy(); } catch (e) {} model = null; }
     say('换装中…', 0);
     PIXI.live2d.Live2DModel.from(BASE + '/model/' + persona.file, { autoInteract: false }).then(function (m) {
