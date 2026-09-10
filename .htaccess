@@ -111,6 +111,7 @@ RewriteRule ^community-post/(.+)$ community-post.php?id=$1 [L,QSA]
 RewriteRule ^(skill|plugin|theme)/([^/]+)/?$ asset.php?type=$1&id=$2 [L,QSA,B]
 # 幻灯片放映（创作台产物）
 RewriteRule ^deck/([a-z0-9_]+)/?$ deck.php?id=$1 [L,QSA]
+RewriteRule ^order-success/?$ order-success.php [L,QSA]
 
 # 插件 API 路由：/api/plugin/{插件ID}/{路径} → api/plugin.php（必须在通用 API 规则之前）
 RewriteRule ^api/plugin/([a-z0-9-]+)(?:/(.*))?$ api/plugin.php?plugin=$1&path=$2 [L,QSA]

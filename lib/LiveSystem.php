@@ -122,6 +122,83 @@ function live_chat(string $roomId, int $limit = 60): array {
     return array_slice($msgs, -$limit);
 }
 
+/* ═══ 弹幕风控（F2c）：频率 / 重复 / 敏感词 / 慢速模式 / 禁言 ═══ */
+function live_risk_file(): string { return DATA_DIR . '/live/risk.json'; }
+
+/** 当前发言者 key：会员 ID 优先，游客用 IP 哈希 */
+function live_user_key(): string {
+    if (function_exists('member_current')) {
+        $m = member_current();
+        if ($m) return 'm:' . ($m['id'] ?? '');
+    }
+    return 'ip:' . md5($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+}
+
+/**
+ * 发言前风控检查。返回 null 放行，否则返回错误文案。
+ * 四道闸：禁言名单 → 敏感词 → 频率（房间慢速模式优先，默认 3s）→ 重复内容
+ */
+function live_risk_check(string $roomId, string $text, ?array $room = null): ?string {
+    $settings = live_settings();
+    $key = live_user_key();
+
+    // 1. 禁言名单（会员 ID 或 IP 哈希，每行一个）
+    $muted = array_filter(array_map('trim', explode("\n", (string)($settings['muted'] ?? ''))));
+    $rawKey = $key;
+    if (str_starts_with($key, 'm:')) $rawKey = substr($key, 2);
+    foreach ($muted as $m) {
+        if ($m !== '' && ($m === $rawKey || $m === $key)) return '你已被禁言，无法发言';
+    }
+
+    // 2. 敏感词（每行一个，命中即拒）
+    $banned = array_filter(array_map('trim', explode("\n", (string)($settings['banned_words'] ?? ''))));
+    foreach ($banned as $w) {
+        if ($w !== '' && mb_stripos($text, $w) !== false) return '消息包含不允许的内容';
+    }
+
+    // 3+4. 频率与重复（按房间+发言人）
+    $room = $room ?? live_room($roomId);
+    $minInterval = max(1, (int)($room['slow_mode'] ?? 3));   // 慢速模式秒数，默认 3s
+    $risk = json_read(live_risk_file());
+    $last = $risk[$roomId][$key] ?? null;
+    $now = time();
+    if ($last) {
+        if ($now - (int)$last['ts'] < $minInterval) return '发言太快了，喝口水再来（' . $minInterval . 's/条）';
+        if (($last['text'] ?? '') === $text) return '不要重复发送相同内容';
+    }
+    $risk[$roomId][$key] = ['ts' => $now, 'text' => $text];
+    // 控制文件体积：每房间只留最近 100 个发言人
+    if (count((array)$risk[$roomId]) > 100) $risk[$roomId] = array_slice($risk[$roomId], -100, null, true);
+    json_write(live_risk_file(), $risk);
+    return null;
+}
+
+/* ═══ 点赞（F2b）：轻量计数 + 每会话限速 ═══ */
+function live_likes_file(): string { return DATA_DIR . '/live/likes.json'; }
+
+function live_likes(string $roomId): int {
+    $all = json_read(live_likes_file());
+    return (int)($all[$roomId]['count'] ?? 0);
+}
+
+/** 点赞。每会话每分钟最多 60 次（连击上限），返回最新总数 */
+function live_like(string $roomId): array {
+    $key = live_user_key();
+    $all = json_read(live_likes_file());
+    $all[$roomId] = $all[$roomId] ?? ['count' => 0, 'hits' => []];
+    $all[$roomId]['hits'] = (array)($all[$roomId]['hits'] ?? []);
+    $now = time();
+    $hits = array_filter((array)($all[$roomId]['hits'][$key] ?? []), fn($ts) => $now - $ts < 60);
+    if (count($hits) >= 60) return ['ok' => false, 'count' => (int)$all[$roomId]['count']];
+    $hits[] = $now;
+    $all[$roomId]['hits'][$key] = array_values($hits);
+    $all[$roomId]['count'] = (int)$all[$roomId]['count'] + 1;
+    // 控制体积：只留最近 50 个点赞者
+    if (count($all[$roomId]['hits']) > 50) $all[$roomId]['hits'] = array_slice($all[$roomId]['hits'], -50, null, true);
+    json_write(live_likes_file(), $all);
+    return ['ok' => true, 'count' => (int)$all[$roomId]['count']];
+}
+
 function live_chat_send(string $roomId, string $user, string $text): array {
     $msg = [
         'id' => 'cm_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 5),
