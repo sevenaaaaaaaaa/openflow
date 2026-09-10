@@ -19,7 +19,7 @@ function cp_items(): array {
     $add('articles', '文章管理', '/xmp/articles', '📝', $sec, 'article 文章 发布');
     $add('articles', '写一篇新文章', '/xmp/article-edit', '✍️', $sec, '新文章 创建 编辑');
     $add('articles', '产品发现 Loop', '/xmp/product-scout', '🔭', $sec, 'scout 产品发现 每日 新产品');
-    $add('articles', '创作台', '/xmp/create', '🎨', $sec, '创作 专栏 脚本 幻灯片 slides create');
+    $add('articles', '创作台', '/xmp/create', '🎨', $sec, '创作 专栏 脚本 幻灯片 ppt 演示 slides create deck');
     $add('ingest', '外部内容导入（飞书/Notion/Obsidian）', '/xmp/ingest', '🔌', $sec, 'ingest 导入 飞书 notion obsidian');
     $add('articles', '批量导入文章', '/xmp/api-batch', '📦', $sec, '批量 导入 api');
     $add('articles', '文章分类', '/xmp/categories', '🗂️', $sec, 'category 分类');

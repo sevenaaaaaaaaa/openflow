@@ -65,8 +65,10 @@ admin_header('工作台');
     <div class="v-head">
       <div><h1>工作台</h1><p class="v-sub">运营脉搏 · 待办 · 增长引擎。数据实时读取自 openflow.db（快照 <?=htmlspecialchars(date('Y-m-d', time()))?>）。</p></div>
       <div class="v-actions">
+        <a href="create.php" class="btn btn-p btn-sm">🎨 创作台</a>
+        <a href="live.php" class="btn btn-s btn-sm">📺 直播</a>
         <a href="dashboard.php" class="btn btn-s btn-sm">经营驾驶舱</a>
-        <a href="article-edit.php" class="btn btn-p btn-sm">新建内容</a>
+        <a href="article-edit.php" class="btn btn-s btn-sm">新建内容</a>
       </div>
     </div>
 
