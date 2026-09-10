@@ -21,6 +21,7 @@ $settings = json_read($settingsFile);
     'address' => '上海市',
     'beian' => '',
     'site_slogan' => 'AI 时代的网站增长操作系统',
+    'waifu_model' => 'mao',
     'site_desc' => '专注于以 AI 驱动网站增长、营销与运营的解决方案提供商',
     'site_keywords' => '网站增长, 营销自动化, AI Agent, SEO, GEO, 线索管理',
     'site_logo' => '',
@@ -102,6 +103,13 @@ admin_header('系统设置');
         <div class="field-row">
           <div class="field"><label>站点标语 <span class="hint">· Slogan</span></label><input type="text" name="settings[site_slogan]" value="<?=htmlspecialchars($settings['site_slogan'] ?? 'AI 时代的网站增长操作系统')?>"></div>
           <div class="field"><label>Logo URL <span class="hint">· 空则用默认</span></label><input type="text" name="settings[site_logo]" value="<?=htmlspecialchars($settings['site_logo'] ?? '')?>" placeholder="assets/images/logo.png"></div>
+          <div class="field"><label>看板娘默认形象 <span class="hint">· 后台右下角 Live2D 助手，用户右键可换装</span></label>
+            <select name="settings[waifu_model]">
+              <?php foreach (['mao' => '玛奥 · 御姐魔女', 'ren' => '莲 · 中性青年', 'natori' => '名取 · 西装男性', 'mark' => '马克 · 休闲男性', 'hiyori' => '日和 · 经典少女'] as $__wk => $__wl): ?>
+              <option value="<?=$__wk?>" <?=($settings['waifu_model'] ?? 'mao') === $__wk ? 'selected' : ''?>><?=$__wl?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
         </div>
         <div class="field"><label>站点描述 <span class="hint">· SEO meta description</span></label><input type="text" name="settings[site_desc]" value="<?=htmlspecialchars($settings['site_desc'] ?? '')?>"></div>
         <div class="field"><label>SEO 关键词 <span class="hint">· 逗号分隔</span></label><input type="text" name="settings[site_keywords]" value="<?=htmlspecialchars($settings['site_keywords'] ?? '')?>"></div>
