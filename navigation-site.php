@@ -14,8 +14,10 @@ require_once __DIR__ . '/lib/CommentSystem.php';
 require_once __DIR__ . '/lib/MemberSystem.php';
 require_once __DIR__ . '/lib/comment-widget.php';
 require_once __DIR__ . '/lib/NavGithub.php';
+require_once __DIR__ . '/lib/Markdown.php';
 
 $nav = json_read(DATA_DIR . '/navigation.json');
+$navIntros = json_read(DATA_DIR . '/nav-intros.json');
 $sites = $nav['sites'] ?? [];
 $categories = $nav['categories'] ?? [];
 $siteId = $_GET['site'] ?? '';
@@ -57,6 +59,11 @@ if (!$related) {
     $related = array_slice($related, 0, 4);
 }
 $compareIds = $site['id'] . ($related ? ',' . $related[0]['id'] : '');
+
+// 产品截图（自动截取的官网首页）与深度介绍（data/nav-intros.json）
+$siteShot = 'assets/images/nav-sites/' . $site['id'] . '.png';
+$hasShot  = file_exists(__DIR__ . '/' . $siteShot);
+$siteIntro = trim((string)($navIntros[$site['id']] ?? ''));
 
 $siteTitle = $site['name'] . (!empty($site['name_en']) ? '（' . $site['name_en'] . '）' : '');
 ?>
@@ -102,6 +109,21 @@ $siteTitle = $site['name'] . (!empty($site['name_en']) ? '（' . $site['name_en'
 .sim-card h3{font-size:15px;margin:0;display:flex;align-items:center;gap:8px}
 .sim-card p{font-size:12.5px;color:var(--muted);line-height:1.7;margin:0;flex:1}
 .sim-card .ops{display:flex;gap:8px}
+/* 产品截图（浏览器框） */
+.shot-win{border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.shot-win .win-bar{display:flex;align-items:center;gap:6px;padding:9px 14px;border-bottom:1px solid var(--border-soft);background:var(--surface-2)}
+.shot-win .win-bar .light{width:10px;height:10px;border-radius:50%}
+.shot-win .win-bar .url{margin-left:8px;font-family:var(--font-mono);font-size:11px;color:var(--faint);background:var(--surface);border:1px solid var(--border-soft);border-radius:7px;padding:2px 10px;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shot-win img{display:block;width:100%;height:auto}
+/* 产品介绍（Markdown 正文） */
+.intro-card h2{font-size:17px;margin:0 0 12px}
+.intro-body{font-size:14.5px;line-height:1.9;color:var(--fg)}
+.intro-body h2{font-size:15px;font-weight:700;margin:20px 0 8px;color:var(--fg)}
+.intro-body p{margin:0 0 12px;color:var(--muted)}
+.intro-body ul{margin:0 0 12px;padding-left:20px;color:var(--muted)}
+.intro-body li{margin-bottom:6px}
+.intro-body strong{color:var(--fg)}
+.intro-body code{font-family:var(--font-mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--border-soft);border-radius:6px;padding:1px 6px}
 @media(max-width:720px){.gh-stats{grid-template-columns:repeat(2,1fr)}.sim-grid{grid-template-columns:1fr}}
 </style>
 <script src="/assets/inject.js?v=20260830b" defer></script>
@@ -133,6 +155,20 @@ $siteTitle = $site['name'] . (!empty($site['name_en']) ? '（' . $site['name_en'
         </div>
       </div>
     </div>
+
+    <?php if ($hasShot): ?>
+    <div class="shot-win" data-od-id="site-shot">
+      <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url"><?=htmlspecialchars($site['url'] ?? '')?></div></div>
+      <img src="/<?=$siteShot?>" alt="<?=htmlspecialchars($site['name'])?> 官网首页截图" loading="lazy">
+    </div>
+    <?php endif; ?>
+
+    <?php if ($siteIntro): ?>
+    <div class="card intro-card" data-od-id="site-intro">
+      <h2>📖 产品介绍</h2>
+      <div class="intro-body"><?=Markdown::toHtml($siteIntro)?></div>
+    </div>
+    <?php endif; ?>
 
     <?php if ($gh): ?>
     <div class="card gh-panel" data-od-id="gh-panel">
