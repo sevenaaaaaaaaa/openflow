@@ -79,7 +79,7 @@ function render_card(array $a, callable $catOf): string {
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260909a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
 <style>
 /* 文章列表独有：筛选栏、最新大卡、卡片摘要、加载更多。其余全部来自 modules.css。 */
 .crumbs{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--faint);justify-content:center}
