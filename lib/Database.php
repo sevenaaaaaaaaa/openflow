@@ -132,6 +132,20 @@ class Database {
         // 事件去重唯一索引（message_id）
         try { $db->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_events_message ON events(message_id) WHERE message_id != ''"); } catch (Exception $e) {}
 
+        // 非人类流量事件表（开发访问 / AI 爬虫 / 搜索爬虫 / 其他机器人）
+        // 与 events 同构 + channel/ua 两列；track.php 入库前按 TrafficFilter 分流，
+        // 所有现存分析查询只查 events → 自动只统计真实用户，零回归。
+        $db->exec("CREATE TABLE IF NOT EXISTS events_bot (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event TEXT, label TEXT, variant TEXT,
+            page TEXT, uid TEXT,
+            member_id TEXT, member_email TEXT, props TEXT,
+            ip TEXT, created_at TEXT,
+            message_id TEXT DEFAULT '',
+            channel TEXT DEFAULT 'bot_other', ua TEXT DEFAULT ''
+        )");
+        try { $db->exec("CREATE INDEX IF NOT EXISTS idx_events_bot_channel ON events_bot(channel, created_at)"); } catch (Exception $e) {}
+
         // ─── events 查询索引（D1）───────────────────────────
         // events 是全库最大的表（生产约 52 万行），此前只有上面那条
         // message_id 部分唯一索引，所有分析查询一律全表扫描。

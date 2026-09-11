@@ -65,6 +65,25 @@ if (isset($_GET['pull'])) {
     $message = '数据已拉取并缓存';
 }
 
+// ── 快速收录：手动推送 URL ──
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['index_submit'])) {
+    csrf_verify();
+    require_once __DIR__ . '/seo-functions.php';
+    $urls = array_values(array_filter(array_map('trim', preg_split('/[\r\n]+/', (string)($_POST['index_urls'] ?? '')))));
+    $urls = array_values(array_filter($urls, fn($u) => preg_match('#^https?://#i', $u)));
+    if (!$urls) {
+        $error = '请粘贴至少一条完整 URL（https:// 开头）';
+    } else {
+        $okIn = 0; $okBd = 0;
+        foreach (array_slice($urls, 0, 20) as $u) {
+            $r = seo_submit_url($u);
+            if ($r['indexnow']) $okIn++;
+            if ($r['baidu']) $okBd++;
+        }
+        $message = "推送完成：IndexNow 成功 {$okIn}/" . count($urls) . "，百度成功 {$okBd}/" . count($urls);
+    }
+}
+
 $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '');
 $publicUrl = $baseUrl . '/' . ($settings['public_slug'] ?: 'seo-board');
 
@@ -112,6 +131,63 @@ if (!defined('OF_EMBED')) admin_header('SEO 站长工具');
         <div class="field"><label>Google OAuth Client ID</label><input type="text" name="google_client_id" form="seoCfg" value="<?=htmlspecialchars($settings['google_client_id'] ?? '')?>" placeholder="xxx.apps.googleusercontent.com"></div>
         <div class="field"><label>Client Secret</label><input type="password" name="google_client_secret" form="seoCfg" value="<?=htmlspecialchars($settings['google_client_secret'] ?? '')?>"></div>
       </div>
+      <?php endif; ?>
+    </div>
+
+    <!-- 快速收录 -->
+    <?php
+    require_once __DIR__ . '/seo-functions.php';
+    $__inCfg = indexnow_config();
+    $__keyUrl = 'https://' . ($__inCfg['host'] ?? '') . '/' . ($__inCfg['key'] ?? '') . '.txt';
+    $__baiduReady = !empty($settings['baidu_token']) && !empty($settings['baidu_site']);
+    $__indexLog = index_log_get();
+    ?>
+    <div class="card" style="border:1.5px solid rgba(22,163,74,.3);background:linear-gradient(135deg,var(--surface),rgba(22,163,74,.06))">
+      <h2>⚡ 快速收录 <span class="hint" style="font-weight:400">· 发布文章时自动双路推送，也可手动推任意页面</span></h2>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin:10px 0 14px">
+        <div class="text-sm">
+          <b>IndexNow</b>（Bing / Yandex / Naver）<br>
+          <?php if (!empty($__inCfg['key'])): ?>
+          <span style="color:#16a34a">✅ 已自动就绪</span> · key 验证地址 <a href="<?=htmlspecialchars($__keyUrl)?>" target="_blank" class="text-sm"><?=htmlspecialchars($__keyUrl)?></a>
+          <?php else: ?>
+          <span style="color:#dc2626">❌ 未就绪</span>
+          <?php endif; ?>
+        </div>
+        <div class="text-sm">
+          <b>百度主动推送</b><br>
+          <?php if ($__baiduReady): ?>
+          <span style="color:#16a34a">✅ 已配置</span>（站点 <?=htmlspecialchars($settings['baidu_site'])?>）
+          <?php else: ?>
+          <span style="color:#d97706">⚠️ 未配置</span> —— 在下方「百度站长」填入 Token 与站点即可开通
+          <?php endif; ?>
+        </div>
+        <div class="text-sm">
+          <b>Google</b><br>
+          <span class="text-muted">靠 sitemap + 上方 Google 授权后自动拉取收录状态；Google 不开放普通页面的主动推送 API</span>
+        </div>
+      </div>
+      <form method="post" style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+        <?= csrf_field() ?>
+        <textarea name="index_urls" rows="2" style="flex:1;min-width:320px;font-family:var(--mono);font-size:12px;padding:8px;border:1.5px solid var(--border);border-radius:8px" placeholder="https://nownexts.com/article/xxx&#10;每行一条，最多 20 条"></textarea>
+        <button type="submit" name="index_submit" class="btn btn-primary">⚡ 立即推送收录</button>
+      </form>
+      <?php if ($__indexLog): ?>
+      <details style="margin-top:12px">
+        <summary class="text-sm" style="cursor:pointer;color:var(--accent,#2563eb)">  推送日志（最近 <?=count($__indexLog)?> 条）</summary>
+        <div style="overflow-x:auto;margin-top:8px"><table>
+          <thead><tr><th>时间</th><th>引擎</th><th>URL</th><th>结果</th></tr></thead>
+          <tbody>
+            <?php foreach (array_slice($__indexLog, 0, 15) as $lg): ?>
+            <tr>
+              <td class="text-sm text-muted"><?=htmlspecialchars($lg['at'])?></td>
+              <td><?=htmlspecialchars($lg['engine'])?></td>
+              <td class="text-sm" style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($lg['url'])?></td>
+              <td class="text-sm"><?=$lg['ok'] ? '<span style="color:#16a34a">✅</span>' : '<span style="color:#dc2626">❌</span>'?> <?=htmlspecialchars($lg['note'] ?? '')?></td>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table></div>
+      </details>
       <?php endif; ?>
     </div>
 

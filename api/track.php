@@ -11,6 +11,7 @@ require_once __DIR__ . '/../lib/Database.php';
 require_once __DIR__ . '/../lib/CdpSystem.php';
 require_once __DIR__ . '/../lib/FlowSystem.php';
 require_once __DIR__ . '/../lib/EventIdentity.php';
+require_once __DIR__ . '/../lib/TrafficFilter.php';
 
 header('Content-Type: application/json; charset=utf-8');
 cors_headers();
@@ -61,6 +62,29 @@ if ($newUtm) {
 // 关联会员（若已登录）
 $memberId = $_SESSION['member_id'] ?? '';
 $memberEmail = $_SESSION['member_email'] ?? '';
+
+// ── 流量分流：开发访问与爬虫不写主 events 表（否则测试浏览/抓取会污染 UV/DAU/漏斗），
+// 单独进 events_bot 表，后台「SEO 中心 → 爬虫洞察」可查看 AI/搜索爬虫抓取分布。
+$__traffic = traffic_classify();
+if ($__traffic['channel'] !== 'human') {
+    Database::insert('events_bot', [
+        'event' => mb_substr($event, 0, 60),
+        'label' => mb_substr((string)($input['label'] ?? ''), 0, 200),
+        'variant' => mb_substr((string)($input['variant'] ?? ''), 0, 20),
+        'page' => mb_substr((string)($input['page'] ?? (($_SERVER['HTTP_REFERER'] ?? '') ? parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH) : '/')), 0, 200),
+        'uid' => $uid,
+        'member_id' => $memberId,
+        'member_email' => $memberEmail,
+        'props' => json_encode($input['props'] ?? [], JSON_UNESCAPED_UNICODE),
+        'ip' => $_SERVER['REMOTE_ADDR'] ?? '',
+        'message_id' => $eventId,
+        'created_at' => date('Y-m-d H:i:s'),
+        'channel' => $__traffic['channel'],
+        'ua' => mb_substr($__traffic['ua'], 0, 250),
+    ]);
+    echo json_encode(['ok' => true, 'uid' => $uid, 'channel' => $__traffic['channel']]);
+    exit;
+}
 
 // 写入 SQLite
 Database::insert('events', [

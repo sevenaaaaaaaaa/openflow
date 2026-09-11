@@ -156,7 +156,7 @@ $catName = $catNames[$article['category'] ?? ''] ?? '';
 $pageTitle = !empty($article['seo_title']) ? $article['seo_title'] : ($article['title'] ?? '文章') . ' | OpenFlow';
 $pageDesc = !empty($article['seo_desc']) ? $article['seo_desc'] : mb_substr(strip_tags($content), 0, 120);
 $cover = $article['cover'] ?? '';
-$coverUrl = $cover ? (strpos($cover, 'http') === 0 ? $cover : $baseUrl . '/' . ltrim($cover, '/')) : $baseUrl . '/assets/images/logos/openflow-symbol-primary.png';
+$coverUrl = $cover ? (strpos($cover, 'http') === 0 ? $cover : $baseUrl . '/' . ltrim($cover, '/')) : $baseUrl . '/assets/images/og-cover.png';
 
 // JSON-LD
 $jsonLd = [
@@ -168,7 +168,7 @@ $jsonLd = [
     'datePublished' => $article['created_at'] ?? '',
     'dateModified' => $article['updated_at'] ?? ($article['created_at'] ?? ''),
     'author' => ['@type' => 'Person', 'name' => $article['author'] ?? 'OpenFlow', 'url' => $baseUrl . '/author/' . urlencode($article['author'] ?? 'OpenFlow')],
-    'publisher' => ['@type' => 'Organization', 'name' => 'OpenFlow', 'logo' => ['@type' => 'ImageObject', 'url' => $baseUrl . '/assets/images/logos/openflow-symbol-primary.png']],
+    'publisher' => ['@type' => 'Organization', 'name' => 'OpenFlow', 'logo' => ['@type' => 'ImageObject', 'url' => $baseUrl . '/assets/images/logos/of-icon-512.png']],
     'mainEntityOfPage' => $articleUrl,
 ];
 if ($catName) $jsonLd['articleSection'] = $catName;

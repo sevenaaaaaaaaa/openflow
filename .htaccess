@@ -17,6 +17,9 @@ RewriteRule ^$ index.php [L,QSA]
 RewriteCond %{THE_REQUEST} \s/index\.php[\s?]
 RewriteRule ^index\.php$ / [R=301,L]
 
+# IndexNow key 验证文件：/{32位hex}.txt → 动态输出（key 存 data/indexnow.json，部署不丢）
+RewriteRule ^([a-f0-9]{32})\.txt$ /api/indexnow-key.php?key=$1 [L]
+
 # 多语言 URL 前缀（/en/ /ja/ /zh-CN/ 剥离 → 原路径，语言由 REQUEST_URI 检测）
 RewriteRule ^(en|ja|zh-CN)/(.*)$ $2 [L,QSA]
 
