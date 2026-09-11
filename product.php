@@ -26,7 +26,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '产品 | OpenFlow', 'canonical' => site_config_get('site_url') . '/product']); endif; ?>
+<?php if (function_exists('seo_head')): seo_head(['title' => '产品 | OpenFlow', 'description' => 'Open Flow 产品介绍：连接、编排、执行三步原理，可视化画布、AI 步骤、开放连接器与可运行演示。', 'canonical' => site_config_get('site_url') . '/product']); endif; ?>
 <title>产品 · 芭乐派 · OpenFlow 增长操作系统</title>
 <meta name="description" content="Open Flow 产品介绍：连接、编排、执行三步原理，可视化画布、AI 步骤、开放连接器与可运行演示。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>

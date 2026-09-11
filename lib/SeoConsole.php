@@ -8,9 +8,14 @@ function seo_console_file(): string { return DATA_DIR . '/seo-console.json'; }
 
 function seo_console_settings(): array {
     return array_merge([
-        'gsc_email' => '',           // GSC Service Account Email
-        'gsc_key' => '',             // GSC Service Account JSON Key（填路径或内容）
+        'gsc_email' => '',           // GSC Service Account Email（旧方式，留作回退）
+        'gsc_key' => '',             // GSC Service Account JSON Key（旧方式，留作回退）
         'gsc_property' => '',        // GSC 属性（如 sc-domain:example.com）
+        'google_client_id' => '',    // Google OAuth Client ID（一次配置，GSC+GA4 共用）
+        'google_client_secret' => '',// Google OAuth Client Secret
+        'google_refresh_token' => '',// 授权后自动写入，无需手填
+        'google_account' => '',      // 已授权的 Google 账号邮箱（展示用）
+        'ga4_property' => '',        // GA4 属性 ID（数字，授权后从下拉选择自动带入）
         'bing_api_key' => '',        // Bing Webmaster API Key
         'bing_site' => '',           // Bing 站点 URL
         'baidu_token' => '',         // 百度站长 Token
@@ -30,15 +35,171 @@ function seo_cache_file(): string { return DATA_DIR . '/seo-console-cache.json';
 function seo_cache(): array { return json_read(seo_cache_file()); }
 function seo_cache_save(array $data): bool { return json_write(seo_cache_file(), $data); }
 
+// ─── Google OAuth 2.0（一次授权，GSC + GA4 共用）───
+// 回调地址固定为 /xmp/seo-center?tab=console&google_callback=1（seo-console 被 301 到
+// seo-center 嵌入渲染，直接打 seo-console 会在 301 中丢 query），需在 Google Cloud Console 的
+// OAuth 客户端「已授权的重定向 URI」里登记完整地址
+function seo_google_callback_url(): string {
+    $base = function_exists('site_config_get') ? rtrim(site_config_get('site_url', ''), '/') : '';
+    if ($base === '') $base = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '');
+    return $base . '/xmp/seo-center?tab=console&google_callback=1';
+}
+
+function seo_google_oauth_url(): string {
+    $s = seo_console_settings();
+    return 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query([
+        'client_id' => $s['google_client_id'],
+        'redirect_uri' => seo_google_callback_url(),
+        'response_type' => 'code',
+        'scope' => 'https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly email',
+        'access_type' => 'offline',   // 要 refresh_token
+        'prompt' => 'consent',        // 每次都给 refresh_token（重复授权也不丢）
+    ]);
+}
+
+// 授权码 → tokens（成功返回 true 并落库 refresh_token + 账号邮箱）
+function seo_google_oauth_exchange(string $code): bool {
+    $s = seo_console_settings();
+    if ($s['google_client_id'] === '' || $s['google_client_secret'] === '') return false;
+    $resp = seo_http_post_json('https://oauth2.googleapis.com/token', [
+        'code' => $code,
+        'client_id' => $s['google_client_id'],
+        'client_secret' => $s['google_client_secret'],
+        'redirect_uri' => seo_google_callback_url(),
+        'grant_type' => 'authorization_code',
+    ], null, true);
+    if (empty($resp['refresh_token']) && empty($resp['access_token'])) return false;
+    if (!empty($resp['refresh_token'])) $s['google_refresh_token'] = $resp['refresh_token'];
+    // 记录授权账号邮箱（展示用）
+    if (!empty($resp['access_token'])) {
+        $ui = seo_http_get_json('https://www.googleapis.com/oauth2/v2/userinfo', $resp['access_token']);
+        if (!empty($ui['email'])) $s['google_account'] = $ui['email'];
+    }
+    return seo_console_save($s);
+}
+
+// refresh_token → access_token（1 小时内存+文件缓存，避免每次拉取都刷新）
+function seo_google_access_token(): ?string {
+    $s = seo_console_settings();
+    if ($s['google_refresh_token'] === '') return null;
+    static $memo = null;
+    if ($memo && ($memo['exp'] ?? 0) > time() + 60) return $memo['token'];
+    $cache = seo_cache();
+    if (!empty($cache['google_token']) && ($cache['google_token_exp'] ?? 0) > time() + 60) {
+        $memo = ['token' => $cache['google_token'], 'exp' => $cache['google_token_exp']];
+        return $memo['token'];
+    }
+    $resp = seo_http_post_json('https://oauth2.googleapis.com/token', [
+        'client_id' => $s['google_client_id'],
+        'client_secret' => $s['google_client_secret'],
+        'refresh_token' => $s['google_refresh_token'],
+        'grant_type' => 'refresh_token',
+    ], null, true);
+    if (empty($resp['access_token'])) return null;
+    $cache['google_token'] = $resp['access_token'];
+    $cache['google_token_exp'] = time() + (int)($resp['expires_in'] ?? 3600);
+    seo_cache_save($cache);
+    $memo = ['token' => $resp['access_token'], 'exp' => $cache['google_token_exp']];
+    return $memo['token'];
+}
+
+// ─── HTTP 小助手（JSON POST / 带 Bearer 的 GET）───
+function seo_http_post_json(string $url, array $payload, ?string $bearer = null, bool $form = false): array {
+    $ch = curl_init($url);
+    $headers = $form ? ['Content-Type: application/x-www-form-urlencoded'] : ['Content-Type: application/json'];
+    if ($bearer) $headers[] = 'Authorization: Bearer ' . $bearer;
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $form ? http_build_query($payload) : json_encode($payload),
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 20, CURLOPT_SSL_VERIFYPEER => false,
+    ]);
+    $resp = json_decode((string)curl_exec($ch), true);
+    curl_close($ch);
+    return is_array($resp) ? $resp : [];
+}
+function seo_http_get_json(string $url, string $bearer): array {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $bearer],
+        CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 20, CURLOPT_SSL_VERIFYPEER => false,
+    ]);
+    $resp = json_decode((string)curl_exec($ch), true);
+    curl_close($ch);
+    return is_array($resp) ? $resp : [];
+}
+
+// ─── 授权后自动发现：GSC 属性列表 / GA4 属性列表 ───
+function seo_gsc_list_sites(): array {
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $resp = seo_http_get_json('https://www.googleapis.com/webmasters/v3/sites', $token);
+    $out = [];
+    foreach ($resp['siteEntry'] ?? [] as $e) {
+        if (($e['permissionLevel'] ?? '') === 'siteUnverifiedUser') continue;
+        $out[] = $e['siteUrl'] ?? '';
+    }
+    return array_values(array_filter($out));
+}
+
+function seo_ga4_list_properties(): array {
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    // Admin API：先列账号，再列每个账号下的 GA4 属性
+    $out = [];
+    $accounts = seo_http_get_json('https://analyticsadmin.googleapis.com/v1beta/accounts?pageSize=200', $token);
+    foreach ($accounts['accounts'] ?? [] as $acc) {
+        $accName = $acc['name'] ?? ''; // accounts/123
+        if ($accName === '') continue;
+        $props = seo_http_get_json('https://analyticsadmin.googleapis.com/v1beta/properties?pageSize=200&filter=' . urlencode('parent:' . $accName), $token);
+        foreach ($props['properties'] ?? [] as $p) {
+            $id = str_replace('properties/', '', (string)($p['name'] ?? ''));
+            if ($id !== '') $out[] = ['id' => $id, 'label' => ($p['displayName'] ?? $id) . '（' . ($acc['displayName'] ?? '') . '）'];
+        }
+    }
+    return $out;
+}
+
+// ─── 拉取 GA4 数据（近 28 天：会话/浏览/热门页面）───
+function seo_fetch_ga4(): array {
+    $s = seo_console_settings();
+    if (empty($s['ga4_property'])) return [];
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $resp = seo_http_post_json(
+        'https://analyticsdata.googleapis.com/v1beta/properties/' . $s['ga4_property'] . ':runReport',
+        [
+            'dateRanges' => [['startDate' => '28daysAgo', 'endDate' => 'today']],
+            'dimensions' => [['name' => 'pagePath']],
+            'metrics' => [['name' => 'sessions'], ['name' => 'screenPageViews'], ['name' => 'totalUsers']],
+            'orderBys' => [['metric' => ['metricName' => 'sessions'], 'desc' => true]],
+            'limit' => 25,
+        ],
+        $token
+    );
+    $rows = [];
+    foreach ($resp['rows'] ?? [] as $r) {
+        $rows[] = [
+            'page' => $r['dimensionValues'][0]['value'] ?? '',
+            'sessions' => (int)($r['metricValues'][0]['value'] ?? 0),
+            'views' => (int)($r['metricValues'][1]['value'] ?? 0),
+            'users' => (int)($r['metricValues'][2]['value'] ?? 0),
+        ];
+    }
+    return $rows;
+}
+
 // ─── 拉取 GSC 数据（Search Analytics）───
 function seo_fetch_gsc(): array {
     $s = seo_console_settings();
-    if (empty($s['gsc_email']) || empty($s['gsc_key']) || empty($s['gsc_property'])) return [];
+    if (empty($s['gsc_property'])) return [];
 
-    // 用 JWT 生成 OAuth token（简化：需 Google API Client，这里用本地实现）
-    $jwt = seo_make_jwt($s['gsc_email'], $s['gsc_key']);
-    if (!$jwt) return [];
-    $token = seo_gsc_token($jwt);
+    // 优先 OAuth 授权（一键连接）；没有则回退 Service Account JWT（旧方式）
+    $token = seo_google_access_token();
+    if (!$token && !empty($s['gsc_email']) && !empty($s['gsc_key'])) {
+        $jwt = seo_make_jwt($s['gsc_email'], $s['gsc_key']);
+        if ($jwt) $token = seo_gsc_token($jwt);
+    }
     if (!$token) return [];
 
     $endpoint = 'https://searchconsole.googleapis.com/webmasters/v3/sites/' . urlencode($s['gsc_property']) . '/searchAnalytics/query';
@@ -145,13 +306,41 @@ function seo_fetch_yandex(): array {
     return $rows;
 }
 
+// ─── OAuth 回调/断开处理（必须在任何 HTML 输出前调用；seo-center 嵌入时由宿主页提前调用）───
+// 返回 [type, text] 用于页面顶部提示；若执行了跳转则直接 exit。
+function seo_console_handle_google_actions(): ?array {
+    if (isset($_GET['google_callback'])) {
+        $code = trim((string)($_GET['code'] ?? ''));
+        if ($code !== '' && seo_google_oauth_exchange($code)) {
+            header('Location: ' . of_hub_url(['google_connected' => 1]));
+            exit;
+        }
+        return ['error', 'Google 授权失败：' . (string)($_GET['error'] ?? '请检查 Client ID/Secret 与回调地址配置')];
+    }
+    if (isset($_GET['google_disconnect'])) {
+        $s = seo_console_settings();
+        $s['google_refresh_token'] = '';
+        $s['google_account'] = '';
+        seo_console_save($s);
+        header('Location: ' . of_hub_url(['google_disconnected' => 1]));
+        exit;
+    }
+    if (isset($_GET['google_connected'])) return ['success', 'Google 账号连接成功，GSC 属性与 GA4 属性已可自动选择'];
+    if (isset($_GET['google_disconnected'])) return ['success', '已断开 Google 授权'];
+    return null;
+}
+
 // ─── 统一拉取 + 缓存 ───
 function seo_console_pull(): array {
     $data = ['fetched_at'=>date('Y-m-d H:i:s')];
     $data['gsc'] = seo_fetch_gsc();
+    $data['ga4'] = seo_fetch_ga4();
     $data['bing'] = seo_fetch_bing();
     $data['baidu'] = seo_fetch_baidu();
     $data['yandex'] = seo_fetch_yandex();
+    // 保留 token 缓存，避免被覆盖
+    $old = seo_cache();
+    foreach (['google_token','google_token_exp'] as $k) if (isset($old[$k])) $data[$k] = $old[$k];
     seo_cache_save($data);
     return $data;
 }

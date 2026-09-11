@@ -27,7 +27,7 @@ of_shell('events'); ?>
         <?php foreach ($up as $e): ?>
         <a class="scn-row" href="#"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><div><span class="when"><?=substr($e['start_date'],5,11)?> · <?=$e['event_type']==='online'?'线上':htmlspecialchars($e['location'])?></span><h3><?=htmlspecialchars($e['title'])?></h3><p><?=htmlspecialchars(mb_substr($e['description'],0,60))?>…</p></div></a>
         <?php endforeach; ?>
-        <a class="scn-row" href="#"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span><div><span class="when">随时</span><h3>想办一场？</h3><p>门派成员可以发起线下聚会，我们帮你张罗。</p></div></a>
+        <a class="scn-row" href="#"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span><div><span class="when">随时</span><h3>想办一场？</h3><p>社区成员可以发起线下聚会，我们帮你张罗。</p></div></a>
       </div>
     </div>
   </section>
@@ -38,7 +38,7 @@ of_shell('events'); ?>
       <div><span class="when"><?=substr($e['start_date'],0,10)?> · <?=$e['event_type']==='online'?'线上':htmlspecialchars($e['location'])?></span><h3><?=htmlspecialchars($e['title'])?></h3><p><?=htmlspecialchars($e['description'])?></p><a class="btn subtle" style="align-self:flex-start;margin-left:-14px" href="#">看回顾 →</a></div>
       <?php endforeach; ?>
       <div><span class="when">—</span><h3>更多回顾整理中</h3><p>直播录像与线下纪要会陆续放到学院。</p></div>
-      <div><span class="when">—</span><h3>订阅活动通知</h3><p>进门派社区，新活动第一时间通知。</p><a class="btn subtle" style="align-self:flex-start;margin-left:-14px" href="#">进入社区 →</a></div>
+      <div><span class="when">—</span><h3>订阅活动通知</h3><p>进增长社区，新活动第一时间通知。</p><a class="btn subtle" style="align-self:flex-start;margin-left:-14px" href="#">进入社区 →</a></div>
     </div>
   </section>
 <?php mock_foot();

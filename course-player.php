@@ -68,6 +68,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($course['title'])?> | OpenFlow 课程</title>
+<meta name="description" content="<?=htmlspecialchars(mb_substr(trim(preg_replace('/\s+/u', ' ', strip_tags((string)($course['description'] ?? '')))), 0, 120) ?: ($course['title'] . ' - OpenFlow 在线课程'))?>">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 课程播放页独有：目录行、进度条、播放器画布、测验。其余全部来自 modules.css。 */
@@ -390,7 +391,7 @@ function togglePlay() {
   btn.textContent = playing ? '▶ 继续播放' : '⏸ 暂停';
 }
 function markCurrentDone() {
-  if (!currentLesson) { alert('请先选择一节课'); return; }
+  if (!currentLesson) { (window.OFShell?OFShell.toast:alert)('请先选择一节课'); return; }
   saveProgress(currentLesson, { done: true });
   /* 课时完成 → 行为触发 */
   if (window.fcTrack) { try { fcTrack('lesson_complete', { course_id: COURSE_ID, lesson_id: currentLesson }); } catch (e) {} }
@@ -399,7 +400,7 @@ function markCurrentDone() {
   var btn = document.querySelector('.lesson[data-id="'+currentLesson+'"]');
   if (btn) btn.classList.remove('active');
   document.getElementById('playerStatus').textContent = '✅ 本节已完成';
-  alert('本节已标记完成');
+  (window.OFShell?OFShell.toast:alert)('本节已标记完成');
 }
 /* 测验 */
 function renderQuiz(qs) {
@@ -489,7 +490,7 @@ function buyCourse(payType) {
   fetch('/api/shop?pay_type=' + payType + '&action=create_order', { method:'POST', body: fd })
     .then(function(r){ return r.json(); })
     .then(function(d){
-      if (!d.ok) { alert(d.error); return; }
+      if (!d.ok) { (window.OFShell?OFShell.toast:alert)(d.error); return; }
       var form = document.createElement('form');
       form.method = 'POST'; form.action = d.payment.gateway;
       Object.keys(d.payment.params).forEach(function(k){

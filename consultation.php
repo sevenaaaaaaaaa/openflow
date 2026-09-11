@@ -271,9 +271,9 @@ function payBooking(id, btn) {
         });
         document.body.appendChild(form); form.submit();
       } else {
-        alert(d.error || '支付失败'); btn.disabled = false; btn.textContent = '去付款';
+        (window.OFShell?OFShell.toast:alert)(d.error || '支付失败'); btn.disabled = false; btn.textContent = '去付款';
       }
-    }).catch(function(){ alert('网络异常'); btn.disabled = false; btn.textContent = '去付款'; });
+    }).catch(function(){ (window.OFShell?OFShell.toast:alert)('网络异常'); btn.disabled = false; btn.textContent = '去付款'; });
 }
 </script>
 </body>

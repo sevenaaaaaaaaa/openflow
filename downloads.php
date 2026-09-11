@@ -30,6 +30,7 @@ usort($downloads, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>资料下载 | <?=site_config_get('site_name')?></title>
+<meta name="description" content="芭乐派资料下载：增长方法论、OpenFlow 实战手册、模板与白皮书，免费获取。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 资料库独有：资料卡。其余全部来自 modules.css。 */

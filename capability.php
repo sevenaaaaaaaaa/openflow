@@ -78,7 +78,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '产品能力 | OpenFlow', 'canonical' => site_config_get('site_url') . '/capability']); endif; ?>
+<?php if (function_exists('seo_head')): seo_head(['title' => '产品能力 | OpenFlow', 'description' => 'OpenFlow 六大能力域：内容触达、数据洞察、个性化运营、销售增强、自生长 AI Engine 与永久开源生态，36 个真实模块全部可在代码与后台中核验。', 'canonical' => site_config_get('site_url') . '/capability']); endif; ?>
 <title>能力 · TIPS 四力 | 芭乐派 · OpenFlow</title>
 <meta name="description" content="OpenFlow 六大能力域：内容触达、数据洞察、个性化运营、销售增强、自生长 AI Engine 与永久开源生态，36 个真实模块全部可在代码与后台中核验。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>

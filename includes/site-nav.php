@@ -12,7 +12,7 @@
  * data/nav.json 缺失或损坏时回落到 site-shell.js 内置的 NAV_FALLBACK。
  */
 
-if (!defined('OF_SHELL_VER')) define('OF_SHELL_VER', '20260911a');
+if (!defined('OF_SHELL_VER')) define('OF_SHELL_VER', '20260911b');
 
 if (!function_exists('of_nav_data')) {
     /**

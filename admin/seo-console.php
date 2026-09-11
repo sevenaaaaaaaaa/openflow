@@ -10,6 +10,11 @@ require_perm('settings');
 $settings = seo_console_settings();
 $cache = seo_cache();
 $message = '';
+$error = '';
+
+// ── Google OAuth 回调/断开（独立访问时在此处理；seo-center 嵌入时宿主页已提前处理）───
+$__g = seo_console_handle_google_actions();
+if ($__g) { if ($__g[0] === 'error') $error = $__g[1]; else $message = $__g[1]; }
 
 // 保存配置
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
@@ -17,6 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     $settings['gsc_email'] = trim($_POST['gsc_email'] ?? '');
     $settings['gsc_key'] = trim($_POST['gsc_key'] ?? '');
     $settings['gsc_property'] = trim($_POST['gsc_property'] ?? '');
+    $settings['google_client_id'] = trim($_POST['google_client_id'] ?? '');
+    $settings['google_client_secret'] = trim($_POST['google_client_secret'] ?? '');
+    $settings['ga4_property'] = trim($_POST['ga4_property'] ?? '');
     $settings['bing_api_key'] = trim($_POST['bing_api_key'] ?? '');
     $settings['bing_site'] = trim($_POST['bing_site'] ?? '');
     $settings['baidu_token'] = trim($_POST['baidu_token'] ?? '');
@@ -26,6 +34,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     $settings['yandex_user_id'] = trim($_POST['yandex_user_id'] ?? 'self');
     $settings['public_enabled'] = isset($_POST['public_enabled']);
     $settings['public_slug'] = trim($_POST['public_slug'] ?? '') ?: 'seo-board';
+    // GA4 属性选定后，自动把前台统计需要的 Measurement ID 写进站点设置（无需再手填 G-XXXX）
+    if ($settings['ga4_property'] !== '' && function_exists('site_config_set')) {
+        $token = seo_google_access_token();
+        if ($token) {
+            $streams = seo_http_get_json('https://analyticsadmin.googleapis.com/v1beta/properties/' . $settings['ga4_property'] . '/dataStreams', $token);
+            foreach ($streams['dataStreams'] ?? [] as $ds) {
+                if (($ds['type'] ?? '') === 'WEB_DATA_STREAM' && !empty($ds['webStreamData']['measurementId'])) {
+                    site_config_set('ga_id', $ds['webStreamData']['measurementId']);
+                    break;
+                }
+            }
+        }
+    }
     // 广告平台
     $platforms = [];
     foreach (($_POST['ad_platform'] ?? []) as $i => $ap) {
@@ -55,8 +76,44 @@ if (!defined('OF_EMBED')) admin_header('SEO 站长工具');
   <div class="main">
 <?php endif; ?>
     <h1> SEO 站长工具</h1>
-    <p class="sub">接入 Google Search Console / Bing / 百度 / Yandex · 公开看板 · 广告回传</p>
+    <p class="sub">接入 Google Search Console / GA4 / Bing / 百度 / Yandex · 公开看板 · 广告回传</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
+    <?php if ($error): ?><?=msg('error', $error)?><?php endif; ?>
+
+    <!-- Google 一键授权（GSC + GA4 共用） -->
+    <div class="card" style="background:linear-gradient(135deg,var(--surface),rgba(66,133,244,.08));border:1.5px solid rgba(66,133,244,.25)">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="font-size:32px">🔗</div>
+        <div style="flex:1;min-width:260px">
+          <h2 style="margin-bottom:4px">Google 账号授权</h2>
+          <?php if (!empty($settings['google_refresh_token'])): ?>
+          <p class="text-sm" style="margin-bottom:0;color:var(--ok,#16a34a)">✅ 已连接 <b><?=htmlspecialchars($settings['google_account'] ?: 'Google 账号')?></b> · Search Console 与 GA4 数据自动拉取，token 自动刷新</p>
+          <?php else: ?>
+          <p class="text-sm text-muted" style="margin-bottom:0">一次授权同时接通 <b>Search Console</b> 和 <b>GA4</b>：属性自动列出下拉即选，GA 统计代码自动注入前台，不用再手填 Service Account JSON 和 G-XXXX</p>
+          <?php endif; ?>
+        </div>
+        <?php if (!empty($settings['google_refresh_token'])): ?>
+        <a href="<?=of_hub_url(['google_disconnect'=>1])?>" class="btn btn-ghost" data-confirm="断开后 GSC/GA4 数据将停止自动拉取，确定？">断开连接</a>
+        <?php elseif (!empty($settings['google_client_id']) && !empty($settings['google_client_secret'])): ?>
+        <a href="<?=htmlspecialchars(seo_google_oauth_url())?>" class="btn btn-primary">🔑 连接 Google 账号</a>
+        <?php endif; ?>
+      </div>
+      <?php if (empty($settings['google_refresh_token'])): ?>
+      <details style="margin-top:12px">
+        <summary class="text-sm" style="cursor:pointer;color:var(--accent,#2563eb)">⚙️ 首次使用：配置 Google OAuth 客户端（一次性，约 5 分钟）</summary>
+        <div class="text-sm text-muted" style="margin-top:8px;line-height:1.9">
+          1. 打开 <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console → 凭据</a>，创建「OAuth 客户端 ID」（类型：Web 应用）<br>
+          2. 「已授权的重定向 URI」填：<code style="background:var(--hover,rgba(0,0,0,.06));padding:2px 8px;border-radius:6px;user-select:all"><?=htmlspecialchars(seo_google_callback_url())?></code><br>
+          3. 启用 <a href="https://console.cloud.google.com/apis/library/webmasters.googleapis.com" target="_blank">Search Console API</a>、<a href="https://console.cloud.google.com/apis/library/analyticsadmin.googleapis.com" target="_blank">Analytics Admin API</a> 与 <a href="https://console.cloud.google.com/apis/library/analyticsdata.googleapis.com" target="_blank">Analytics Data API</a><br>
+          4. 把 Client ID / Secret 填到下方表单保存，再点「连接 Google 账号」
+        </div>
+      </details>
+      <div class="field-row" style="margin-top:10px">
+        <div class="field"><label>Google OAuth Client ID</label><input type="text" name="google_client_id" form="seoCfg" value="<?=htmlspecialchars($settings['google_client_id'] ?? '')?>" placeholder="xxx.apps.googleusercontent.com"></div>
+        <div class="field"><label>Client Secret</label><input type="password" name="google_client_secret" form="seoCfg" value="<?=htmlspecialchars($settings['google_client_secret'] ?? '')?>"></div>
+      </div>
+      <?php endif; ?>
+    </div>
 
     <!-- 公开看板 -->
     <div class="card" style="background:linear-gradient(135deg,var(--surface),rgba(221,255,14,.08));display:flex;align-items:center;gap:16px;flex-wrap:wrap">
@@ -69,16 +126,46 @@ if (!defined('OF_EMBED')) admin_header('SEO 站长工具');
     </div>
 
     <!-- 配置 -->
-    <form method="post">
+    <form method="post" id="seoCfg">
       <?= csrf_field() ?>
       <div class="card">
         <h2>⚙️ 站长工具配置</h2>
         <h3 style="font-size:14px;margin:12px 0 8px;color:#2b5f7e">🇺🇸 Google Search Console</h3>
+        <?php if (!empty($settings['google_refresh_token'])): ?>
+        <?php $__gscSites = seo_gsc_list_sites(); ?>
+        <div class="field-row">
+          <div class="field"><label>GSC 属性（授权账号下自动列出）</label>
+            <select name="gsc_property" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px">
+              <option value="">— 选择属性 —</option>
+              <?php foreach ($__gscSites as $su): ?><option value="<?=htmlspecialchars($su)?>" <?=$settings['gsc_property']===$su?'selected':''?>><?=htmlspecialchars($su)?></option><?php endforeach; ?>
+              <?php if ($settings['gsc_property'] && !in_array($settings['gsc_property'], $__gscSites, true)): ?><option value="<?=htmlspecialchars($settings['gsc_property'])?>" selected><?=htmlspecialchars($settings['gsc_property'])?>（当前）</option><?php endif; ?>
+            </select>
+          </div>
+        </div>
+        <?php else: ?>
+        <p class="text-sm text-muted mb-2">👆 建议直接用上面的「连接 Google 账号」一键授权；以下为手动 Service Account 方式（留作回退）。</p>
         <div class="field-row">
           <div class="field"><label>Service Account Email</label><input type="text" name="gsc_email" value="<?=htmlspecialchars($settings['gsc_email'])?>" placeholder="xxx@xxx.iam.gserviceaccount.com"></div>
           <div class="field"><label>GSC 属性</label><input type="text" name="gsc_property" value="<?=htmlspecialchars($settings['gsc_property'])?>" placeholder="sc-domain:example.com"></div>
         </div>
         <div class="field"><label>Service Account 私钥 JSON</label><textarea name="gsc_key" rows="4" style="font-family:var(--mono);font-size:12px"><?=htmlspecialchars($settings['gsc_key'])?></textarea></div>
+        <?php endif; ?>
+
+        <h3 style="font-size:14px;margin:16px 0 8px;color:#2b5f7e">📈 Google Analytics 4</h3>
+        <?php if (!empty($settings['google_refresh_token'])): ?>
+        <?php $__ga4Props = seo_ga4_list_properties(); ?>
+        <div class="field-row">
+          <div class="field"><label>GA4 属性（选定后自动写入前台统计代码，无需手填 G-XXXX）</label>
+            <select name="ga4_property" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px">
+              <option value="">— 选择属性 —</option>
+              <?php foreach ($__ga4Props as $gp): ?><option value="<?=htmlspecialchars($gp['id'])?>" <?=$settings['ga4_property']===$gp['id']?'selected':''?>><?=htmlspecialchars($gp['label'])?>（ID: <?=htmlspecialchars($gp['id'])?>）</option><?php endforeach; ?>
+              <?php if ($settings['ga4_property'] && !array_filter($__ga4Props, fn($p) => $p['id'] === $settings['ga4_property'])): ?><option value="<?=htmlspecialchars($settings['ga4_property'])?>" selected>当前：<?=htmlspecialchars($settings['ga4_property'])?></option><?php endif; ?>
+            </select>
+          </div>
+        </div>
+        <?php else: ?>
+        <p class="text-sm text-muted mb-2">连接 Google 账号后此处自动列出 GA4 属性；当前可在「设置 → Google Analytics ID」手动填 G-XXXX（保存后前台自动注入统计代码）。</p>
+        <?php endif; ?>
 
         <h3 style="font-size:14px;margin:16px 0 8px;color:#2b5f7e">🔵 Bing Webmaster</h3>
         <div class="field-row">
@@ -131,8 +218,26 @@ if (!defined('OF_EMBED')) admin_header('SEO 站长工具');
     <!-- 缓存数据概览 -->
     <div class="card">
       <h2>📈 最近拉取数据 <?php if (!empty($cache['fetched_at'])): ?><span class="text-sm text-muted">· <?=htmlspecialchars($cache['fetched_at'])?></span><?php endif; ?></h2>
+      <?php if (!empty($cache['ga4'])): ?>
+      <h3 style="font-size:14px;margin:4px 0 10px;color:#2b5f7e">📈 GA4 · 近 28 天热门页面</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px">
+        <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">会话</div><div style="font-size:24px;font-weight:700"><?=array_sum(array_column($cache['ga4'],'sessions'))?></div></div>
+        <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">浏览量</div><div style="font-size:24px;font-weight:700"><?=array_sum(array_column($cache['ga4'],'views'))?></div></div>
+        <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">用户</div><div style="font-size:24px;font-weight:700"><?=array_sum(array_column($cache['ga4'],'users'))?></div></div>
+      </div>
+      <div style="overflow-x:auto;margin-bottom:20px">
+        <table>
+          <thead><tr><th>页面</th><th>会话</th><th>浏览</th><th>用户</th></tr></thead>
+          <tbody>
+            <?php foreach (array_slice($cache['ga4'],0,10) as $r): ?>
+            <tr><td class="text-sm" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($r['page'])?></td><td><?=$r['sessions']?></td><td><?=$r['views']?></td><td><?=$r['users']?></td></tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <?php endif; ?>
       <?php if (empty($cache['gsc'])): ?>
-      <div class="empty" style="padding:24px">暂无数据，配置好 Key 后点「立即拉取」</div>
+      <div class="empty" style="padding:24px">暂无 GSC 数据，连接 Google 账号并选择属性后点「立即拉取」</div>
       <?php else: ?>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
         <?php $sumClick = array_sum(array_column($cache['gsc'],'clicks')); $sumImp = array_sum(array_column($cache['gsc'],'impressions')); ?>

@@ -34,7 +34,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>芭乐派 · OpenFlow 增长操作系统</title>
 <meta name="description" content="芭乐派给一人公司的增长系统。OpenFlow 用稳定 Flow 连接内容、数据与销售，并以受控的 TIPS Agent Loop 辅助判断和优化。">
-<?php if (function_exists('seo_head')): seo_head(['title' => '芭乐派 · OpenFlow 增长操作系统', 'canonical' => site_config_get('site_url') . '/']); endif; ?>
+<?php if (function_exists('seo_head')): seo_head(['title' => '芭乐派 · OpenFlow 增长操作系统', 'description' => '芭乐派给一人公司的增长系统。OpenFlow 用稳定 Flow 连接内容、数据与销售，并以受控的 TIPS Agent Loop 辅助判断和优化。', 'canonical' => site_config_get('site_url') . '/']); endif; ?>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='2' y1='16' x2='30' y2='16' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='oklch(52%25 .17 258)'/%3E%3Cstop offset='1' stop-color='oklch(58%25 .16 285)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='16' fill='oklch(16%25 0 0)'/%3E%3Cpath d='M16 6.5a9.5 9.5 0 1 1-9.5 9.5' stroke='url(%23g)' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M11.5 10.5v12M11.5 14h7.6M11.5 18.5h7.6' stroke='oklch(96%25 0 0)' stroke-width='2.2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。
@@ -520,53 +520,8 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
     </div>
   </section>
 
-  <!-- ══ footer ══ -->
-  <footer class="foot" data-od-id="site-footer">
-    <div class="fb">
-      <div class="brand"><span class="ic"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-f" x1="2" y1="16" x2="30" y2="16" gradientUnits="userSpaceOnUse"><stop stop-color="var(--accent)"/><stop offset="1" stop-color="oklch(58% .16 285)"/></linearGradient></defs><path d="M16 6.5a9.5 9.5 0 1 1-9.5 9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M11.5 10v13M11.5 13.5h8.2M11.5 18.5h8.2" stroke="url(#ofg-f)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M19.7 18.5c2.3 0 4.4-.7 6.1-2M25 14.3l1.6 2.2-2.9 1" stroke="url(#ofg-f)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>芭乐派 · OpenFlow</div>
-      <p class="f-about">芭乐派给一人公司的增长系统。用 Flow 稳定执行已知方法，用受控 Loop 辅助探索未知路径。核心能力永久开源。</p>
-      <p class="note">核心能力永久开源 · 鱼与渔相结合</p>
-      <div class="f-social" aria-label="社交媒体">
-        <?php
-        // 社交图标只渲染后台配置了链接的（系统设置 → 品牌设置 → 社交账号）
-        $__soc = [
-          'github' => ['GitHub 开源仓库', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.1.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.58 9.58 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85V21c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>'],
-          'x' => ['X 官方账号', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.3l-4.9-6.4L5.2 21H2.1l7.3-8.3L2 3h6.4l4.4 5.9L17.8 3Zm-1.1 16.1h1.7L7.6 4.8H5.8l10.9 14.3Z"/></svg>'],
-          'youtube' => ['YouTube 频道', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>'],
-          'wechat' => ['微信公众号', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.6 4.5C5.9 4.5 3 6.9 3 9.9c0 1.7 1 3.2 2.5 4.2l-.6 2.2 2.4-1.2c.7.2 1.5.3 2.3.3h.5a5.8 5.8 0 0 1-.4-2c0-3 2.9-5.4 6.5-5.4h.4C15.9 6.2 13 4.5 9.6 4.5Zm-2.4 3.4a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Zm4.8 0a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/><path d="M21 14.5c0-2.5-2.4-4.5-5.4-4.5s-5.4 2-5.4 4.5 2.4 4.5 5.4 4.5c.5 0 1-.1 1.4-.2l1.9 1-.5-1.7c1.5-.8 2.6-2.2 2.6-3.6Z"/></svg>'],
-          'bilibili' => ['B 站账号', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.2" y="7" width="17.6" height="12.5" rx="2.8"/><path d="M9.2 4 7.8 6.4M14.8 4l1.4 2.4M7.8 11v3.4M12 11v3.4"/></svg>'],
-          'zhihu' => ['知乎机构号', '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5.5 4.5h13l-7.5 12.5h4.5v2.5H5.8l.8-2.4h2.6L12.6 9H5.5v-4.5Z"/></svg>'],
-        ];
-        $__gh = 'https://github.com/sevenaaaaaaaaa/openflow';
-        $__groups = [['github','x','youtube'], ['wechat','bilibili','zhihu']];
-        $__rendered = 0;
-        foreach ($__groups as $__g):
-          $__items = array_values(array_filter($__g, fn($k) => site_config_get('social_' . $k, $k === 'github' ? $__gh : '') !== ''));
-          if (!$__items) continue;
-          if ($__rendered++) echo '<span class="soc-div" aria-hidden="true"></span>'; ?>
-        <div class="soc-group">
-          <?php foreach ($__items as $k): [$__l, $__svg] = $__soc[$k]; $__u = site_config_get('social_' . $k, $k === 'github' ? $__gh : ''); ?>
-          <a class="soc" href="<?=htmlspecialchars($__u)?>" target="_blank" rel="noopener" data-od-id="soc-<?=$k?>" aria-label="<?=$__l?>"><?=$__svg?></a>
-          <?php endforeach; ?>
-        </div>
-        <?php endforeach; ?>
-      </div>
-    </div>
-    <div class="fb">
-      <h4>站点导航</h4>
-      <a href="#touch" data-od-id="f-product">产品</a><a href="#compare" data-od-id="f-capability">能力</a><a href="#insights" data-od-id="f-courses">课程</a><a href="#insights" data-od-id="f-academy">学院</a><a href="#reviews" data-od-id="f-community">论坛</a><a href="#contact" data-od-id="f-about">关于我们</a>
-    </div>
-    <div class="fb">
-      <h4>资源</h4>
-      <a href="/courses" data-od-id="f-r-courses">芭乐派课程</a><a href="/docs" data-od-id="f-r-docs">文档中心</a><a href="/docs#templates" data-od-id="f-r-tpl">模板库</a><a href="/docs#api" data-od-id="f-r-api">开放 API</a>
-      <a href="/gtm-onepager.html" data-od-id="f-r-onepager">一页纸介绍</a><a href="/gtm-deck.html" data-od-id="f-r-deck">产品介绍幻灯片</a><a href="/lp/solo-growth.html" data-od-id="f-r-h5">一人公司增长手册（H5）</a>
-    </div>
-    <div class="fb">
-      <h4>联系</h4>
-      <a href="mailto:hello@openflow.dev" data-od-id="f-mail">hello@openflow.dev</a><a href="#contact" data-od-id="f-biz">商务合作</a><a href="#contact" data-od-id="f-team">加入团队</a><a href="#reviews" data-od-id="f-community-2">门派社区</a>
-    </div>
-    <div class="f-bottom"><span>© 2026 芭乐派 · OpenFlow 增长操作系统</span><?php if (function_exists('i18n_enabled') && i18n_enabled()): ?><?=i18n_switcher()?><?php endif; ?><span>给一人公司的增长系统</span></div>
-  </footer>
+  <!-- ══ footer（共享页脚，与全站一致） ══ -->
+  <?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
 
 

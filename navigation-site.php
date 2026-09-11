@@ -74,6 +74,24 @@ $siteTitle = $site['name'] . (!empty($site['name_en']) ? '（' . $site['name_en'
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($site['name'])?>  | <?=site_config_get("site_name")?> 增长导航</title>
 <meta name="description" content="<?=htmlspecialchars(mb_substr($siteDesc, 0, 120))?>">
+<?php
+// 结构化数据：WebSite（含评分时带 aggregateRating）+ 面包屑，417 个详情页直接可被富媒体收录
+$__siteUrl = rtrim(site_config_get('site_url', ''), '/');
+$__ld = [
+  '@context' => 'https://schema.org',
+  '@type' => 'WebSite',
+  'name' => $site['name'],
+  'url' => $site['url'] ?? '',
+  'description' => mb_substr($siteDesc, 0, 200),
+];
+if (!empty($rating['count'])) $__ld['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => round($rating['avg'], 1), 'ratingCount' => $rating['count'], 'bestRating' => 5, 'worstRating' => 1];
+$__ldCrumb = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [
+  ['@type' => 'ListItem', 'position' => 1, 'name' => '增长导航', 'item' => $__siteUrl . '/navigation'],
+  ['@type' => 'ListItem', 'position' => 2, 'name' => $site['name'], 'item' => $__siteUrl . '/navigation/' . $site['id']],
+]];
+?>
+<script type="application/ld+json"><?=json_encode($__ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)?></script>
+<script type="application/ld+json"><?=json_encode($__ldCrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)?></script>
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 站点详情独有样式；通用零件全部来自 modules.css */
@@ -110,12 +128,13 @@ $siteTitle = $site['name'] . (!empty($site['name_en']) ? '（' . $site['name_en'
 .sim-card p{font-size:12.5px;color:var(--muted);line-height:1.7;margin:0;flex:1}
 .sim-card .ops{display:flex;gap:8px}
 /* 产品截图（浏览器框） */
-.shot-win{border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.shot-win{margin-top:22px;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
 .shot-win .win-bar{display:flex;align-items:center;gap:6px;padding:9px 14px;border-bottom:1px solid var(--border-soft);background:var(--surface-2)}
 .shot-win .win-bar .light{width:10px;height:10px;border-radius:50%}
 .shot-win .win-bar .url{margin-left:8px;font-family:var(--font-mono);font-size:11px;color:var(--faint);background:var(--surface);border:1px solid var(--border-soft);border-radius:7px;padding:2px 10px;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .shot-win img{display:block;width:100%;height:auto}
 /* 产品介绍（Markdown 正文） */
+.intro-card{margin-top:22px}
 .intro-card h2{font-size:17px;margin:0 0 12px}
 .intro-body{font-size:14.5px;line-height:1.9;color:var(--fg)}
 .intro-body h2{font-size:15px;font-weight:700;margin:20px 0 8px;color:var(--fg)}
@@ -227,7 +246,7 @@ $siteTitle = $site['name'] . (!empty($site['name_en']) ? '（' . $site['name_en'
 <script>
 function copyURL() {
   var url = <?=json_encode($site['url'] ?? '')?>;
-  navigator.clipboard.writeText(url).then(function() { alert('链接已复制'); });
+  navigator.clipboard.writeText(url).then(function() { (window.OFShell?OFShell.toast:alert)('链接已复制'); });
 }
 </script>
 </body>

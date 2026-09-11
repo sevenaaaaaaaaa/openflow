@@ -102,8 +102,8 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
     <div class="cta-band">
       <span class="kicker">暂无活动</span>
       <h2>暂无活动，敬请期待</h2>
-      <p class="lead">下一场活动开放报名时，门派社区会第一时间通知。在此之前，先把地基打好。</p>
-      <div class="cta-row"><a class="btn primary" href="/community">进入门派社区</a><a class="btn ghost" href="/courses">先看课程</a></div>
+      <p class="lead">下一场活动开放报名时，增长社区会第一时间通知。在此之前，先把地基打好。</p>
+      <div class="cta-row"><a class="btn primary" href="/community">进入增长社区</a><a class="btn ghost" href="/courses">先看课程</a></div>
     </div>
     <?php else: ?>
     <?php if (!empty($pinnedEvents)): ?>

@@ -2294,3 +2294,16 @@ if (PHP_SAPI !== 'cli') {
     }
     unset($__ofScript);
 }
+
+// ─── 前台 SEO 兜底：从请求最开始捕获整页 HTML，只补缺失的 canonical/description/og ───
+// 以前在 of_head_assets() 里才 ob_start，页面先 echo 的 <title>/<meta> 收不到，
+// 导致重复 description 与错误的 og:title 兜底。移到这里（全站第一个公共包含点）即可完整捕获。
+// 后台（/xmp、/admin）与 /api 不介入；CLI（测试/脚本）不介入。
+if (PHP_SAPI !== 'cli') {
+    $__ofSeoUri = (string)($_SERVER['REQUEST_URI'] ?? '/');
+    if (!preg_match('#^/(xmp|admin|api)(/|$|\?)#', $__ofSeoUri)) {
+        require_once __DIR__ . '/../includes/site-head.php';
+        of_seo_bootstrap();
+    }
+    unset($__ofSeoUri);
+}

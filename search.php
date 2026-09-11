@@ -22,6 +22,7 @@ if ($q) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>搜索「<?=htmlspecialchars($q)?>」 | <?=site_config_get('site_name')?></title>
+<meta name="robots" content="noindex,follow">
 <meta name="description" content="搜索 <?=htmlspecialchars($q)?> 相关文章、专题、课程、资料与技能">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>

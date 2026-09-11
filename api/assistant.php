@@ -68,7 +68,7 @@ $systemPrompt = <<<PROMPT
 - SEO 与技术：页面 SEO、SEO 工具、批量 SEO 策略、301 重定向、结构化数据、健康检测
 - 营销：WeChat 微信、线索管理、表单管理、提交记录、Campaign、分发渠道、社交媒体、转化组件、邮件、短信、二维码、UTM 生成器
 - 系统：系统设置、运维工具、插件管理、主题管理、AI Agent、操作日志、数据导出、权限管理
-- 前端：/article/slug 文章详情、/community 门派社区、/academy 内容学院
+- 前端：/article/slug 文章详情、/community 增长社区、/academy 内容学院
 
 回答要求：
 1. 用中文、简洁、条理清晰回复，可用 emoji 让语气友好

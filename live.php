@@ -27,6 +27,7 @@ $shopSettings = shop_settings();
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><?=$room ? htmlspecialchars($room['title']) : htmlspecialchars($settings['page_title'])?> | <?=site_config_get("site_name")?></title>
+<meta name="description" content="<?=htmlspecialchars(mb_substr(trim(preg_replace('/\s+/u', ' ', strip_tags((string)($room['description'] ?? $settings['page_desc'] ?? '')))), 0, 120) ?: '芭乐派直播：增长实战分享与课程答疑')?>">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 直播独有：播放器画布、弹幕盒、直播红点。其余全部来自 modules.css。 */
@@ -183,7 +184,7 @@ foreach ((array)($room['products'] ?? []) as $line) {
               document.getElementById('subCount').textContent = d.count;
               document.getElementById('subStrip').querySelector('.tx b').textContent = d.dup ? '你已预约过' : '✅ 预约成功';
               document.getElementById('subBtn').disabled = true;
-            } else alert(d.error || '预约失败');
+            } else (window.OFShell?OFShell.toast:alert)(d.error || '预约失败');
           });
         };
         </script>
@@ -326,7 +327,7 @@ foreach ((array)($room['products'] ?? []) as $line) {
     fetch('/api/live?action=send', { method: 'POST', body: body })
       .then(function(r){ return r.json(); }).then(function(d) {
         if (d.ok) { input.value = ''; loadChat(); }
-        else alert(d.error || '发送失败');
+        else (window.OFShell?OFShell.toast:alert)(d.error || '发送失败');
       });
   }
   document.getElementById('chatInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') sendChat(); });
