@@ -121,7 +121,7 @@ function shop_course_ids_for_member(string $memberId): array {
     return array_unique($ids);
 }
 
-function shop_create_order(string $memberId, string $courseId, string $ref = ''): array {
+function shop_create_order(string $memberId, string $courseId, string $ref = '', string $couponCode = ''): array {
     $settings = shop_settings();
     $courses = json_read(DATA_DIR . '/courses/index.json');
     $course = null;
@@ -138,6 +138,18 @@ function shop_create_order(string $memberId, string $courseId, string $ref = '')
         && (!$promo['end'] || strtotime($promo['end']) >= $now);
     $original = $price;
     if ($promoOn) $price = (float)$promo['price'];
+
+    // 优惠码：在促销价基础上再减；支付成功时才真正计入已用（见 shop_mark_paid）
+    $coupon = null; $couponDiscount = 0.0;
+    if ($couponCode !== '') {
+        require_once __DIR__ . '/CouponSystem.php';
+        $members0 = Database::query("SELECT * FROM members WHERE id = ?", [$memberId]);
+        $v = coupon_validate($members0[0] ?? null, $couponCode, (float)$price);
+        if (!$v['ok']) return ['ok' => false, 'error' => $v['error']];
+        $coupon = $v['coupon'];
+        $couponDiscount = (float)$v['discount'];
+        $price = (float)$v['payable'];
+    }
 
     $orderId = 'order_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(4)), 0, 6);
     $referrerId = '';
@@ -171,6 +183,9 @@ function shop_create_order(string $memberId, string $courseId, string $ref = '')
         'course_title' => $course['title'],
         'amount' => $price,
         'original_amount' => $original,
+        'coupon_id' => $coupon['id'] ?? '',
+        'coupon_code' => $coupon['code'] ?? '',
+        'coupon_discount' => $couponDiscount,
         'goods_type' => 'course',
         'author' => $authorId,
         'platform_fee' => $platformFee,
@@ -264,6 +279,12 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
                 );
             }
     
+            // 优惠券计入已用（下单时只校验不占用，支付成功才算真正使用）
+            if (!empty($order['coupon_id'])) {
+                require_once __DIR__ . '/CouponSystem.php';
+                coupon_mark_used($order['coupon_id'], $order['member_id'] ?? '', $orderId);
+            }
+
             // 分销佣金入账
             if (!empty($order['referrer_id']) && $order['commission'] > 0) {
                 Database::execute(
