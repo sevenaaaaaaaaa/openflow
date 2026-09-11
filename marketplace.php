@@ -69,7 +69,7 @@ $__ld = [
 ];
 if ($__pr['count'] > 0) $__ld['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => round($__pr['avg'], 1), 'ratingCount' => $__pr['count'], 'bestRating' => 5, 'worstRating' => 1];
 ?>
-<script type="application/ld+json"><?=json_encode($__ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)?></script>
+<script type="application/ld+json"><?=json_encode($__ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP)?></script>
 <?php else: ?>
 <title>生态市场 | <?=site_config_get("site_name")?></title>
 <meta name="description" content="OpenFlow 生态市场：官方与社区开发的插件、技能与主题，一键安装扩展你的增长系统能力。">

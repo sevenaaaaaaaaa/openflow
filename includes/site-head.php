@@ -112,6 +112,12 @@ function of_seo_bootstrap(): void {
             $inject .= '<script async src="https://www.googletagmanager.com/gtag/js?id=' . $gaIdEsc . '"></script>' . "\n"
                      . '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","' . $gaIdEsc . '");</script>' . "\n";
         }
+        // 百度统计自动注入：baidu_id 与 ga_id 一样是死设置（全站无消费方），此处补齐
+        $baiduId = function_exists('site_config_get') ? trim(site_config_get('baidu_id', '')) : '';
+        if ($baiduId !== '' && stripos($html, 'hm.baidu.com') === false) {
+            $bdEsc = htmlspecialchars($baiduId, ENT_QUOTES);
+            $inject .= '<script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?' . $bdEsc . '";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>' . "\n";
+        }
         if ($inject !== '') $html = str_ireplace('</head>', $inject . '</head>', $html);
         return $html;
     });
