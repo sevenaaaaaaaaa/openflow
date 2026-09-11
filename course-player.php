@@ -207,6 +207,13 @@ foreach ($course['chapters'] ?? [] as $ch) {
           <?php if ($member && member_can($member, 'courses', ['course_id' => $courseId])): ?>
           <span class="badge ok"><span class="dot"></span>VIP 会员免费观看</span>
           <?php endif; ?>
+          <div class="field" style="margin:0">
+            <div style="display:flex;gap:8px">
+              <input id="couponInput" class="inp sm" placeholder="优惠码（选填）" style="flex:1;text-transform:uppercase" autocomplete="off">
+              <button type="button" class="btn ghost sm" onclick="applyCoupon()" style="flex:0 0 auto">使用</button>
+            </div>
+            <div id="couponMsg" class="note" style="margin:6px 0 0;min-height:18px"></div>
+          </div>
           <button type="button" onclick="buyCourse('wechat')" class="btn primary">微信支付</button>
           <button type="button" onclick="buyCourse('alipay')" class="btn ghost">支付宝</button>
           <button type="button" onclick="buyCourse('unionpay')" class="btn ghost">云闪付</button>
@@ -479,6 +486,32 @@ function saveProgress(lessonId, extra) {
 // 初始化：若已有续播，自动打开
 var resume = <?=json_encode($resume ? $resume['lesson_id'] : null)?>;
 if (resume) { openLesson(resume); }
+/* 优惠码：实时试算折后价，下单时随单提交 */
+var appliedCoupon = '';
+function applyCoupon() {
+  var input = document.getElementById('couponInput');
+  var msg = document.getElementById('couponMsg');
+  var code = (input.value || '').trim().toUpperCase();
+  if (!code) { appliedCoupon = ''; msg.textContent = ''; msg.style.color = ''; return; }
+  var fd = new FormData();
+  fd.append('course_id', <?=json_encode($courseId)?>);
+  fd.append('coupon_code', code);
+  msg.textContent = '校验中…'; msg.style.color = '';
+  fetch('/api/shop?action=validate_coupon', { method:'POST', body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.ok) {
+        appliedCoupon = d.code;
+        msg.style.color = 'var(--ok)';
+        msg.textContent = '已优惠 ¥' + Number(d.discount).toFixed(2) + '，实付 ¥' + Number(d.payable).toFixed(2);
+      } else {
+        appliedCoupon = '';
+        msg.style.color = 'var(--danger)';
+        msg.textContent = d.error || '优惠码不可用';
+      }
+    })
+    .catch(function(){ msg.style.color = 'var(--danger)'; msg.textContent = '网络异常，请稍后再试'; });
+}
 function buyCourse(payType) {
   var member = <?=json_encode($member ? ['id'=>$member['id']] : null)?>;
   if (!member) { location.href = '/account?view=login&next=/courses/' + <?=json_encode($courseId)?>; return; }
@@ -487,6 +520,9 @@ function buyCourse(payType) {
   fd.append('course_id', <?=json_encode($courseId)?>);
   var ref = new URLSearchParams(location.search).get('ref') || '';
   if (ref) fd.append('ref', ref);
+  // 输入框有值但未点「使用」时，以输入框为准带上（服务端会再校验一次）
+  var couponNow = (document.getElementById('couponInput').value || '').trim().toUpperCase();
+  if (couponNow) fd.append('coupon_code', couponNow === appliedCoupon ? appliedCoupon : couponNow);
   fetch('/api/shop?pay_type=' + payType + '&action=create_order', { method:'POST', body: fd })
     .then(function(r){ return r.json(); })
     .then(function(d){
