@@ -94,3 +94,6 @@ deploy-shell-unify.sh
 # ─── 内部整改/临时方案文档(仅本地) ───
 lovart-art-google-内部整改方案.md
 *内部整改方案.md
+
+# ─── 批量截取的导航站官网截图（400+ 张，由 tests/visual/nav_site_shots.py 生成，deploy.sh 直接 rsync） ───
+/assets/images/nav-sites/

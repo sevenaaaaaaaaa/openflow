@@ -16,6 +16,9 @@ require_once __DIR__ . '/lib/SkillSystem.php';
 require_once __DIR__ . '/lib/MemberSystem.php';
 require_once __DIR__ . '/lib/CommentSystem.php';
 require_once __DIR__ . '/lib/comment-widget.php';
+require_once __DIR__ . '/lib/Markdown.php';
+
+$mktIntros = json_read(DATA_DIR . '/marketplace-intros.json');
 
 $member = member_current();
 $view = req_str('view', 'market');
@@ -79,6 +82,13 @@ $typeNames = mkt_categories();
 .dt-side .stars{color:var(--warn);letter-spacing:.12em}
 .dt-side .price{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--ok)}
 .prompt{background:var(--fg);color:var(--bg);padding:20px 22px;border-radius:var(--r-md);font-family:var(--font-mono);font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word}
+.intro-body{font-size:14.5px;line-height:1.9;color:var(--fg)}
+.intro-body h2{font-size:15px;font-weight:700;margin:20px 0 8px;color:var(--fg)}
+.intro-body p{margin:0 0 12px;color:var(--muted)}
+.intro-body ul{margin:0 0 12px;padding-left:20px;color:var(--muted)}
+.intro-body li{margin-bottom:6px}
+.intro-body strong{color:var(--fg)}
+.intro-body code{font-family:var(--font-mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--border-soft);border-radius:6px;padding:1px 6px}
 .back{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--accent)}
 @media (max-width:860px){.dt-head{grid-template-columns:1fr}.dt-side{align-items:flex-start;text-align:left}.filters .sort{margin-left:0}}
 </style>
@@ -168,6 +178,12 @@ $typeNames = mkt_categories();
           <a href="/xmp/plugins" class="btn primary">去后台管理</a>
         </div>
       </div>
+      <?php $pluginIntro = trim((string)($mktIntros[$plugin['id']] ?? '')); if ($pluginIntro): ?>
+      <div style="margin-top:28px;border-top:1px solid var(--border-soft);padding-top:24px">
+        <div class="kicker" style="margin-bottom:14px">插件介绍</div>
+        <div class="intro-body"><?=Markdown::toHtml($pluginIntro)?></div>
+      </div>
+      <?php endif; ?>
     </div>
   </section>
   <section class="reveal in" data-od-id="mkt-plugin-comments"><?php fc_comment_widget('plugin', $plugin['id'], ['title' => '评价', 'rating' => true]); ?></section>
