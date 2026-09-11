@@ -172,12 +172,16 @@ function member_start_session(array $member): void {
     $_SESSION['member_id'] = $member['id'];
     $_SESSION['member_email'] = $member['email'] ?? '';
     $_SESSION['member_name'] = $member['name'] ?? '';
+    // 登录态标记 cookie（非 HttpOnly，JS 可读）：前台外壳据此决定是否请求 profile_summary，
+    // 匿名访客不再产生 401 请求噪音；会话过期后浏览器端也能立刻识别。
+    setcookie('of_lm', '1', ['expires' => time() + 30 * 86400, 'path' => '/', 'samesite' => 'Lax']);
 }
 function member_current(): ?array {
     return isset($_SESSION['member_id']) ? member_get($_SESSION['member_id']) : null;
 }
 function member_logout(): void {
     unset($_SESSION['member_id'], $_SESSION['member_email'], $_SESSION['member_name']);
+    setcookie('of_lm', '', ['expires' => time() - 3600, 'path' => '/', 'samesite' => 'Lax']);
 }
 function member_require_login() {
     if (!member_current()) {

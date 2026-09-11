@@ -55,6 +55,7 @@ $typeIcons = ['site' => '🌐', 'product' => '🎓', 'book' => '📚', 'event' =
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>点评榜单 | 芭乐派 · OpenFlow</title>
+<meta name="description" content="真实用户对增长工具与站点的评分与点评榜单，帮你快速选出值得用的产品。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 点评榜独有：榜单卡。其余全部来自 modules.css。 */

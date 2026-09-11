@@ -24,8 +24,8 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '关于我们 | OpenFlow', 'canonical' => site_config_get('site_url') . '/about']); endif; ?>
-<title>关于我们 · 芭乐派门派 | OpenFlow</title>
+<?php if (function_exists('seo_head')): seo_head(['title' => '关于我们 | OpenFlow', 'description' => 'Open Flow 的使命、原则与时间线，以及加入我们的方式。', 'canonical' => site_config_get('site_url') . '/about']); endif; ?>
+<title>关于我们 · 芭乐派社区 | OpenFlow</title>
 <meta name="description" content="Open Flow 的使命、原则与时间线，以及加入我们的方式。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。
@@ -53,7 +53,7 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
       <h1>我们只服务一种人：<br><i class="si">一个人扛着一家公司的人</i></h1>
       <p class="lead">芭乐派是主品牌，OpenFlow 是它的开源平台。我们的信念很朴素：你不缺"怎么做"的工具，你缺的是"该做什么"的系统——设计你的系统，而不是操作你的系统。</p>
       <div class="cta-row">
-        <a class="btn primary" href="/community" data-od-id="about-cta-join">加入门派</a>
+        <a class="btn primary" href="/community" data-od-id="about-cta-join">加入社区</a>
         <a class="btn ghost" href="/product" data-od-id="about-cta-product">看看平台</a>
       </div>
       <div class="trust"><span class="dot"></span>创始人Seven · 十年增长操盘</div>
@@ -80,7 +80,7 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
       </div>
       <div class="w-col">
         <span class="w-tag">派 · 第三层</span>
-        <h3>是门派</h3>
+        <h3>是社区</h3>
         <p class="w-q">一个人走得快，一群人走得远。</p>
       </div>
     </div>
@@ -170,14 +170,14 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
     <div class="stats">
       <div class="st"><div class="st-n"><?=$articleCount?></div><span class="st-en">Articles</span><span class="st-t">方法论文库持续更新</span></div>
       <div class="st"><div class="st-n"><?=$navCount?></div><span class="st-en">Tools curated</span><span class="st-t">导航站工具收录</span></div>
-      <div class="st"><div class="st-n"><?=$postCount?></div><span class="st-en">Discussions</span><span class="st-t">门派社区讨论</span></div>
+      <div class="st"><div class="st-n"><?=$postCount?></div><span class="st-en">Discussions</span><span class="st-t">增长社区讨论</span></div>
       <div class="st"><div class="st-n">99</div><span class="st-en">Open APIs</span><span class="st-t">全部代码在 GitHub</span></div>
     </div>
     <div class="link-grid" style="margin-top:22px">
       <a class="link-it top" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener"><span class="lt"><b>GitHub 仓库</b><span>30 个 MCP 工具、插件平台 v2、101 个 API——代码即证据。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <a class="link-it top" href="/academy"><span class="lt"><b>学院内容库</b><span>每一篇方法论都公开可读，十年操盘提炼其中。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <a class="link-it top" href="/navigation"><span class="lt"><b>增长导航站</b><span><?=$navCount?> 个工具逐个收录点评，含 GitHub 数据与同类对比。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
-      <a class="link-it top" href="/community"><span class="lt"><b>门派社区</b><span>学员作业、增长数据、互相诊断——真实讨论不删帖。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+      <a class="link-it top" href="/community"><span class="lt"><b>增长社区</b><span>学员作业、增长数据、互相诊断——真实讨论不删帖。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
     </div>
   </section>
 
@@ -195,10 +195,10 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
     </div>
   </section>
 
-  <!-- ══ 加入门派 ══ -->
+  <!-- ══ 加入社区 ══ -->
   <section id="join" class="sec reveal" data-od-anchor data-od-id="about-join">
     <div class="sec-head center">
-      <span class="kicker">加入门派</span>
+      <span class="kicker">加入社区</span>
       <h2>一起把增长系统做得更好</h2>
       <p class="lead">无论你是正在从 0 到 1 死磕的一人公司，还是想和 Agent 时代一起成长的创业者——这里都有你的位置。</p>
     </div>
@@ -230,7 +230,7 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
       <div class="cta-row">
         <a class="btn primary" href="/courses">开始学习</a>
         <a class="btn ghost" href="/product">看看产品</a>
-        <a class="btn ghost" href="/community">进入门派社区</a>
+        <a class="btn ghost" href="/community">进入增长社区</a>
       </div>
     </div>
   </section>

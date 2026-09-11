@@ -57,7 +57,8 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>门派社区 | <?=site_config_get('site_name')?> · 讨论</title>
+<title>增长社区 | <?=site_config_get('site_name')?> · 讨论</title>
+<meta name="description" content="芭乐派增长社区：一人公司与增长从业者的实战讨论区，分享 OpenFlow 玩法、增长案例与工具经验。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
@@ -96,7 +97,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 
 <a class="skip" href="#main">跳到主要内容</a>
 
-<!-- ══ 情境侧栏：话题 / 本周热议 / 门派公约（由 site-shell.js 挂载到全站侧栏） ══ -->
+<!-- ══ 情境侧栏：话题 / 本周热议 / 社区公约（由 site-shell.js 挂载到全站侧栏） ══ -->
 <template id="of-sidebar-context">
   <div class="sb-w">
     <h3>话题</h3>
@@ -124,8 +125,8 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
   </div>
   <?php endif; ?>
   <div class="sb-w">
-    <h3>门派公约</h3>
-    <p class="sb-note">晒数据不吹牛，提问带上下文，诊断对事不对人。广告与割韭菜内容直接删除并移出门派。</p>
+    <h3>社区公约</h3>
+    <p class="sb-note">晒数据不吹牛，提问带上下文，诊断对事不对人。广告与割韭菜内容直接删除并移出社区。</p>
   </div>
 </template>
 
@@ -134,7 +135,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
   <!-- ══ 首屏 ══ -->
   <section id="top" class="reveal in" data-od-anchor data-od-id="community-hero">
     <div class="hero-center" style="padding-bottom:0">
-      <span class="kicker">COMMUNITY · 门派</span>
+      <span class="kicker">COMMUNITY · 社区</span>
       <h1>一个人做公司，<br><i class="si">不该一个人扛</i></h1>
       <p class="lead">提问、分享、讨论。学完课程的同学在这里交作业、晒增长数据、互相诊断——把增长系统这门功夫，练到身上。</p>
       <div class="trust"><span class="dot"></span><?=count($posts)?> 个帖子 · <?=count($topics)?> 个话题</div>
@@ -188,9 +189,9 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
   <!-- ══ 收尾 CTA ══ -->
   <section id="next" class="reveal" data-od-anchor data-od-id="community-cta">
     <div class="cta-band">
-      <span class="kicker">芭乐派 · 门派</span>
-      <h2>还没进门派？从 New-1 开始练功</h2>
-      <p class="lead">地基在 New-1~4 基石课，招式在 R.B.E 训练营，切磋在这里。先学再用，再回来交作业。</p>
+      <span class="kicker">芭乐派 · 社区</span>
+      <h2>还没加入社区？从 New-1 开始打基础</h2>
+      <p class="lead">地基在 New-1~4 基石课，实战在 R.B.E 训练营，交流在这里。先学再用，再回来交作业。</p>
       <div class="cta-row"><a class="btn primary" href="/courses">浏览课程</a><a class="btn ghost" href="/academy">去学院读文章</a></div>
     </div>
   </section>
@@ -214,7 +215,7 @@ function createPost() {
   fd.append('topic', document.getElementById('np_topic').value);
   fetch('/api/community', {method:'POST', body:fd})
     .then(function(r){return r.json();})
-    .then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
+    .then(function(d){ if (d.ok) location.reload(); else (window.OFShell?OFShell.toast:alert)(d.error); });
 }
 function vote(postId, delta) {
   if (!MEMBER) { location.href = '/account?view=login'; return; }

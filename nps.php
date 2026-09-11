@@ -90,7 +90,7 @@ function pickScore(v) {
 }
 function npsSubmit() {
   var s = document.getElementById('scoreInput').value;
-  if (!s) { alert('请选择一个分数'); return false; }
+  if (!s) { (window.OFShell?OFShell.toast:alert)('请选择一个分数'); return false; }
   return true;
 }
 </script>
