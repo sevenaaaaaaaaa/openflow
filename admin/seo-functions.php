@@ -1,14 +1,41 @@
 <?php
 /**
  * IndexNow: notify search engines when content changes
+ *
+ * 零配置设计：首次调用自动生成 32 位 key 并落盘，key 验证文件
+ * 由 .htaccess 路由到 api/indexnow-key.php 动态输出，部署不丢。
  */
 function indexnow_config(): array {
-    return json_read(DATA_DIR . '/indexnow.json');
+    $cfg = json_read(DATA_DIR . '/indexnow.json');
+    if (empty($cfg['key'])) {
+        $cfg['key'] = bin2hex(random_bytes(16));
+        $cfg['created_at'] = date('Y-m-d H:i:s');
+    }
+    if (empty($cfg['host'])) {
+        $siteUrl = function_exists('site_config_get') ? site_config_get('site_url', '') : '';
+        $cfg['host'] = $siteUrl ? (parse_url($siteUrl, PHP_URL_HOST) ?: '') : ($_SERVER['HTTP_HOST'] ?? '');
+    }
+    if (!empty($cfg['key']) && !empty($cfg['host'])) {
+        // 幂等落盘（每次读都写代价可忽略，保证自动生成后持久化）
+        static $saved = false;
+        if (!$saved) { json_write(DATA_DIR . '/indexnow.json', $cfg); $saved = true; }
+    }
+    return $cfg;
 }
 
 function indexnow_save_config(array $data): bool {
     return json_write(DATA_DIR . '/indexnow.json', $data);
 }
+
+// ─── 收录推送日志（最近 50 条，后台「快速收录」卡展示）───
+function index_log(string $engine, string $url, bool $ok, string $note = ''): void {
+    $file = DATA_DIR . '/index-log.json';
+    $log = json_read($file);
+    if (!is_array($log)) $log = [];
+    $log[] = ['engine' => $engine, 'url' => $url, 'ok' => $ok, 'note' => $note, 'at' => date('Y-m-d H:i:s')];
+    json_write($file, array_slice($log, -50));
+}
+function index_log_get(): array { return array_reverse(json_read(DATA_DIR . '/index-log.json') ?: []); }
 
 function indexnow_ping(string $url): bool {
     $cfg = indexnow_config();
@@ -35,7 +62,44 @@ function indexnow_ping(string $url): bool {
     $resp = curl_exec($ch);
     $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    return $http >= 200 && $http < 300;
+    $ok = $http >= 200 && $http < 300;
+    index_log('IndexNow', $url, $ok, 'HTTP ' . $http);
+    return $ok;
+}
+
+// ─── 百度站长主动推送（实时接口，token 在 SEO 中心 → 站长工具里配）───
+function baidu_push_urls(array $urls): array {
+    if (!$urls) return ['ok' => false, 'note' => '空 URL 列表'];
+    require_once __DIR__ . '/../lib/SeoConsole.php';
+    $s = seo_console_settings();
+    $site = trim($s['baidu_site'] ?? '');
+    $token = trim($s['baidu_token'] ?? '');
+    if ($site === '' || $token === '') return ['ok' => false, 'note' => '未配置百度站点/Token'];
+    $api = 'http://data.zz.baidu.com/urls?site=' . urlencode($site) . '&token=' . urlencode($token);
+    $ch = curl_init($api);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => implode("\n", $urls),
+        CURLOPT_HTTPHEADER => ['Content-Type: text/plain'],
+        CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_SSL_VERIFYPEER => false,
+    ]);
+    $resp = json_decode((string)curl_exec($ch), true);
+    $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    // 成功返回 {"success":N,"remain":M}
+    $ok = $http === 200 && isset($resp['success']);
+    $note = $ok ? "成功 {$resp['success']} 条，今日余量 " . ($resp['remain'] ?? '?') : ('HTTP ' . $http . ' ' . ($resp['message'] ?? ''));
+    foreach ($urls as $u) index_log('百度', $u, $ok, $note);
+    return ['ok' => $ok, 'note' => $note];
+}
+
+// ─── 统一收录推送：IndexNow（Bing/Yandex/Google 逐步接入）+ 百度 ───
+function seo_submit_url(string $url): array {
+    $r = ['indexnow' => false, 'baidu' => null];
+    $r['indexnow'] = indexnow_ping($url);
+    $b = baidu_push_urls([$url]);
+    $r['baidu'] = $b['ok'];
+    $r['baidu_note'] = $b['note'];
+    return $r;
 }
 
 // ─── 301 Redirects ──────────────────────────────

@@ -224,11 +224,11 @@ function flow_crm_stage_change(string $email, string $oldStage, string $newStage
 // ── 内容流：内容发布联动（发布后自动推进分发/收录）──
 function flow_content_published(array $article): void {
     // 推送渠道（公众号/邮件等由各自模块触发）
-    // IndexNow 收录
-    if (!empty($article['slug']) && function_exists('indexnow_ping')) {
+    // 收录推送：IndexNow（Bing/Yandex）+ 百度主动推送，一次发布双路直达
+    if (!empty($article['slug']) && function_exists('seo_submit_url')) {
         try {
             $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http');
-            indexnow_ping($protocol . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/article/' . $article['slug']);
+            seo_submit_url($protocol . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/article/' . $article['slug']);
         } catch (Exception $e) {}
     }
 }
