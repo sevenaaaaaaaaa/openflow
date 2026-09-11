@@ -67,9 +67,13 @@ if (!$article) {
     $article = [];
 }
 
-$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'example.com';
-$baseUrl = $protocol . '://' . $host;
+// canonical/OG/JSON-LD 一律用配置的站点域名，不随请求 Host 漂移
+// （否则 HTTP 访问或错误 Host 会产出错误 canonical，重复内容归一失效）
+$baseUrl = rtrim(site_config_get('site_url', ''), '/');
+if ($baseUrl === '') {
+    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+    $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? '');
+}
 $articleUrl = $baseUrl . '/article/' . $slug;
 
 // ─── 内容处理：短代码 → 标题锚点 → 阅读时间 ───
@@ -214,7 +218,7 @@ $breadcrumbLd = [
     '@type' => 'BreadcrumbList',
     'itemListElement' => [
         ['@type' => 'ListItem', 'position' => 1, 'name' => '首页', 'item' => $baseUrl . '/'],
-        ['@type' => 'ListItem', 'position' => 2, 'name' => '社区', 'item' => $baseUrl . '/community'],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => '文章', 'item' => $baseUrl . '/articles'],
         ['@type' => 'ListItem', 'position' => 3, 'name' => $article['title'] ?? ''],
     ],
 ];
@@ -254,9 +258,9 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 <meta property="og:url" content="<?=htmlspecialchars($articleUrl)?>">
 <meta name="twitter:card" content="summary_large_image">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<script type="application/ld+json"><?=json_encode($jsonLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?></script>
-<?php if ($faqLd): ?><script type="application/ld+json"><?=json_encode($faqLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?></script><?php endif; ?>
-<script type="application/ld+json"><?=json_encode($breadcrumbLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?></script>
+<script type="application/ld+json"><?=json_encode($jsonLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP)?></script>
+<?php if ($faqLd): ?><script type="application/ld+json"><?=json_encode($faqLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP)?></script><?php endif; ?>
+<script type="application/ld+json"><?=json_encode($breadcrumbLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP)?></script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
 <link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">

@@ -105,16 +105,23 @@ $emojiOrSvg = fn(string $e, string $fallback) => (preg_match('/^[\x{1F000}-\x{1F
 <meta property="og:title" content="<?=htmlspecialchars($asset['title'] ?? '')?>">
 <meta property="og:description" content="<?=htmlspecialchars($desc)?>">
 <script type="application/ld+json">
-<?=json_encode([
+<?php
+$__productLd = [
     '@context' => 'https://schema.org',
     '@type' => 'Product',
     'name' => $asset['title'] ?? '',
     'description' => $desc,
     'brand' => ['@type' => 'Brand', 'name' => $author],
     'category' => $typeLabel,
-    'aggregateRating' => ['@type' => 'AggregateRating', 'ratingValue' => $asset['rating'] ?? 0, 'ratingCount' => $asset['rating_count'] ?? 0],
     'offers' => ['@type' => 'Offer', 'price' => $price, 'priceCurrency' => 'CNY', 'availability' => $price > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OnlineOnly'],
-], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)?>
+];
+// 0 评分不输出 aggregateRating（Google 要求评分必须来自真实评价，空评分会失去富结果资格）
+if (($asset['rating_count'] ?? 0) > 0) {
+    $__productLd['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => $asset['rating'] ?? 0, 'ratingCount' => $asset['rating_count']];
+}
+// JSON_HEX_TAG/AMP：防止内容里的 </script> 提前闭合节点导致结构化数据解析失败
+echo json_encode($__productLd, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_HEX_TAG | JSON_HEX_AMP);
+?>
 </script>
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>

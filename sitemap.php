@@ -26,6 +26,13 @@ if (empty($siteUrl) || str_contains($siteUrl, 'localhost')) {
 }
 $base = $siteUrl;
 
+// 输出 lastmod：空值/非法日期直接跳过（空 <lastmod> 不符合 sitemap 规范）
+$lastmod = function ($raw): string {
+    $d = substr((string)$raw, 0, 10);
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) return '';
+    return '<lastmod>' . htmlspecialchars($d) . '</lastmod>';
+};
+
 echo '<?xml version="1.0" encoding="UTF-8"?>';
 ?>
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -69,7 +76,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     <loc><?=$base?>/article/<?=htmlspecialchars($slug)?></loc>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
-    <lastmod><?=htmlspecialchars(substr($a['updated_at'] ?? $a['created_at'] ?? '', 0, 10))?></lastmod>
+    <?=$lastmod($a['updated_at'] ?? $a['created_at'] ?? '')?>
   </url>
   <?php endforeach; ?>
 
@@ -80,7 +87,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     $cslug = $c['slug'] ?? $c['id'] ?? '';
     if (!$cslug) continue;
   ?>
-  <url><loc><?=$base?>/course/<?=htmlspecialchars($cslug)?></loc><priority>0.7</priority><changefreq>weekly</changefreq><lastmod><?=htmlspecialchars(substr($c['updated_at'] ?? '', 0, 10))?></lastmod></url>
+  <url><loc><?=$base?>/course/<?=htmlspecialchars($cslug)?></loc><priority>0.7</priority><changefreq>weekly</changefreq><?=$lastmod($c['updated_at'] ?? '')?></url>
   <?php endforeach; ?>
 
   <!-- Skills -->
@@ -118,7 +125,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     $dslug = $d['slug'] ?? $d['id'] ?? '';
     if (!$dslug) continue;
   ?>
-  <url><loc><?=$base?>/download/<?=htmlspecialchars($dslug)?></loc><priority>0.6</priority><changefreq>weekly</changefreq><lastmod><?=htmlspecialchars(substr($d['updated_at'] ?? '', 0, 10))?></lastmod></url>
+  <url><loc><?=$base?>/download/<?=htmlspecialchars($dslug)?></loc><priority>0.6</priority><changefreq>weekly</changefreq><?=$lastmod($d['updated_at'] ?? '')?></url>
   <?php endforeach; ?>
 
   <!-- Podcast episodes -->
@@ -169,7 +176,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     $hslug = $h['slug'] ?? '';
     if (!$hslug) continue;
   ?>
-  <url><loc><?=$base?>/help/<?=htmlspecialchars($hslug)?></loc><priority>0.6</priority><changefreq>monthly</changefreq><lastmod><?=htmlspecialchars(substr($h['updated_at'] ?? '', 0, 10))?></lastmod></url>
+  <url><loc><?=$base?>/help/<?=htmlspecialchars($hslug)?></loc><priority>0.6</priority><changefreq>monthly</changefreq><?=$lastmod($h['updated_at'] ?? '')?></url>
   <?php endforeach; ?>
 
   <!-- Navigation 站点详情（增长导航收录的每个产品都是一页） -->
@@ -191,7 +198,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     $cpid = $cp['id'] ?? '';
     if (!$cpid) continue;
   ?>
-  <url><loc><?=$base?>/community-post/<?=htmlspecialchars($cpid)?></loc><priority>0.5</priority><changefreq>weekly</changefreq><lastmod><?=htmlspecialchars(substr($cp['updated_at'] ?? $cp['created_at'] ?? '', 0, 10))?></lastmod></url>
+  <url><loc><?=$base?>/community-post/<?=htmlspecialchars($cpid)?></loc><priority>0.5</priority><changefreq>weekly</changefreq><?=$lastmod($cp['updated_at'] ?? $cp['created_at'] ?? '')?></url>
   <?php endforeach; ?>
 
   <!-- Marketplace 插件详情 -->

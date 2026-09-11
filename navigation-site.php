@@ -90,8 +90,8 @@ $__ldCrumb = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', '
   ['@type' => 'ListItem', 'position' => 2, 'name' => $site['name'], 'item' => $__siteUrl . '/navigation/' . $site['id']],
 ]];
 ?>
-<script type="application/ld+json"><?=json_encode($__ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)?></script>
-<script type="application/ld+json"><?=json_encode($__ldCrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)?></script>
+<script type="application/ld+json"><?=json_encode($__ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP)?></script>
+<script type="application/ld+json"><?=json_encode($__ldCrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP)?></script>
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 站点详情独有样式；通用零件全部来自 modules.css */
