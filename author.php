@@ -91,6 +91,20 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
         <?php if (!empty($authorLinks)): ?>
         <div class="au-links"><?php foreach ($authorLinks as $l): if (empty($l['url'])) continue; ?><a class="pill neutral" href="<?=htmlspecialchars($l['url'])?>" target="_blank" rel="nofollow noopener"><?=htmlspecialchars($l['label'] ?? $l['url'])?></a><?php endforeach; ?></div>
         <?php endif; ?>
+        <?php if (!empty($authorProfile['id'])):
+          require_once __DIR__ . '/lib/FollowSystem.php';
+          require_once __DIR__ . '/lib/MemberSystem.php';
+          $__viewer = member_current();
+          $__authorUid = (string)$authorProfile['id'];
+          $__isFollowing = $__viewer ? FollowSystem::isFollowing($__viewer['id'], $__authorUid) : false;
+          $__followers = FollowSystem::followersCount($__authorUid);
+          $__isSelf = $__viewer && $__viewer['id'] === $__authorUid;
+          if (!$__isSelf): ?>
+        <div class="au-links" style="align-items:center">
+          <button type="button" id="followBtn" class="btn <?=$__isFollowing?'ghost':'primary'?>" style="height:38px;padding:0 18px;font-size:14px" data-uid="<?=htmlspecialchars($__authorUid)?>"><?=$__isFollowing?'已关注':'+ 关注 TA'?></button>
+          <span class="note" style="margin:0"><b id="followerCnt"><?=$__followers?></b> 位关注者</span>
+        </div>
+        <?php endif; endif; ?>
       </div>
     </div>
   </section>
@@ -143,5 +157,32 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
 <?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
 <button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
+<script>
+(function(){
+  var btn = document.getElementById('followBtn');
+  if (!btn) return;
+  var toast = function(m){ (window.OFShell ? OFShell.toast : alert)(m); };
+  btn.addEventListener('click', function(){
+    var fd = new FormData();
+    fd.append('target_user_id', btn.getAttribute('data-uid'));
+    btn.disabled = true;
+    fetch('/api/follow.php', {method:'POST', body:fd}).then(function(r){
+      if (r.status === 401) { toast('登录后即可关注作者'); location.href = '/member.php?view=login&next=' + encodeURIComponent(location.pathname); return null; }
+      return r.json();
+    }).then(function(d){
+      btn.disabled = false;
+      if (!d) return;
+      if (d.ok) {
+        var on = !!d.following;
+        btn.textContent = on ? '已关注' : '+ 关注 TA';
+        btn.className = 'btn ' + (on ? 'ghost' : 'primary');
+        var cnt = document.getElementById('followerCnt');
+        if (cnt && typeof d.followers_count !== 'undefined') cnt.textContent = d.followers_count;
+        toast(on ? '已关注，更新将出现在你的消息流' : '已取消关注');
+      } else { toast(d.error || '操作失败'); }
+    }).catch(function(){ btn.disabled = false; toast('网络异常，请稍后再试'); });
+  });
+})();
+</script>
 </body>
 </html>

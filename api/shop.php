@@ -102,13 +102,64 @@ switch ($action) {
     case 'create_order':
         $courseId = trim($_POST['course_id'] ?? '');
         $ref = trim($_POST['ref'] ?? ($_GET['ref'] ?? $_COOKIE['of_ref'] ?? ''));
-        $result = shop_create_order($member['id'], $courseId, $ref);
+        $couponCode = strtoupper(trim($_POST['coupon_code'] ?? ''));
+        $result = shop_create_order($member['id'], $courseId, $ref, $couponCode);
         if (!$result['ok']) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>$result['error']]); exit; }
         $channel = trim($_POST['channel'] ?? 'xfpay');
         $pay = payment_channel_create($channel, $result['order']);
         if (!$pay['ok']) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>$pay['error']]); exit; }
         if (!empty($result['order']['referrer_id'])) setcookie('of_ref', $result['order']['referrer_id'], time() + 86400 * 30, '/');
         echo json_encode(['ok'=>true, 'order'=>$result['order'], 'payment'=>$pay]);
+        break;
+
+    // ─── 优惠码校验（前端实时试算折后价） ───
+    case 'validate_coupon':
+        require_once __DIR__ . '/../lib/CouponSystem.php';
+        $courseId = trim($_POST['course_id'] ?? $_GET['course_id'] ?? '');
+        $code = strtoupper(trim($_POST['coupon_code'] ?? $_GET['coupon_code'] ?? ''));
+        if ($code === '') { echo json_encode(['ok'=>false,'error'=>'请输入优惠码']); break; }
+        $settings = shop_settings();
+        $price = (float)($settings['course_prices'][$courseId] ?? 0);
+        if ($price <= 0) { echo json_encode(['ok'=>false,'error'=>'课程不存在或未定价']); break; }
+        // 与下单一致：先算限时促销价，再叠优惠码
+        $promo = $settings['course_promos'][$courseId] ?? [];
+        $now = time();
+        if (!empty($promo['price']) && $promo['price'] > 0
+            && (!$promo['start'] || strtotime($promo['start']) <= $now)
+            && (!$promo['end'] || strtotime($promo['end']) >= $now)) {
+            $price = (float)$promo['price'];
+        }
+        $v = coupon_validate($member, $code, $price);
+        if (!$v['ok']) { echo json_encode(['ok'=>false,'error'=>$v['error']]); break; }
+        echo json_encode(['ok'=>true,'discount'=>$v['discount'],'payable'=>$v['payable'],'code'=>$code]);
+        break;
+
+    // ─── 退款申请（用户端；管理员在后台退款工作台处理） ───
+    case 'request_refund':
+        $orderId = trim($_POST['order_id'] ?? '');
+        $reason = trim($_POST['reason'] ?? '');
+        if ($orderId === '') { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'参数缺失']); break; }
+        $order = shop_get_order($orderId);
+        if (!$order || ($order['member_id'] ?? '') !== $member['id']) { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'订单不存在']); break; }
+        if (($order['status'] ?? '') !== 'paid') { echo json_encode(['ok'=>false,'error'=>'仅已支付订单可申请退款']); break; }
+        $reqFile = DATA_DIR . '/refund-requests.json';
+        $reqs = json_read($reqFile);
+        foreach ((array)$reqs as $r) {
+            if (($r['order_id'] ?? '') === $orderId && ($r['status'] ?? '') === 'pending') {
+                echo json_encode(['ok'=>false,'error'=>'该订单已有待处理的退款申请']); break 2;
+            }
+        }
+        $reqs[] = [
+            'id' => 'rr_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(3)), 0, 6),
+            'order_id' => $orderId,
+            'member_id' => $member['id'],
+            'amount' => (float)($order['amount'] ?? 0),
+            'reason' => $reason !== '' ? mb_substr($reason, 0, 200) : '未填写原因',
+            'status' => 'pending',
+            'created_at' => date('Y-m-d H:i:s'),
+        ];
+        json_write($reqFile, $reqs);
+        echo json_encode(['ok'=>true,'message'=>'退款申请已提交，工作人员会尽快处理']);
         break;
 
     // ─── 查询订单 ───

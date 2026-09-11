@@ -35,7 +35,7 @@ if ($member && in_array($view, ['login', 'register'], true)) {
 $orders = shop_all_orders();
 $myOrders = $member ? array_values(array_filter($orders, fn($o) => ($o['member_id'] ?? '') === $member['id'])) : [];
 
-$pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个人中心', 'profile' => '个人资料', 'password' => '修改密码', 'reset-password' => '重置密码'][$view] ?? '用户中心';
+$pageTitle = ['login' => '登录', 'register' => '注册', 'dashboard' => '个人中心', 'profile' => '个人资料', 'password' => '修改密码', 'reset-password' => '重置密码', 'bookmarks' => '我的收藏'][$view] ?? '用户中心';
 
 // 状态词 → 共享 badge / pill（颜色只来自 token）
 function acct_tag(string $kind): string {
@@ -177,6 +177,8 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
             ['subscribe', 'member.php?view=subscribe', '付费订阅', '<path d="m2 8 9-5 9 5-9 5-9-5Z"/><path d="M2 8v8l9 5 9-5V8M11 13v8"/>'],
             ['orders', 'member.php?view=orders', '我的订单', '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>'],
             ['courses', 'member.php?view=courses', '我的课程', '<path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v5"/>'],
+            ['bookmarks', 'member.php?view=bookmarks', '我的收藏', '<path d="M19 21 12 16 5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/>'],
+            ['activate', '/activate', '激活码兑换', '<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M3 12h18M8 16h4"/>'],
             ['teacher', 'member.php?view=teacher', '成为讲师', '<path d="m3 9 9-6 9 6-9 6-9-6Z"/><path d="M6 11.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5M21 9v5"/>'],
             ['submit', 'member.php?view=submit', '投稿文章', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/>'],
             ['consult', '/consultation?view=my', '我的 1v1 咨询', '<path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/>'],
@@ -243,6 +245,7 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
         <?php elseif ($tab === 'level'): include_member_level($member); ?>
         <?php elseif ($tab === 'subscribe'): include_member_subscribe($member); ?>
         <?php elseif ($tab === 'courses'): include_member_courses($member); ?>
+        <?php elseif ($tab === 'bookmarks'): include_member_bookmarks($member); ?>
         <?php elseif ($tab === 'ambassador'): include_member_ambassador($member); ?>
         <?php elseif ($tab === 'teacher'): include_member_teacher($member); ?>
         <?php elseif ($tab === 'submit'): include_member_submit($member); ?>
@@ -468,17 +471,38 @@ function include_member_subscribe($member): void {
     echo '</div>';
 }
 function include_member_orders(array $orders): void {
-    echo '<div class="card panel"><div class="ph"><div><h2>我的订单</h2></div></div>';
+    // 退款申请状态（order_id => status）
+    $refundReqs = [];
+    foreach ((array)json_read(DATA_DIR . '/refund-requests.json') as $r) {
+        $refundReqs[$r['order_id'] ?? ''] = $r['status'] ?? 'pending';
+    }
+    echo '<div class="card panel"><div class="ph"><div><h2>我的订单</h2><p>已支付订单可申请退款，工作人员会在 1-3 个工作日内处理。</p></div></div>';
     if (empty($orders)) { echo '<div class="empty">暂无订单，去逛逛课程吧 → <a href="/courses" style="color:var(--accent);font-weight:600">浏览课程</a></div>'; }
     else {
-        echo '<table class="tbl"><thead><tr><th>订单号</th><th>课程</th><th>金额</th><th>状态</th><th>时间</th></tr></thead><tbody>';
+        echo '<table class="tbl"><thead><tr><th>订单号</th><th>课程</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead><tbody>';
         foreach ($orders as $o) {
             $statusTag = ['paid'=>'已支付','pending'=>'待支付','cancelled'=>'已取消','refunded'=>'已退款'][$o['status']] ?? $o['status'];
             $tagCls = $o['status']==='paid'?'green':($o['status']==='pending'?'orange':'gray');
-            echo '<tr><td class="mu mono">' . htmlspecialchars(substr($o['id'],-10)) . '</td><td>' . htmlspecialchars($o['course_title']) . '</td><td>¥' . number_format($o['amount']??0,2) . '</td><td><span class="' . acct_tag($tagCls) . '">' . $statusTag . '</span></td><td class="mu mono">' . htmlspecialchars(substr($o['created_at']??'',0,10)) . '</td></tr>';
+            $oid = htmlspecialchars($o['id']);
+            $op = '<span class="mu">—</span>';
+            if ($o['status'] === 'paid') {
+                $rr = $refundReqs[$o['id']] ?? '';
+                if ($rr === 'pending') $op = '<span class="mu" style="font-size:12px">退款审核中</span>';
+                elseif ($rr === 'rejected') $op = '<span class="mu" style="font-size:12px">退款已驳回</span>';
+                else $op = '<button type="button" class="btn ghost sm" data-refund="' . $oid . '" data-title="' . htmlspecialchars($o['course_title'] ?? '') . '">申请退款</button>';
+            }
+            echo '<tr><td class="mu mono">' . htmlspecialchars(substr($o['id'],-10)) . '</td><td>' . htmlspecialchars($o['course_title']) . '</td><td>¥' . number_format($o['amount']??0,2) . '</td><td><span class="' . acct_tag($tagCls) . '">' . $statusTag . '</span></td><td class="mu mono">' . htmlspecialchars(substr($o['created_at']??'',0,10)) . '</td><td>' . $op . '</td></tr>';
         }
         echo '</tbody></table>';
     }
+    // 退款申请行内表单（点击「申请退款」展开）
+    echo '<div id="refundBox" style="display:none;margin-top:14px;padding:16px;border:1px dashed var(--border);border-radius:var(--r-sm)">' .
+        '<div class="field" style="margin:0 0 10px"><label style="font-size:13px">退款原因</label>' .
+        '<input id="refundReason" class="inp sm" placeholder="简单说明退款原因（选填）" maxlength="200"></div>' .
+        '<div style="display:flex;gap:8px;align-items:center">' .
+        '<button type="button" class="btn primary sm" id="refundSubmit">确认提交</button>' .
+        '<button type="button" class="btn ghost sm" id="refundCancel">取消</button>' .
+        '<span id="refundMsg" class="note" style="margin:0"></span></div></div>';
     echo '</div>';
 }
 function include_member_courses($member): void {
@@ -499,6 +523,52 @@ function include_member_courses($member): void {
                     '<div class="note" style="margin:0">已学 ' . $s['done'] . '/' . $s['total'] . ' 节 · ' . $s['percent'] . '%</div>'
                     : '<div class="note" style="margin:0">' . count($c['chapters']??[]) . ' 章 · 点击开始学习 →</div>') .
                 '</a>';
+        }
+        echo '</div>';
+    }
+    echo '</div>';
+}
+// ─── 我的收藏（文章/课程/帖子，对接 BookmarkSystem） ───
+function include_member_bookmarks($member): void {
+    require_once __DIR__ . '/lib/BookmarkSystem.php';
+    $items = BookmarkSystem::getUserBookmarks($member['id'], null, 200);
+    // 合并课程收藏（course-player 用的是独立的 course-favorites.json）
+    $favs = json_read(DATA_DIR . '/course-favorites.json');
+    $myFavs = $favs[$member['id']] ?? [];
+    if (!empty($myFavs)) {
+        $courses = json_read(DATA_DIR . '/courses/index.json');
+        $titleOf = [];
+        foreach ($courses as $c) $titleOf[$c['id']] = $c['title'] ?? $c['id'];
+        foreach ($myFavs as $cid => $ts) {
+            $items[] = ['target_type' => 'course', 'target_id' => $cid, 'title' => $titleOf[$cid] ?? $cid, 'created_at' => $ts, '_src' => 'course-fav'];
+        }
+        usort($items, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
+    }
+    // 目标类型 → 前台链接
+    $linkOf = function (array $b): string {
+        $id = rawurlencode((string)($b['target_id'] ?? ''));
+        return match ($b['target_type'] ?? '') {
+            'article' => '/article/' . $id,
+            'course'  => '/course/' . $id,
+            'post'    => '/community-post/' . $id,
+            default   => '#',
+        };
+    };
+    $typeLabel = ['article' => '文章', 'course' => '课程', 'post' => '帖子'];
+    echo '<div class="card panel"><div class="ph"><div><h2>我的收藏</h2><p>在文章、课程、帖子详情页点击「收藏」后会出现在这里。</p></div></div>';
+    if (empty($items)) {
+        echo '<div class="empty">还没有收藏内容，去逛逛 → <a href="/articles" style="color:var(--accent);font-weight:600">浏览文章</a> · <a href="/courses" style="color:var(--accent);font-weight:600">浏览课程</a></div>';
+    } else {
+        echo '<div id="bmList" style="display:flex;flex-direction:column;gap:10px">';
+        foreach ($items as $b) {
+            $t = $b['target_type'] ?? '';
+            $label = $typeLabel[$t] ?? '内容';
+            echo '<div class="item" style="display:flex;align-items:center;gap:12px" data-bm-row>' .
+                '<a href="' . $linkOf($b) . '" class="t" style="color:inherit;text-decoration:none;flex:1;min-width:0">' .
+                '<b>' . htmlspecialchars($b['title'] ?: '未命名内容') . '</b>' .
+                '<span>' . $label . ' · 收藏于 ' . htmlspecialchars(substr($b['created_at'] ?? '', 0, 10)) . '</span></a>' .
+                '<button type="button" class="btn ghost sm" data-unbm data-type="' . htmlspecialchars($t) . '" data-id="' . htmlspecialchars((string)($b['target_id'] ?? '')) . '" data-src="' . htmlspecialchars($b['_src'] ?? 'bookmark') . '" style="flex:0 0 auto">取消收藏</button>' .
+                '</div>';
         }
         echo '</div>';
     }
@@ -1316,6 +1386,68 @@ function submitTeacher() {
     .then(function(r){return r.json();})
     .then(function(d){ location.href = '/member.php?view=teacher'; });
 }
+// 退款申请（我的订单视图）
+(function(){
+  var box = document.getElementById('refundBox');
+  if (!box) return;
+  var toast = function(m){ (window.OFShell?OFShell.toast:function(x){alert(x);})(m); };
+  var currentOrder = '';
+  document.querySelectorAll('[data-refund]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      currentOrder = btn.getAttribute('data-refund');
+      box.style.display = 'block';
+      box.scrollIntoView({behavior:'smooth', block:'nearest'});
+      document.getElementById('refundMsg').textContent = '订单：' + btn.getAttribute('data-title');
+    });
+  });
+  document.getElementById('refundCancel').addEventListener('click', function(){ box.style.display = 'none'; });
+  document.getElementById('refundSubmit').addEventListener('click', function(){
+    if (!currentOrder) return;
+    var fd = new FormData();
+    fd.append('order_id', currentOrder);
+    fd.append('reason', document.getElementById('refundReason').value);
+    this.disabled = true;
+    var self = this;
+    fetch('/api/shop?action=request_refund', {method:'POST', body:fd})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        self.disabled = false;
+        if (d.ok) { toast(d.message || '已提交'); location.reload(); }
+        else { toast(d.error || '提交失败'); }
+      })
+      .catch(function(){ self.disabled = false; toast('网络异常'); });
+  });
+})();
+// 取消收藏（我的收藏视图；课程收藏走 /api/course，其余走 BookmarkSystem）
+document.querySelectorAll('[data-unbm]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var isCourseFav = btn.getAttribute('data-src') === 'course-fav';
+    var fd = new FormData();
+    var url = '/api/bookmark.php';
+    if (isCourseFav) {
+      fd.append('action', 'toggle_fav');
+      fd.append('course_id', btn.getAttribute('data-id'));
+      url = '/api/course';
+    } else {
+      fd.append('target_type', btn.getAttribute('data-type'));
+      fd.append('target_id', btn.getAttribute('data-id'));
+    }
+    btn.disabled = true;
+    fetch(url, {method:'POST', body:fd})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if (d.ok) {
+          var row = btn.closest('[data-bm-row]');
+          if (row) row.remove();
+          (window.OFShell?OFShell.toast:function(m){alert(m);})('已取消收藏');
+          if (!document.querySelector('[data-bm-row]')) location.reload();
+        } else {
+          btn.disabled = false;
+          (window.OFShell?OFShell.toast:function(m){alert(m);})(d.error || '操作失败');
+        }
+      });
+  });
+});
 function submitArticle() {
   var f = document.getElementById('submitForm');
   var fd = new FormData(); fd.append('action','submit_article');

@@ -73,6 +73,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ship'])) {
     exit;
 }
 
+// 用户退款申请审批（来自前台「我的订单 · 申请退款」）
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['req_action'])) {
+    csrf_verify();
+    $reqId = trim($_POST['req_id'] ?? '');
+    $act = $_POST['req_action'] === 'approve' ? 'approve' : 'reject';
+    $reqFile = DATA_DIR . '/refund-requests.json';
+    $reqs = json_read($reqFile);
+    $found = false;
+    foreach ($reqs as &$r) {
+        if (($r['id'] ?? '') !== $reqId || ($r['status'] ?? '') !== 'pending') continue;
+        $found = true;
+        if ($act === 'approve') {
+            require_once __DIR__ . '/../lib/ShopSystem.php';
+            $res = shop_refund_order($r['order_id'], '用户申请：' . ($r['reason'] ?? ''));
+            if ($res['ok'] ?? false) { $r['status'] = 'approved'; $r['handled_at'] = date('Y-m-d H:i:s'); flash('success', '已同意并退款'); }
+            else { flash('error', '退款失败：' . ($res['error'] ?? '未知错误')); }
+        } else {
+            $r['status'] = 'rejected'; $r['handled_at'] = date('Y-m-d H:i:s');
+            flash('success', '已驳回该申请');
+        }
+        break;
+    }
+    unset($r);
+    if ($found) json_write($reqFile, $reqs);
+    elseif (!$found) flash('error', '申请不存在或已处理');
+    header('Location: /xmp/refunds');
+    exit;
+}
+
+// 退款申请列表（pending 在前）
+$refundReqs = json_read(DATA_DIR . '/refund-requests.json');
+usort($refundReqs, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
+$pendingReqs = array_values(array_filter($refundReqs, fn($r) => ($r['status'] ?? '') === 'pending'));
+
 // 订单列表（paid 状态可退款）
 try {
     $orders = Database::query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 200");
@@ -98,6 +132,34 @@ admin_header('退款售后');
       <div class="card" style="padding:14px;text-align:center"><div style="font-size:24px;font-weight:800;color:var(--danger)"><?=$c['refunded']?></div><div style="font-size:12px;color:var(--muted)">已退款</div></div>
       <div class="card" style="padding:14px;text-align:center"><div style="font-size:24px;font-weight:800;color:var(--warn)"><?=$c['pending']?></div><div style="font-size:12px;color:var(--muted)">待支付</div></div>
     </div>
+
+    <?php if (!empty($pendingReqs)): ?>
+    <div class="card" style="padding:0;overflow:auto;margin-bottom:20px">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-weight:700">用户退款申请 <span class="badge" style="background:var(--warn);color:var(--on-accent);padding:2px 10px;border-radius:999px;font-size:12px"><?=count($pendingReqs)?> 待处理</span></div>
+      <table>
+        <thead><tr><th>订单号</th><th>买家</th><th>金额</th><th>退款原因</th><th>申请时间</th><th>操作</th></tr></thead>
+        <tbody>
+          <?php foreach ($pendingReqs as $r): ?>
+          <tr>
+            <td class="text-sm text-muted"><?=htmlspecialchars(substr($r['order_id'] ?? '', -12))?></td>
+            <td><?=htmlspecialchars($mName[$r['member_id']] ?? ($r['member_id'] ?? ''))?></td>
+            <td style="font-weight:600">¥<?=number_format($r['amount'] ?? 0, 2)?></td>
+            <td class="text-sm"><?=htmlspecialchars(mb_substr($r['reason'] ?? '', 0, 40))?></td>
+            <td class="text-sm text-muted"><?=substr($r['created_at'] ?? '', 0, 16)?></td>
+            <td>
+              <form method="post" style="display:flex;gap:6px">
+                <?= csrf_field() ?>
+                <input type="hidden" name="req_id" value="<?=htmlspecialchars($r['id'])?>">
+                <button name="req_action" value="approve" class="btn sm" data-confirm="同意并立即退款 ¥<?=number_format($r['amount'] ?? 0, 2)?>？将自动扣回佣金与分成。">同意退款</button>
+                <button name="req_action" value="reject" class="btn sm ghost" data-confirm="驳回该退款申请？">驳回</button>
+              </form>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+    <?php endif; ?>
 
     <div class="card" style="padding:0;overflow:auto">
       <table>
