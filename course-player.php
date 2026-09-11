@@ -110,8 +110,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
 #quizArea{padding:20px;border-radius:var(--r-md);background:var(--bg-soft);border:1px solid var(--border-soft)}
 /* 课时讲稿：正文排版与文章页对齐 */
 .lesson-content{margin-top:14px;padding:22px 24px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border-soft)}
-.lesson-content h3{font-size:17px;font-weight:800;margin:20px 0 10px;letter-spacing:-.01em}
-.lesson-content h3:first-child{margin-top:0}
+.lesson-content h3{font-size:17px;font-weight:800;margin:20px 0 10px;letter-spacing:-.01em}.lesson-content h3:first-child{margin-top:0}
 .lesson-content p{font-size:14.5px;line-height:1.9;color:var(--fg);margin:0 0 12px}
 .lesson-content ul,.lesson-content ol{margin:0 0 12px;padding-left:22px;font-size:14.5px;line-height:1.9}
 .lesson-content li{margin-bottom:6px}
