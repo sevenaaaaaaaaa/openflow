@@ -32,7 +32,7 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
      id 与 site-shell.js 的注入判重一致，故 site-shell 不会重复插入。 -->
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260909a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
 <style>
 /* 关于页独有：创始人战绩窄栏里的四行成果。其余全部来自 modules.css。 */
 .win-lead{padding:18px 22px 4px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;font-family:var(--font-mono)}

@@ -60,29 +60,15 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260909a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
 <style>
-/* 导航站独有：搜索框、热搜、分类侧栏项、站点卡评分。其余全部来自 modules.css。 */
+/* 导航站独有：搜索框、热搜、站点卡评分。分类/地区/热门/收录标准已迁入全站侧栏（modules.css 的 .sb-w）。 */
 .search{display:flex;gap:10px;width:min(560px,100%);margin:0 auto}
 .search .inp{border-radius:999px;padding-left:22px}
 .search .btn{border-radius:999px;flex:0 0 auto}
 .hots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
 .hots .lbl{font-family:var(--font-mono);font-size:12px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase;margin-right:4px}
-.cat-nav{display:flex;flex-direction:column;gap:2px}
-.cat-nav a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;font-size:14px;color:var(--muted);transition:background .15s,color .15s}
-.cat-nav a:hover{background:var(--hover);color:var(--fg)}
-.cat-nav a.active{background:var(--accent-soft);color:var(--accent-strong);font-weight:600}
-.cat-nav .em{width:16px;height:16px;flex:0 0 auto;color:var(--faint)}.cat-nav .em svg{width:16px;height:16px}.cat-nav a.active .em,.cat-nav a:hover .em{color:var(--accent)}
-/* 热门榜 */
-.hot-list a{display:flex;align-items:center;gap:9px}
-.hot-list .rk{font-family:var(--font-mono);font-size:11px;font-weight:800;width:18px;height:18px;border-radius:6px;background:var(--hover);color:var(--faint);display:grid;place-items:center;flex:0 0 auto}
-.hot-list a:nth-child(1) .rk,.hot-list a:nth-child(2) .rk,.hot-list a:nth-child(3) .rk{background:var(--accent-soft);color:var(--accent-strong)}
-.hot-list .hits{margin-left:auto;font-family:var(--font-mono);font-size:10.5px;color:var(--faint)}
-.crit{font-size:12.5px;color:var(--muted);line-height:1.85;padding:2px 4px 0}
-.crit b{color:var(--fg)}
 .fl-h{display:flex;align-items:center;gap:10px}.fl-h .em{width:30px;height:30px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}.fl-h .em svg{width:16px;height:16px}
-.g-main-aside.aside-left{grid-template-columns:minmax(0,220px) minmax(0,1fr)}
-.g-main-aside.aside-left>aside{position:sticky;top:var(--shell-sticky-top)}
 .site-card{display:flex;flex-direction:column;gap:8px;padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);backdrop-filter:blur(16px) saturate(150%);transition:transform .3s var(--ease-spring),box-shadow .3s,border-color .3s}
 .site-card:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:var(--shadow)}
 .site-card .hd{display:flex;align-items:center;gap:10px}
@@ -98,7 +84,6 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 .site-card .meta span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .floor+.floor{margin-top:clamp(36px,5vw,56px)}
 .site-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
-@media (max-width:1080px){.g-main-aside.aside-left{grid-template-columns:1fr}.g-main-aside.aside-left>aside{position:static}.cat-nav{flex-direction:row;flex-wrap:wrap}}
 </style>
 <script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
@@ -106,6 +91,48 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('navigation'); ?>
 
 <a class="skip" href="#main">跳到主要内容</a>
+
+<!-- ══ 情境侧栏：分类 / 地区 / 热门工具 / 收录标准（由 site-shell.js 挂载到全站侧栏） ══ -->
+<template id="of-sidebar-context">
+  <div class="sb-w">
+    <h3>全部分类</h3>
+    <nav aria-label="分类">
+      <a class="sb-row <?=!$cat?'on':''?>" href="/navigation?region=<?=$region?>"><span class="em"><?=$allIcon?></span><span class="tx">全部</span></a>
+      <?php foreach ($categories as $c): ?>
+      <a class="sb-row <?=$cat===$c['id']?'on':''?>" href="?cat=<?=urlencode($c['id'])?>&region=<?=$region?>"><span class="em"><?=$catIcons[$c['id']] ?? $allIcon?></span><span class="tx"><?=htmlspecialchars($c['name'])?></span></a>
+      <?php endforeach; ?>
+    </nav>
+  </div>
+  <div class="sb-w">
+    <h3>地区</h3>
+    <nav aria-label="地区">
+      <a class="sb-row <?=$region==='all'?'on':''?>" href="?region=all"><span class="em"><?=nav_region_icon('all')?></span><span class="tx">全部</span></a>
+      <a class="sb-row <?=$region==='cn'?'on':''?>" href="?region=cn"><span class="em"><?=nav_region_icon('cn')?></span><span class="tx">国内</span></a>
+      <a class="sb-row <?=$region==='intl'?'on':''?>" href="?region=intl"><span class="em"><?=nav_region_icon('intl')?></span><span class="tx">海外</span></a>
+    </nav>
+  </div>
+  <?php
+  // 热门榜：按点击量（hits）排序取前 8；无点击数据时按编辑推荐优先
+  $hotSites = $sites;
+  usort($hotSites, fn($a, $b) => ((int)($b['hits'] ?? 0) <=> (int)($a['hits'] ?? 0)) ?: ((int)($b['featured'] ?? 0) <=> (int)($a['featured'] ?? 0)));
+  $hotSites = array_slice($hotSites, 0, 8);
+  if ($hotSites):
+  ?>
+  <div class="sb-w">
+    <h3>热门工具</h3>
+    <nav aria-label="热门工具">
+      <?php foreach ($hotSites as $hi => $hs): ?>
+      <a class="sb-row" href="/navigation/<?=urlencode($hs['id'])?>"><span class="rk"><?=$hi+1?></span><span class="tx"><?=htmlspecialchars($hs['name'])?></span><span class="hits"><?=(int)($hs['hits'] ?? 0)?></span></a>
+      <?php endforeach; ?>
+    </nav>
+  </div>
+  <?php endif; ?>
+  <div class="sb-w">
+    <h3>收录标准</h3>
+    <p class="sb-note">只收<b>一人公司真正在用</b>的工具：有真实用户、持续更新、定价透明。不接受付费置顶，推荐位由编辑评定。<a href="/navigation/submit">提交收录 →</a></p>
+  </div>
+</template>
+
 <main id="main" data-od-id="main">
 
   <!-- ══ 首屏：搜索 + 热搜 ══ -->
@@ -140,48 +167,8 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
   </section>
   <?php endif; endif; ?>
 
-  <!-- ══ 分类侧栏 + 楼层 ══ -->
+  <!-- ══ 站点楼层（筛选已迁入全站侧栏，主体单栏） ══ -->
   <section id="sites" class="sec reveal" data-od-anchor data-od-id="nav-sites">
-    <div class="g-main-aside aside-left">
-      <aside>
-        <div class="aside-box">
-          <h3>全部分类</h3>
-          <nav class="cat-nav" aria-label="分类">
-            <a class="<?=!$cat?'active':''?>" href="/navigation?region=<?=$region?>"><span class="em"><?=$allIcon?></span>全部</a>
-            <?php foreach ($categories as $c): ?>
-            <a class="<?=$cat===$c['id']?'active':''?>" href="?cat=<?=urlencode($c['id'])?>&region=<?=$region?>"><span class="em"><?=$catIcons[$c['id']] ?? $allIcon?></span><?=htmlspecialchars($c['name'])?></a>
-            <?php endforeach; ?>
-          </nav>
-        </div>
-        <div class="aside-box">
-          <h3>地区</h3>
-          <nav class="cat-nav" aria-label="地区">
-            <a class="<?=$region==='all'?'active':''?>" href="?region=all"><span class="em"><?=nav_region_icon('all')?></span>全部</a>
-            <a class="<?=$region==='cn'?'active':''?>" href="?region=cn"><span class="em"><?=nav_region_icon('cn')?></span>国内</a>
-            <a class="<?=$region==='intl'?'active':''?>" href="?region=intl"><span class="em"><?=nav_region_icon('intl')?></span>海外</a>
-          </nav>
-        </div>
-        <?php
-        // 热门榜：按点击量（hits）排序取前 8；无点击数据时按编辑推荐优先
-        $hotSites = $sites;
-        usort($hotSites, fn($a, $b) => ((int)($b['hits'] ?? 0) <=> (int)($a['hits'] ?? 0)) ?: ((int)($b['featured'] ?? 0) <=> (int)($a['featured'] ?? 0)));
-        $hotSites = array_slice($hotSites, 0, 8);
-        if ($hotSites):
-        ?>
-        <div class="aside-box">
-          <h3>热门工具</h3>
-          <nav class="cat-nav hot-list" aria-label="热门工具">
-            <?php foreach ($hotSites as $hi => $hs): ?>
-            <a href="/navigation/<?=urlencode($hs['id'])?>"><span class="rk"><?=$hi+1?></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?=htmlspecialchars($hs['name'])?></span><span class="hits"><?=(int)($hs['hits'] ?? 0)?></span></a>
-            <?php endforeach; ?>
-          </nav>
-        </div>
-        <?php endif; ?>
-        <div class="aside-box">
-          <h3>收录标准</h3>
-          <p class="crit">只收<b>一人公司真正在用</b>的工具：有真实用户、持续更新、定价透明。不接受付费置顶，推荐位由编辑评定。<a href="/navigation/submit" style="color:var(--accent)">提交收录 →</a></p>
-        </div>
-      </aside>
       <div>
         <?php if ($q): ?>
         <p class="note">搜索「<strong><?=htmlspecialchars($q)?></strong>」找到 <?=count($filtered)?> 个结果 · <a href="/navigation" style="color:var(--accent)">清除</a></p>
@@ -209,7 +196,6 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
         </div>
         <?php endforeach; endif; ?>
       </div>
-    </div>
   </section>
 
 <?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
