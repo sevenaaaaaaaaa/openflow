@@ -407,7 +407,8 @@
     var sbHtml =
       '<div class="ws" id="ws"><span class="ic">' + BRAND_SVG + '</span><b>Open Flow · ' + PAGE_LABEL + '</b></div>' +
       '<div id="sbExtra"></div>' +
-      '<div class="sec-title"><span>站点</span></div>' +
+      '<div id="sbContext"></div>' +
+      '<div class="sec-title" id="sbNavSec"><span>站点</span></div>' +
       '<div id="sbNav"></div>' +
       '<div class="sec-title"><span>账户</span></div>' +
       '<button class="drop-item" id="drawer-auth"><span class="ic">' + I.users + '</span><b id="drawer-auth-label">登录 / 注册</b></button>' +
@@ -447,6 +448,23 @@
         var tpl = document.getElementById('of-sidebar-extra'), slot = g('sbExtra');
         if (!tpl || !slot) return;
         slot.innerHTML = tpl.innerHTML;
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
+      else fill();
+    })();
+
+    /* 情境侧栏：页面可放 <template id="of-sidebar-context">…</template>，
+       存在时接管侧栏（桌面端隐藏公版站点导航，由 CSS 的 sb-has-context 负责），
+       让侧栏内容随页面切换：导航站显分类/地区，社区显话题，文章显目录。
+       移动端抽屉里情境内容与站点导航并存（见 modules.css 媒体查询）。 */
+    (function mountSidebarContext() {
+      function fill() {
+        var tpl = document.getElementById('of-sidebar-context'), slot = g('sbContext');
+        if (!tpl || !slot) return;
+        slot.innerHTML = tpl.innerHTML;
+        document.body.classList.add('sb-has-context');
+        /* 挂载后广播，页面脚本（如文章目录滚动高亮）可在此刻再绑定 */
+        try { document.dispatchEvent(new CustomEvent('of:sb-context')); } catch (e) {}
       }
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
       else fill();

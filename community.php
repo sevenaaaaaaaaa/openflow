@@ -22,6 +22,8 @@ $sort = req_str('sort', 'hot');
 $display = $posts;
 if ($topicFilter) $display = array_values(array_filter($display, fn($p) => ($p['topic'] ?? '') === $topicFilter));
 $display = array_values(array_filter($display, fn($p) => ($p['status'] ?? 'published') === 'published'));
+// 热议榜用全站已发布帖子（不受当前话题筛选影响，也不露出被隐藏的帖子）
+$publishedPosts = array_values(array_filter($posts, fn($p) => ($p['status'] ?? 'published') === 'published'));
 
 // 置顶优先（📌 帖子始终排最前）
 usort($display, function($a, $b) {
@@ -59,16 +61,9 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260909a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
 <style>
-/* 社区页独有：话题侧栏项、帖子卡与投票列、发帖框。其余全部来自 modules.css。 */
-.g-main-aside.aside-left{grid-template-columns:minmax(0,240px) minmax(0,1fr)}
-.g-main-aside.aside-left>aside{position:sticky;top:var(--shell-sticky-top)}
-.topic-nav{display:flex;flex-direction:column;gap:2px}
-.topic-nav a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;font-size:14px;color:var(--muted);transition:background .15s,color .15s}
-.topic-nav a:hover{background:var(--hover);color:var(--fg)}
-.topic-nav a.active{background:var(--accent-soft);color:var(--accent-strong);font-weight:600}
-.topic-nav .em{width:20px;text-align:center;flex:0 0 auto}
+/* 社区页独有：帖子卡与投票列、发帖框。话题/热议/公约已迁入全站侧栏（modules.css 的 .sb-w）。 */
 .stream{display:flex;flex-direction:column;gap:14px}
 .stream-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .stream-bar .count{margin-left:auto;font-family:var(--font-mono);font-size:12.5px;color:var(--faint)}
@@ -92,8 +87,6 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 .newpost{display:flex;flex-direction:column;gap:12px}
 .newpost .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .newpost .row .btn{margin-left:auto}
-.hot-posts .hp-n{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);flex:0 0 auto}
-@media (max-width:1080px){.g-main-aside.aside-left{grid-template-columns:1fr}.g-main-aside.aside-left>aside{position:static}.topic-nav{flex-direction:row;flex-wrap:wrap}}
 @media (max-width:640px){.post{grid-template-columns:1fr}.vote{flex-direction:row;gap:8px}}
 </style>
 <script src="/assets/inject.js?v=20260830b" defer></script>
@@ -102,6 +95,40 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('community'); ?>
 
 <a class="skip" href="#main">跳到主要内容</a>
+
+<!-- ══ 情境侧栏：话题 / 本周热议 / 门派公约（由 site-shell.js 挂载到全站侧栏） ══ -->
+<template id="of-sidebar-context">
+  <div class="sb-w">
+    <h3>话题</h3>
+    <nav aria-label="话题">
+      <a class="sb-row <?=!$topicFilter?'on':''?>" href="community?sort=<?=$sort?>"><span class="em"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="tx">全部</span></a>
+      <?php foreach ($topics as $t): ?>
+      <a class="sb-row <?=$topicFilter===$t['id']?'on':''?>" href="community?topic=<?=urlencode($t['id'])?>&sort=<?=$sort?>"><span class="em"><?=$t['icon']??'💬'?></span><span class="tx"><?=htmlspecialchars($t['name'])?></span></a>
+      <?php endforeach; ?>
+    </nav>
+  </div>
+  <?php
+  // 热议榜：按票数+评论加权（基于已发布帖子）
+  $hotPosts = $publishedPosts;
+  usort($hotPosts, fn($a, $b) => (($b['votes'] ?? 0) + ($b['comments'] ?? 0) * 2) <=> (($a['votes'] ?? 0) + ($a['comments'] ?? 0) * 2));
+  $hotPosts = array_slice($hotPosts, 0, 5);
+  if ($hotPosts):
+  ?>
+  <div class="sb-w">
+    <h3>本周热议</h3>
+    <nav aria-label="热议帖子">
+      <?php foreach ($hotPosts as $hp): ?>
+      <a class="sb-row" href="community-post/<?=urlencode($hp['id'] ?? '')?>"><span class="em" style="color:var(--warn)">🔥</span><span class="tx"><?=htmlspecialchars($hp['title'] ?? '')?></span><span class="hits"><?=(int)($hp['votes'] ?? 0)?></span></a>
+      <?php endforeach; ?>
+    </nav>
+  </div>
+  <?php endif; ?>
+  <div class="sb-w">
+    <h3>门派公约</h3>
+    <p class="sb-note">晒数据不吹牛，提问带上下文，诊断对事不对人。广告与割韭菜内容直接删除并移出门派。</p>
+  </div>
+</template>
+
 <main id="main" data-od-id="main">
 
   <!-- ══ 首屏 ══ -->
@@ -114,42 +141,8 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
     </div>
   </section>
 
-  <!-- ══ 话题侧栏 + 帖子流 ══ -->
+  <!-- ══ 帖子流（话题/热议已迁入全站侧栏，主体单栏） ══ -->
   <section id="stream" class="sec reveal" data-od-anchor data-od-id="community-stream">
-    <div class="g-main-aside aside-left">
-      <aside>
-        <div class="aside-box">
-          <h3>话题</h3>
-          <nav class="topic-nav" aria-label="话题">
-            <a class="<?=!$topicFilter?'active':''?>" href="community?sort=<?=$sort?>"><span class="em"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>全部</a>
-            <?php foreach ($topics as $t): ?>
-            <a class="<?=$topicFilter===$t['id']?'active':''?>" href="community?topic=<?=urlencode($t['id'])?>&sort=<?=$sort?>"><span class="em"><?=$t['icon']??'💬'?></span><?=htmlspecialchars($t['name'])?></a>
-            <?php endforeach; ?>
-          </nav>
-        </div>
-        <button class="btn primary" onclick="showNewPost()" style="width:100%"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg>发帖</button>
-        <?php
-        // 热议榜：按票数+评论加权
-        $hotPosts = $posts;
-        usort($hotPosts, fn($a, $b) => (($b['votes'] ?? 0) + ($b['comments'] ?? 0) * 2) <=> (($a['votes'] ?? 0) + ($a['comments'] ?? 0) * 2));
-        $hotPosts = array_slice($hotPosts, 0, 5);
-        if ($hotPosts):
-        ?>
-        <div class="aside-box">
-          <h3>本周热议</h3>
-          <nav class="topic-nav hot-posts" aria-label="热议帖子">
-            <?php foreach ($hotPosts as $hp): ?>
-            <a href="community-post/<?=urlencode($hp['id'] ?? '')?>"><span class="em" style="color:var(--warn)">🔥</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"><?=htmlspecialchars($hp['title'] ?? '')?></span><span class="hp-n"><?=(int)($hp['votes'] ?? 0)?></span></a>
-            <?php endforeach; ?>
-          </nav>
-        </div>
-        <?php endif; ?>
-        <div class="aside-box">
-          <h3>门派公约</h3>
-          <p style="font-size:12.5px;color:var(--muted);line-height:1.85;padding:2px 4px 0">晒数据不吹牛，提问带上下文，诊断对事不对人。广告与割韭菜内容直接删除并移出门派。</p>
-        </div>
-      </aside>
-
       <div class="stream">
         <div class="stream-bar">
           <div class="tab-bar" style="border-bottom:none;padding-bottom:0;justify-content:flex-start">
@@ -157,6 +150,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
             <a class="tab-p" href="community?topic=<?=$topicFilter?>&sort=new" aria-selected="<?=$sort==='new'?'true':'false'?>"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>最新</a>
           </div>
           <span class="count"><?=count($display)?> 帖</span>
+          <button class="btn primary" onclick="showNewPost()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg>发帖</button>
         </div>
 
         <div id="newPostBox" class="card newpost" style="display:none">
@@ -189,7 +183,6 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
         </article>
         <?php endforeach; ?>
       </div>
-    </div>
   </section>
 
   <!-- ══ 收尾 CTA ══ -->
