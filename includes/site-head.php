@@ -34,7 +34,20 @@ function of_seo_bootstrap(): void {
     ob_start(function (string $html): string {
         if (stripos($html, '</head>') === false) return $html;
         $siteUrl = function_exists('site_config_get') ? rtrim(site_config_get('site_url', ''), '/') : '';
-        $req = preg_replace('/\?.*$/', '', preg_replace('/#.*$/', '', (string)($_SERVER['REQUEST_URI'] ?? '/')));
+        // canonical：保留内容身份参数（site/id/view/slug/play 等），只剥离跟踪参数（utm_*/ref/fbclid…），
+        // 否则 marketplace?view=plugin&id=x 这类无伪静态页会把 canonical 全归并到 /marketplace。
+        $reqUri = (string)($_SERVER['REQUEST_URI'] ?? '/');
+        $reqPath = preg_replace('/\?.*$/', '', preg_replace('/#.*$/', '', $reqUri));
+        $req = $reqPath;
+        $qs = parse_url($reqUri, PHP_URL_QUERY);
+        if (is_string($qs) && $qs !== '') {
+            parse_str($qs, $q);
+            $tracking = array_filter(array_keys($q), fn($k) => preg_match('/^(utm_|fbclid$|gclid$|ref$|_ga$|spm$)/i', (string)$k));
+            foreach ($tracking as $tk) unset($q[$tk]);
+            // 分页/排序/搜索等浏览态参数不参与 canonical（避免重复内容）
+            foreach (['sort', 'page', 'q', 'type', 'cat', 'tab'] as $bk) unset($q[$bk]);
+            if ($q) $req .= '?' . http_build_query($q);
+        }
         // canonical：两种引号形式都没有才补，用当前请求 URL + 站点域名（修 example.com bug）
         $hasCanonical = (stripos($html, 'rel="canonical"') !== false || stripos($html, "rel='canonical'") !== false);
         if (!$hasCanonical && $siteUrl !== '') {
@@ -48,18 +61,58 @@ function of_seo_bootstrap(): void {
         }
         // OG title：页面没写 og:title 就补（优先取已捕获的 <title>，否则用站点默认名）
         $hasOg = (stripos($html, 'property="og:title"') !== false || stripos($html, "property='og:title'") !== false);
-        if (!$hasOg) {
-            $ogTitle = '';
-            if (preg_match('/<title>(.*?)<\/title>/s', $html, $tm)) $ogTitle = trim(strip_tags($tm[1]));
-            if ($ogTitle === '') {
-                $ogTitle = function_exists('site_config_get') ? site_config_get('site_name', '') : '';
-                $desc2   = function_exists('site_config_get') ? site_config_get('site_desc', '') : '';
-                if ($ogTitle !== '' && $desc2 !== '') $ogTitle .= ' - ' . $desc2;
+        $ogTitle = '';
+        if (preg_match('/<title>(.*?)<\/title>/s', $html, $tm)) $ogTitle = trim(strip_tags($tm[1]));
+        if ($ogTitle === '') {
+            $ogTitle = function_exists('site_config_get') ? site_config_get('site_name', '') : '';
+            $desc2   = function_exists('site_config_get') ? site_config_get('site_desc', '') : '';
+            if ($ogTitle !== '' && $desc2 !== '') $ogTitle .= ' - ' . $desc2;
+        }
+        if (!$hasOg && $ogTitle !== '') {
+            $html = str_ireplace('</head>', '<meta property="og:title" content="' . htmlspecialchars($ogTitle, ENT_QUOTES) . '">' . "\n</head>", $html);
+        }
+        // 分享卡全量兜底：og:description / og:url / og:type / og:site_name / og:image + Twitter Card
+        // （页面已写的保留，缺什么补什么；og:image 默认 1200×630 品牌横幅）
+        $inject = '';
+        $hasOgDesc = (stripos($html, 'property="og:description"') !== false || stripos($html, "property='og:description'") !== false);
+        if (!$hasOgDesc) {
+            $ogDesc = '';
+            if (preg_match('/<meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']/is', $html, $dm)) $ogDesc = trim($dm[1]);
+            if ($ogDesc === '' && function_exists('site_config_get')) $ogDesc = site_config_get('site_desc', '');
+            if ($ogDesc !== '') $inject .= '<meta property="og:description" content="' . htmlspecialchars($ogDesc, ENT_QUOTES) . '">' . "\n";
+        }
+        if ($siteUrl !== '') {
+            if (stripos($html, 'property="og:url"') === false && stripos($html, "property='og:url'") === false) {
+                $inject .= '<meta property="og:url" content="' . htmlspecialchars($siteUrl . $req, ENT_QUOTES) . '">' . "\n";
             }
-            if ($ogTitle !== '') {
-                $html = str_ireplace('</head>', '<meta property="og:title" content="' . htmlspecialchars($ogTitle, ENT_QUOTES) . '">' . "\n</head>", $html);
+            if (stripos($html, 'property="og:image"') === false && stripos($html, "property='og:image'") === false) {
+                $ogImg = function_exists('site_config_get') ? site_config_get('og_image', '') : '';
+                if ($ogImg === '') $ogImg = $siteUrl . '/assets/images/og-cover.png';
+                $inject .= '<meta property="og:image" content="' . htmlspecialchars($ogImg, ENT_QUOTES) . '">' . "\n"
+                         . '<meta property="og:image:width" content="1200">' . "\n"
+                         . '<meta property="og:image:height" content="630">' . "\n";
             }
         }
+        if (stripos($html, 'property="og:type"') === false && stripos($html, "property='og:type'") === false) {
+            $inject .= '<meta property="og:type" content="website">' . "\n";
+        }
+        if (stripos($html, 'property="og:site_name"') === false && stripos($html, "property='og:site_name'") === false) {
+            $sn = function_exists('site_config_get') ? site_config_get('site_name', '') : '';
+            if ($sn !== '') $inject .= '<meta property="og:site_name" content="' . htmlspecialchars($sn, ENT_QUOTES) . '">' . "\n";
+        }
+        // Twitter Card：有 og:image 就用大卡，标题/描述复用 og 值（Twitter 会自己回退读 og:*，这里只补 card 类型）
+        if (stripos($html, 'name="twitter:card"') === false && stripos($html, "name='twitter:card'") === false) {
+            $inject .= '<meta name="twitter:card" content="summary_large_image">' . "\n";
+        }
+        // GA4 自动注入：后台配了 ga_id（或 SEO 站长工具里 Google 授权选 GA4 属性时自动写入）就全站注入 gtag，
+        // 页面已手动接入 gtag（含 GTM）则不重复。此前 ga_id 设置是死的——保存了前台根本不输出。
+        $gaId = function_exists('site_config_get') ? trim(site_config_get('ga_id', '')) : '';
+        if ($gaId !== '' && stripos($html, 'googletagmanager.com/gtag') === false && stripos($html, 'googletagmanager.com/gtm.js') === false) {
+            $gaIdEsc = htmlspecialchars($gaId, ENT_QUOTES);
+            $inject .= '<script async src="https://www.googletagmanager.com/gtag/js?id=' . $gaIdEsc . '"></script>' . "\n"
+                     . '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","' . $gaIdEsc . '");</script>' . "\n";
+        }
+        if ($inject !== '') $html = str_ireplace('</head>', $inject . '</head>', $html);
         return $html;
     });
 }

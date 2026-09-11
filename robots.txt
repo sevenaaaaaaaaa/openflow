@@ -1,8 +1,14 @@
 # robots.txt - nownexts.com
 # OpenFlow Growth Operating System
+#
+# 单一 User-agent: * 分组覆盖全部爬虫（含 GPTBot/ClaudeBot 等 AI 爬虫）：
+# robots 协议中分组各自独立、最具体分组整体生效，若给 AI 爬虫单开只含 Allow 的分组，
+# 它们将不再继承下面的 Disallow，/admin /api /data 会被爬——故刻意不再单开 AI 分组。
 
 User-agent: *
 Allow: /
+
+# 后台与内部目录
 Disallow: /admin/
 Disallow: /xmp/
 Disallow: /api/
@@ -15,48 +21,16 @@ Disallow: /lib/
 Disallow: /tmp/
 Disallow: /.git/
 
-# AI 训练数据访问
-User-agent: GPTBot
-Allow: /
-Allow: /articles/
-Allow: /article/
-Allow: /academy/
-Allow: /community/
-
-User-agent: Google-Extended
-Allow: /
-Allow: /articles/
-Allow: /article/
-Allow: /academy/
-Allow: /community/
-
-User-agent: CCBot
-Allow: /
-Allow: /articles/
-Allow: /article/
-Allow: /academy/
-Allow: /community/
-
-User-agent: anthropic-ai
-Allow: /
-Allow: /articles/
-Allow: /article/
-Allow: /academy/
-Allow: /community/
-
-User-agent: ClaudeBot
-Allow: /
-Allow: /articles/
-Allow: /article/
-Allow: /academy/
-Allow: /community/
+# 工具页：搜索结果 / 会员 / 投稿表单（薄内容，不进索引）
+Disallow: /search
+Disallow: /search.php
+Disallow: /member
+Disallow: /member.php
+Disallow: /account
+Disallow: /register
+Disallow: /navigation/submit
+Disallow: /nav-submit.php
 
 # 站点地图
 Sitemap: https://nownexts.com/sitemap.xml
 Sitemap: https://nownexts.com/articles-sitemap.xml
-
-# 延迟（可选，避免服务器过载）
-Crawl-delay: 1
-
-# 根目录访问
-Disallow: /index.php

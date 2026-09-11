@@ -36,6 +36,14 @@ if (!$allowed) { require_perm('seo'); }   // 一个都没有 → 走标准无权
 $tab = $_GET['tab'] ?? array_key_first($allowed);
 if (!isset($allowed[$tab])) $tab = array_key_first($allowed);
 
+// Google OAuth 回调必须在 admin_header() 输出前处理（内部要做 header 跳转）。
+// 回调地址登记的是 /xmp/seo-center?tab=console&google_callback=1，会先进到这里。
+if ($tab === 'console' && (isset($_GET['google_callback']) || isset($_GET['google_disconnect']))) {
+    require_once __DIR__ . '/../lib/SeoConsole.php';
+    require_perm('settings');
+    seo_console_handle_google_actions(); // 跳转则 exit；失败信息回退到子页内展示
+}
+
 define('OF_EMBED', 1);
 
 admin_header('SEO 中心');

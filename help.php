@@ -19,8 +19,21 @@ foreach ($cats as $c) $catMap[$c['id']] = $c;
 $meta = ['title' => '帮助中心', 'desc' => 'OpenFlow 使用指南：快速上手、内容创作、增长营销、直播带货、AI 能力与账户设置。'];
 require_once __DIR__ . '/includes/site-head.php';
 require_once __DIR__ . '/includes/site-nav.php';
-of_shell('help');
-?>
+require_once __DIR__ . '/lib/SeoHead.php';
+?><!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><?=htmlspecialchars($meta['title'])?> | <?=site_config_get('site_name')?></title>
+<meta name="description" content="<?=htmlspecialchars($meta['desc'])?>">
+<?php seo_head(['title' => $meta['title'] . ' | ' . site_config_get('site_name'), 'description' => $meta['desc'], 'canonical' => rtrim(site_config_get('site_url', ''), '/') . '/help']); ?>
+<?php of_head_assets(); ?>
+</head>
+<body>
+<a class="skip" href="#top">跳到主要内容</a>
+<?php of_shell('help'); ?>
+
 <style>
 .help-hero{text-align:center;padding:clamp(48px,8vw,84px) 0 clamp(30px,4vw,44px);position:relative}
 .help-hero::before{content:'';position:absolute;inset:-20px 0 auto;height:340px;background:radial-gradient(60% 80% at 50% 0%,oklch(from var(--accent) l c h / 0.1),transparent 70%);pointer-events:none}
@@ -57,7 +70,7 @@ of_shell('help');
 .help-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:12px;text-decoration:none;color:var(--fg);transition:background .14s}
 .help-row:hover{background:var(--surface)}
 .help-row .hr-t{font-size:14.5px;font-weight:600}
-.help-row .hr-e{font-size:12.5px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.help-row .hr-e{display:block;font-size:12.5px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .help-row .hr-arrow{margin-left:auto;color:var(--faint);transition:transform .15s,color .15s;flex:none}
 .help-row:hover .hr-arrow{transform:translateX(3px);color:var(--accent)}
 .help-sec-t{display:flex;align-items:baseline;gap:10px;margin:40px 0 12px}
@@ -70,7 +83,7 @@ of_shell('help');
 @media (prefers-reduced-motion: reduce){.hs-results.on{animation:none}.help-cat,.help-row,.help-row .hr-arrow{transition:none}}
 </style>
 
-<section class="help-hero">
+<section class="help-hero" id="top">
   <h1>有什么可以帮你？</h1>
   <p class="sub">搜索指南，或按分类浏览 — 共 <?=count($articles)?> 篇指南</p>
   <div class="help-search">
@@ -182,4 +195,6 @@ of_shell('help');
   document.addEventListener('click', function (e) { if (!e.target.closest('.help-search')) box.classList.remove('on'); });
 })();
 </script>
-<?php require_once __DIR__ . '/includes/site-footer.php'; ?>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</body>
+</html>

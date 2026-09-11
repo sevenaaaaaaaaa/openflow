@@ -12,6 +12,11 @@ RewriteRule ^data(/|$) - [F,L]
 DirectoryIndex index.php index.html
 RewriteRule ^$ index.php [L,QSA]
 
+# /index.php → / 301：首页 .php 孪生地址永久归并（配合 canonical 消除重复内容，
+# 取代旧 robots.txt 里 Disallow: /index.php 的堵爬虫做法——堵了爬虫反而看不到归并信号）
+RewriteCond %{THE_REQUEST} \s/index\.php[\s?]
+RewriteRule ^index\.php$ / [R=301,L]
+
 # 多语言 URL 前缀（/en/ /ja/ /zh-CN/ 剥离 → 原路径，语言由 REQUEST_URI 检测）
 RewriteRule ^(en|ja|zh-CN)/(.*)$ $2 [L,QSA]
 

@@ -54,6 +54,7 @@ $bestHits = row_best($cols, fn($s) => (int)($s['hits'] ?? 0) ?: null);
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>产品对比 | <?=site_config_get("site_name")?> 增长导航</title>
+<meta name="description" content="并排对比增长工具的功能、评分与适用场景，用数据帮你做选型决策。">
 <meta name="robots" content="noindex">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>

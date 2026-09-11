@@ -17,7 +17,7 @@ header('Cache-Control: no-cache, max-age=0');
 $PATH = [
   ['基石','New-1~4 入门课','免费 · 4 节','用 OpenFlow 理解一人公司增长：冷启动 / 增长模型 / 精算体系 / Agent 知识管理。',['一人公司冷启动诀窍','核心增长模型','AI 精算体系','Agent 知识管理']],
   ['方法','芭乐派方法论','R.B.E 前四模块','利润公式、四引擎、DIKW 洞察、触达体系——理解增长系统的底层逻辑。',['Agent-Native 利润公式','四引擎模型','DIKW 数据洞察','触达体系']],
-  ['训练营','R.B.E 系统设计营','8 周 · ¥9,999','M0-M8 九模块，用 OpenFlow 画出你的 Task Graph，产出专属增长模型白皮书。',['O.L.B 诊断','Task Graph 设计','增长模型白皮书','毕业后进门派']],
+  ['训练营','R.B.E 系统设计营','8 周 · ¥9,999','M0-M8 九模块，用 OpenFlow 画出你的 Task Graph，产出专属增长模型白皮书。',['O.L.B 诊断','Task Graph 设计','增长模型白皮书','毕业后进社区']],
 ];
 $COURSES = [
   ['c1','基石','New-1 · 一人公司冷启动','免费 · 以 OpenFlow 演示','AI 红利出现，人人都是 CEO。用 OpenFlow 从 0 搭建一人公司的增长起点。',['一人公司冷启动诀窍','用 OpenFlow 搭增长起点','内容获客链路','转化基础']],
@@ -35,7 +35,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '课程 | OpenFlow', 'canonical' => site_config_get('site_url') . '/courses']); endif; ?>
+<?php if (function_exists('seo_head')): seo_head(['title' => '课程 | OpenFlow', 'description' => '芭乐派 R.B.E 训练营：New-1~4 基石课 + 八周系统设计营，用 OpenFlow 设计 Agent 能跑的增长系统，让方法论边学边用。', 'canonical' => site_config_get('site_url') . '/courses']); endif; ?>
 <title>课程 · New-1~4 + R.B.E 训练营 | 芭乐派</title>
 <meta name="description" content="芭乐派 R.B.E 训练营：New-1~4 基石课 + 八周系统设计营，用 OpenFlow 设计 Agent 能跑的增长系统，让方法论边学边用。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
@@ -83,7 +83,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <p class="lead">学完 New-1~4，你会知道业务里哪里该让 Agent 做；走完 R.B.E 训练营，你会画出自己专属的 Task Graph。理论（芭乐派方法论）→ 工具（OpenFlow）→ 落地（Agent 增长引擎），边学边用。</p>
       <div class="cta-row">
         <button class="btn primary" data-act="start" data-od-id="courses-cta-start">免费开始学习</button>
-        <a class="btn ghost" href="/community" data-od-id="courses-cta-community">进入门派</a>
+        <a class="btn ghost" href="/community" data-od-id="courses-cta-community">进入社区</a>
       </div>
       <div class="trust"><span class="dot"></span>New-1~4 免费开放 · R.B.E 训练营 8 周</div>
     </div>
@@ -149,7 +149,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l4 4v14H7V3Z"/><path d="M17 3v4h4"/></svg></span><h3>New-1~4 基石课</h3><p>一人公司冷启动 / 增长模型 / 精算体系 / Agent 知识管理。</p></div>
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 9h18M9 3v18"/></svg></span><h3>利润公式计算器</h3><p>把销转率杠杆算明白，看哪些环节 Agent 化收益最高。</p></div>
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg></span><h3>视频实操</h3><p>用 OpenFlow 跑增长闭环的实操演示，跟着做一遍就会。</p></div>
-      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.5c2.8.3 5 2.6 5 5.5"/></svg></span><h3>门派社区</h3><p>卡住了？提问，热心成员与官方都会回答。</p></div>
+      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.5c2.8.3 5 2.6 5 5.5"/></svg></span><h3>增长社区</h3><p>卡住了？提问，热心成员与官方都会回答。</p></div>
     </div>
   </section>
 
@@ -181,7 +181,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <div class="scn-s">
         <div class="scn-row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg></span><div><h3>你的利润公式</h3><p>算出销转率杠杆，知道该先优化哪个环节。</p></div></div>
         <div class="scn-row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14m6-12v14"/></svg></span><div><h3>你的 Task Graph</h3><p>把增长漏斗拆成 Agent 可执行的任务图。</p></div></div>
-        <div class="scn-row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V6a1.5 1.5 0 0 1 3 0v4m0-5.5V5a1.5 1.5 0 0 1 3 0v4m0-4.5A1.5 1.5 0 0 1 16 5v4m0-3.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.8-2.4L4 14a1.5 1.5 0 0 1 2.4-1.8L7 13"/></svg></span><div><h3>门派入场券</h3><p>毕业进门派，和同行切磋、交换案例。</p></div></div>
+        <div class="scn-row"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V6a1.5 1.5 0 0 1 3 0v4m0-5.5V5a1.5 1.5 0 0 1 3 0v4m0-4.5A1.5 1.5 0 0 1 16 5v4m0-3.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.8-2.4L4 14a1.5 1.5 0 0 1 2.4-1.8L7 13"/></svg></span><div><h3>社区入场券</h3><p>毕业进社区，和同行交流、交换案例。</p></div></div>
       </div>
     </div>
   </section>

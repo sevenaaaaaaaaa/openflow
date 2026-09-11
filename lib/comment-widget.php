@@ -112,7 +112,7 @@ function fc_comment_widget(string $type, string $targetId, array $opts = []): vo
   window.fcCommentSubmit = function() {
     var input = document.getElementById('fcCwInput');
     var text = input.value.trim();
-    if (!text) { alert('请输入内容'); return; }
+    if (!text) { (window.OFShell?OFShell.toast:alert)('请输入内容'); return; }
     var btn = document.getElementById('fcCwSubmit');
     btn.disabled = true;
     var body = new FormData();
@@ -124,9 +124,9 @@ function fc_comment_widget(string $type, string $targetId, array $opts = []): vo
       .then(function(r){ return r.json(); })
       .then(function(d){
         if (d.ok) { input.value = ''; starVal = 0; w.fcLoad(); }
-        else alert(d.error || '提交失败');
+        else (window.OFShell?OFShell.toast:alert)(d.error || '提交失败');
         btn.disabled = false;
-      }).catch(function(){ alert('网络异常'); btn.disabled = false; });
+      }).catch(function(){ (window.OFShell?OFShell.toast:alert)('网络异常'); btn.disabled = false; });
   };
   window.fcCommentLike = function(id, el) {
     var body = new FormData(); body.append('comment_id', id);

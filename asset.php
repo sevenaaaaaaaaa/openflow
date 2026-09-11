@@ -265,18 +265,18 @@ function purchase() {
         var f = document.createElement('form'); f.method = 'post'; f.action = d.payment.gateway;
         Object.keys(d.payment.params).forEach(function(k){ var i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=d.payment.params[k]; f.appendChild(i); });
         document.body.appendChild(f); f.submit();
-      } else if (d.ok && d.already_purchased) { alert('✅ 你已拥有，可直接安装'); location.reload(); }
-      else alert(d.error || '购买失败');
-    }).catch(function(){ alert('网络异常'); });
+      } else if (d.ok && d.already_purchased) { (window.OFShell?OFShell.toast:alert)('✅ 你已拥有，可直接安装'); location.reload(); }
+      else (window.OFShell?OFShell.toast:alert)(d.error || '购买失败');
+    }).catch(function(){ (window.OFShell?OFShell.toast:alert)('网络异常'); });
 }
 function installAsset() {
   var body = new FormData(); body.append('skill_id', ASSET_ID);
   fetch('/api/marketplace?action=install', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){
-      if (d.ok) { alert('✅ 已安装'); location.reload(); }
+      if (d.ok) { (window.OFShell?OFShell.toast:alert)('✅ 已安装'); location.reload(); }
       else if (d.need_purchase) { if (confirm('该资产需付费，是否前往购买？')) purchase(); }
-      else alert(d.error || '安装失败');
+      else (window.OFShell?OFShell.toast:alert)(d.error || '安装失败');
     });
 }
 </script>

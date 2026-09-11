@@ -51,7 +51,29 @@ $typeNames = mkt_categories();
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<?php if ($view === 'plugin' && $plugin): ?>
+<title><?=htmlspecialchars($plugin['title'] ?? '插件')?> | 生态市场 | <?=site_config_get("site_name")?></title>
+<meta name="description" content="<?=htmlspecialchars(mb_substr(trim((string)($plugin['description'] ?? '')), 0, 120) ?: 'OpenFlow 插件详情')?>">
+<?php
+// 插件详情结构化数据：SoftwareApplication + 评分，可被 Google 富媒体结果收录
+$__pr = comment_rating_summary('plugin', $plugin['id']);
+$__ld = [
+  '@context' => 'https://schema.org',
+  '@type' => 'SoftwareApplication',
+  'name' => $plugin['title'] ?? '',
+  'applicationCategory' => 'BusinessApplication',
+  'operatingSystem' => 'OpenFlow',
+  'description' => mb_substr(trim((string)($plugin['description'] ?? '')), 0, 200),
+  'author' => ['@type' => 'Organization', 'name' => $plugin['author'] ?? 'OpenFlow'],
+  'offers' => ['@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'CNY'],
+];
+if ($__pr['count'] > 0) $__ld['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => round($__pr['avg'], 1), 'ratingCount' => $__pr['count'], 'bestRating' => 5, 'worstRating' => 1];
+?>
+<script type="application/ld+json"><?=json_encode($__ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)?></script>
+<?php else: ?>
 <title>生态市场 | <?=site_config_get("site_name")?></title>
+<meta name="description" content="OpenFlow 生态市场：官方与社区开发的插件、技能与主题，一键安装扩展你的增长系统能力。">
+<?php endif; ?>
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
@@ -344,9 +366,9 @@ function installSkill(id) {
   fetch('/api/marketplace?action=install', { method: 'POST', body: body })
     .then(function(r){ return r.json(); })
     .then(function(d){
-      if (d.ok) { alert('✅ 技能已安装'); location.reload(); }
+      if (d.ok) { (window.OFShell?OFShell.toast:alert)('✅ 技能已安装'); location.reload(); }
       else if (d.need_purchase) { if (confirm('该技能需 ¥' + d.price + ' 购买，是否前往购买？')) purchaseSkill(id); }
-      else alert(d.error || '安装失败');
+      else (window.OFShell?OFShell.toast:alert)(d.error || '安装失败');
     });
 }
 function purchaseSkill(id) {
@@ -359,14 +381,14 @@ function purchaseSkill(id) {
         var f = document.createElement('form'); f.method = 'post'; f.action = d.payment.gateway;
         Object.keys(d.payment.params).forEach(function(k){ var i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=d.payment.params[k]; f.appendChild(i); });
         document.body.appendChild(f); f.submit();
-      } else if (d.ok && d.already_purchased) { alert('✅ 你已购买，可直接安装'); location.reload(); }
-      else alert(d.error || '购买失败');
+      } else if (d.ok && d.already_purchased) { (window.OFShell?OFShell.toast:alert)('✅ 你已购买，可直接安装'); location.reload(); }
+      else (window.OFShell?OFShell.toast:alert)(d.error || '购买失败');
     })
-    .catch(function(){ alert('网络异常'); });
+    .catch(function(){ (window.OFShell?OFShell.toast:alert)('网络异常'); });
 }
 function copySkillPrompt() {
   var pre = document.querySelector('pre');
-  navigator.clipboard.writeText(pre.textContent).then(function(){ alert('已复制提示词'); });
+  navigator.clipboard.writeText(pre.textContent).then(function(){ (window.OFShell?OFShell.toast:alert)('已复制提示词'); });
 }
 </script>
 </body>

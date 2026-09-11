@@ -23,7 +23,7 @@ window.OF_ROLES = {
       {href:'/courses', t:'新手课程', d:'New-1 开始学增长系统', icon:'book'},
       {href:'/docs', t:'使用指南', d:'一步步带你上手', icon:'doc'},
       {href:'/academy', t:'入门文章', d:'看得懂的增长知识', icon:'doc'},
-      {href:'/community', t:'门派社区', d:'有人帮你答疑', icon:'users'},
+      {href:'/community', t:'增长社区', d:'有人帮你答疑', icon:'users'},
       {href:'#contact', t:'免费诊断', d:'顾问帮你看看增长瓶颈', icon:'info'}
     ],
     steps: [
@@ -95,7 +95,7 @@ window.OF_ROLES = {
       {href:'/marketplace', t:'Skill 市场', d:'开箱即用的增长技能', icon:'box'},
       {href:'/courses', t:'R.B.E 训练营', d:'New-1~4 + 八周系统设计', icon:'book'},
       {href:'/academy', t:'实践文章', d:'增长案例与技巧', icon:'doc'},
-      {href:'/community', t:'门派社区', d:'分享与交流', icon:'users'},
+      {href:'/community', t:'增长社区', d:'分享与交流', icon:'users'},
       {href:'#contact', t:'增长诊断', d:'深度评估你的增长体系', icon:'info'}
     ],
     steps: [

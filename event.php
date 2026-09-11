@@ -150,7 +150,7 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
   }
   function cancelReg() {
     if (!confirm('确认取消报名？')) return;
-    regFetch('cancel').then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
+    regFetch('cancel').then(function(d){ if (d.ok) location.reload(); else (window.OFShell?OFShell.toast:alert)(d.error); });
   }
   </script>
 </body>

@@ -92,7 +92,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>学院 · 门派知识库 | <?=htmlspecialchars($siteName)?></title>
+<title>学院 · 社区知识库 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="芭乐派增长方法论内容库：文章 · 资料下载 · 播客 · 视频教程，从利润公式到 Agent 系统，把增长讲清楚、用起来">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
@@ -397,7 +397,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
       <p class="lead">方法论在学院，工具在 OpenFlow，落地在 R.B.E 训练营——三条路，最后都通向同一个地方。</p>
       <div class="cta-row">
         <a class="btn primary" href="/courses">浏览课程</a>
-        <a class="btn ghost" href="/community">进入门派社区</a>
+        <a class="btn ghost" href="/community">进入增长社区</a>
       </div>
     </div>
   </section>

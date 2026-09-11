@@ -161,6 +161,48 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <url><loc><?=$base?>/topic/<?=htmlspecialchars($tslug)?></loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
   <?php endforeach; ?>
 
+  <!-- Help Center -->
+  <url><loc><?=$base?>/help</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
+  <?php
+  $help = jread($dataDir . '/help-center.json');
+  foreach (($help['articles'] ?? []) as $h):
+    $hslug = $h['slug'] ?? '';
+    if (!$hslug) continue;
+  ?>
+  <url><loc><?=$base?>/help/<?=htmlspecialchars($hslug)?></loc><priority>0.6</priority><changefreq>monthly</changefreq><lastmod><?=htmlspecialchars(substr($h['updated_at'] ?? '', 0, 10))?></lastmod></url>
+  <?php endforeach; ?>
+
+  <!-- Navigation 站点详情（增长导航收录的每个产品都是一页） -->
+  <?php
+  $navSites = jread($dataDir . '/navigation.json');
+  foreach (($navSites['sites'] ?? []) as $ns):
+    if (($ns['status'] ?? 'published') !== 'published') continue;
+    $nid = $ns['id'] ?? '';
+    if (!$nid) continue;
+  ?>
+  <url><loc><?=$base?>/navigation/<?=htmlspecialchars($nid)?></loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <?php endforeach; ?>
+
+  <!-- Community 帖子 -->
+  <?php
+  $cposts = jread($dataDir . '/community-posts.json');
+  foreach (($cposts['posts'] ?? $cposts) as $cp):
+    if (($cp['status'] ?? 'published') !== 'published') continue;
+    $cpid = $cp['id'] ?? '';
+    if (!$cpid) continue;
+  ?>
+  <url><loc><?=$base?>/community-post/<?=htmlspecialchars($cpid)?></loc><priority>0.5</priority><changefreq>weekly</changefreq><lastmod><?=htmlspecialchars(substr($cp['updated_at'] ?? $cp['created_at'] ?? '', 0, 10))?></lastmod></url>
+  <?php endforeach; ?>
+
+  <!-- Marketplace 插件详情 -->
+  <?php
+  foreach (glob(__DIR__ . '/plugins/*/plugin.json') ?: [] as $pj):
+    $pmeta = json_decode(file_get_contents($pj), true) ?: [];
+    $pid = $pmeta['id'] ?? basename(dirname($pj));
+  ?>
+  <url><loc><?=$base?>/marketplace?view=plugin&amp;id=<?=htmlspecialchars($pid)?></loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <?php endforeach; ?>
+
   <!-- Landing Pages -->
   <?php
   $landings = jread($dataDir . '/landing-pages.json');

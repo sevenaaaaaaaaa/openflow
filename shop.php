@@ -21,6 +21,7 @@ foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>商城 | <?=site_config_get('site_name')?></title>
+<meta name="description" content="芭乐派商城：课程、服务与数字商品，一站式配齐你的增长系统。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 商城独有：价格行。其余全部来自 modules.css。 */
@@ -95,8 +96,8 @@ foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
     <div class="cta-band">
       <span class="kicker">EARN POINTS</span>
       <h2>积分从哪来？</h2>
-      <p class="lead">完成课程、在门派社区发帖回帖、每日签到，都会自动累计到你的账户。</p>
-      <div class="cta-row"><a href="/courses" class="btn primary">去学一门课</a><a href="/community" class="btn ghost">逛逛门派社区</a></div>
+      <p class="lead">完成课程、在增长社区发帖回帖、每日签到，都会自动累计到你的账户。</p>
+      <div class="cta-row"><a href="/courses" class="btn primary">去学一门课</a><a href="/community" class="btn ghost">逛逛增长社区</a></div>
     </div>
   </section>
 
@@ -118,25 +119,25 @@ function buyProduct(id, title) {
         Object.keys(d.payment.params).forEach(function(k){ var i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=d.payment.params[k]; f.appendChild(i); });
         document.body.appendChild(f); f.submit();
       } else {
-        alert(d.error || '下单失败');
+        (window.OFShell?OFShell.toast:alert)(d.error || '下单失败');
       }
     })
-    .catch(function(){ alert('网络异常'); });
+    .catch(function(){ (window.OFShell?OFShell.toast:alert)('网络异常'); });
 }
 function redeem(id, title, points) {
   <?php if (!$member): ?>
   location.href = '/account?view=login&next=/shop'; return;
   <?php endif; ?>
   var myPoints = <?=(int)($member['points'] ?? 0)?>;
-  if (myPoints < points) { alert('积分不足，需要 ' + points + ' 积分'); return; }
+  if (myPoints < points) { (window.OFShell?OFShell.toast:alert)('积分不足，需要 ' + points + ' 积分'); return; }
   if (!confirm('确认用 ' + points + ' 积分兑换「' + title + '」？')) return;
   fetch('/api/mall', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'redeem', points_product_id:id})})
     .then(function(r){return r.json();})
     .then(function(d){
-      if (d.ok) { alert('🎉 兑换成功！'); location.reload(); }
-      else alert(d.error || '兑换失败');
+      if (d.ok) { (window.OFShell?OFShell.toast:alert)('🎉 兑换成功！'); location.reload(); }
+      else (window.OFShell?OFShell.toast:alert)(d.error || '兑换失败');
     })
-    .catch(function(){ alert('网络异常'); });
+    .catch(function(){ (window.OFShell?OFShell.toast:alert)('网络异常'); });
 }
 </script>
 </body>

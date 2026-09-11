@@ -176,7 +176,7 @@
     {
       id: 'marketplace', label: '生态', href: '/marketplace', icon: 'box',
       mega: {
-        title: '生态市场', blurb: 'Skill · 插件 · 主题 · 一人公司增长门派',
+        title: '生态市场', blurb: 'Skill · 插件 · 主题 · 一人公司增长社区',
         cols: [
           { head: '资产', items: [
             { t: 'Skill 技能', d: '开箱即用的增长能力', href: '/marketplace?type=skill' },
@@ -615,13 +615,17 @@
     }
     refreshAuth();
     /* 与服务端会话对齐：以前只看 localStorage —— 在 /account 页登录后头像仍显示未登录，
-       服务端会话过期后头像却一直显示已登录，点「我的课程」又被弹回登录页。 */
+       服务端会话过期后头像却一直显示已登录，点「我的课程」又被弹回登录页。
+       匿名访客（无 of_lm 标记且本地无用户）直接跳过请求，避免每页一次 401 噪音。 */
+    var hasMark = /(?:^|;\s*)of_lm=1/.test(document.cookie);
+    if (!hasMark && !curUser()) { /* 纯匿名：不对齐，无请求 */ }
+    else
     fetch('/api/member?action=profile_summary', { method: 'POST', headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
       .then(function (r) { return r.json().then(function (d) { return { http: r.status, d: d }; }).catch(function () { return { http: r.status, d: {} }; }); })
       .then(function (res) {
         var d = res.d || {};
         if (res.http === 200 && d.ok) { var cu = curUser(); if (!cu || cu.email !== d.email || cu.nick !== d.name) setUser({ email: d.email || (cu && cu.email) || '', nick: d.name || '' }); }
-        else if (res.http === 401 && curUser()) setUser(null);
+        else if (res.http === 401) { document.cookie = 'of_lm=; Max-Age=0; path=/'; if (curUser()) setUser(null); }
       }).catch(function () {});
     avBtn.addEventListener('click', function (e) {
       e.stopPropagation();

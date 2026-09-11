@@ -35,7 +35,7 @@ if ($type === 'article') {
         }
     }
 } elseif ($type === 'page') {
-    $pages = ['index'=>'首页','about'=>'关于我们','product'=>'产品','courses'=>'课程','capability'=>'能力','academy'=>'学院','community'=>'门派社区','docs'=>'文档'];
+    $pages = ['index'=>'首页','about'=>'关于我们','product'=>'产品','courses'=>'课程','capability'=>'能力','academy'=>'学院','community'=>'增长社区','docs'=>'文档'];
     if (isset($pages[$id])) {
         $title = $pages[$id] . ' - ' . $siteName;
         $description = '芭乐派 · 帮一人公司设计 Agent 能跑的增长系统';
