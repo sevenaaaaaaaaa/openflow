@@ -20,7 +20,7 @@ $siteName = site_config_get('site_name', 'OpenFlow');
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260909a">
+<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
 <style>
 /* 收录申请页独有：表单卡。其余全部来自 modules.css。 */
 .submit-wrap{max-width:640px;margin:0 auto}

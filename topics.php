@@ -43,7 +43,7 @@ if ($currentTopic) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= $currentTopic ? (htmlspecialchars($currentTopic['title'] ?? '专题') . ' | ' . site_config_get('site_name')) : ('专题合集 | ' . site_config_get('site_name')) ?></title>
 <link rel="stylesheet" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" href="/assets/modules.css?v=20260909a">
+<link rel="stylesheet" href="/assets/modules.css?v=20260911a">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 专题页独有：专题卡。其余全部来自 modules.css。 */
