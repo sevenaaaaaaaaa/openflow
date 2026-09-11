@@ -483,7 +483,34 @@ document.getElementById('likeBtn').addEventListener('click',function(){
   if(!liked){liked=true;ofStat('like').then(function(d){document.getElementById('likeBtn').textContent=(d.stats?d.stats.likes:0)+' 赞';});this.classList.add('on');}
   else{liked=false;ofStat('like').then(function(d){document.getElementById('likeBtn').textContent=(d.stats?d.stats.likes:0)+' 赞';});this.classList.remove('on');}
 });
-document.getElementById('favBtn').addEventListener('click',function(){ofStat('favorite').then(function(d){document.getElementById('favBtn').textContent=d.active?'已收藏':'收藏';});});
+// 收藏：写入 BookmarkSystem（我的收藏视图可见），同时保留互动统计
+(function(){
+  var favBtn=document.getElementById('favBtn');
+  var toast=function(m){(window.OFShell?OFShell.toast:alert)(m);};
+  // 已登录用户进入页面时回显收藏状态
+  fetch('/api/bookmark.php?action=check&target_type=article&target_id='+encodeURIComponent(OF_SLUG))
+    .then(function(r){return r.json();})
+    .then(function(d){if(d.ok&&d.bookmarked){favBtn.textContent='已收藏';favBtn.classList.add('on');}})
+    .catch(function(){});
+  favBtn.addEventListener('click',function(){
+    var fd=new FormData();
+    fd.append('target_type','article');
+    fd.append('target_id',OF_SLUG);
+    fd.append('title',document.title.replace(/\s*[|\-–].*$/,''));
+    fetch('/api/bookmark.php',{method:'POST',body:fd}).then(function(r){
+      if(r.status===401){toast('登录后即可收藏，收藏内容会同步到「个人中心 · 我的收藏」');return null;}
+      return r.json();
+    }).then(function(d){
+      if(!d)return;
+      if(d.ok){
+        favBtn.textContent=d.bookmarked?'已收藏':'收藏';
+        favBtn.classList.toggle('on',!!d.bookmarked);
+        toast(d.bookmarked?'已收藏，可在「个人中心 · 我的收藏」查看':'已取消收藏');
+        ofStat('favorite');
+      }else{toast(d.error||'操作失败');}
+    }).catch(function(){toast('网络异常，请稍后再试');});
+  });
+})();
 document.getElementById('shareBtn').addEventListener('click',function(){
   ofStat('share');
   var url=location.href;
