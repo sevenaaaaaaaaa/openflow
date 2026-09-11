@@ -37,7 +37,7 @@ $jsonLd = [
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($survey['title'])?> | <?=site_config_get("site_name")?> 调研</title>
 <meta name="robots" content="noindex">
-<script type="application/ld+json"><?=json_encode($jsonLd, JSON_UNESCAPED_UNICODE)?></script>
+<script type="application/ld+json"><?=json_encode($jsonLd, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP)?></script>
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 问卷独立页：无外壳，居中一列题卡。选项 / 评分 / 分步进度为本页独有；沉浸式模板改为深色 token 底。 */

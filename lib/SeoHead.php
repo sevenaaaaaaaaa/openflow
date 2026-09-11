@@ -72,6 +72,8 @@ if (!function_exists('seo_head')) {
             if ($__robots) echo '<meta name="robots" content="' . htmlspecialchars(implode(',', $__robots), ENT_QUOTES) . '">' . "\n";
             if (!empty($__ss['google_verify'])) echo '<meta name="google-site-verification" content="' . htmlspecialchars($__ss['google_verify'], ENT_QUOTES) . '">' . "\n";
             if (!empty($__ss['baidu_verify'])) echo '<meta name="baidu-site-verification" content="' . htmlspecialchars($__ss['baidu_verify'], ENT_QUOTES) . '">' . "\n";
+            // Bing 站点验证 meta（此前后台可填但前台无输出路径，等于死配置）
+            if (!empty($__ss['bing_verify'])) echo '<meta name="msvalidate.01" content="' . htmlspecialchars($__ss['bing_verify'], ENT_QUOTES) . '">' . "\n";
         }
         // favicon（SVG data URI，兼容所有浏览器）
         echo '<link rel="icon" type="image/svg+xml" href="' . $faviconData . '">' . "\n";
@@ -103,6 +105,6 @@ if (!function_exists('seo_head')) {
             'description' => $siteDesc,
             'url' => $canonical,
         ];
-        echo '<script type="application/ld+json">' . json_encode($jsonLd, JSON_UNESCAPED_UNICODE) . '</script>' . "\n";
+        echo '<script type="application/ld+json">' . json_encode($jsonLd, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>' . "\n";
     }
 }

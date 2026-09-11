@@ -31,6 +31,5 @@ Disallow: /register
 Disallow: /navigation/submit
 Disallow: /nav-submit.php
 
-# 站点地图
+# 站点地图（文章 URL 已并入主 sitemap，不再单独声明）
 Sitemap: https://nownexts.com/sitemap.xml
-Sitemap: https://nownexts.com/articles-sitemap.xml
