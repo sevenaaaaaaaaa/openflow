@@ -108,6 +108,19 @@ foreach ($course['chapters'] ?? [] as $ch) {
 .buy-card .btn{width:100%}
 .fav-on{color:var(--warn)!important}
 #quizArea{padding:20px;border-radius:var(--r-md);background:var(--bg-soft);border:1px solid var(--border-soft)}
+/* 课时讲稿：正文排版与文章页对齐 */
+.lesson-content{margin-top:14px;padding:22px 24px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--border-soft)}
+.lesson-content h3{font-size:17px;font-weight:800;margin:20px 0 10px;letter-spacing:-.01em}
+.lesson-content h3:first-child{margin-top:0}
+.lesson-content p{font-size:14.5px;line-height:1.9;color:var(--fg);margin:0 0 12px}
+.lesson-content ul,.lesson-content ol{margin:0 0 12px;padding-left:22px;font-size:14.5px;line-height:1.9}
+.lesson-content li{margin-bottom:6px}
+.lesson-content strong{font-weight:700;color:var(--fg-strong)}
+.lesson-content blockquote{margin:12px 0;padding:12px 16px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 var(--r-sm) var(--r-sm) 0;font-size:14px;line-height:1.8;color:var(--fg)}
+.lesson-content code{font-family:var(--font-mono);font-size:13px;background:var(--bg-soft);padding:2px 6px;border-radius:4px}
+.lesson-content table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+.lesson-content th,.lesson-content td{padding:8px 12px;border:1px solid var(--border-soft);text-align:left}
+.lesson-content th{background:var(--bg-soft);font-weight:700}
 .qz{margin-bottom:18px}
 .qz-q{font-weight:600;font-size:14px;margin-bottom:8px}
 .qz-q small{color:var(--faint);font-size:11px;font-weight:400}
@@ -168,6 +181,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
               <button type="button" onclick="submitQuiz()" class="btn primary" style="height:40px;padding:0 18px;font-size:14px">提交答案</button>
               <div id="quizResult" class="qz-res" style="display:none"></div>
             </div>
+            <div id="lessonContent" class="lesson-content" style="display:none"></div>
             <div class="cta-row" style="margin-top:12px;align-items:center;gap:12px"><button type="button" onclick="markCurrentDone()" class="btn ghost" style="height:40px;padding:0 18px;font-size:14px;color:var(--ok)">✓ 标记本节完成</button><span class="note mono" style="margin:0" id="resumeHint"><?=$resume ? '已记住上次进度 ' . gmdate('i:s', (int)$resume['position']) : ''?></span></div>
           </div>
           <?php endif; ?>
@@ -377,6 +391,13 @@ function openLesson(id) {
   } else {
     if (quizArea) quizArea.style.display = 'none';
     if (playerVid) playerVid.style.display = 'grid';
+  }
+  // 课时讲稿：有 content 时在播放器下方渲染（内容为管理员维护的可信 HTML）
+  var lc = document.getElementById('lessonContent');
+  if (lc) {
+    var html = LESSONS[id] && LESSONS[id].content;
+    if (html) { lc.innerHTML = html; lc.style.display = 'block'; }
+    else { lc.innerHTML = ''; lc.style.display = 'none'; }
   }
   // 高亮
   document.querySelectorAll('.lesson').forEach(function(el){
