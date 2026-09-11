@@ -58,6 +58,10 @@ of_shell('help');
 .ha-body th{text-align:left;padding:9px 12px;border-bottom:2px solid var(--border);font-weight:700}
 .ha-body td{padding:9px 12px;border-bottom:1px solid var(--border-soft);color:var(--text-2)}
 .ha-body a{color:var(--accent)}
+.ha-body img{max-width:100%;border-radius:14px;border:1px solid var(--border);box-shadow:0 8px 30px rgba(0,0,0,.08);margin:8px 0 22px;display:block}
+.ha-body blockquote{margin:0 0 18px;padding:14px 18px;border-left:3px solid var(--accent);background:var(--surface);border-radius:0 12px 12px 0;color:var(--text-2);font-size:14.5px}
+.ha-body blockquote p{margin:0}
+.ha-body strong{font-weight:700}
 /* TOC */
 .ha-toc{position:sticky;top:90px;align-self:start}
 .ha-toc .tt{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;margin-bottom:10px}
