@@ -22,6 +22,7 @@ function seo_center_tabs(): array {
         'structured' => ['结构化数据', 'structured-data.php', 'structured'],
         'images'     => ['图片 SEO',   'image-seo.php',       'media'],
         'redirects'  => ['301 重定向', 'redirects.php',       'redirects'],
+        'bots'       => ['爬虫洞察',   'bot-insights.php',    'settings'],
     ];
 }
 

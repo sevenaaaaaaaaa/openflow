@@ -42,6 +42,8 @@ $finishLogin = function (array $users, string $username) use (&$rateData, $ip, $
     $_SESSION['admin_user'] = $username;
     $_SESSION['admin_role'] = $users[$username]['role'];
     $_SESSION['admin_name'] = $users[$username]['name'];
+    // 种开发标记 cookie：管理员之后访问前台的行为不计入用户统计（见 TrafficFilter）
+    setcookie('of_dev', '1', time() + 86400 * 30, '/', '', !empty($_SERVER['HTTPS']), false);
     audit('登录成功', 'auth', ['user' => $username, 'two_factor' => !empty($users[$username]['totp_secret'])]);
     session_write_close();
     $ob = json_read(DATA_DIR . '/onboarding.json');

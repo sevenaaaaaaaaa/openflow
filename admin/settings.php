@@ -108,7 +108,16 @@ admin_header('系统设置');
         <h2>品牌设置 <span class="hint" style="font-weight:400">· 所有前端页面的品牌信息均由此配置驱动</span></h2>
         <div class="field-row">
           <div class="field"><label>站点标语 <span class="hint">· Slogan</span></label><input type="text" name="settings[site_slogan]" value="<?=htmlspecialchars($settings['site_slogan'] ?? 'AI 时代的网站增长操作系统')?>"></div>
-          <div class="field"><label>Logo URL <span class="hint">· 空则用默认</span></label><input type="text" name="settings[site_logo]" value="<?=htmlspecialchars($settings['site_logo'] ?? '')?>" placeholder="assets/images/logo.png"></div>
+          <div class="field"><label>Logo URL <span class="hint">· 空则用默认流环</span></label><input type="text" name="settings[site_logo]" value="<?=htmlspecialchars($settings['site_logo'] ?? '')?>" placeholder="assets/images/logo.png"></div>
+          <div class="field" style="grid-column:1/-1">
+            <label>品牌标识预览 <span class="hint">· 流环 Logo v2 · 全站生效位置一览</span></label>
+            <div style="display:flex;gap:18px;align-items:center;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg-2,#f8f8f6);flex-wrap:wrap">
+              <div style="text-align:center"><img src="/assets/images/logos/of-mark.svg" width="44" height="44" alt="流环 Logo"><div class="hint" style="margin-top:4px">站头 / 页脚</div></div>
+              <div style="text-align:center"><img src="/favicon.svg" width="44" height="44" style="border-radius:11px" alt="favicon"><div class="hint" style="margin-top:4px">favicon / 后台 / 登录页</div></div>
+              <div style="text-align:center"><img src="/assets/images/og-cover.png" width="88" height="46" style="border-radius:8px;object-fit:cover" alt="OG 分享图"><div class="hint" style="margin-top:4px">社交分享图</div></div>
+              <div class="hint" style="flex:1;min-width:220px;line-height:1.8">流环标识硬编码于：前台站头与页脚（site-shell.js / site-footer.php）、favicon.svg、后台运营台与登录页、OG 分享图。上方「Logo URL」仅替换 SEO/结构化数据里的图片引用；要换主标识需改上述文件。</div>
+            </div>
+          </div>
           <div class="field"><label>看板娘默认形象 <span class="hint">· 后台右下角 Live2D 助手</span></label>
             <select name="settings[waifu_model]">
               <?php foreach (['rice' => '璃丝 · 御姐黑裙（推荐）', 'mao' => '玛奥 · 猫娘少女', 'ren' => '莲 · 中性青年', 'natori' => '名取 · 西装男性', 'mark' => '马克 · 休闲男性', 'hiyori' => '日和 · 经典少女'] as $__wk => $__wl): ?>
