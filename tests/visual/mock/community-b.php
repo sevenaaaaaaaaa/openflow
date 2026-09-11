@@ -7,7 +7,7 @@ of_shell('community'); ?>
 <main id="main">
   <section id="top" class="reveal in">
     <div class="hero-center" style="padding-bottom:0">
-      <span class="kicker">COMMUNITY · 门派</span>
+      <span class="kicker">COMMUNITY · 社区</span>
       <h1>一个人做公司，<br><i class="si">不该一个人扛</i></h1>
       <p class="lead">提问、分享、讨论。学完课程的同学在这里交作业、晒增长数据、互相诊断——把增长系统这门功夫，练到身上。</p>
       <div class="cta-row"><a class="btn primary" href="#">发帖</a><a class="btn ghost" href="#">先逛逛</a></div>
@@ -31,6 +31,6 @@ of_shell('community'); ?>
     </div>
   </section>
   <section class="reveal in">
-    <div class="cta-band"><span class="kicker">芭乐派 · 门派</span><h2>还没进门派？从 New-1 开始练功</h2><p class="lead">地基在 New-1~4 基石课，招式在 R.B.E 训练营，切磋在这里。先学再用，再回来交作业。</p><div class="cta-row"><a class="btn primary" href="#">浏览课程</a><a class="btn ghost" href="#">去学院读文章</a></div></div>
+    <div class="cta-band"><span class="kicker">芭乐派 · 社区</span><h2>还没加入社区？从 New-1 开始打基础</h2><p class="lead">地基在 New-1~4 基石课，招式在 R.B.E 训练营，切磋在这里。先学再用，再回来交作业。</p><div class="cta-row"><a class="btn primary" href="#">浏览课程</a><a class="btn ghost" href="#">去学院读文章</a></div></div>
   </section>
 <?php mock_foot();

@@ -212,11 +212,11 @@ function stepNext() {
   var qid = cur.dataset.qid;
   var hasRating = cur.querySelector('input[data-rid]');
   if (hasRating && cur.querySelector('.q-title .req') && !hasRating.value) {
-    alert('请完成本题'); return;
+    (window.OFShell?OFShell.toast:alert)('请完成本题'); return;
   }
   var radio = cur.querySelector('input[type=radio]:checked');
   if (cur.querySelector('.q-title .req') && cur.querySelector('input[type=radio]') && !radio) {
-    alert('请完成本题'); return;
+    (window.OFShell?OFShell.toast:alert)('请完成本题'); return;
   }
   STEP_CUR++;
   if (STEP_CUR > STEP_TOTAL + 1) STEP_CUR = STEP_TOTAL + 1;
@@ -270,7 +270,7 @@ function surveySubmit(form) {
       if (title && title.querySelector('.req')) { missing = true; title.style.color = 'var(--danger)'; }
     }
   });
-  if (missing) { alert('请完成所有必答题'); return false; }
+  if (missing) { (window.OFShell?OFShell.toast:alert)('请完成所有必答题'); return false; }
   return true;
 }
 </script>

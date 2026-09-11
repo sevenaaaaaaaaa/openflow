@@ -33,8 +33,9 @@ if (!function_exists('seo_head')) {
         $keywords = $opts['keywords'] ?? $siteKeywords;
         $canonical = $opts['canonical'] ?? ($siteUrl ? $siteUrl . ($_SERVER['REQUEST_URI'] ?? '/') : '');
         $image = $opts['image'] ?? site_config_get('site_logo', '');
-        // og:image 兜底：站点未配 logo 时用品牌应用图标（需绝对 URL）
-        if (!$image && $siteUrl) $image = $siteUrl . '/assets/images/logos/of-icon-512.png';
+        // og:image 兜底：优先后台配置的 og_image，否则用 1200×630 品牌分享横幅（需绝对 URL）
+        if (!$image && function_exists('site_config_get')) $image = site_config_get('og_image', '');
+        if (!$image && $siteUrl) $image = $siteUrl . '/assets/images/og-cover.png';
         $type = $opts['type'] ?? 'website';
 
         // 默认 favicon（流环 Logo 内联 SVG，无需文件）

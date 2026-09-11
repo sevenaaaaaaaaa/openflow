@@ -30,6 +30,7 @@ $topic = $topicNames[$post['topic'] ?? ''] ?? ['name'=>'综合','icon'=>'💬'];
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($post['title'])?> | OpenFlow 社区</title>
+<meta name="description" content="<?=htmlspecialchars(mb_substr(trim(preg_replace('/\s+/u', ' ', strip_tags((string)($post['content'] ?? '')))), 0, 120) ?: ($post['title'] . ' - OpenFlow 社区讨论'))?>">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 帖子页独有：评论列表。其余全部来自 modules.css。 */
@@ -97,9 +98,9 @@ function vote(postId, delta) {
 }
 function addComment() {
   var content = document.getElementById('cmtContent').value;
-  if (!content.trim()) return alert('评论不能为空');
+  if (!content.trim()) return (window.OFShell?OFShell.toast:alert)('评论不能为空');
   var fd = new FormData(); fd.append('action','comment'); fd.append('post_id', POST_ID); fd.append('content', content);
-  fetch('/api/community.php', {method:'POST', body:fd}).then(function(r){return r.json();}).then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
+  fetch('/api/community.php', {method:'POST', body:fd}).then(function(r){return r.json();}).then(function(d){ if (d.ok) location.reload(); else (window.OFShell?OFShell.toast:alert)(d.error); });
 }
 </script>
 </body>

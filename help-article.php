@@ -12,12 +12,24 @@ $article = $slug ? HelpCenter::get($slug) : null;
 
 if (!$article) {
     http_response_code(404);
-    $meta = ['title' => '指南不存在', 'desc' => ''];
     require_once __DIR__ . '/includes/site-head.php';
     require_once __DIR__ . '/includes/site-nav.php';
-    of_shell('help');
-    echo '<div style="text-align:center;padding:90px 20px"><div style="font-size:44px;margin-bottom:14px">📭</div><h1 style="font-size:22px;margin:0 0 8px">这篇指南不存在或已下线</h1><p style="color:var(--text-2);margin-bottom:22px">去帮助中心首页搜索试试</p><a href="/help" style="color:var(--accent);font-weight:700">← 返回帮助中心</a></div>';
-    require_once __DIR__ . '/includes/site-footer.php';
+    require_once __DIR__ . '/lib/SeoHead.php';
+    ?><!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>指南不存在 | <?=site_config_get('site_name')?> 帮助中心</title>
+<meta name="robots" content="noindex">
+<?php of_head_assets(); ?>
+</head>
+<body>
+<?php of_shell('help'); ?>
+<div style="text-align:center;padding:90px 20px"><div style="font-size:44px;margin-bottom:14px">📭</div><h1 style="font-size:22px;margin:0 0 8px">这篇指南不存在或已下线</h1><p style="color:var(--text-2);margin-bottom:22px">去帮助中心首页搜索试试</p><a href="/help" style="color:var(--accent);font-weight:700">← 返回帮助中心</a></div>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</body>
+</html><?php
     exit;
 }
 
@@ -38,8 +50,26 @@ foreach ($m[1] as $i => $t) {
 $meta = ['title' => $article['title'] . ' · 帮助中心', 'desc' => (string)($article['excerpt'] ?? '')];
 require_once __DIR__ . '/includes/site-head.php';
 require_once __DIR__ . '/includes/site-nav.php';
-of_shell('help');
-?>
+require_once __DIR__ . '/lib/SeoHead.php';
+$helpUrl = rtrim(site_config_get('site_url', ''), '/') . '/help/' . $article['slug'];
+?><!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><?=htmlspecialchars($meta['title'])?> | <?=site_config_get('site_name')?></title>
+<meta name="description" content="<?=htmlspecialchars($meta['desc'])?>">
+<?php seo_head(['title' => $meta['title'] . ' | ' . site_config_get('site_name'), 'description' => $meta['desc'], 'canonical' => $helpUrl, 'type' => 'article', 'json_ld' => [
+    '@context' => 'https://schema.org', '@type' => 'TechArticle',
+    'headline' => $article['title'], 'description' => $meta['desc'],
+    'url' => $helpUrl, 'dateModified' => $article['updated_at'] ?? '',
+]]); ?>
+<?php of_head_assets(); ?>
+</head>
+<body>
+<a class="skip" href="#ha-body">跳到主要内容</a>
+<?php of_shell('help'); ?>
+
 <style>
 .ha-wrap{display:grid;grid-template-columns:1fr 240px;gap:44px;padding:36px 0 60px}
 .ha-crumb{font-size:12.5px;color:var(--faint);margin-bottom:18px}
@@ -91,7 +121,7 @@ of_shell('help');
       <span class="ha-cat"><?=$cat['icon'] ?? '📄'?> <?=htmlspecialchars($cat['name'] ?? '')?></span>
       <span>更新于 <?=htmlspecialchars($article['updated_at'] ?? '')?></span>
     </div>
-    <div class="ha-body"><?=$html?></div>
+    <div class="ha-body" id="ha-body"><?=$html?></div>
 
     <div class="ha-fb" id="haFb">
       <div class="q">这篇指南对你有用吗？</div>
@@ -152,4 +182,6 @@ of_shell('help');
   }
 })();
 </script>
-<?php require_once __DIR__ . '/includes/site-footer.php'; ?>
+<?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
+</body>
+</html>

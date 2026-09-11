@@ -52,6 +52,7 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=$pageTitle?> | <?=site_config_get("site_name")?></title>
+<meta name="robots" content="noindex,follow">
 <meta name="robots" content="noindex">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
@@ -309,7 +310,7 @@ function subscribePlan(planId) {
   fetch('/api/shop.php', { method:'POST', body: fd })
     .then(function(r){ return r.json(); })
     .then(function(d){
-      if (!d.ok) { alert(d.error); return; }
+      if (!d.ok) { (window.OFShell?OFShell.toast:alert)(d.error); return; }
       var form = document.createElement('form');
       form.method = 'POST'; form.action = d.payment.gateway;
       Object.keys(d.payment.params).forEach(function(k){
@@ -386,9 +387,9 @@ function include_member_membership($member): void {
             Object.keys(d.payment.params).forEach(function(k){ var i = document.createElement('input'); i.type='hidden'; i.name=k; i.value=d.payment.params[k]; form.appendChild(i); });
             document.body.appendChild(form); form.submit();
           } else if (d.ok && d.order) {
-            alert('支付需配置支付渠道，请联系管理员');
+            (window.OFShell?OFShell.toast:alert)('支付需配置支付渠道，请联系管理员');
           } else {
-            alert(d.error || '下单失败');
+            (window.OFShell?OFShell.toast:alert)(d.error || '下单失败');
           }
         });
     }
@@ -510,7 +511,7 @@ function include_member_ambassador($member): void {
         $base = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST']??'');
         echo '<div class="card panel"><div class="ph"><div><h2>我的推广</h2></div></div>' .
             '<div class="field"><label>我的专属推广链接</label>' .
-            '<div style="display:flex;gap:8px"><input class="inp sm mono" readonly value="' . $base . '/member.php?view=register&ref=' . htmlspecialchars($member['referral_code']) . '" style="flex:1"><button type="button" class="btn ghost sm" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(()=>alert(\'已复制\'))">复制</button></div></div>' .
+            '<div style="display:flex;gap:8px"><input class="inp sm mono" readonly value="' . $base . '/member.php?view=register&ref=' . htmlspecialchars($member['referral_code']) . '" style="flex:1"><button type="button" class="btn ghost sm" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(()=>(window.OFShell?OFShell.toast:alert)(\'已复制\'))">复制</button></div></div>' .
             '<div class="tiles">' .
             acct_tile((string)($member['ambassador_stats']['clicks']??0), '点击') .
             acct_tile((string)($member['ambassador_stats']['orders']??0), '成交') .
@@ -976,7 +977,7 @@ function include_member_developer($member): void {
       var fd = new FormData(); fd.append('action','delete_product'); fd.append('id', id);
       fetch('/api/developer.php', { method:'POST', body: fd })
         .then(function(r){ return r.json(); })
-        .then(function(d){ if (d.ok) location.reload(); else alert(d.error); });
+        .then(function(d){ if (d.ok) location.reload(); else (window.OFShell?OFShell.toast:alert)(d.error); });
     }
     function addChapter() {
       var box = document.getElementById('chaptersBox');
@@ -1100,7 +1101,7 @@ function include_member_distribution($member): void {
         <p class="d" style="font-size:12.5px">平台抽 10% 覆盖支付手续费；分销者拿产品配置的佣金比例；作者拿剩余。</p>
         <div class="row" style="gap:8px">
           <input type="text" id="refBase" class="inp sm mono" value="<?=htmlspecialchars($siteUrl)?>/marketplace?ref=<?=htmlspecialchars($refCode)?>" readonly style="flex:1;min-width:220px">
-          <button type="button" class="btn primary sm" onclick="var i=document.getElementById('refBase');i.select();document.execCommand('copy');alert('已复制推广链接')">复制</button>
+          <button type="button" class="btn primary sm" onclick="var i=document.getElementById('refBase');i.select();document.execCommand('copy');(window.OFShell?OFShell.toast:alert)('已复制推广链接')">复制</button>
         </div>
       </div>
 
@@ -1250,7 +1251,7 @@ function include_member_distribution($member): void {
     <script>
     function copyDistLink(ref, productId) {
       var url = '<?=htmlspecialchars($siteUrl)?>/marketplace?ref=' + ref + '&product=' + productId;
-      navigator.clipboard.writeText(url).then(function(){ alert('已复制该产品的推广链接'); });
+      navigator.clipboard.writeText(url).then(function(){ (window.OFShell?OFShell.toast:alert)('已复制该产品的推广链接'); });
     }
     function submitWithdraw(e) {
       e.preventDefault();

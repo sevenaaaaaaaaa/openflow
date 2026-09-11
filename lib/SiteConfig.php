@@ -35,6 +35,14 @@ function site_config_get(string $key, string $default = ''): string {
     return (string)($c[$key] ?? $default);
 }
 
+// 快捷写入（单键落库到 data/settings.json，其余键不动）
+function site_config_set(string $key, string $value): bool {
+    $d = json_read(DATA_DIR . '/settings.json');
+    if (!is_array($d)) $d = [];
+    $d[$key] = $value;
+    return json_write(DATA_DIR . '/settings.json', $d);
+}
+
 // 版权行
 function site_copyright(): string {
     $c = site_config();
