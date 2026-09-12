@@ -20,6 +20,7 @@ function copilot_flow_schema(): array {
             'element_click' => '元素点击', 'download' => '下载', 'share' => '分享',
             'segment_enter' => '进入分群', 'segment_exit' => '离开分群', 'refund' => '退款',
             'crm_stage_change' => 'CRM阶段变更', 'nps_submit' => 'NPS提交', 'tool_use' => '工具使用',
+            'event_register' => '活动报名',
             'role_selected' => '选择角色', 'cron' => '定时',
         ],
         'actions' => [

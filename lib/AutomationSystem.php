@@ -174,7 +174,7 @@ function automation_match_trigger(array $flow, string $trigger, array $context):
         if ((int)($context['score'] ?? 0) < $threshold) return false;
     }
     // 行为类触发：页面访问 / 文章浏览 / 元素点击 / 分群进出
-    if (in_array($trigger, ['page_view', 'article_view', 'element_click', 'download', 'purchase', 'course_complete', 'course_start', 'course_enroll', 'lesson_complete', 'role_selected', 'tool_use', 'segment_enter', 'segment_exit'], true)) {
+    if (in_array($trigger, ['page_view', 'article_view', 'element_click', 'download', 'purchase', 'course_complete', 'course_start', 'course_enroll', 'lesson_complete', 'role_selected', 'tool_use', 'segment_enter', 'segment_exit', 'event_register'], true)) {
         // 条件：指定页面/文章/元素/标签/分群
         $matchField = $flow['match_field'] ?? '';   // page / url / label / element / course_id / tag / segment_id
         $matchValue = trim($flow['match_value'] ?? '');
