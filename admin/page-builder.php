@@ -90,6 +90,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     if ($savedId !== '') $id = $savedId;
 }
 
+// 插入组合模板（成套区块，追加到当前页面）
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_template'])) {
+    csrf_verify();
+    require_once __DIR__ . '/../lib/BlockTemplate.php';
+    $pid = (string)($_POST['id'] ?? '');
+    $r = btpl_apply($pid, (string)($_POST['template_id'] ?? ''));
+    flash($r['ok'] ? 'success' : 'error', $r['ok'] ? ('已插入 ' . $r['added'] . ' 个区块') : ('插入失败：' . ($r['error'] ?? '')));
+    header('Location: /xmp/page-builder?edit=' . urlencode($pid));
+    exit;
+}
+
 if (isset($_POST['delete'])) {
     builder_page_delete((string)$_POST['delete']);
     $pages = builder_pages_all();
@@ -308,6 +319,18 @@ admin_header('落地页构建器');
                 <?php endif; ?>
               </span>
               <?php endforeach; endforeach; ?>
+            </div>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)">
+              <?php require_once __DIR__ . '/../lib/BlockTemplate.php'; $btplList = btpl_all(); ?>
+              <form method="post" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center" data-no-guard>
+                <?= csrf_field() ?>
+                <input type="hidden" name="apply_template" value="1">
+                <input type="hidden" name="id" value="<?=htmlspecialchars($editPage['id'] ?? '')?>">
+                <span class="text-sm text-muted">📦 组合模板：</span>
+                <select name="template_id" style="min-width:180px"><option value="">选择模板…</option><?php foreach ($btplList as $t): ?><option value="<?=htmlspecialchars($t['id'])?>"><?=htmlspecialchars($t['name'])?>（<?=count((array)$t['blocks'])?> 块）</option><?php endforeach; ?></select>
+                <button class="btn btn-s btn-sm" data-confirm="把模板区块插入到当前页面末尾？">插入</button>
+                <a class="btn btn-ghost btn-sm" href="/xmp/block-templates">管理模板</a>
+              </form>
             </div>
           </div>
         </div>
