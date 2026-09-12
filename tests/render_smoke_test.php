@@ -60,6 +60,7 @@ $urls = [
     ['audience-live', ''],
     ['modules', ''],
     ['page-builder', ''],
+    ['block-templates', ''],
     ['person',       ''],
     ['live',         ''],
     ['course-edit',  ''],
