@@ -424,6 +424,12 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
         }
     } catch (\Throwable $e) {}
 
+    // A3：出票 + 邮件发收据（幂等，失败不影响支付主流程）
+    try {
+        require_once __DIR__ . '/ReceiptSystem.php';
+        receipt_ensure($orderId);
+    } catch (\Throwable $e) {}
+
     return true;
 }
 
