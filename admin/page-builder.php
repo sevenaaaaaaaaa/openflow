@@ -38,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         $postedKey = trim((string)($_POST['block_key'][$bi] ?? ''));
         if (!preg_match('/^[A-Za-z0-9_-]{1,64}$/', $postedKey)) $postedKey = block_new_key();
         $block = ['_key' => $postedKey, '_type' => $bt];
+        $variant = preg_replace('/[^a-z0-9_-]/', '', strtolower((string)($_POST['block_variant'][$bi] ?? '')));
+        if ($variant !== '') $block['variant'] = $variant;
         // 模块工厂：自定义模块按它的 schema 字段名动态收集（含 repeat 列表）
         if (function_exists('blockschema_is_custom') && blockschema_is_custom($bt)) {
             $schema = blockschema_get($bt);
@@ -152,6 +154,12 @@ $blockTypes = block_types();
 $moduleLib  = block_modules();
 // 自定义模块（模块工厂）：编辑器按 schema 动态生成字段；JS 也用它渲染新块输入框
 $customSchemas = function_exists('blockschema_all') ? blockschema_all() : [];
+$variantMap = [];
+foreach ($customSchemas as $vk => $vs) {
+    if (!empty($vs['variants'])) $variantMap[$vk] = array_map(fn($v) => ['id' => $v['id'], 'name' => $v['name']], $vs['variants']);
+}
+$palette = function_exists('block_palette') ? block_palette() : [];
+$catLabels = function_exists('blockschema_categories') ? blockschema_categories() : [];
 
 admin_header('落地页构建器');
 ?>
@@ -232,6 +240,7 @@ admin_header('落地页构建器');
                   <option value="<?=$btk?>" <?=$bkType===$btk?'selected':''?>><?=htmlspecialchars($btv)?></option>
                   <?php endforeach; ?>
                 </select>
+                <select name="block_variant[]" class="blk-variant" data-cur="<?=htmlspecialchars((string)($blk['variant'] ?? ''))?>" title="样式变体" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px"><option value="">默认样式</option></select>
                 <button type="button" class="btn btn-danger btn-sm" style="margin-left:auto" onclick="this.closest('.block-item').remove()">✕</button>
               </div>
               <div class="block-fields" style="display:grid;gap:8px">
@@ -282,10 +291,24 @@ admin_header('落地页构建器');
             <?php endforeach; ?>
           </div>
 
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
-            <?php foreach ($blockTypes as $btk => $btv): ?>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="addBlock('<?=$btk?>','<?=htmlspecialchars($btv)?>')">+ <?=htmlspecialchars($btv)?></button>
-            <?php endforeach; ?>
+          <div style="margin-top:12px">
+            <input type="text" id="paletteSearch" placeholder="搜索模块…" oninput="paletteFilter()" style="width:100%;margin-bottom:8px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+            <div id="paletteTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+              <button type="button" class="btn btn-s btn-sm pal-tab" data-cat="all" onclick="paletteCat('all',this)">全部</button>
+              <?php foreach ($palette as $cat => $items): ?>
+              <button type="button" class="btn btn-s btn-sm pal-tab" data-cat="<?=htmlspecialchars($cat)?>" onclick="paletteCat('<?=htmlspecialchars($cat)?>',this)"><?=htmlspecialchars($catLabels[$cat] ?? $cat)?> <span class="text-muted"><?=count($items)?></span></button>
+              <?php endforeach; ?>
+            </div>
+            <div id="paletteList" style="display:flex;flex-wrap:wrap;gap:6px">
+              <?php foreach ($palette as $cat => $items): foreach ($items as $it): ?>
+              <span class="pal-item" data-cat="<?=htmlspecialchars($cat)?>" data-name="<?=htmlspecialchars(mb_strtolower($it['label'] . ' ' . $it['type'] . ' ' . $it['subcategory']))?>" style="display:inline-flex;align-items:center;gap:2px">
+                <button type="button" class="btn btn-ghost btn-sm" onclick="addBlock('<?=htmlspecialchars($it['type'])?>','<?=htmlspecialchars($it['label'])?>')">+ <?=htmlspecialchars($it['label'])?></button>
+                <?php if (!empty($it['variants'])): ?>
+                <select onchange="if(this.value)addBlock('<?=htmlspecialchars($it['type'])?>','<?=htmlspecialchars($it['label'])?>',this.value);this.value=''" title="选变体直接插入" style="padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:12px"><option value="">变体…</option><?php foreach ($it['variants'] as $v): ?><option value="<?=htmlspecialchars($v['id'])?>"><?=htmlspecialchars($v['name'])?></option><?php endforeach; ?></select>
+                <?php endif; ?>
+              </span>
+              <?php endforeach; endforeach; ?>
+            </div>
           </div>
         </div>
 
@@ -330,6 +353,7 @@ var blockIdx = <?=count($editPage['blocks'] ?? [])?>;
 
 // 模块工厂：自定义模块的 schema 数据，JS 端按它生成新块输入框
 var CUSTOM_SCHEMAS = <?=json_encode($customSchemas, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?>;
+var VARIANT_MAP = <?=json_encode($variantMap, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?>;
 
 // 按 schema 生成一个自定义模块的字段输入框 HTML（JS 版，与 PHP blockschema_editor_fields 对齐）
 function schemaFieldsHtml(schema, vals) {
@@ -367,7 +391,7 @@ function bsAddRepeat(btn) {
   rowsEl.appendChild(r.firstElementChild);
 }
 
-function addBlock(type, label) {
+function addBlock(type, label, variant) {
   var div = document.createElement('div');
   div.className = 'block-item';
   div.draggable = true;
@@ -400,6 +424,7 @@ function addBlock(type, label) {
       '<select name="block_type[]" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px">' +
         '<?php foreach ($blockTypes as $btk => $btv): ?><option value="<?=$btk?>" ' + (type === '<?=$btk?>' ? 'selected' : '') + '><?=htmlspecialchars($btv)?></option><?php endforeach; ?>' +
       '</select>' +
+      '<select name="block_variant[]" class="blk-variant" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px"><option value="">默认样式</option></select>' +
       '<button type="button" class="btn btn-danger btn-sm" style="margin-left:auto" onclick="this.closest(\'.block-item\').remove()">✕</button>' +
     '</div>' +
     '<input type="hidden" name="block_key[]" value="">' +
@@ -423,13 +448,43 @@ function addBlock(type, label) {
       '</details>' +
     '</div>';
   document.getElementById('blocksList').appendChild(div);
-  setTimeout(function(){ bindPreview(div); var pv = div.querySelector('.block-preview'); if (pv) refreshBlockPreview(div); }, 50);
+  setTimeout(function(){ bindPreview(div); syncVariants(div); if (variant) { var vs = div.querySelector('select[name="block_variant[]"]'); if (vs) vs.value = variant; } var pv = div.querySelector('.block-preview'); if (pv) refreshBlockPreview(div); }, 50);
+}
+
+/* 变体下拉：按当前块类型填充该模块的变体 */
+function syncVariants(item) {
+  if (!item) return;
+  var t = item.querySelector('select[name="block_type[]"]'); if (!t) return;
+  var sel = item.querySelector('select[name="block_variant[]"]'); if (!sel) return;
+  var cur = sel.dataset.cur || sel.value || '';
+  var list = VARIANT_MAP[t.value] || [];
+  sel.innerHTML = '<option value="">默认样式</option>' + list.map(function (v) {
+    return '<option value="' + v.id + '"' + (v.id === cur ? ' selected' : '') + '>' + v.name + '</option>';
+  }).join('');
+  sel.dataset.cur = '';
+}
+
+/* 模块面板：分类 tab + 搜索 */
+var palCat = 'all';
+function paletteFilter() {
+  var q = (document.getElementById('paletteSearch').value || '').toLowerCase();
+  document.querySelectorAll('#paletteList .pal-item').forEach(function (el) {
+    var okCat = (palCat === 'all' || el.dataset.cat === palCat);
+    var okQ = !q || (el.dataset.name || '').indexOf(q) !== -1;
+    el.style.display = (okCat && okQ) ? '' : 'none';
+  });
+}
+function paletteCat(cat, btn) {
+  palCat = cat;
+  document.querySelectorAll('#paletteTabs .pal-tab').forEach(function (b) { b.classList.toggle('primary', b === btn); });
+  paletteFilter();
 }
 
 function renameBlock(sel) {
   var label = sel.options[sel.selectedIndex].text;
   var title = sel.parentElement.querySelector('span');
   if (title) title.textContent = '🧱 ' + label;
+  syncVariants(sel.closest('.block-item'));
 }
 
 /* 区块拖拽排序 */
@@ -478,7 +533,7 @@ function bindPreview(item) {
   item.addEventListener('change', function(e){ if (e.target.name === 'block_type[]') setTimeout(function(){ refreshBlockPreview(item); }, 10); });
 }
 document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('#blocksList .block-item').forEach(function(it){ bindPreview(it); });
+  document.querySelectorAll('#blocksList .block-item').forEach(function(it){ bindPreview(it); syncVariants(it); });
   // 主视图「实时预览」按钮：切换整页预览（仅展示，不含表单操作）
   var prog = document.getElementById('ofLivePrev');
   if (prog) prog.addEventListener('click', function(){

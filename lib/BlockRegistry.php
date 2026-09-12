@@ -45,6 +45,45 @@ function block_types(): array {
 
 function block_type_label(string $t): string { return block_types()[$t] ?? $t; }
 
+/** 内置模块的分类归属 */
+function block_builtin_categories(): array {
+    return [
+        'hero' => 'layout', 'features' => 'content', 'cta' => 'convert', 'text' => 'content',
+        'image-text' => 'media', 'stats' => 'content', 'testimonials' => 'social', 'logo-wall' => 'social',
+        'faq' => 'content', 'gallery' => 'media', 'form' => 'convert', 'newsletter' => 'convert',
+        'video' => 'media', 'contact' => 'convert', 'pricing' => 'commerce', 'timeline' => 'layout',
+        'comparison' => 'commerce', 'module' => 'other',
+    ];
+}
+
+/** 某模块的分类（自定义模块读 schema，内置读映射） */
+function block_type_category(string $type): string {
+    if (function_exists('blockschema_get')) {
+        $s = blockschema_get($type);
+        if ($s && !empty($s['category'])) return (string)$s['category'];
+    }
+    return block_builtin_categories()[$type] ?? 'other';
+}
+
+/** 模块面板目录：category => [{type,label,subcategory,variants,custom}] */
+function block_palette(): array {
+    $out = [];
+    foreach (block_types() as $type => $label) {
+        $cat = block_type_category($type);
+        $variants = []; $sub = ''; $custom = false;
+        if (function_exists('blockschema_get')) {
+            $s = blockschema_get($type);
+            if ($s) {
+                $sub = (string)($s['subcategory'] ?? '');
+                foreach ((array)($s['variants'] ?? []) as $v) $variants[] = ['id' => $v['id'], 'name' => $v['name']];
+                $custom = true;
+            }
+        }
+        $out[$cat][] = ['type' => $type, 'label' => $label, 'subcategory' => $sub, 'variants' => $variants, 'custom' => $custom];
+    }
+    return $out;
+}
+
 /** 可复用模块库（admin/page-modules.php 维护），只返回启用的 */
 function block_modules(): array {
     require_once __DIR__ . '/BlockContract.php';
@@ -200,6 +239,12 @@ function builder_render_schema_module(array $b): ?string {
     // 样式（CSS 变量映射到 style 内联）
     $styleCss = '';
     $style = (array)($schema['style'] ?? []);
+    // 变体（样式预设）：页面实例选的变体覆盖模块默认样式，可带独立 custom_html
+    $variant = function_exists('blockschema_variant') ? blockschema_variant($schema, (string)($b['variant'] ?? '')) : null;
+    if ($variant) {
+        foreach ((array)($variant['style'] ?? []) as $vk => $vv) $style[$vk] = $vv;
+        if (($variant['custom_html'] ?? '') !== '') $customHtml = (string)$variant['custom_html'];
+    }
     $styleCss .= !empty($style['bg']) ? 'background:' . blockschema_safe_color((string)$style['bg']) . ';' : '';
     $styleCss .= !empty($style['radius']) ? 'border-radius:' . (preg_match('/^\d+$/',(string)$style['radius'])?(string)$style['radius'].'px':(string)$style['radius']) . ';' : '';
     $styleCss .= !empty($style['align']) ? 'text-align:' . (in_array($style['align'], ['left','center','right'], true)?$style['align']:'left') . ';' : '';
