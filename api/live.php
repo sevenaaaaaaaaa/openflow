@@ -44,11 +44,19 @@ switch ($action) {
         break;
 
     // 点赞（连击限速，返回最新总数）
-    case 'like':
-        $id = trim((string)($_POST['room_id'] ?? ''));
+    case 'like':        $id = trim((string)($_POST['room_id'] ?? ''));
         if (!live_room($id)) { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'房间不存在']); exit; }
         $r = live_like($id);
         echo json_encode($r, JSON_UNESCAPED_UNICODE);
+        break;
+
+    // 观看心跳（30s/次，LOW_POWER 60s；按会话去重累计观看时长）
+    case 'view':
+        $id = trim((string)($_POST['room_id'] ?? ''));
+        if (!live_room($id)) { http_response_code(404); echo json_encode(['ok'=>false]); exit; }
+        live_view_ping($id);
+        $s = live_view_stats($id);
+        echo json_encode(['ok'=>true] + $s, JSON_UNESCAPED_UNICODE);
         break;
 
     // 预约直播提醒（会员记 member_id，游客留邮箱）

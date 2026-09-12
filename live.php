@@ -73,13 +73,13 @@ ob_start();
 if ($st === 'live' && $ytEmbed): ?>
 <iframe src="<?=htmlspecialchars($ytEmbed)?>" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
 <?php elseif ($st === 'live' && !empty($room['hls_url'])): ?>
-<video id="livePlayer" controls autoplay muted playsinline src="<?=htmlspecialchars($room['hls_url'])?>"></video>
+<video id="livePlayer" controls autoplay muted playsinline></video>
 <?php elseif ($st === 'live' && empty($room['hls_url'])): ?>
 <div class="ph"><span class="live-dot"></span>直播进行中<small>播放地址待配置</small></div>
 <?php elseif ($st === 'replay' && $ytEmbed): ?>
 <iframe src="<?=htmlspecialchars(str_replace('autoplay=1', 'autoplay=0', $ytEmbed))?>" style="width:100%;height:100%;border:0" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>
 <?php elseif ($st === 'replay' && !empty($room['replay_url'])): ?>
-<video controls playsinline src="<?=htmlspecialchars($room['replay_url'])?>"></video>
+<video id="livePlayer" controls playsinline></video>
 <?php elseif ($st === 'scheduled'): ?>
 <div class="ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>直播预告<small><?=htmlspecialchars(substr($room['start_at'] ?? '', 0, 16))?> 开播</small></div>
 <?php else: ?>
@@ -159,6 +159,7 @@ foreach ((array)($room['products'] ?? []) as $line) {
         <div class="room-head">
           <h1><?=htmlspecialchars($room['title'])?></h1>
           <?php if ($st === 'live'): ?><span class="badge live"><span class="live-dot"></span>直播中</span><?php else: ?><span class="pill neutral"><?=live_status_label($st)?></span><?php endif; ?>
+          <span class="pill neutral" title="当前在线（5分钟内活跃）" style="margin-left:8px">👁 <span id="viewOnline">…</span></span>
         </div>
         <p class="lead" style="font-size:15px;line-height:1.85;color:var(--muted)"><?=nl2br(htmlspecialchars($room['desc'] ?? ''))?></p>
         <?php if (!empty($room['start_at'])): ?><div class="note mono" style="margin-top:0"><?=htmlspecialchars(substr($room['start_at'], 0, 16))?> — <?=htmlspecialchars(substr($room['end_at'] ?? '', 0, 16))?></div><?php endif; ?>
@@ -260,12 +261,37 @@ foreach ((array)($room['products'] ?? []) as $line) {
     </div>
   </section>
 <?php endif; ?>
+<script src="/assets/vendor/hls.light.min.js?v=20260907a"></script>
 <script>
   var ROOM_ID = <?=json_encode($room['id'])?>;
   var LAST_COUNT = 0, LAST_MSG_ID = '';
   var LAST_PUSH_TS = +(localStorage.getItem('of_push_' + ROOM_ID) || 0);
   var ESC_MAP = {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'};
   function escH(s){ return (s||'').replace(/[<>&"]/g, function(c){ return ESC_MAP[c]; }); }
+
+  /* ── HLS 播放：Safari 原生，其余浏览器 hls.js 兜底（修 Chrome/安卓黑屏）── */
+  (function(){
+    var v = document.getElementById('livePlayer');
+    if (!v) return;
+    var src = <?=json_encode((string)($room['hls_url'] ?? $room['replay_url'] ?? ''))?>;
+    if (!src) return;
+    var canNative = v.canPlayType('application/vnd.apple.mpegurl');
+    if (canNative) { v.src = src; return; }              // Safari/iOS 原生
+    if (window.Hls && Hls.isSupported()) {                // Chrome/安卓/微信 hls.js
+      var hls = new Hls({ lowLatencyMode: true, backBufferLength: 30 });
+      hls.loadSource(src);
+      hls.attachMedia(v);
+      hls.on(Hls.Events.ERROR, function(_, data){
+        if (data.fatal) { switch(data.type){
+          case Hls.ErrorTypes.NETWORK_ERROR: hls.startLoad(); break;
+          case Hls.ErrorTypes.MEDIA_ERROR:   hls.recoverMediaError(); break;
+          default: hls.destroy();
+        }}
+      });
+    } else {
+      v.src = src;                                        // 最后兜底直连
+    }
+  })();
 
   /* ── 性能分级：低端机自动降级（关毛玻璃/飘心限量/轮询降频）── */
   var LOW_POWER = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
@@ -339,6 +365,24 @@ foreach ((array)($room['products'] ?? []) as $line) {
   function stopPoll(){ clearInterval(pollTimer); pollTimer = null; }
   document.addEventListener('visibilitychange', function(){ document.hidden ? stopPoll() : (loadChat(), startPoll()); });
   startPoll();
+
+  /* 观看心跳：30s/次（低端机 60s），页面可见时才发；顺带回显在线人数 */
+  var VIEW_MS = LOW_POWER ? 60000 : 30000, viewTimer = null;
+  function viewPing(){
+    if (document.hidden) return;
+    var body = 'room_id=' + encodeURIComponent(ROOM_ID);
+    fetch('/api/live?action=view', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: body })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d.ok) return;
+        var n = document.getElementById('viewOnline');
+        if (n && typeof d.online === 'number') n.textContent = d.online > 999 ? (d.online/1000).toFixed(1)+'k' : d.online;
+      }).catch(function(){});
+  }
+  function startView(){ if (!viewTimer) { viewPing(); viewTimer = setInterval(viewPing, VIEW_MS); } }
+  function stopView(){ clearInterval(viewTimer); viewTimer = null; }
+  document.addEventListener('visibilitychange', function(){ document.hidden ? stopView() : startView(); });
+  startView();
 
   /* 点赞：飘心动画 + 连击徽标 + 计数（每会话 60 次/分钟限速；低端机限量并发） */
   var HEARTS = ['❤️','🧡','💛','💜','💙','💖'];

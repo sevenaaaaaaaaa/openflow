@@ -46,13 +46,13 @@ PluginSystem::register_api_route('my-plugin', 'GET', 'stats', function () {
 
 - 端点：`GET /api/plugin/my-plugin/stats`
 - 回调返回 `PluginApiResponse::json($data)` 自动输出 JSON；返回 `null` 则自己输出。
-- 选项：`['auth' => true]` 要求后台登录，`['roles' => ['admin']]` 限定角色。
+- 选项：`['auth' => 'admin']` 要求后台登录（**默认值**，未声明 auth 的路由一律需要登录——安全从严），`['auth' => 'member']` 要求会员登录，`['auth' => 'none']` 显式公开（只读端点才用）。
 - 插件未启用 → 404；回调抛异常 → 500（不会拖垮整站）。
 
 ## 4. 后台菜单 + 设置页（v2 新增）
 
 ```php
-PluginSystem::register_admin_menu(['id' => 'my-plugin', 'label' => '我的插件', 'order' => 50]);
+PluginSystem::register_admin_menu(['id' => 'my-plugin', 'label' => '我的插件', 'sort' => 50]);
 PluginSystem::register_admin_page('my-plugin', function ($pluginId) {
     echo '<div class="card"><h2>设置</h2>...</div>';
 });
@@ -83,7 +83,7 @@ PluginSystem::register_schedule('my-cleanup', 'daily', function () {
 });
 ```
 
-间隔：`minutely` / `five_minutes` / `hourly` / `daily` / `weekly`。执行状态存 `data/cron-state.json`。
+间隔：`every`（每次 cron）/ `5min` / `15min` / `hourly` / `6hours` / `daily` / `weekly`。执行状态存 `data/plugin-schedule.json`。
 
 ## 7. 工具函数速查
 
