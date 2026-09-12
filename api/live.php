@@ -5,6 +5,7 @@
 require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/../lib/LiveSystem.php';
 require_once __DIR__ . '/../lib/MemberSystem.php';
+require_once __DIR__ . '/../lib/LiveInteractions.php';
 
 header('Content-Type: application/json; charset=utf-8');
 $action = $_GET['action'] ?? ($_POST['action'] ?? '');
@@ -26,7 +27,8 @@ switch ($action) {
         if ($r && !empty($r['push']) && is_array($r['push']) && !empty($r['push']['title'])) {
             $push = $r['push'];   // ['title','link','price','ts']
         }
-        echo json_encode(['ok'=>true, 'messages'=>live_chat($id), 'likes'=>live_likes($id), 'push'=>$push], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['ok'=>true, 'messages'=>live_chat($id), 'likes'=>live_likes($id), 'push'=>$push,
+            'giveaway'=>li_giveaway_current($id), 'flash'=>li_flash($id)], JSON_UNESCAPED_UNICODE);
         break;
 
     // 发送消息（带风控）
@@ -79,6 +81,32 @@ switch ($action) {
         $id = $_GET['room_id'] ?? '';
         echo json_encode(['ok'=>true, 'count'=>live_sub_count($id)]);
         break;
+
+    // 直播互动：抽奖参与 / 秒杀抢购 / 连麦申请 / 回放切片
+    case 'giveaway_enter': {
+        $m = member_current();
+        if (!$m) { http_response_code(401); echo json_encode(['ok'=>false,'error'=>'请先登录']); exit; }
+        echo json_encode(li_giveaway_enter((string)($_POST['room_id'] ?? ''), (string)($_POST['giveaway_id'] ?? ''), (string)$m['id'], (string)($m['name'] ?? '')), JSON_UNESCAPED_UNICODE);
+        break;
+    }
+    case 'flash_claim': {
+        $m = member_current();
+        if (!$m) { http_response_code(401); echo json_encode(['ok'=>false,'error'=>'请先登录']); exit; }
+        echo json_encode(li_flash_claim((string)($_POST['room_id'] ?? ''), (string)$m['id'], (string)($m['name'] ?? '')), JSON_UNESCAPED_UNICODE);
+        break;
+    }
+    case 'guest_request': {
+        $m = member_current();
+        if (!$m) { http_response_code(401); echo json_encode(['ok'=>false,'error'=>'请先登录']); exit; }
+        echo json_encode(li_guest_request((string)($_POST['room_id'] ?? ''), (string)$m['id'], (string)($m['name'] ?? '')), JSON_UNESCAPED_UNICODE);
+        break;
+    }
+    case 'clips': {
+        $id = (string)($_GET['room_id'] ?? '');
+        $r = live_room($id);
+        echo json_encode(['ok'=>true, 'clips'=>$r ? li_clips($r) : []], JSON_UNESCAPED_UNICODE);
+        break;
+    }
 
     default:
         http_response_code(400);
