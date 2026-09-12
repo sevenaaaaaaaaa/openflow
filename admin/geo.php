@@ -4,6 +4,9 @@
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/GeoSystem.php';
+require_once __DIR__ . '/../lib/GeoEntities.php';
+require_once __DIR__ . '/../lib/GeoCompetitor.php';
+require_once __DIR__ . '/../lib/GeoCitable.php';
 require_login();
 require_perm('settings');
 
@@ -12,6 +15,17 @@ $sources = geo_sources();
 $topics = geo_get_topics();
 $message = '';
 $error = '';
+
+// 实体图 / 竞品 操作
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['geo_panel'])) {
+    csrf_verify();
+    $panel = (string)$_POST['geo_panel'];
+    if ($panel === 'build_entities') { $g = geo_entities_build(); $message = '实体图已重建：' . count($g['nodes']) . ' 个实体 / ' . count($g['edges']) . ' 条关系'; }
+    elseif ($panel === 'add_competitor') { $r = geo_competitor_add((string)($_POST['domain'] ?? ''), (string)($_POST['name'] ?? '')); if (!$r['ok']) $error = $r['error']; else $message = '竞品已添加'; }
+    elseif ($panel === 'remove_competitor') { geo_competitor_remove((string)($_POST['domain'] ?? '')); $message = '竞品已移除'; }
+}
+$entReport = geo_entities_report();
+$compRows = geo_competitor_scan();
 
 // 保存设置
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
@@ -264,9 +278,88 @@ admin_header('GEO 话题监控');
       </div>
       <?php endforeach; ?>
     </div>
+    <!-- 实体图 -->
+    <div class="card">
+      <h2>🕸️ 实体图 <span class="hint">· 品牌/产品/人物/话题 的一致实体与共现关系</span></h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <span class="text-sm text-muted">共 <?=$entReport['total']?> 个实体 · <?=$entReport['links']?> 条关系<?=($entReport['built_at'] ? ' · 构建于 ' . htmlspecialchars($entReport['built_at']) : ' · 尚未构建')?></span>
+        <form method="post" style="margin-left:auto" data-no-guard><?= csrf_field() ?><input type="hidden" name="geo_panel" value="build_entities"><button class="btn btn-primary btn-sm">重建实体图</button></form>
+      </div>
+      <?php if ($entReport['total']): ?>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <?php foreach ($entReport['by_type'] as $type => $n): ?><span class="badge badge-gray"><?=htmlspecialchars(['brand'=>'品牌','product'=>'产品','person'=>'人物','topic'=>'话题'][$type] ?? $type)?> <?=$n?></span><?php endforeach; ?>
+      </div>
+      <table><thead><tr><th>实体</th><th>类型</th><th>提及</th><th>出现位置</th></tr></thead><tbody>
+        <?php foreach ($entReport['top_nodes'] as $n): ?>
+        <tr><td><b><?=htmlspecialchars($n['name'])?></b></td><td class="text-sm text-muted"><?=htmlspecialchars(['brand'=>'品牌','product'=>'产品','person'=>'人物','topic'=>'话题'][$n['type']] ?? $n['type'])?></td><td class="mono"><?=(int)$n['mentions']?></td><td class="text-sm text-muted"><?=htmlspecialchars(implode('、', array_slice((array)($n['sources'] ?? []), 0, 3)))?></td></tr>
+        <?php endforeach; ?>
+      </tbody></table>
+      <div class="text-xs text-muted" style="margin-top:8px">Top 关系：<?php foreach ($entReport['top_edges'] as $e) echo htmlspecialchars(substr($e['a'], strpos($e['a'], ':') + 1) . '↔' . substr($e['b'], strpos($e['b'], ':') + 1) . '（' . $e['weight'] . '）　'); ?></div>
+      <?php else: ?><div class="empty" style="padding:16px">点「重建实体图」从内容里抽取实体与关系。</div><?php endif; ?>
+    </div>
+
+    <!-- 竞品引用 -->
+    <div class="card">
+      <h2>⚔️ 竞品引用分析 <span class="hint">· 同一话题里谁被更多提及（share of voice）</span></h2>
+      <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px" data-no-guard>
+        <?= csrf_field() ?><input type="hidden" name="geo_panel" value="add_competitor">
+        <input class="inp" name="domain" placeholder="竞品域名，如 competitor.com" style="flex:1;min-width:200px">
+        <input class="inp" name="name" placeholder="显示名（可选）" style="width:160px">
+        <button class="btn btn-primary btn-sm">添加竞品</button>
+      </form>
+      <?php if (count($compRows) > 1): ?>
+      <table><thead><tr><th>主体</th><th>域名</th><th>提及</th><th>话题份额</th><th></th></tr></thead><tbody>
+        <?php foreach ($compRows as $r): ?>
+        <tr>
+          <td><b><?=htmlspecialchars($r['name'])?></b><?=$r['self'] ? ' <span class="badge badge-green">本品牌</span>' : ''?></td>
+          <td class="text-sm text-muted"><?=htmlspecialchars($r['domain'])?></td>
+          <td class="mono"><?=(int)$r['mentions']?></td>
+          <td><div style="background:var(--hover);border-radius:99px;height:8px;width:120px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;width:<?=(float)$r['share']?>%;background:var(--accent)"></div></div> <span class="text-sm"><?=(float)$r['share']?>%</span></td>
+          <td><?php if (!$r['self']): ?><form method="post" data-no-guard><?= csrf_field() ?><input type="hidden" name="geo_panel" value="remove_competitor"><input type="hidden" name="domain" value="<?=htmlspecialchars($r['domain'])?>"><button class="btn btn-ghost btn-sm" style="color:var(--danger)">移除</button></form><?php endif; ?></td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody></table>
+      <?php else: ?><div class="empty" style="padding:16px">添加竞品域名后，统计站内内容与选题库中的提及份额。</div><?php endif; ?>
+    </div>
+
+    <!-- 可引用改写 -->
+    <div class="card">
+      <h2>✂️ 可引用格式改写 <span class="hint">· 把文章重排成 AI 引擎愿直接引用的结构（结论+关键事实+Q&A）</span></h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input class="inp" id="gcId" placeholder="文章 id" style="width:220px">
+        <label class="text-sm" style="display:flex;align-items:center;gap:5px"><input type="checkbox" id="gcAi" checked> 用 AI 重写</label>
+        <button type="button" class="btn btn-primary btn-sm" onclick="gcPreview()">生成预览</button>
+        <span id="gcMsg" class="text-sm text-muted"></span>
+      </div>
+      <div id="gcOut" style="margin-top:12px"></div>
+    </div>
   </div>
 </div>
 <script>
+var GC_CSRF = <?=json_encode(csrf_token())?>;
+function gcPreview() {
+  var id = document.getElementById('gcId').value.trim();
+  var ai = document.getElementById('gcAi').checked ? '1' : '';
+  var msg = document.getElementById('gcMsg');
+  if (!id) { msg.textContent = '填文章 id'; return; }
+  msg.textContent = '生成中…';
+  var fd = new FormData(); fd.append('action', 'preview'); fd.append('id', id); if (ai) fd.append('ai', '1');
+  fetch('/api/geo-citable.php', { method: 'POST', headers: {'X-CSRF-Token': GC_CSRF}, body: fd })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d.ok) { msg.textContent = d.error || '失败'; return; }
+      msg.textContent = (d.source === 'ai' ? 'AI 生成' : '规则抽取');
+      window.__gcBlocks = d.blocks;
+      document.getElementById('gcOut').innerHTML = d.html + '<div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="gcApply()">写回正文</button></div>';
+    }).catch(function () { msg.textContent = '网络错误'; });
+}
+function gcApply() {
+  var id = document.getElementById('gcId').value.trim();
+  var fd = new FormData(); fd.append('action', 'apply'); fd.append('id', id); fd.append('blocks', JSON.stringify(window.__gcBlocks || {}));
+  fetch('/api/geo-citable.php', { method: 'POST', headers: {'X-CSRF-Token': GC_CSRF}, body: fd })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { document.getElementById('gcMsg').textContent = d.ok ? '已写回正文' : (d.error || '失败'); });
+}
 function addSource() {
   var d = document.createElement('div');
   d.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap';

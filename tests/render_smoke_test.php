@@ -55,6 +55,7 @@ $urls = [
     ['decision-trace', ''],
     ['flow-workspace', ''],
     ['today',        ''],
+    ['geo', ''],
     ['modules', ''],
     ['page-builder', ''],
     ['person',       ''],
