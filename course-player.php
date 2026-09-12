@@ -17,7 +17,11 @@ $course = null;
 foreach (json_read(DATA_DIR . '/courses/index.json') as $c) {
     if (($c['id'] ?? '') === $courseKey || ($c['slug'] ?? '') === $courseKey) { $course = $c; break; }
 }
-if (!$course) { http_response_code(404); die('课程不存在'); }
+if (!$course) {
+    // 无 id/slug → 引导到课程列表；有 id 但找不到 → 真 404
+    if ($courseKey === '') { header('Location: /courses', true, 301); exit; }
+    http_response_code(404); die('课程不存在');
+}
 $courseId = $course['id'] ?? $courseKey;
 
 $member = member_current();
