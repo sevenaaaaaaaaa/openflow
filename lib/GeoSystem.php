@@ -195,9 +195,73 @@ function geo_fetch_all(int $limit = 8): array {
         }
     }
 
+    // 去重：同 link/title 只留一条 + 过滤已处理过的（seen 状态文件，避免重复烧 AI token）
+    $seenFile = DATA_DIR . '/geo-seen.json';
+    $seen = is_file($seenFile) ? (json_decode((string)file_get_contents($seenFile), true) ?: []) : [];
+    $seen = is_array($seen) ? $seen : [];
+    $dedup = []; $dupKeys = [];
+    foreach ($all as $row) {
+        $link = trim((string)($row['item']['link'] ?? ''));
+        $title = trim((string)($row['item']['title'] ?? ''));
+        if ($link === '' && $title === '') continue;
+        $key = $link !== '' ? 'L:' . md5($link) : 'T:' . md5($title);
+        if (isset($dupKeys[$key]) || !empty($seen[$key])) continue;   // 本轮重复 或 已处理过
+        $dupKeys[$key] = true;
+        $dedup[] = $row;
+    }
+    $all = $dedup;
+
     // 按时间倒序
     usort($all, fn($a,$b) => strcmp($b['item']['pubDate'] ?? '', $a['item']['pubDate'] ?? ''));
     return $all;
+}
+
+/** 标记一批条目为已处理（cron 提炼完成后调用，防重复烧 token） */
+function geo_mark_seen(array $items): void {
+    $seenFile = DATA_DIR . '/geo-seen.json';
+    $seen = is_file($seenFile) ? (json_decode((string)file_get_contents($seenFile), true) ?: []) : [];
+    if (!is_array($seen)) $seen = [];
+    foreach ($items as $row) {
+        $link = trim((string)($row['item']['link'] ?? ''));
+        $title = trim((string)($row['item']['title'] ?? ''));
+        if ($link !== '') $seen['L:' . md5($link)] = date('c');
+        elseif ($title !== '') $seen['T:' . md5($title)] = date('c');
+    }
+    // 只保留最近 5000 条，防止无限膨胀
+    if (count($seen) > 5000) $seen = array_slice($seen, -5000, null, true);
+    @mkdir(dirname($seenFile), 0775, true);
+    file_put_contents($seenFile, json_encode($seen), LOCK_EX);
+}
+
+/** cron 调度入口：抓取→AI提炼→存选题库（内部自判当天是否已跑，失败可重试） */
+function geo_daily_run(): array {
+    $stateFile = DATA_DIR . '/geo-cron-state.json';
+    $state = is_file($stateFile) ? (json_decode((string)file_get_contents($stateFile), true) ?: []) : [];
+    $today = date('Y-m-d');
+    if (($state['last_run'] ?? '') === $today && ($state['last_status'] ?? '') === 'ok') {
+        return ['status' => 'skipped', 'detail' => '今天已跑过'];
+    }
+    $settings = geo_settings();
+    if (empty($settings['enabled']) && empty($settings['rss_enabled']) && empty($settings['search_api_enabled'])) {
+        return ['status' => 'skipped', 'detail' => 'GEO 未启用'];
+    }
+    try {
+        $items = geo_fetch_all();
+        if (empty($items)) {
+            $state = ['last_run' => $today, 'last_status' => 'ok', 'topics' => 0, 'items' => 0];
+            file_put_contents($stateFile, json_encode($state));
+            return ['status' => 'ok', 'items' => 0, 'topics' => 0, 'detail' => '无新条目'];
+        }
+        $topics = geo_ai_extract_topics($items);
+        geo_mark_seen($items);   // 提炼完标记已处理（含提炼失败的情况——避免反复烧 token）
+        $state = ['last_run' => $today, 'last_status' => 'ok', 'topics' => count($topics), 'items' => count($items)];
+        file_put_contents($stateFile, json_encode($state));
+        return ['status' => 'ok', 'items' => count($items), 'topics' => count($topics)];
+    } catch (Throwable $e) {
+        $state = ['last_run' => $today, 'last_status' => 'error', 'error' => $e->getMessage()];
+        file_put_contents($stateFile, json_encode($state));
+        return ['status' => 'error', 'detail' => $e->getMessage()];
+    }
 }
 
 // ─── 采集关键词（供搜索 API 用）───

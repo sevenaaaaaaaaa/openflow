@@ -193,6 +193,7 @@ function shop_create_order(string $memberId, string $courseId, string $ref = '',
         'payment_method' => '',
         'referrer_id' => $referrerId,
         'commission' => $commission,
+        'source' => function_exists('live_order_source') ? live_order_source() : '',
         'created_at' => date('Y-m-d H:i:s'),
         'paid_at' => '',
     ];

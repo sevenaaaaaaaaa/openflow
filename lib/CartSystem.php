@@ -224,6 +224,8 @@ function cart_checkout(string $memberId, string $method = ''): array {
         return ['ok' => true, 'order_id' => $orderId, 'total' => 0, 'free' => true];
     }
 
+    // 非免费单：订单已创建即清空购物车（防止重复下单；支付失败可从订单页重新发起支付）
+    cart_clear();
     return ['ok' => true, 'order_id' => $orderId, 'total' => $total];
 }
 
