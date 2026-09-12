@@ -330,6 +330,22 @@ function automation_execute_flow(array $flow, array $context, int $startAt = 0):
             case 'send_wechat':
                 automation_send_wechat($step, $context, $flow['id']);
                 break;
+            // ── 内容 / 销售 / 电商 原子节点（把 Flow 从"只会触达"扩到业务动作）──
+            case 'update_lead':
+                automation_update_lead($step, $context, $flow['id']);
+                break;
+            case 'create_task':
+                automation_create_task($step, $context, $flow['id']);
+                break;
+            case 'add_segment':
+                automation_segment($step, $context, $flow['id'], true);
+                break;
+            case 'remove_segment':
+                automation_segment($step, $context, $flow['id'], false);
+                break;
+            case 'publish_content':
+                automation_publish_content($step, $context, $flow['id']);
+                break;
         }
     }
 }
@@ -390,6 +406,82 @@ function automation_send_email(array $step, array $context, string $flowId): voi
         return;
     }
     automation_log($flowId, '无可用邮件服务，发送失败', 'error');
+}
+
+// 内容/销售原子动作：更新 CRM 线索（阶段/金额/负责人/来源/跟进）
+function automation_update_lead(array $step, array $context, string $flowId): void {
+    $email = (string)($context['email'] ?? '');
+    if ($email === '') { automation_log($flowId, 'update_lead：无邮箱', 'error'); return; }
+    try {
+        if (!function_exists('crm_ensure_lead')) require_once __DIR__ . '/CrmSystem.php';
+        if (!function_exists('crm_ensure_lead')) return;
+        crm_ensure_lead($email, (string)($context['name'] ?? ''));
+        $patch = [];
+        if (!empty($step['stage'])) $patch['stage'] = (string)$step['stage'];
+        if (isset($step['value']) && $step['value'] !== '') $patch['value'] = (float)$step['value'];
+        if (!empty($step['owner'])) $patch['owner'] = (string)$step['owner'];
+        if (!empty($step['source'])) $patch['source'] = (string)$step['source'];
+        if ($patch && function_exists('crm_update_lead')) crm_update_lead($email, $patch);
+        if (!empty($step['followup']) && function_exists('crm_add_followup')) crm_add_followup($email, (string)$step['followup'], 'automation');
+        automation_log($flowId, '更新线索：' . $email . ($patch ? '（' . implode('，', array_keys($patch)) . '）' : ''));
+    } catch (\Throwable $e) { automation_log($flowId, '更新线索失败：' . $e->getMessage(), 'error'); }
+}
+
+// 创建人工待办（把需要人做的事交给任务系统）
+function automation_create_task(array $step, array $context, string $flowId): void {
+    $title = trim((string)($step['title'] ?? ''));
+    if ($title === '') return;
+    try {
+        $tasks = json_read(DATA_DIR . '/tasks.json');
+        if (!is_array($tasks)) $tasks = [];
+        $tasks[] = [
+            'id' => 'task_' . date('Ymd_His') . '_' . substr(bin2hex(random_bytes(4)), 0, 6),
+            'title' => $title, 'description' => (string)($step['description'] ?? ''),
+            'assignee' => (string)($step['assignee'] ?? 'admin'), 'assigner' => 'automation',
+            'priority' => in_array($step['priority'] ?? '', ['low', 'medium', 'high'], true) ? $step['priority'] : 'medium',
+            'status' => 'pending', 'progress' => 0, 'due_date' => (string)($step['due_date'] ?? ''),
+            'comments' => [], 'created_at' => date('Y-m-d H:i:s'), 'completed_at' => '',
+        ];
+        json_write(DATA_DIR . '/tasks.json', $tasks);
+        automation_log($flowId, '创建任务：' . $title);
+    } catch (\Throwable $e) { automation_log($flowId, '创建任务失败：' . $e->getMessage(), 'error'); }
+}
+
+// 加入/移出 CDP 分群（真实维护 memberships 并触发进出群事件）
+function automation_segment(array $step, array $context, string $flowId, bool $add): void {
+    $sid = (string)($step['segment_id'] ?? '');
+    if ($sid === '') return;
+    try {
+        if (!function_exists('cdp_find')) require_once __DIR__ . '/CdpSync.php';
+        if (!function_exists('cdp_profile_put')) require_once __DIR__ . '/CdpProfileStore.php';
+        $c = cdp_find((string)($context['email'] ?? ''), (string)($context['member_id'] ?? ''), (string)($context['uid'] ?? ''));
+        if (!$c) { automation_log($flowId, 'segment 动作：未找到画像', 'info'); return; }
+        $profile = is_array($c['profile'] ?? null) ? $c['profile'] : $c;
+        $memberships = (array)($profile['segment_memberships'] ?? []);
+        $changed = false;
+        if ($add && !isset($memberships[$sid])) { $memberships[$sid] = ['joined_at' => date('Y-m-d H:i:s'), 'evaluated_at' => date('Y-m-d H:i:s')]; $changed = true; }
+        if (!$add && isset($memberships[$sid])) { unset($memberships[$sid]); $changed = true; }
+        if (!$changed) return;
+        $profile['segment_memberships'] = $memberships;
+        cdp_profile_put((string)($profile['visitor_id'] ?? ($c['id'] ?? '')), $profile);
+        if (function_exists('flow_handle')) flow_handle($add ? 'segment_enter' : 'segment_exit', ['profile_id' => (string)($profile['visitor_id'] ?? ''), 'segment_id' => $sid]);
+        automation_log($flowId, ($add ? '加入' : '移出') . '分群：' . $sid);
+    } catch (\Throwable $e) { automation_log($flowId, '分群动作失败：' . $e->getMessage(), 'error'); }
+}
+
+// 发布内容（按 id 把草稿置为已发布）
+function automation_publish_content(array $step, array $context, string $flowId): void {
+    $aid = trim((string)($step['article_id'] ?? ''));
+    if ($aid === '' || !function_exists('get_article') || !function_exists('save_article')) return;
+    try {
+        $a = get_article($aid);
+        if (!$a) { automation_log($flowId, '发布内容：文章不存在 ' . $aid, 'error'); return; }
+        $a['status'] = 'published';
+        $a['updated_at'] = date('Y-m-d H:i:s');
+        if (empty($a['published_at'])) $a['published_at'] = date('Y-m-d H:i:s');
+        save_article($a);
+        automation_log($flowId, '发布内容：' . ($a['title'] ?? $aid));
+    } catch (\Throwable $e) { automation_log($flowId, '发布内容失败：' . $e->getMessage(), 'error'); }
 }
 
 // 延迟动作（存入队列，cron 到点从该步骤之后续流，而非只补发一封邮件）
