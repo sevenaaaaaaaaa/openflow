@@ -83,6 +83,30 @@ switch ($action) {
         echo json_encode(['ok' => true, 'funnel' => $funnel], JSON_UNESCAPED_UNICODE);
         break;
 
+    case 'live_audience': {
+        // 实时人群看板：在线/今日新增/近7日活跃 + 各分群实时人数
+        $profiles = CdpSystem::allProfiles();
+        $now = time();
+        $online = 0; $newToday = 0; $active7 = 0;
+        $counts = [];
+        foreach ($profiles as $p) {
+            $seen = strtotime((string)($p['last_seen'] ?? '2000-01-01'));
+            if ($seen > $now - 300) $online++;
+            if (substr((string)($p['created_at'] ?? ''), 0, 10) === date('Y-m-d')) $newToday++;
+            if ($seen > $now - 7 * 86400) $active7++;
+            foreach (array_keys((array)($p['segment_memberships'] ?? [])) as $sid) $counts[$sid] = ($counts[$sid] ?? 0) + 1;
+        }
+        $list = [];
+        foreach (CdpSystem::allSegments() as $s) {
+            $id = (string)($s['id'] ?? '');
+            $list[] = ['id' => $id, 'name' => (string)($s['name'] ?? ''), 'count' => (int)($counts[$id] ?? 0)];
+        }
+        usort($list, fn($a, $b) => $b['count'] <=> $a['count']);
+        echo json_encode(['ok' => true, 'online' => $online, 'new_today' => $newToday, 'active_7d' => $active7,
+            'total' => count($profiles), 'segments' => $list, 'ts' => date('H:i:s')], JSON_UNESCAPED_UNICODE);
+        break;
+    }
+
     default:
         http_response_code(400);
         echo json_encode(['ok' => false, 'error' => '未知操作']);

@@ -447,7 +447,10 @@ class CdpSystem {
             $tags = &$profile['tags'];
             foreach ($rules as $rid => $rule) {
                 if (empty($rule['enabled']) || empty($rule['tag'])) continue;
-                $match = self::matchTagRule($rule['when'], $profile, $event, $data);
+                // 优先表达式（AND/OR 嵌套）；否则回退到单条件 when
+                $match = (!empty($rule['expr']) && is_array($rule['expr']))
+                    ? self::evaluateExpr($rule['expr'], $profile)
+                    : self::matchTagRule($rule['when'] ?? [], $profile, $event, $data);
                 if ($match) {
                     if (!isset($tags[$rule['tag']])) $tags[$rule['tag']] = ['type'=>'auto','rule_id'=>$rid,'at'=>date('Y-m-d H:i:s')];
                 }
@@ -581,6 +584,45 @@ class CdpSystem {
         return true;
     }
 
+    /**
+     * 表达式评估（标签/分群共用）：支持嵌套 AND/OR 与友好字段路径。
+     * 表达式形如 {"op":"and","rules":[
+     *   {"field":"summaries.article_view","operator":"gte","value":5},
+     *   {"field":"properties.city","operator":"eq","value":"上海"},
+     *   {"op":"or","rules":[{"field":"tags","operator":"exists","value":"vip"},{"event":"purchase","operator":"gte","value":1}]}
+     * ]}
+     */
+    public static function evaluateExpr(array $expr, array $profile): bool {
+        return self::matchRuleGroup(self::normalizeExpr($expr), $profile);
+    }
+
+    private static function normalizeExpr(array $node): array {
+        if (isset($node['op']) || isset($node['rules'])) {
+            $op = strtolower((string)($node['op'] ?? $node['operator'] ?? 'and'));
+            $rules = [];
+            foreach ((array)($node['rules'] ?? $node) as $r) {
+                if (!is_array($r)) continue;
+                if (isset($r['op']) || isset($r['rules'])) $rules[] = ['type' => 'group'] + self::normalizeExpr($r);
+                else $rules[] = self::normalizeLeaf($r);
+            }
+            return ['operator' => $op === 'or' ? 'or' : 'and', 'rules' => $rules];
+        }
+        return ['operator' => 'and', 'rules' => [self::normalizeLeaf($node)]];
+    }
+
+    private static function normalizeLeaf(array $r): array {
+        $field = (string)($r['field'] ?? '');
+        $operator = (string)($r['operator'] ?? 'eq');
+        $value = $r['value'] ?? '';
+        if (isset($r['event'])) return ['type' => 'event', 'event' => (string)$r['event'], 'operator' => $operator, 'value' => $value, 'window' => (int)($r['window'] ?? 0)];
+        if ($field === 'lifecycle.stage') return ['type' => 'lifecycle', 'field' => 'stage', 'operator' => $operator, 'value' => $value];
+        if (str_starts_with($field, 'properties.')) return ['type' => 'property', 'field' => substr($field, 11), 'operator' => $operator, 'value' => $value];
+        if (str_starts_with($field, 'summaries.')) return ['type' => 'summary', 'field' => substr($field, 10), 'operator' => $operator, 'value' => $value];
+        if ($field === 'tags') return ['type' => 'tag', 'field' => (string)$value, 'operator' => 'exists', 'value' => ''];
+        if (str_starts_with($field, 'tag.')) return ['type' => 'tag', 'field' => substr($field, 4), 'operator' => 'exists', 'value' => ''];
+        return ['type' => 'property', 'field' => $field, 'operator' => $operator, 'value' => $value];
+    }
+
     // 单条规则评估
     private static function matchSingleRule(array $rule, array $profile): bool {
         $type = $rule['type'] ?? '';
@@ -668,7 +710,7 @@ class CdpSystem {
     private static function compare($actual, string $operator, $expected): bool {
         switch ($operator) {
             case 'equals': case 'eq': case '==': return $actual == $expected;
-            case 'not_equals': case 'ne': return $actual != $expected;
+            case 'not_equals': case 'ne': case 'neq': return $actual != $expected;
             case 'greater_than': case 'gt': case '>': return $actual > $expected;
             case 'less_than': case 'lt': case '<': return $actual < $expected;
             case 'gte': case '>=': return $actual >= $expected;
@@ -676,6 +718,11 @@ class CdpSystem {
             case 'contains': return stripos((string)$actual, (string)$expected) !== false;
             case 'starts_with': return stripos((string)$actual, (string)$expected) === 0;
             case 'in': return in_array($actual, (array)$expected);
+            case 'not_in': return !in_array($actual, (array)$expected);
+            case 'exists': return is_array($actual) ? isset($actual[(string)$expected]) : ($actual !== '' && $actual !== null);
+            case 'not_exists': return is_array($actual) ? !isset($actual[(string)$expected]) : ($actual === '' || $actual === null);
+            case 'between': return is_array($expected) && count($expected) === 2 && $actual >= $expected[0] && $actual <= $expected[1];
+            case 'regex': return @preg_match('#' . str_replace('#', '\\#', (string)$expected) . '#u', (string)$actual) === 1;
             default: return false;
         }
     }
