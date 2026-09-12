@@ -490,6 +490,7 @@ function include_member_orders(array $orders): void {
                 if ($rr === 'pending') $op = '<span class="mu" style="font-size:12px">退款审核中</span>';
                 elseif ($rr === 'rejected') $op = '<span class="mu" style="font-size:12px">退款已驳回</span>';
                 else $op = '<button type="button" class="btn ghost sm" data-refund="' . $oid . '" data-title="' . htmlspecialchars($o['course_title'] ?? '') . '">申请退款</button>';
+                $op .= ' <a class="btn ghost sm" href="/receipt?order=' . $oid . '">收据</a>';
             }
             echo '<tr><td class="mu mono">' . htmlspecialchars(substr($o['id'],-10)) . '</td><td>' . htmlspecialchars($o['course_title']) . '</td><td>¥' . number_format($o['amount']??0,2) . '</td><td><span class="' . acct_tag($tagCls) . '">' . $statusTag . '</span></td><td class="mu mono">' . htmlspecialchars(substr($o['created_at']??'',0,10)) . '</td><td>' . $op . '</td></tr>';
         }

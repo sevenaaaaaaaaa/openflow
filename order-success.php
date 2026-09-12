@@ -84,6 +84,7 @@ $courseId = (string)($order['course_id'] ?? '');
       <p class="muted" style="margin:0">服务类订单：我们会在 24 小时内通过你留下的联系方式与你对接交付细节。</p>
       <a class="btn primary" href="/member.php?view=orders">查看订单</a>
       <?php endif; ?>
+      <a class="btn" href="/receipt?order=<?=urlencode($orderId)?>" style="border:1px solid var(--border)">🧾 查看收据</a>
       <?php if ($fromLive && $liveRoom !== ''): ?>
       <button class="btn" id="backLive" style="border:1px solid var(--border)">🔴 返回直播间</button>
       <?php endif; ?>
