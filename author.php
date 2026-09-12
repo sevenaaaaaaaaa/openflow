@@ -56,7 +56,7 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($pageTitle)?></title>
 <meta name="description" content="<?=htmlspecialchars($authorName)?> 在 <?=site_config_get('site_name')?> 发布的文章、课程与技能">
-<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
+<?php require_once __DIR__ . '/includes/site-head.php'; if (empty($articles)) of_seo_noindex(); of_head_assets(); ?>
 <style>
 /* 作者页独有：作者头。其余全部来自 modules.css。 */
 .au-head{display:flex;align-items:center;gap:24px;flex-wrap:wrap}

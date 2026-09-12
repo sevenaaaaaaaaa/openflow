@@ -50,7 +50,15 @@ function of_seo_bootstrap(): void {
         }
         // canonical：两种引号形式都没有才补，用当前请求 URL + 站点域名（修 example.com bug）
         $hasCanonical = (stripos($html, 'rel="canonical"') !== false || stripos($html, "rel='canonical'") !== false);
-        if (!$hasCanonical && $siteUrl !== '') {
+        // 页面显式指定的 canonical 优先（软404/筛选页归并到聚合页）
+        if (!empty($GLOBALS['OF_SEO_CANONICAL'])) {
+            $__canon = (string)$GLOBALS['OF_SEO_CANONICAL'];
+            if ($hasCanonical) {
+                $html = preg_replace('/<link\b[^>]*rel=["\']canonical["\'][^>]*>/i', '<link rel="canonical" href="' . htmlspecialchars($__canon, ENT_QUOTES) . '">', $html, 1);
+            } else {
+                $html = str_ireplace('</head>', '<link rel="canonical" href="' . htmlspecialchars($__canon, ENT_QUOTES) . '">' . "\n</head>", $html);
+            }
+        } elseif (!$hasCanonical && $siteUrl !== '') {
             $html = str_ireplace('</head>', '<link rel="canonical" href="' . htmlspecialchars($siteUrl . $req, ENT_QUOTES) . '">' . "\n</head>", $html);
         }
         // description：页面没写就补站点默认
@@ -118,7 +126,16 @@ function of_seo_bootstrap(): void {
             $bdEsc = htmlspecialchars($baiduId, ENT_QUOTES);
             $inject .= '<script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?' . $bdEsc . '";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>' . "\n";
         }
+        // 软 404 处理：页面显式标记 noindex 时注入 robots（避免空筛选/空作者被判软 404）
+        if (!empty($GLOBALS['OF_SEO_NOINDEX']) && stripos($html, 'name="robots"') === false && stripos($html, "name='robots'") === false) {
+            $inject .= '<meta name="robots" content="noindex,follow">' . "\n";
+        }
         if ($inject !== '') $html = str_ireplace('</head>', $inject . '</head>', $html);
         return $html;
     });
 }
+
+/** 页面标记：本页不参与索引（软 404 / 空筛选 / 搜索页） */
+function of_seo_noindex(bool $v = true): void { $GLOBALS['OF_SEO_NOINDEX'] = $v; }
+/** 页面标记：本页 canonical 归并到指定 URL */
+function of_seo_canonical(string $url): void { $GLOBALS['OF_SEO_CANONICAL'] = $url; }
