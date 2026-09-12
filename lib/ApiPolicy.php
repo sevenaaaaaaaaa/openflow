@@ -74,6 +74,7 @@ if (!function_exists('api_policy_defaults')) {
             'cron'           => ['tier' => 'token', 'perm' => '', 'note' => '定时发布，自带签名校验'],
             'data-export'    => ['tier' => 'token', 'perm' => '', 'note' => '数仓出向导出，自带 token'],
             'leads'          => ['tier' => 'token', 'perm' => '', 'note' => '线索拉取，自带 api_key'],
+            'segments'       => ['tier' => 'token', 'perm' => '', 'note' => '分群即服务：外部按 api_key 拉分群/成员'],
             'push-article'   => ['tier' => 'token', 'perm' => '', 'note' => '推送到分发渠道，自带 key'],
             'webhook'        => ['tier' => 'token', 'perm' => '', 'note' => '入站 webhook，自带校验'],
             'wechat'         => ['tier' => 'token', 'perm' => '', 'note' => '公众号服务器验证（微信要求可匿名访问）'],
