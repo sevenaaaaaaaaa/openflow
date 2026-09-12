@@ -161,6 +161,7 @@ foreach ((array)($room['products'] ?? []) as $line) {
           <?php if ($st === 'live'): ?><span class="badge live"><span class="live-dot"></span>直播中</span><?php else: ?><span class="pill neutral"><?=live_status_label($st)?></span><?php endif; ?>
           <span class="pill neutral" title="当前在线（5分钟内活跃）" style="margin-left:8px">👁 <span id="viewOnline">…</span></span>
         </div>
+        <div id="liveInteract" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div>
         <p class="lead" style="font-size:15px;line-height:1.85;color:var(--muted)"><?=nl2br(htmlspecialchars($room['desc'] ?? ''))?></p>
         <?php if (!empty($room['start_at'])): ?><div class="note mono" style="margin-top:0"><?=htmlspecialchars(substr($room['start_at'], 0, 16))?> — <?=htmlspecialchars(substr($room['end_at'] ?? '', 0, 16))?></div><?php endif; ?>
 
@@ -323,6 +324,30 @@ foreach ((array)($room['products'] ?? []) as $line) {
   var POLL_MS = LOW_POWER ? 5000 : 3000;
   var pollTimer = null;
 
+  function renderInteract(gw, fl) {
+    var box = document.getElementById('liveInteract'); if (!box) return;
+    var h = '';
+    if (gw && gw.status === 'open') {
+      h += '<button type="button" class="btn primary" style="height:38px" onclick="enterGiveaway(\'' + gw.id + '\')">🎁 参与抽奖：' + escH(gw.title) + '</button>';
+    } else if (gw && gw.status === 'drawn' && gw.winners && gw.winners.length) {
+      h += '<span class="badge" style="background:var(--ok-soft);color:var(--ok);padding:6px 12px;border-radius:999px">🎉 已开奖：' + gw.winners.map(function (w) { return escH(w.name || '匿名'); }).join('、') + '</span>';
+    }
+    if (fl && fl.active) {
+      h += '<button type="button" class="btn primary" style="height:38px;background:var(--danger)" onclick="flashClaim()">⚡ 秒杀 ¥' + fl.price + '（剩 ' + fl.remaining + '）</button>';
+    }
+    h += '<button type="button" class="btn ghost" style="height:38px" onclick="guestRequest()">🎙️ 申请连麦</button>';
+    box.innerHTML = h;
+  }
+  function liPost(action, extra) {
+    var fd = new FormData(); fd.append('action', action); fd.append('room_id', ROOM_ID);
+    if (extra) for (var k in extra) fd.append(k, extra[k]);
+    return fetch('/api/live', { method: 'POST', body: fd }).then(function (r) { return r.json(); });
+  }
+  function liToast(msg) { (window.OFShell ? OFShell.toast : alert)(msg); }
+  function enterGiveaway(id) { liPost('giveaway_enter', { giveaway_id: id }).then(function (d) { liToast(d.ok ? ('参与成功，当前 ' + d.count + ' 人') : (d.error || '失败')); }); }
+  function flashClaim() { liPost('flash_claim').then(function (d) { liToast(d.ok ? ('抢到啦！' + d.product + ' ¥' + d.price + '，剩余 ' + d.remaining) : (d.error || '失败')); }); }
+  function guestRequest() { liPost('guest_request').then(function (d) { liToast(d.ok ? '已提交连麦申请，等待主播通过' : (d.error || '失败')); }); }
+
   function loadChat() {
     fetch('/api/live?action=chat&room_id=' + encodeURIComponent(ROOM_ID)).then(function(r){ return r.json(); }).then(function(d) {
       if (!d.ok) return;
@@ -349,6 +374,7 @@ foreach ((array)($room['products'] ?? []) as $line) {
       // 点赞数同步
       var likeN = document.getElementById('likeN');
       if (likeN && typeof d.likes === 'number') likeN.textContent = d.likes > 999 ? (d.likes/1000).toFixed(1)+'k' : d.likes;
+      renderInteract(d.giveaway, d.flash);
       // 主播推品：新推品自动弹出（12s 自动收起）
       if (d.push && d.push.ts > LAST_PUSH_TS) {
         LAST_PUSH_TS = d.push.ts;
