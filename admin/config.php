@@ -135,8 +135,8 @@ if (PHP_SAPI !== 'cli' && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
             $__from = '/' . trim((string)($__r['from'] ?? ''), '/');
             if ($__from === $__reqPath) {
                 $__to = (string)($__r['to'] ?? '');
-                if (!empty($__r['gone'])) { http_response_code(410); header('Content-Type: text/plain; charset=utf-8'); echo '410 Gone'; exit; }
-                if ($__to !== '') { header('Location: ' . $__to, true, 301); exit; }
+                if (!empty($__r['gone'])) { http_response_code(410); header('Cache-Control: no-store, max-age=0'); header('Content-Type: text/plain; charset=utf-8'); echo '410 Gone'; exit; }
+                if ($__to !== '') { header('Cache-Control: no-store, max-age=0'); header('Location: ' . $__to, true, 301); exit; }
             }
         }
     }
