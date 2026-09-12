@@ -31,6 +31,46 @@ function live_rooms_save(array $rooms): void {
     if (!is_dir(dirname(live_file()))) mkdir(dirname(live_file()), 0755, true);
     json_write(live_file(), $rooms);
 }
+
+/** 找到绑定到某课程课时的直播间（课程内「直播课」由房间侧绑定） */
+function live_room_for_lesson(string $courseId, string $lessonId): ?array {
+    if ($courseId === '' || $lessonId === '') return null;
+    foreach (live_rooms() as $r) {
+        if (($r['bind_course_id'] ?? '') === $courseId && ($r['bind_lesson_id'] ?? '') === $lessonId) return $r;
+    }
+    return null;
+}
+
+/**
+ * 课程的「直播课」上下文：解析绑定房间 → 直播/预约/回放 + 回放章节。
+ * 让同一堂课在课程页与直播页有同一份数据（学习绑定，而非仅售卖导购）。
+ */
+function live_lesson_context(array $lesson, string $courseId = ''): ?array {
+    if (($lesson['type'] ?? '') !== 'live') return null;
+    $room = null;
+    $roomId = (string)($lesson['live_room_id'] ?? '');
+    if ($roomId !== '') $room = live_room($roomId);
+    if (!$room && $courseId !== '') $room = live_room_for_lesson($courseId, (string)($lesson['id'] ?? ''));
+    $status = $room ? live_status($room) : 'scheduled';
+    $replay = (string)($room['replay_url'] ?? ($lesson['replay_url'] ?? ''));
+    $chapters = [];
+    if (!empty($room['chapters']) && is_array($room['chapters'])) $chapters = $room['chapters'];
+    elseif ($replay !== '' && $room && function_exists('live_auto_chapters')) $chapters = live_auto_chapters($room);
+    return [
+        'bound' => (bool)$room,
+        'room_id' => (string)($room['id'] ?? $roomId),
+        'room_url' => $room ? ('/live?room=' . urlencode((string)$room['id'])) : '',
+        'status' => $status,
+        'status_label' => live_status_label($status),
+        'start_at' => (string)($room['start_at'] ?? ($lesson['live_at'] ?? '')),
+        'end_at' => (string)($room['end_at'] ?? ''),
+        'hls' => (string)($room['hls_url'] ?? ''),
+        'youtube' => (string)($room['youtube_url'] ?? ''),
+        'replay' => $replay,
+        'chapters' => $chapters,
+        'title' => (string)($room['title'] ?? ($lesson['title'] ?? '')),
+    ];
+}
 function live_room_save(array $room): void {
     $rooms = live_rooms();
     $found = false;

@@ -13,6 +13,13 @@ $settings = live_settings();
 $courses = json_read(DATA_DIR . '/courses/index.json');
 $courseMap = [];
 foreach ($courses as $c) $courseMap[$c['id']] = $c['title'];
+$courseLessonsMap = [];
+foreach ($courses as $c) {
+    $ls = [];
+    foreach (($c['chapters'] ?? []) as $ch) foreach (($ch['lessons'] ?? []) as $l) if (!empty($l['id'])) $ls[] = ['id' => $l['id'], 'title' => (($ch['title'] ?? '') !== '' ? $ch['title'] . ' / ' : '') . ($l['title'] ?? '')];
+    foreach (($c['lessons'] ?? []) as $l) if (!empty($l['id'])) $ls[] = ['id' => $l['id'], 'title' => $l['title'] ?? ''];
+    $courseLessonsMap[$c['id']] = $ls;
+}
 $message = '';
 
 // 弹幕管理：删除 / 禁言 / 取消禁言
@@ -42,6 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_room'])) {
         'youtube_url' => trim($_POST['youtube_url'] ?? ''),   // YouTube 直播/回放链接（优先于 HLS 播放）
         'replay_url' => trim($_POST['replay_url'] ?? ''),
         'sell_course' => trim($_POST['sell_course'] ?? ''),   // 售卖课程（兼容旧字段）
+        'bind_course_id' => trim($_POST['bind_course_id'] ?? ''),   // 绑定课程（作为课程内直播课时）
+        'bind_lesson_id' => trim($_POST['bind_lesson_id'] ?? ''),   // 绑定的课时 id
         'products' => array_values(array_filter(array_map('trim', explode("\n", (string)($_POST['products'] ?? ''))))),  // 多商品卡：每行 "标题|链接|价格文案"
         'slow_mode' => max(0, min(60, (int)($_POST['slow_mode'] ?? 3))),   // 慢速模式：同一观众最少间隔秒数
         'stream_mode' => in_array($_POST['stream_mode'] ?? '', ['landscape','vertical','immersive'], true) ? $_POST['stream_mode'] : 'landscape',  // 画面形态
@@ -235,6 +244,19 @@ admin_header('直播管理');
           </div>
         </div>
         <div class="field-row">
+          <div class="field"><label>绑定课程（作为课程内「直播课」课时）</label>
+            <select name="bind_course_id" id="bindCourse" onchange="bindCourseLessons()">
+              <option value="">— 不绑定 —</option>
+              <?php foreach ($courses as $c): ?>
+              <option value="<?=htmlspecialchars($c['id'])?>" <?=($r['bind_course_id']??'')===$c['id']?'selected':''?>><?=htmlspecialchars($c['title'])?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="field"><label>对应课时</label>
+            <select name="bind_lesson_id" id="bindLesson"><option value="">— 先选课程 —</option></select>
+          </div>
+        </div>
+        <div class="field-row">
           <div class="field"><label>开播时间</label><input type="datetime-local" name="start_at" value="<?=htmlspecialchars(str_replace(' ', 'T', $r['start_at'] ?? ''))?>"></div>
           <div class="field"><label>结束时间</label><input type="datetime-local" name="end_at" value="<?=htmlspecialchars(str_replace(' ', 'T', $r['end_at'] ?? ''))?>"></div>
         </div>
@@ -338,3 +360,22 @@ admin_header('直播管理');
   </div>
 </div>
 <?php admin_footer(); ?>
+<script>
+var COURSE_LESSONS = <?=json_encode($courseLessonsMap, JSON_UNESCAPED_UNICODE)?>;
+var CUR_BIND_LESSON = <?=json_encode((string)($r['bind_lesson_id'] ?? ''))?>;
+function bindCourseLessons() {
+  var c = document.getElementById('bindCourse');
+  var sel = document.getElementById('bindLesson');
+  if (!c || !sel) return;
+  var list = COURSE_LESSONS[c.value] || [];
+  sel.innerHTML = '';
+  if (!list.length) { sel.innerHTML = '<option value="">— 先选课程 —</option>'; return; }
+  list.forEach(function (l) {
+    var o = document.createElement('option');
+    o.value = l.id; o.textContent = l.title || l.id;
+    if (l.id === CUR_BIND_LESSON) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+document.addEventListener('DOMContentLoaded', bindCourseLessons);
+</script>
