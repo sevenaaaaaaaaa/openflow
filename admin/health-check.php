@@ -290,6 +290,33 @@ function run_health_checks(): array {
     ];
     $checks['媒体资产'] = $med;
 
+    // ═══ 六、定时任务与运维 ═══
+    $ops = [];
+    $cronLast = json_read(DATA_DIR . '/cron-last.json');
+    $cronTs = (int)($cronLast['ts'] ?? 0);
+    if ($cronTs === 0) {
+        $ops[] = ['status' => 'warn', 'weight' => 3, 'title' => '定时任务从未运行', 'detail' => 'api/cron.php 尚未被调用；请配置服务器 cron 定时触发（建议每 5 分钟）', 'fix' => '配置 cron 调用 /api/cron.php', 'fix_url' => 'devops.php'];
+    } else {
+        $ageMin = (int)round((time() - $cronTs) / 60);
+        $ops[] = ['status' => $ageMin <= 15 ? 'pass' : ($ageMin <= 60 ? 'warn' : 'fail'), 'weight' => 3, 'title' => '定时任务' . ($ageMin <= 15 ? '正常' : '延迟'), 'detail' => '最近运行：' . (string)($cronLast['at'] ?? '') . '（' . $ageMin . ' 分钟前）' . ($ageMin > 15 ? '，建议检查 cron 配置' : ''), 'fix' => '检查 cron 计划任务', 'fix_url' => 'devops.php'];
+    }
+    $errLogSize = 0;
+    foreach (['error_log', 'php_errors.log', 'debug.log'] as $lf) if (is_file(DATA_DIR . '/' . $lf)) $errLogSize += (int)filesize(DATA_DIR . '/' . $lf);
+    $ops[] = ['status' => $errLogSize < 5 * 1048576 ? 'pass' : 'warn', 'weight' => 1, 'title' => '错误日志体积', 'detail' => $errLogSize > 0 ? round($errLogSize / 1024, 1) . ' KB' : '无错误日志', 'fix' => '清理错误日志', 'fix_url' => 'devops.php'];
+    $checks['定时任务与运维'] = $ops;
+
+    // ═══ 七、存储占用 ═══
+    $dirSize = function (string $dir): int {
+        if (!is_dir($dir)) return 0; $s = 0;
+        try { $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS)); foreach ($it as $f) if ($f->isFile()) $s += (int)$f->getSize(); } catch (\Throwable $e) {}
+        return $s;
+    };
+    $dataSize = $dirSize(DATA_DIR); $upSize = $dirSize(defined('UPLOAD_DIR') ? UPLOAD_DIR : DATA_DIR . '/uploads');
+    $checks['存储占用'] = [
+        ['status' => $dataSize < 500 * 1048576 ? 'pass' : 'warn', 'weight' => 1, 'title' => 'data 目录 ' . round($dataSize / 1048576, 1) . ' MB', 'detail' => $dataSize >= 500 * 1048576 ? '数据目录偏大，建议清理日志/备份/孤儿媒体' : '占用正常', 'fix' => '清理与归档', 'fix_url' => 'devops.php'],
+        ['status' => $upSize < 2 * 1073741824 ? 'pass' : 'warn', 'weight' => 1, 'title' => 'uploads 目录 ' . round($upSize / 1048576, 1) . ' MB', 'detail' => $upSize >= 2 * 1073741824 ? '上传目录偏大' : '占用正常', 'fix' => '压缩图片/清理未引用媒体', 'fix_url' => 'media.php'],
+    ];
+
     return $checks;
 }
 
@@ -328,6 +355,17 @@ function collect_fix_items(array $checks): array {
 $checks = run_health_checks();
 $scoreInfo = compute_score($checks);
 $fixItems = collect_fix_items($checks);
+
+require_once __DIR__ . '/../lib/HealthRecord.php';
+health_record_add($scoreInfo, $checks);
+$trend = health_trend();
+$history = health_history(30);
+$selfEvolve = [];
+try {
+    require_once __DIR__ . '/../lib/SelfEvolve.php';
+    $st = SelfEvolve::state();
+    foreach ((array)($st['suggestions'] ?? []) as $s) if (($s['status'] ?? 'open') === 'open' && in_array(($s['severity'] ?? ''), ['critical', 'high', 'medium'], true)) $selfEvolve[] = $s;
+} catch (\Throwable $e) {}
 
 $statusCss = ['pass' => 'var(--ok)', 'warn' => 'var(--warn)', 'fail' => 'var(--danger)'];
 $statusIco = ['pass' => '✓', 'warn' => '!', 'fail' => '✕'];
@@ -406,6 +444,32 @@ if ($__sub === 'self'):
         </div>
       </div>
     </div>
+
+    <!-- 身体趋势 -->
+    <div class="card" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;padding:14px 18px;margin-bottom:16px">
+      <div>
+        <div class="text-sm text-muted">健康趋势（近 <?=count($history)?> 次）</div>
+        <div style="font-size:20px;font-weight:800"><?=$trend['last']?><span class="text-sm text-muted"> 分</span>
+          <?php if ($trend['delta'] !== 0): ?><span class="text-sm" style="color:<?=$trend['delta'] > 0 ? 'var(--ok)' : 'var(--danger)'?>"><?=$trend['delta'] > 0 ? '▲ +' : '▼ '?><?=$trend['delta']?></span><?php endif; ?>
+          <span class="text-sm text-muted" style="margin-left:8px">均值 <?=$trend['avg']?></span>
+        </div>
+      </div>
+      <?=health_trend_svg($trend['points'])?>
+    </div>
+
+    <?php if ($selfEvolve): ?>
+    <!-- 自优化建议（SelfEvolve 自动发现）-->
+    <div class="card" style="margin-bottom:16px">
+      <h2>🧠 自优化建议 <span class="hint">· 系统自动发现的可优化点</span></h2>
+      <?php foreach (array_slice($selfEvolve, 0, 8) as $s): ?>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border-soft,var(--border))">
+        <span class="badge <?=($s['severity'] ?? '') === 'critical' ? 'badge-red' : (($s['severity'] ?? '') === 'high' ? 'badge-yellow' : 'badge-gray')?>"><?=htmlspecialchars((string)($s['severity'] ?? ''))?></span>
+        <div style="flex:1"><b><?=htmlspecialchars((string)($s['title'] ?? ''))?></b><div class="text-sm text-muted"><?=htmlspecialchars((string)($s['detail'] ?? ''))?></div></div>
+        <a class="btn btn-ghost btn-sm" href="/xmp/evolution">去处理</a>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 
     <!-- 分类评分 -->
     <div class="cat-grid">
