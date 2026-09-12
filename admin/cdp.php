@@ -770,17 +770,33 @@ admin_header('CDP 客户数据中台');
 
     <?php elseif ($tab === 'funnel'): ?>
     <?php
-    $funnelSteps = ['page_view', 'form_view', 'form_submit', 'purchase'];
+    require_once __DIR__ . '/../lib/FunnelDefinition.php';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['funnel_steps'])) {
+        csrf_verify();
+        $steps = array_filter(array_map('trim', explode(',', (string)$_POST['funnel_steps'])));
+        $r = funnel_steps_save($steps);
+        if (!$r['ok']) { $funnelError = $r['error']; }
+    }
+    $funnelSteps = funnel_steps();
     $funnel = CdpSystem::getFunnel($funnelSteps, 30);
+    $labels = funnel_event_options();
     ?>
     <div class="card">
       <h2>漏斗分析</h2>
-      <p class="text-sm text-muted mb-4">分析用户从访问到转化的全流程</p>
-      <div class="cdp-g" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      <p class="text-sm text-muted mb-4">分析用户从访问到转化的全流程。步骤可自定义——只选系统真正采集的事件，否则该步会恒为 0。</p>
+      <?php if (!empty($funnelError)): ?><div class="note" style="color:var(--danger);margin-bottom:10px"><?=htmlspecialchars($funnelError)?></div><?php endif; ?>
+      <form method="post" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+        <input type="hidden" name="_csrf_token" value="<?=csrf_token()?>">
+        <label style="font-size:12.5px;color:var(--muted)">漏斗步骤（事件名，逗号分隔）</label>
+        <input class="inp sm" name="funnel_steps" value="<?=htmlspecialchars(implode(',', $funnelSteps))?>" style="flex:1;min-width:260px">
+        <button class="btn btn-p btn-sm">保存步骤</button>
+      </form>
+      <div class="note" style="font-size:12px;color:var(--muted);margin-bottom:14px">可用事件：<?php foreach ($labels as $k => $v) echo htmlspecialchars($v . '（' . $k . '） ') ?></div>
+      <div class="cdp-g" style="display:grid;grid-template-columns:repeat(<?=max(2, count($funnel))?>,1fr);gap:12px;margin-bottom:20px">
         <?php foreach ($funnel as $i => $step): ?>
         <div class="funnel-step">
           <div class="count"><?=$step['count']?></div>
-          <div class="lab"><?=htmlspecialchars($step['step'])?></div>
+          <div class="lab"><?=htmlspecialchars($labels[$step['step']] ?? $step['step'])?></div>
           <div class="rate"><?=$step['rate']?>%</div>
         </div>
         <?php if ($i < count($funnel) - 1): ?><div style="text-align:center;color:var(--muted);padding:4px;display:flex;align-items:center">→</div><?php endif; ?>
