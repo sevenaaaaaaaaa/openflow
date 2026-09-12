@@ -109,6 +109,10 @@ if (isset($_POST['preview'])) {
 
 $templates = $strategy['templates'] ?? [];
 
+require_once __DIR__ . '/../lib/SeoAudit.php';
+$audit = function_exists('seo_audit_all') ? seo_audit_all() : ['items' => [], 'summary' => []];
+$auditWorst = array_slice($audit['items'] ?? [], 0, 15);
+
 if (!defined('OF_EMBED')) admin_header('批量 SEO 策略');
 ?>
 <?php if (!defined('OF_EMBED')): ?>
@@ -119,6 +123,30 @@ if (!defined('OF_EMBED')) admin_header('批量 SEO 策略');
     <h1>批量 SEO 策略</h1>
     <p class="sub">为文章/聚合页/课程/资料设置 TDK 生成规则，支持变量替换，一键应用</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
+
+    <?php $asum = $audit['summary'] ?? []; if (!empty($asum['total'])): ?>
+    <div class="card">
+      <h2>🩺 内容健康分 <span class="text-sm text-muted" style="font-weight:400">· 平均 <?=$asum['avg']?> 分 · <?=$asum['total']?> 篇</span></h2>
+      <div style="display:flex;gap:10px;margin:8px 0 14px;flex-wrap:wrap">
+        <?php foreach (['A' => '≥90', 'B' => '75–89', 'C' => '60–74', 'D' => '<60'] as $g => $rng): ?>
+        <span class="badge <?=['A'=>'badge-green','B'=>'badge-green','C'=>'badge-yellow','D'=>'badge-red'][$g]?>"><?=$g?> <?=$asum['dist'][$g] ?? 0?></span>
+        <?php endforeach; ?>
+        <span class="text-sm text-muted" style="margin-left:auto">排序：最差优先 · 点标题去修</span>
+      </div>
+      <table>
+        <thead><tr><th>分数</th><th>文章</th><th>待优化项</th></tr></thead>
+        <tbody>
+          <?php foreach ($auditWorst as $it): ?>
+          <tr>
+            <td><span class="badge <?=['A'=>'badge-green','B'=>'badge-green','C'=>'badge-yellow','D'=>'badge-red'][$it['grade']] ?? 'badge-gray'?>"><?=$it['score']?></span></td>
+            <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href="/xmp/article-edit?id=<?=urlencode($it['id'])?>"><?=htmlspecialchars($it['title'] ?: $it['id'])?></a></td>
+            <td class="text-sm text-muted"><?php foreach (array_slice($it['issues'], 0, 3) as $iss) echo htmlspecialchars($iss['label'] . '（' . $iss['hint'] . '）') . '　'; ?></td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+    <?php endif; ?>
 
     <form method="post">
       <?= csrf_field() ?>
