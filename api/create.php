@@ -103,6 +103,40 @@ try {
         break;
     }
 
+    /* ── 2b. 口播脚本 → 一键转文章草稿（闭环：脚本→公众号/专栏） ── */
+    case 'script_to_article': {
+        $sid = trim((string)($_POST['id'] ?? ''));
+        $scripts = json_read(DATA_DIR . '/scripts.json');
+        if ($sid === '' || empty($scripts[$sid])) throw new RuntimeException('脚本不存在');
+        $sd = (array)($scripts[$sid]['data'] ?? []);
+        $topic = (string)($scripts[$sid]['topic'] ?? '');
+        $title = (string)($sd['title'] ?? $topic);
+        // 把脚本节拍转成文章段落（去掉时间戳与镜头提示，保留台词为主干）
+        $html = '<p>' . htmlspecialchars((string)($sd['hook'] ?? '')) . '</p>';
+        foreach ((array)($sd['beats'] ?? []) as $b) {
+            $say = trim((string)($b['say'] ?? ''));
+            if ($say === '') continue;
+            $html .= '<p>' . nl2br(htmlspecialchars($say)) . '</p>';
+        }
+        if (!empty($sd['cta'])) $html .= '<h2>行动建议</h2><p>' . htmlspecialchars((string)$sd['cta']) . '</p>';
+
+        $articles = json_read(ARTICLES_DIR . '/index.json');
+        $id = 'repost_' . date('Ymd_His') . '_' . substr(bin2hex(random_bytes(3)), 0, 5);
+        $articles[] = [
+            'id' => $id, 'title' => $title ?: ($topic ?: '口播script转写'),
+            'slug' => 'repost-' . date('YmdHis'),
+            'content' => $html, 'excerpt' => mb_substr(trim(strip_tags($html)), 0, 100),
+            'status' => 'draft', 'author' => '创作台', 'category' => 'insight',
+            'tags' => array_values(array_filter((array)($sd['shot_list'] ?? []))),
+            'seo_title' => '', 'seo_desc' => '', 'seo_keywords' => '',
+            'source' => 'script_repost',
+            'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'),
+        ];
+        json_write(ARTICLES_DIR . '/index.json', $articles);
+        echo json_encode(['ok' => true, 'id' => $id, 'title' => $title, 'edit_url' => '/xmp/article-edit?id=' . urlencode($id)], JSON_UNESCAPED_UNICODE);
+        break;
+    }
+
     /* ── 3. 幻灯片 → 存 slide-decks.json（前台 /deck/{id} 放映） ── */
     case 'slides': {
         $pages    = max(5, min(15, (int)($_POST['pages'] ?? 8)));

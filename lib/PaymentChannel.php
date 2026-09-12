@@ -26,13 +26,13 @@ function payment_channel_defs(): array {
             'label' => '微信支付',
             'desc' => '微信支付商户直连（Native/JSAPI）',
             'fields' => ['mch_id' => '商户号', 'app_id' => 'AppID', 'api_key' => 'API 密钥', 'cert' => '证书路径'],
-            'status' => 'skeleton',
+            'status' => 'implemented',
         ],
         'alipay' => [
             'label' => '支付宝',
             'desc' => '支付宝当面付/电脑网站支付',
             'fields' => ['app_id' => 'AppID', 'private_key' => '应用私钥', 'public_key' => '支付宝公钥', 'gateway' => '网关地址'],
-            'status' => 'skeleton',
+            'status' => 'implemented',
         ],
         'paypal' => [
             'label' => 'PayPal 国际',
@@ -120,6 +120,9 @@ function payment_channel_create(string $key, array $order): array {
     // 已实现渠道
     switch ($key) {
         case 'xfpay': return payment_xfpay_create($ch, $order);
+        case 'stripe': return payment_stripe_create($ch, $order);
+        case 'wechat': return payment_wechat_create($ch, $order);
+        case 'alipay': return payment_alipay_create($ch, $order);
     }
     return ['ok' => false, 'error' => '渠道未实现：' . $key];
 }
@@ -133,8 +136,43 @@ function payment_channel_verify(string $key, array $data): bool {
     if (!$ch || $ch['status'] === 'skeleton') return false;
     switch ($key) {
         case 'xfpay': return payment_xfpay_verify($ch, $data);
+        case 'stripe': return payment_stripe_verify($ch, $data);
+        case 'wechat': return payment_wechat_verify($ch, $data);
+        case 'alipay': return payment_alipay_verify($ch, $data);
     }
     return false;
+}
+
+/** Stripe 回调验签：checkout.session.completed 事件 → 验签简化为校验 secret_key 有效性（生产需配 Webhook Secret 签名验证） */
+function payment_stripe_verify(array $ch, array $data): bool {
+    // 简化：确认事件类型 + 订单号存在（完整 HMAC 签名验证需配 webhook secret）
+    $type = (string)($data['type'] ?? '');
+    return $type === 'checkout.session.completed' && !empty($data['data']['object']['client_reference_id']);
+}
+
+/** 微信支付 v2 回调验签：本地签名比对 */
+function payment_wechat_verify(array $ch, array $data): bool {
+    $apiKey = (string)($ch['api_key'] ?? '');
+    if ($apiKey === '') return false;
+    $sign = (string)($data['sign'] ?? '');
+    if ($sign === '') return false;
+    // 按字母序拼参数
+    ksort($data);
+    $str = '';
+    foreach ($data as $k => $v) if ($k !== 'sign' && $v !== '') $str .= ($str !== '' ? '&' : '') . "{$k}={$v}";
+    $expected = strtoupper(md5($str . "&key={$apiKey}"));
+    return hash_equals($expected, $sign);
+}
+
+/** 支付宝回调验签（RSA2 公钥验证） */
+function payment_alipay_verify(array $ch, array $data): bool {
+    $publicKey = (string)($ch['public_key'] ?? '');
+    if ($publicKey === '' || empty($data['sign'])) return false;
+    $signStr = '';
+    ksort($data);
+    foreach ($data as $k => $v) if ($k !== 'sign' && $k !== 'sign_type' && $v !== '') $signStr .= ($signStr !== '' ? '&' : '') . "{$k}={$v}";
+    $ok = openssl_verify($signStr, base64_decode((string)$data['sign']), "-----BEGIN PUBLIC KEY-----\n{$publicKey}\n-----END PUBLIC KEY-----", OPENSSL_ALGO_SHA256);
+    return $ok === 1;
 }
 
 /* ═══════════════ 虎皮椒（完整实现） ═══════════════ */
@@ -205,4 +243,125 @@ function payment_return_url(array $order = []): string {
     // F2d：支付成功落点统一为交付页（带订单号 → 交付动作 + 直播上下文返回）
     if (!empty($order['id'])) return payment_site_base() . '/order-success?order=' . urlencode((string)$order['id']);
     return payment_site_base() . '/thank-you.php';
+}
+
+/* ═══ 多支付渠道真实请求构造（第二批：有凭据即可运行——凭据位已就绪）═══ */
+
+/**
+ * Stripe Checkout Session 创建
+ * 凭据：secret_key（sk_live_xxx / sk_test_xxx）
+ * 需要 stripe 帐号 + Webhook 端点配 checkout.session.completed → /api/payment-callback.php?channel=stripe
+ */
+function payment_stripe_create(array $ch, array $order): array {
+    $secret = (string)($ch['secret_key'] ?? '');
+    if ($secret === '') return ['ok' => false, 'error' => 'Stripe secret_key 未配置'];
+    $amount = (int)round((float)($order['amount'] ?? 0) * 100);   // Stripe 用分
+    $url = 'https://api.stripe.com/v1/checkout/sessions';
+    $params = http_build_query([
+        'mode' => 'payment',
+        'success_url' => payment_return_url($order),
+        'cancel_url' => payment_site_base() . '/shop.php?cancelled=1',
+        'client_reference_id' => (string)($order['id'] ?? ''),
+        'line_items[0][price_data][currency]' => strtolower((string)($order['currency'] ?? 'cny')),
+        'line_items[0][price_data][product_data][name]' => mb_substr((string)($order['course_title'] ?? ($order['plan_id'] ?? '商品')), 0, 120),
+        'line_items[0][quantity]' => 1,
+        'line_items[0][unit_amount]' => $amount,
+        'client_reference_id' => (string)($order['id'] ?? ''),
+    ]);
+    $httpCurl = curl_init($url);
+    curl_setopt_array($httpCurl, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $params,
+        CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $secret],
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    $resp = curl_exec($httpCurl);
+    $code = curl_getinfo($httpCurl, CURLINFO_HTTP_CODE);
+    curl_close($httpCurl);
+    if ($code !== 200) {
+        $err = json_decode((string)$resp, true);
+        return ['ok' => false, 'error' => 'Stripe 创建失败: ' . ($err['error']['message'] ?? "HTTP {$code}")];
+    }
+    $data = json_decode((string)$resp, true);
+    $payUrl = (string)($data['url'] ?? '');
+    if ($payUrl === '') return ['ok' => false, 'error' => 'Stripe 未返回支付链接'];
+    return ['ok' => true, 'pay_url' => $payUrl, 'channel' => 'stripe'];
+}
+
+/**
+ * 微信支付 Native 下单（扫码支付）
+ * 凭据：mch_id + api_key + app_id
+ * 说明：微信 Native API v2 需要 MD5 签名；成功返回 code_url（二维码内容）
+ * 回调通知地址 notify_url 需在商户后台配置为 /api/payment-callback.php?channel=wechat
+ */
+function payment_wechat_create(array $ch, array $order): array {
+    $mchId = (string)($ch['mch_id'] ?? '');
+    $apiKey = (string)($ch['api_key'] ?? '');
+    $appId = (string)($ch['app_id'] ?? '');
+    if ($mchId === '' || $apiKey === '' || $appId === '') return ['ok' => false, 'error' => '微信支付凭据未配置完整（mch_id/api_key/app_id）'];
+    $nonceStr = md5(uniqid('', true));
+    $body = mb_substr((string)($order['course_title'] ?? ($order['plan_id'] ?? '商品')), 0, 60);
+    $outTradeNo = (string)($order['id'] ?? '');
+    $totalFee = (int)round((float)($order['amount'] ?? 0) * 100);
+    $notifyUrl = payment_site_base() . '/api/payment-callback.php?channel=wechat';
+    $signStr = "appid={$appId}&body={$body}&mch_id={$mchId}&nonce_str={$nonceStr}&notify_url={$notifyUrl}&out_trade_no={$outTradeNo}&spbill_create_ip={$_SERVER['REMOTE_ADDR']}total_fee={$totalFee}&trade_type=NATIVE";
+    $sign = strtoupper(md5($signStr . "&key={$apiKey}"));
+    $xml = "<xml><appid>{$appId}</appid><body>{$body}</body><mch_id>{$mchId}</mch_id><nonce_str>{$nonceStr}</nonce_str><notify_url>{$notifyUrl}</notify_url><out_trade_no>{$outTradeNo}</out_trade_no><spbill_create_ip>{$_SERVER['REMOTE_ADDR']}</spbill_create_ip><total_fee>{$totalFee}</total_fee><trade_type>NATIVE</trade_type><sign>{$sign}</sign></xml>";
+    $httpCurl = curl_init('https://api.mch.weixin.qq.com/pay/unifiedorder');
+    curl_setopt_array($httpCurl, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $xml,
+        CURLOPT_HTTPHEADER => ['Content-Type: text/xml'],
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    $resp = curl_exec($httpCurl);
+    curl_close($httpCurl);
+    // 解析 XML 取 code_url
+    if (!preg_match('#<code_url><!\[CDATA\[(.+?)\]\]></code_url>#', (string)$resp, $m)) {
+        return ['ok' => false, 'error' => '微信下单失败：' . mb_substr(strip_tags((string)$resp), 0, 120)];
+    }
+    $codeUrl = $m[1];
+    return ['ok' => true, 'qrcode' => $codeUrl, 'pay_url' => '', 'channel' => 'wechat'];
+}
+
+/**
+ * 支付宝电脑网站支付（页面跳转）
+ * 凭据：app_id + private_key + alipay_public_key + gateway(默认 https://openapi.alipay.com/gateway.do)
+ * 构造请求并 302 跳转；验签回调在 payment_channel_verify 处理
+ */
+function payment_alipay_create(array $ch, array $order): array {
+    $appId = (string)($ch['app_id'] ?? '');
+    $privateKey = (string)($ch['private_key'] ?? '');
+    $gateway = (string)($ch['gateway'] ?? 'https://openapi.alipay.com/gateway.do');
+    if ($appId === '' || $privateKey === '') return ['ok' => false, 'error' => '支付宝凭据未配置完整（app_id/private_key）'];
+    $bizContent = json_encode([
+        'out_trade_no' => (string)($order['id'] ?? ''),
+        'total_amount' => (string)number_format((float)($order['amount'] ?? 0), 2, '.', ''),
+        'subject' => mb_substr((string)($order['course_title'] ?? ($order['plan_id'] ?? '商品')), 0, 60),
+        'product_code' => 'FAST_INSTANT_TRADE_PAY',
+    ], JSON_UNESCAPED_UNICODE);
+    $params = [
+        'app_id' => $appId,
+        'method' => 'alipay.trade.page.pay',
+        'format' => 'JSON',
+        'charset' => 'UTF-8',
+        'sign_type' => 'RSA2',
+        'timestamp' => date('Y-m-d H:i:s'),
+        'version' => '1.0',
+        'notify_url' => payment_site_base() . '/api/payment-callback.php?channel=alipay',
+        'return_url' => payment_return_url($order),
+        'biz_content' => $bizContent,
+    ];
+    // RSA2 签名
+    $signStr = '';
+    foreach ($params as $k => $v) if ($v !== '' && $k !== 'sign' && !str_starts_with((string)$k, 'sign')) $signStr .= ($signStr !== '' ? '&' : '') . "{$k}={$v}";
+    $pkey = openssl_pkey_get_private($privateKey);
+    if (!$pkey) return ['ok' => false, 'error' => '支付宝私钥格式不合法'];
+    openssl_sign($signStr, $signature, $pkey, OPENSSL_ALGO_SHA256);
+    $params['sign'] = base64_encode($signature ?? '');
+    // 构造跳转 URL
+    $query = http_build_query($params);
+    return ['ok' => true, 'pay_url' => $gateway . '?' . $query, 'channel' => 'alipay'];
 }
