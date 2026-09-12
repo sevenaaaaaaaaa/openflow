@@ -146,11 +146,39 @@ $jsonLd = [
   <section class="reveal" data-od-id="lp-cta">
     <div class="cta-band">
       <span class="kicker">NEXT</span>
-      <h2>想获取完整的网站增长方法论？</h2>
-      <p class="lead">预约一次免费诊断，或订阅我们的内容更新。</p>
-      <div class="cta-row"><a href="/#contact" class="btn primary">预约诊断</a><a href="/community" class="btn ghost">返回社区</a></div>
+      <h2><?=htmlspecialchars(($landing['cta_title'] ?? '') ?: '想获取完整的网站增长方法论？')?></h2>
+      <p class="lead"><?=htmlspecialchars(($landing['cta_text'] ?? '') ?: '预约一次免费诊断，或订阅我们的内容更新。')?></p>
+      <div class="cta-row">
+        <a href="<?=htmlspecialchars(($landing['cta_url'] ?? '') ?: '/#contact')?>" class="btn primary" id="lpGoal"><?=htmlspecialchars(($landing['cta_button'] ?? '') ?: '预约诊断')?></a>
+        <a href="/community" class="btn ghost">返回社区</a>
+      </div>
     </div>
   </section>
+  <?php
+  $__goalId = (string)($landing['goal_id'] ?? '');
+  $__goalEvent = '';
+  if ($__goalId !== '') {
+      require_once __DIR__ . '/lib/ConversionGoal.php';
+      $__g = cg_get($__goalId);
+      $__goalEvent = (string)($__g['event'] ?? '');
+  }
+  ?>
+  <?php if ($__goalId !== '' && $__goalEvent !== ''): ?>
+  <script>
+  (function(){
+    var el = document.getElementById('lpGoal');
+    if (!el) return;
+    el.addEventListener('click', function(){
+      try {
+        var body = new URLSearchParams();
+        body.append('event', <?=json_encode($__goalEvent)?>);
+        body.append('data', JSON.stringify({url_path: location.pathname, page: location.pathname, goal_id: <?=json_encode($__goalId)?>, label: '落地页 CTA'}));
+        navigator.sendBeacon('/api/cdp.php?action=track', body);
+      } catch (e) {}
+    });
+  })();
+  </script>
+  <?php endif; ?>
 
 <?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
