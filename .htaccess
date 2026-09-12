@@ -12,6 +12,15 @@ RewriteRule ^data(/|$) - [F,L]
 DirectoryIndex index.php index.html
 # 404 兜底：真 404 时交给 PHP，先跑 redirects.json 拦截（301/410），未命中再渲染友好页
 ErrorDocument 404 /404.php
+# 旧 WordPress 痕迹统一 410（这些前缀无任何现站路由，避免被反复抓取）
+RedirectMatch 410 ^/wp-.*$
+RedirectMatch 410 ^/wp/.*$
+RedirectMatch 410 ^/wordpress/.*$
+RedirectMatch 410 ^/xmlrpc\.php$
+RedirectMatch 410 ^/wp-content/.*$
+RedirectMatch 410 ^/wp-admin/.*$
+RedirectMatch 410 ^/wp-includes/.*$
+RedirectMatch 410 ^/wp-json/.*$
 RewriteRule ^$ index.php [L,QSA]
 
 # /index.php → / 301：首页 .php 孪生地址永久归并（配合 canonical 消除重复内容，
