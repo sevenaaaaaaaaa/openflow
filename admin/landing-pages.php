@@ -1,11 +1,13 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../lib/ConversionGoal.php';
 require_login();
 require_perm('landing');
 
 $pages = get_landing_pages();
 $allTags = get_tags();
 $publishedArticles = array_values(array_filter(get_articles(), fn($a) => ($a['status'] ?? '') === 'published'));
+$allGoals = function_exists('cg_all') ? cg_all() : [];
 
 $message = '';
 
@@ -28,6 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'layout' => $_POST['layout'] ?? 'grid',
             'show_description' => isset($_POST['show_description']),
             'sort_by' => $_POST['sort_by'] ?? 'newest',
+            'goal_id' => trim((string)($_POST['goal_id'] ?? '')),
+            'cta_title' => trim((string)($_POST['cta_title'] ?? '')),
+            'cta_text' => trim((string)($_POST['cta_text'] ?? '')),
+            'cta_button' => trim((string)($_POST['cta_button'] ?? '')),
+            'cta_url' => trim((string)($_POST['cta_url'] ?? '')),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         if (empty($data['slug'])) $data['slug'] = preg_replace('/[^a-z0-9\x{4e00}-\x{9fff}-]/u', '-', $data['title']);
@@ -200,6 +207,21 @@ admin_header('聚合页管理');
           <div class="field-row" style="margin-top:12px">
             <div class="field"><label>排序</label><select name="sort_by"><option value="newest" <?=($editPage['sort_by']??'newest')==='newest'?'selected':''?>>最新发布</option><option value="popular" <?=($editPage['sort_by']??'')==='popular'?'selected':''?>>最受欢迎（按浏览）</option></select></div>
             <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" name="show_description" value="1" <?=($editPage['show_description']??true)?'checked':''?> style="width:18px;height:18px">显示文章摘要</label></div>
+          </div>
+
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-soft,var(--border))">
+            <div style="font-weight:700;font-size:13px;margin-bottom:8px">🎯 转化目标与 CTA</div>
+            <div class="field-row">
+              <div class="field"><label>绑定转化目标 <span class="hint">· 点击 CTA 计入该目标</span></label>
+                <select name="goal_id"><option value="">不绑定</option><?php foreach ($allGoals as $g): ?><option value="<?=htmlspecialchars($g['id'])?>" <?=($editPage['goal_id']??'')===$g['id']?'selected':''?>><?=htmlspecialchars($g['name'])?></option><?php endforeach; ?></select>
+              </div>
+              <div class="field"><label>按钮文案</label><input type="text" name="cta_button" value="<?=htmlspecialchars($editPage['cta_button']??'')?>" placeholder="如 预约免费诊断"></div>
+            </div>
+            <div class="field"><label>CTA 链接</label><input type="text" name="cta_url" value="<?=htmlspecialchars($editPage['cta_url']??'')?>" placeholder="https://... 或 /form/xxx"></div>
+            <div class="field-row">
+              <div class="field"><label>标题</label><input type="text" name="cta_title" value="<?=htmlspecialchars($editPage['cta_title']??'')?>" placeholder="留空用默认"></div>
+              <div class="field"><label>说明</label><input type="text" name="cta_text" value="<?=htmlspecialchars($editPage['cta_text']??'')?>" placeholder="一句话价值主张"></div>
+            </div>
           </div>
         </div>
 

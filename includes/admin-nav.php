@@ -129,6 +129,7 @@ function admin_nav_tree(): array {
                     ['id' => 'modules', 'label' => '模块工厂', 'perm' => ['pages', 'settings'], 'hint' => '可视化定义新模块'],
                     ['id' => 'page-modules', 'label' => '落地页模块', 'perm' => ['landing', 'conversion']],
                     ['id' => 'conversion', 'label' => '转化组件', 'perm' => ['landing', 'conversion']],
+                    ['id' => 'conversion-goals', 'label' => '转化目标', 'perm' => ['landing', 'conversion'], 'hint' => '目标事件+作用域+价值'],
                 ]],
                 ['label' => '内容结构', 'hint' => '分类 · 专题 · 作者', 'subs' => [
                     ['id' => 'categories', 'href' => '/xmp/categories?type=article', 'label' => '分类', 'perm' => ['community-config', 'articles']],
