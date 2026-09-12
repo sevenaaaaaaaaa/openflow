@@ -37,6 +37,15 @@ if ($action === 'command') {
     exit;
 }
 
+if ($action === 'evaluate') {
+    csrf_verify();
+    $tid = (int)($input['trace_id'] ?? 0);
+    $verdict = (string)($input['verdict'] ?? '');
+    $ok = mainline_ai_evaluate($tid, $verdict);
+    echo json_encode(['ok' => $ok, 'verdict' => $verdict], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 if ($action === 'execute') {
     csrf_verify();
     $act = $input['plan_action'] ?? null;

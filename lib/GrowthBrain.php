@@ -130,6 +130,15 @@ if (!function_exists('growth_brain_propose')) {
             unset($pr);
         }
 
+        // ── 学习加权：把「哪类建议被验证有效/无效」的历史得分加进来（自生长回流）──
+        if (function_exists('growth_learning_boost')) {
+            foreach ($props as &$pr) {
+                $lb = growth_learning_boost((string)$pr['module'], (string)$pr['action']);
+                if ($lb !== 0) { $pr['priority'] = max(0, min(100, $pr['priority'] + $lb)); $pr['learned_boost'] = $lb; }
+            }
+            unset($pr);
+        }
+
         usort($props, fn($a, $b) => $b['priority'] <=> $a['priority']);
         return ['best' => $props[0] ?? null, 'all' => $props];
     }
