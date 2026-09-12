@@ -30,8 +30,67 @@ if (!function_exists('askdata_gather')) {
         return $snap;
     }
 
+if (!function_exists('askdata_bi_answer')) {
     /**
-     * 回答一个自然语言问题。$snapshot 可注入（测试）。
+     * 对话式 BI：AI 只负责「选数据集 + 说人话 + 建议追问」，数字全部来自真实数据集。
+     * 返回 ['ok','answer','chart'=>{type,title,dataset,unit,points}|null,'followups'=>[],'data'=>[]]。
+     */
+    function askdata_bi_answer(string $question, ?array $datasets = null): array {
+        $question = trim($question);
+        if ($question === '') return ['ok' => false, 'error' => '请输入问题'];
+        if (!function_exists('bi_catalog')) require_once __DIR__ . '/BiData.php';
+        $sets = $datasets ?? bi_datasets();
+        if (empty($sets)) return ['ok' => false, 'error' => '暂无可用数据', 'data' => []];
+
+        // 注入式（测试）
+        if (isset($GLOBALS['ASKDATA_BI_FN']) && is_callable($GLOBALS['ASKDATA_BI_FN'])) {
+            $r = call_user_func($GLOBALS['ASKDATA_BI_FN'], $question, $sets);
+            return is_array($r) ? $r : ['ok' => false, 'error' => 'bad inject'];
+        }
+
+        if (!class_exists('AiCenter') || !\AiCenter::isConfigured()) {
+            return ['ok' => false, 'error' => 'AI 未配置：到「AI 配置」设置模型后即可用自然语言问数据。', 'data' => $sets];
+        }
+
+        $catalog = bi_catalog($sets);
+        $system = "你是资深经营分析师。下面是本站**真实数据集目录**(key/label/type/unit + 最近样本)：\n"
+            . json_encode($catalog, JSON_UNESCAPED_UNICODE) . "\n\n"
+            . "根据用户问题，选择**最合适的一个数据集**来可视化，并用中文回答（引用数据里的真实数字）。\n"
+            . "严格输出 JSON：{\"answer\":\"...\",\"dataset\":\"数据集key或空字符串\",\"chart_type\":\"line|bar|none\",\"title\":\"图表标题(短)\",\"followups\":[\"追问1\",\"追问2\"]}\n"
+            . "规则：只能选目录里存在的 dataset key；问趋势用 timeseries→line；问分布/占比/对比用 breakdown→bar；"
+            . "目录无法回答时 dataset 设为空、chart_type=none，并在 answer 里说明缺什么。不要编造任何数字。";
+
+        try {
+            $r = \AiCenter::json($system, "问题：{$question}", ['max_tokens' => 800, 'feature' => 'ask_data_bi', 'tier' => 'admin']);
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage(), 'data' => $sets];
+        }
+        if (empty($r['ok']) || empty($r['data'])) return ['ok' => false, 'error' => $r['error'] ?? 'AI 请求失败', 'data' => $sets];
+
+        return askdata_bi_shape((array)$r['data'], $sets);
+    }
+
+    /** 校验 AI 返回并绑定真实数据 → 组装最终结果 */
+    function askdata_bi_shape(array $d, array $sets): array {
+        $byKey = [];
+        foreach ($sets as $s) $byKey[(string)$s['key']] = $s;
+        $key = (string)($d['dataset'] ?? '');
+        $type = (string)($d['chart_type'] ?? 'none');
+        if (!in_array($type, ['line', 'bar', 'none'], true)) $type = 'none';
+        $chart = null;
+        if ($key !== '' && isset($byKey[$key]) && $type !== 'none') {
+            $s = $byKey[$key];
+            if ($type === 'line' && ($s['type'] ?? '') !== 'timeseries') $type = 'bar';
+            $chart = ['type' => $type, 'title' => mb_substr((string)($d['title'] ?? $s['label']), 0, 40),
+                      'dataset' => $key, 'label' => (string)$s['label'], 'unit' => (string)$s['unit'], 'points' => array_values((array)$s['points'])];
+        }
+        $followups = array_values(array_filter(array_map('strval', array_slice((array)($d['followups'] ?? []), 0, 3))));
+        return ['ok' => true, 'answer' => (string)($d['answer'] ?? ''), 'chart' => $chart, 'followups' => $followups, 'data' => $sets];
+    }
+    }
+
+    /**
+     * 回答一个自然语言问题（旧版：对预计算快照直接作答；页面已改用 BI）。$snapshot 可注入（测试）。
      * 返回 ['ok'=>bool,'answer'=>string,'data'=>快照,'error'?]。
      */
     function askdata_answer(string $question, ?array $snapshot = null): array {
