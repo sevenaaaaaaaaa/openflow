@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../lib/EventSystem.php';
 require_login();
-require_perm('articles');
+require_perm('events');
 
 $eventsFile = DATA_DIR . '/events/index.json';
 $events = json_read($eventsFile);
@@ -14,10 +15,15 @@ if (isset($_GET['regs'])) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reg_action'])) {
         csrf_verify();
         $regId = $_POST['reg_id'] ?? '';
+        $act = (string)$_POST['reg_action'];
         foreach ($data[$_GET['regs']] ?? [] as &$r) {
             if (($r['id'] ?? '') === $regId) {
-                $r['status'] = $_POST['reg_action'] === 'approve' ? 'approved' : 'rejected';
-                try { inbox_send($r['member_id'] ?? '', $_POST['reg_action'] === 'approve' ? '报名通过：' . ($_GET['regs'] ?? '') : '报名未通过', '你的活动报名已处理'); } catch (Throwable $e) {}
+                if ($act === 'checkin') { $r['checked_in'] = true; $r['checkin_at'] = date('Y-m-d H:i:s'); }
+                elseif ($act === 'uncheckin') { $r['checked_in'] = false; unset($r['checkin_at']); }
+                else {
+                    $r['status'] = $act === 'approve' ? 'approved' : 'rejected';
+                    try { inbox_send($r['member_id'] ?? '', $act === 'approve' ? '报名通过：' . ($_GET['regs'] ?? '') : '报名未通过', '你的活动报名已处理'); } catch (Throwable $e) {}
+                }
                 break;
             }
         }
@@ -25,6 +31,19 @@ if (isset($_GET['regs'])) {
         json_write($regsFile, $data);
         $message = '报名状态已更新';
     }
+}
+
+// 报名名单导出 CSV（含票种/签到）
+if (isset($_GET['export_regs']) && isset($_GET['regs'])) {
+    $list = event_regs((string)$_GET['regs']);
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="registrations-' . preg_replace('/[^a-z0-9]/i', '', (string)$_GET['regs']) . '-' . date('Ymd') . '.csv"');
+    echo "\xEF\xBB\xBF";
+    $fp = fopen('php://output', 'w');
+    fputcsv($fp, ['姓名', '邮箱', '电话', '票种', '状态', '已签到', '签到时间', '报名时间', '备注']);
+    foreach ($list as $r) fputcsv($fp, [$r['name'] ?? '', $r['email'] ?? '', $r['phone'] ?? '', $r['ticket_name'] ?? '普通票', $r['status'] ?? 'pending', !empty($r['checked_in']) ? '是' : '否', $r['checkin_at'] ?? '', $r['created_at'] ?? '', $r['note'] ?? '']);
+    fclose($fp);
+    exit;
 }
 
 // Delete
@@ -111,6 +130,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         'end_date' => $_POST['end_date'] ?? '',
         'event_type' => in_array($_POST['event_type'] ?? '', ['online','offline'], true) ? $_POST['event_type'] : 'online',
         'capacity' => (int)($_POST['capacity'] ?? 0),
+        'agenda' => array_values(array_filter((array)json_decode((string)($_POST['agenda_json'] ?? '[]'), true), fn($x) => is_array($x) && trim((string)($x['title'] ?? '')) !== '')),
+        'tickets' => array_values(array_filter((array)json_decode((string)($_POST['tickets_json'] ?? '[]'), true), fn($x) => is_array($x))),
         'location' => $_POST['location'] ?? '',
         'location_url' => $_POST['location_url'] ?? '',
         'live_room' => $_POST['live_room'] ?? '',
@@ -176,25 +197,31 @@ admin_header('活动管理');
 <div class="admin-layout">
   <?php admin_sidebar('events'); ?>
   <div class="main">
-    <?php if (isset($_GET['regs'])): $regEventId = $_GET['regs']; $regEvent = null; foreach ($events as $ee) if ($ee['id'] === $regEventId) { $regEvent = $ee; break; } $regData = json_read($regsFile); $regList = $regData[$regEventId] ?? []; ?>
+    <?php if (isset($_GET['regs'])): $regEventId = $_GET['regs']; $regEvent = null; foreach ($events as $ee) if ($ee['id'] === $regEventId) { $regEvent = $ee; break; } $regData = json_read($regsFile); $regList = $regData[$regEventId] ?? []; $regStats = event_stats($regEventId); ?>
     <div class="v-head">
-      <div><h1>报名名单：<?=htmlspecialchars($regEvent['title'] ?? '')?></h1><p class="v-sub"><?=count($regList)?> 人报名 · 名额 <?=($regEvent['capacity'] ?? 0) > 0 ? $regEvent['capacity'] : '不限'?></p></div>
-      <div class="v-actions"><a href="events.php" class="btn btn-ghost btn-sm">← 返回</a></div>
+      <div><h1>报名名单：<?=htmlspecialchars($regEvent['title'] ?? '')?></h1><p class="v-sub"><?=$regStats['total']?> 人报名 · 通过 <?=$regStats['approved']?> · 待审 <?=$regStats['pending']?> · 已签到 <?=$regStats['checked_in']?>（出勤率 <?=$regStats['checkin_rate']?>%） · 名额 <?=($regEvent['capacity'] ?? 0) > 0 ? $regEvent['capacity'] : '不限'?></p></div>
+      <div class="v-actions">
+        <a href="?regs=<?=urlencode($regEventId)?>&export_regs=1" class="btn btn-s btn-sm">⬇ 导出名单</a>
+        <a href="events.php" class="btn btn-ghost btn-sm">← 返回</a>
+      </div>
     </div>
+    <?php if (!empty($regStats['by_ticket'])): ?><div class="note" style="margin-bottom:10px">票种分布：<?php foreach ($regStats['by_ticket'] as $tn => $c) echo htmlspecialchars($tn . ' ' . $c . ' 人  '); ?></div><?php endif; ?>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <div class="card" style="padding:0;overflow:auto">
       <table>
-        <thead><tr><th>姓名</th><th>邮箱</th><th>电话</th><th>备注</th><th>报名时间</th><th>状态</th><th>操作</th></tr></thead>
+        <thead><tr><th>姓名</th><th>邮箱</th><th>电话</th><th>票种</th><th>备注</th><th>报名时间</th><th>状态</th><th>签到</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($regList)): ?><tr><td colspan="7" class="empty">暂无报名</td></tr><?php endif; ?>
+          <?php if (empty($regList)): ?><tr><td colspan="9" class="empty">暂无报名</td></tr><?php endif; ?>
           <?php foreach ($regList as $r): ?>
           <tr>
             <td><b><?=htmlspecialchars($r['name'] ?? '')?></b></td>
             <td class="text-sm text-muted"><?=htmlspecialchars($r['email'] ?? '')?></td>
             <td class="text-sm text-muted"><?=htmlspecialchars($r['phone'] ?? '')?></td>
+            <td class="text-sm text-muted"><?=htmlspecialchars($r['ticket_name'] ?? '普通票')?><?php if ((float)($r['ticket_price'] ?? 0) > 0): ?> ¥<?=number_format((float)$r['ticket_price'], 0)?><?php endif; ?></td>
             <td class="text-sm text-muted"><?=htmlspecialchars($r['note'] ?? '')?></td>
             <td class="text-sm text-muted"><?=htmlspecialchars(substr($r['created_at'] ?? '', 0, 16))?></td>
             <td><span class="badge <?=['pending'=>'badge-yellow','approved'=>'badge-green','rejected'=>'badge-red'][$r['status'] ?? 'pending'] ?? 'badge-gray'?>"><?=['pending'=>'待审核','approved'=>'已通过','rejected'=>'已拒绝'][$r['status'] ?? 'pending'] ?? $r['status']?></span></td>
+            <td><?php if (!empty($r['checked_in'])): ?><span class="badge badge-green">已签到</span><?php else: ?><span class="text-sm text-muted">—</span><?php endif; ?></td>
             <td style="white-space:nowrap">
               <?php if (($r['status'] ?? '') === 'pending'): ?>
               <form method="post" style="display:inline">
@@ -202,6 +229,11 @@ admin_header('活动管理');
               </form>
               <form method="post" style="display:inline">
                 <?= csrf_field() ?><input type="hidden" name="reg_id" value="<?=htmlspecialchars($r['id'] ?? '')?>"><input type="hidden" name="reg_action" value="reject"><button class="btn btn-danger btn-sm">拒绝</button>
+              </form>
+              <?php endif; ?>
+              <?php if (($r['status'] ?? '') === 'approved'): ?>
+              <form method="post" style="display:inline">
+                <?= csrf_field() ?><input type="hidden" name="reg_id" value="<?=htmlspecialchars($r['id'] ?? '')?>"><input type="hidden" name="reg_action" value="<?=!empty($r['checked_in']) ? 'uncheckin' : 'checkin'?>"><button class="btn btn-s btn-sm"><?=!empty($r['checked_in']) ? '取消签到' : '签到'?></button>
               </form>
               <?php endif; ?>
             </td>
@@ -322,6 +354,10 @@ admin_header('活动管理');
         <div class="field-row">
           <div class="field"><label>活动组图 <span class="hint">每行一个路径</span></label><textarea name="gallery" rows="3" style="font-family:var(--mono);font-size:13px"><?=htmlspecialchars(implode("\n", $editEvent['gallery'] ?? []))?></textarea></div>
           <div class="field"><label>视频回顾 URL</label><input type="url" name="video_url" value="<?=htmlspecialchars($editEvent['video_url']??'')?>" placeholder="https://..."></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>票种 <span class="hint">· JSON 数组：[{"id":"vip","name":"VIP票","price":199,"capacity":20,"desc":""}]</span></label><textarea name="tickets_json" rows="3" style="font-family:var(--mono);font-size:12px" placeholder='[{"id":"free","name":"免费票","price":0,"capacity":100}]'><?=htmlspecialchars(json_encode($editEvent['tickets'] ?? [], JSON_UNESCAPED_UNICODE))?></textarea></div>
+          <div class="field"><label>议程 <span class="hint">· JSON 数组：[{"time":"14:00","title":"主题演讲","speaker":"张三","desc":""}]</span></label><textarea name="agenda_json" rows="3" style="font-family:var(--mono);font-size:12px" placeholder='[{"time":"14:00","title":"开场","speaker":""}]'><?=htmlspecialchars(json_encode($editEvent['agenda'] ?? [], JSON_UNESCAPED_UNICODE))?></textarea></div>
         </div>
         <div class="field-row">
           <div class="field"><label>封面图</label><input type="text" name="cover" value="<?=htmlspecialchars($editEvent['cover']??'')?>" placeholder="uploads/..."></div>
