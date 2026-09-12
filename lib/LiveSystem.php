@@ -384,14 +384,82 @@ function live_chat_send(string $roomId, string $user, string $text): array {
 
 /** 每个房间只留最近 500 条，抽样触发（不必每条消息都清一次）。 */
 function live_chat_prune(int $keep = 500): void {
-    if (random_int(1, 50) !== 1) return;
-    try {
-        Database::execute(
-            "DELETE FROM live_chat WHERE id NOT IN (
-                SELECT id FROM live_chat AS c2 WHERE c2.room_id = live_chat.room_id
-                ORDER BY id DESC LIMIT {$keep})"
-        );
-    } catch (\Throwable $e) {}
+    // 只在 SQLite 可用时清；JSON 路径不做（回退场景体量小可接受）
+    if (live_chat_ensure()) {
+        try {
+            require_once __DIR__ . '/Database.php';
+            // 留最近 keep 条（每房间），按 id 倒序保留
+            $rooms = Database::query("SELECT DISTINCT room_id FROM live_chat");
+            foreach ($rooms as $r) {
+                $rid = (string)$r['room_id'];
+                Database::execute(
+                    "DELETE FROM live_chat WHERE room_id = ? AND id NOT IN (SELECT id FROM live_chat WHERE room_id = ? ORDER BY id DESC LIMIT ?)",
+                    [$rid, $rid, $keep]
+                );
+            }
+        } catch (\Throwable $e) {}
+    }
+}
+
+/* ═══ 弹幕管理（第二批：删除/禁言快捷——后台看得见也管得了）═══ */
+
+/** 删除一条弹幕（后台管理用；SQLite + JSON 双路） */
+function live_chat_delete(string $msgId): bool {
+    if (live_chat_ensure()) {
+        try {
+            require_once __DIR__ . '/Database.php';
+            Database::execute("DELETE FROM live_chat WHERE msg_id = ?", [$msgId]);
+            return true;
+        } catch (\Throwable $e) {}
+    }
+    $all = json_read(live_chat_file());
+    $filtered = array_values(array_filter($all, fn($m) => ($m['id'] ?? '') !== $msgId));
+    if (count($filtered) === count($all)) return false;
+    json_write(live_chat_file(), $filtered);
+    return true;
+}
+
+/** 禁言一个用户（把 user 标识追加进 muted 名单，立即生效于后续发言） */
+function live_mute_user(string $user, string $reason = ''): bool {
+    $user = trim($user);
+    if ($user === '') return false;
+    $settings = json_read(DATA_DIR . '/live/settings.json');
+    if (!is_array($settings)) $settings = [];
+    $muted = array_filter(array_map('trim', explode("\n", (string)($settings['muted'] ?? ''))));
+    if (in_array($user, $muted, true)) return true;   // 已禁言
+    $muted[] = $user;
+    $settings['muted'] = implode("\n", array_values($muted));
+    json_write(DATA_DIR . '/live/settings.json', $settings);
+    if ($reason !== '') {
+        @mkdir(DATA_DIR . '/live', 0775, true);
+        @file_put_contents(DATA_DIR . '/live/mute-log.json', json_encode([['user'=>$user,'reason'=>$reason,'at'=>date('c')]], JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
+    }
+    return true;
+}
+
+/** 取消禁言 */
+function live_unmute_user(string $user): bool {
+    $user = trim($user);
+    if ($user === '') return false;
+    $settings = json_read(DATA_DIR . '/live/settings.json');
+    if (!is_array($settings)) $settings = [];
+    $muted = array_filter(array_map('trim', explode("\n", (string)($settings['muted'] ?? ''))));
+    $muted = array_values(array_filter($muted, fn($m) => $m !== $user));
+    $settings['muted'] = implode("\n", $muted);
+    json_write(DATA_DIR . '/live/settings.json', $settings);
+    return true;
+}
+
+/** 当前禁言名单 */
+function live_muted_list(): array {
+    $settings = json_read(DATA_DIR . '/live/settings.json');
+    return array_filter(array_map('trim', explode("\n", (string)($settings['muted'] ?? ''))));
+}
+
+/** 某房间的弹幕列表（后台管理用；含 msg_id 供删除按钮） */
+function live_chat_admin(string $roomId, int $limit = 50): array {
+    $rows = live_chat($roomId, $limit);
+    return array_reverse($rows);   // 最新在前
 }
 
 // 直播状态
