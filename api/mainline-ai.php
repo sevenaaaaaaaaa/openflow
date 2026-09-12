@@ -30,6 +30,13 @@ if ($action === 'judge') {
     exit;
 }
 
+if ($action === 'command') {
+    csrf_verify();
+    $text = (string)($input['text'] ?? '');
+    echo json_encode(mainline_ai_command($text, mainline_items()), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 if ($action === 'execute') {
     csrf_verify();
     $act = $input['plan_action'] ?? null;
