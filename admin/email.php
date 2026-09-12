@@ -127,7 +127,10 @@ if (isset($_POST['send_newsletter'])) {
             $campaign = 'nl_' . $selectedId;
 
             $sentCount = 0;
+            require_once __DIR__ . '/../lib/EmailDeliverability.php';
             foreach ($recipients as $rcpt) {
+                // 送达率闸门：抑制名单不再发
+                if (function_exists('email_can_marketing_send') && !email_can_marketing_send((string)$rcpt['email'])) continue;
                 // 渲染内容（模板 + 变量 + 退订链接 + pixel + 链接包装）
                 $subject = $article['title'];
                 $articleUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/article/' . $article['slug'];
@@ -162,6 +165,7 @@ if (isset($_POST['send_newsletter'])) {
                 ]);
                 curl_exec($ch);
                 $sentCount++;
+                if (function_exists("email_record_sent")) email_record_sent();
             }
 
             // Log
