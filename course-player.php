@@ -9,6 +9,7 @@ require_once __DIR__ . '/lib/ProgressSystem.php';
 require_once __DIR__ . '/lib/MembershipSystem.php';
 require_once __DIR__ . '/lib/CommentSystem.php';
 require_once __DIR__ . '/lib/CoverRenderer.php';
+require_once __DIR__ . '/lib/LiveSystem.php';
 
 $courseId = req_str('id', '', false);
 $courseKey = $courseId ?: req_str('course') ?: req_str('slug');
@@ -59,6 +60,7 @@ $lessonsFlat = [];
 foreach ($course['chapters'] ?? [] as $ch) {
     foreach ($ch['lessons'] ?? [] as $l) {
         $lessonsFlat[$l['id']] = $l;
+        $lessonsFlat[$l['id']]['live'] = live_lesson_context($l, $courseId);
     }
 }
 ?>
@@ -133,6 +135,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
 .rv p{color:var(--muted);margin-top:4px;line-height:1.7}
 </style>
 <script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/vendor/hls.light.min.js?v=20260907a"></script>
 </head>
 <body data-of-main>
 <?php of_shell('courses'); ?>
@@ -180,6 +183,8 @@ foreach ($course['chapters'] ?? [] as $ch) {
               <button type="button" onclick="submitQuiz()" class="btn primary" style="height:40px;padding:0 18px;font-size:14px">提交答案</button>
               <div id="quizResult" class="qz-res" style="display:none"></div>
             </div>
+            <!-- 直播课：同一堂课在课程内直接开播/倒计时/看回放（含章节） -->
+            <div id="liveArea" style="display:none;margin-top:14px"></div>
             <div id="lessonContent" class="lesson-content" style="display:none"></div>
             <div class="cta-row" style="margin-top:12px;align-items:center;gap:12px"><button type="button" onclick="markCurrentDone()" class="btn ghost" style="height:40px;padding:0 18px;font-size:14px;color:var(--ok)">✓ 标记本节完成</button><span class="note mono" style="margin:0" id="resumeHint"><?=$resume ? '已记住上次进度 ' . gmdate('i:s', (int)$resume['position']) : ''?></span></div>
           </div>
@@ -355,14 +360,100 @@ function saveNote() {
 }
 var HAS_ACCESS = <?=$hasAccess?'true':'false'?>;
 var MEMBER_ID = <?=json_encode($member ? $member['id'] : null)?>;
-var LESSONS = <?=json_encode($lessonsFlat)?>;
+var LESSONS = <?=json_encode($lessonsFlat, JSON_UNESCAPED_UNICODE)?>;
 var currentLesson = null;
 var playStart = Date.now();
+
+function attachHls(v, src) {
+  if (!v || !src) return;
+  if (window.Hls && Hls.isSupported()) {
+    var hls = new Hls({ lowLatencyMode: true, backBufferLength: 30 });
+    hls.loadSource(src); hls.attachMedia(v);
+    window.__liveHls = hls;
+  } else { v.src = src; }
+  var p = v.play(); if (p && p.catch) p.catch(function () {});
+}
+function renderLive(lesson, box) {
+  var L = lesson.live || {};
+  var h = '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">' +
+    '<span class="badge" style="padding:3px 10px;border-radius:999px;font-size:12px;background:var(--accent-soft);color:var(--accent)">直播课</span>' +
+    '<span class="note" style="margin:0">' + (L.status_label || '') + (L.start_at ? (' · ' + String(L.start_at).substring(0, 16)) : '') + '</span>';
+  if (L.room_url) h += '<a class="btn ghost sm" href="' + L.room_url + '" target="_blank" style="margin-left:auto;height:34px;padding:0 14px;font-size:13px">进入直播间 →</a>';
+  h += '</div>';
+
+  if (L.status === 'live' && L.hls) {
+    h += '<div class="player" style="aspect-ratio:16/9"><video id="liveVideo" controls autoplay playsinline style="width:100%;height:100%;object-fit:contain;background:oklch(0% 0 0)"></video></div>';
+  } else if (!L.replay) {
+    h += '<div class="player" style="aspect-ratio:16/9"><div class="ph"><b>' + (L.status === 'live' ? '直播进行中' : '直播尚未开始') + '</b>' +
+      '<small id="liveCountdown">' + (L.start_at ? '加载倒计时…' : '等待排期') + '</small>' +
+      (L.room_url ? '<a class="btn primary" href="' + L.room_url + '" target="_blank">进入直播间</a>' : '') + '</div></div>';
+  }
+
+  if (L.replay) {
+    h += '<div style="margin-top:12px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">回放' + (L.chapters && L.chapters.length ? ' · ' + L.chapters.length + ' 个章节' : '') + '</div>' +
+      '<video id="liveReplay" controls preload="metadata" playsinline style="width:100%;border-radius:var(--r-md);background:oklch(0% 0 0);aspect-ratio:16/9" src="' + L.replay + '"></video>';
+    if (L.chapters && L.chapters.length) {
+      h += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">';
+      L.chapters.forEach(function (c) {
+        h += '<button type="button" class="chip" data-t="' + (c.t || '') + '" style="padding:5px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);cursor:pointer;font-size:12px"><b style="color:var(--accent)">' + (c.t || '') + '</b> ' + (c.title || '') + '</button>';
+      });
+      h += '</div>';
+    }
+    h += '</div>';
+  }
+  box.innerHTML = h;
+
+  var lv = document.getElementById('liveVideo');
+  if (lv && L.hls) attachHls(lv, L.hls);
+  box.querySelectorAll('.chip[data-t]').forEach(function (b) {
+    b.onclick = function () {
+      var rp = document.getElementById('liveReplay'); if (!rp) return;
+      var parts = String(b.dataset.t || '0:0').split(':').map(Number);
+      rp.currentTime = parts.length === 2 ? parts[0] * 60 + parts[1] : 0;
+      var p = rp.play(); if (p && p.catch) p.catch(function () {});
+      rp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+  });
+  var rp = document.getElementById('liveReplay');
+  if (rp) rp.addEventListener('ended', function () { saveProgress(lesson.id, { position: 0, done: true }); });
+  var cd = document.getElementById('liveCountdown');
+  if (cd && L.start_at) {
+    var t = new Date(String(L.start_at).replace(' ', 'T')).getTime();
+    var tick = function () {
+      var d = t - Date.now();
+      if (d <= 0) { cd.textContent = '即将开始'; return; }
+      var hh = Math.floor(d / 3600000), mm = Math.floor(d % 3600000 / 60000), ss = Math.floor(d % 60000 / 1000);
+      cd.textContent = (hh > 0 ? hh + ' 小时 ' : '') + mm + ' 分 ' + ss + ' 秒后开始';
+    };
+    tick(); clearInterval(window.__liveCd); window.__liveCd = setInterval(tick, 1000);
+  }
+}
 
 function openLesson(id) {
   if (!HAS_ACCESS) return;
   currentLesson = id;
   document.getElementById('playerPanel').style.display = 'block';
+  // 直播课：优先渲染直播间/回放，不走普通视频分支
+  var live = LESSONS[id] && LESSONS[id].live;
+  var liveArea = document.getElementById('liveArea');
+  if (live) {
+    if (window.__liveHls) { try { window.__liveHls.destroy(); } catch (e) {} window.__liveHls = null; }
+    var pv0 = document.getElementById('playerVideo'); if (pv0) { pv0.pause(); pv0.removeAttribute('src'); pv0.style.display = 'none'; }
+    document.getElementById('playerEmpty').style.display = 'none';
+    var qa0 = document.getElementById('quizArea'); if (qa0) qa0.style.display = 'none';
+    var lc0 = document.getElementById('lessonContent'); if (lc0) lc0.style.display = 'none';
+    document.querySelector('.player').style.display = 'none';
+    renderLive(LESSONS[id], liveArea);
+    liveArea.style.display = 'block';
+    document.querySelectorAll('.lesson').forEach(function (el) { el.classList.toggle('active', el.dataset.id === id); });
+    // 出勤/学习：进入直播课即记录（回放看完再自动标记完成）
+    saveProgress(id, { position: 0, done: false });
+    playStart = Date.now();
+    return;
+  }
+  if (liveArea) liveArea.style.display = 'none';
+  if (window.__liveHls) { try { window.__liveHls.destroy(); } catch (e) {} window.__liveHls = null; }
+  document.querySelector('.player').style.display = '';
   // 课时视频：有 video URL 时渲染真实 <video>，否则保留占位
   var vid = LESSONS[id] && (LESSONS[id].video || LESSONS[id].video_url);
   var pv = document.getElementById('playerVideo');
