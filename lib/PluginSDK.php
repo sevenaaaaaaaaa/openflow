@@ -235,6 +235,13 @@ class PluginContext
             $this->log("HTTP {$method} 拒绝：URL 不合法 {$url}", 'error');
             return $out;
         }
+        // 权限闸门：出站 HTTP 需要声明 'http' 权限（fail-closed，越权记审计日志）
+        if (class_exists('PluginSystem') && !PluginSystem::plugin_can($this->id, 'http')) {
+            PluginSystem::permission_denied($this->id, 'http', "http {$method}");
+            $out['error'] = '插件未声明 http 权限（plugin.json permissions 需包含 "http"）';
+            $this->log($out['error'], 'error');
+            return $out;
+        }
         if (!function_exists('curl_init')) {
             $out['error'] = '环境无 curl';
             return $out;

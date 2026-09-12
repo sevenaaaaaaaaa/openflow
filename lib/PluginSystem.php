@@ -93,6 +93,10 @@ class PluginSystem {
             $meta = json_decode(file_get_contents($manifest), true);
             if (!$meta || empty($meta['id'])) continue;
 
+            // 权限声明：manifest 未声明 permissions 的插件按「最小权限集」从严处理
+            // （只能用钩子观察 + 自身配置/日志；读写数据/HTTP/CDP/邮件等能力须显式声明）
+            $meta['permissions'] = self::normalize_permissions($meta['permissions'] ?? null);
+
             // Check if plugin is enabled in registry
             $enabled = $registry['enabled'][$pluginId] ?? ($meta['enabled_by_default'] ?? true);
 
@@ -102,6 +106,35 @@ class PluginSystem {
                 self::do_action('plugin_loaded', $pluginId, $meta);
             }
         }
+    }
+
+    /** 权限清单归一化：null（未声明）→ 基础集；数组 → 白名单交集 */
+    public static function normalize_permissions($perms): array {
+        $known = ['hooks','config','log','data.read','data.write','http','cdp','email','notify','schedule','api','menu','page','slot','asset'];
+        if (!is_array($perms)) {
+            // 未声明：只给基础能力（钩子观察/配置/日志）——老插件兼容，写能力需补声明
+            return ['hooks','config','log'];
+        }
+        $out = [];
+        foreach ($perms as $p) {
+            $p = strtolower(trim((string)$p));
+            if (in_array($p, $known, true)) $out[] = $p;
+        }
+        return array_values(array_unique($out)) ?: ['hooks','config','log'];
+    }
+
+    /** 插件是否被授予某权限（SDK 层能力闸门用） */
+    public static function plugin_can(string $pluginId, string $perm): bool {
+        $meta = self::$plugins[$pluginId] ?? null;
+        if (!$meta) return false;
+        return in_array($perm, (array)($meta['permissions'] ?? []), true);
+    }
+
+    /** 无权限调用的审计记录（谁想越权一目了然） */
+    public static function permission_denied(string $pluginId, string $perm, string $api = ''): void {
+        $line = date('c') . " plugin={$pluginId} perm={$perm}" . ($api !== '' ? " api={$api}" : '') . " DENIED\n";
+        @mkdir(DATA_DIR . '/plugins', 0775, true);
+        @file_put_contents(DATA_DIR . '/plugin-permissions.log', $line, FILE_APPEND | LOCK_EX);
     }
 
     public static function get_plugins(): array { return self::$plugins; }
@@ -159,9 +192,32 @@ class PluginSystem {
         }
         if (!$hasManifest) { $zip->close(); unlink($tmp); return ['ok' => false, 'error' => 'ZIP 中未找到 plugin.json']; }
 
-        // Extract to plugins directory
+        // 读 ZIP 内 manifest，做版本比较（降级安装需显式确认，防止误覆盖新版）
         $targetDir = $pluginsDir . '/' . $pluginId;
+        $existingManifest = is_file($targetDir . '/plugin.json') ? (json_decode((string)file_get_contents($targetDir . '/plugin.json'), true) ?: []) : [];
+        $newVersion = '';
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if (basename($name) === 'plugin.json') {
+                $m = json_decode((string)$zip->getFromIndex($i), true);
+                $newVersion = (string)($m['version'] ?? '');
+                // ZIP 内 id 与目标目录不一致 → 拒装（防装出不匹配目录）
+                if (!empty($m['id']) && $m['id'] !== $pluginId) {
+                    $zip->close(); unlink($tmp);
+                    return ['ok' => false, 'error' => "plugin.json id「{$m['id']}」与目标目录「{$pluginId}」不一致，拒绝安装"];
+                }
+                break;
+            }
+        }
+        if ($existingManifest && $newVersion !== '' && version_compare($newVersion, (string)($existingManifest['version'] ?? '0'), '<')) {
+            $zip->close(); unlink($tmp);
+            return ['ok' => false, 'error' => "新版本 {$newVersion} 低于已装 " . ($existingManifest['version'] ?? '?') . "（降级需先卸载再安装）"];
+        }
+
+        // 升级前备份现有目录（保留最近 3 版，可回滚）
+        $backupDir = DATA_DIR . '/plugin-backups/' . $pluginId;
         if (is_dir($targetDir)) {
+            self::backup_plugin($pluginId, $targetDir, $backupDir);
             // Remove existing
             $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($targetDir, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
             foreach ($it as $f) { $f->isFile() ? unlink($f->getRealPath()) : rmdir($f->getRealPath()); }
@@ -202,14 +258,118 @@ class PluginSystem {
         $pluginsDir = __DIR__ . '/../plugins/' . $pluginId;
         if (!is_dir($pluginsDir)) return false;
 
+        // 卸载前给插件一次清理机会（uninstall 钩子：删自己的数据/配置）
+        $entry = $pluginsDir . '/plugin.php';
+        if (is_file($entry)) {
+            try {
+                require_once $entry;
+                self::do_action('plugin_uninstall', $pluginId);
+            } catch (\Throwable $e) {}
+        }
+
         $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($pluginsDir, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($it as $f) { $f->isFile() ? unlink($f->getRealPath()) : rmdir($f->getRealPath()); }
         rmdir($pluginsDir);
+
+        // 清理插件运行时数据目录（data/plugins/{id}/）与配置
+        $dataDir = DATA_DIR . '/plugins/' . $pluginId;
+        if (is_dir($dataDir)) {
+            $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dataDir, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+            foreach ($it as $f) { $f->isFile() ? unlink($f->getRealPath()) : rmdir($f->getRealPath()); }
+            @rmdir($dataDir);
+        }
 
         $registry = json_read(__DIR__ . '/../data/plugins.json');
         unset($registry['installed'][$pluginId], $registry['enabled'][$pluginId]);
         json_write(__DIR__ . '/../data/plugins.json', $registry);
         return true;
+    }
+
+    /** 升级前备份插件目录（保留最近 3 版） */
+    private static function backup_plugin(string $pluginId, string $srcDir, string $backupRoot): void {
+        if (!is_dir($srcDir)) return;
+        $srcReal = realpath($srcDir) ?: $srcDir;   // macOS /var → /private/var 对齐 realPath
+        $m = is_file($srcDir . '/plugin.json') ? (json_decode((string)file_get_contents($srcDir . '/plugin.json'), true) ?: []) : [];
+        $ver = (string)($m['version'] ?? '0');
+        $dest = $backupRoot . '/' . $ver . '-' . date('YmdHis');
+        @mkdir($dest, 0755, true);
+        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($srcReal, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($it as $f) {
+            $rel = substr($f->getRealPath(), strlen($srcReal) + 1);
+            $target = $dest . '/' . $rel;
+            if ($f->isDir()) { @mkdir($target, 0755, true); }
+            else { @mkdir(dirname($target), 0755, true); @copy($f->getRealPath(), $target); }
+        }
+        // 只保留最近 3 版
+        $versions = glob($backupRoot . '/*', GLOB_ONLYDIR) ?: [];
+        if (count($versions) > 3) {
+            sort($versions);
+            foreach (array_slice($versions, 0, count($versions) - 3) as $old) {
+                $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($old, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+                foreach ($it as $f) { $f->isFile() ? @unlink($f->getRealPath()) : @rmdir($f->getRealPath()); }
+                @rmdir($old);
+            }
+        }
+    }
+
+    /** 回滚到最近一次备份（升级出问题时用） */
+    public static function rollback_plugin(string $pluginId): array {
+        $backupRoot = DATA_DIR . '/plugin-backups/' . $pluginId;
+        $versions = glob($backupRoot . '/*', GLOB_ONLYDIR) ?: [];
+        if (!$versions) return ['ok' => false, 'error' => '没有可用备份'];
+        usort($versions, fn($a, $b) => strcmp($b, $a));   // 最新备份在前
+        $targetDir = __DIR__ . '/../plugins/' . $pluginId;
+        $curVer = is_file($targetDir . '/plugin.json') ? (string)(json_decode((string)file_get_contents($targetDir . '/plugin.json'), true)['version'] ?? '') : '';
+
+        // 备份当前（回滚也可能需要再回滚）
+        if (is_dir($targetDir)) self::backup_plugin($pluginId, $targetDir, $backupRoot);
+
+        // 重新列出（backup_plugin 可能刚加了一个当前版本的备份）
+        $versions = glob($backupRoot . '/*', GLOB_ONLYDIR) ?: [];
+        usort($versions, fn($a, $b) => strcmp($b, $a));
+        // 选恢复源：跳过与当前版本一致的备份（那是刚备份的当前），取上一个
+        $src = $versions[0];
+        if ($curVer !== '' && count($versions) > 1 && str_starts_with(basename($versions[0]), $curVer . '-')) {
+            $src = $versions[1];
+        }
+
+        // 清空当前（不存在则创建）
+        if (is_dir($targetDir)) {
+            $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($targetDir, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+            foreach ($it as $f) { $f->isFile() ? @unlink($f->getRealPath()) : @rmdir($f->getRealPath()); }
+        } else {
+            @mkdir($targetDir, 0755, true);
+        }
+        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($src, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+        $srcReal = realpath($src) ?: $src;   // macOS /var → /private/var 对齐 getRealPath 前缀
+        foreach ($it as $f) {
+            $rel = substr($f->getRealPath(), strlen($srcReal) + 1);
+            $dest = $targetDir . '/' . $rel;
+            if ($f->isDir()) { @mkdir($dest, 0755, true); }
+            else { @mkdir(dirname($dest), 0755, true); @copy($f->getRealPath(), $dest); }
+        }
+        // 更新注册表版本
+        $m = is_file($targetDir . '/plugin.json') ? (json_decode((string)file_get_contents($targetDir . '/plugin.json'), true) ?: []) : [];
+        $regFile = __DIR__ . '/../data/plugins.json';
+        if (is_file($regDir = dirname($regDir ?? $regFile)) || true) {}
+        $registry = function_exists('json_read') ? json_read($regFile) : (is_file($regFile) ? (json_decode((string)file_get_contents($regFile), true) ?: []) : []);
+        if (is_array($registry) && isset($registry['installed'][$pluginId])) {
+            $registry['installed'][$pluginId]['version'] = (string)($m['version'] ?? '0');
+            $registry['installed'][$pluginId]['rolled_back_at'] = date('Y-m-d H:i:s');
+            if (function_exists('json_write')) json_write($regFile, $registry);
+            else @file_put_contents($regFile, json_encode($registry, JSON_UNESCAPED_UNICODE));
+        }
+        return ['ok' => true, 'version' => (string)($m['version'] ?? '0')];
+    }
+
+    /** 列出某插件的可用备份版本 */
+    public static function plugin_backups(string $pluginId): array {
+        $out = [];
+        foreach ((glob(DATA_DIR . '/plugin-backups/' . $pluginId . '/*', GLOB_ONLYDIR) ?: []) as $dir) {
+            $out[] = ['path' => $dir, 'label' => basename($dir)];
+        }
+        usort($out, fn($a, $b) => strcmp($b['label'], $a['label']));
+        return $out;
     }
 
     public static function toggle_plugin(string $pluginId, bool $enabled): bool {

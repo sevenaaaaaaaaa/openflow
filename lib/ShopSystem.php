@@ -317,7 +317,7 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
                 }
             }
     
-            // 订阅订单：激活订阅状态
+            // 订阅订单：激活订阅状态（含 auto_renew + payment_method——自动代扣依赖这两个字段）
             if (!empty($order['plan_id'])) {
                 $memberId = $order['member_id'];
                 $s = sub_get_member($memberId);
@@ -329,6 +329,10 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
                     'plan_id' => $order['plan_id'],
                     'status' => 'active',
                     'expires_at' => date('Y-m-d', strtotime($base . ' +' . $months . ' month')),
+                    // 自动续费标记 + 支付方式：下次到期时 sub_attempt_renewals 用它们自动代扣
+                    'auto_renew' => !empty($order['auto_renew']) || ($order['goods_type'] ?? '') === 'subscription',
+                    'payment_method' => (string)($order['payment_method'] ?? ''),
+                    'order_id' => (string)($order['id'] ?? ''),
                     'updated_at' => date('Y-m-d H:i:s'),
                 ]);
             }
