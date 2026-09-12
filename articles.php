@@ -76,6 +76,11 @@ function render_card(array $a, callable $catOf): string {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($pageTitle)?> · 学院 | <?=$siteName?></title>
 <meta name="description" content="芭乐派学院 · 文章：增长实践、AI 工具评测、行业洞察，共 <?=$total?> 篇。">
+<?php if ($filtering): ?><meta name="robots" content="noindex,follow"><?php endif; ?>
+<link rel="canonical" href="<?=htmlspecialchars(rtrim(site_config_get('site_url', ''), '/') . '/articles')?>">
+<meta property="og:title" content="<?=htmlspecialchars($pageTitle . ' · 学院 | ' . $siteName)?>">
+<meta property="og:type" content="website">
+<meta property="og:url" content="<?=htmlspecialchars(rtrim(site_config_get('site_url', ''), '/') . '/articles')?>">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
