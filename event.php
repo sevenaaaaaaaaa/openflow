@@ -8,6 +8,7 @@
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 require_once __DIR__ . '/lib/CoverRenderer.php';
+require_once __DIR__ . '/lib/EventSystem.php';
 
 $slug = trim(req_str('slug'));
 $event = null;
@@ -27,6 +28,9 @@ if (!$event) {
 
 $cover = $event['cover'] ?? '';
 $coverUrl = $cover ? (strpos($cover, 'http') === 0 ? $cover : '/' . ltrim($cover, '/')) : '';
+$tickets = event_tickets($event);
+$agenda = event_agenda($event);
+$showTickets = count($tickets) > 1 || (float)($tickets[0]['price'] ?? 0) > 0;
 
 // 报名状态 + 名额
 require_once __DIR__ . '/lib/MemberSystem.php';
@@ -102,11 +106,40 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
         <?php elseif ($event['registration_url'] ?? ''): ?>
         <a href="<?=htmlspecialchars($event['registration_url'])?>" class="btn primary" style="align-self:flex-start">立即报名 →</a>
         <?php else: ?>
+        <?php if ($showTickets): ?>
+        <div style="display:flex;flex-direction:column;gap:6px;margin:4px 0 10px;width:100%">
+          <?php foreach ($tickets as $ti => $tk): ?>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer">
+            <input type="radio" name="event_ticket" value="<?=htmlspecialchars($tk['id'])?>" <?=$ti===0?'checked':''?>>
+            <span><?=htmlspecialchars($tk['name'])?></span>
+            <span style="margin-left:auto;color:var(--faint);font-family:var(--font-mono)"><?=(float)$tk['price'] > 0 ? '¥' . number_format((float)$tk['price'], 0) : '免费'?></span>
+          </label>
+          <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
         <button onclick="doRegister()" class="btn primary" style="align-self:flex-start">立即报名<?=$capacity > 0 ? '（剩 ' . max(0, $capacity - $joinedCount) . ' 席）' : ''?></button>
         <div id="regMsg" class="note"></div>
         <?php endif; ?>
       </div>
     </div>
+
+    <?php if ($agenda): ?>
+    <section style="margin-top:32px">
+      <span class="w-tag">议程</span>
+      <div style="display:flex;flex-direction:column;gap:0;margin-top:10px">
+        <?php foreach ($agenda as $ag): ?>
+        <div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border-soft,var(--border))">
+          <div class="mono" style="flex:none;width:64px;color:var(--accent);font-weight:700;font-size:13px"><?=htmlspecialchars($ag['time'])?></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:650;font-size:14.5px"><?=htmlspecialchars($ag['title'])?></div>
+            <?php if ($ag['speaker'] !== ''): ?><div class="note" style="margin:2px 0 0"><?=htmlspecialchars($ag['speaker'])?></div><?php endif; ?>
+            <?php if ($ag['desc'] !== ''): ?><div class="note" style="margin:2px 0 0"><?=htmlspecialchars($ag['desc'])?></div><?php endif; ?>
+          </div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </section>
+    <?php endif; ?>
 
     <?php if (!empty($event['replay_url']) || !empty($event['live_room'])): ?>
     <div class="sp-win" style="margin-top:32px">
@@ -145,8 +178,11 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
     var msg = document.getElementById('regMsg');
     if (!IS_LOGGED) { location.href = '/account?view=login&next=' + encodeURIComponent('/event/' + <?=json_encode($slug)?>); return; }
     if (!confirm('确认报名该活动？')) return;
+    var tk = document.querySelector('input[name=event_ticket]:checked');
+    var fd = new FormData(); fd.append('action', 'register'); fd.append('event_id', EVENT_ID);
+    if (tk) fd.append('ticket_id', tk.value);
     msg.textContent = '提交中…'; msg.style.color = 'var(--muted)';
-    regFetch('register').then(function(d){ msg.textContent = d.message || d.error; msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; if (d.ok) setTimeout(function(){ location.reload(); }, 1000); });
+    fetch('/api/event-register', { method:'POST', body: fd }).then(function(r){ return r.json(); }).then(function(d){ msg.textContent = d.message || d.error; msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; if (d.ok) setTimeout(function(){ location.reload(); }, 1000); });
   }
   function cancelReg() {
     if (!confirm('确认取消报名？')) return;
