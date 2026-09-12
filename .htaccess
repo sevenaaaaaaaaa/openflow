@@ -10,6 +10,8 @@ RewriteRule ^data(/|$) - [F,L]
 
 # 首页：优先动态版 index.php（避免浏览器缓存旧 index.html）
 DirectoryIndex index.php index.html
+# 404 兜底：真 404 时交给 PHP，先跑 redirects.json 拦截（301/410），未命中再渲染友好页
+ErrorDocument 404 /404.php
 RewriteRule ^$ index.php [L,QSA]
 
 # /index.php → / 301：首页 .php 孪生地址永久归并（配合 canonical 消除重复内容，
