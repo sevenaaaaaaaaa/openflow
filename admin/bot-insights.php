@@ -37,6 +37,30 @@ $botNames = Database::query("SELECT channel, ua, COUNT(*) c FROM events_bot WHER
 // 被抓最多的页面
 $topPages = Database::query("SELECT channel, page, COUNT(*) c FROM events_bot WHERE created_at >= ? AND channel LIKE 'bot_%' GROUP BY channel, page ORDER BY c DESC LIMIT 30", [$since]);
 
+// GEO 回流归因：AI 爬虫抓了哪篇文章 → 按文章聚合（channel=bot_ai 时 page 为文章路径 /article/{slug}）
+// props 里存的是 track.php 写入的 JSON（含页面路径），page 字段本身已含路径
+$aiRefPages = Database::query("SELECT page, COUNT(*) c, COUNT(DISTINCT uid) u FROM events_bot WHERE created_at >= ? AND channel = 'bot_ai' AND page LIKE '/article/%' GROUP BY page ORDER BY c DESC LIMIT 15", [$since]);
+// 引用源域名（props 里的 referrer，爬虫上报时带 referer 的场景）
+$aiRefSources = Database::query("SELECT props, COUNT(*) c FROM events_bot WHERE created_at >= ? AND channel='bot_ai' AND props LIKE '%referrer%' GROUP BY props ORDER BY c DESC LIMIT 10", [$since]);
+$aiRefCount = 0;
+$aiRefArticles = [];   // slug => ['title'=>, 'c'=>, 'u'=>]
+try {
+    $slugs = [];
+    foreach ((array)$aiRefPages as $r) {
+        $aiRefCount += (int)$r['c'];
+        if (preg_match('#^/article/([a-z0-9\x{4e00}-\x{9fff}-]+)#u', (string)$r['page'], $m)) {
+            $slug = $m[1];
+            $aiRefArticles[$slug] = ['c' => (int)$r['c'], 'u' => (int)$r['u']];
+        }
+    }
+    if ($aiRefArticles) {
+        $titles = [];
+        foreach (get_articles() as $a) $titles[$a['slug']] = $a['title'] ?? '';
+        foreach ($aiRefArticles as $slug => &$row) $row['title'] = $titles[$slug] ?? $slug;
+        unset($row);
+    }
+} catch (Throwable $e) {}
+
 // 开发访问明细（近期）
 $devRows = Database::query("SELECT page, ip, ua, created_at FROM events_bot WHERE channel='dev' ORDER BY id DESC LIMIT 20");
 
@@ -113,6 +137,29 @@ if (!defined('OF_EMBED')) admin_header('爬虫洞察');
           <?php endforeach; ?>
         </tbody>
       </table></div>
+      <?php endif; ?>
+    </div>
+
+    <!-- GEO 回流归因：AI 爬虫抓了哪篇文章 -->
+    <div class="card">
+      <h2>🎯 AI 引用归因 <span class="hint">· AI 爬虫抓了哪些文章 · 回流链路追踪</span></h2>
+      <?php if (!$aiRefArticles): ?>
+      <div class="empty" style="padding:20px">暂无 AI 爬虫抓取文章的记录——文章被 GPTBot/ClaudeBot/PerplexityBot 等抓取后自动出现在这里</div>
+      <?php else: ?>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>文章</th><th>被 AI 抓取次数</th><th>独立 AI</th><th>占比</th></tr></thead>
+        <tbody>
+          <?php foreach ($aiRefArticles as $slug => $row): ?>
+          <tr>
+            <td><a href="/article/<?=htmlspecialchars($slug)?>" style="color:var(--accent);text-decoration:none"><?=htmlspecialchars($row['title'])?></a></td>
+            <td><b><?=number_format($row['c'])?></b></td>
+            <td class="text-sm text-muted"><?=$row['u']?></td>
+            <td class="text-sm text-muted"><?=($aiRefCount>0)?round($row['c']/$aiRefCount*100,1):0?>%</td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table></div>
+      <p class="text-sm text-muted" style="margin-top:10px">共计 <b><?=number_format($aiRefCount)?></b> 次 AI 爬虫抓取命中文章页。回流归因显示"哪篇文章被哪个 AI 爬虫抓得最多"，帮助判断哪些内容更容易被 AI 引用。</p>
       <?php endif; ?>
     </div>
 
