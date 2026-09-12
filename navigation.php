@@ -57,6 +57,8 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>增长导航 | 优秀网站增长·SEO·AI 运营工具</title>
 <meta name="description" content="收录国内外优秀的网站增长、SEO、AI 运营工具与学习资源，一站直达高质量增长资源。">
+<?php if ($region !== 'all' || $cat !== '' || $q !== ''): ?><meta name="robots" content="noindex,follow"><?php endif; ?>
+<link rel="canonical" href="<?=htmlspecialchars(rtrim(site_config_get('site_url', ''), '/') . '/navigation')?>">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
