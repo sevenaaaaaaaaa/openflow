@@ -40,6 +40,12 @@ function block_types(): array {
             $builtin[$key] = $mod['name'] ?? $key;
         }
     }
+    // 合并插件注册的区块（PluginSystem::register_block）
+    if (class_exists('PluginSystem') && method_exists('PluginSystem', 'blocks')) {
+        foreach (PluginSystem::blocks() as $ptype => $pb) {
+            if (!isset($builtin[$ptype])) $builtin[$ptype] = $pb['name'] ?? $ptype;
+        }
+    }
     return $builtin;
 }
 
@@ -62,6 +68,10 @@ function block_type_category(string $type): string {
         $s = blockschema_get($type);
         if ($s && !empty($s['category'])) return (string)$s['category'];
     }
+    if (class_exists('PluginSystem') && method_exists('PluginSystem', 'blocks')) {
+        $pb = PluginSystem::blocks();
+        if (isset($pb[$type]['category'])) return (string)$pb[$type]['category'];
+    }
     return block_builtin_categories()[$type] ?? 'other';
 }
 
@@ -80,6 +90,13 @@ function block_palette(): array {
             }
         }
         $out[$cat][] = ['type' => $type, 'label' => $label, 'subcategory' => $sub, 'variants' => $variants, 'custom' => $custom];
+    }
+    // 插件区块也进面板
+    if (class_exists('PluginSystem') && method_exists('PluginSystem', 'blocks')) {
+        foreach (PluginSystem::blocks() as $ptype => $pb) {
+            $cat = $pb['category'] ?: 'other';
+            $out[$cat][] = ['type' => $ptype, 'label' => $pb['name'], 'subcategory' => '', 'variants' => [], 'custom' => true];
+        }
     }
     return $out;
 }
@@ -135,6 +152,16 @@ function builder_render_block(array $b): string {
     if (blockschema_is_custom($t)) {
         $custom = builder_render_schema_module($b);
         if ($custom !== null) return $custom;
+    }
+    // 插件注册的区块：调用插件自己的渲染回调；异常不搞挂宿主
+    if (class_exists('PluginSystem') && method_exists('PluginSystem', 'blocks')) {
+        $pblocks = PluginSystem::blocks();
+        if (isset($pblocks[$t]) && is_callable($pblocks[$t]['render'])) {
+            try {
+                $html = (string)call_user_func($pblocks[$t]['render'], $b);
+                if ($html !== '') return $html;
+            } catch (\Throwable $e) { /* 静默降级到默认渲染 */ }
+        }
     }
     // 引用模块库：把「定义一次、到处插入」真正接通（此前 page-modules.json 无人读取）
     if ($t === 'module') {

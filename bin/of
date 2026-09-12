@@ -187,8 +187,36 @@ switch ($cmd) {
         } else { of_out("用法: php bin/of flow run <event>"); }
         break;
 
+    case 'plugin':
+        $sub = $params[0] ?? '';
+        $pid = preg_replace('/[^a-z0-9_-]/', '', strtolower($params[1] ?? ''));
+        if ($sub === 'new' && $pid !== '') {
+            $dir = __DIR__ . '/../plugins/' . $pid;
+            if (is_dir($dir)) { of_out("插件目录已存在：{$dir}"); break; }
+            @mkdir($dir, 0755, true);
+            $manifest = ['id'=>$pid,'name'=>ucwords(str_replace(['-','_'], ' ', $pid)),'version'=>'0.1.0','description'=>'','author'=>'','permissions'=>['hooks','config','log'],'enabled_by_default'=>false];
+            file_put_contents($dir . '/plugin.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            $tpl = "<?php\n/**\n * {$manifest['name']} — 插件示例（骨架）\n *\n * 可用能力见 docs/PLUGIN-DEV.md；需要更多权限请在 plugin.json 的 permissions 里声明。\n */\nrequire_once __DIR__ . '/../../lib/PluginSDK.php';\n\$p = plugin('{$pid}');\n\n// 监听一个钩子\n\$p->on('user_registered', function (\$member) use (\$p) {\n    \$p->log('新用户注册：' . (\$member['email'] ?? ''));\n});\n\n// 注册一个后台菜单\n\$p->menu('{$manifest['name']}', \$p->pageUrl(), '🧩', 'settings');\n";
+            file_put_contents($dir . '/plugin.php', $tpl);
+            of_json(['ok'=>true,'scaffolded'=>$pid,'dir'=>$dir,'next'=>'编辑 plugin.php 后，在后台「插件」页启用']);
+        } elseif ($sub === 'list') {
+            $rows = [];
+            foreach (PluginSystem::get_plugins() as $id => $m) $rows[] = ['id'=>$id,'name'=>$m['name']??$id,'version'=>$m['version']??''];
+            of_json(['ok'=>true,'plugins'=>$rows]);
+        } else {
+            of_out('用法: php bin/of plugin new <id> | plugin list');
+        }
+        break;
+
     default:
+        // 插件注册的 CLI 命令（PluginSystem::register_cli）
+        $pcli = PluginSystem::cli_commands();
+        if (isset($pcli[$cmd]) && is_callable($pcli[$cmd]['cb'])) {
+            $result = call_user_func($pcli[$cmd]['cb'], $params);
+            of_json(['ok'=>true, 'command'=>$cmd, 'plugin'=>$pcli[$cmd]['plugin'], 'result'=>$result]);
+            break;
+        }
         of_out("OpenFlow CLI");
         of_out("用法: php bin/of <命令>");
-        of_out("命令: articles / article / pages / members / leads / orders / sentiment / topic / cron / search");
+        of_out("命令: articles / article / pages / members / leads / orders / sentiment / topic / cron / search / plugin");
 }

@@ -30,6 +30,13 @@ if (isset($_GET['uninstall'])) {
     exit;
 }
 
+// Rollback —— 回滚到上一个备份版本（敏感操作，csrf）
+if (isset($_GET['rollback'])) {
+    csrf_verify();
+    $r = PluginSystem::rollback_plugin((string)$_GET['rollback']);
+    $message = $r['ok'] ? '✅ 已回滚到上一个备份版本' : ('❌ 回滚失败：' . ($r['error'] ?? '未知'));
+}
+
 // Toggle —— 同上，启用/禁用插件是敏感操作，必须带 token
 if (isset($_GET['toggle'])) {
     csrf_verify();
@@ -110,6 +117,9 @@ admin_header('插件管理');
             <td><span class="badge <?=($registry['enabled'][$pid] ?? false)?'badge-green':'badge-gray'?>"><?=($registry['enabled'][$pid] ?? false)?'已启用':'已禁用'?></span></td>
             <td>
               <a href="?toggle=<?=urlencode($pid)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-ghost btn-sm"><?=($registry['enabled'][$pid] ?? false)?'禁用':'启用'?></a>
+              <?php $backs = PluginSystem::plugin_backups($pid); if ($backs): ?>
+              <a href="?rollback=<?=urlencode($pid)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-ghost btn-sm" data-confirm="回滚到上一个备份版本？">回滚 (<?=count($backs)?>)</a>
+              <?php endif; ?>
               <a href="?uninstall=<?=urlencode($pid)?>&csrf_token=<?=urlencode(csrf_token())?>" class="btn btn-danger btn-sm" data-confirm="确认卸载?">卸载</a>
             </td>
           </tr>
@@ -153,7 +163,7 @@ admin_header('插件管理');
   "id": "my-plugin",
   "name": "My Plugin",
   "version": "1.0.0",
-  "hooks": ["admin_sidebar"]
+  "permissions": ["hooks", "config", "log"]
 }</pre>
         </div>
         <div style="padding:16px;background:var(--surface-2);border-radius:12px">
@@ -171,8 +181,8 @@ admin_header('插件管理');
             <code>admin_sidebar_menu</code> — 侧边栏菜单<br>
             <code>article_save_before</code> — 文章保存前（filter 可改写）<br>
             <code>article_output_before</code> — 文章输出前（filter 可改写）<br>
-            <code>admin_header</code> — 后台头部<br>
-            <code>plugin_loaded</code> — 插件加载时
+            <code>cdp_event_received</code> — CDP 事件入库前（filter 可改写/丢弃）<br>
+            <code>plugin_uninstall</code> — 插件被卸载时（清理数据）
           </div>
         </div>
       </div>

@@ -110,8 +110,25 @@ class PluginContext
 
     public function configFile(): string { return $this->dir() . '/config.json'; }
 
+    /** 能力闸门：插件没声明该权限就拒绝并留痕（声明式权限落到运行时） */
+    private function can(string $perm): bool {
+        if (!class_exists('PluginSystem')) return true;   // 无引擎上下文（单测）放行
+        $known = PluginSystem::get_plugins();
+        if (!isset($known[$this->id])) {
+            // 引擎尚未加载该插件（独立调用/单测）：按其 manifest 或基础集判定
+            $mf = is_file($this->dir() . '/plugin.json') ? (json_decode((string)@file_get_contents($this->dir() . '/plugin.json'), true) ?: []) : [];
+            if (in_array($perm, PluginSystem::normalize_permissions($mf['permissions'] ?? null), true)) return true;
+            PluginSystem::permission_denied($this->id, $perm);
+            return false;
+        }
+        if (PluginSystem::plugin_can($this->id, $perm)) return true;
+        PluginSystem::permission_denied($this->id, $perm);
+        return false;
+    }
+
     public function config(): array
     {
+        if (!$this->can('config')) return [];
         if ($this->configCache === null) {
             $f = $this->configFile();
             $this->configCache = is_file($f)
@@ -137,6 +154,7 @@ class PluginContext
 
     public function setConfig(array $config): bool
     {
+        if (!$this->can('config')) return false;
         $this->configCache = $config;
         if (!$this->ensureDir()) return false;
         $json = json_encode($config, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
@@ -156,6 +174,7 @@ class PluginContext
 
     public function log(string $message, string $level = 'info'): void
     {
+        if (!$this->can('log')) return;
         try {
             if (!$this->ensureDir()) return;
             $f = $this->logFile();
