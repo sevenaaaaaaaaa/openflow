@@ -13,6 +13,7 @@ require_once __DIR__ . '/../admin/config.php';
 header('Content-Type: application/json; charset=utf-8');
 
 if (!is_logged_in()) { http_response_code(401); echo json_encode(['ok' => false, 'error' => '需要登录']); exit; }
+require_perm('articles');   // 创作台 AI 全部为文章创作能力，统一用 articles 权限（同时满足 AI 韧性契约的门标记）
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['ok' => false, 'error' => 'POST only']); exit; }
 csrf_verify();
 

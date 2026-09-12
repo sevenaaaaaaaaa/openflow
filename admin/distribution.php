@@ -94,7 +94,7 @@ admin_header('分销管理');
 <div class="stats">
   <div class="stat-card"><div class="num"><?=count($ambassadors)?></div><div class="label">大使总数</div></div>
   <div class="stat-card"><div class="num"><?=count(array_filter($orders, fn($o) => !empty($o['referrer_id'])))?></div><div class="label">分销订单</div></div>
-  <div class="stat-card"><div class="num">¥<?=number_format(array_sum(array_column(array_filter($orders, fn($o) => ($o['status']??'')==='paid'), 'commission_amount')), 0)?></div><div class="label">已发放佣金</div></div>
+  <div class="stat-card"><div class="num">¥<?=number_format(array_sum(array_column(array_filter($orders, fn($o) => ($o['status']??'')==='paid'), 'commission')), 0)?></div><div class="label">已发放佣金</div></div>
   <div class="stat-card"><div class="num"><?=count($pendingWithdrawals)?></div><div class="label">待审核提现</div></div>
 </div>
 <div class="card">
@@ -143,7 +143,7 @@ admin_header('分销管理');
         <td><code><?=htmlspecialchars($o['id'] ?? '')?></code></td>
         <td><?=htmlspecialchars($o['course_title'] ?? $o['goods_title'] ?? '')?></td>
         <td>¥<?=number_format($o['amount'] ?? 0, 2)?></td>
-        <td><strong>¥<?=number_format($o['commission_amount'] ?? 0, 2)?></strong></td>
+        <td><strong>¥<?=number_format($o['commission'] ?? 0, 2)?></strong></td>
         <td><?=($o['status'] ?? '') === 'paid' ? '<span class="pill ok"><span class="dot"></span>已支付</span>' : '<span class="pill gray">' . htmlspecialchars($o['status'] ?? '') . '</span>'?></td>
         <td><?=htmlspecialchars($referrerName ?: '—')?></td>
         <td class="text-sm text-muted"><?=htmlspecialchars(substr($o['created_at'] ?? '', 0, 16))?></td>

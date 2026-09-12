@@ -169,8 +169,8 @@ admin_header('插件管理');
           <strong>3. 可用钩子</strong>
           <div style="font-size:12px;margin-top:4px;line-height:1.8">
             <code>admin_sidebar_menu</code> — 侧边栏菜单<br>
-            <code>article_save</code> — 文章保存时<br>
-            <code>article_render</code> — 文章渲染时<br>
+            <code>article_save_before</code> — 文章保存前（filter 可改写）<br>
+            <code>article_output_before</code> — 文章输出前（filter 可改写）<br>
             <code>admin_header</code> — 后台头部<br>
             <code>plugin_loaded</code> — 插件加载时
           </div>

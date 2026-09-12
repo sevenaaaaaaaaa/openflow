@@ -280,7 +280,12 @@ try { $pluginCron = PluginSystem::run_schedules(); } catch (Throwable $e) { $plu
 $scout = ['status' => 'skipped'];
 try { $scout = ProductScout::dailyRun(); } catch (Throwable $e) { $scout = ['status' => 'error', 'detail' => $e->getMessage()]; }
 
+// ── GEO 内容引擎：每天抓取→AI提炼→选题库（内部自判当天是否已跑）──
+$geoRun = ['status' => 'skipped'];
+try { require_once __DIR__ . '/../lib/GeoSystem.php'; $geoRun = geo_daily_run(); } catch (Throwable $e) { $geoRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
+
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge,
                   'webhook_retry' => $webhookRetry, 'plugin_cron' => $pluginCron, 'product_scout' => $scout,
+                  'geo_run' => $geoRun,
                   'time' => date('Y-m-d H:i:s')]);

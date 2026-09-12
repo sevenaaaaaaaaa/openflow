@@ -179,7 +179,7 @@ admin_header('直播管理');
           <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('<?=htmlspecialchars(SITE_URL)?>/live-overlay?room=<?=urlencode($r['id'])?>').then(()=>fcToast('叠加层地址已复制'))">复制</button>
           <span class="hint">· 透明背景，OBS 浏览器源直接贴（宽 1280 高 720）</span>
         </div>
-        <div class="text-sm" style="margin-top:4px"><b>预约：</b><?=live_sub_count($r['id'])?> 人 · <b>点赞：</b><?=live_likes($r['id'])?> · <a href="/live?room=<?=urlencode($r['id'])?>" target="_blank">前台直播间 →</a></div>
+        <div class="text-sm" style="margin-top:4px"><b>预约：</b><?=live_sub_count($r['id'])?> 人 · <b>点赞：</b><?=live_likes($r['id'])?><?php $vs = function_exists('live_view_stats') ? live_view_stats($r['id']) : []; if ($vs): ?> · <b>观看：</b><?=$vs['viewers']?> 人（在线 <?=$vs['online']?>）· <b>时长：</b><?=$vs['minutes']?> 分钟<?php endif; ?> · <a href="/live?room=<?=urlencode($r['id'])?>" target="_blank">前台直播间 →</a></div>
         <?php $rps = array_values(array_filter((array)($r['products'] ?? []))); if ($rps): ?>
         <div class="text-sm" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
           <b>推品：</b>

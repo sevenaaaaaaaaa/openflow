@@ -159,6 +159,35 @@ function live_risk_check(string $roomId, string $text, ?array $room = null): ?st
     // 3+4. 频率与重复（按房间+发言人）
     $room = $room ?? live_room($roomId);
     $minInterval = max(1, (int)($room['slow_mode'] ?? 3));   // 慢速模式秒数，默认 3s
+    // 风控迁 SQLite（live_risk 表），消除 risk.json 整文件写回的并发覆盖丢状态
+    try {
+        require_once __DIR__ . '/Database.php';
+        Database::execute("CREATE TABLE IF NOT EXISTS live_risk (
+            room_id TEXT DEFAULT '',
+            skey    TEXT DEFAULT '',
+            ts      INTEGER DEFAULT 0,
+            text    TEXT DEFAULT '',
+            PRIMARY KEY (room_id, skey)
+        )");
+        $rows = Database::query("SELECT ts, text FROM live_risk WHERE room_id = ? AND skey = ?", [$roomId, $key]);
+        $last = $rows ? ['ts' => (int)$rows[0]['ts'], 'text' => (string)$rows[0]['text']] : null;
+        $now = time();
+        if ($last) {
+            if ($now - $last['ts'] < $minInterval) return '发言太快了，喝口水再来（' . $minInterval . 's/条）';
+            if (($last['text'] ?? '') === $text) return '不要重复发送相同内容';
+        }
+        Database::execute(
+            "INSERT OR REPLACE INTO live_risk (room_id, skey, ts, text) VALUES (?,?,?,?)",
+            [$roomId, $key, $now, $text]
+        );
+        // 体积控制：每房间只留最近 100 个发言人（按 ts 保留最新）
+        Database::execute(
+            "DELETE FROM live_risk WHERE room_id = ? AND skey NOT IN (SELECT skey FROM live_risk WHERE room_id = ? ORDER BY ts DESC LIMIT 100)",
+            [$roomId, $roomId]
+        );
+        return null;
+    } catch (\Throwable $e) {}
+    // SQLite 不可用回退原 JSON
     $risk = json_read(live_risk_file());
     $last = $risk[$roomId][$key] ?? null;
     $now = time();
@@ -167,7 +196,6 @@ function live_risk_check(string $roomId, string $text, ?array $room = null): ?st
         if (($last['text'] ?? '') === $text) return '不要重复发送相同内容';
     }
     $risk[$roomId][$key] = ['ts' => $now, 'text' => $text];
-    // 控制文件体积：每房间只留最近 100 个发言人
     if (count((array)$risk[$roomId]) > 100) $risk[$roomId] = array_slice($risk[$roomId], -100, null, true);
     json_write(live_risk_file(), $risk);
     return null;
@@ -177,13 +205,62 @@ function live_risk_check(string $roomId, string $text, ?array $room = null): ?st
 function live_likes_file(): string { return DATA_DIR . '/live/likes.json'; }
 
 function live_likes(string $roomId): int {
+    // 优先 SQLite 聚合（并发安全），不可用回退 JSON
+    if (live_likes_ensure()) {
+        try {
+            require_once __DIR__ . '/Database.php';
+            $r = Database::query("SELECT COALESCE(SUM(count),0) AS n FROM live_likes WHERE room_id = ?", [$roomId]);
+            return (int)($r[0]['n'] ?? 0);
+        } catch (\Throwable $e) {}
+    }
     $all = json_read(live_likes_file());
     return (int)($all[$roomId]['count'] ?? 0);
 }
 
-/** 点赞。每会话每分钟最多 60 次（连击上限），返回最新总数 */
+/** 点赞。每会话每分钟最多 60 次（连击上限），返回最新总数。
+ *  存储迁 SQLite（live_likes 表），消除 likes.json 整文件写回的并发覆盖丢计数——
+ *  与 live_chat 同构的 bug：聊天修了，点赞没修，热门直播点赞会静默丢失。 */
+function live_likes_ensure(): bool {
+    static $ready = null;
+    if ($ready !== null) return $ready;
+    try {
+        require_once __DIR__ . '/Database.php';
+        Database::execute("CREATE TABLE IF NOT EXISTS live_likes (
+            room_id TEXT DEFAULT '',
+            skey    TEXT DEFAULT '',
+            hits    TEXT DEFAULT '[]',
+            count   INTEGER DEFAULT 0,
+            at      TEXT DEFAULT '',
+            PRIMARY KEY (room_id, skey)
+        )");
+        $ready = true;
+    } catch (\Throwable $e) { $ready = false; }
+    return $ready;
+}
+
 function live_like(string $roomId): array {
     $key = live_user_key();
+    if (live_likes_ensure()) {
+        try {
+            require_once __DIR__ . '/Database.php';
+            $row = Database::query("SELECT hits, count FROM live_likes WHERE room_id = ? AND skey = ?", [$roomId, $key]);
+            $hits = $row ? (array)(json_decode((string)$row[0]['hits'], true) ?: []) : [];
+            $count = $row ? (int)$row[0]['count'] : 0;
+            $now = time();
+            $hits = array_values(array_filter($hits, fn($ts) => $now - (int)$ts < 60));
+            if (count($hits) >= 60) return ['ok' => false, 'count' => $count];
+            $hits[] = $now;
+            $count++;
+            Database::execute(
+                "INSERT OR REPLACE INTO live_likes (room_id, skey, hits, count, at) VALUES (?,?,?,?,?)",
+                [$roomId, $key, json_encode(array_slice($hits, -60)), $count, date('Y-m-d H:i:s')]
+            );
+            // 总数 = 各会话 count 之和（单查询聚合，避免读全量）
+            $total = Database::query("SELECT COALESCE(SUM(count),0) AS n FROM live_likes WHERE room_id = ?", [$roomId]);
+            return ['ok' => true, 'count' => (int)($total[0]['n'] ?? $count)];
+        } catch (\Throwable $e) {}
+    }
+    // SQLite 不可用回退原 JSON（语义一致）
     $all = json_read(live_likes_file());
     $all[$roomId] = $all[$roomId] ?? ['count' => 0, 'hits' => []];
     $all[$roomId]['hits'] = (array)($all[$roomId]['hits'] ?? []);
@@ -193,10 +270,91 @@ function live_like(string $roomId): array {
     $hits[] = $now;
     $all[$roomId]['hits'][$key] = array_values($hits);
     $all[$roomId]['count'] = (int)$all[$roomId]['count'] + 1;
-    // 控制体积：只留最近 50 个点赞者
     if (count($all[$roomId]['hits']) > 50) $all[$roomId]['hits'] = array_slice($all[$roomId]['hits'], -50, null, true);
     json_write(live_likes_file(), $all);
     return ['ok' => true, 'count' => (int)$all[$roomId]['count']];
+}
+
+/** 房间点赞总数（SQLite 聚合，后台/前台共用） */
+function live_likes_total(string $roomId): int {
+    if (live_likes_ensure()) {
+        try {
+            require_once __DIR__ . '/Database.php';
+            $r = Database::query("SELECT COALESCE(SUM(count),0) AS n FROM live_likes WHERE room_id = ?", [$roomId]);
+            return (int)($r[0]['n'] ?? 0);
+        } catch (\Throwable $e) {}
+    }
+    $all = json_read(live_likes_file());
+    return (int)($all[$roomId]['count'] ?? 0);
+}
+
+/* ═══ 观看数据层（第二批：观看人数/时长——"播了一场效果如何"的度量闭环）═══ */
+
+/** 观看心跳表：skey(会话) 维度去重，ts 记录最后活跃，dur 累计观看秒数 */
+function live_views_ensure(): bool {
+    static $ready = null;
+    if ($ready !== null) return $ready;
+    try {
+        require_once __DIR__ . '/Database.php';
+        Database::execute("CREATE TABLE IF NOT EXISTS live_views (
+            room_id TEXT DEFAULT '',
+            skey    TEXT DEFAULT '',
+            first_at TEXT DEFAULT '',
+            last_at  TEXT DEFAULT '',
+            dur      INTEGER DEFAULT 0,
+            PRIMARY KEY (room_id, skey)
+        )");
+        Database::execute("CREATE INDEX IF NOT EXISTS idx_live_views_room ON live_views(room_id)");
+        $ready = true;
+    } catch (\Throwable $e) { $ready = false; }
+    return $ready;
+}
+
+/** 观看心跳：前台每 30s 调一次（LOW_POWER 60s），按会话去重累计观看时长 */
+function live_view_ping(string $roomId): void {
+    if (!live_views_ensure()) return;
+    try {
+        require_once __DIR__ . '/Database.php';
+        $skey = live_user_key();
+        $now = time();
+        $rows = Database::query("SELECT first_at, last_at, dur FROM live_views WHERE room_id = ? AND skey = ?", [$roomId, $skey]);
+        if ($rows) {
+            $last = strtotime((string)$rows[0]['last_at']);
+            $gap = max(0, min(120, $now - $last));   // 心跳间隔上限 120s（防切后台狂累计）
+            Database::execute(
+                "UPDATE live_views SET last_at = ?, dur = dur + ? WHERE room_id = ? AND skey = ?",
+                [date('Y-m-d H:i:s', $now), $gap, $roomId, $skey]
+            );
+        } else {
+            Database::execute(
+                "INSERT OR REPLACE INTO live_views (room_id, skey, first_at, last_at, dur) VALUES (?,?,?,?,?)",
+                [$roomId, $skey, date('Y-m-d H:i:s', $now), date('Y-m-d H:i:s', $now), 0]
+            );
+        }
+    } catch (\Throwable $e) {}
+}
+
+/** 房间观看统计：去重人数（累计）/ 当前在线（5分钟内活跃）/ 总观看时长（分钟） */
+function live_view_stats(string $roomId): array {
+    if (!live_views_ensure()) return ['viewers' => 0, 'online' => 0, 'minutes' => 0];
+    try {
+        require_once __DIR__ . '/Database.php';
+        $viewers = Database::query("SELECT COUNT(*) AS n FROM live_views WHERE room_id = ?", [$roomId]);
+        $online  = Database::query("SELECT COUNT(*) AS n FROM live_views WHERE room_id = ? AND last_at >= ?", [$roomId, date('Y-m-d H:i:s', time() - 300)]);
+        $dur     = Database::query("SELECT COALESCE(SUM(dur),0) AS s FROM live_views WHERE room_id = ?", [$roomId]);
+        return [
+            'viewers' => (int)($viewers[0]['n'] ?? 0),
+            'online'  => (int)($online[0]['n'] ?? 0),
+            'minutes' => round((int)($dur[0]['s'] ?? 0) / 60, 1),
+        ];
+    } catch (\Throwable $e) {}
+    return ['viewers' => 0, 'online' => 0, 'minutes' => 0];
+}
+
+/** 直播间来源标记：直播间内下单时把房间号写进订单 source（live:{roomId}） */
+function live_order_source(): string {
+    $room = (string)($_COOKIE['of_live_room'] ?? '');
+    return $room !== '' ? 'live:' . $room : '';
 }
 
 function live_chat_send(string $roomId, string $user, string $text): array {

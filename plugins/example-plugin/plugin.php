@@ -54,12 +54,13 @@ PluginSystem::add_action('admin_sidebar_menu', function ($current) {
 // ═══════════ 以下为 v2 插件 API（推荐用法）═══════════
 
 // 5. 注册 API 端点：GET /api/plugin/example-plugin/stats
+//    此端点只读文章计数，显式声明公开（新安全默认：未声明 auth 的路由按需要登录从严处理）
 PluginSystem::register_api_route('example-plugin', 'GET', 'stats', function () {
     return PluginApiResponse::json([
         'articles' => count(json_read(DATA_DIR . '/articles.json')['items'] ?? []),
         'time'     => date('c'),
     ]);
-});
+}, ['auth' => 'none']);
 
 // 6. 注册后台菜单 + 设置页：/xmp/plugin/example-plugin
 PluginSystem::register_admin_menu(['id' => 'example-plugin', 'label' => '示例插件', 'order' => 50]);

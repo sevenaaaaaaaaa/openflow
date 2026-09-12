@@ -245,7 +245,9 @@ class PluginSystem {
         $path = trim($path, '/');
         self::$apiRoutes[$pluginId][strtoupper($method) . ' ' . $path] = [
             'cb' => $cb,
-            'auth' => $opts['auth'] ?? 'none',
+            // 安全默认：未声明 auth 的路由按「需要登录」从严处理（fail-closed），
+            // 插件要公开端点必须显式声明 auth => 'none'——防止忘声明变成公开接口
+            'auth' => in_array($opts['auth'] ?? '', ['none','admin','member'], true) ? $opts['auth'] : 'admin',
         ];
     }
 
