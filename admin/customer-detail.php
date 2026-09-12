@@ -48,7 +48,7 @@ admin_header('客户详情');
         <h1><?=htmlspecialchars($customer['name'] ?: '—')?> <span style="font-size:14px;color:var(--muted);font-weight:400"><?=htmlspecialchars($customer['company'] ?? '')?></span></h1>
         <p class="v-sub"><?=htmlspecialchars($customer['email'] ?? '')?> · <?=htmlspecialchars($customer['plan_type'] ?? '')?> · <?=$statusMap[$customer['status']] ?? $customer['status']?></p>
       </div>
-      <div class="v-actions"><a href="/xmp/crm?tab=customers" class="btn btn-s btn-sm">← 返回客户</a></div>
+      <div class="v-actions"><a href="/xmp/person?id=<?=urlencode((string)($customer['email'] ?? ($customer['lead_key'] ?? '')))?>" class="btn btn-p btn-sm">统一用户 →</a><a href="/xmp/crm?tab=customers" class="btn btn-s btn-sm">← 返回客户</a></div>
     </div>
 
     <!-- 概览卡 -->

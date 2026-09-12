@@ -73,7 +73,7 @@ admin_header('用户画像详情');
           · 生命周期 <span style="color:var(--accent);font-weight:600"><?=$lifecycle['stage'] ?? 'new'?></span>
         </p>
       </div>
-      <div class="v-actions"><a href="/xmp/cdp?tab=profiles" class="btn btn-s btn-sm">← 返回画像</a></div>
+      <div class="v-actions"><a href="/xmp/person?id=<?=urlencode((string)$vid)?>" class="btn btn-p btn-sm">统一用户 →</a><a href="/xmp/cdp?tab=profiles" class="btn btn-s btn-sm">← 返回画像</a></div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px" class="p360-grid">

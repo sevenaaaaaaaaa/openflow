@@ -54,7 +54,7 @@ admin_header('线索详情');
 <div class="admin-layout"><?php admin_sidebar('crm'); ?><div class="main">
   <div class="v-head"><div><h1><?=htmlspecialchars($lead['name'] ?: $lead['email'])?> <span style="font-size:14px;color:var(--muted);font-weight:400"><?=htmlspecialchars($lead['company'] ?? '')?></span></h1>
     <p class="v-sub"><?=htmlspecialchars($lead['email'])?> · 来源 <?=htmlspecialchars($lead['source'] ?? '—')?> · 距上次动作 <?=is_numeric($daysSince)?$daysSince.' 天':'—'?></p></div>
-    <div class="v-actions"><a href="/xmp/crm?tab=pipeline" class="btn btn-s btn-sm">← 返回管道</a></div></div>
+    <div class="v-actions"><a href="/xmp/person?id=<?=urlencode((string)($lead['email'] ?? ''))?>" class="btn btn-p btn-sm">统一用户 →</a><a href="/xmp/crm?tab=pipeline" class="btn btn-s btn-sm">← 返回管道</a></div></div>
 
   <!-- 概览卡 -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
