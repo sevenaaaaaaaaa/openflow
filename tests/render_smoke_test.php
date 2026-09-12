@@ -61,6 +61,7 @@ $urls = [
     ['person',       ''],
     ['live',         ''],
     ['course-edit',  ''],
+    ['course-students', ''],
     ['demo-growth', ''],
     ['dev-docs',     ''],
     ['commission',   ''],
