@@ -18,7 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     $steps = [];
     foreach (($_POST['step_action'] ?? []) as $i => $sa) {
         if (empty($sa)) continue;
-        $steps[] = [
+        $params = json_decode((string)($_POST['step_params'][$i] ?? ''), true);
+        $params = is_array($params) ? $params : [];
+        $step = [
             'action' => $sa,
             'subject' => $_POST['step_subject'][$i] ?? '',
             'content' => $_POST['step_content'][$i] ?? '',
@@ -33,7 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
             'coupon_value' => (float)($_POST['step_coupon_value'][$i] ?? 0),
             'coupon_min' => (float)($_POST['step_coupon_min'][$i] ?? 0),
             'action_id' => preg_replace('/[^a-z0-9_]/', '', (string)($_POST['step_action_id'][$i] ?? '')),
+            'params' => $params,
         ];
+        $steps[] = array_merge($step, $params);   // 参数摊平到步骤顶层，执行器直接读
     }
     $data = [
         'name' => trim($_POST['name'] ?? ''),
@@ -175,6 +179,7 @@ admin_header('营销自动化');
 .au-step[data-action="add_tag"] [data-f="tag"],
 .au-step[data-action="award_points"] [data-f="points"],
 .au-step[data-action="send_coupon"] [data-f^="coupon_"]{display:flex}
+.au-step[data-action="update_lead"] [data-f="params"],.au-step[data-action="create_task"] [data-f="params"],.au-step[data-action="add_segment"] [data-f="params"],.au-step[data-action="remove_segment"] [data-f="params"],.au-step[data-action="publish_content"] [data-f="params"]{display:flex}
 .au-step[data-action="send_wecom"] [data-f="content"],[data-action="send_wecom"] [data-f="mode"],[data-action="send_wecom"] [data-f="title"],[data-action="send_wecom"] [data-f="url"]{display:flex}
 .au-step[data-action="send_wechat"] [data-f="content"],[data-action="send_wechat"] [data-f="mode"],[data-action="send_wechat"] [data-f="template_id"],[data-action="send_wechat"] [data-f="tag_id"],[data-action="send_wechat"] [data-f="title"],[data-action="send_wechat"] [data-f="url"]{display:flex}
 @media(max-width:840px){.au-fields{grid-template-columns:1fr}}
@@ -359,7 +364,12 @@ var AU_ACTIONS = {
   send_coupon:  {label:'发优惠券', fields:['coupon_name','coupon_type','coupon_value','coupon_min']},
   send_wecom:   {label:'企业微信', fields:['content','title','url','mode']},
   send_wechat:  {label:'公众号/服务号', fields:['content','title','url','template_id','tag_id','mode']},
-  connection_action: {label:'连接动作（外部服务）', fields:['action_id']}
+  connection_action: {label:'连接动作（外部服务）', fields:['action_id']},
+  update_lead:  {label:'更新 CRM 线索', fields:['params']},
+  create_task:  {label:'创建待办任务', fields:['params']},
+  add_segment:  {label:'加入分群',     fields:['params']},
+  remove_segment:{label:'移出分群',    fields:['params']},
+  publish_content:{label:'发布内容',   fields:['params']},
 };
 // 开放能力：可用的连接动作（连接名 · 动作名）
 var AU_CONN_ACTIONS = <?php require_once __DIR__ . '/../lib/ConnectionActions.php'; echo json_encode(action_options(), JSON_UNESCAPED_UNICODE); ?>;
@@ -404,6 +414,7 @@ function stepHTML(st, i) {
         '<option value="">请选择…</option>' + Object.keys(AU_CONN_ACTIONS).map(function(k){ return '<option value="'+esc(k)+'"'+((st.action_id||'')===k?' selected':'')+'>'+esc(AU_CONN_ACTIONS[k])+'</option>'; }).join('') +
         (Object.keys(AU_CONN_ACTIONS).length ? '' : '<option value="" disabled>还没有启用的连接动作，先到「连接」里建一个</option>') +
       '</select></label>' +
+      '<label class="au-f wide" data-f="params"><span>参数(JSON) <em>update_lead:{stage,value,owner,source,followup} · create_task:{title,assignee,priority} · add/remove_segment:{segment_id} · publish_content:{article_id}</em></span><textarea name="step_params[]" rows="2">'+esc(st.params?JSON.stringify(st.params):'')+'</textarea></label>' +
     '</div></div>';
 }
 function stepAction(sel) { var row = sel.closest('.au-step'); row.dataset.action = sel.value; stepSummary(row); }
@@ -417,6 +428,7 @@ function stepSummary(row) {
   else if (a === 'award_points') s = '+' + v('step_points') + ' 分';
   else if (a === 'send_coupon') s = (v('step_coupon_name') || '券') + ' · ' + (v('step_coupon_type') === 'percent' ? v('step_coupon_value') + '%' : '¥' + v('step_coupon_value'));
   else if (a === 'connection_action') s = AU_CONN_ACTIONS[v('step_action_id')] || '未选择动作';
+  else if (['update_lead', 'create_task', 'add_segment', 'remove_segment', 'publish_content'].indexOf(a) >= 0) s = (AU_ACTIONS[a] ? AU_ACTIONS[a].label : a) + (v('step_params') ? ' · ' + v('step_params').slice(0, 40) : '');
   row.querySelector('.au-step-sum').textContent = s;
 }
 function stepRenumber() { document.querySelectorAll('#stepList .au-step').forEach(function (r, i) { r.querySelector('.au-n').textContent = i + 1; }); }
