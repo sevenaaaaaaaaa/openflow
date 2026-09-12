@@ -71,6 +71,7 @@ function admin_nav_pinned(): array {
                 ['id' => 'driver',          'label' => '规则增长引擎', 'href' => '/xmp/driver'],
                 ['id' => 'action-approvals','label' => '行动审批',     'href' => '/xmp/action-approvals'],
                 ['id' => 'demo-growth',     'label' => 'Demo 陪跑',   'href' => '/xmp/demo-growth'],
+                ['id' => 'provision',       'label' => '自动装配',     'href' => '/xmp/provision'],
             ],
         ],
         [
