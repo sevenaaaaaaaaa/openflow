@@ -20,6 +20,16 @@ $mods  = blockschema_all();
 $curKey = preg_replace('/[^a-z0-9_-]/', '', (string)($_GET['key'] ?? ''));
 $edit = $curKey ? blockschema_get($curKey) : null;
 
+// 导出模块 schema（JSON）
+if (isset($_GET['export']) && $edit) {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Content-Disposition: attachment; filename="module-' . $edit['key'] . '.json"');
+    echo json_encode(['key' => $edit['key'], 'name' => $edit['name'], 'category' => $edit['category'] ?? 'other',
+        'subcategory' => $edit['subcategory'] ?? '', 'status' => $edit['status'], 'style' => $edit['style'],
+        'variants' => $edit['variants'] ?? [], 'custom_html' => $edit['custom_html'] ?? '', 'fields' => $edit['fields']], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $act = $_POST['action'] ?? '';
@@ -53,7 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
         $mod = ['key' => trim((string)($_POST['key'] ?? '')), 'name' => trim((string)($_POST['name'] ?? '')),
                 'status' => ($_POST['status'] ?? 'active') === 'active' ? 'active' : 'draft',
-                'fields' => $fields, 'style' => $style, 'custom_html' => (string)($_POST['custom_html'] ?? ''),
+                'category' => (string)($_POST['category'] ?? 'other'),
+                'subcategory' => trim((string)($_POST['subcategory'] ?? '')),
+                'fields' => $fields, 'style' => $style,
+                'variants' => json_decode((string)($_POST['variants_json'] ?? '[]'), true) ?: [],
+                'custom_html' => (string)($_POST['custom_html'] ?? ''),
                 'updated_at' => date('c')];
         $r = blockschema_save($mod);
         if ($r['ok']) {
@@ -62,6 +76,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         $err = implode('；', $r['errors']);
+    } elseif ($act === 'clone') {
+        $srcKey = preg_replace('/[^a-z0-9_-]/', '', (string)($_POST['key'] ?? ''));
+        $src = $srcKey ? blockschema_get($srcKey) : null;
+        if ($src) {
+            $newKey = $srcKey . '_copy' . substr(bin2hex(random_bytes(2)), 0, 3);
+            $clone = $src; $clone['key'] = $newKey; $clone['name'] = ($src['name'] ?? $newKey) . ' 副本'; $clone['id'] = '';
+            blockschema_save($clone);
+            audit('克隆模块 ' . $srcKey . ' → ' . $newKey, 'module');
+            header('Location: /xmp/modules?key=' . urlencode($newKey) . '&ok=1');
+            exit;
+        }
+        $err = '克隆失败：模块不存在';
+    } elseif ($act === 'import') {
+        $raw = (string)($_POST['import_json'] ?? '');
+        $data = json_decode($raw, true);
+        if (is_array($data) && isset($data['key'])) {
+            $r = blockschema_save($data);
+            if ($r['ok']) { header('Location: /xmp/modules?key=' . urlencode($r['schema']['key']) . '&ok=1'); exit; }
+            $err = implode('；', $r['errors']);
+        } else { $err = '导入失败：需要单个模块 schema 的 JSON（含 key）'; }
     } elseif ($act === 'delete') {
         blockschema_delete((string)($_POST['key'] ?? ''));
         audit('删除模块 ' . ($_POST['key'] ?? ''), 'module');
@@ -93,6 +127,12 @@ admin_header('模块工厂');
       </a>
       <?php endforeach; ?>
       <a href="/xmp/modules?key=new" class="btn btn-primary btn-sm" style="margin-top:8px">+ 新建模块</a>
+      <form method="post" style="margin-top:10px" data-no-guard>
+        <?= csrf_field() ?>
+        <input type="hidden" name="action" value="import">
+        <textarea class="inp" name="import_json" rows="2" placeholder='粘贴模块 JSON 导入（含 "key"）' style="font-family:var(--mono);font-size:11px"></textarea>
+        <button type="submit" class="btn btn-ghost btn-sm" style="margin-top:6px">导入模块 JSON</button>
+      </form>
       <div class="text-xs text-muted" style="margin-top:10px;line-height:1.7">建好的模块会出现在「落地页构建器」的区块下拉里，和内置块一样可拖进页面、可复用。</div>
     </div>
 
@@ -111,6 +151,13 @@ admin_header('模块工厂');
               <select class="inp" name="status"><option value="active" <?=($m['status']??'active')==='active'?'selected':''?>>启用</option><option value="draft" <?=($m['status']??'')==='draft'?'selected':''?>>停用</option></select>
             </div>
           </div>
+          <div class="field-row">
+            <div class="field"><label>分类</label>
+              <select class="inp" name="category"><?php foreach (blockschema_categories() as $ck => $cl): ?><option value="<?=$ck?>" <?=($m['category']??'other')===$ck?'selected':''?>><?=htmlspecialchars($cl)?></option><?php endforeach; ?></select>
+            </div>
+            <div class="field"><label>子分类 <span class="hint">· 可选，如「课程页」</span></label><input class="inp" type="text" name="subcategory" value="<?=htmlspecialchars($m['subcategory'] ?? '')?>" placeholder="可选"></div>
+          </div>
+          <div class="field"><label>样式变体 <span class="hint">· JSON：[{"id":"dark","name":"深色","style":{"bg":"#111","align":"center"}}]</span></label><textarea class="inp" name="variants_json" rows="3" style="font-family:var(--mono);font-size:12px" placeholder='[{"id":"dark","name":"深色","style":{"bg":"#111827","radius":"16"}}]'><?=htmlspecialchars(json_encode($m['variants'] ?? [], JSON_UNESCAPED_UNICODE))?></textarea></div>
           <?php if (!empty($_GET['ok'])): ?><div class="text-sm text-muted" style="margin-top:8px">修改 key 请删掉重建（已建模块被页面引用，改 key 会失联）。</div><?php endif; ?>
 
           <h3 style="font-size:13px;margin:18px 0 8px">字段定义</h3>
@@ -168,6 +215,15 @@ admin_header('模块工厂');
         </div>
       </form>
       <?php if ($edit): ?>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <form method="post" data-no-guard>
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="clone">
+          <input type="hidden" name="key" value="<?=htmlspecialchars($m['key'])?>">
+          <button type="submit" class="btn btn-ghost btn-sm">克隆模块</button>
+        </form>
+        <a class="btn btn-ghost btn-sm" href="/xmp/modules?key=<?=urlencode($m['key'])?>&export=1">导出 JSON</a>
+      </div>
       <form method="post" style="margin-top:10px" data-confirm="删除模块「<?=htmlspecialchars($m['name']??'',ENT_QUOTES)?>」？">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="delete">
