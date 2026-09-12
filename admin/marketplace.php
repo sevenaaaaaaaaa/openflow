@@ -37,6 +37,15 @@ if (isset($_POST['save_skill'])) {
         }
     }
     skill_publish($data);
+    // 定价接线：把表单里的 price 同步到 mkt_prices（死代码 mkt_set_price 接通）
+    $price = (float)($_POST['price'] ?? 0);
+    $sid = trim($_POST['skill_id'] ?? '');
+    if ($sid !== '' && $price >= 0) {
+        $existing = mkt_asset_price('skill', $sid);
+        if ($price > 0 || $existing) {
+            mkt_set_price('skill', $sid, $price, 'CNY', (string)($data['period'] ?? ''));
+        }
+    }
     $message = '技能已保存';
     $skills = skills_all();
 }
@@ -195,6 +204,7 @@ admin_header('生态市场');
 
         <div class="field-row">
           <div class="field"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" name="status" value="published" <?=($s['status'] ?? 'published')==='published'?'checked':''?> style="width:16px;height:16px"> 发布到市场</label></div>
+          <div class="field"><label>定价 ¥ <span class="hint">· 0=免费</span></label><input type="number" name="price" value="<?=htmlspecialchars((string)($s['price'] ?? (mkt_asset_price('skill', $s['id'] ?? '')['price'] ?? 0)))?>" min="0" step="0.01" style="width:100px"></div>
         </div>
         <button type="submit" class="btn btn-primary">保存技能</button>
       </form>

@@ -235,7 +235,7 @@ if (colWrite) colWrite.onclick = async () => {
 };
 
 /* ── 脚本 ── */
-function renderScript(d) {
+function renderScript(d, id) {
   const beats = (d.beats || []).map(b =>
     `<tr><td class="nowrap mono">${esc(b.t)}</td><td>${esc(b.say)}</td><td class="hint">${esc(b.note)}</td></tr>`).join('');
   return `<h2>${esc(d.title)}</h2>
@@ -243,7 +243,26 @@ function renderScript(d) {
     <table class="tbl" style="margin-top:14px"><thead><tr><th>时间</th><th>台词</th><th>镜头/情绪</th></tr></thead><tbody>${beats}</tbody></table>
     <p style="margin-top:14px"><strong>结尾 CTA：</strong>${esc(d.cta)}</p>
     <p><strong>发布文案：</strong>${esc(d.caption)}</p>
-    <p><strong>物料清单：</strong>${esc((d.shot_list || []).join('、'))}</p>`;
+    <p><strong>物料清单：</strong>${esc((d.shot_list || []).join('、'))}</p>
+    ${id ? `<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="scriptToArticle('${id}', this)">转文章草稿（去编辑发布）</button>
+      <button class="btn btn-sm" onclick="copyScript(this)">复制全文</button>
+    </div>` : ''}`;
+}
+async function scriptToArticle(id, btn) {
+  btn.disabled = true;
+  try {
+    const body = new URLSearchParams({action: 'script_to_article', id, csrf_token: CSRF});
+    const r = await fetch('/api/create.php', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || '转换失败');
+    ofAlert('已生成文章草稿，正在跳转编辑…', 'success');
+    location.href = j.edit_url;
+  } catch (e) { ofAlert(e.message); btn.disabled = false; }
+}
+function copyScript(btn) {
+  const card = btn.closest('.card') || document;
+  navigator.clipboard.writeText(card.innerText).then(() => { btn.textContent = '✓ 已复制'; setTimeout(() => btn.textContent = '复制全文', 1500); });
 }
 const scBtn = document.getElementById('sc-btn');
 if (scBtn) scBtn.onclick = async () => {
@@ -254,7 +273,7 @@ if (scBtn) scBtn.onclick = async () => {
       duration: document.getElementById('sc-duration').value, style: document.getElementById('sc-style').value}, scBtn,
       ['理解主题与时长', '设计开场钩子', '编排节奏与镜头', '写发布文案']);
     const box = document.getElementById('sc-result');
-    box.innerHTML = renderScript(j.data); box.style.display = '';
+    box.innerHTML = renderScript(j.data, j.id); box.style.display = '';
     box.classList.add('ai-result');
     window.scrollTo({top: box.offsetTop - 80, behavior: 'smooth'});
   } catch (e) { ofAlert(e.message); }

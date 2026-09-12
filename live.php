@@ -164,6 +164,27 @@ foreach ((array)($room['products'] ?? []) as $line) {
         <p class="lead" style="font-size:15px;line-height:1.85;color:var(--muted)"><?=nl2br(htmlspecialchars($room['desc'] ?? ''))?></p>
         <?php if (!empty($room['start_at'])): ?><div class="note mono" style="margin-top:0"><?=htmlspecialchars(substr($room['start_at'], 0, 16))?> — <?=htmlspecialchars(substr($room['end_at'] ?? '', 0, 16))?></div><?php endif; ?>
 
+        <?php if ($st === 'replay'):
+            $chapters = !empty($room['chapters']) && is_array($room['chapters']) ? $room['chapters'] : live_auto_chapters($room);
+            if (count($chapters) > 1 && function_exists('live_save_chapters')) { try { live_save_chapters($room['id'], $chapters); } catch (\Throwable $e) {} }
+        ?>
+        <!-- 回放章节（自动从弹幕/推品历史提取时间轴，可点击跳转） -->
+        <div class="card" style="padding:14px 18px;margin-top:14px">
+          <div style="font-size:12px;font-weight:700;color:var(--text-3);margin-bottom:8px">🎬 回放章节</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <?php foreach ($chapters as $ci => $ch):
+                // 时间转秒（章节 t 格式 "MM:SS" 或 "HH:MM"）
+                $chParts = array_map('intval', explode(':', $ch['t'] ?? '0:0'));
+                $chSec = count($chParts) === 2 ? $chParts[0] * 60 + $chParts[1] : 0;
+            ?>
+            <button onclick="var v=document.getElementById('livePlayer');if(v&&typeof v.currentTime==='number'){v.currentTime=<?=$chSec?>;v.play();}" style="padding:5px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);cursor:pointer;font-size:12px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+              <b style="color:var(--accent)"><?=htmlspecialchars($ch['t'])?></b> <?=htmlspecialchars($ch['title'])?>
+            </button>
+            <?php endforeach; ?>
+          </div>
+        </div>
+        <?php endif; ?>
+
         <?php if ($st === 'scheduled'): ?>
         <!-- 预约提醒（E3）：会员一键预约，游客留邮箱；开播自动通知 -->
         <div class="strip" id="subStrip">
