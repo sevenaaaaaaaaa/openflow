@@ -15,6 +15,17 @@ $courseMap = [];
 foreach ($courses as $c) $courseMap[$c['id']] = $c['title'];
 $message = '';
 
+// 弹幕管理：删除 / 禁言 / 取消禁言
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chat_action'])) {
+    csrf_verify();
+    $chatAction = $_POST['chat_action'] ?? '';
+    if ($chatAction === 'delete_msg') { live_chat_delete((string)($_POST['msg_id'] ?? '')); flash('success', '弹幕已删除'); }
+    elseif ($chatAction === 'mute_user') { live_mute_user(trim((string)($_POST['mute_user'] ?? '')), '后台手动禁言'); flash('success', '已禁言'); }
+    elseif ($chatAction === 'unmute_user') { live_unmute_user(trim((string)($_POST['unmute_user'] ?? ''))); flash('success', '已取消禁言'); }
+    header('Location: /xmp/live?tab=chat' . (!empty($_POST['room_id']) ? '&room=' . urlencode((string)$_POST['room_id']) : ''));
+    exit;
+}
+
 // 保存房间
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_room'])) {
     csrf_verify();
@@ -150,6 +161,7 @@ admin_header('直播管理');
     <div class="tabs" style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
       <a href="?tab=rooms" class="btn <?=($_GET['tab']??'rooms')==='rooms'?'btn-primary':'btn-ghost'?> btn-sm">📡 直播间 <?=count($rooms)?></a>
       <a href="?tab=new" class="btn <?=($_GET['tab']??'')==='new'?'btn-primary':'btn-ghost'?> btn-sm">➕ 新建直播</a>
+      <a href="?tab=chat" class="btn <?=($_GET['tab']??'')==='chat'?'btn-primary':'btn-ghost'?> btn-sm">💬 弹幕管理</a>
       <a href="?tab=settings" class="btn <?=($_GET['tab']??'')==='settings'?'btn-primary':'btn-ghost'?> btn-sm">⚙️ 设置</a>
     </div>
 
@@ -276,6 +288,52 @@ admin_header('直播管理');
         <button type="submit" class="btn btn-primary">保存设置</button>
       </form>
     </div>
+    <?php endif; ?>
+
+    <?php if (($_GET['tab'] ?? '') === 'chat'): ?>
+    <?php $chatRoom = trim((string)($_GET['room'] ?? ($rooms[0]['id'] ?? ''))); $chatMsgs = $chatRoom ? live_chat_admin($chatRoom, 50) : []; $mutedNow = live_muted_list(); ?>
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <form method="get" style="display:flex;gap:10px;align-items:center">
+        <input type="hidden" name="tab" value="chat">
+        <select name="room" onchange="this.form.submit()" style="min-width:200px">
+          <?php foreach ($rooms as $r): ?><option value="<?=htmlspecialchars($r['id'])?>" <?=$chatRoom===$r['id']?'selected':''?>><?=htmlspecialchars($r['title'])?></option><?php endforeach; ?>
+        </select>
+        <noscript><button class="btn btn-primary btn-sm">查看</button></noscript>
+      </form>
+    </div>
+    <?php if (!$chatRoom || !$chatMsgs): ?><div class="card empty" style="padding:40px">该房间暂无弹幕</div>
+    <?php else: ?>
+    <div class="card" style="padding:0;overflow:auto">
+      <table>
+        <thead><tr><th>时间</th><th>用户</th><th>内容</th><th style="width:160px">操作</th></tr></thead>
+        <tbody>
+          <?php foreach ($chatMsgs as $msg): $msgUser = (string)($msg['user'] ?? ''); $isMuted = in_array($msgUser, $mutedNow, true); ?>
+          <tr>
+            <td class="text-sm text-muted"><?=htmlspecialchars($msg['time'] ?? '')?></td>
+            <td><span class="badge <?=$isMuted?'badge-red':'badge-gray'?>" style="font-size:11px"><?=htmlspecialchars($msgUser ?: '匿名')?></span><?php if ($isMuted): ?> <span class="st st-danger" style="font-size:10px">已禁言</span><?php endif; ?></td>
+            <td class="text-sm"><?=htmlspecialchars(mb_substr($msg['text'] ?? '', 0, 60))?></td>
+            <td>
+              <form method="post" style="display:inline"><?=csrf_field()?><input type="hidden" name="chat_action" value="delete_msg"><input type="hidden" name="msg_id" value="<?=htmlspecialchars($msg['id'] ?? '')?>"><input type="hidden" name="room_id" value="<?=htmlspecialchars($chatRoom)?>"><button class="btn btn-ghost btn-sm" style="color:var(--danger)">删除</button></form>
+              <?php if (!$isMuted && $msgUser): ?>
+              <form method="post" style="display:inline"><?=csrf_field()?><input type="hidden" name="chat_action" value="mute_user"><input type="hidden" name="mute_user" value="<?=htmlspecialchars($msgUser)?>"><input type="hidden" name="room_id" value="<?=htmlspecialchars($chatRoom)?>"><button class="btn btn-ghost btn-sm" style="color:var(--warn)">禁言</button></form>
+              <?php endif; ?>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+    <?php if ($mutedNow): ?>
+    <div class="card" style="padding:16px;margin-top:16px">
+      <h3 style="font-size:14px;margin-bottom:10px">当前禁言名单（<?=count($mutedNow)?> 人）</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <?php foreach ($mutedNow as $mu): ?>
+        <form method="post" style="display:inline"><?=csrf_field()?><input type="hidden" name="chat_action" value="unmute_user"><input type="hidden" name="unmute_user" value="<?=htmlspecialchars($mu)?>"><button class="btn btn-ghost btn-sm" title="点击取消禁言">        <button type="button" class="btn btn-ghost btn-sm" title="点击取消禁言"><?=htmlspecialchars($mu)?> ✕</button></form>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php endif; ?>
+    <?php endif; ?>
     <?php endif; ?>
   </div>
 </div>
