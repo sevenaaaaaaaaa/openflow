@@ -11,6 +11,9 @@ class PluginSystem {
     private static array $actions = [];
     private static array $filters = [];
     private static array $plugins = [];
+    private static array $blocks = [];        // type => ['plugin','name','category','render','schema']
+    private static array $cli = [];           // command => ['plugin','desc','cb']
+    private static array $mcp = [];           // name => ['plugin','desc','schema','cb']
     private static bool $initialized = false;
 
     // ─── Hook Registration ───
@@ -110,7 +113,7 @@ class PluginSystem {
 
     /** 权限清单归一化：null（未声明）→ 基础集；数组 → 白名单交集 */
     public static function normalize_permissions($perms): array {
-        $known = ['hooks','config','log','data.read','data.write','http','cdp','email','notify','schedule','api','menu','page','slot','asset'];
+        $known = ['hooks','config','log','data.read','data.write','http','cdp','email','notify','schedule','api','menu','page','slot','asset','block','cli','mcp'];
         if (!is_array($perms)) {
             // 未声明：只给基础能力（钩子观察/配置/日志）——老插件兼容，写能力需补声明
             return ['hooks','config','log'];
@@ -132,6 +135,7 @@ class PluginSystem {
 
     /** 无权限调用的审计记录（谁想越权一目了然） */
     public static function permission_denied(string $pluginId, string $perm, string $api = ''): void {
+        if (!defined('DATA_DIR')) return;
         $line = date('c') . " plugin={$pluginId} perm={$perm}" . ($api !== '' ? " api={$api}" : '') . " DENIED\n";
         @mkdir(DATA_DIR . '/plugins', 0775, true);
         @file_put_contents(DATA_DIR . '/plugin-permissions.log', $line, FILE_APPEND | LOCK_EX);
@@ -196,10 +200,13 @@ class PluginSystem {
         $targetDir = $pluginsDir . '/' . $pluginId;
         $existingManifest = is_file($targetDir . '/plugin.json') ? (json_decode((string)file_get_contents($targetDir . '/plugin.json'), true) ?: []) : [];
         $newVersion = '';
+        $newManifest = [];
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
             if (basename($name) === 'plugin.json') {
                 $m = json_decode((string)$zip->getFromIndex($i), true);
+                if (!is_array($m)) $m = [];
+                $newManifest = $m;
                 $newVersion = (string)($m['version'] ?? '');
                 // ZIP 内 id 与目标目录不一致 → 拒装（防装出不匹配目录）
                 if (!empty($m['id']) && $m['id'] !== $pluginId) {
@@ -212,6 +219,19 @@ class PluginSystem {
         if ($existingManifest && $newVersion !== '' && version_compare($newVersion, (string)($existingManifest['version'] ?? '0'), '<')) {
             $zip->close(); unlink($tmp);
             return ['ok' => false, 'error' => "新版本 {$newVersion} 低于已装 " . ($existingManifest['version'] ?? '?') . "（降级需先卸载再安装）"];
+        }
+        // 依赖 / 冲突检查：manifest 里声明 requires/conflicts 时强制校验（此前 pkg_check 从未被调用）
+        if (!empty($newManifest['requires']) || !empty($newManifest['conflicts']) || !empty($newManifest['platform'])) {
+            require_once __DIR__ . '/PackageRegistry.php';
+            if (function_exists('pkg_check')) {
+                $installedPkgs = [];
+                foreach (self::get_plugins() as $pid => $pm) $installedPkgs[$pid] = (string)($pm['version'] ?? '0');
+                $chk = pkg_check(['requires' => $newManifest['requires'] ?? [], 'conflicts' => $newManifest['conflicts'] ?? [], 'platform' => $newManifest['platform'] ?? ''], $installedPkgs);
+                if (empty($chk['ok'])) {
+                    $zip->close(); unlink($tmp);
+                    return ['ok' => false, 'error' => '依赖不满足：' . implode('；', (array)($chk['reasons'] ?? []))];
+                }
+            }
         }
 
         // 升级前备份现有目录（保留最近 3 版，可回滚）
@@ -601,6 +621,43 @@ class PluginSystem {
         if (function_exists('json_write')) json_write($stateFile, $state);
         return ['ran' => $ran, 'errors' => $errors, 'registered' => count(self::$schedules)];
     }
+
+    /* ── 扩展面：插件可注册 区块 / CLI 命令 / MCP 工具 ── */
+
+    /**
+     * 注册一个前台区块类型（会出现在落地页构建器面板里）。
+     *   PluginSystem::register_block('my-plugin', ['type'=>'promo','name'=>'促销条','category'=>'convert',
+     *     'render'=>fn(array $b) => '<div>…</div>']);
+     * requires 权限 block。
+     */
+    public static function register_block(string $pluginId, array $def): void {
+        if (!self::plugin_can($pluginId, 'block')) { self::permission_denied($pluginId, 'block', 'register_block'); return; }
+        $type = preg_replace('/[^a-z0-9_-]/', '', strtolower((string)($def['type'] ?? '')));
+        if ($type === '' || !isset($def['render']) || !is_callable($def['render'])) return;
+        if (isset(self::$blocks[$type])) return;   // 不覆盖已有类型
+        $cat = preg_replace('/[^a-z_]/', '', strtolower((string)($def['category'] ?? 'other')));
+        self::$blocks[$type] = ['plugin' => $pluginId, 'type' => $type, 'name' => (string)($def['name'] ?? $type), 'category' => $cat ?: 'other', 'render' => $def['render']];
+    }
+
+    /** 注册一个 CLI 命令（bin/of <command>），权限 cli */
+    public static function register_cli(string $pluginId, string $command, string $desc, callable $cb): void {
+        if (!self::plugin_can($pluginId, 'cli')) { self::permission_denied($pluginId, 'cli', 'register_cli'); return; }
+        $command = preg_replace('/[^a-z0-9_-]/', '', strtolower($command));
+        if ($command === '') return;
+        self::$cli[$command] = ['plugin' => $pluginId, 'desc' => $desc, 'cb' => $cb];
+    }
+
+    /** 注册一个 MCP 工具（供 AI/外部调用），权限 mcp */
+    public static function register_mcp_tool(string $pluginId, string $name, string $desc, array $schema, callable $cb): void {
+        if (!self::plugin_can($pluginId, 'mcp')) { self::permission_denied($pluginId, 'mcp', 'register_mcp_tool'); return; }
+        $name = preg_replace('/[^a-z0-9_]/', '', strtolower($name));
+        if ($name === '') return;
+        self::$mcp[$name] = ['plugin' => $pluginId, 'name' => $name, 'desc' => $desc, 'schema' => $schema, 'cb' => $cb];
+    }
+
+    public static function blocks(): array { return self::$blocks; }
+    public static function cli_commands(): array { return self::$cli; }
+    public static function mcp_tools(): array { return self::$mcp; }
 }
 
 /**

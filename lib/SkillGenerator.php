@@ -90,27 +90,20 @@ function skill_generate_plugin(string $description, string $author = 'OpenFlow')
     $spec = json_decode($m[0], true);
     if (!$spec) return ['ok' => false, 'error' => 'AI 返回无法解析'];
 
-    // 写文件
+    // ── 组装 plugin.php（先组装、后审查、再落盘：AI 生成的插件不许裸奔）──
     $id = preg_replace('/[^a-z0-9\-_]/', '', strtolower($spec['id'] ?? 'my-plugin'));
     $id = $id ?: 'my-plugin';
     $dir = __DIR__ . '/../plugins/' . $id;
-    if (!is_dir($dir)) mkdir($dir, 0755, true);
+    $name = (string)($spec['name'] ?? 'My Plugin');
 
-    // plugin.json
-    $manifest = [
-        'id' => $id, 'name' => $spec['name'] ?? 'My Plugin', 'version' => '1.0.0',
-        'description' => $spec['description'] ?? '', 'author' => $author,
-    ];
-    file_put_contents($dir . '/plugin.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-    // plugin.php
-    $php = "<?php\n/**\n * {$manifest['name']} — AI 生成插件\n * 由 OpenFlow 生态市场 AI 生成\n */\n";
+    $php = "<?php\n/**\n * {$name} — AI 生成插件（草稿，需人工审核后启用）\n * 由 OpenFlow 生态市场 AI 生成\n */\n";
     $seen = [];
     foreach ($spec['hooks'] ?? [] as $h) {
-        $hook = $h['hook'] ?? 'admin_sidebar_menu';
+        if (!is_array($h)) continue;
+        $hook = (string)($h['hook'] ?? 'admin_sidebar_menu');
         if (isset($seen[$hook])) continue;
         $seen[$hook] = true;
-        $code = trim($h['code'] ?? '');
+        $code = trim((string)($h['code'] ?? ''));
         if ($code === '') continue;
         if (strpos($hook, 'filter') !== false) {
             $php .= "PluginSystem::add_filter('{$hook}', function(\$value) {\n    {$code}\n    return \$value;\n});\n\n";
@@ -118,8 +111,29 @@ function skill_generate_plugin(string $description, string $author = 'OpenFlow')
             $php .= "PluginSystem::add_action('{$hook}', function() {\n    {$code}\n});\n\n";
         }
     }
-    $php .= "// 后台侧边栏入口（示例）\nPluginSystem::add_action('admin_sidebar_menu', function() { echo '<a href=\"#\">{$manifest['name']}</a>'; });\n";
+    $php .= "// 后台侧边栏入口（示例）\nPluginSystem::add_action('admin_sidebar_menu', function() { echo '<a href=\"#\">{$name}</a>'; });\n";
+
+    // 静态安全审查：命中危险模式（eval/exec/穿越/凭证外带…）直接拒绝，绝不落盘
+    if (!function_exists('skillguard_scan')) require_once __DIR__ . '/SkillGuard.php';
+    $risks = function_exists('skillguard_scan') ? skillguard_scan($php) : [];
+    if ($risks) {
+        return ['ok' => false, 'error' => '生成物未通过安全审查：' . implode('、', $risks), 'risks' => $risks];
+    }
+
+    // 最小权限声明（由代码推断）+ 默认不启用（草稿，人工确认后启用）
+    $perms = ['hooks', 'config', 'log'];
+    if (preg_match('/curl_|httpPost|httpGet|file_get_contents\(\s*[\'"]https?:/i', $php)) $perms[] = 'http';
+    if (preg_match('/file_put_contents|fwrite|json_write/', $php)) $perms[] = 'data.write';
+
+    $manifest = [
+        'id' => $id, 'name' => $name, 'version' => '1.0.0',
+        'description' => $spec['description'] ?? '', 'author' => $author,
+        'permissions' => array_values(array_unique($perms)),
+        'enabled_by_default' => false,
+    ];
+    if (!is_dir($dir)) mkdir($dir, 0755, true);
+    file_put_contents($dir . '/plugin.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     file_put_contents($dir . '/plugin.php', $php);
 
-    return ['ok' => true, 'plugin_id' => $id, 'manifest' => $manifest, 'dir' => $dir];
+    return ['ok' => true, 'plugin_id' => $id, 'manifest' => $manifest, 'dir' => $dir, 'draft' => true, 'risks' => []];
 }
