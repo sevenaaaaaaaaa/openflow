@@ -60,6 +60,9 @@ function admin_nav_pinned(): array {
     $I = admin_nav_icons();
     $all = [
         [
+            'id' => 'today', 'label' => '今日主线', 'tag' => '主线', 'icon' => $I['home'], 'href' => '/xmp/today',
+        ],
+        [
             'id' => 'deck', 'label' => 'Deck', 'tag' => '运营', 'icon' => $I['home'], 'href' => '/xmp/workspace',
             'subs' => [
                 ['id' => 'deck',            'label' => 'Deck',        'href' => '/xmp/workspace'],
