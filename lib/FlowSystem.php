@@ -295,5 +295,18 @@ function flow_order_paid(array $order): void {
             ];
             conv_track($convData);
         } catch (Throwable $e) {}
+        // 多触点归因：购买触点带金额，供各归因模型分配
+        try {
+            require_once __DIR__ . '/AttributionModel.php';
+            AttributionModel::addTouchpoint([
+                'user_id' => $memberId,
+                'source' => $_COOKIE['fc_utm_utm_source'] ?? '',
+                'medium' => $_COOKIE['fc_utm_utm_medium'] ?? '',
+                'campaign' => $_COOKIE['fc_utm_utm_campaign'] ?? '',
+                'page' => '/order',
+                'event' => 'purchase',
+                'value' => $amount,
+            ]);
+        } catch (Throwable $e) {}
     }
 }

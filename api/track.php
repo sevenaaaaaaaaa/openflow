@@ -57,6 +57,20 @@ if ($newUtm) {
         'props' => json_encode(array_filter($_COOKIE, fn($k) => strpos($k, 'fc_utm_') === 0, ARRAY_FILTER_USE_KEY), JSON_UNESCAPED_UNICODE),
         'ip' => $_SERVER['REMOTE_ADDR'] ?? '', 'created_at' => date('Y-m-d H:i:s'),
     ]);
+
+    // 多触点归因：写入触点（此前 addTouchpoint 无调用，归因模型是死数据）
+    try {
+        require_once __DIR__ . '/../lib/AttributionModel.php';
+        AttributionModel::addTouchpoint([
+            'user_id' => $uid,
+            'source' => $_COOKIE['fc_utm_utm_source'] ?? '',
+            'medium' => $_COOKIE['fc_utm_utm_medium'] ?? '',
+            'campaign' => $_COOKIE['fc_utm_utm_campaign'] ?? '',
+            'content' => $_COOKIE['fc_utm_utm_content'] ?? '',
+            'page' => (($_SERVER['HTTP_REFERER'] ?? '') ? parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH) : '/'),
+            'event' => 'utm_landing',
+        ]);
+    } catch (\Throwable $e) {}
 }
 
 // 关联会员（若已登录）

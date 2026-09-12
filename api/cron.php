@@ -177,6 +177,10 @@ sub_expire_check();
 if (function_exists('sub_attempt_renewals')) sub_attempt_renewals();
 if (function_exists('sub_send_reminders')) sub_send_reminders();
 
+// CAPI 回传 worker：把待发送的转化事件回传广告平台（此前 conversion_events.json 只进不出）
+$convRun = ['status' => 'skipped'];
+try { require_once __DIR__ . '/../lib/ConversionApi.php'; $convRun = array_merge(['status' => 'ok'], conv_process()); } catch (Throwable $e) { $convRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
+
 // 每日存储维护（每 6 小时一次的频率保护）
 $lastMaintain = (int)(json_read(DATA_DIR . '/storage-maintain.json')['ts'] ?? 0);
 if (time() - $lastMaintain > 6 * 3600) {
@@ -287,5 +291,5 @@ try { require_once __DIR__ . '/../lib/GeoSystem.php'; $geoRun = geo_daily_run();
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge,
                   'webhook_retry' => $webhookRetry, 'plugin_cron' => $pluginCron, 'product_scout' => $scout,
-                  'geo_run' => $geoRun,
+                  'geo_run' => $geoRun, 'conv_run' => $convRun,
                   'time' => date('Y-m-d H:i:s')]);

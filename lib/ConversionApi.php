@@ -50,6 +50,9 @@ function conv_process(): array {
         $configs = $sc['ad_platforms'] ?? [];
     }
     if (!is_array($configs)) $configs = [];
+    $hasEnabled = false;
+    foreach ($configs as $plat) if (!empty($plat['enabled'])) { $hasEnabled = true; break; }
+    if (!$hasEnabled) return ['sent' => 0, 'failed' => 0, 'skipped' => 'no_enabled_platform'];
     $sent = 0; $failed = 0;
 
     foreach ($list as &$c) {
@@ -70,6 +73,8 @@ function conv_process(): array {
         $c['attempts'] = ($c['attempts'] ?? 0) + 1;
         $c['status'] = $platFailed === 0 ? 'sent' : (($c['attempts'] >= 3) ? 'failed' : 'pending');
         $c['last_attempt'] = date('Y-m-d H:i:s');
+        if ($platFailed === 0 && $platSent > 0) $sent++;
+        elseif ($platFailed > 0) $failed++;
     }
     json_write($file, $list);
     return ['sent' => $sent, 'failed' => $failed];

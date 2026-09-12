@@ -392,6 +392,12 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
         }
     } catch (Exception $e) {}
 
+    // 数据流：订单支付联动（CDP 价值 + 积分 + 站内信 + purchase 回传广告平台）
+    try {
+        require_once __DIR__ . '/FlowSystem.php';
+        if (function_exists('flow_order_paid')) flow_order_paid(array_merge($order, ['id' => $orderId, 'status' => 'paid']));
+    } catch (\Throwable $e) {}
+
     // 支付成功 → 插件钩子（旁路）
     if (class_exists('PluginSystem')) {
         PluginSystem::do_action('payment_success', $orderId, $order, $method);
