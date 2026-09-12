@@ -16,6 +16,11 @@ if ($campaign !== '' && $emailId !== '') {
 }
 
 if ($type === 'click') {
+    // 邮件归因：点击时打上活动标记，下单成交时归因到该邮件活动
+    if ($campaign !== '') {
+        setcookie('fc_mail_c', $campaign, time() + 86400 * 30, '/');
+        $_COOKIE['fc_mail_c'] = $campaign;
+    }
     $url = $_GET['u'] ?? '/';
     $decoded = urldecode($url);
     if (preg_match('#^https?://#i', $decoded)) {
