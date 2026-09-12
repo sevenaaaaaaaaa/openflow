@@ -27,7 +27,7 @@ const ADMIN_NAV_ALIAS = [
     // 编辑 / 详情 / 历史页 → 所属条目
     'article-edit' => 'content-hub', 'revisions' => 'content-hub', 'collaborators' => 'content-hub', 'articles' => 'content-hub', 'pages-list' => 'content-hub', 'downloads' => 'content-hub', 'download-edit' => 'content-hub',
     'podcasts' => 'content-hub', 'page-categories' => 'content-hub', 'tags' => 'content-hub', 'page-builder' => 'pages', 'page-editor-config' => 'pages',
-    'course-edit' => 'courses', 'customer-detail' => 'crm', 'profile-detail' => 'profiling', 'user-profile' => 'profiling', 'crm-lead-detail' => 'crm',
+    'course-edit' => 'courses', 'customer-detail' => 'crm', 'profile-detail' => 'profiling', 'user-profile' => 'profiling', 'crm-lead-detail' => 'crm', 'person' => 'crm',
     'abtests-stats' => 'abtests', 'sentiment-report' => 'sentiment', 'survey-agent' => 'survey', 'survey-org' => 'survey',
     'brain' => 'studio', 'decision-trace' => 'studio', 'ai-config' => 'studio', 'ai-usage' => 'studio', 'knowledge' => 'studio', 'driver' => 'deck', 'action-approvals' => 'deck', 'demo-growth' => 'deck', 'flow' => 'deck', 'safefix' => 'deck', 'evolution' => 'deck', 'workspace' => 'deck',
     'media-upload' => 'media', 'export' => 'data-export', 'export-all' => 'data-export', 'onboarding' => 'deck', 'debug' => 'devops',
