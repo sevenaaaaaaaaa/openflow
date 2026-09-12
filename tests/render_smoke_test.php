@@ -53,6 +53,7 @@ $urls = [
     ['catalog',      ''],
     ['decision-trace', ''],
     ['flow-workspace', ''],
+    ['today',        ''],
     ['demo-growth', ''],
     ['dev-docs',     ''],
     ['commission',   ''],
