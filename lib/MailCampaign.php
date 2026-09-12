@@ -224,6 +224,26 @@ function mailc_campaign_stats(string $campaign, int $sentCount = 0): array {
 }
 
 // ─── 渲染邮件内容（模板变量 + 退订/pixel/链接包装） ───
+/** 全量统计：每活动的打开/点击人数（供送达率中心汇总） */
+function mailc_stats_all(): array {
+    $out = [];
+    if (mailc_stats_ensure()) {
+        try {
+            $rows = Database::query("SELECT campaign, SUM(CASE WHEN open_count>0 THEN 1 ELSE 0 END) AS opens, SUM(CASE WHEN click_count>0 THEN 1 ELSE 0 END) AS clicks FROM mail_stats GROUP BY campaign");
+            foreach ($rows as $r) $out[] = ['campaign' => (string)$r['campaign'], 'opens' => (int)$r['opens'], 'clicks' => (int)$r['clicks']];
+            return $out;
+        } catch (\Throwable $e) {}
+    }
+    $agg = [];
+    foreach (json_read(mailc_stats_file()) as $k => $v) {
+        $c = explode(':', (string)$k)[0];
+        $agg[$c] = $agg[$c] ?? ['campaign' => $c, 'opens' => 0, 'clicks' => 0];
+        if (!empty($v['open_count'])) $agg[$c]['opens']++;
+        if (!empty($v['click_count'])) $agg[$c]['clicks']++;
+    }
+    return array_values($agg);
+}
+
 function mailc_render(string $html, array $vars, string $campaign, string $email): string {
     foreach ($vars as $k => $v) {
         $html = str_replace('{{' . $k . '}}', (string)$v, $html);
@@ -276,10 +296,14 @@ function nl_process_schedule(): array {
             $recipients = [];
             if (($t['mode'] ?? '') === 'test') $recipients[] = ['email' => 'hello@openflow.dev', 'name' => '测试'];
             else foreach ((array)$subscribers as $s) if (($s['status'] ?? 'subscribed') === 'subscribed' && !empty($s['email'])) $recipients[] = $s;
+            // 送达率闸门：抑制名单（硬退信/投诉）不再发
+            try { require_once __DIR__ . '/EmailDeliverability.php'; } catch (\Throwable $e) {}
             foreach ($recipients as $r) {
+                if (function_exists('email_can_marketing_send') && !email_can_marketing_send((string)$r['email'])) continue;
                 $html = mailc_render((string)$t['html'], ['title'=>($t['subject'] ?? '')], $campaign, $r['email']);
                 if ($bm) $bm->send($r['email'], '📬 ' . ($t['subject'] ?? ''), $html, ['title' => $t['subject'] ?? '']);
                 $sent++;
+                if (function_exists('email_record_sent')) email_record_sent();
             }
         } catch (\Throwable $e) {}
         $t['status'] = 'sent'; $t['sent_at'] = $now;

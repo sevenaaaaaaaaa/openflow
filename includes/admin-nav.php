@@ -32,7 +32,7 @@ const ADMIN_NAV_ALIAS = [
     'brain' => 'studio', 'decision-trace' => 'studio', 'ai-config' => 'studio', 'ai-usage' => 'studio', 'knowledge' => 'studio', 'driver' => 'deck', 'action-approvals' => 'deck', 'demo-growth' => 'deck', 'flow' => 'deck', 'safefix' => 'deck', 'evolution' => 'deck', 'workspace' => 'deck',
     'media-upload' => 'media', 'export' => 'data-export', 'export-all' => 'data-export', 'onboarding' => 'deck', 'debug' => 'devops',
     'notion-sync' => 'data-sync', 'languages' => 'settings', 'storage' => 'health-check', 'activity' => 'audit-log', 'footer-links' => 'site-builder',
-    'mail-settings' => 'email', 'connections' => 'settings', 'payment-settings' => 'shop-settings', 'seo' => 'seo-center', 'seo-tools' => 'seo-center', 'seo-batch' => 'seo-center',
+    'mail-settings' => 'email', 'email-deliverability' => 'email', 'connections' => 'settings', 'payment-settings' => 'shop-settings', 'seo' => 'seo-center', 'seo-tools' => 'seo-center', 'seo-batch' => 'seo-center',
     'seo-console' => 'seo-center', 'redirects' => 'seo-center', 'structured-data' => 'seo-center', 'structured' => 'seo-center', 'bot-insights' => 'seo-center', 'landing' => 'landing-pages',
     'image-seo' => 'seo-center', 'index' => 'deck', 'plugin-page' => 'plugins',
 ];
@@ -254,6 +254,7 @@ function admin_nav_tree(): array {
                 ['label' => '邮件与短信', 'hint' => 'EDM · SMTP · 短信', 'subs' => [
                     ['id' => 'email', 'label' => '邮件', 'perm' => 'email'],
                     ['id' => 'newsletter-editor', 'label' => 'Newsletter 编辑器', 'perm' => 'email', 'hint' => 'Revue 式排版·预览·定时'],
+                    ['id' => 'email-deliverability', 'label' => '送达率中心', 'perm' => 'email', 'hint' => 'SPF/DKIM/DMARC · 抑制名单 · 退信投诉率 · 收入归因'],
                     ['id' => 'sms', 'label' => '短信', 'perm' => 'sms'],
                 ]],
                 ['label' => '表单与提交', 'hint' => '表单 · 提交记录', 'subs' => [
