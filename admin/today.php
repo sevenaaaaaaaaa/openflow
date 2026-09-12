@@ -8,6 +8,8 @@
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/Mainline.php';
+require_once __DIR__ . '/../lib/AiCenter.php';
+require_once __DIR__ . '/../lib/MainlineAi.php';
 require_login();
 
 // 处理回流：完成 / 稍后
@@ -40,6 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ml_action'])) {
 $items = mainline_items();
 $summary = mainline_summary($items);
 $lanes = mainline_lanes($items);
+$aiReady = AiCenter::isConfigured();
+$judgeCache = mainline_ai_cache();
+$receipts = mainline_ai_receipts(6);
 
 // 目标进度（若有）
 $goal = null; $goalProg = null;
@@ -106,33 +111,52 @@ admin_header('今日主线');
       </div>
     </div>
 
-    <?php if ($top): ?>
     <div class="panel ml-hero" style="margin-bottom:16px">
-      <div class="p-body">
-        <div class="ml-hero-ic"><?=htmlspecialchars($top['icon'])?></div>
+      <div class="p-body" id="mlJudge">
+        <div class="ml-hero-ic">🧠</div>
         <div class="ml-hero-body">
-          <div class="ml-hero-k">今天先做这件事</div>
-          <div class="ml-hero-t"><?=htmlspecialchars($top['title'])?></div>
-          <?php if (!empty($top['why'])): ?><div class="ml-hero-w">为什么是现在：<?=htmlspecialchars($top['why'])?></div><?php endif; ?>
+          <div class="ml-hero-k">小福的判断 <span class="ml-src" id="mlJudgeMeta">推理中…</span></div>
+          <div class="ml-hero-t" id="mlJudgeHead">正在读今天的生意…</div>
+          <div class="ml-hero-w" id="mlJudgeWhy"></div>
+          <div id="mlJudgePlan" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"></div>
         </div>
         <div class="ml-act" style="display:flex;gap:8px;flex-wrap:wrap">
-          <?php if (!empty($top['action_url'])): ?><a class="btn btn-p btn-sm" href="<?=htmlspecialchars($top['action_url'])?>"><?=htmlspecialchars($top['action_label'])?></a><?php endif; ?>
-          <form method="post" style="display:inline" data-no-guard>
-            <input type="hidden" name="csrf_token" value="<?=csrf_token()?>">
-            <input type="hidden" name="id" value="<?=htmlspecialchars($top['id'])?>">
-            <input type="hidden" name="title" value="<?=htmlspecialchars($top['title'])?>">
-            <input type="hidden" name="source" value="<?=htmlspecialchars($top['source'])?>">
-            <button class="btn btn-s btn-sm" name="ml_action" value="done">标记完成</button>
-          </form>
+          <button class="btn btn-s btn-sm" id="mlJudgeBtn" onclick="mlJudge(true)">↻ 重新判断</button>
         </div>
       </div>
     </div>
-    <?php else: ?>
+
+    <?php if ($top && !$aiReady): ?>
+    <div class="panel" style="margin-bottom:16px">
+      <div class="p-body" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:18px"><?=htmlspecialchars($top['icon'])?></span>
+        <div style="flex:1;min-width:220px"><b><?=htmlspecialchars($top['title'])?></b><span class="text-muted" style="font-size:12.5px;display:block;margin-top:2px">规则判断（配置 AI 后可获得推理式判断）：<?=htmlspecialchars($top['why'])?></span></div>
+        <?php if (!empty($top['action_url'])): ?><a class="btn btn-s btn-sm" href="<?=htmlspecialchars($top['action_url'])?>"><?=htmlspecialchars($top['action_label'])?></a><?php endif; ?>
+        <a href="/xmp/ai-config" class="btn btn-s btn-sm">配置 AI</a>
+      </div>
+    </div>
+    <?php elseif (!$top): ?>
     <div class="panel" style="margin-bottom:16px;border-color:var(--ok)">
       <div class="p-body" style="display:flex;gap:12px;align-items:center">
         <span style="font-size:22px">✅</span>
-        <div><b>主线已清空。</b><span class="text-muted" style="font-size:13px">没有需要立刻处理的信号——可以去创作台产出内容，或让系统体检发现新机会。</span></div>
+        <div><b>行动队列已清空。</b><span class="text-muted" style="font-size:13px">可以去创作台产出内容，或让系统体检发现新机会。</span></div>
         <a href="/xmp/create" class="btn btn-s btn-sm" style="margin-left:auto">去创作台</a>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($receipts): ?>
+    <div class="panel" style="margin-bottom:16px">
+      <div class="p-head"><h3>小福最近做的事</h3><span class="p-sub mono">留痕 · 可回溯</span></div>
+      <div class="p-body">
+        <?php foreach ($receipts as $rc): ?>
+        <div style="display:flex;gap:10px;align-items:center;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border-soft,var(--border))">
+          <span class="st <?=$rc['ok'] ? 'st-ok' : 'st-danger'?>" style="font-size:10.5px;padding:1px 7px;border-radius:999px"><?=$rc['ok'] ? '已完成' : '失败'?></span>
+          <span style="flex:1;min-width:0"><?=htmlspecialchars((string)$rc['label'])?></span>
+          <span class="ml-src"><?=htmlspecialchars((string)$rc['type'])?></span>
+          <span class="text-muted mono" style="font-size:11px"><?=htmlspecialchars(substr((string)$rc['at'], 5, 11))?></span>
+        </div>
+        <?php endforeach; ?>
       </div>
     </div>
     <?php endif; ?>
@@ -181,7 +205,7 @@ admin_header('今日主线');
         <div class="ml-act">
           <?php if (!empty($it['action_url'])): ?><a class="btn btn-p btn-sm" href="<?=htmlspecialchars($it['action_url'])?>"><?=htmlspecialchars($it['action_label'])?></a><?php endif; ?>
           <form method="post" style="display:inline" data-no-guard>
-            <input type="hidden" name="csrf_token" value="<?=csrf_token()?>">
+            <input type="hidden" name="_csrf_token" value="<?=csrf_token()?>">
             <input type="hidden" name="id" value="<?=htmlspecialchars($it['id'])?>">
             <input type="hidden" name="title" value="<?=htmlspecialchars($it['title'])?>">
             <input type="hidden" name="source" value="<?=htmlspecialchars($it['source'])?>">
@@ -197,4 +221,94 @@ admin_header('今日主线');
     <p class="text-xs text-muted" style="margin-top:22px">主线只做编排：数据全部来自现有模块，不改动它们。完成/稍后写入 <code>data/mainline/events.json</code> 并回流决策轨迹。</p>
   </div>
 </div>
+<script>
+const ML_CSRF = <?=json_encode(csrf_token())?>;
+window.__mlJudge = <?=json_encode($judgeCache['judge'] ?? null)?>;
+window.__mlPlan = [];
+window.__mlAiReady = <?=$aiReady ? 'true' : 'false'?>;
+window.__mlCachedAt = <?=json_encode($judgeCache['generated_at'] ?? '')?>;
+
+function mlRenderPlan(plan) {
+  window.__mlPlan = plan || [];
+  const box = document.getElementById('mlJudgePlan');
+  if (!box) return;
+  box.innerHTML = '';
+  window.__mlPlan.forEach((p, i) => {
+    const a = p.action || {};
+    const el = document.createElement(a.type === 'open' ? 'a' : 'button');
+    el.className = 'btn ' + (i === 0 ? 'btn-p' : 'btn-s') + ' btn-sm';
+    el.textContent = (a.label || p.step || '执行') + (a.type === 'open' ? ' →' : '');
+    if (a.type === 'open') { el.href = a.url; }
+    else { el.onclick = () => mlExec(i, el); }
+    if (p.step) el.title = p.step;
+    box.appendChild(el);
+  });
+}
+
+function mlRenderJudge(j, meta) {
+  document.getElementById('mlJudgeHead').textContent = j ? j.headline : '还没有判断';
+  document.getElementById('mlJudgeWhy').textContent = j ? (j.reasoning || '') : '';
+  document.getElementById('mlJudgeMeta').textContent = meta || '';
+  if (!j) {
+    const box = document.getElementById('mlJudgePlan');
+    box.innerHTML = window.__mlAiReady
+      ? '<button class="btn btn-p btn-sm" onclick="mlJudge(true)">让小福看一眼今天的生意</button>'
+      : '<a class="btn btn-s btn-sm" href="/xmp/ai-config">配置 AI 后开启推理判断</a>';
+    return;
+  }
+  mlRenderPlan(j.plan);
+}
+
+async function mlJudge(force) {
+  const btn = document.getElementById('mlJudgeBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '小福思考中…'; }
+  document.getElementById('mlJudgeMeta').textContent = '正在读今天的生意…';
+  try {
+    const r = await fetch('/api/mainline-ai.php?action=judge' + (force ? '&force=1' : ''), {headers: {'X-Requested-With': 'fetch'}});
+    const j = await r.json();
+    if (!j.ok) {
+      mlRenderJudge(null, j.error || '判断失败');
+      if (window.ofAlert) ofAlert(j.error || '判断失败'); 
+      return;
+    }
+    mlRenderJudge(j.judge, (j.cached ? '缓存 · ' : '刚生成 · ') + (j.generated_at || ''));
+  } catch (e) {
+    mlRenderJudge(null, '网络错误');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↻ 重新判断'; }
+  }
+}
+
+async function mlExec(idx, btn) {
+  const p = window.__mlPlan[idx];
+  if (!p) return;
+  const a = p.action || {};
+  if (a.type === 'open') { location.href = a.url; return; }
+  btn.disabled = true;
+  const old = btn.textContent; btn.textContent = '执行中…';
+  try {
+    const r = await fetch('/api/mainline-ai.php?action=execute', {
+      method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': ML_CSRF},
+      body: JSON.stringify({action: 'execute', plan_action: a})
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || '执行失败');
+    if (window.ofAlert) ofAlert('小福已完成：' + (a.label || p.step), 'success');
+    if (j.kind === 'open' && j.url) { location.href = j.url; return; }
+    setTimeout(() => location.reload(), 600);
+  } catch (e) {
+    if (window.ofAlert) ofAlert(e.message);
+    btn.disabled = false; btn.textContent = old;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  if (window.__mlJudge) mlRenderJudge(window.__mlJudge, '缓存 · ' + (window.__mlCachedAt || ''));
+  else {
+    document.getElementById('mlJudgeMeta').textContent = window.__mlAiReady ? '尚未判断' : '未配置 AI';
+    mlRenderJudge(null, '');
+    if (window.__mlAiReady) mlJudge(false);
+  }
+});
+</script>
 <?php admin_footer(); ?>
