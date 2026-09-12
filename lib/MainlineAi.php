@@ -55,7 +55,7 @@ function mainline_ai_judge(array $items, bool $force = false): array {
         . "  set_goal —— 设定本周目标，goal:{metric, target, title}，metric 只能是 revenue/won/members/leads\n"
         . "严格输出 JSON，不要多余文字：{\"headline\":\"今天先做这件事(≤40字)\",\"reasoning\":\"为什么是它(≤120字，引用快照里的真实数字)\",\"focus_id\":\"队列里最相关项的id或空字符串\",\"plan\":[{\"step\":\"这步做什么(≤30字)\",\"action\":{\"type\":\"...\",\"label\":\"按钮文案\",...}}]}";
 
-    $user = "【业务快照】\n" . $ctx['digest'] . "\n\n【今日行动队列】\n" . json_encode($queue, JSON_UNESCAPED_UNICODE);
+    $user = "【业务快照】\n" . $ctx['digest'] . "\n\n【今日行动队列】\n" . json_encode($queue, JSON_UNESCAPED_UNICODE) . mainline_ai_learning_hint();
 
     try {
         $r = AiCenter::json($system, $user, ['max_tokens' => 1400, 'feature' => 'mainline_judge', 'tier' => 'admin']);
@@ -80,6 +80,18 @@ function mainline_ai_safe_url(string $url): bool {
     if (substr($url, 0, 2) === '//') return false;
     if (strpos($url, '..') !== false) return false;
     return preg_match('#^/[A-Za-z0-9_\-/?=&.%]+$#', $url) === 1;
+}
+
+/** 历史经验提示：让模型参考「哪些打法被验证有效/无效」 */
+function mainline_ai_learning_hint(): string {
+    try {
+        if (!function_exists('growth_learning_snapshot')) require_once __DIR__ . '/GrowthLearning.php';
+        $s = growth_learning_snapshot();
+        $eff = implode('、', array_slice((array)($s['effective'] ?? []), 0, 6));
+        $ineff = implode('、', array_slice((array)($s['ineffective'] ?? []), 0, 6));
+        if ($eff === '' && $ineff === '') return '';
+        return "\n\n【历史经验】已验证有效：" . ($eff ?: '暂无') . "；已验证无效：" . ($ineff ?: '暂无') . "。请优先复用有效打法、避免无效打法。";
+    } catch (\Throwable $e) { return ''; }
 }
 
 /** 白名单校验 AI 判断；非法动作剔除，没有任何可用动作则只留纯建议 */
@@ -144,7 +156,7 @@ function mainline_ai_command(string $text, array $items): array {
         . "如果指令无法用上述动作完成（例如需要复杂人工判断），就把 plan 里放一个 open 动作指到最相关的后台页，并在 reasoning 里说明。\n"
         . "严格输出 JSON，不要多余文字：{\"headline\":\"对这个指令的确认(≤40字)\",\"reasoning\":\"简短说明(≤100字)\",\"focus_id\":\"\",\"plan\":[{\"step\":\"这步做什么(≤30字)\",\"action\":{\"type\":\"...\",\"label\":\"按钮文案\",...}}]}";
 
-    $user = "【业务快照】\n" . $ctx['digest'] . "\n\n【当前行动队列】\n" . json_encode($queue, JSON_UNESCAPED_UNICODE) . "\n\n【用户指令】\n" . $text;
+    $user = "【业务快照】\n" . $ctx['digest'] . "\n\n【当前行动队列】\n" . json_encode($queue, JSON_UNESCAPED_UNICODE) . "\n\n【用户指令】\n" . $text . mainline_ai_learning_hint();
 
     try {
         $r = AiCenter::json($system, $user, ['max_tokens' => 1400, 'feature' => 'mainline_command', 'tier' => 'admin']);
@@ -161,41 +173,73 @@ function mainline_ai_command(string $text, array $items): array {
 function mainline_ai_execute(array $action): array {
     $type = (string)($action['type'] ?? '');
     $label = (string)($action['label'] ?? '');
+    $traceId = mainline_ai_record_trace($type, $label);
     try {
         if ($type === 'open') {
             $url = (string)($action['url'] ?? '');
             if (!mainline_ai_safe_url($url)) return ['ok' => false, 'error' => '非法链接'];
-            mainline_ai_log($type, $label, ['url' => $url], true);
+            mainline_ai_log($type, $label, ['url' => $url], true, $traceId);
             return ['ok' => true, 'kind' => 'open', 'url' => $url];
         }
         if ($type === 'create_flow') {
             if (!class_exists('CopilotActions')) require_once __DIR__ . '/CopilotActions.php';
             $r = copilot_create_flow((array)($action['flow'] ?? []));
-            if (empty($r['ok'])) { mainline_ai_log($type, $label, ['error' => $r['error'] ?? ''], false); return ['ok' => false, 'error' => $r['error'] ?? '创建失败']; }
-            mainline_ai_log($type, $label, ['flow_id' => $r['flow_id'], 'name' => $r['flow']['name'] ?? ''], true);
+            if (empty($r['ok'])) { mainline_ai_log($type, $label, ['error' => $r['error'] ?? ''], false, $traceId); return ['ok' => false, 'error' => $r['error'] ?? '创建失败']; }
+            mainline_ai_log($type, $label, ['flow_id' => $r['flow_id'], 'name' => $r['flow']['name'] ?? ''], true, $traceId);
             return ['ok' => true, 'kind' => 'create_flow', 'flow_id' => $r['flow_id'], 'url' => '/xmp/automation'];
         }
         if ($type === 'set_goal') {
             require_once __DIR__ . '/GrowthGoal.php';
             $g = (array)($action['goal'] ?? []);
-            $r = growth_goal_set(['title' => $g['title'] ?? '增长目标', 'metric' => $g['metric'] ?? 'revenue', 'target' => (float)($g['target'] ?? 0)]);
-            mainline_ai_log($type, $label, ['goal' => $g], true);
+            growth_goal_set(['title' => $g['title'] ?? '增长目标', 'metric' => $g['metric'] ?? 'revenue', 'target' => (float)($g['target'] ?? 0)]);
+            mainline_ai_log($type, $label, ['goal' => $g], true, $traceId);
             return ['ok' => true, 'kind' => 'set_goal', 'url' => '/xmp/brain'];
         }
     } catch (\Throwable $e) {
-        mainline_ai_log($type, $label, ['error' => $e->getMessage()], false);
+        mainline_ai_log($type, $label, ['error' => $e->getMessage()], false, $traceId);
         return ['ok' => false, 'error' => $e->getMessage()];
     }
     return ['ok' => false, 'error' => '未知动作'];
 }
 
+/** 为一次控制台执行记录决策轨迹，返回 trace id（供事后评估回流） */
+function mainline_ai_record_trace(string $type, string $label): int {
+    try {
+        require_once __DIR__ . '/DecisionTrace.php';
+        return dtrace_record([
+            'subject' => 'control_room', 'decision' => $label, 'module' => '控制台',
+            'trigger' => '控制台计划执行', 'evidence' => ['动作类型：' . $type],
+            'guard' => '人工点击执行',
+        ]);
+    } catch (\Throwable $e) { return 0; }
+}
+
+/** 结果评估回流：判定某次执行有效/无效 → 写回轨迹 + 学习层（影响下一轮计划） */
+function mainline_ai_evaluate(int $traceId, string $verdict): bool {
+    if (!in_array($verdict, ['effective', 'ineffective'], true)) return false;
+    try { require_once __DIR__ . '/DecisionTrace.php'; if ($traceId > 0) dtrace_outcome($traceId, $verdict); } catch (\Throwable $e) {}
+    // 找到对应回执，取其动作标签做学习
+    $log = json_read(mainline_ai_log_file());
+    $hit = false;
+    foreach ($log as &$rc) {
+        if ((int)($rc['trace_id'] ?? 0) === $traceId) {
+            $rc['evaluated'] = $verdict;
+            try { require_once __DIR__ . '/GrowthLearning.php'; growth_learning_verdict('控制台', (string)($rc['label'] ?? ''), $verdict); } catch (\Throwable $e) {}
+            $hit = true; break;
+        }
+    }
+    unset($rc);
+    if ($hit) json_write(mainline_ai_log_file(), $log);
+    return $hit;
+}
+
 /** 回执日志：老板要的「看得见涟漪 / 留痕可回溯」 */
-function mainline_ai_log(string $type, string $label, array $meta, bool $ok): void {
+function mainline_ai_log(string $type, string $label, array $meta, bool $ok, int $traceId = 0): void {
     $log = json_read(mainline_ai_log_file());
     if (!is_array($log)) $log = [];
     array_unshift($log, [
         'at' => date('Y-m-d H:i:s'), 'type' => $type, 'label' => $label,
-        'ok' => $ok, 'meta' => $meta, 'by' => $_SESSION['admin_user'] ?? 'system',
+        'ok' => $ok, 'meta' => $meta, 'by' => $_SESSION['admin_user'] ?? 'system', 'trace_id' => $traceId,
     ]);
     json_write(mainline_ai_log_file(), array_slice($log, 0, 50));
 }

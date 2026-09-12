@@ -100,13 +100,11 @@ if (!function_exists('growth_action_adopt')) {
             'status'        => 'pending',
             'created_at'    => date('Y-m-d H:i:s'),
         ];
-        $list[] = $row;
-        growth_action_save_all($list);
 
-        // 可解释轨道（BACKLOG T2-5）：把"为什么建议这件事"留痕，可看可纠可审计
+        // 可解释轨道（BACKLOG T2-5）：先记录、拿到 trace id 存到 row 上，完成/忽略时回写结果
         try {
             require_once __DIR__ . '/DecisionTrace.php';
-            dtrace_record([
+            $tid = dtrace_record([
                 'subject'  => $row['profile_email'] ?: ($row['profile_id'] ?: $row['profile_name']),
                 'decision' => $row['action'],
                 'module'   => $row['module'],
@@ -114,7 +112,11 @@ if (!function_exists('growth_action_adopt')) {
                 'evidence' => array_filter([$row['reason'], $row['goal_metric'] ? ('当前目标指标：' . $row['goal_metric']) : '']),
                 'guard'    => '人工采纳，未走自动执行',
             ]);
+            if ($tid) $row['dtrace_id'] = $tid;
         } catch (\Throwable $e) {}
+
+        $list[] = $row;
+        growth_action_save_all($list);
 
         // 共享记忆（BACKLOG T1-17）：记住"对这个人做过什么"，下次判断不再从零开始
         try {
@@ -145,16 +147,29 @@ if (!function_exists('growth_action_set_status')) {
     /** 完成 / 忽略一条待办。返回是否命中。 */
     function growth_action_set_status(string $id, string $status): bool {
         if (!in_array($status, ['done', 'dismissed', 'pending'], true)) return false;
-        $list = growth_action_all(); $hit = false;
+        $list = growth_action_all(); $hit = false; $matched = null;
         foreach ($list as &$a) {
             if (($a['id'] ?? '') === $id) {
                 $a['status'] = $status;
                 $a[$status === 'done' ? 'done_at' : 'updated_at'] = date('Y-m-d H:i:s');
-                $hit = true; break;
+                $matched = $a; $hit = true; break;
             }
         }
         unset($a);
-        if ($hit) growth_action_save_all($list);
+        if ($hit) {
+            growth_action_save_all($list);
+            // 回流：把「采纳后完成/忽略」写回决策轨迹 + 学习层——自生长闭环最后两环
+            if ($matched && in_array($status, ['done', 'dismissed'], true)) {
+                try {
+                    require_once __DIR__ . '/DecisionTrace.php';
+                    if (!empty($matched['dtrace_id'])) dtrace_outcome((int)$matched['dtrace_id'], $status === 'done' ? 'completed' : 'ignored');
+                } catch (\Throwable $e) {}
+                try {
+                    require_once __DIR__ . '/GrowthLearning.php';
+                    growth_learning_verdict((string)($matched['module'] ?? ''), (string)($matched['action'] ?? ''), $status);
+                } catch (\Throwable $e) {}
+            }
+        }
         return $hit;
     }
     function growth_action_complete(string $id): bool { return growth_action_set_status($id, 'done'); }

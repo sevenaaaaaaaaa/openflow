@@ -162,6 +162,12 @@ admin_header('今日主线');
         <div style="display:flex;gap:10px;align-items:center;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border-soft,var(--border))">
           <span class="st <?=$rc['ok'] ? 'st-ok' : 'st-danger'?>" style="font-size:10.5px;padding:1px 7px;border-radius:999px"><?=$rc['ok'] ? '已完成' : '失败'?></span>
           <span style="flex:1;min-width:0"><?=htmlspecialchars((string)$rc['label'])?></span>
+          <?php if (!empty($rc['evaluated'])): ?>
+            <span class="st <?=$rc['evaluated']==='effective'?'st-ok':'st-danger'?>" style="font-size:10.5px;padding:1px 7px;border-radius:999px"><?=$rc['evaluated']==='effective'?'有效':'无效'?></span>
+          <?php elseif (!empty($rc['ok']) && !empty($rc['trace_id'])): ?>
+            <button class="btn btn-s btn-sm" onclick="mlEvaluate(<?=(int)$rc['trace_id']?>, 'effective', this)">有效</button>
+            <button class="btn btn-s btn-sm" onclick="mlEvaluate(<?=(int)$rc['trace_id']?>, 'ineffective', this)" style="color:var(--muted)">无效</button>
+          <?php endif; ?>
           <span class="ml-src"><?=htmlspecialchars((string)$rc['type'])?></span>
           <span class="text-muted mono" style="font-size:11px"><?=htmlspecialchars(substr((string)$rc['at'], 5, 11))?></span>
         </div>
@@ -351,6 +357,23 @@ async function mlCommand() {
   } catch (e) {
     out.innerHTML = '<span style="color:var(--danger);font-size:13px">网络错误</span>';
   } finally {
+    btn.disabled = false;
+  }
+}
+
+async function mlEvaluate(traceId, verdict, btn) {
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/mainline-ai.php?action=evaluate', {
+      method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': ML_CSRF},
+      body: JSON.stringify({action: 'evaluate', trace_id: traceId, verdict: verdict})
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error('评估失败');
+    if (window.ofAlert) ofAlert(verdict === 'effective' ? '已记为有效，下次会优先复用' : '已记为无效，下次会避开', 'success');
+    setTimeout(function () { location.reload(); }, 500);
+  } catch (e) {
+    if (window.ofAlert) ofAlert(e.message);
     btn.disabled = false;
   }
 }
