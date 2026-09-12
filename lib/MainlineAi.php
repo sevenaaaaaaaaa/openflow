@@ -27,6 +27,7 @@ function mainline_ai_fingerprint(array $items, array $ctx): string {
 
 /** 取判断（命中缓存则直接用；force 或有变化则重新推理） */
 function mainline_ai_judge(array $items, bool $force = false): array {
+    if (!function_exists('business_context')) require_once __DIR__ . '/BusinessContext.php';
     $ctx = business_context();
     $fp = mainline_ai_fingerprint($items, $ctx);
     $cache = mainline_ai_cache();
@@ -121,6 +122,39 @@ function mainline_ai_validate(array $d, array $items): ?array {
         if ($clean && $step !== '') { $clean['step'] = $step; $plan[] = $clean; }
     }
     return ['headline' => $headline, 'reasoning' => $reasoning, 'focus_id' => $focus, 'plan' => array_slice($plan, 0, 3)];
+}
+
+/** 把用户的一句话指令变成可执行计划（不走缓存，指令是即时的） */
+function mainline_ai_command(string $text, array $items): array {
+    if (!function_exists('business_context')) require_once __DIR__ . '/BusinessContext.php';
+    $text = mb_substr(trim($text), 0, 500);
+    if ($text === '') return ['ok' => false, 'error' => '指令为空'];
+    if (!class_exists('AiCenter')) require_once __DIR__ . '/AiCenter.php';
+    if (!AiCenter::isConfigured()) return ['ok' => false, 'error' => 'AI 未配置，无法解析指令'];
+
+    $ctx = business_context();
+    $queue = [];
+    foreach (array_slice($items, 0, 10) as $it) $queue[] = ['id' => $it['id'], 'lane' => $it['lane'], 'title' => $it['title'], 'why' => $it['why']];
+
+    $system = "你是 OpenFlow 的增长 COO「小福」。用户给了一条指令，把它变成一份**可执行计划**（1-3 步），每步一个动作。\n"
+        . "可用动作类型（只能选这些）：\n"
+        . "  create_flow —— 创建自动化流程，flow:{name,trigger,steps[]}，trigger 只能是 purchase/register/member_register/login/form_submit/newsletter_subscribed/course_complete/course_start/course_enroll/lesson_complete/page_view/article_view/element_click/download/share/segment_enter/segment_exit/refund/crm_stage_change/nps_submit/cron；steps 动作只能是 send_email(subject,content)/delay(delay_minutes)/notify(title)/add_tag(tag)/award_points(points)/inbox(title,content)/send_coupon(coupon_name,coupon_type,coupon_value,coupon_min)\n"
+        . "  open —— 打开某个后台页面，url 用 /xmp/ 开头（当需要人进入某页操作时）\n"
+        . "  set_goal —— 设定本周目标，goal:{metric,target,title}，metric 只能是 revenue/won/members/leads\n"
+        . "如果指令无法用上述动作完成（例如需要复杂人工判断），就把 plan 里放一个 open 动作指到最相关的后台页，并在 reasoning 里说明。\n"
+        . "严格输出 JSON，不要多余文字：{\"headline\":\"对这个指令的确认(≤40字)\",\"reasoning\":\"简短说明(≤100字)\",\"focus_id\":\"\",\"plan\":[{\"step\":\"这步做什么(≤30字)\",\"action\":{\"type\":\"...\",\"label\":\"按钮文案\",...}}]}";
+
+    $user = "【业务快照】\n" . $ctx['digest'] . "\n\n【当前行动队列】\n" . json_encode($queue, JSON_UNESCAPED_UNICODE) . "\n\n【用户指令】\n" . $text;
+
+    try {
+        $r = AiCenter::json($system, $user, ['max_tokens' => 1400, 'feature' => 'mainline_command', 'tier' => 'admin']);
+    } catch (\Throwable $e) {
+        return ['ok' => false, 'error' => 'AI 调用失败'];
+    }
+    if (empty($r['ok']) || empty($r['data'])) return ['ok' => false, 'error' => (string)($r['error'] ?? 'AI 无有效返回')];
+    $judge = mainline_ai_validate((array)$r['data'], $items);
+    if (!$judge) return ['ok' => false, 'error' => '指令无法解析为可执行计划'];
+    return ['ok' => true, 'judge' => $judge, 'command' => $text];
 }
 
 /** 执行一个 AI 计划动作（审批优先：由用户在控制台点击触发） */

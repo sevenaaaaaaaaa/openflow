@@ -22,8 +22,14 @@ function json_write(string $f, array $d): bool {
 
 // stub AiCenter：MainlineAi 认为 AI 可用，但不真调模型
 class AiCenter {
+    public static array $queue = [];
     public static function isConfigured(): bool { return true; }
+    public static function json(string $s, string $u, array $o = []): array {
+        return array_shift(self::$queue) ?? ['ok' => false];
+    }
 }
+// stub 业务快照（避免拉起 CDP/CRM/订单）
+function business_context(): array { return ['digest' => '【交易】测试快照']; }
 
 require_once __DIR__ . '/../lib/CopilotActions.php';
 require_once __DIR__ . '/../lib/GrowthGoal.php';
@@ -96,6 +102,20 @@ mainline_ai_log('create_flow', '创建欢迎流程', ['flow_id' => 'f1'], true);
 $rc = mainline_ai_receipts(5);
 check('回执按时间倒序', count($rc) === 2 && $rc[0]['label'] === '创建欢迎流程');
 check('回执含成功标记', ($rc[0]['ok'] ?? false) === true);
+
+// 一句话指挥：指令 → 计划
+AiCenter::$queue = [['ok' => true, 'data' => [
+    'headline' => '给沉默会员发召回', 'reasoning' => '近 7 天活跃下降，值得召回。',
+    'plan' => [['step' => '创建召回流程', 'action' => ['type' => 'create_flow', 'label' => '建召回流程', 'flow' => [
+        'name' => '沉默会员召回', 'trigger' => 'login', 'steps' => [['action' => 'send_email', 'subject' => '想你了', 'content' => '回来看看']],
+    ]]]],
+]]];
+$cmd = mainline_ai_command('给 7 天没来的会员发召回邮件', $items);
+check('指令解析成可执行计划', ($cmd['ok'] ?? false) && count($cmd['judge']['plan']) === 1 && $cmd['judge']['plan'][0]['type'] === 'create_flow');
+check('空指令被拒', (mainline_ai_command('   ', $items)['ok'] ?? true) === false);
+AiCenter::$queue = [['ok' => true, 'data' => ['headline' => 'h', 'reasoning' => 'r', 'plan' => [['step' => '越权', 'action' => ['type' => 'exec_shell']]]]]];
+$cmd2 = mainline_ai_command('删除所有数据', $items);
+check('指令里的越权动作被清洗为纯确认', ($cmd2['ok'] ?? false) && $cmd2['judge']['plan'] === []);
 
 echo ($fail ? "❌ {$fail} 失败 / {$pass} 通过\n" : "✅ 全部通过（{$pass}）\n");
 exit($fail ? 1 : 0);
