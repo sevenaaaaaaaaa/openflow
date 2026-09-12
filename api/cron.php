@@ -181,6 +181,9 @@ if (function_exists('sub_send_reminders')) sub_send_reminders();
 $convRun = ['status' => 'skipped'];
 try { require_once __DIR__ . '/../lib/ConversionApi.php'; $convRun = array_merge(['status' => 'ok'], conv_process()); } catch (Throwable $e) { $convRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
 
+// 记录本次 cron 运行时间（系统体检据此判断定时任务是否正常）
+json_write(DATA_DIR . '/cron-last.json', ['ts' => time(), 'at' => date('Y-m-d H:i:s')]);
+
 // 每日存储维护（每 6 小时一次的频率保护）
 $lastMaintain = (int)(json_read(DATA_DIR . '/storage-maintain.json')['ts'] ?? 0);
 if (time() - $lastMaintain > 6 * 3600) {
