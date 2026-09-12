@@ -234,6 +234,7 @@ function admin_nav_tree(): array {
             ]],
             ['label' => '人群', 'items' => [
                 ['id' => 'segments', 'label' => '用户分群', 'perm' => 'segments'],
+                ['id' => 'audience-live', 'label' => '实时人群', 'perm' => 'cdp', 'hint' => '在线/新增/分群实时人数'],
                 ['id' => 'destinations', 'label' => '人群激活', 'perm' => 'segments'],
                 ['id' => 'tag-rules', 'label' => '标签体系', 'perm' => 'segments'],
             ]],

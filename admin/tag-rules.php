@@ -29,14 +29,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($rid === '') $rid = 'rule_' . bin2hex(random_bytes(4));
         $tag = trim((string)($_POST['tag'] ?? ''));
         $type = (string)($_POST['when_type'] ?? 'event');
-        if ($tag === '' || !in_array($type, ['event','summary','lifecycle','property'], true)) {
-            $err = '标签名必填，条件类型不合法'; goto render;
+        if ($tag === '') { $err = '标签名必填'; goto render; }
+        // 高级表达式（AND/OR 嵌套）；填了就用它，否则用单条件
+        $exprRaw = trim((string)($_POST['expr'] ?? ''));
+        $expr = null;
+        if ($exprRaw !== '') {
+            $expr = json_decode($exprRaw, true);
+            if (!is_array($expr)) { $err = '表达式 JSON 不合法'; goto render; }
+        }
+        if ($expr === null && !in_array($type, ['event', 'summary', 'lifecycle', 'property'], true)) {
+            $err = '条件类型不合法'; goto render;
         }
         $when = ['type' => $type, 'operator' => $_POST['when_op'] ?? 'gte', 'value' => $_POST['when_value'] ?? '1'];
         if ($type === 'event') $when['event'] = trim((string)($_POST['when_event'] ?? ''));
         if ($type === 'summary' || $type === 'property') $when['field'] = trim((string)($_POST['when_field'] ?? ''));
-        $rules[$rid] = ['enabled' => isset($_POST['enabled']), 'tag' => $tag, 'when' => $when,
-            'description' => trim((string)($_POST['description'] ?? ''))];
+        $row = ['enabled' => isset($_POST['enabled']), 'tag' => $tag, 'description' => trim((string)($_POST['description'] ?? ''))];
+        if ($expr !== null) $row['expr'] = $expr; else $row['when'] = $when;
+        $rules[$rid] = $row;
         json_write(tag_rules_file(), $rules);
         audit('保存标签规则 ' . $tag, 'cdp');
         header('Location: /xmp/tag-rules?ok=1'); exit;
@@ -86,9 +95,11 @@ admin_header('标签管理');
         </div>
         <div style="font-size:12px;color:var(--faint);margin-top:4px">
           <?php $w = $r['when'] ?? []; $td = ($w['type']??'');
-          if ($td === 'event') echo '触发事件：' . htmlspecialchars($w['event'] ?? '') . '（' . htmlspecialchars($w['operator'] ?? 'gte') . ' ' . htmlspecialchars($w['value'] ?? '1') . ' 次）';
-          elseif ($td === 'summary' || $td === 'property') echo '字段：' . htmlspecialchars($w['field'] ?? '') . ' ' . htmlspecialchars($w['operator'] ?? '') . ' ' . htmlspecialchars($w['value'] ?? '');
-          elseif ($td === 'lifecycle') echo '生命周期 ' . htmlspecialchars($w['operator'] ?? 'eq') . ' ' . htmlspecialchars($w['value'] ?? '');
+          $sv = fn($v) => htmlspecialchars(is_array($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : (string)$v);
+          if (!empty($r['expr'])) echo '表达式规则：' . htmlspecialchars(mb_substr(json_encode($r['expr'], JSON_UNESCAPED_UNICODE), 0, 80));
+          elseif ($td === 'event') echo '触发事件：' . htmlspecialchars($w['event'] ?? '') . '（' . htmlspecialchars($w['operator'] ?? 'gte') . ' ' . $sv($w['value'] ?? '1') . ' 次）';
+          elseif ($td === 'summary' || $td === 'property') echo '字段：' . htmlspecialchars($w['field'] ?? '') . ' ' . htmlspecialchars($w['operator'] ?? '') . ' ' . $sv($w['value'] ?? '');
+          elseif ($td === 'lifecycle') echo '生命周期 ' . htmlspecialchars($w['operator'] ?? 'eq') . ' ' . $sv($w['value'] ?? '');
           else echo htmlspecialchars($r['description'] ?? '');
           ?>
         </div>
@@ -113,6 +124,11 @@ admin_header('标签管理');
             <input type="text" name="when_value" placeholder="值" value="<?=htmlspecialchars($edit['when']['value'] ?? '1')?>" style="flex:0 0 70px;padding:6px">
           </div>
           <input type="text" name="description" placeholder="描述（可选）" value="<?=htmlspecialchars($edit['description'] ?? '')?>" style="width:100%;margin-bottom:8px">
+          <div class="field" style="margin-bottom:8px">
+            <label style="font-size:12px">高级表达式 <span class="hint">· 可选，填了就覆盖上面的单条件（支持 AND/OR 嵌套）</span></label>
+            <textarea name="expr" rows="3" style="width:100%;font-family:var(--mono);font-size:12px" placeholder='{"op":"and","rules":[{"field":"summaries.article_view","operator":"gte","value":5},{"op":"or","rules":[{"field":"properties.city","operator":"eq","value":"上海"},{"event":"purchase","operator":"gte","value":1}]}]}'><?=htmlspecialchars(!empty($edit['expr']) ? json_encode($edit['expr'], JSON_UNESCAPED_UNICODE) : '')?></textarea>
+            <div class="hint" style="font-size:11px">字段：properties.x / summaries.x / tags / lifecycle.stage / event · 运算符：eq neq gt gte lt lte contains in exists between regex</div>
+          </div>
           <label style="font-size:13px;display:block;margin-bottom:10px"><input type="checkbox" name="enabled" <?=empty($edit)||!empty($edit['enabled'])?'checked':''?>> 启用</label>
           <button class="btn btn-primary btn-sm"><?=$edit?'更新':'创建'?></button>
           <?php if ($edit): ?><a href="/xmp/tag-rules" class="btn btn-ghost btn-sm">取消</a><?php endif; ?>
