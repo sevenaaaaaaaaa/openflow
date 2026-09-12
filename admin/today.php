@@ -111,6 +111,15 @@ admin_header('今日主线');
       </div>
     </div>
 
+    <div class="panel" style="margin-bottom:16px">
+      <div class="p-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:18px">⌘</span>
+        <input id="mlCmd" class="inp sm" placeholder="告诉小福要做什么，例如：给 7 天没来的会员发一封召回邮件" style="flex:1;min-width:260px" onkeydown="if(event.key==='Enter')mlCommand()">
+        <button class="btn btn-p btn-sm" id="mlCmdBtn" onclick="mlCommand()">指挥</button>
+      </div>
+      <div class="p-body" id="mlCmdOut" style="display:none;border-top:1px solid var(--border-soft,var(--border))"></div>
+    </div>
+
     <div class="panel ml-hero" style="margin-bottom:16px">
       <div class="p-body" id="mlJudge">
         <div class="ml-hero-ic">🧠</div>
@@ -225,6 +234,7 @@ admin_header('今日主线');
 const ML_CSRF = <?=json_encode(csrf_token())?>;
 window.__mlJudge = <?=json_encode($judgeCache['judge'] ?? null)?>;
 window.__mlPlan = [];
+window.__mlCmdPlan = [];
 window.__mlAiReady = <?=$aiReady ? 'true' : 'false'?>;
 window.__mlCachedAt = <?=json_encode($judgeCache['generated_at'] ?? '')?>;
 
@@ -239,7 +249,24 @@ function mlRenderPlan(plan) {
     el.className = 'btn ' + (i === 0 ? 'btn-p' : 'btn-s') + ' btn-sm';
     el.textContent = (a.label || p.step || '执行') + (a.type === 'open' ? ' →' : '');
     if (a.type === 'open') { el.href = a.url; }
-    else { el.onclick = () => mlExec(i, el); }
+    else { el.onclick = () => mlExecAction(a, el, p.step); }
+    if (p.step) el.title = p.step;
+    box.appendChild(el);
+  });
+}
+
+function mlRenderCmdPlan(plan) {
+  window.__mlCmdPlan = plan || [];
+  const box = document.getElementById('mlCmdPlan');
+  if (!box) return;
+  box.innerHTML = '';
+  window.__mlCmdPlan.forEach((p, i) => {
+    const a = p.action || {};
+    const el = document.createElement(a.type === 'open' ? 'a' : 'button');
+    el.className = 'btn ' + (i === 0 ? 'btn-p' : 'btn-s') + ' btn-sm';
+    el.textContent = (a.label || p.step || '执行') + (a.type === 'open' ? ' →' : '');
+    if (a.type === 'open') { el.href = a.url; }
+    else { el.onclick = () => mlExecAction(a, el, p.step); }
     if (p.step) el.title = p.step;
     box.appendChild(el);
   });
@@ -279,10 +306,8 @@ async function mlJudge(force) {
   }
 }
 
-async function mlExec(idx, btn) {
-  const p = window.__mlPlan[idx];
-  if (!p) return;
-  const a = p.action || {};
+async function mlExecAction(a, btn, step) {
+  if (!a) return;
   if (a.type === 'open') { location.href = a.url; return; }
   btn.disabled = true;
   const old = btn.textContent; btn.textContent = '执行中…';
@@ -293,12 +318,40 @@ async function mlExec(idx, btn) {
     });
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || '执行失败');
-    if (window.ofAlert) ofAlert('小福已完成：' + (a.label || p.step), 'success');
+    if (window.ofAlert) ofAlert('小福已完成：' + (a.label || step), 'success');
     if (j.kind === 'open' && j.url) { location.href = j.url; return; }
     setTimeout(() => location.reload(), 600);
   } catch (e) {
     if (window.ofAlert) ofAlert(e.message);
     btn.disabled = false; btn.textContent = old;
+  }
+}
+
+async function mlCommand() {
+  const inp = document.getElementById('mlCmd');
+  const text = (inp.value || '').trim();
+  if (!text) return;
+  const btn = document.getElementById('mlCmdBtn');
+  const out = document.getElementById('mlCmdOut');
+  out.style.display = '';
+  out.innerHTML = '<span class="text-muted" style="font-size:13px">小福正在拆解你的指令…</span>';
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/mainline-ai.php?action=command', {
+      method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': ML_CSRF},
+      body: JSON.stringify({action: 'command', text: text})
+    });
+    const j = await r.json();
+    if (!j.ok) { out.innerHTML = '<span style="color:var(--danger);font-size:13px">' + (j.error || '解析失败') + '</span>'; return; }
+    const jd = j.judge;
+    out.innerHTML = '<div style="font-size:14px;font-weight:650;margin-bottom:4px">' + jd.headline + '</div>'
+      + '<div class="text-muted" style="font-size:12.5px;margin-bottom:10px">' + (jd.reasoning || '') + '</div>'
+      + '<div id="mlCmdPlan" style="display:flex;gap:8px;flex-wrap:wrap"></div>';
+    mlRenderCmdPlan(jd.plan || []);
+  } catch (e) {
+    out.innerHTML = '<span style="color:var(--danger);font-size:13px">网络错误</span>';
+  } finally {
+    btn.disabled = false;
   }
 }
 
