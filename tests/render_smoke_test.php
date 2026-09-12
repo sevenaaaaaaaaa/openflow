@@ -34,6 +34,7 @@ $urls = [
     ['shop-settings', ''],
     ['shop-settings', 'sub=pay'],
     ['email',        'sub=smtp'],
+    ['email-deliverability', ''],
     ['site-builder', 'sub=foot'],
     ['health-check', 'sub=stor'],
     ['audit-log',    'sub=act'],

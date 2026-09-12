@@ -194,6 +194,7 @@ function shop_create_order(string $memberId, string $courseId, string $ref = '',
         'referrer_id' => $referrerId,
         'commission' => $commission,
         'source' => function_exists('live_order_source') ? live_order_source() : '',
+        'mail_campaign' => preg_replace('/[^a-z0-9_\-]/i', '', (string)($_COOKIE['fc_mail_c'] ?? '')),   // 邮件归因：点击带上的活动标记
         'created_at' => date('Y-m-d H:i:s'),
         'paid_at' => '',
     ];
@@ -396,6 +397,14 @@ function shop_mark_paid(string $orderId, string $method = ''): bool {
     try {
         require_once __DIR__ . '/FlowSystem.php';
         if (function_exists('flow_order_paid')) flow_order_paid(array_merge($order, ['id' => $orderId, 'status' => 'paid']));
+    } catch (\Throwable $e) {}
+
+    // 邮件收入归因：点击带上的邮件活动 → 归因成交额
+    try {
+        if (!empty($order['mail_campaign'])) {
+            require_once __DIR__ . '/EmailDeliverability.php';
+            email_attr_record((string)$order['mail_campaign'], (float)($order['amount'] ?? 0), $orderId);
+        }
     } catch (\Throwable $e) {}
 
     // 支付成功 → 插件钩子（旁路）

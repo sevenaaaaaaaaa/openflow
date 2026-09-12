@@ -338,6 +338,13 @@ function automation_execute_flow(array $flow, array $context, int $startAt = 0):
 function automation_send_email(array $step, array $context, string $flowId): void {
     $email = $context['email'] ?? '';
     if (empty($email)) { automation_log($flowId, '无邮箱，跳过邮件', 'error'); return; }
+    // 送达率闸门：被抑制（硬退信/投诉/退订）的地址不再发，保护发件声誉
+    try {
+        require_once __DIR__ . '/EmailDeliverability.php';
+        if (function_exists('email_can_marketing_send') && !email_can_marketing_send((string)$email)) {
+            automation_log($flowId, '收件人在抑制名单，跳过邮件', 'info'); return;
+        }
+    } catch (\Throwable $e) {}
     $subject = $step['subject'] ?? '来自 OpenFlow';
     $content = $step['content'] ?? '';
     // 变量替换
@@ -370,6 +377,7 @@ function automation_send_email(array $step, array $context, string $flowId): voi
             $mautic->sendEmail((int)$step['mautic_email_id'], $res['contact']['id']);
             automation_log($flowId, "Mautic 邮件已发送给 {$email}");
             if (class_exists('PluginSystem')) PluginSystem::do_action('ma_email_sent', $email, $subject, $content, $flowId, 'mautic');
+            try { require_once __DIR__ . '/EmailDeliverability.php'; email_record_sent(); } catch (\Throwable $e) {}
             return;
         }
     }
@@ -378,6 +386,7 @@ function automation_send_email(array $step, array $context, string $flowId): voi
         $bm->send($email, $subject, $content);
         automation_log($flowId, "BillionMail 邮件已发送给 {$email}");
         if (class_exists('PluginSystem')) PluginSystem::do_action('ma_email_sent', $email, $subject, $content, $flowId, 'billionmail');
+        try { require_once __DIR__ . '/EmailDeliverability.php'; email_record_sent(); } catch (\Throwable $e) {}
         return;
     }
     automation_log($flowId, '无可用邮件服务，发送失败', 'error');
