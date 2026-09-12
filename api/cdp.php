@@ -76,7 +76,8 @@ switch ($action) {
         break;
 
     case 'funnel':
-        $steps = json_decode($_GET['steps'] ?? '[]', true) ?: [];
+        require_once __DIR__ . '/../lib/FunnelDefinition.php';
+        $steps = json_decode($_GET['steps'] ?? '[]', true) ?: funnel_steps();
         $days = (int)($_GET['days'] ?? 30);
         $funnel = CdpSystem::getFunnel($steps, $days);
         echo json_encode(['ok' => true, 'funnel' => $funnel], JSON_UNESCAPED_UNICODE);
