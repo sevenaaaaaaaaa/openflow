@@ -1,10 +1,31 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../lib/CourseSystem.php';
 require_login();
 require_perm('courses');
 
 $coursesFile = DATA_DIR . '/courses/index.json';
 $courses = json_read($coursesFile);
+
+// 批量操作（发布 / 转草稿 / 删除）
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_action'])) {
+    csrf_verify();
+    $ids = array_map('strval', (array)($_POST['ids'] ?? []));
+    $act = (string)$_POST['bulk_action'];
+    $n = 0;
+    if ($act === 'delete') {
+        $courses = array_values(array_filter($courses, fn($c) => !in_array((string)($c['id'] ?? ''), $ids, true)));
+        $n = count($ids);
+    } elseif (in_array($act, ['publish', 'draft'], true)) {
+        $status = $act === 'publish' ? 'published' : 'draft';
+        foreach ($courses as &$c) if (in_array((string)($c['id'] ?? ''), $ids, true)) { $c['status'] = $status; $c['updated_at'] = date('Y-m-d H:i:s'); $n++; }
+        unset($c);
+    }
+    json_write($coursesFile, $courses);
+    flash('success', "已批量处理 {$n} 门课程");
+    header('Location: /xmp/courses');
+    exit;
+}
 
 if (isset($_GET['delete'])) {
     $courses = array_values(array_filter($courses, fn($c) => $c['id'] !== $_GET['delete']));
@@ -119,17 +140,20 @@ admin_header('课程管理');
     $courseCats = get_categories('course');
     ?>
     <!-- 统计卡 -->
+    <?php $cAgg = course_analytics_all(); $cRev = array_sum(array_column($cAgg, 'revenue')); $cAvgComp = count($cAgg) ? round(array_sum(array_column($cAgg, 'completion_rate')) / count($cAgg), 1) : 0; ?>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:700"><?=count($courses)?></div><div class="text-sm text-muted" style="font-size:11px">总课程</div></div>
       <div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:700;color:var(--ok)"><?=$publishedCount?></div><div class="text-sm text-muted" style="font-size:11px">已发布</div></div>
       <div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:700"><?=$totalStudents?></div><div class="text-sm text-muted" style="font-size:11px">累计学员</div></div>
+      <div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:700;color:var(--accent)">¥<?=number_format($cRev, 0)?></div><div class="text-sm text-muted" style="font-size:11px">累计营收</div></div>
+      <div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:700"><?=$cAvgComp?>%</div><div class="text-sm text-muted" style="font-size:11px">平均完课率</div></div>
     </div>
 
     <!-- 筛选 -->
     <div class="flex gap-2 mb-4" style="flex-wrap:wrap">
       <a href="courses.php" class="btn btn-sm <?=!$typeFilter&&!$statusFilter?'btn-primary':'btn-ghost'?>">全部</a>
-      <?php foreach (['课程','专栏','认证课','系列课'] as $t): ?>
-      <a href="?type=<?=urlencode($t)?><?=$statusFilter?'&status='.$statusFilter:''?>" class="btn btn-sm <?=$typeFilter===$t?'btn-primary':'btn-ghost'?>"><?=htmlspecialchars($t)?></a>
+      <?php foreach (array_keys(course_types()) as $t): ?>
+      <a href="?type=<?=urlencode($t)?><?=$statusFilter?'&status='.$statusFilter:''?>" class="btn btn-sm <?=$typeFilter===$t?'btn-primary':'btn-ghost'?>"><?=htmlspecialchars(course_type_label($t))?></a>
       <?php endforeach; ?>
       <span style="width:10px"></span>
       <a href="?status=published<?=$typeFilter?'&type='.$typeFilter:''?><?=$catFilter?'&cat='.$catFilter:''?>" class="btn btn-sm <?=$statusFilter==='published'?'btn-primary':'btn-ghost'?>">已发布</a>
@@ -151,11 +175,21 @@ admin_header('课程管理');
         <a href="course-edit.php" class="btn btn-primary" style="margin-top:12px">创建第一门课程</a>
       </div>
       <?php else: ?>
+      <form method="post" id="bulkForm" data-confirm="确认对选中的课程执行批量操作？">
+      <div style="display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border-soft,var(--border));flex-wrap:wrap">
+        <?= csrf_field() ?>
+        <span class="text-sm text-muted">批量：</span>
+        <button class="btn btn-ghost btn-sm" name="bulk_action" value="publish">发布</button>
+        <button class="btn btn-ghost btn-sm" name="bulk_action" value="draft">转草稿</button>
+        <button class="btn btn-danger btn-sm" name="bulk_action" value="delete">删除</button>
+        <span class="text-sm text-muted" style="margin-left:auto">共 <?=count($display)?> 门</span>
+      </div>
       <table>
-        <thead><tr><th>课程名称</th><th>类型</th><th>价格</th><th>讲师</th><th>难度</th><th>学员</th><th>状态</th><th>操作</th></tr></thead>
+        <thead><tr><th style="width:28px"><input type="checkbox" onclick="document.querySelectorAll('.crow').forEach(function(c){c.checked=this.checked}.bind(this))"></th><th>课程名称</th><th>类型</th><th>价格</th><th>讲师</th><th>难度</th><th>学员</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
           <?php foreach ($display as $c): ?>
           <tr>
+            <td><input type="checkbox" class="crow" name="ids[]" value="<?=htmlspecialchars($c['id'])?>"></td>
             <td style="max-width:220px"><strong><?=htmlspecialchars($c['title'])?></strong>
               <?php if (!empty($c['tags'])): ?><div class="text-sm text-muted" style="font-size:11px"><?=htmlspecialchars(implode('、', array_slice($c['tags'],0,3)))?></div><?php endif; ?>
             </td>
@@ -170,12 +204,13 @@ admin_header('课程管理');
               <a href="courses.php?approve=<?=urlencode($c['id'])?>" class="btn btn-success btn-sm">通过上架</a>
               <a href="courses.php?reject=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认拒绝该课程?">拒绝</a>
               <?php endif; ?>
-              <a href="course-edit.php?id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=course&id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="courses.php?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除?">删除</a>
+              <a href="course-edit.php?id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">编辑</a><a href="../content-preview.php?type=course&id=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm" target="_blank">👁</a><a href="course-students.php?course=<?=urlencode($c['id'])?>" class="btn btn-ghost btn-sm">学员</a><a href="courses.php?delete=<?=urlencode($c['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除?">删除</a>
             </td>
           </tr>
           <?php endforeach; ?>
         </tbody>
       </table>
+      </form>
       <?php endif; ?>
     </div>
 
