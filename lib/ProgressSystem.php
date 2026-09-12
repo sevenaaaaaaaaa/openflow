@@ -46,6 +46,14 @@ function progress_done(string $memberId, string $courseId, string $lessonId): vo
                     'label' => ($course['title'] ?? '') . ' 已学完',
                     'props' => ['percent' => 100, 'lessons' => $sum['total']],
                 ]);
+                // 结业证书：认证课或开启证书的课程，完课即颁发
+                try {
+                    require_once __DIR__ . '/CertificateSystem.php';
+                    if (function_exists('cert_maybe_issue')) {
+                        $m = function_exists('member_get') ? member_get($memberId) : null;
+                        cert_maybe_issue($memberId, $course, (string)($m['name'] ?? ''));
+                    }
+                } catch (\Throwable $e) {}
             }
         }
     } catch (Exception $e) {}
