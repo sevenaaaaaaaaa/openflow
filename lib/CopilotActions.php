@@ -31,6 +31,11 @@ function copilot_flow_schema(): array {
             'award_points' => ['points' => 'int'],
             'inbox'        => ['title' => 'string', 'content' => 'text'],
             'send_coupon'  => ['coupon_name' => 'string', 'coupon_type' => 'fixed|percent|free', 'coupon_value' => 'number', 'coupon_min' => 'number'],
+            'update_lead'  => ['stage' => 'string', 'value' => 'number', 'owner' => 'string', 'source' => 'string', 'followup' => 'text'],
+            'create_task'  => ['title' => 'string', 'assignee' => 'string', 'priority' => 'string'],
+            'add_segment'  => ['segment_id' => 'string'],
+            'remove_segment' => ['segment_id' => 'string'],
+            'publish_content' => ['article_id' => 'string'],
         ],
     ];
 }
@@ -73,6 +78,9 @@ function copilot_validate_flow(array $flow): ?array {
         if ($action === 'send_email' && ($clean['subject'] ?? '') === '') return null;
         if ($action === 'add_tag' && ($clean['tag'] ?? '') === '') return null;
         if ($action === 'award_points' && (int)($clean['points'] ?? 0) <= 0) return null;
+        if ($action === 'create_task' && ($clean['title'] ?? '') === '') return null;
+        if (in_array($action, ['add_segment', 'remove_segment'], true) && ($clean['segment_id'] ?? '') === '') return null;
+        if ($action === 'publish_content' && ($clean['article_id'] ?? '') === '') return null;
         $steps[] = $clean;
     }
 
