@@ -26,6 +26,7 @@ try {
 } catch (\Throwable $e) {}
 
 http_response_code(404);
+header('Cache-Control: no-store, max-age=0');
 $site = function_exists('site_config_get') ? (string)site_config_get('site_name') : 'OpenFlow';
 ?><!doctype html>
 <html lang="zh-CN" data-theme="light">
