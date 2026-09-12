@@ -44,6 +44,12 @@ function blockschema_field_labels(): array {
 /** 用户自定义模块的存储文件 */
 function blockschema_file(): string { return DATA_DIR . '/block-types.json'; }
 
+/** 模块分类体系（模块工厂面板按此分组） */
+function blockschema_categories(): array {
+    return ['layout' => '布局', 'content' => '内容', 'convert' => '转化', 'media' => '媒体', 'social' => '社交证明', 'commerce' => '电商', 'other' => '其他'];
+}
+function blockschema_category_label(string $key): string { return blockschema_categories()[$key] ?? '其他'; }
+
 /**
  * 读取全部模块 schema（用户自定义 + 内置白名单）。
  * 返回 id => {id, name, key, status, fields:[], style:[], custom_html, created_at, updated_at}
@@ -76,17 +82,38 @@ function blockschema_normalize(array $mod): array {
     foreach ((array)($mod['style'] ?? []) as $k => $v) {
         $style[preg_replace('/[^a-z_]/', '', strtolower((string)$k))] = (string)$v;
     }
+    // 变体（样式预设）：一个模块可有多套外观，页面实例选用
+    $variants = [];
+    foreach ((array)($mod['variants'] ?? []) as $i => $v) {
+        if (!is_array($v)) continue;
+        $vid = preg_replace('/[^a-z0-9_-]/', '', strtolower((string)($v['id'] ?? ('v' . $i))));
+        if ($vid === '') continue;
+        $vstyle = [];
+        foreach ((array)($v['style'] ?? []) as $k => $val) $vstyle[preg_replace('/[^a-z_]/', '', strtolower((string)$k))] = (string)$val;
+        $variants[] = ['id' => $vid, 'name' => trim((string)($v['name'] ?? $vid)) ?: $vid, 'style' => $vstyle, 'custom_html' => (string)($v['custom_html'] ?? '')];
+    }
+    $cat = preg_replace('/[^a-z_]/', '', strtolower((string)($mod['category'] ?? 'other')));
+    if (!isset(blockschema_categories()[$cat])) $cat = 'other';
     return [
         'id'          => (string)($mod['id'] ?? ''),
         'key'         => $key,
         'name'        => trim((string)($mod['name'] ?? $key)),
         'status'      => (($mod['status'] ?? 'active') === 'active' ? 'active' : 'draft'),
+        'category'    => $cat,
+        'subcategory' => mb_substr(trim((string)($mod['subcategory'] ?? '')), 0, 30),
         'fields'      => $fields,
         'style'       => $style,
+        'variants'    => $variants,
         'custom_html' => (string)($mod['custom_html'] ?? ''),
         'created_at'  => (string)($mod['created_at'] ?? ''),
         'updated_at'  => (string)($mod['updated_at'] ?? ''),
     ];
+}
+
+/** 取模块的某个变体；不存在返回 null */
+function blockschema_variant(array $schema, string $id): ?array {
+    foreach ((array)($schema['variants'] ?? []) as $v) if (($v['id'] ?? '') === $id) return $v;
+    return null;
 }
 
 /** 单个字段归一化；不合法返回 null */
