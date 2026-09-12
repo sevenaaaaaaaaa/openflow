@@ -55,11 +55,13 @@ if (!function_exists('seo_head')) {
         if (function_exists('i18n_enabled') && i18n_enabled()) {
             try {
                 $default = i18n_default_locale();
+                $path = preg_replace('#^/([a-z]{2}(?:-[A-Z]{2})?)(/|$)#', '/', $_SERVER['REQUEST_URI'] ?? '/') ?: '/';
                 foreach (i18n_supported() as $loc) {
-                    $path = preg_replace('#^/([a-z]{2}(?:-[A-Z]{2})?)(/|$)#', '/', $_SERVER['REQUEST_URI'] ?? '/') ?: '/';
                     $altUrl = $siteUrl . ($loc === $default ? $path : '/' . $loc . $path);
                     echo '<link rel="alternate" hreflang="' . htmlspecialchars($loc) . '" href="' . htmlspecialchars($altUrl, ENT_QUOTES) . '">' . "\n";
                 }
+                // x-default：未匹配任何语言时指向默认语言版本
+                echo '<link rel="alternate" hreflang="x-default" href="' . htmlspecialchars($siteUrl . $path, ENT_QUOTES) . '">' . "\n";
             } catch (Throwable $e) {}
         }
         // A3 可用化：seo-settings.json 站点级 meta 注入（后台可配、前台真正生效）
