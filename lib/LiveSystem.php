@@ -462,6 +462,86 @@ function live_chat_admin(string $roomId, int $limit = 50): array {
     return array_reverse($rows);   // 最新在前
 }
 
+/* ═══ 回放自动转章节（第二批：从弹幕/推品记录提取时间轴，回放页可点击跳转）═══ */
+
+/**
+ * 从房间弹幕+推品历史提取章节时间轴。
+ * 策略：推品弹窗时的时间点 → 章节（主播推品=内容转折点）；每隔 10 分钟的弹幕密集点=讨论段。
+ * 结果存 room['chapters'] = [{t:'00:00', title:'开场'}, ...]
+ */
+function live_auto_chapters(array $room): array {
+    $roomId = (string)($room['id'] ?? '');
+    if ($roomId === '') return [];
+    // 已生成过且未被重置 → 直接用
+    if (!empty($room['chapters']) && is_array($room['chapters'])) return $room['chapters'];
+
+    $chapters = [];
+    // 1. 推品弹窗历史 → 章节（推品=内容关键节点；相邻推品间隔按 5 分钟估）
+    $products = array_values(array_filter((array)($room['products'] ?? [])));
+    if ($products) {
+        foreach ($products as $i => $line) {
+            $t = trim(explode('|', $line)[0] ?? '');
+            if ($t === '') continue;
+            $offsetSec = $i * 300;   // 每 5 分钟一个推品节点
+            $chapters[] = ['t' => sprintf('%02d:%02d', (int)($offsetSec / 60), $offsetSec % 60), 'title' => '推品：' . mb_substr($t, 0, 20)];
+        }
+    }
+
+    // 2. 弹幕密集点 → 互动章节（用 live_chat 数据，每 10 分钟取一个点）
+    if (live_chat_ensure()) {
+        try {
+            require_once __DIR__ . '/Database.php';
+            $rows = Database::query("SELECT at, COUNT(*) c FROM live_chat WHERE room_id = ? GROUP BY substr(at,1,16) ORDER BY at", [$roomId]);
+            $byMinute = [];
+            foreach ($rows as $r) {
+                $min = (string)$r['at'];
+                $ts = strtotime($min);
+                if ($ts > 0) $byMinute[$ts] = (int)$r['c'];
+            }
+            if ($byMinute) {
+                $firstTs = min(array_keys($byMinute));
+                ksort($byMinute);
+                $bucket = [];   // 10 分钟桶
+                foreach ($byMinute as $ts => $cnt) {
+                    $bucketKey = (int)floor(($ts - min(array_keys($byMinute))) / 600);
+                    $bucket[$bucketKey = $bucketKey ?? 0] = ($bucket[$bucketKey] ?? 0) + $cnt;
+                }
+                // 取弹幕量 Top3 的桶 → 章节
+                arsort($bucket);
+                $top = array_slice($bucket, 0, 3, true);
+                ksort($top);
+                foreach ($top as $bucketIdx => $cnt) {
+                    $offsetSec = $bucketIdx * 600;
+                    $chapters[] = ['t' => sprintf('%02d:%02d', (int)($offsetSec / 60), $offsetSec % 60), 'title' => '讨论热点（' . $cnt . ' 条弹幕）'];
+                }
+            }
+        } catch (\Throwable $e) {}
+    }
+
+    // 去重（同 t 只留一条）+ 按时间排序
+    $seen = []; $out = [];
+    foreach ($chapters as $c) {
+        $t = $c['t'] ?? '';
+        if ($t === '' || isset($seen[$t])) continue;
+        $seen[$t] = true;
+        $out[] = $c;
+    }
+    usort($out, fn($a, $b) => strcmp($a['t'], $b['t']));
+    if (!$out) $out = [['t' => '00:00', 'title' => '完整回放']];
+    return $out;
+}
+
+/** 保存章节到房间（生成一次后缓存） */
+function live_save_chapters(string $roomId, array $chapters): bool {
+    $rooms = live_rooms();
+    foreach ($rooms as &$r) {
+        if (($r['id'] ?? '') === $roomId) { $r['chapters'] = $chapters; break; }
+    }
+    unset($r);
+    live_rooms_save($rooms);
+    return true;
+}
+
 // 直播状态
 function live_status(array $room): string {
     $now = time();
