@@ -5,6 +5,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/LiveSystem.php';
 require_once __DIR__ . '/../lib/MessageSystem.php';
+require_once __DIR__ . '/../lib/LiveInteractions.php';
 require_login();
 require_perm('live');
 
@@ -21,6 +22,30 @@ foreach ($courses as $c) {
     $courseLessonsMap[$c['id']] = $ls;
 }
 $message = '';
+
+// 直播互动：抽奖发起/开奖 · 秒杀上架/下架 · 连麦审批
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['li_action'])) {
+    csrf_verify();
+    $roomId = (string)($_POST['room_id'] ?? '');
+    $act = (string)$_POST['li_action'];
+    if ($act === 'giveaway_create') {
+        $x = li_giveaway_create($roomId, (string)($_POST['gw_title'] ?? ''), (string)($_POST['gw_prize'] ?? ''), (int)($_POST['gw_count'] ?? 1), (int)($_POST['gw_min'] ?? 5));
+        flash($x['ok'] ? 'success' : 'error', $x['ok'] ? '抽奖已发起' : ($x['error'] ?? '失败'));
+    } elseif ($act === 'giveaway_draw') {
+        $x = li_giveaway_draw($roomId, (string)($_POST['gw_id'] ?? ''));
+        flash($x['ok'] ? 'success' : 'error', $x['ok'] ? ('已开奖：' . count($x['winners']) . ' 位中奖') : ($x['error'] ?? '失败'));
+    } elseif ($act === 'flash_set') {
+        $x = li_flash_set($roomId, (string)($_POST['fl_product'] ?? ''), (float)($_POST['fl_price'] ?? 0), (int)($_POST['fl_stock'] ?? 0), (int)($_POST['fl_min'] ?? 10));
+        flash($x['ok'] ? 'success' : 'error', $x['ok'] ? '秒杀已上架' : ($x['error'] ?? '失败'));
+    } elseif ($act === 'flash_clear') {
+        li_flash_clear($roomId); flash('success', '秒杀已下架');
+    } elseif ($act === 'guest_set') {
+        li_guest_set($roomId, (string)($_POST['guest_id'] ?? ''), (string)($_POST['status'] ?? ''));
+        flash('success', '嘉宾状态已更新');
+    }
+    header('Location: /xmp/live?edit=' . urlencode($roomId));
+    exit;
+}
 
 // 弹幕管理：删除 / 禁言 / 取消禁言
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chat_action'])) {
@@ -287,6 +312,84 @@ admin_header('直播管理');
         <button type="submit" class="btn btn-primary">保存直播间</button>
       </form>
     </div>
+
+    <?php if (!empty($r['id'])): $lid = $r['id']; $gw = li_giveaway_current($lid); $fl = li_flash($lid); $board = li_sales_board($lid); $clips = li_clips($r); $guests = li_guests($lid); ?>
+    <div class="card" style="margin-top:16px">
+      <h2>🎛️ 直播互动 · <?=htmlspecialchars($r['title'] ?: $lid)?></h2>
+
+      <div class="kpi-grid" style="margin-bottom:14px">
+        <div class="kpi"><div class="k-label">本场成交额</div><div class="k-val mono">¥<?=number_format($board['revenue'], 0)?></div><div class="k-sub"><?=$board['orders']?> 单 · 客单 ¥<?=number_format($board['aov'], 0)?></div></div>
+        <div class="kpi"><div class="k-label">成交人数</div><div class="k-val mono"><?=$board['buyers']?></div><div class="k-sub">爆品：<?=htmlspecialchars($board['top_product'] ?: '—')?></div></div>
+        <div class="kpi"><div class="k-label">在线观众</div><div class="k-val mono"><?=$board['viewers']?></div><div class="k-sub">点赞 <?=$board['likes']?></div></div>
+        <div class="kpi"><div class="k-label">下单转化</div><div class="k-val mono"><?=$board['conv']?>%</div><div class="k-sub">订单/在线</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <!-- 抽奖 -->
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px">
+          <strong>🎁 抽奖</strong>
+          <?php if ($gw && ($gw['status'] ?? '') === 'open'): ?>
+          <p class="text-sm text-muted" style="margin:6px 0">进行中：<?=htmlspecialchars($gw['title'])?> · 奖品 <?=htmlspecialchars($gw['prize'] ?: '—')?> · <?=count($gw['entries'])?> 人参与 · 截止 <?=htmlspecialchars(substr((string)$gw['ends_at'], 11, 5))?></p>
+          <form method="post" data-no-guard><?= csrf_field() ?><input type="hidden" name="li_action" value="giveaway_draw"><input type="hidden" name="room_id" value="<?=htmlspecialchars($lid)?>"><input type="hidden" name="gw_id" value="<?=htmlspecialchars($gw['id'])?>"><button class="btn btn-primary btn-sm" data-confirm="确认开奖？">开奖（<?=$gw['count']?> 名）</button></form>
+          <?php elseif ($gw && ($gw['status'] ?? '') === 'drawn'): ?>
+          <p class="text-sm text-muted" style="margin:6px 0">已开奖：<?php foreach ((array)$gw['winners'] as $w) echo htmlspecialchars($w['name'] ?: '匿名') . '、'; ?></p>
+          <?php endif; ?>
+          <form method="post" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" data-no-guard>
+            <?= csrf_field() ?><input type="hidden" name="li_action" value="giveaway_create"><input type="hidden" name="room_id" value="<?=htmlspecialchars($lid)?>">
+            <input class="inp sm" name="gw_title" placeholder="抽奖标题" style="flex:1;min-width:120px" required>
+            <input class="inp sm" name="gw_prize" placeholder="奖品" style="width:110px">
+            <input class="inp sm" type="number" name="gw_count" value="1" min="1" style="width:64px" title="名额">
+            <input class="inp sm" type="number" name="gw_min" value="5" min="1" style="width:64px" title="分钟">
+            <button class="btn btn-ghost btn-sm">发起抽奖</button>
+          </form>
+        </div>
+
+        <!-- 秒杀 -->
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px">
+          <strong>⚡ 秒杀库存</strong>
+          <?php if ($fl): ?>
+          <p class="text-sm text-muted" style="margin:6px 0"><?=htmlspecialchars($fl['product'])?> · ¥<?=number_format((float)$fl['price'], 0)?> · 剩余 <b><?=$fl['remaining']?></b>/<?=$fl['stock']?> · <?=$fl['active'] ? '进行中' : '已结束'?></p>
+          <form method="post" data-no-guard><?= csrf_field() ?><input type="hidden" name="li_action" value="flash_clear"><input type="hidden" name="room_id" value="<?=htmlspecialchars($lid)?>"><button class="btn btn-ghost btn-sm" style="color:var(--danger)">下架</button></form>
+          <?php endif; ?>
+          <form method="post" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" data-no-guard>
+            <?= csrf_field() ?><input type="hidden" name="li_action" value="flash_set"><input type="hidden" name="room_id" value="<?=htmlspecialchars($lid)?>">
+            <input class="inp sm" name="fl_product" placeholder="商品" style="flex:1;min-width:110px" required>
+            <input class="inp sm" type="number" name="fl_price" placeholder="价" style="width:70px">
+            <input class="inp sm" type="number" name="fl_stock" placeholder="库存" style="width:74px" required>
+            <input class="inp sm" type="number" name="fl_min" value="10" style="width:64px" title="分钟">
+            <button class="btn btn-ghost btn-sm">上架秒杀</button>
+          </form>
+        </div>
+
+        <!-- 连麦 -->
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px">
+          <strong>🎙️ 连麦嘉宾</strong>
+          <?php if (!$guests): ?><p class="text-sm text-muted" style="margin:6px 0">暂无申请。观众在直播间可申请连麦。</p><?php endif; ?>
+          <?php foreach ($guests as $g): ?>
+          <div style="display:flex;gap:8px;align-items:center;font-size:13px;padding:5px 0">
+            <span style="flex:1"><?=htmlspecialchars($g['name'] ?: $g['uid'])?></span>
+            <span class="st <?=['requested'=>'st-warn','approved'=>'st-ok','onair'=>'st-danger','removed'=>'st-faint'][$g['status']] ?? 'st-faint'?>" style="font-size:10.5px;padding:1px 7px;border-radius:999px"><?=htmlspecialchars(['requested'=>'待审','approved'=>'已通过','onair'=>'连麦中','removed'=>'已移除'][$g['status']] ?? $g['status'])?></span>
+            <?php if ($g['status'] === 'requested'): ?><form method="post" data-no-guard><?= csrf_field() ?><input type="hidden" name="li_action" value="guest_set"><input type="hidden" name="room_id" value="<?=htmlspecialchars($lid)?>"><input type="hidden" name="guest_id" value="<?=htmlspecialchars($g['id'])?>"><input type="hidden" name="status" value="approved"><button class="btn btn-s btn-sm">通过</button></form><?php endif; ?>
+            <?php if ($g['status'] === 'approved'): ?><form method="post" data-no-guard><?= csrf_field() ?><input type="hidden" name="li_action" value="guest_set"><input type="hidden" name="room_id" value="<?=htmlspecialchars($lid)?>"><input type="hidden" name="guest_id" value="<?=htmlspecialchars($g['id'])?>"><input type="hidden" name="status" value="onair"><button class="btn btn-s btn-sm">上麦</button></form><?php endif; ?>
+            <form method="post" data-no-guard><?= csrf_field() ?><input type="hidden" name="li_action" value="guest_set"><input type="hidden" name="room_id" value="<?=htmlspecialchars($lid)?>"><input type="hidden" name="guest_id" value="<?=htmlspecialchars($g['id'])?>"><input type="hidden" name="status" value="removed"><button class="btn btn-ghost btn-sm" style="color:var(--danger)">移除</button></form>
+          </div>
+          <?php endforeach; ?>
+          <p class="text-xs text-muted" style="margin:8px 0 0">连麦的音频/视频传输由流媒体服务承载；此处管理嘉宾申请与上麦状态。</p>
+        </div>
+
+        <!-- 回放切片 -->
+        <div style="border:1px solid var(--border);border-radius:10px;padding:14px">
+          <strong>✂️ 回放切片</strong>
+          <?php if (!$clips): ?><p class="text-sm text-muted" style="margin:6px 0">暂无切片。回放章节或弹幕高峰会自动生成。</p><?php endif; ?>
+          <div style="display:flex;flex-direction:column;gap:4px;margin-top:6px">
+            <?php foreach (array_slice($clips, 0, 12) as $c): ?>
+            <a href="<?=htmlspecialchars($c['url'])?>" target="_blank" class="text-sm" style="color:var(--accent)"><?=sprintf('%02d:%02d', intdiv(max(0,$c['start']),60), max(0,$c['start'])%60)?> · <?=htmlspecialchars($c['title'])?><?=$c['kind']==='peak' ? ' 🔥' : ''?></a>
+            <?php endforeach; ?>
+          </div>
+        </div>
+      </div>
+    </div>
+    <?php endif; ?>
 
     <?php else: ?>
     <div class="card" style="max-width:640px">
