@@ -333,7 +333,10 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="qr">
       <div class="q-i"><div class="stars">★★★★★</div><blockquote>「以前每天 3 小时找选题改文章，现在 OpenFlow 爬完信号直接给草稿，我只管把关。效率翻了三倍。」</blockquote><div class="who"><span class="av">陈</span><div><b>陈默</b><span>内容工作室</span></div></div></div>
       <div class="q-i"><div class="stars">★★★★★</div><blockquote>「销转率从 2.1% 提到 3.8%，靠的不是更多流量，是把转化每一环都拆出来让 Agent 盯。」</blockquote><div class="who"><span class="av">林</span><div><b>林晓</b><span>知识付费</span></div></div></div>
-      <div class="q-i"><div class="stars">★★★★★</div><blockquote>「4 个人的团队，周报、监控、跨群通知全交给工作流，省出的时间够多做一个客户。」</blockquote><div class="who"><span class="av">王</span><div><b>王珩</b><span>SaaS 服务商</span></div></div></div>
+      <div class="q-i"><div class="stars">★★★★☆</div><blockquote>「4 个人的团队，周报、监控、跨群通知全交给工作流，省出的时间够多做一个客户。上手花了一周，值。」</blockquote><div class="who"><span class="av">王</span><div><b>王珩</b><span>SaaS 服务商</span></div></div></div>
+      <div class="q-i"><div class="stars">★★★★★</div><blockquote>「一个人做播客加卖课，数据原来散在三个地方。现在选题、发布、转化在一条线上，月底复盘不用再翻六个后台。」</blockquote><div class="who"><span class="av">林</span><div><b>林之然</b><span>播客主理人</span></div></div></div>
+      <div class="q-i"><div class="stars">★★★★☆</div><blockquote>「开源版装在自己服务器，数据不出域这点对我们行业是硬要求。评估了三个 SaaS，最后是这个谈得最痛快。」</blockquote><div class="who"><span class="av">沈</span><div><b>沈亦舟</b><span>财税咨询</span></div></div></div>
+      <div class="q-i"><div class="stars">★★★★★</div><blockquote>「托管版最值的是睡得着觉：升级、备份、证书彻底不用惦记。一个人创业，省下的心力比钱值钱。」</blockquote><div class="who"><span class="av">青</span><div><b>青禾</b><span>独立电商</span></div></div></div>
     </div>
   </section>
 
