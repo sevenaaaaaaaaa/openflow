@@ -84,6 +84,7 @@ function admin_nav_pinned(): array {
                 ['id' => 'flow-workspace',  'label' => 'Flow 工作台',     'href' => '/xmp/flow-workspace'],
                 ['id' => 'loop-workspace',  'label' => 'Loop 工作台',     'href' => '/xmp/loop-workspace'],
                 ['id' => 'brain',           'label' => '增长大脑',        'href' => '/xmp/brain'],
+                ['id' => 'agent',           'label' => 'Agent 运行时',    'href' => '/xmp/agent'],
                 ['id' => 'ai-config',       'label' => '模型与 AI',      'href' => '/xmp/ai-config'],
                 ['id' => 'knowledge',       'label' => '知识库',          'href' => '/xmp/knowledge'],
             ],
