@@ -116,6 +116,7 @@ function admin_nav_tree(): array {
                     ['id' => 'create', 'label' => '创作台', 'perm' => 'articles', 'hint' => '专栏 · 脚本 · 幻灯片'],
                     ['id' => 'tasks', 'label' => '生产任务', 'perm' => 'tasks'],
                     ['id' => 'product-scout', 'label' => '产品发现', 'perm' => 'articles', 'hint' => '每日 Loop'],
+                    ['id' => 'trend-radar', 'label' => '热点雷达', 'perm' => 'settings', 'hint' => '多源热点 → 选题'],
                     ['id' => 'content-calendar', 'label' => '内容日历', 'perm' => 'tasks'],
                     ['id' => 'help-center', 'label' => '帮助中心', 'perm' => 'articles', 'hint' => '指南 · 分类'],
                     ['id' => 'publish', 'label' => '内容分发', 'perm' => 'tasks'],
