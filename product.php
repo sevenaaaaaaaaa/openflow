@@ -323,7 +323,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         <button class="btn primary" data-act="start">免费开始</button>
         <a class="btn ghost" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 源码</a>
         <a class="btn ghost" href="/capability">了解 TIPS 能力</a>
-        <a class="btn subtle" href="/about">预约演示 →</a>
+        <a class="btn subtle" href="/consultation">预约演示 →</a>
       </div>
     </div>
   </section>

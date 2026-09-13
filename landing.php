@@ -91,8 +91,9 @@ $jsonLd = [
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>404 | OpenFlow</title>
+<title><?=htmlspecialchars($landing['title'])?> | OpenFlow</title>
     <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
+<script type="application/ld+json"><?=json_encode($jsonLd, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP)?></script>
 <style>
 /* 专题聚合页：全部来自 modules.css（hero-center / a-card / cta-band）。 */
 .lp-tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
