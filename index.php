@@ -112,7 +112,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
       <h1>你不缺<i class="si">怎么做</i>，<br>你缺 <span class="hr-word" id="hr-word" role="button" tabindex="0" aria-label="点击切换关键词">该做什么</span></h1>
       <p class="lead">市面上的增长工具都默认你有一支团队。芭乐派把内容、数据、自动化和销售接进同一套 TIPS 系统：已知方法交给 Flow 稳定执行，未知路径由受控 Loop 辅助判断。</p>
       <div class="cta-row">
-        <a class="btn primary" href="/courses" data-od-id="home-cta-start">免费开始（开源）</a>
+        <a class="btn primary" href="/register" data-od-id="home-cta-start">免费开始（开源）</a>
         <a class="btn ghost" href="/product" data-od-id="home-cta-demo">先看它一天干什么</a>
       </div>
       <div class="trust"><span class="dot"></span>Seven · 十年增长操盘 · 核心能力永久开源 · 数据在你自己的服务器</div>
