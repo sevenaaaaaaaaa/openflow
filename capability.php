@@ -49,7 +49,7 @@ $CAPS = [
   ['check','销售 Sales','CRM、转化、商城、订阅。从触达到成交，让支付能力流向你。',[
     ['CRM 管道','线索评分、360° 详情、跟进任务与成交回流'],
     ['统一收件箱','多渠道会话汇聚一处，销售话术 AI 辅助'],
-    ['商城与支付','购物车、优惠码、虎皮椒支付，下单即交付'],
+    ['商城与支付','购物车、优惠码，虎皮椒 / 微信 / 支付宝 / Stripe 多渠道，下单即交付'],
     ['订阅计费','自动续费、到期提醒、会员付费墙与升级引导'],
     ['课程交付','报名 → 学习 → 结业，知识付费全链路'],
     ['推荐分销','推荐码归因、佣金结算、提现，老客带新客'],
@@ -62,7 +62,7 @@ $CAPS = [
     ['Agent 运行时','AI 在白名单工具内链式执行目标：风险审批门 + 重试自愈 + 全程落盘'],
     ['热点雷达与全平台发布','HN / GitHub / RSS 热点聚类转选题；Telegram / Discord / Mastodon / WordPress 真发队列'],
   ],'workspace','控制台 · 今日主线与 Agent 运行时 · 真实后台界面','/product#feat-spine','看行动脊柱 →'],
-  ['box','自生长 AI Engine','按你设的周期自动推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动转化。周期用 cron 自己定，装完即用。',[
+  ['box','增长引擎','按你设的周期自动推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动转化。周期用 cron 自己定，装完即用。',[
     ['产品发现 Loop','每天自动发现 GitHub 新产品，AI 成稿进入审核队列'],
     ['GEO 话题采集','行业信号自动抓取，AI 结构化提炼选题'],
     ['用户研究中心','JTBD / 用户旅程图 / VoC 等 6 大研究框架'],
@@ -79,7 +79,7 @@ $CAPS = [
     ['数据自主','JSON + SQLite 起步零依赖，可平滑演进 MySQL'],
   ],'github','GitHub 仓库 · 代码即证据','https://github.com/sevenaaaaaaaaa/openflow','去 GitHub 验证 →'],
 ];
-$CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮件','Ghost','虎皮椒支付','Search Console','Webhook','OpenAPI','MCP']; // 与 product.php 同一份，全部在代码里核过
+$CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮件','Ghost','虎皮椒支付','微信支付','支付宝','Stripe','Telegram','Discord','Mastodon','WordPress','Search Console','Webhook','OpenAPI','MCP']; // 与 product.php 同一份，全部在代码里核过（支付见 PaymentChannel、发布见 PublishAdapters）
 $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>';
 ?>
 <!doctype html>
@@ -87,9 +87,9 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '产品能力 | OpenFlow', 'description' => 'OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、自生长 AI Engine 与永久开源生态，42 个真实模块全部可在代码与后台中核验。', 'canonical' => site_config_get('site_url') . '/capability']); endif; ?>
+<?php if (function_exists('seo_head')): seo_head(['title' => '产品能力 | OpenFlow', 'description' => 'OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、增长引擎与永久开源生态，42 个真实模块全部可在代码与后台中核验。', 'canonical' => site_config_get('site_url') . '/capability']); endif; ?>
 <title>能力 · TIPS 四力 | 芭乐派 · OpenFlow</title>
-<meta name="description" content="OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、自生长 AI Engine 与永久开源生态，42 个真实模块全部可在代码与后台中核验。">
+<meta name="description" content="OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、增长引擎与永久开源生态，42 个真实模块全部可在代码与后台中核验。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
@@ -207,7 +207,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
     <div class="sec-head center">
       <span class="kicker">集成生态</span>
       <h2>不用推翻你现在在用的东西</h2>
-      <p class="lead">下面每一项都已在代码里实现：通知与知识同步走飞书 / 企业微信 / WhatsApp / Notion，内容可从 GitHub 导入，邮件走 SMTP 或 Ghost，支付走虎皮椒，搜索数据来自 Search Console；其余系统用 Webhook / OpenAPI / MCP 接入。</p>
+      <p class="lead">下面每一项都已在代码里实现：通知与知识同步走飞书 / 企业微信 / WhatsApp / Notion，内容可从 GitHub 导入，邮件走 SMTP 或 Ghost，支付走虎皮椒 / 微信 / 支付宝 / Stripe，内容可发布到 Telegram / Discord / Mastodon / WordPress；搜索数据来自 Search Console，其余系统用 Webhook / OpenAPI / MCP 接入。</p>
     </div>
     <div class="sp-win" id="connChips2">
       <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">connectors</div></div>

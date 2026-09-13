@@ -121,6 +121,7 @@ $apiEndpoints = [
     ['path' => '/api/site-structure', 'method' => 'GET', 'desc' => '站点结构：全局导航 / 页脚 / 自定义页面', 'params' => '—'],
     ['path' => '/api/landing', 'method' => 'GET', 'desc' => '聚合页数据：slug → 页面 + 聚合文章', 'params' => 'slug'],
     ['path' => '/api/search', 'method' => 'GET', 'desc' => '站内搜索：文章 / 课程 / 资料', 'params' => 'q'],
+    ['path' => '/api/segments', 'method' => 'GET', 'desc' => '分群即服务：按 API Key 拉取分群定义、人数与脱敏成员名单', 'params' => 'key, action=list/count/members/profile, segment, limit'],
 ];
 
 // 模板库
