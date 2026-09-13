@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../lib/PublishAdapters.php';
 require_login();
 require_perm('articles');
 
@@ -124,6 +125,38 @@ admin_header('内容分发');
       <div class="stat-card"><div class="num" style="color:var(--ok)"><?=$publishStats[$pk]?></div><div class="label"><?=$pv['name']?></div></div>
       <?php endif; endforeach; ?>
     </div>
+
+    <!-- 平台适配器与凭据 -->
+    <div class="card" style="margin-bottom:24px">
+      <h2>🔌 平台适配器与凭据</h2>
+      <p class="sub" style="margin-bottom:12px">有开放 API 的平台填好凭据即真发；**通用 Webhook** 可对接任意外部发布器（n8n/Make/自建）；无 API 的平台生成原生文案后手动发布。</p>
+      <?php $adapters = pub_adapters(); foreach ($adapters as $aid => $ad): $cfg = pub_adapter_cfg($aid); $ready = pub_adapter_ready($aid); $isManual = ($ad['mode'] ?? '') === 'manual'; ?>
+      <div style="border-bottom:1px solid var(--border-soft,var(--border));padding:10px 0">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <b><?=htmlspecialchars($ad['name'])?></b>
+          <span class="badge <?=$isManual ? 'badge-gray' : 'badge-green'?>"><?=$isManual ? '手动平台' : 'API 直发'?></span>
+          <?php if (!$isManual): ?><span class="badge <?=$ready ? 'badge-green' : 'badge-yellow'?>"><?=$ready ? '已就绪' : '未配置'?></span><?php endif; ?>
+        </div>
+        <?php if (!empty($ad['fields'])): ?>
+        <div class="field-row" data-ad="<?=htmlspecialchars($aid)?>" style="margin-top:8px;align-items:flex-end">
+          <?php foreach ($ad['fields'] as $fk => $flabel): ?>
+          <div class="field"><label style="font-size:12px"><?=htmlspecialchars($flabel)?></label><input class="inp sm" data-f="<?=htmlspecialchars($fk)?>" value="<?=htmlspecialchars((string)($cfg[$fk] ?? ''))?>" <?=(stripos($fk, 'token') !== false || stripos($fk, 'secret') !== false || stripos($fk, 'password') !== false || stripos($fk, 'key') !== false) ? 'type="password"' : ''?>></div>
+          <?php endforeach; ?>
+          <button class="btn btn-ghost btn-sm" onclick="paSave('<?=htmlspecialchars($aid)?>',this)">保存</button>
+          <button class="btn btn-s btn-sm" onclick="paTest('<?=htmlspecialchars($aid)?>',this)">测试</button>
+        </div>
+        <?php endif; ?>
+      </div>
+      <?php endforeach; ?>
+      <span class="note mono" id="paMsg" style="display:block;margin-top:10px"></span>
+    </div>
+<script>
+const PA_CSRF = <?=json_encode(csrf_token())?>;
+async function paPost(p){ return (await fetch('/api/publish-adapters.php',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':PA_CSRF},body:JSON.stringify(p)})).json(); }
+function paFields(id){ const box=document.querySelector('[data-ad="'+id+'"]'); const o={action:'save',id:id}; if(box) box.querySelectorAll('[data-f]').forEach(el=>o[el.getAttribute('data-f')]=el.value); return o; }
+async function paSave(id, btn){ btn.disabled=true; const r=await paPost(paFields(id)); document.getElementById('paMsg').textContent = r.ok ? ('已保存'+(r.ready?'，已就绪':'，仍缺凭据')) : (r.error||'保存失败'); btn.disabled=false; if(r.ok) setTimeout(()=>location.reload(),500); }
+async function paTest(id, btn){ btn.disabled=true; document.getElementById('paMsg').textContent='测试中…'; const r=await paPost({action:'test', id:id}); document.getElementById('paMsg').textContent = r.message || (r.ok?'成功':'失败'); btn.disabled=false; }
+</script>
 
     <!-- 发布表单 -->
     <div class="card" style="margin-bottom:24px">
