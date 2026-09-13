@@ -64,7 +64,7 @@ $CAPS = [
   ['doc','永久开源','核心能力永久开源，Tools 和 Strategy 双向迭代，鱼与渔相结合。',[
     ['MIT 开源','核心能力全部公开，代码即证据'],
     ['插件平台 v2','钩子 / API 路由 / 后台菜单页面 / 前端插槽 / 定时任务'],
-    ['MCP Server','30+ 工具，外部 Agent 在权限与审计约束下调用'],
+    ['MCP Server','18 个工具，外部 Agent 在权限与审计约束下调用'],
     ['Skills 生态','prompt / tool / workflow 三类能力包，可分享可安装'],
     ['连接器','飞书 / 企微 / Notion / Search Console 等开箱即用'],
     ['数据自主','JSON + SQLite 起步零依赖，可平滑演进 MySQL'],
@@ -140,7 +140,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
         <button class="btn primary" data-act="start" data-od-id="capability-cta-start">免费开始</button>
         <a class="btn ghost" href="/product" data-od-id="capability-cta-product">了解产品原理</a>
       </div>
-      <div class="proof-strip"><span><b>30</b>MCP 工具</span><span><b>v2</b>插件平台</span><span><b>101</b>API 端点</span><span><b>209</b>后台页面</span><span><b>188</b>功能模块</span></div>
+      <div class="proof-strip"><span><b>18</b>MCP 工具</span><span><b>v2</b>插件平台</span><span><b>113</b>API 端点</span><span><b>221</b>后台页面</span><span><b>216</b>核心类文件</span></div>
     </div>
   </section>
 

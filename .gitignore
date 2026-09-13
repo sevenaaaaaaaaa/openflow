@@ -97,3 +97,6 @@ lovart-art-google-内部整改方案.md
 
 # ─── 批量截取的导航站官网截图（400+ 张，由 tests/visual/nav_site_shots.py 生成，deploy.sh 直接 rsync） ───
 /assets/images/nav-sites/
+
+# 服务器部署配置含基础设施信息，不入库（本地保留）
+docs/DEPLOY-CONFIG.md
