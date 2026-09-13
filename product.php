@@ -223,6 +223,30 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         </div>
       </div></div>
     </div>
+
+    <div class="split" id="feat-spine" data-od-anchor>
+      <div class="sp-txt">
+        <h3>行动脊柱：从建议到可执行</h3>
+        <p class="lead">v2.5 起，全站信号收口成一条行动脊柱：CDP、CRM、会员、订单合成统一「人」对象，今日主线排出「立即 / 今日 / 本周」该做的事，Agent 在白名单工具内按目标链式执行——中高风险动作等你批准，全程落盘可审计。</p>
+        <ul class="sp-list">
+          <li><?=$ck?><span>统一「人」对象：一条跨模块时间线</span></li>
+          <li><?=$ck?><span>今日主线：该做哪件事，直接给你</span></li>
+          <li><?=$ck?><span>Agent 运行时：风险审批门 + 重试自愈</span></li>
+        </ul>
+      </div>
+      <div class="sp-vis"><div class="hero-win">
+        <div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">action-spine · agent-runtime</div></div>
+        <div class="win-flow">
+          <div class="flow-row"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.5c2.8.3 5 2.6 5 5.5"/></svg></span><div><div class="ft">统一「人」对象 · 360° 时间线</div><div class="fd">CDP + CRM + 订单</div></div><span class="badge ok">已合并</span></div>
+          <div class="flow-link"></div>
+          <div class="flow-row"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span><div><div class="ft">今日主线 · 排出该做的事</div><div class="fd">立即 / 今日 / 本周</div></div><span class="badge ok">3 件待办</span></div>
+          <div class="flow-link"></div>
+          <div class="flow-row"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span><div><div class="ft">Agent · 调用白名单工具</div><div class="fd">打标签 → 建任务 → 更新线索</div></div><span class="badge warn">高风险待批准</span></div>
+          <div class="flow-link"></div>
+          <div class="flow-row"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg></span><div><div class="ft">执行结果回流学习</div><div class="fd">有效上浮 · 无效下沉</div></div><span class="badge ok">完成</span></div>
+        </div>
+      </div></div>
+    </div>
   </section>
 
   <!-- ══ 真实界面 ══ -->
