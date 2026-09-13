@@ -291,8 +291,19 @@ try { $scout = ProductScout::dailyRun(); } catch (Throwable $e) { $scout = ['sta
 $geoRun = ['status' => 'skipped'];
 try { require_once __DIR__ . '/../lib/GeoSystem.php'; $geoRun = geo_daily_run(); } catch (Throwable $e) { $geoRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
 
+// ── 热点雷达：每天一次多源抓取+聚类 ──
+$trendRun = ['status' => 'skipped'];
+try {
+    $trLast = (string)(json_read(DATA_DIR . '/trends/last.json')['date'] ?? '');
+    if ($trLast !== date('Y-m-d')) {
+        require_once __DIR__ . '/../lib/TrendRadar.php';
+        $trendRun = trend_run(true);
+        json_write(DATA_DIR . '/trends/last.json', ['date' => date('Y-m-d'), 'result' => $trendRun]);
+    }
+} catch (Throwable $e) { $trendRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
+
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge,
                   'webhook_retry' => $webhookRetry, 'plugin_cron' => $pluginCron, 'product_scout' => $scout,
-                  'geo_run' => $geoRun, 'conv_run' => $convRun,
+                  'geo_run' => $geoRun, 'conv_run' => $convRun, 'trend_run' => $trendRun,
                   'time' => date('Y-m-d H:i:s')]);
