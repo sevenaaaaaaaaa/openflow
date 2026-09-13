@@ -162,6 +162,11 @@ if ($ext === 'svg') {
     $svgContent = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $svgContent);
     $svgContent = preg_replace('/\bon\w+\s*=\s*["\'][^"\']*["\']/i', '', $svgContent);
     $svgContent = preg_replace('/javascript\s*:/i', '', $svgContent);
+    // foreignObject 可在 SVG 内嵌 HTML/iframe，整体移除；href 只放行 image/ 外的 data: URI（可夹带 text/html）；
+    // animate/set 可把 href 动画改成 javascript: 链接，一并剥掉。
+    $svgContent = preg_replace('/<foreignObject\b[^>]*>(.*?)<\/foreignObject>/is', '', $svgContent);
+    $svgContent = preg_replace('/\s(?:xlink:href|href|src)\s*=\s*["\']data:(?!image\/)[^"\']*["\']/i', '', $svgContent);
+    $svgContent = preg_replace('/<(animate|set)\b[^>]*\battributeName\s*=\s*["\'](?:xlink:)?href["\'][^>]*\/?>/i', '', $svgContent);
     file_put_contents($dest, $svgContent);
 }
 
