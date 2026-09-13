@@ -136,7 +136,13 @@ class SocialPublisher {
             }
         }
 
-        // 其他平台：无开放 API → 生成带链接的分享文案（明确「仅生成文案需手动发布」非假成功）
+        // 其他平台：交给适配器框架（api 真发 / manual 生成文案）；适配器不可用再回退旧文案逻辑
+        try {
+            if (!function_exists('pub_adapter_publish')) require_once __DIR__ . '/PublishAdapters.php';
+            if (function_exists('pub_adapter_publish')) return pub_adapter_publish($platform, $article, $opts);
+        } catch (\Throwable $e) {}
+
+        // 保底：生成带链接的分享文案（明确「仅生成文案需手动发布」非假成功）
         $pname = (self::platforms()[$platform]['name'] ?? $platform);
         $msg = "已生成「{$pname}」平台文案，复制后到创作中心手动发布";
         return ['ok' => false, 'manual' => true, 'message' => $msg, 'platform_id' => 'manual_' . substr(bin2hex(random_bytes(4)), 0, 6), 'variant' => $var, 'publish_url' => self::platformHome($platform)];
@@ -166,23 +172,33 @@ class SocialPublisher {
      */
     public static function processQueue(): array {
         $queue = json_read(self::$queueFile);
-        $done = [];
         $remaining = [];
+        $done = [];
         foreach ($queue as $task) {
             if (($task['status'] ?? '') === 'sent') continue;
             if (strtotime($task['send_at'] ?? '') > time()) { $remaining[] = $task; continue; }
+            if (!empty($task['next_retry_at']) && $task['next_retry_at'] > time()) { $remaining[] = $task; continue; }
             $article = get_article($task['article_id'] ?? '');
             $results = [];
+            $retryable = false;
             foreach (($task['platforms'] ?? []) as $p) {
-                if ($article) $results[$p] = self::publish($article, $p);
-                else $results[$p] = ['ok' => false, 'message' => '文章不存在'];
+                $results[$p] = $article ? self::publish($article, $p) : ['ok' => false, 'message' => '文章不存在'];
+                if (empty($results[$p]['ok']) && empty($results[$p]['manual'])) $retryable = true;
             }
-            $task['status'] = 'sent';
-            $task['sent_at'] = date('Y-m-d H:i:s');
             $task['results'] = $results;
-            $remaining[] = $task;
-            self::log($task, $results);
-            $done[] = $task['id'];
+            $task['attempts'] = (int)($task['attempts'] ?? 0) + 1;
+            if ($retryable && $task['attempts'] < 3) {
+                // 可重试失败（非手动平台）→ 退避后重试
+                $task['status'] = 'pending';
+                $task['next_retry_at'] = time() + 300 * $task['attempts'];
+                $remaining[] = $task;
+            } else {
+                $task['status'] = 'sent';
+                $task['sent_at'] = date('Y-m-d H:i:s');
+                $remaining[] = $task;
+                self::log($task, $results);
+                $done[] = $task['id'];
+            }
         }
         json_write(self::$queueFile, $remaining);
         return $done;
