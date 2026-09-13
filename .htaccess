@@ -95,6 +95,7 @@ RewriteRule ^xmp/(.+)$ admin/$1 [L,QSA]
 RewriteRule ^docs/?$ docs.php [L,QSA]
 RewriteRule ^academy/?$ academy.php [L,QSA]
 RewriteRule ^community/?$ community.php [L,QSA]
+RewriteRule ^pricing/?$ pricing.php [L,QSA]
 # 帮助中心
 RewriteRule ^help/?$ help.php [L,QSA]
 RewriteRule ^help/([a-z0-9-]+)/?$ help-article.php?slug=$1 [L,QSA]
