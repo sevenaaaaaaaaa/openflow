@@ -98,7 +98,7 @@
             { t: '可视化编排画布', d: '拖拽触发器、条件、动作，连线即流程', href: '/product#feat-canvas' },
             { t: 'AI 步骤', d: '给流程装上判断力：分类、打分、生成', href: '/product#feat-ai' },
             { t: '开放连接器', d: '飞书 · 企微 · Notion · GitHub · 支付', href: '/product#feat-connectors' },
-            { t: '自生长 AI Engine', d: '按周期自动跑：信号 → 洞察 → 草稿 → 触达', href: '/product#feat-engine' }
+            { t: '增长引擎', d: '按周期自动跑：信号 → 洞察 → 草稿 → 触达', href: '/product#feat-engine' }
           ]},
           { head: '看看再说', items: [
             { t: '在线演示', d: '点一下，看增长引擎跑起来', href: '/product#demo' },
@@ -113,7 +113,7 @@
     {
       id: 'capability', label: '能力', href: '/capability', icon: 'bolt',
       mega: {
-        title: '能力 · TIPS 框架', blurb: '触达 / 洞察 / 个性化 / 销售 四力合一，加上自生长与开源两个底座',
+        title: '能力 · TIPS 框架', blurb: '触达 / 洞察 / 个性化 / 销售 四力合一，加上行动脊柱、增长引擎与开源',
         cols: [
           { head: '四力', items: [
             { t: '触达 Touch', d: '内容引擎 · 分发渠道 · 触达体系', href: '/capability#cap-touch' },
@@ -122,7 +122,8 @@
             { t: '销售 Sales', d: 'CRM · 转化 · 商城 · 订阅', href: '/capability#cap-sales' }
           ]},
           { head: '底座', items: [
-            { t: '自生长 AI Engine', d: '按周期自动推一轮增长', href: '/capability#cap-engine' },
+            { t: '行动脊柱 Agentic', d: '统一人对象 · 今日主线 · Agent 运行时', href: '/capability#cap-spine' },
+            { t: '增长引擎', d: '按周期自动推一轮增长', href: '/capability#cap-engine' },
             { t: '永久开源', d: '核心能力 MIT 开源，Tools 与 Strategy 双向迭代', href: '/capability#cap-open' },
             { t: '接你现有的工具', d: '不用推翻现在在用的东西', href: '/capability#connectors' },
             { t: '托管还是自建', d: '云端 SaaS / 私有化 / 混合', href: '/capability#deploy' }
