@@ -52,8 +52,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <url><loc><?=$base?>/downloads</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
   <url><loc><?=$base?>/podcasts</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
   <url><loc><?=$base?>/articles</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
-  <url><loc><?=$base?>/lp/solo-growth</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc><?=$base?>/lp/one-pager</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc><?=$base?>/lp/solo-growth.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 
   <!-- Category 分类页 -->
   <?php
