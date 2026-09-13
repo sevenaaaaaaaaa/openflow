@@ -18,6 +18,7 @@ $I = [
   'check'  => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>',
   'box'    => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 8v8l9 5 9-5V8"/></svg>',
   'doc'    => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l4 4v14H7V3Z"/><path d="M17 3v4h4"/></svg>',
+  'flag'   => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/></svg>',
 ];
 /* 每项能力：图标 / 名称 / 一句话主张 / 6 个真实模块（名称+一句说明）/ 后台截图 / 图注 / 前台体验链接 */
 $CAPS = [
@@ -53,6 +54,14 @@ $CAPS = [
     ['课程交付','报名 → 学习 → 结业，知识付费全链路'],
     ['推荐分销','推荐码归因、佣金结算、提现，老客带新客'],
   ],'crm','CRM 管道 · 真实后台界面','/courses','看课程商品形态 →'],
+  ['flag','行动脊柱 Agentic','统一人对象 → 今日主线 → Agent 运行时。系统不只记录，还按目标干活；中高风险动作等人批准。',[
+    ['统一「人」对象','CDP + CRM + 会员 + 订单 + 学习合成一人一册，一条跨模块时间线'],
+    ['今日主线','全站信号收口为「立即 / 今日 / 本周」行动队列，完成与稍后回流'],
+    ['一句话指挥','控制台自然语言指令 → 可执行计划 → 白名单校验 → 审批执行'],
+    ['自动装配','投喂文本或站点，按 TIPS + 用户旅程生成装配项，逐个确认真实创建'],
+    ['Agent 运行时','AI 在白名单工具内链式执行目标：风险审批门 + 重试自愈 + 全程落盘'],
+    ['热点雷达与全平台发布','HN / GitHub / RSS 热点聚类转选题；Telegram / Discord / Mastodon / WordPress 真发队列'],
+  ],'workspace','控制台 · 今日主线与 Agent 运行时 · 真实后台界面','/product#feat-spine','看行动脊柱 →'],
   ['box','自生长 AI Engine','按你设的周期自动推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动转化。周期用 cron 自己定，装完即用。',[
     ['产品发现 Loop','每天自动发现 GitHub 新产品，AI 成稿进入审核队列'],
     ['GEO 话题采集','行业信号自动抓取，AI 结构化提炼选题'],
@@ -78,9 +87,9 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '产品能力 | OpenFlow', 'description' => 'OpenFlow 六大能力域：内容触达、数据洞察、个性化运营、销售增强、自生长 AI Engine 与永久开源生态，36 个真实模块全部可在代码与后台中核验。', 'canonical' => site_config_get('site_url') . '/capability']); endif; ?>
+<?php if (function_exists('seo_head')): seo_head(['title' => '产品能力 | OpenFlow', 'description' => 'OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、自生长 AI Engine 与永久开源生态，42 个真实模块全部可在代码与后台中核验。', 'canonical' => site_config_get('site_url') . '/capability']); endif; ?>
 <title>能力 · TIPS 四力 | 芭乐派 · OpenFlow</title>
-<meta name="description" content="OpenFlow 六大能力域：内容触达、数据洞察、个性化运营、销售增强、自生长 AI Engine 与永久开源生态，36 个真实模块全部可在代码与后台中核验。">
+<meta name="description" content="OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、自生长 AI Engine 与永久开源生态，42 个真实模块全部可在代码与后台中核验。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
 <link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
@@ -146,9 +155,9 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 
   <!-- ══ 六项能力（tab） ══ -->
   <section id="caps" class="sec reveal" data-od-anchor data-od-id="capability-caps">
-    <div class="tab-bar dense" id="cap-tabs" role="tablist" aria-label="六项能力" data-tabs>
+    <div class="tab-bar dense" id="cap-tabs" role="tablist" aria-label="七项能力" data-tabs>
       <?php foreach ($CAPS as $i => $c): ?>
-      <button type="button" class="tab-p" role="tab" id="cap-t<?=$i?>" data-hash="<?=['cap-touch','cap-insight','cap-personality','cap-sales','cap-engine','cap-open'][$i] ?? 'cap-'.$i?>" aria-selected="<?=$i===0?'true':'false'?>" aria-controls="cap-p<?=$i?>" data-od-id="cap-<?=$i?>"><span class="ic"><?=$I[$c[0]]?></span><?=htmlspecialchars($c[1])?></button>
+      <button type="button" class="tab-p" role="tab" id="cap-t<?=$i?>" data-hash="<?=['cap-touch','cap-insight','cap-personality','cap-sales','cap-spine','cap-engine','cap-open'][$i] ?? 'cap-'.$i?>" aria-selected="<?=$i===0?'true':'false'?>" aria-controls="cap-p<?=$i?>" data-od-id="cap-<?=$i?>"><span class="ic"><?=$I[$c[0]]?></span><?=htmlspecialchars($c[1])?></button>
       <?php endforeach; ?>
     </div>
     <div class="tab-panels">
@@ -179,7 +188,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
   <section id="index" class="sec reveal" data-od-anchor data-od-id="capability-index">
     <div class="sec-head center">
       <span class="kicker">能力索引</span>
-      <h2>36 个模块，全部真实存在</h2>
+      <h2>42 个模块，全部真实存在</h2>
       <p class="lead">不写「规划中」、不写「敬请期待」。下面每一个名词，都能在后台界面或 GitHub 代码里找到对应实现。</p>
     </div>
     <div class="capidx">

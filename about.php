@@ -191,7 +191,7 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
       <div class="tl-step"><span class="tl-n">01</span><span class="tl-y">2015-2025</span><h3>十年增长操盘</h3><p>横跨快消/SaaS/教育/3C/跨境/金融科技/AI 产品 7 行业，从 400 人团队到 AI 产品操盘。</p></div>
       <div class="tl-step"><span class="tl-n">02</span><span class="tl-y">2026</span><h3>芭乐派成立</h3><p>帮一人公司设计 Agent 能跑的增长系统，把十年操盘提炼成方法论。</p></div>
       <div class="tl-step"><span class="tl-n">03</span><span class="tl-y">2026</span><h3>OpenFlow 开源</h3><p>芭乐派增长操作系统的开源底座，TIPS 框架四力合一。</p></div>
-      <div class="tl-step"><span class="tl-n">04</span><span class="tl-y">现在</span><h3>自生长引擎上线</h3><p>主动爬取、主动洞察、主动转化——每个人都能长出专属增长引擎。</p></div>
+      <div class="tl-step"><span class="tl-n">04</span><span class="tl-y">现在</span><h3>行动脊柱与 Agent 运行时</h3><p>统一人对象、今日主线、Agent 白名单工具链式执行——系统自己干活，人只做判断；增长引擎按周期主动爬取、洞察、转化。</p></div>
     </div>
   </section>
 
