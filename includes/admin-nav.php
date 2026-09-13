@@ -198,6 +198,7 @@ function admin_nav_tree(): array {
             ['label' => '分析', 'items' => [
                 ['label' => '运营分析', 'hint' => '实时 · 路径 · 传播 · 订阅', 'subs' => [
                     ['id' => 'analytics', 'label' => '运营分析', 'perm' => 'analytics'],
+                    ['id' => 'reports', 'label' => '自定义报表', 'perm' => 'analytics', 'hint' => '维度×指标×筛选+下钻'],
                     ['id' => 'tag-rules', 'label' => '标签管理', 'perm' => 'segments', 'hint' => '自动打标规则'],
                     ['id' => 'ma-platforms', 'label' => '广告平台对接', 'perm' => 'cdp', 'hint' => 'CAPI回传'],
                     ['id' => 'realtime', 'label' => '实时数据', 'perm' => 'analytics'],
