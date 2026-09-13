@@ -49,6 +49,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <url><loc><?=$base?>/events</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
   <url><loc><?=$base?>/enterprise</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc><?=$base?>/consultation</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc><?=$base?>/pricing</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc><?=$base?>/downloads</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
   <url><loc><?=$base?>/podcasts</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
   <url><loc><?=$base?>/articles</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
