@@ -216,3 +216,8 @@ a>.of-ic:only-child,button>.of-ic:only-child{width:16px;height:16px}
 body.has-selbar .main{padding-bottom:90px}
 body[data-sb="closed"] .of-selbar{left:14px}
 @media(max-width:840px){.of-selbar{left:14px;right:14px;flex-wrap:wrap}}
+
+/* ── 提交 busy 态（admin-ui.js 双击防护联动）：按钮转圈 + 禁点 ── */
+.of-busy{position:relative;pointer-events:none;opacity:.72}
+.of-busy::after{content:'';display:inline-block;width:.85em;height:.85em;margin-left:.45em;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;vertical-align:-.12em;animation:ofspin .7s linear infinite}
+@keyframes ofspin{to{transform:rotate(360deg)}}
