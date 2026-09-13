@@ -56,6 +56,7 @@ $urls = [
     ['flow-workspace', ''],
     ['today',        ''],
     ['geo', ''],
+    ['trend-radar', ''],
     ['provision', ''],
     ['conversion-goals', ''],
     ['audience-live', ''],
