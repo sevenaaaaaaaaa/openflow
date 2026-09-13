@@ -1,7 +1,9 @@
 # OpenFlow
 
-> **v2.4** · 基于 TIPS，同时运行 Flow 与 Loop 的开源增长操作系统。
+> **v2.5** · 基于 TIPS，同时运行 Flow 与 Loop 的开源增长操作系统。
 > 跨形态：**Web / PWA（mac·win·linux·iPad·安卓pad·鸿蒙）/ CLI / MCP**，一套后端多端触达。
+>
+> 本次增量见 **[RELEASE_NOTES_2.5.md](RELEASE_NOTES_2.5.md)**：统一「人」对象与行动主线、今日主线控制台、一句话指挥、**自动装配**、专家基准（CDP/SEO/GEO/Email/直播）、Agent 运行时、全平台发布框架等。
 
 OpenFlow 把内容触达、用户洞察、个性化运营和销售增强放进同一个业务系统，帮助一人公司、创作者和小型组织，把零散的营销工具与运营动作连接成可以执行、衡量和持续改进的增长过程。
 
