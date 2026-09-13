@@ -127,6 +127,21 @@
       if (!ok) return; f.dataset.ofOk = '1'; (f.requestSubmit ? f.requestSubmit() : f.submit()); setTimeout(function () { delete f.dataset.ofOk; }, 1500);
     });
   }, true);
+  /* ── 2.5 全局双击防护 + 提交 busy 态 ──
+     所有 POST 表单默认生效（data-no-double 可退出）：4 秒窗口内的重复 submit 被拦下，
+     防止「保存」被连点两次产生重复记录；提交后按钮进入 busy 样式，给慢网络一个明确反馈。 */
+  document.addEventListener('submit', function (e) {
+    var f = e.target;
+    if (!f || !f.matches || !f.matches('form')) return;
+    if ((f.getAttribute('method') || '').toLowerCase() !== 'post') return;
+    if (f.hasAttribute('data-no-double')) return;
+    if (f.dataset.ofOk === '1') return;              // data-confirm 确认后的重放
+    var now = Date.now();
+    if (now - (+(f.dataset.ofSubmitted || 0)) < 4000) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+    f.dataset.ofSubmitted = String(now);
+    var btn = e.submitter || $('button[type=submit],input[type=submit]', f);
+    if (btn) { btn.classList.add('of-busy'); setTimeout(function () { btn.classList.remove('of-busy'); }, 6000); }
+  }, true);
   // alert 替代：语义猜类型（失败 / 错误 → error；成功 / 已 → success）
   window.ofAlert = function (msg, type) {
     msg = String(msg == null ? '' : msg).replace(/^[\s✅❌⚠️🎉✓✗]+/, '');
