@@ -58,6 +58,7 @@ $urls = [
     ['geo', ''],
     ['trend-radar', ''],
     ['reports', ''],
+    ['agent', ''],
     ['provision', ''],
     ['conversion-goals', ''],
     ['audience-live', ''],
