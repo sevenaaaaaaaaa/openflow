@@ -56,7 +56,7 @@ function payment_channel_defs(): array {
             'label' => 'Stripe',
             'desc' => 'Stripe 国际支付（含信用卡）',
             'fields' => ['secret_key' => 'Secret Key', 'publishable_key' => 'Publishable Key'],
-            'status' => 'skeleton',
+            'status' => 'implemented',
         ],
         'link' => [
             'label' => 'Link',

@@ -10,10 +10,10 @@ require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
-$CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮件','Ghost','虎皮椒支付','Search Console','Webhook','OpenAPI','MCP']; // 全部在 lib/ 与 api/ 里核过：NotifyChannels / NotionClient / api/ingest / MailChannel / PaymentChannel / SeoConsole / WebhookSystem / mcp-server
+$CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮件','Ghost','虎皮椒支付','微信支付','支付宝','Stripe','Telegram','Discord','Mastodon','WordPress','Search Console','Webhook','OpenAPI','MCP']; // 全部在 lib/ 与 api/ 里核过：NotifyChannels / NotionClient / api/ingest / MailChannel / PaymentChannel / PublishAdapters / SeoConsole / WebhookSystem / mcp-server
 $FAQS = [
   ['OpenFlow 需要写代码吗？','不需要。TIPS 框架下可视化配置触达/洞察/个性化/销售四力；需要时可用 Task Graph 编排 Agent，深浅兼顾。'],
-  ['适合一人公司吗？','OpenFlow 就是为 OPC 一人公司设计的。装完即用，自生长 AI Engine 自动爬取、洞察、转化，一个人也能驱动整套增长系统。'],
+  ['适合一人公司吗？','OpenFlow 就是为 OPC 一人公司设计的。装完即用，增长引擎自动爬取、洞察、转化，一个人也能驱动整套增长系统。'],
   ['和「芭乐派」是什么关系？','OpenFlow 是芭乐派增长操作系统的开源底座。芭乐派讲方法论（利润公式/四引擎/Agent 系统），OpenFlow 是落地工具——鱼与渔相结合。'],
   ['核心能力真的永久开源吗？','是。Tools 和 Strategy 双向迭代，核心能力永久开源，坚持让用户既用得上工具，也能用最前沿的增长策略。'],
   ['数据安全如何保证？','传输与存储加密、细粒度权限、审计日志；支持私有化部署，数据不出域。'],
@@ -202,7 +202,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 
     <div class="split rev" id="feat-engine" data-od-anchor>
       <div class="sp-txt">
-        <h3>自生长 AI Engine，从 Marketing 到 Sales</h3>
+        <h3>增长引擎，从 Marketing 到 Sales</h3>
         <p class="lead">OpenFlow 不是被动工具，而是主动驱动增长的引擎：按你设的周期自动爬取信号、AI 洞察、生成内容、主动触达转化。装完即用，每个人都能改造成专属自己的增长引擎。</p>
         <ul class="sp-list">
           <li><?=$ck?><span>主动爬取舆情与行业热点</span></li>
@@ -305,7 +305,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     </div>
     <div class="stats">
       <div class="st"><div class="st-n">8/8</div><span class="st-en">Loop health</span><span class="st-t">增长闭环环节正常</span></div>
-      <div class="st"><div class="st-n">24/7</div><span class="st-en">Always on</span><span class="st-t">自生长引擎主动运行</span></div>
+      <div class="st"><div class="st-n">24/7</div><span class="st-en">Always on</span><span class="st-t">增长引擎主动运行</span></div>
       <div class="st"><div class="st-n">100%</div><span class="st-en">Open source</span><span class="st-t">核心能力永久开源</span></div>
       <div class="st"><div class="st-n">1人</div><span class="st-en">Operator</span><span class="st-t">即可驱动整套增长系统</span></div>
     </div>
