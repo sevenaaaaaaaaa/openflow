@@ -27,7 +27,7 @@ if (!function_exists('of_footer')) {
         ?>
   <footer class="foot" data-od-id="site-footer">
     <div class="fb">
-      <div class="brand"><span class="ic"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-foot" x1="12" y1="52" x2="54" y2="8" gradientUnits="userSpaceOnUse"><stop stop-color="var(--accent)"/><stop offset="1" stop-color="oklch(58% .16 285)"/></linearGradient></defs><path d="M46.7 48.3 A22 22 0 1 1 46.7 15.7" stroke="url(#ofg-foot)" stroke-width="7" stroke-linecap="round"/><path d="M40.5 13.4 L52.7 9.0 L49.6 21.6" stroke="url(#ofg-foot)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>芭乐派 · OpenFlow</div>
+      <div class="brand"><span class="ic"><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-foot" x1="12" y1="52" x2="54" y2="8" gradientUnits="userSpaceOnUse"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs><path d="M46.7 48.3 A22 22 0 1 1 46.7 15.7" stroke="url(#ofg-foot)" stroke-width="7" stroke-linecap="round"/><path d="M40.5 13.4 L52.7 9.0 L49.6 21.6" stroke="url(#ofg-foot)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>芭乐派 · OpenFlow</div>
       <p class="f-about">芭乐派增长操作系统的开源底座。TIPS 框架（触达/洞察/个性化/销售）四力合一，增长引擎主动驱动增长，行动脊柱让建议落地。</p>
       <p class="note">核心能力永久开源 · 鱼与渔相结合</p>
       <div class="f-social" aria-label="社交媒体">
@@ -47,7 +47,7 @@ if (!function_exists('of_footer')) {
     </div>
     <div class="fb">
       <h4>站点导航</h4>
-      <a href="/product">产品</a><a href="/capability">能力</a><a href="/courses">课程</a><a href="/academy">学院</a><a href="/community">增长社区</a><a href="/about">关于我们</a>
+      <a href="/product">产品</a><a href="/capability">能力</a><a href="/courses">课程</a><a href="/academy">学院</a><a href="/community">增长社区</a><a href="/pricing">定价</a><a href="/about">关于我们</a>
     </div>
     <div class="fb">
       <h4>资源</h4>

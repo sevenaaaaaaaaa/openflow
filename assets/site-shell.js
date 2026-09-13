@@ -199,6 +199,7 @@
     { id: 'events', label: '活动', href: '/events', icon: 'bolt' },
     { id: 'navigation', label: '导航', href: '/navigation', icon: 'search' },
     { id: 'help', label: '帮助', href: '/help', icon: 'info' },
+    { id: 'pricing', label: '定价', href: '/pricing', icon: 'doc' },
     { id: 'about', label: '关于', href: '/about', icon: 'info' }
   ];
 
@@ -246,7 +247,7 @@
   })();
 
   /* ── 流环 brand logo：开放的 O（Open）缺口溢出成箭（Flow / 增长飞轮）── */
-  var BRAND_SVG = '<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-b" x1="12" y1="52" x2="54" y2="8" gradientUnits="userSpaceOnUse"><stop stop-color="var(--accent)"/><stop offset="1" stop-color="oklch(58% .16 285)"/></linearGradient></defs><path d="M46.7 48.3 A22 22 0 1 1 46.7 15.7" stroke="url(#ofg-b)" stroke-width="7" stroke-linecap="round"/><path d="M40.5 13.4 L52.7 9.0 L49.6 21.6" stroke="url(#ofg-b)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var BRAND_SVG = '<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><defs><linearGradient id="ofg-b" x1="12" y1="52" x2="54" y2="8" gradientUnits="userSpaceOnUse"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs><path d="M46.7 48.3 A22 22 0 1 1 46.7 15.7" stroke="url(#ofg-b)" stroke-width="7" stroke-linecap="round"/><path d="M40.5 13.4 L52.7 9.0 L49.6 21.6" stroke="url(#ofg-b)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   function g(id) { return document.getElementById(id); }
 
