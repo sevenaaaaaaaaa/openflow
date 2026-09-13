@@ -53,6 +53,7 @@ mt_srand(20260913);
 
 $all = comments_all();
 $index = json_read(DATA_DIR . '/index.json');
+if (!is_array($index) || !$index) $index = json_read(DATA_DIR . '/articles/index.json'); // 服务器布局:文章索引在 data/articles/
 if (!is_array($index)) $index = [];
 
 /* ── 选目标:已发布文章,确定性等距取样最多 8 篇 ── */
