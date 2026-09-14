@@ -131,6 +131,43 @@ $tools = [
      'inputSchema'=>['type'=>'object','properties'=>['email'=>['type'=>'string'],'name'=>['type'=>'string']],'required'=>['email']]],
 ];
 
+/**
+ * MCP Prompts — 增长技能包:让 Claude / ChatGPT 等外部 Agent 用「模板 + 工具」
+ * 直接执行增长任务,而不是只会查数据。每个 prompt 内嵌执行步骤与要求输出。
+ */
+function mcp_growth_prompts(): array {
+    return [
+        ['id' => 'weekly_growth_review', 'description' => '周增长复盘:拉数据 → 对比目标 → 找最大瓶颈 → 给下周一件事',
+         'arguments' => ['instructions' => ['default' =>
+"请用 OpenFlow 的 MCP 工具做一次周增长复盘:
+1) 用 growth_goal_status 看目标进度;
+2) 用 orders_revenue 和 growth_conversion_truth 看真实成交与来源;
+3) 用 sentiment_topics 看本周用户在讨论什么;
+4) 输出:三行结论(达标情况 / 最大瓶颈 / 下周最值得做的一件事),并列出你用到的工具与数字。"]]],
+        ['id' => 'content_idea_from_trends', 'description' => '从热点与受众讨论里挑 3 个值得写的选题,并说明理由',
+         'arguments' => ['instructions' => ['default' =>
+"请基于本站数据提出本周内容选题:
+1) 用 growth_ask_data 或 sentiment_topics 了解受众关心什么;
+2) 挑 3 个与「{{topic_hint}}」相关、且能用本站数据支撑的选题;
+3) 每个选题给出:标题、切入角度、为什么现在写、可引用的本站数据点。"]]],
+        ['id' => 'lead_nurture_plan', 'description' => '为高意向线索制定 7 天培育计划(内容 + 触达节奏 + 成交动作)',
+         'arguments' => ['instructions' => ['default' =>
+"请为高意向线索设计 7 天培育计划:
+1) 用 growth_conversion_truth 看已成交用户来自哪里、看了什么;
+2) 输出 7 天计划:每天一条动作(发什么内容/什么渠道/什么时机);
+3) 触达必须尊重频控,不设计轰炸式触达;
+4) 标注哪些步骤可用本站自动化执行、哪些需要人工。"]]],
+        ['id' => 'site_growth_audit', 'description' => '整站增长体检:流量 → 内容 → 转化 → 保留,四环各给一个改进项',
+         'arguments' => ['instructions' => ['default' =>
+"请对本站做增长体检,每一环用一个工具取数:
+1) 流量:sentiment_scan 或 growth_ask_data 看访问与来源;
+2) 内容:articles_list 看最近发布;
+3) 转化:growth_conversion_truth 看成交真相;
+4) 保留:growth_goal_status 看复购/订阅状态。
+输出:四环各一条结论 + 一个本周可执行的改进项,不超过 200 字。"]]],
+    ];
+}
+
 // ─── 工具执行 ───
 function mcp_call(string $name, array $args): array {
     switch ($name) {
@@ -298,9 +335,28 @@ function mcp_handle(array $msg): ?array {
         case 'initialize':
             return ['jsonrpc'=>'2.0','id'=>$id,'result'=>[
                 'protocolVersion'=>'2024-11-05',
-                'capabilities'=>['tools'=>['listChanged'=>false]],
-                'serverInfo'=>['name'=>'openflow-mcp','version'=>'1.0.0'],
+                'capabilities'=>['tools'=>['listChanged'=>false], 'prompts'=>['listChanged'=>false]],
+                'serverInfo'=>['name'=>'openflow-mcp','version'=>'1.1.0'],
             ]];
+
+        case 'prompts/list':
+            return ['jsonrpc'=>'2.0','id'=>$id,'result'=>['prompts'=>mcp_growth_prompts()]];
+
+        case 'prompts/get': {
+            $pname = (string)($msg['params']['name'] ?? '');
+            $pargs = (array)($msg['params']['arguments'] ?? []);
+            foreach (mcp_growth_prompts() as $p) {
+                if (($p['id'] ?? '') === $pname) {
+                    // 参数填空:把 {{arg}} 占位符替换成调用方给的值(未给则留空,由外部 Agent 自行补充)
+                    $text = $p['arguments']['instructions']['default'] ?? '';
+                    foreach ($pargs as $k => $v) $text = str_replace('{{' . $k . '}}', (string)$v, $text);
+                    return ['jsonrpc'=>'2.0','id'=>$id,'result'=>['description'=>$p['description'],'messages'=>[
+                        ['role'=>'user','content'=>['type'=>'text','text'=>$text]],
+                    ]]];
+                }
+            }
+            return ['jsonrpc'=>'2.0','id'=>$id,'error'=>['code'=>-32602,'message'=>'未知 prompt：'.$pname]];
+        }
 
         case 'tools/list':
             global $tools, $MCP_CTX;
