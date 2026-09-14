@@ -302,8 +302,13 @@ try {
     }
 } catch (Throwable $e) { $trendRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
 
+// ── AI 岗位:每个在岗岗位每天交班一次(内部按日期防重) ──
+$agentPostRun = [];
+try { require_once __DIR__ . '/../lib/AgentPost.php'; $agentPostRun = agent_posts_cron(); } catch (Throwable $e) { $agentPostRun = ['error' => $e->getMessage()]; }
+
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge,
                   'webhook_retry' => $webhookRetry, 'plugin_cron' => $pluginCron, 'product_scout' => $scout,
                   'geo_run' => $geoRun, 'conv_run' => $convRun, 'trend_run' => $trendRun,
+                  'agent_posts' => $agentPostRun,
                   'time' => date('Y-m-d H:i:s')]);

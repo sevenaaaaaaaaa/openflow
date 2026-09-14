@@ -297,6 +297,31 @@ function mainline_src_scout(): array {
     return $items;
 }
 
+/** AI 岗位昨日交班(AgentPost):每个活跃岗位最多一条,只报今天与昨天 */
+function mainline_src_agent_posts(): array {
+    $items = [];
+    if (!function_exists('agent_posts')) { require_once __DIR__ . '/AgentPost.php'; }
+    if (!function_exists('agent_posts')) return $items;
+    $yesterday = date('Y-m-d', time() - 86400);
+    foreach (agent_posts() as $p) {
+        if (($p['status'] ?? '') !== 'active') continue;
+        $shifts = agent_post_shifts((string)$p['id']);
+        if (!$shifts) continue;
+        $latest = end($shifts);
+        $d = (string)($latest['date'] ?? '');
+        if ($d !== date('Y-m-d') && $d !== $yesterday) continue;
+        $drafts = (int)($latest['drafts'] ?? 0);
+        $items[] = mainline_item('agent_post:' . $p['id'] . ':' . $d, 'today', 'AI 岗位',
+            ($p['emoji'] ?? '🤖') . ' ' . ($p['name'] ?? $p['id']) . '交班:' . (string)($latest['summary'] ?? ''), [
+            'icon' => '🤖', 'severity' => $drafts > 0 ? 'good' : 'info', 'est_min' => $drafts > 0 ? 10 : 2,
+            'why' => (string)($p['goal'] ?? ''),
+            'action_label' => '看这个岗位', 'action_url' => '/xmp/agent-posts',
+            'meta' => ['post_id' => $p['id'], 'date' => $d, 'drafts' => $drafts],
+        ]);
+    }
+    return $items;
+}
+
 /* ═══════════════ 汇总 / 排序 / 权限 ═══════════════ */
 
 /** source → 所需权限（无权限则不展示该来源） */
@@ -304,7 +329,7 @@ function mainline_source_perm(string $source): string {
     return [
         '直播' => 'live', '交易' => 'commerce', '线索' => 'crm', '任务' => 'tasks',
         '内容' => 'reviews', '社区' => 'moderation', '订阅' => 'subscription',
-        '洞察' => 'analytics', '系统' => 'evolution', '发现' => 'articles',
+        '洞察' => 'analytics', '系统' => 'evolution', '发现' => 'articles', 'AI 岗位' => 'settings',
     ][$source] ?? '';
 }
 
@@ -322,7 +347,7 @@ function mainline_items(array $opts = []): array {
     $providers = [
         'mainline_src_live', 'mainline_src_orders', 'mainline_src_leads', 'mainline_src_tasks',
         'mainline_src_reviews', 'mainline_src_moderation', 'mainline_src_subscription',
-        'mainline_src_funnel', 'mainline_src_evolve', 'mainline_src_scout',
+        'mainline_src_funnel', 'mainline_src_evolve', 'mainline_src_scout', 'mainline_src_agent_posts',
     ];
     $items = [];
     foreach ($providers as $fn) {
