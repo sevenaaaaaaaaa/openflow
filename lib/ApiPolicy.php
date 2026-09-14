@@ -69,6 +69,8 @@ if (!function_exists('api_policy_defaults')) {
             'ai-generate'    => ['tier' => 'admin', 'perm' => 'ai-config', 'note' => 'AI 通用生成：每次调用都花钱'],
             'survey-ai'      => ['tier' => 'admin', 'perm' => 'survey',    'note' => 'AI 生成问卷：每次调用都花钱'],
             'assistant'      => ['tier' => 'admin', 'perm' => '',          'note' => '后台助手：花钱 + 注入公司知识库 + 能创建自动化流程'],
+            'agent-posts'    => ['tier' => 'admin', 'perm' => 'settings',  'note' => 'AI 岗位：run 会触发 AI 写稿（花钱），调用方 admin/agent-posts.php'],
+            'morning-briefing' => ['tier' => 'admin', 'perm' => 'dashboard', 'note' => '晨会简报：briefing 的 AI 增强会花钱，调用方为后台控制台'],
 
             // ── 机器对机器：端点自带密钥/签名，本层只登记不重复拦 ──
             'cron'           => ['tier' => 'token', 'perm' => '', 'note' => '定时发布，自带签名校验'],
