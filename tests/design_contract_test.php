@@ -19,6 +19,9 @@ $MIGRATED = ['index.php','about.php','product.php','capability.php','courses.php
 $PENDING  = []; // 2026-09-02：前台页面全部迁完；新页面先进这里，迁完挪到 MIGRATED
 // 对外独立页（问卷 / NPS 由外链打开，不接站点外壳、不带页脚）—— 只免 of_shell / .foot 两项，其余契约照常
 $STANDALONE = ['nps.php','survey-my.php','survey.php'];
+// member.php 的认证视图(登录/注册/重置)用独立沉浸式布局(au-),不走 of_shell;
+// 登录后的个人中心仍走全站外壳。豁免 of_shell 一项,其余照常。同类的还有私有色豁免(品牌渐变区)。
+$STANDALONE[] = 'member.php';
 
 $SHARED_CLASSES = ['btn','card','sec-head','kicker','foot','stats','hero','hero-center','cta-row','trust','worlds','wf','tl','scn','split','cols','qr','link-grid','cta-band','tab-bar','tab-p','faq','inp','field'];
 $MAX_STYLE_LINES = 60;

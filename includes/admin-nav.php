@@ -109,6 +109,13 @@ function admin_nav_allowed($perm): bool {
 function admin_nav_tree(): array {
     static $tree = null;
     if ($tree !== null) return $tree;
+    return $tree = admin_nav_build(true);
+}
+
+/**
+ * 构建导航树。$includeSystem=false 时剔除「系统」区(顶栏齿轮已覆盖,见 admin_nav_system_area)。
+ */
+function admin_nav_build(bool $includeSystem): array {
     $I = admin_nav_icons();
     $all = [
         ['id' => 'touch', 'label' => '触达 Touch', 'short' => '触达', 'icon' => $I['touch'], 'desc' => '内容 · 社区 · 学院：对外的每一个触点', 'groups' => [
@@ -393,6 +400,12 @@ function admin_nav_tree(): array {
     return $tree;
 }
 
+/** 系统区导航(顶栏齿轮面板数据源):与侧栏旧 system 区同源 */
+function admin_nav_system_area(): array {
+    foreach (admin_nav_build(true) as $a) if (($a['id'] ?? '') === 'system') return $a;
+    return ['id' => 'system', 'label' => '系统', 'groups' => []];
+}
+
 /** 当前页 id（含别名 / 簇内兄弟页）→ 所在区、条目、簇内位置 */
 function admin_nav_locate(string $current, string $script = ''): array {
     $tree = admin_nav_tree();
@@ -466,12 +479,18 @@ function admin_nav_cluster_bar(string $current = '', string $script = ''): strin
 function admin_nav_render(string $current, string $script = ''): void {
     $tree = admin_nav_tree();
     $loc = admin_nav_locate($current, $script);
+    // 「系统」区页面(settings/users/plugins…):侧栏不渲染系统区,就近回落到 Studio 区展示,
+    // 顶栏齿轮面板才是这些页的导航入口;data-area 同步改,避免顶栏高亮悬空。
+    if (($loc['area'] ?? '') === 'system') {
+        $loc['area'] = 'studio';
+        $loc['areaLabel'] = '系统 · 用顶栏齿轮管理';
+    }
     $pins = admin_nav_pinned();
     $svg = fn(string $p) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $p . '</svg>';
     ?>
 <nav class="sidebar" id="sidebar" aria-label="后台导航" data-area="<?=htmlspecialchars($loc['area'])?>">
   <div class="sb-areas" role="tablist" aria-label="模块">
-    <?php foreach ($tree as $area): $on = $area['id'] === $loc['area']; ?>
+    <?php foreach ($tree as $area): if (($area['id'] ?? '') === 'system') continue; /* 系统区入顶栏齿轮面板,侧栏不再重复渲染 */ $on = $area['id'] === $loc['area']; ?>
     <button type="button" class="sb-area<?=$on ? ' on' : ''?>" role="tab" aria-selected="<?=$on ? 'true' : 'false'?>" data-area="<?=$area['id']?>" title="<?=htmlspecialchars($area['label'] . ' · ' . $area['desc'])?>"><?=$svg($area['icon'])?><span><?=htmlspecialchars($area['short'] ?? $area['label'])?></span></button>
     <?php endforeach; ?>
   </div>
@@ -484,7 +503,7 @@ function admin_nav_render(string $current, string $script = ''): void {
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
-    <?php foreach ($tree as $area): $on = $area['id'] === $loc['area']; ?>
+    <?php foreach ($tree as $area): if (($area['id'] ?? '') === 'system') continue; $on = $area['id'] === $loc['area']; ?>
     <div class="sb-panel<?=$on ? ' on' : ''?>" data-area="<?=$area['id']?>" role="tabpanel">
       <?php foreach ($area['groups'] as $g): ?>
       <?php if ($g['label'] !== ''): ?><div class="sb-group"><?=htmlspecialchars($g['label'])?></div><?php endif; ?>
@@ -508,7 +527,6 @@ function admin_nav_render(string $current, string $script = ''): void {
     <?php if ($__plugRaw !== ''): ?><div class="sb-plugins"><?=$__plugRaw?></div><?php endif; ?>
     <?php endif; ?>
   </div>
-  <div class="sb-foot mono">OpenFlow</div>
 </nav>
 <?php
 }
