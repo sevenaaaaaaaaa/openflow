@@ -489,11 +489,7 @@ function admin_nav_render(string $current, string $script = ''): void {
     $svg = fn(string $p) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $p . '</svg>';
     ?>
 <nav class="sidebar" id="sidebar" aria-label="后台导航" data-area="<?=htmlspecialchars($loc['area'])?>">
-  <div class="sb-areas" role="tablist" aria-label="模块">
-    <?php foreach ($tree as $area): if (($area['id'] ?? '') === 'system') continue; /* 系统区入顶栏齿轮面板,侧栏不再重复渲染 */ $on = $area['id'] === $loc['area']; ?>
-    <button type="button" class="sb-area<?=$on ? ' on' : ''?>" role="tab" aria-selected="<?=$on ? 'true' : 'false'?>" data-area="<?=$area['id']?>" title="<?=htmlspecialchars($area['label'] . ' · ' . $area['desc'])?>"><?=$svg($area['icon'])?><span><?=htmlspecialchars($area['short'] ?? $area['label'])?></span></button>
-    <?php endforeach; ?>
-  </div>
+  <?php /* 一级导航(触达/洞察/个性化/销售/Studio)在顶栏 main-tabs;侧栏只渲染当前区的功能明细,不再有竖排区切换条 */ ?>
   <div class="sb-panels">
     <div class="sb-area-title" id="sbAreaTitle"><?=htmlspecialchars(($loc['areaLabel'] ?? '') ?: '触达 Touch')?></div>
     <?php if ($pins): ?>
