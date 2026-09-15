@@ -29,9 +29,13 @@
       areas.forEach(function (a) { var on = a.dataset.area === id; a.classList.toggle('on', on); a.setAttribute('aria-selected', on ? 'true' : 'false'); });
       panels.forEach(function (p) { p.classList.toggle('on', p.dataset.area === id); });
       sb.dataset.area = id;
-      // 动态更新区域标题
+      // 动态更新区域标题:优先顶栏 main-tab 文案(一级导航在顶栏,竖排区条已移除)
       var titleEl = document.getElementById('sbAreaTitle');
-      if (titleEl) { var btn = $$('[data-area="' + id + '"]', sb).find(function(b){ return b.classList.contains('sb-area'); }); if (btn) titleEl.textContent = btn.getAttribute('title').split(' · ')[0] || btn.textContent.trim(); }
+      if (titleEl) {
+        var tab = document.querySelector('.main-tab[data-area-tab="' + id + '"]');
+        if (tab) titleEl.textContent = tab.textContent.trim();
+        else { var btn = $$('[data-area="' + id + '"]', sb).find(function(b){ return b.classList.contains('sb-area'); }); if (btn) titleEl.textContent = btn.getAttribute('title').split(' · ')[0] || btn.textContent.trim(); }
+      }
     }
     areas.forEach(function (a) {
       a.addEventListener('click', function () {
