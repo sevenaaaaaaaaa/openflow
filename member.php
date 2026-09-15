@@ -104,25 +104,93 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
 <script src="/assets/inject.js?v=20260830b" defer></script>
 </head>
 <body data-of-main>
-<?php of_shell('account'); ?>
-
-<a class="skip" href="#main">跳到主要内容</a>
-<main id="main" data-od-id="main">
 <?php if (!$member && in_array($view, ['login','register','reset-password'])): ?>
-  <!-- 登录 / 注册 / 密码重置 -->
-  <section id="top" class="sec reveal in" data-od-anchor data-od-id="acct-auth">
-    <div class="auth">
+<?php
+  /* ── 沉浸式认证布局:不加载 site-shell(无顶导航/无页脚/无看板娘) ──
+     左侧品牌叙事区(渐变 + 定位文案 + 可验证信任点 + 流环标识),
+     右侧表单卡;窄屏退化为单列表单。 */
+  $AUTH_IS_REGISTER = ($view === 'register');
+?>
+<style>
+  /* 局部样式:只作用于认证视图,不影响登录后的页面(它们仍走全站外壳) */
+  .au-wrap{min-height:100vh;display:grid;grid-template-columns:minmax(420px,46%) 1fr}
+  @media (max-width:920px){.au-wrap{grid-template-columns:1fr}.au-brand{display:none}.au-form-side{padding:32px 20px}}
+  .au-brand{position:relative;overflow:hidden;background:linear-gradient(155deg,#1d4ed8 0%,#4f46e5 55%,#7c5cff 100%);color:#fff;padding:clamp(36px,5vw,64px);display:flex;flex-direction:column;justify-content:space-between}
+  .au-brand::before{content:'';position:absolute;inset:0;background:radial-gradient(60% 50% at 80% 10%,rgba(255,255,255,.16),transparent 70%),radial-gradient(40% 40% at 10% 90%,rgba(255,255,255,.10),transparent 70%)}
+  .au-brand>*{position:relative}
+  .au-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:.02em}
+  .au-logo img{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.14);padding:3px}
+  .au-logo .bn{font-weight:500;opacity:.72;font-size:12px;margin-left:2px}
+  .au-headline{font-size:clamp(26px,3vw,38px);font-weight:800;line-height:1.32;letter-spacing:-.01em;margin:0}
+  .au-headline em{font-style:normal;color:#ffe08a}
+  .au-sub{margin-top:16px;font-size:15px;line-height:1.8;color:rgba(255,255,255,.82);max-width:40ch}
+  .au-points{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+  .au-points li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:rgba(255,255,255,.9);line-height:1.6}
+  .au-points svg{flex:none;width:17px;height:17px;margin-top:2px;color:#ffe08a}
+  .au-foot{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:rgba(255,255,255,.6)}
+  .au-foot a{color:rgba(255,255,255,.85);text-decoration:none}
+  .au-ring{position:absolute;right:-70px;bottom:-70px;width:280px;height:280px;opacity:.2;animation:au-spin 26s linear infinite}
+  @keyframes au-spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.au-ring{animation:none}}
+  .au-form-side{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(28px,5vw,60px);background:
+    radial-gradient(50% 36% at 85% 0%,var(--accent-soft),transparent 70%),var(--bg)}
+  .au-card{width:min(460px,100%);background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:clamp(26px,3.4vw,40px);box-shadow:0 28px 70px -30px oklch(30% .06 270/.35);backdrop-filter:blur(16px)}
+  .au-card .kicker{font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--accent-strong)}
+  .au-card h1{font-size:clamp(22px,2.4vw,27px);font-weight:800;margin:6px 0 8px;letter-spacing:-.01em}
+  .au-card .au-lead{font-size:13.5px;color:var(--muted);margin:0 0 22px;line-height:1.7}
+  .au-card .field{margin-bottom:14px}
+  .au-card .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--fg)}
+  .au-card .inp{width:100%;min-height:44px;padding:10px 13px;border:1px solid var(--border-strong);border-radius:11px;background:var(--surface-strong);font-size:14px;transition:border .15s,box-shadow .15s}
+  .au-card .inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .au-card .btn{width:100%;min-height:46px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),oklch(55% .19 285));color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:transform .12s,box-shadow .15s}
+  .au-card .btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px -10px var(--accent)}
+  .au-card .btn:disabled{opacity:.6;cursor:wait;transform:none}
+  .au-alt{margin-top:18px;text-align:center;font-size:13px;color:var(--muted)}
+  .au-alt a{color:var(--accent-strong);font-weight:700;text-decoration:none}
+  .au-benefits{margin:0 0 20px;padding:14px 16px;border-radius:12px;background:var(--accent-soft);font-size:12.5px;color:var(--muted);line-height:1.7}
+  .au-benefits b{color:var(--fg)}
+  .au-msg{margin-top:14px;font-size:13px;font-weight:600}
+  .au-msg.ok{color:var(--ok)}.au-msg.err{color:var(--danger)}
+  .au-return{position:fixed;top:18px;right:22px;font-size:13px;color:var(--muted);text-decoration:none;display:flex;gap:6px;align-items:center;z-index:5}
+  .au-return:hover{color:var(--accent-strong)}
+</style>
+<a class="au-return" href="/">← 返回官网首页</a>
+<div class="au-wrap">
+  <aside class="au-brand" aria-hidden="true">
+    <div class="au-logo"><img src="/favicon.svg" alt="">芭乐派 · OpenFlow<span class="bn">GROWTH OS</span></div>
+    <div>
+      <h1 class="au-headline">别人的增长工具<br>默认你有一支团队。<br><em>这套是给没有团队的你。</em></h1>
+      <p class="au-sub">内容、数据、自动化、成交,在同一个系统里自己转起来。你只做判断,不做事。</p>
+    </div>
+    <ul class="au-points">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg><span><b>核心能力开源</b>&nbsp;· MIT 协议,代码就是证据</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg><span><b>AI 替你跑流程</b>&nbsp;· 爬热点、出草稿、盯该跟进谁</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg><span><b>数据在你手里</b>&nbsp;· 存自己的服务器,随时可迁走</span></li>
+    </ul>
+    <div class="au-foot">
+      <span>© <?=date('Y')?> 芭乐派 · 增长方法论与增长社区</span>
+      <a href="/pricing">定价</a>
+    </div>
+    <svg class="au-ring" viewBox="0 0 64 64" fill="none"><path d="M46.7 48.3 A22 22 0 1 1 46.7 15.7" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M40.5 13.4 L52.7 9.0 L49.6 21.6" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </aside>
+  <main class="au-form-side">
+    <div class="au-card">
+      <span class="kicker"><?=$AUTH_IS_REGISTER ? '创建账号 · SIGN UP' : ($view === 'login' ? '欢迎回来 · SIGN IN' : '重置密码 · RESET')?></span>
+      <h1><?=$AUTH_IS_REGISTER ? '注册后,让系统开始替你干活' : ($view === 'login' ? '登录你的增长操作系统' : '找回你的账号')?></h1>
+      <p class="au-lead"><?=$AUTH_IS_REGISTER ? '免费开始。注册后可购买课程、成为讲师、领取增长手册。' : ($view === 'login' ? '登录后继续你的增长流程。' : '输入注册邮箱,我们会发送重置链接。')?></p>
+      <?php if ($AUTH_IS_REGISTER): ?>
+      <div class="au-benefits"><b>注册即得:</b>免费基石课 ×4 · 增长方法论库 · AI 岗位帮你盯热点出草稿</div>
+      <?php endif; ?>
     <?php if ($view === 'reset-password'): ?>
       <?php include_member_reset_password(); ?>
     <?php else: ?>
-      <div class="form-card panel">
-        <div class="sec-head center" style="gap:8px"><span class="kicker"><?=$view==='login'?'SIGN IN':'SIGN UP'?></span><h2 style="font-size:24px"><?=$view==='login'?'欢迎回来':'创建账号'?></h2><p class="lead" style="font-size:14px"><?=$view==='login'?'登录你的 OpenFlow 账号':'注册后可购买课程、成为讲师'?></p></div>
+      <div class="form-card panel" style="background:transparent;border:none;box-shadow:none;padding:0;backdrop-filter:none">
         <?php if ($view === 'login'): ?>
         <form onsubmit="memberLogin(event)" class="form-grid">
           <div class="field"><label for="l_account">邮箱或手机号</label><input class="inp" type="text" name="account" id="l_account" required placeholder="you@example.com 或手机号"></div>
           <div class="field"><label for="l_password">密码</label><input class="inp" type="password" name="password" id="l_password" required placeholder="••••••"></div>
-          <button type="submit" class="btn primary" style="width:100%">登录</button>
-          <p class="note" style="text-align:center;margin:0">还没有账号？<a href="member.php?view=register<?=$next?'&next='.urlencode($next):''?>" style="color:var(--accent);font-weight:600">立即注册</a> · <a href="member.php?view=reset-password" style="color:var(--accent);font-weight:600">忘记密码</a></p>
+          <button type="submit" class="btn">登录</button>
+          <p class="au-alt">还没有账号?<a href="member.php?view=register<?=$next?'&next='.urlencode($next):''?>">免费注册</a> · <a href="member.php?view=reset-password">忘记密码</a></p>
         </form>
         <?php else: ?>
         <form onsubmit="memberRegister(event)" class="form-grid">
@@ -141,17 +209,23 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
           <div class="field"><label for="r_goal">想解决的问题</label><select class="inp" name="goal" id="r_goal"><option value="">请选择（帮助我们给你更合适的建议）</option><?php foreach ($goalOpts as $gv => $gt): ?><option value="<?=htmlspecialchars($gv)?>"><?=htmlspecialchars($gv)?></option><?php endforeach; ?></select></div>
           <div class="field"><label for="r_password">密码</label><input class="inp" type="password" name="password" id="r_password" required minlength="6" placeholder="至少 6 位"></div>
           <?php if (!empty($_GET['ref'])): ?><input type="hidden" name="referral" value="<?=htmlspecialchars($_GET['ref'])?>"><?php endif; ?>
-          <button type="submit" class="btn primary" style="width:100%">注册</button>
-          <p class="note" style="text-align:center;margin:0">已有账号？<a href="member.php?view=login<?=$next?'&next='.urlencode($next):''?>" style="color:var(--accent);font-weight:600">直接登录</a></p>
+          <button type="submit" class="btn">创建账号,免费开始</button>
+          <p class="au-alt">已有账号?<a href="member.php?view=login<?=$next?'&next='.urlencode($next):''?>">直接登录</a></p>
         </form>
         <?php endif; ?>
-        <div id="memberMsg"></div>
+        <div id="memberMsg" class="au-msg"></div>
       </div>
     <?php endif; ?>
     </div>
-  </section>
-
-<?php elseif ($member): ?>
+  </main>
+</div>
+<script src="/assets/inject.js?v=20260830b" defer></script>
+</body>
+</html>
+<?php
+  /* 认证视图已输出完整 HTML,提前结束;个人中心(登录态)在下方,仍走全站外壳 */
+  if (!$member) return;
+?>
   <!-- 个人中心 -->
   <section id="top" class="sec reveal in" data-od-anchor data-od-id="acct-main">
     <div class="g-main-aside aside-left acct">
