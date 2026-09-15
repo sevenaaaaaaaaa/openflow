@@ -1035,7 +1035,11 @@ table th{text-align:left; padding:10px 14px; font-family:var(--font-mono); font-
 table td{padding:10px 14px; border-bottom:1px solid var(--border)}
 table tr:hover td{background:var(--hover)}
 .tabs{display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:0}
-.tabs a{padding:10px 18px; font-size:var(--fs-lg); font-weight:600; color:var(--muted); text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .15s}
+/* 文字 tab 与底线之间留出呼吸:line-height 撑高触区,底线压在 8px 呼吸带下 */
+.tabs a{padding:14px 18px; line-height:1.2; font-size:var(--fs-lg); font-weight:600; color:var(--muted); text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .15s}
+/* live 等页把 .tabs 当按钮组用(内联 flex 覆盖),去掉继承的底线避免「tab 贴线」 */
+.tabs[style*="display:flex"] a{border-bottom:1px solid transparent}
+.tabs[style*="display:flex"]{border-bottom:none; align-items:center; padding-bottom:2px}
 .tabs a:hover{color:var(--fg)}
 .tabs a.active{color:var(--accent); border-bottom-color:var(--accent)}
 .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:20px}
@@ -1075,6 +1079,22 @@ code{font-family:var(--font-mono); font-size:var(--fs-md); background:var(--hove
 #chrome .bar-center{justify-self:center;min-width:0;width:min(500px,100%)}
 #chrome .bar-end{display:flex;align-items:center;gap:8px;justify-self:end;position:relative}
 #chrome .lights{display:flex;gap:8px;flex:0 0 auto}
+/* ── 顶栏 TIPS 主导航(四力+Studio):与侧栏区切换联动 ── */
+.main-tabs{display:flex;gap:2px;margin-left:14px}
+.main-tab{position:relative;padding:7px 13px;border-radius:9px;font-size:var(--fs-lg);font-weight:600;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;white-space:nowrap}
+.main-tab:hover{background:var(--hover);color:var(--fg)}
+.main-tab.on{background:var(--accent-soft);color:var(--accent-strong)}
+@media (max-width:1180px){.main-tab{padding:7px 9px}}
+@media (max-width:1024px){.main-tabs{display:none}}   /* 窄屏收进侧栏区切换,避免顶栏溢出 */
+/* ── 齿轮悬停系统面板 ── */
+.gear-wrap{position:relative}
+.gear-menu{display:none;position:absolute;right:0;top:calc(100% + 8px);width:340px;max-height:min(520px,70vh);overflow:auto;background:var(--surface-strong);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:12px;z-index:9980}
+.gear-wrap:hover .gear-menu,.gear-wrap:focus-within .gear-menu{display:block}
+.gear-menu .g-h{font-size:var(--fs-xs);color:var(--faint);font-weight:700;margin:10px 0 4px;letter-spacing:.06em}
+.gear-menu .g-h:first-child{margin-top:0}
+.gear-menu .g-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.gear-menu a{display:block;padding:7px 10px;border-radius:8px;font-size:var(--fs-md);color:var(--fg);text-decoration:none}
+.gear-menu a:hover{background:var(--hover)}
 #chrome .light{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 2px oklch(0% 0 0/.18)}
 #chrome .light-r{background:oklch(64% .19 28)} #chrome .light-y{background:oklch(82% .15 82)} #chrome .light-g{background:oklch(68% .15 150)}
 #chrome .brand{font-family:var(--font-display);font-size:var(--fs-xl);font-weight:600;display:flex;align-items:baseline;gap:8px;white-space:nowrap}
@@ -1305,6 +1325,22 @@ $roleLabel = $roleLabels[$role] ?? $role;
       <span class="lights" aria-hidden="true"><i class="light light-r"></i><i class="light light-y"></i><i class="light light-g"></i></span>
       <button class="cbtn" onclick="fcToggleSidebar()" aria-label="切换侧栏" title="切换侧栏（full / rail / closed）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg></button>
       <span class="brand" style="align-items:center"><img src="/favicon.svg" alt="" width="24" height="24" style="border-radius:6px;margin-right:2px">OpenFlow<span class="bn-sub">运营台</span></span>
+      <nav class="main-tabs" aria-label="TIPS 主导航" style="display:flex;gap:2px;margin-left:14px">
+        <?php
+        // TIPS 四力 + Studio 常驻顶栏:一级导航放顶部,侧栏只展开当前区的细项——少占一列
+        $__tabs = [
+            ['touch',      '触达'],
+            ['insight',    '洞察'],
+            ['personalize','个性化'],
+            ['sales',      '销售'],
+            ['studio',     'Studio'],
+        ];
+        $__curArea = (string)($_GET['area'] ?? '');
+        foreach ($__tabs as [$tid, $tlabel]):
+        ?>
+        <a href="/xmp/dashboard?area=<?=htmlspecialchars($tid)?>" class="main-tab<?=$__curArea === $tid ? ' on' : ''?>" data-area-tab="<?=htmlspecialchars($tid)?>" onclick="return fcGotoArea('<?=htmlspecialchars($tid)?>')" title="<?=htmlspecialchars($tlabel)?>"><?=htmlspecialchars($tlabel)?></a>
+        <?php endforeach; ?>
+      </nav>
     </div>
     <div class="bar-center">
       <button class="searchbox" onclick="fcFocusSearch()" aria-label="全局搜索（⌘K）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>搜索模块、内容、订单、线索…</span><kbd>⌘K</kbd></button>
@@ -1334,7 +1370,24 @@ $roleLabel = $roleLabels[$role] ?? $role;
         <?php endforeach; ?>
         <?php if ($unreadCount === 0): ?><div class="notif-item"><div class="msg" style="text-align:center;padding:12px">暂无新通知</div></div><?php endif; ?>
       </div>
-      <a href="/xmp/settings" class="cbtn" aria-label="系统设置" title="系统设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.35.14.74.01 1.09"/></svg></a>
+      <div class="gear-wrap">
+        <a href="/xmp/settings" class="cbtn" aria-label="系统设置" title="系统设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.35.14.74.01 1.09"/></svg></a>
+        <div class="gear-menu" role="menu" aria-label="系统与设置">
+          <?php
+          // 系统区内容在悬停面板里展开(侧栏不再有系统区);需要 admin-nav
+          if (!function_exists('admin_nav_system_area')) require_once dirname(__DIR__) . '/includes/admin-nav.php';
+          $__gearArea = function_exists('admin_nav_system_area') ? admin_nav_system_area() : ['groups' => []];
+          foreach (($__gearArea['groups'] ?? []) as $__gg):
+              if (!($__gg['items'] ?? [])) continue; ?>
+          <div class="g-h"><?=htmlspecialchars($__gg['label'] ?? '')?></div>
+          <div class="g-grid">
+            <?php foreach ($__gg['items'] as $__gi): ?>
+            <a href="<?=htmlspecialchars($__gi['href'] ?? ('/xmp/' . $__gi['id']))?>" role="menuitem"><?=htmlspecialchars($__gi['label'])?></a>
+            <?php endforeach; ?>
+          </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
       <span class="who" title="<?=htmlspecialchars($name)?> · <?=htmlspecialchars($roleLabel)?>"><span class="ava"><?=htmlspecialchars(mb_substr($name,0,1))?></span></span>
       <a href="/xmp/logout" class="cbtn" aria-label="退出登录" title="退出登录"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="m10 8-4 4 4 4M6 12h11"/></svg></a>
     </div>
@@ -1385,6 +1438,26 @@ function admin_sidebar(string $current): void {
 <script>
 function toggleNotif(e) { e.stopPropagation(); var d = document.getElementById('notifDropdown'); if (d) d.classList.toggle('show'); }
 document.addEventListener('click', function() { var d = document.getElementById('notifDropdown'); if (d) d.classList.remove('show'); });
+/* 顶栏 TIPS 主导航:在本页直接切换侧栏区(带 Shift 或中键则按 href 整页跳转备用) */
+function fcGotoArea(areaId) {
+  var btn = document.querySelector('.sb-area[data-area="' + areaId + '"]');
+  if (!btn) return true;   // 侧栏未渲染(OF_EMBED 等)→ 走默认跳转
+  btn.click();
+  // 高亮顶栏当前 tab + 保证侧栏展开(rail/closed 状态下切区后看不到内容)
+  document.querySelectorAll('.main-tab').forEach(function (t) { t.classList.toggle('on', t.getAttribute('data-area-tab') === areaId); });
+  if (document.body.getAttribute('data-sb') !== 'full') document.body.setAttribute('data-sb', 'full');
+  try { localStorage.setItem('of_sb', 'full'); } catch (e) {}
+  var p = document.querySelector('.sb-panel[data-area="' + areaId + '"] a.sb-link');
+  if (p) p.focus({ preventScroll: true });
+  return false;
+}
+// 页面加载后按当前区高亮顶栏 tab
+document.addEventListener('DOMContentLoaded', function () {
+  var cur = document.getElementById('sidebar');
+  if (!cur) return;
+  var area = cur.getAttribute('data-area');
+  document.querySelectorAll('.main-tab').forEach(function (t) { t.classList.toggle('on', t.getAttribute('data-area-tab') === area); });
+});
 // ─── 侧栏切换（full / rail / closed）：CSS 见 admin-ui.css 的 body[data-sb] ───
 function fcToggleSidebar() {
   if (window.matchMedia && window.matchMedia('(max-width:840px)').matches) {   // 窄屏：抽屉开关
