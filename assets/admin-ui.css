@@ -10,16 +10,11 @@
  * 颜色全部来自 admin_header 的 token，零 hex。
  * ─────────────────────────────────────────────────────────────────────── */
 
-:root{--sb-rail:60px} /* --sb-w 唯一来源在 admin/config.php :root（268px），这里不再重复声明 */
+:root{--sb-w-full:268px} /* 全宽侧栏宽度的本文件引用名;权威值 --sb-w 在 admin/config.php :root */
 
-/* ── 1. 侧栏：区 rail + 面板 ── */
-#sidebar{display:grid;grid-template-columns:var(--sb-rail) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;column-gap:0;padding:8px;overflow:hidden}
-#sidebar .sb-areas{grid-row:1;display:flex;flex-direction:column;gap:4px;padding:4px 6px 4px 0;border-right:1px solid var(--border-soft);overflow-y:auto;scrollbar-width:none}
-#sidebar .sb-area{display:flex;flex-direction:column;align-items:center;gap:3px;width:48px;padding:8px 0 6px;border-radius:12px;color:var(--faint);font-size:var(--fs-xs);font-weight:600;line-height:1;letter-spacing:.01em;transition:background .18s,color .18s}
-#sidebar .sb-area svg{width:18px;height:18px}
-#sidebar .sb-area span{max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#sidebar .sb-area:hover{background:var(--hover);color:var(--fg)}
-#sidebar .sb-area.on{background:var(--accent-soft);color:var(--accent)}
+/* ── 1. 侧栏：单列面板(一级导航在顶栏 main-tabs;旧竖排区条已移除) ── */
+#sidebar{display:flex;flex-direction:column;padding:8px;overflow:hidden}
+#sidebar .sb-panels{flex:1;overflow-y:auto;scrollbar-width:thin;padding:2px 2px 8px 4px;min-width:0}
 #sidebar .sb-panels{grid-row:1;overflow-y:auto;scrollbar-width:thin;padding:2px 2px 8px 8px;min-width:0}
 #sidebar .sb-area-title{padding:10px 12px 4px;font-size:var(--fs-lg);font-weight:800;letter-spacing:-.01em;color:var(--fg);user-select:none;pointer-events:none}
 #sidebar .sb-panel{display:none;flex-direction:column;gap:1px}
@@ -53,24 +48,17 @@
 #sidebar .sb-plugins a{display:flex;align-items:center;gap:8px;padding:7px 10px!important;border-radius:10px;font-size:var(--fs-lg)!important;font-weight:500;color:var(--muted);text-decoration:none}
 #sidebar .sb-plugins a:hover{background:var(--hover);color:var(--fg)}
 #sidebar .sb-plugins svg{width:15px;height:15px}
-#sidebar .sb-foot{grid-column:1/-1;grid-row:2;padding:8px 10px 2px;font-size:var(--fs-sm);color:var(--faint);border-top:1px solid var(--border-soft)}
-/* 三态：rail 只留区图标；closed 整个收起，正文顶到左边 */
-body[data-sb="rail"]{--sb-w:calc(var(--sb-rail) + 16px)}
-body[data-sb="rail"] #sidebar .sb-panels,body[data-sb="rail"] #sidebar .sb-foot{display:none}
-body[data-sb="rail"] #sidebar{grid-template-columns:1fr}
-body[data-sb="rail"] #sidebar .sb-areas{border-right:0;padding-right:0}
+/* 两态(full/closed):一级导航在顶栏,rail 模式(只留区图标列)随竖排区条一起废弃 */
+body[data-sb="rail"]{--sb-w:var(--sb-w-full)}   /* 旧 localStorage 值兼容:按 full 渲染 */
 body[data-sb="closed"] #sidebar{transform:translateX(-120%);opacity:0;pointer-events:none}
 body[data-sb="closed"] .main{margin-left:calc(14px + max(0px,(100vw - 28px - var(--main-max))/2))}
 body.sb-anim #sidebar,body.sb-anim .main{transition:margin-left .35s var(--ease-spring),transform .35s var(--ease-spring),opacity .25s,width .35s var(--ease-spring)}
-/* 窄屏：侧栏是抽屉，data-sb 三态不生效；顶栏按钮切 .open */
+/* 窄屏：侧栏是抽屉，data-sb 两态不生效；顶栏按钮切 .open */
 .sb-backdrop{position:fixed;inset:0;z-index:49;background:oklch(12% 0 0/.35);opacity:0;pointer-events:none;transition:opacity .25s}
 @media(max-width:840px){
   body[data-sb] #sidebar,#sidebar{transform:translateX(-110%);opacity:1;pointer-events:auto;width:min(300px,86vw);top:70px}
   body[data-sb] #sidebar.open,#sidebar.open{transform:none}
   body[data-sb] .main,.main{margin-left:14px}
-  body[data-sb] #sidebar .sb-panels,body[data-sb] #sidebar .sb-foot{display:block}
-  body[data-sb] #sidebar{grid-template-columns:var(--sb-rail) minmax(0,1fr)}
-  body[data-sb] #sidebar .sb-areas{border-right:1px solid var(--border-soft);padding-right:6px}
   body.sb-open .sb-backdrop{opacity:1;pointer-events:auto}
   /* 顶栏：1fr auto 1fr 在 390px 会叠；改成两端对齐，去掉红绿灯与副标题 */
   #chrome .bar{display:flex;justify-content:space-between;gap:6px}

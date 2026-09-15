@@ -1438,15 +1438,19 @@ function admin_sidebar(string $current): void {
 <script>
 function toggleNotif(e) { e.stopPropagation(); var d = document.getElementById('notifDropdown'); if (d) d.classList.toggle('show'); }
 document.addEventListener('click', function() { var d = document.getElementById('notifDropdown'); if (d) d.classList.remove('show'); });
-/* 顶栏 TIPS 主导航:在本页直接切换侧栏区(带 Shift 或中键则按 href 整页跳转备用) */
+/* 顶栏 TIPS 主导航:在本页直接切换侧栏面板(Shift/中键点击则按 href 整页跳转备用) */
 function fcGotoArea(areaId) {
-  var btn = document.querySelector('.sb-area[data-area="' + areaId + '"]');
-  if (!btn) return true;   // 侧栏未渲染(OF_EMBED 等)→ 走默认跳转
-  btn.click();
-  // 高亮顶栏当前 tab + 保证侧栏展开(rail/closed 状态下切区后看不到内容)
+  var panels = document.querySelectorAll('.sb-panel[data-area="' + areaId + '"]');
+  if (!panels.length) return true;   // 侧栏未渲染(OF_EMBED 等)→ 走默认跳转
+  document.querySelectorAll('.sb-panel').forEach(function (p) { p.classList.toggle('on', p.dataset.area === areaId); });
+  document.getElementById('sidebar').dataset.area = areaId;
+  // 面板标题 = 区名(取顶栏 tab 文案)
+  var tab = document.querySelector('.main-tab[data-area-tab="' + areaId + '"]');
+  var title = document.getElementById('sbAreaTitle');
+  if (title && tab) title.textContent = tab.textContent.trim();
+  // 高亮顶栏当前 tab + 保证侧栏展开(closed 状态下切区后看不到内容)
   document.querySelectorAll('.main-tab').forEach(function (t) { t.classList.toggle('on', t.getAttribute('data-area-tab') === areaId); });
-  if (document.body.getAttribute('data-sb') !== 'full') document.body.setAttribute('data-sb', 'full');
-  try { localStorage.setItem('of_sb', 'full'); } catch (e) {}
+  if (document.body.getAttribute('data-sb') === 'closed') { document.body.setAttribute('data-sb', 'full'); try { localStorage.setItem('of_sb', 'full'); } catch (e) {} }
   var p = document.querySelector('.sb-panel[data-area="' + areaId + '"] a.sb-link');
   if (p) p.focus({ preventScroll: true });
   return false;
@@ -1458,15 +1462,14 @@ document.addEventListener('DOMContentLoaded', function () {
   var area = cur.getAttribute('data-area');
   document.querySelectorAll('.main-tab').forEach(function (t) { t.classList.toggle('on', t.getAttribute('data-area-tab') === area); });
 });
-// ─── 侧栏切换（full / rail / closed）：CSS 见 admin-ui.css 的 body[data-sb] ───
+// ─── 侧栏切换（full / closed 两态；旧 localStorage 的 rail 值按 full 处理） ───
 function fcToggleSidebar() {
   if (window.matchMedia && window.matchMedia('(max-width:840px)').matches) {   // 窄屏：抽屉开关
     var s = document.getElementById('sidebar'); if (!s) return;
     var open = s.classList.toggle('open'); document.body.classList.toggle('sb-open', open); return;
   }
-  var seq = ['full', 'rail', 'closed'];
   var cur = document.body.getAttribute('data-sb') || 'full';
-  var next = seq[(seq.indexOf(cur) + 1) % seq.length];
+  var next = cur === 'closed' ? 'full' : 'closed';
   document.body.setAttribute('data-sb', next);
   try { localStorage.setItem('of_sb', next); } catch (e) {}
 }
@@ -1494,7 +1497,7 @@ function fcToggleTheme() {
   var btn = document.getElementById('themeToggle');
   if (btn) btn.textContent = dark ? '☀️' : '🌙';
   var sb = null; try { sb = localStorage.getItem('of_sb'); } catch (e) {}
-  if (sb) document.body.setAttribute('data-sb', sb);
+  if (sb && sb !== 'rail') document.body.setAttribute('data-sb', sb);   // rail 随竖排区条废弃,按 full 渲染
 })();
 function markNotifRead() {
   var xhr = new XMLHttpRequest();
