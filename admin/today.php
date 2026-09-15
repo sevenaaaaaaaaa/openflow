@@ -111,6 +111,28 @@ admin_header('今日主线');
       </div>
     </div>
 
+    <!-- 每日晨会:岗位干活 → 小福汇报 的闭环入口 -->
+    <div class="panel" style="margin-bottom:12px" id="briefPanel">
+      <div class="p-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:18px">☀️</span>
+        <div style="flex:1;min-width:220px">
+          <b style="font-size:14px">每日晨会</b>
+          <span class="note" style="margin-left:8px" id="briefSub">小福的 3 分钟汇报 · 结果 → 重点 → 待拍板</span>
+        </div>
+        <button class="btn btn-p btn-sm" id="briefPlayBtn" onclick="briefToggle()">▶ 听晨会</button>
+        <button class="btn btn-s btn-sm" onclick="briefExpand()">文字版</button>
+      </div>
+      <div class="p-body" id="briefBody" style="display:none;border-top:1px solid var(--border-soft,var(--border))">
+        <div id="briefLoading" class="note" style="padding:4px 0">正在准备今天的晨会…</div>
+        <div id="briefText" style="display:none;white-space:pre-wrap;line-height:1.9;font-size:13.5px"></div>
+        <div id="briefFoot" style="display:none;margin-top:10px;gap:8px;flex-wrap:wrap;align-items:center">
+          <span class="note mono" id="briefMode"></span>
+          <button class="btn btn-s btn-sm" id="briefStopBtn" onclick="briefStop()" style="display:none">⏹ 停止朗读</button>
+          <button class="btn btn-s btn-sm" onclick="briefToggle()">↻ 重听</button>
+        </div>
+      </div>
+    </div>
+
     <div class="panel" style="margin-bottom:16px">
       <div class="p-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <span style="font-size:18px">⌘</span>
@@ -243,6 +265,76 @@ window.__mlPlan = [];
 window.__mlCmdPlan = [];
 window.__mlAiReady = <?=$aiReady ? 'true' : 'false'?>;
 window.__mlCachedAt = <?=json_encode($judgeCache['generated_at'] ?? '')?>;
+
+/* ═══ 每日晨会:取简报 → 文字展示 → 浏览器 TTS 朗读(分句喂,规避中文长文截断) ═══ */
+window.__brief = { text: '', playing: false, queue: [] };
+
+function briefSplitSentences(t) {
+  return String(t).split(/(?<=[。！？!?;\n])/).map(s => s.trim()).filter(Boolean);
+}
+function briefStop() {
+  window.__brief.playing = false;
+  try { speechSynthesis.cancel(); } catch (e) {}
+  const b = document.getElementById('briefPlayBtn'); if (b) b.textContent = '▶ 听晨会';
+  const s = document.getElementById('briefStopBtn'); if (s) s.style.display = 'none';
+}
+function briefSpeakNext() {
+  if (!window.__brief.playing) return;
+  const sent = window.__brief.queue.shift();
+  if (sent === undefined) { briefStop(); return; }
+  const u = new SpeechSynthesisUtterance(sent);
+  u.lang = 'zh-CN';
+  u.rate = 1.05;
+  u.onend = () => briefSpeakNext();
+  u.onerror = () => briefStop();
+  try { speechSynthesis.speak(u); } catch (e) { briefStop(); }
+}
+async function briefFetch() {
+  const r = await fetch('/api/morning-briefing.php?action=briefing', { headers: { 'X-CSRF-Token': ML_CSRF } });
+  return r.json();
+}
+async function briefToggle() {
+  if (window.__brief.playing) { briefStop(); return; }
+  const body = document.getElementById('briefBody');
+  const load = document.getElementById('briefLoading');
+  const txt = document.getElementById('briefText');
+  const foot = document.getElementById('briefFoot');
+  body.style.display = 'block'; load.style.display = 'block'; txt.style.display = 'none'; foot.style.display = 'none';
+  let data;
+  try { data = await briefFetch(); } catch (e) {
+    load.textContent = '晨会暂时开不了(网络异常),稍后再试。';
+    return;
+  }
+  if (!data || !data.ok || !data.text) { load.textContent = '晨会数据还没准备好,稍后再试。'; return; }
+  window.__brief.text = data.text;
+  txt.textContent = data.text;
+  load.style.display = 'none'; txt.style.display = 'block'; foot.style.display = 'flex';
+  document.getElementById('briefMode').textContent = data.mode === 'ai' ? 'AI 口播稿 · 小福' : '模板简报(AI 未接入或未生效)';
+  // 朗读
+  if (!('speechSynthesis' in window)) { document.getElementById('briefPlayBtn').textContent = '✓ 已展示'; return; }
+  window.__brief.playing = true;
+  window.__brief.queue = briefSplitSentences(data.text);
+  document.getElementById('briefPlayBtn').textContent = '⏸ 停止';
+  document.getElementById('briefStopBtn').style.display = '';
+  briefSpeakNext();
+}
+function briefExpand() {
+  const body = document.getElementById('briefBody');
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+    briefFetch().then(d => {
+      if (d && d.ok && d.text) {
+        document.getElementById('briefText').textContent = d.text;
+        document.getElementById('briefLoading').style.display = 'none';
+        document.getElementById('briefText').style.display = 'block';
+        document.getElementById('briefFoot').style.display = 'flex';
+        document.getElementById('briefMode').textContent = d.mode === 'ai' ? 'AI 口播稿 · 小福' : '模板简报(AI 未接入或未生效)';
+      }
+    }).catch(() => {});
+  } else if (!window.__brief.playing) {
+    body.style.display = 'none';
+  }
+}
 
 function mlRenderPlan(plan) {
   window.__mlPlan = plan || [];
