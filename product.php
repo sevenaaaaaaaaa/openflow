@@ -351,22 +351,22 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <a href="/product" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--accent);border-radius:var(--r-md);background:var(--accent-soft)">
         <b style="font-size:15px">OpenFlow</b><span class="note" style="margin:0">增长操作系统 · 四力合一的底座</span><span style="color:var(--accent);font-size:13px;font-weight:700">当前页 →</span>
       </a>
-      <a href="/mflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+      <a href="/product/mflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
         <b style="font-size:15px">MFlow</b><span class="note" style="margin:0">营销流程引擎 · 触达 / 工作流 / 实验</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
       </a>
-      <a href="/webs-flow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+      <a href="/product/webs-flow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
         <b style="font-size:15px">Webs Flow</b><span class="note" style="margin:0">建站与页面流 · 35 区块 / 组件工厂 / 无头 CMS</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
       </a>
-      <a href="/userloop" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+      <a href="/product/userloop" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
         <b style="font-size:15px">UserLoop</b><span class="note" style="margin:0">用户行为循环 · 埋点 / 画像 / 分群 / 旅程</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
       </a>
-      <a href="/inflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+      <a href="/product/inflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
         <b style="font-size:15px">inFlow</b><span class="note" style="margin:0">情报增长站 · 趋势 / 舆情 / 竞品</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
       </a>
-      <a href="/payflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+      <a href="/product/payflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
         <b style="font-size:15px">PayFlow</b><span class="note" style="margin:0">商业变现引擎 · 一行嵌入收款 / 订阅 / 佣金</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
       </a>
-      <a href="/learnflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+      <a href="/product/learnflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
         <b style="font-size:15px">LearnFlow</b><span class="note" style="margin:0">课程与训练营交付 · 进度 / 测验 / 证书</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
       </a>
     </div>
