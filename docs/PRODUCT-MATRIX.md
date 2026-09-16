@@ -127,3 +127,59 @@ OpenFlow（底座）──想引入情报/落地页/全域数据──▶ inFlow
 | inFlow | `/inflow` | 已上线（区块页，后台可改） |
 
 示例页（区块系统展示）：`/b/growth-os-tour`
+
+---
+
+## 六、独立化决策原则（v2 补充）
+
+> 原则：**不做无穷的产品**。一个能力是否独立成产品，三条门槛同时满足才独立：
+
+### 6.1 独立化三门槛
+
+1. **独立人群**：存在一个与「全站增长 OS 用户」依赖假设不同的人群——
+   他们不会为了这个能力整套采用 OpenFlow。
+2. **独立依赖假设**：这个能力在没有 OpenFlow 的 CMS/CDP 时依然完整可用
+   （拔掉母体照常运行，而不是"模块必须挂在母体里"）。
+3. **体量越过插件**：数据模型级的能力（订单/学员/档案），不是功能钩子。
+   插件装得下的，一律留在插件生态。
+
+### 6.2 留在插件/skills 生态的（明确不独立）
+
+| 能力 | 归属 | 理由 |
+|---|---|---|
+| 表单/调研/NPS/测验 | 插件生态 | 商品化能力，单独无壁垒；嵌入 Webs Flow/任何站即可 |
+| SEO 技术工具（sitemap/JSON-LD/收录推送） | OpenFlow / MFlow 分发适配 | 情报已独立为 inFlow，技术 SEO 是分发的一部分 |
+| 直播/播客/视频托管 | OpenFlow 内容类型 | 重基础设施，独立无差异化；媒体底座共用 |
+| 连接器/OAuth/画布/工作流编排 | OpenFlow（插件 + skills + MCP） | **生态本身就是产品**——这正是插件/技能存在的意义 |
+| 积分/等级/忠诚度 | UserLoop | 用户数据域的一部分 |
+| A/B 实验/归因 | MFlow / Webs Flow | 各自场景内的实验能力 |
+| 评价口碑管理 | 插件生态 | 体量小，插件钩子足够 |
+
+### 6.3 候补产品（按优先级）
+
+#### P1 · PayFlow（商业变现引擎）
+
+- **定位**：收款 + 订阅 + 推荐裂变 + 佣金结算，一行嵌入任何页面
+- **人群**：知识付费创作者、独立开发者、课程讲师——只要有「能收钱」，不要增长系统
+- **依赖假设**：零依赖。不要求 OpenFlow CMS/CDP——买按钮嵌进 Webs Flow 落地页、
+  MFlow 分发的内容页、任何第三方网站都能跑
+- **OpenFlow 现成底子**：CartSystem / SubscriptionSystem / ReferralSystem /
+  CommissionPolicy / MarketplaceSystem / PaymentChannel / MembershipSystem（7 个模块）
+- **互通**：Webs Flow 落地页挂 PayFlow 结账；订单事件回传 UserLoop；MFlow 内容挂购买链接
+- **对标**：Gumroad / LemonSqueezy / Paddle
+- **收割理由**：「卖数字产品的创作者」是巨大且独立的受众，他们要的不是增长系统
+
+#### P2 · LearnFlow（课程与训练营交付）
+
+- **定位**：课程交付 + 学员进度 + 测验证书 + 训练营运营（社区轻量版）
+- **人群**：讲师、教练、训练营主理人（R.B.E 训练营即自家案例）
+- **依赖假设**：轻依赖。内容自带，收款接 PayFlow（API 互通），不强依赖 OpenFlow CMS
+- **OpenFlow 现成底子**：CourseSystem / ProgressSystem / CertificateSystem /
+  course-students / course-player / 直播回放
+- **对标**：小鹅通 / Kajabi / Skool
+- **注意**：与 PayFlow 是天作之合（课程交付+收款一体），发布节奏建议 PayFlow 先行
+
+### 6.3 决策原则（一句话版）
+
+> **"人群独立 + 零母体依赖 + 数据模型级体量" → 独立；否则 → 插件 / skills。**
+> 每次想新增产品时先过这三条门槛；过不了的进插件生态，进不了插件生态的不做。
