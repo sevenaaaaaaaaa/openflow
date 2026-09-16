@@ -1,7 +1,7 @@
 <?php
 /**
  * 给示例页追加第二批 8 种区块（tabs/portrait/cluster/prompt/proof/blog-grid/canvas-wall/feature-detail）
- * 用法: php scripts/seed-lovart-page-2.php
+ * 用法: php scripts/seed-showcase-page-2.php
  */
 $_SERVER['REQUEST_METHOD'] = 'CLI';
 require __DIR__ . '/../admin/config.php';

@@ -16,7 +16,6 @@ $U = [];
 
 // ─── 内容创作 · AI 写作与 PPT ───
 foreach ([
-['AI 写作助手','AI Writing','https://www.lovart.ai','你收集的 AI 写作选品笔记（生态入口 Lovart）','content','写作与PPT',['AI','写作','小众']],
 ['Presenton','Presenton','https://github.com/presenton/presenton','开源 AI 演示文稿生成','content','写作与PPT',['AI','PPT','开源']],
 ['GEOFlow','GEOFlow','https://github.com/yaojingang/GEOFlow','GEO 内容流程工具','content','写作与PPT',['GEO','内容','开源']],
 ['Compare2Word','Compare2Word','https://compare2word.com','文档对比工具','content','写作与PPT',['效率','工具']],

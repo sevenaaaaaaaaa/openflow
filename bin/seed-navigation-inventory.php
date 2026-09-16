@@ -6,7 +6,7 @@
  */
 require_once __DIR__ . '/../admin/config.php';
 
-$dir = '/Users/seveno/Knowledge/Obsidian/MindRe/1-Project/Lovart MFlow/1-3 GenFlow/Content Distribution/Drafts/00-选题规划/AI Tool List';
+$dir = '/Users/seveno/Knowledge/Obsidian/MindRe/1-Project/GenFlow/1-3 Content Distribution/Drafts/00-选题规划/AI Tool List';
 $files = ['AI_TOOL_INVENTORY_V2.md', 'AI_TOOL_INVENTORY_COMPLETE.md', 'AI_TOOL_INVENTORY_FULL.md'];
 
 // 原始分类 → 导航站子分类 + 大分类 映射

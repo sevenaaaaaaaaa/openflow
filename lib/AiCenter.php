@@ -115,28 +115,46 @@ class AiCenter {
         }
 
         // 构建 payload
+        // 视觉输入（可选）：opts['image_dataurl'] 传 data:image/...;base64,... 时，
+        // user 消息升级为多模态 content（截图→组件等场景用）。
+        $imageDataUrl = (string)($opts['image_dataurl'] ?? '');
+        $imgPart = null;
+        if ($imageDataUrl !== '' && preg_match('#^data:image/(png|jpeg|jpg|webp|gif);base64,#', $imageDataUrl)) {
+            $imgPart = $imageDataUrl;
+        }
         if ($providerId === 'claude') {
             // Anthropic Messages API 的 system 是**顶层参数**，messages 里只接受
             // user / assistant 两种 role。原来把 system 塞进 messages 会被直接拒掉
             // （400 invalid_request_error），也就是说这个供应商一直是不能用的。
+            if ($imgPart !== null) {
+                preg_match('#^data:image/(\w+);base64,(.*)$#s', $imgPart, $im);
+                $userContent = [['type' => 'image', 'source' => ['type' => 'base64', 'media_type' => 'image/' . ($im[1] === 'jpg' ? 'jpeg' : $im[1]), 'data' => $im[2]]], ['type' => 'text', 'text' => $user !== '' ? $user : $system]];
+            } else {
+                $userContent = $user !== '' ? $user : $system;
+            }
             $payload = json_encode(array_filter([
                 'model' => $model,
                 'max_tokens' => $opts['max_tokens'] ?? 4096,
                 'system' => $system !== '' ? $system : null,
                 'temperature' => $temperature,
                 'messages' => array_merge($history, [
-                    ['role' => 'user', 'content' => $user !== '' ? $user : $system],
+                    ['role' => 'user', 'content' => $userContent],
                 ]),
             ], fn($v) => $v !== null), JSON_UNESCAPED_UNICODE);
             $headers = ['x-api-key: ' . $provider['api_key'], 'anthropic-version: 2023-06-01', 'Content-Type: application/json'];
             $endpoint = $apiUrl . '/messages';
         } elseif ($providerId === 'minimax') {
+            if ($imgPart !== null) {
+                $userContent = [['type' => 'text', 'text' => $user], ['type' => 'image_url', 'image_url' => ['url' => $imgPart]]];
+            } else {
+                $userContent = $user;
+            }
             $payload = json_encode([
                 'model' => $model,
                 'messages' => array_merge(
                     [['role' => 'system', 'content' => $system]],
                     $history,
-                    [['role' => 'user', 'content' => $user]]
+                    [['role' => 'user', 'content' => $userContent]]
                 ),
                 'temperature' => $temperature,
                 'max_tokens' => $opts['max_tokens'] ?? 4096,
@@ -147,7 +165,7 @@ class AiCenter {
             // OpenAI 兼容（OpenAI/DeepSeek/Kimi/GLM/Qwen/Doubao/元宝/OpenRouter）
             $messages = [['role' => 'system', 'content' => $system]];
             foreach ($history as $h) $messages[] = $h;
-            if ($user) $messages[] = ['role' => 'user', 'content' => $user];
+            if ($user) $messages[] = ['role' => 'user', 'content' => $imgPart !== null ? [['type' => 'text', 'text' => $user], ['type' => 'image_url', 'image_url' => ['url' => $imgPart]]] : $user];
             $payload = json_encode([
                 'model' => $model,
                 'messages' => $messages,

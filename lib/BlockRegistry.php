@@ -35,6 +35,10 @@ function block_types(): array {
         'tool-grid' => '工具网格', 'tabs' => '标签页', 'portrait' => '竖版卡片',
         'cluster' => '密集卡片', 'prompt' => '提示词启动器', 'proof' => '信任证明条',
         'blog-grid' => '博客网格', 'canvas-wall' => '画布墙', 'feature-detail' => '特性详情',
+        'checklist' => '对勾清单', 'countdown' => '倒计时', 'banner' => '公告横条',
+        'team' => '团队网格', 'code' => '代码展示', 'kbd' => '快捷键组',
+        'spotlight' => '聚光大字', 'ticker' => '数字滚动', 'quote-wall' => '便签墙',
+        'changelog' => '更新日志',
         'module' => '引用模块库',
     ];
     // 合并用户自定义模块（模块工厂）：key 不与内置冲突时加入
@@ -68,6 +72,9 @@ function block_builtin_categories(): array {
         'before-after' => 'media', 'showcase' => 'layout', 'tool-grid' => 'content',
         'tabs' => 'layout', 'portrait' => 'media', 'cluster' => 'content', 'prompt' => 'convert',
         'proof' => 'social', 'blog-grid' => 'content', 'canvas-wall' => 'media', 'feature-detail' => 'content',
+        'checklist' => 'convert', 'countdown' => 'convert', 'banner' => 'convert', 'team' => 'social',
+        'code' => 'content', 'kbd' => 'content', 'spotlight' => 'layout', 'ticker' => 'content',
+        'quote-wall' => 'social', 'changelog' => 'layout',
     ];
 }
 
@@ -216,7 +223,7 @@ function builder_render_block(array $b): string {
             return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . ($content ? '<div class="prose timeline">' . $content . '</div>' : '<div class="empty">配置时间线条目</div>') . '</section>';
         case 'comparison':
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="scroll-x">' . $content . '</div>' : '<div class="empty">配置对比项</div>') . '</section>';
-        /* ── Lovart 风格扩展区块：内容 = 子项 HTML，CSS archetype 负责布局 ── */
+        /* ── 展示区块扩展组：内容 = 子项 HTML，CSS archetype 负责布局 ── */
         case 'journey':   // 旅程步骤：子项 <div><h4>01</h4><h3>标题</h3><p>描述</p></div>，自动编号
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="steps">' . ($content ?: '<div class="empty">每步一个 &lt;div&gt;：&lt;h3&gt;标题&lt;/h3&gt;&lt;p&gt;描述&lt;/p&gt;</div>') . '</div></section>';
         case 'bento':     // Bento 网格：子项 <div data-w="2">宽卡</div>，不等宽拼贴
@@ -231,7 +238,7 @@ function builder_render_block(array $b): string {
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="showcase">' . ($content ?: '<div class="empty">标题/描述与图片交替排列</div>') . '</div></section>';
         case 'tool-grid': // 工具网格：子项 <div><span class="tg-tag">标签</span><h3>名称</h3><p>描述</p><em>★ 4.9</em></div>
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="toolgrid">' . ($content ?: '<div class="empty">每张工具卡一个 &lt;div&gt;</div>') . '</div></section>';
-        /* ── Lovart 扩展第二批：补齐组件库剩余形态 ── */
+        /* ── 展示区块扩展组第二批：补齐组件库形态 ── */
         case 'tabs': {    // 标签页：子项 <div data-tab="标签名"><p>面板内容</p></div>，纯 CSS 单选切换
             if ($content === '') return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="empty">每个面板一个 &lt;div data-tab=&quot;标签名&quot;&gt;</div></section>';
             $name = 'tb' . substr(md5($title . $sub), 0, 6);
@@ -261,6 +268,31 @@ function builder_render_block(array $b): string {
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="cwall">' . ($content ?: '<div class="empty">每件作品一个 &lt;div&gt;</div>') . '</div></section>';
         case 'feature-detail': // 特性详情：左侧子项要点 <div><b>要点</b><span>说明</span></div> + image 右侧大图
             return '<section class="sec reveal"' . $bgStyle . '><div class="fdetail"><div class="fd-copy">' . $head('h2', false) . '<ul class="fd-points">' . ($content ?: '') . '</ul></div>' . ($img ? '<div class="fd-vis"><img src="' . $img . '" alt="" loading="lazy"></div>' : '') . '</div></section>';
+        /* ── 展示区块扩展组第三批：转化与社区形态 ── */
+        case 'checklist': // 对勾清单：子项 <li>条目</li>，逐条打勾
+            return '<section class="sec reveal"' . $bgStyle . '><div class="checklist-wrap"><div class="checklist">' . ($content ?: '<li>配置一个清单条目</li>') . '</div>' . $btn . '</div></section>';
+        case 'countdown': // 倒计时：content=活动说明，字段 end=截止时间(Y-m-d H:i:s)
+            $endAttr = htmlspecialchars($b['end'] ?? '', ENT_QUOTES);
+            return '<section class="sec reveal"' . $bgStyle . '><div class="countdown" data-end="' . $endAttr . '"><div class="cd-box"><b class="cd-d">--</b><span>天</span></div><div class="cd-box"><b class="cd-h">--</b><span>时</span></div><div class="cd-box"><b class="cd-m">--</b><span>分</span></div><div class="cd-box"><b class="cd-s">--</b><span>秒</span></div></div><div class="cd-note">' . ($content ?: '') . '</div></section>';
+        case 'banner':    // 公告横条：title=正文，button_url=链接
+            $link = $btnUrl !== '' ? '<a href="' . $btnUrl . '">' . $btnText . ' →</a>' : '';
+            return '<div class="banner" role="status"><span class="bn-dot"></span><span class="bn-txt">' . $title . ($content ? ' · ' . $content : '') . '</span>' . $link . '</div>';
+        case 'team':      // 团队网格：子项 <div><img><b>姓名</b><span>职位</span></div>
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="team-grid">' . ($content ?: '<div class="empty">每位成员一个 &lt;div&gt;</div>') . '</div></section>';
+        case 'code':      // 代码展示：content=代码本体，subtitle=语言标签
+            $codeHtml = htmlspecialchars($content ?: '// 粘贴代码', ENT_QUOTES);
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="code-show"><div class="cs-bar"><span class="cs-dot"></span><span class="cs-dot"></span><span class="cs-dot"></span><span class="cs-lang">' . htmlspecialchars($sub ?: 'code', ENT_QUOTES) . '</span></div><pre class="cs-body"><code>' . $codeHtml . '</code></pre></div></section>';
+        case 'kbd':       // 快捷键组：子项 <div><b>⌘ K</b><span>说明</span></div>
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="kbd-grid">' . ($content ?: '<div class="empty">每个快捷键一个 &lt;div&gt;</div>') . '</div></section>';
+        case 'spotlight': // 聚光大字：title=正文，<em>部分高亮
+            $spot = $title !== '' ? $title : $content;
+            return '<section class="sec reveal"' . $bgStyle . '><div class="spotlight"><h2>' . $spot . '</h2>' . ($content && $title ? '<p class="lead">' . $content . '</p>' : '') . '</div></section>';
+        case 'ticker':    // 数字滚动：子项 <div data-n="目标数字" data-suffix="+"><b>0</b><span>标签</span></div>
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="ticker-grid">' . ($content ?: '<div class="empty">每个数字一个 &lt;div data-n=&quot;10000&quot;&gt;</div>') . '</div><script>document.querySelectorAll(".ticker-grid [data-n]").forEach(function(el){var n=parseFloat(el.dataset.n)||0,s=el.dataset.suffix||"",b=el.querySelector("b"),st=null;requestAnimationFrame(function f(t){if(st===null)st=t;var p=Math.min((t-st)/1600,1),v=Math.floor(n*(1-Math.pow(1-p,3)));b.textContent=v.toLocaleString()+s;if(p<1)requestAnimationFrame(f)})});</script></section>';
+        case 'quote-wall': // 便签墙：子项 <div>短句</div>，随机小角度旋转
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="qwall">' . ($content ?: '<div class="empty">每张便签一个 &lt;div&gt;</div>') . '</div><script>document.querySelectorAll(".qwall>div").forEach(function(el,i,a){el.style.setProperty("--tilt",((i*53)%9-4)*0.8+"deg")});</script></section>';
+        case 'changelog': // 更新日志：子项 <div data-v="v2.1"><b>日期</b><h4>标题</h4><p>描述</p></div>
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="changelog">' . ($content ?: '<div class="empty">每个版本一个 &lt;div&gt;</div>') . '</div></section>';
         case 'testimonials':
         case 'logo-wall':
         case 'faq':

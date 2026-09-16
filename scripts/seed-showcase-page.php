@@ -1,7 +1,7 @@
 <?php
 /**
- * 生成 Lovart 风格示例落地页（演示 7 种新扩展区块）
- * 用法: php scripts/seed-lovart-page.php
+ * 生成展示型示例落地页（演示 7 种扩展区块）
+ * 用法: php scripts/seed-showcase-page.php
  */
 $_SERVER['REQUEST_METHOD'] = 'CLI';
 require __DIR__ . '/../admin/config.php';
