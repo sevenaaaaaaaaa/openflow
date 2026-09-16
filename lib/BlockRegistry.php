@@ -32,7 +32,9 @@ function block_types(): array {
         'timeline' => '时间线', 'comparison' => '对比表',
         'journey' => '旅程步骤', 'bento' => 'Bento 网格', 'marquee' => '滚动横幅',
         'accordion' => '手风琴', 'before-after' => '前后对比', 'showcase' => '编号展示',
-        'tool-grid' => '工具网格',
+        'tool-grid' => '工具网格', 'tabs' => '标签页', 'portrait' => '竖版卡片',
+        'cluster' => '密集卡片', 'prompt' => '提示词启动器', 'proof' => '信任证明条',
+        'blog-grid' => '博客网格', 'canvas-wall' => '画布墙', 'feature-detail' => '特性详情',
         'module' => '引用模块库',
     ];
     // 合并用户自定义模块（模块工厂）：key 不与内置冲突时加入
@@ -64,6 +66,8 @@ function block_builtin_categories(): array {
         'comparison' => 'commerce', 'module' => 'other',
         'journey' => 'layout', 'bento' => 'media', 'marquee' => 'media', 'accordion' => 'layout',
         'before-after' => 'media', 'showcase' => 'layout', 'tool-grid' => 'content',
+        'tabs' => 'layout', 'portrait' => 'media', 'cluster' => 'content', 'prompt' => 'convert',
+        'proof' => 'social', 'blog-grid' => 'content', 'canvas-wall' => 'media', 'feature-detail' => 'content',
     ];
 }
 
@@ -227,6 +231,36 @@ function builder_render_block(array $b): string {
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="showcase">' . ($content ?: '<div class="empty">标题/描述与图片交替排列</div>') . '</div></section>';
         case 'tool-grid': // 工具网格：子项 <div><span class="tg-tag">标签</span><h3>名称</h3><p>描述</p><em>★ 4.9</em></div>
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="toolgrid">' . ($content ?: '<div class="empty">每张工具卡一个 &lt;div&gt;</div>') . '</div></section>';
+        /* ── Lovart 扩展第二批：补齐组件库剩余形态 ── */
+        case 'tabs': {    // 标签页：子项 <div data-tab="标签名"><p>面板内容</p></div>，纯 CSS 单选切换
+            if ($content === '') return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="empty">每个面板一个 &lt;div data-tab=&quot;标签名&quot;&gt;</div></section>';
+            $name = 'tb' . substr(md5($title . $sub), 0, 6);
+            preg_match_all('/<div\s+data-tab="([^"]*)"[^>]*>(.*?)<\/div>/s', $content, $tabs, PREG_SET_ORDER);
+            if (!$tabs) return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="empty">面板需带 data-tab 属性</div></section>';
+            $tabsHtml = '<div class="tabs">';
+            $panelsHtml = '<div class="tab-panels">';
+            foreach ($tabs as $i => $tb) {
+                $id = $name . $i;
+                $checked = $i === 0 ? ' checked' : '';
+                $tabsHtml .= '<input class="tab-i" type="radio" name="' . $name . '" id="' . $id . '"' . $checked . '><label for="' . $id . '">' . htmlspecialchars($tb[1]) . '</label>';
+                $panelsHtml .= '<div class="tab-p">' . $tb[2] . '</div>';
+            }
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="tabbed">' . $tabsHtml . '<div style="flex-basis:100%"></div>' . $panelsHtml . '</div></section>';
+        }
+        case 'portrait':  // 竖版卡片：子项 <div><img><h3>标题</h3><p>描述</p><a>链接</a></div>，4列(可 data-cols)
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="pgrid">' . ($content ?: '<div class="empty">每张竖版卡一个 &lt;div&gt;</div>') . '</div></section>';
+        case 'cluster':   // 密集卡片：子项 <div><h4>问题</h4><p>描述</p></div>，紧凑多列小卡
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="cluster">' . ($content ?: '<div class="empty">每张小卡一个 &lt;div&gt;</div>') . '</div></section>';
+        case 'prompt':    // 提示词启动器：content=提示词正文，子项 <span>场景 chips</span>
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head('h2', false) . '<div class="prompt-box"><div class="pb-tags">' . ($content ?: '') . '</div><div class="pb-text">' . htmlspecialchars($title) . '</div><div class="cta-row"><button type="button" class="btn primary">' . ($btnText ?: 'Generate') . '</button></div></div></section>';
+        case 'proof':     // 信任证明条：子项 <div><b>数字/词</b><span>说明</span></div>
+            return '<section class="sec reveal"' . $bgStyle . '>' . '<div class="proof">' . ($content ?: '') . '</div></section>';
+        case 'blog-grid': // 博客网格：子项 <div><img><time>日期</time><h3>标题</h3><p>摘要</p></div>
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="bgrid">' . ($content ?: '<div class="empty">每篇文章一个 &lt;div&gt;</div>') . '</div></section>';
+        case 'canvas-wall': // 画布墙：子项 <div><img><span class="cw-tag">标签</span><em>★ n</em></div>
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="cwall">' . ($content ?: '<div class="empty">每件作品一个 &lt;div&gt;</div>') . '</div></section>';
+        case 'feature-detail': // 特性详情：左侧子项要点 <div><b>要点</b><span>说明</span></div> + image 右侧大图
+            return '<section class="sec reveal"' . $bgStyle . '><div class="fdetail"><div class="fd-copy">' . $head('h2', false) . '<ul class="fd-points">' . ($content ?: '') . '</ul></div>' . ($img ? '<div class="fd-vis"><img src="' . $img . '" alt="" loading="lazy"></div>' : '') . '</div></section>';
         case 'testimonials':
         case 'logo-wall':
         case 'faq':
