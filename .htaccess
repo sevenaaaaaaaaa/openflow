@@ -107,6 +107,10 @@ RewriteRule ^tag/([^/]+)/?$ /articles?tag=$1 [R=301,L,NE]
 RewriteRule ^courses/?$ courses.php [L,QSA]
 RewriteRule ^about/?$ about.php [L,QSA]
 RewriteRule ^product/?$ product.php [L,QSA]
+# ── Demo 预览(不取代现有页面): 总产品聚合 / 总能力聚合 / v2 首页 ──
+RewriteRule ^demo/products/?$       front-builder.php?slug=demo-products       [L,QSA]
+RewriteRule ^demo/capabilities/?$   front-builder.php?slug=demo-capabilities   [L,QSA]
+RewriteRule ^demo/home-v2/?$        front-builder.php?slug=demo-home-v2        [L,QSA]
 # ── 芭乐派产品矩阵：前台产品页统一二级目录 /product/{产品}（后台 page-builder 可继续打磨） ──
 RewriteRule ^product/mflow/?$      front-builder.php?slug=mflow      [L,QSA]
 RewriteRule ^product/webs-flow/?$  front-builder.php?slug=webs-flow  [L,QSA]
@@ -114,13 +118,15 @@ RewriteRule ^product/userloop/?$   front-builder.php?slug=userloop   [L,QSA]
 RewriteRule ^product/inflow/?$     front-builder.php?slug=inflow     [L,QSA]
 RewriteRule ^product/payflow/?$    front-builder.php?slug=payflow    [L,QSA]
 RewriteRule ^product/learnflow/?$  front-builder.php?slug=learnflow  [L,QSA]
-# 旧一级短路径 → 二级目录 301（保外链与 SEO；各产品的后台/站点入口由其子域名承载）
-RewriteRule ^mflow/?$      /product/mflow      [R=301,L,NE]
+# 各产品后台独享入口：短路径留给产品应用（Apache Alias 挂载），营销页在 /product/{产品}
+# 例外规则必须在 301 之前，否则应用路径会被重定向走
+RewriteRule ^learnflow(/.*)?$ - [L]
+RewriteRule ^payflow(/.*)?$   - [L]
+RewriteRule ^userloop(/.*)?$  - [L]
+RewriteRule ^inflow(/.*)?$    - [L]
+RewriteRule ^mflow(/.*)?$     - [L]
+# 兼容旧链接：没有独立应用入口的产品，短路径 301 到二级营销页
 RewriteRule ^webs-flow/?$  /product/webs-flow  [R=301,L,NE]
-RewriteRule ^userloop/?$   /product/userloop   [R=301,L,NE]
-RewriteRule ^inflow/?$     /product/inflow     [R=301,L,NE]
-RewriteRule ^payflow/?$    /product/payflow    [R=301,L,NE]
-RewriteRule ^learnflow/?$  /product/learnflow  [R=301,L,NE]
 # 能力二级目录：/capability/{key} 先 301 到总页锚点（融合形态落地后填真页）
 RewriteRule ^capability/([a-z0-9_-]+)/?$ capability.php?cap=$1 [L,QSA]
 RewriteRule ^capability/?$ capability.php [L,QSA]
