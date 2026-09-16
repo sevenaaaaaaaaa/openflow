@@ -344,8 +344,8 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   <section id="matrix" class="sec reveal" data-od-anchor data-od-id="product-matrix">
     <div class="sec-head center">
       <span class="kicker">产品矩阵</span>
-      <h2>芭乐派不是一个产品，是一套互相衔接的系统</h2>
-      <p class="note">OpenFlow 是底座，MFlow / Webs Flow / UserLoop 是能力域的产品化</p>
+      <h2>五个独立产品，API 互相增益</h2>
+      <p class="note">OpenFlow 是全家桶；MFlow / Webs Flow / UserLoop / inFlow 是独立产品，按人群各收割一域</p>
     </div>
     <div class="cols n4" style="text-align:left">
       <a href="/product" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--accent);border-radius:var(--r-md);background:var(--accent-soft)">
@@ -359,6 +359,9 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       </a>
       <a href="/userloop" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
         <b style="font-size:15px">UserLoop</b><span class="note" style="margin:0">用户行为循环 · 埋点 / 画像 / 分群 / 旅程</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
+      </a>
+      <a href="/inflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+        <b style="font-size:15px">inFlow</b><span class="note" style="margin:0">情报增长站 · 趋势 / 舆情 / 竞品</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
       </a>
     </div>
   </section>
