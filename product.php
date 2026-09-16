@@ -340,6 +340,29 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     </div>
   </section>
 
+  <!-- ══ 产品矩阵 ══ -->
+  <section id="matrix" class="sec reveal" data-od-anchor data-od-id="product-matrix">
+    <div class="sec-head center">
+      <span class="kicker">产品矩阵</span>
+      <h2>芭乐派不是一个产品，是一套互相衔接的系统</h2>
+      <p class="note">OpenFlow 是底座，MFlow / Webs Flow / UserLoop 是能力域的产品化</p>
+    </div>
+    <div class="cols n4" style="text-align:left">
+      <a href="/product" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--accent);border-radius:var(--r-md);background:var(--accent-soft)">
+        <b style="font-size:15px">OpenFlow</b><span class="note" style="margin:0">增长操作系统 · 四力合一的底座</span><span style="color:var(--accent);font-size:13px;font-weight:700">当前页 →</span>
+      </a>
+      <a href="/mflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+        <b style="font-size:15px">MFlow</b><span class="note" style="margin:0">营销流程引擎 · 触达 / 工作流 / 实验</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
+      </a>
+      <a href="/webs-flow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+        <b style="font-size:15px">Webs Flow</b><span class="note" style="margin:0">建站与页面流 · 35 区块 / 组件工厂 / 无头 CMS</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
+      </a>
+      <a href="/userloop" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+        <b style="font-size:15px">UserLoop</b><span class="note" style="margin:0">用户行为循环 · 埋点 / 画像 / 分群 / 旅程</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
+      </a>
+    </div>
+  </section>
+
   <!-- ══ 收尾 CTA ══ -->
   <section id="next" class="reveal" data-od-anchor data-od-id="product-cta">
     <div class="cta-band">
