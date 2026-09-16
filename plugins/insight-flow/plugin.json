@@ -1,0 +1,16 @@
+{
+    "id": "insight-flow",
+    "name": "Insight Flow 增长情报",
+    "version": "1.0.0",
+    "description": "对接 Insight Flow（insFlow）增长情报系统：行为事件出站喂给 IF 做旅程/漏斗分析，IF 洞察回读供后台卡片与 GrowthBrain 消费。",
+    "author": "Insight Flow",
+    "enabled_by_default": false,
+    "permissions": [
+        "hooks",
+        "config",
+        "log",
+        "http",
+        "api",
+        "schedule"
+    ]
+}
