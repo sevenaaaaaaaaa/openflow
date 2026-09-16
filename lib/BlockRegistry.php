@@ -30,6 +30,9 @@ function block_types(): array {
         'gallery' => '图片画廊', 'form' => '表单嵌入', 'newsletter' => '订阅表单',
         'video' => '视频嵌入', 'contact' => '联系表单', 'pricing' => '价格表',
         'timeline' => '时间线', 'comparison' => '对比表',
+        'journey' => '旅程步骤', 'bento' => 'Bento 网格', 'marquee' => '滚动横幅',
+        'accordion' => '手风琴', 'before-after' => '前后对比', 'showcase' => '编号展示',
+        'tool-grid' => '工具网格',
         'module' => '引用模块库',
     ];
     // 合并用户自定义模块（模块工厂）：key 不与内置冲突时加入
@@ -59,6 +62,8 @@ function block_builtin_categories(): array {
         'faq' => 'content', 'gallery' => 'media', 'form' => 'convert', 'newsletter' => 'convert',
         'video' => 'media', 'contact' => 'convert', 'pricing' => 'commerce', 'timeline' => 'layout',
         'comparison' => 'commerce', 'module' => 'other',
+        'journey' => 'layout', 'bento' => 'media', 'marquee' => 'media', 'accordion' => 'layout',
+        'before-after' => 'media', 'showcase' => 'layout', 'tool-grid' => 'content',
     ];
 }
 
@@ -207,6 +212,21 @@ function builder_render_block(array $b): string {
             return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . ($content ? '<div class="prose timeline">' . $content . '</div>' : '<div class="empty">配置时间线条目</div>') . '</section>';
         case 'comparison':
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="scroll-x">' . $content . '</div>' : '<div class="empty">配置对比项</div>') . '</section>';
+        /* ── Lovart 风格扩展区块：内容 = 子项 HTML，CSS archetype 负责布局 ── */
+        case 'journey':   // 旅程步骤：子项 <div><h4>01</h4><h3>标题</h3><p>描述</p></div>，自动编号
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="steps">' . ($content ?: '<div class="empty">每步一个 &lt;div&gt;：&lt;h3&gt;标题&lt;/h3&gt;&lt;p&gt;描述&lt;/p&gt;</div>') . '</div></section>';
+        case 'bento':     // Bento 网格：子项 <div data-w="2">宽卡</div>，不等宽拼贴
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="bento">' . ($content ?: '<div class="empty">每张卡一个 &lt;div&gt;，data-w=&quot;2&quot; 表示跨两列</div>') . '</div></section>';
+        case 'marquee':   // 滚动横幅：子项 <img>/<div>，无缝滚动（悬停暂停）
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="marquee"><div class="marquee-track">' . $content . $content . '</div></div></section>';
+        case 'accordion': // 手风琴：子项 <details><summary>标题</summary><p>内容</p></details>
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="hacc">' . ($content ?: '<details open><summary>面板标题</summary><p>面板内容</p></details>') . '</div></section>';
+        case 'before-after': // 前后对比：前两个 <img>（前/后），悬停或拖动查看
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="ba-wrap">' . ($content ?: '<div class="empty">放两张 &lt;img&gt;：改版前 / 改版后</div>') . '</div><div class="ba-labels"><span>Before</span><span>After</span></div></section>';
+        case 'showcase':  // 编号展示：子项 <div><h3>标题</h3><p>描述</p></div><img>，图文交错 + 自动编号
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="showcase">' . ($content ?: '<div class="empty">标题/描述与图片交替排列</div>') . '</div></section>';
+        case 'tool-grid': // 工具网格：子项 <div><span class="tg-tag">标签</span><h3>名称</h3><p>描述</p><em>★ 4.9</em></div>
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="toolgrid">' . ($content ?: '<div class="empty">每张工具卡一个 &lt;div&gt;</div>') . '</div></section>';
         case 'testimonials':
         case 'logo-wall':
         case 'faq':

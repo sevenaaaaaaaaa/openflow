@@ -885,3 +885,79 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 .gcov.lg.v4 .gc-orbit{width:30%;top:50%}
 .a-card .cov .gcov{position:absolute;inset:0}
 .a-card:hover .gcov .gc-t{color:var(--gc)}
+
+/* ═══════════ Lovart 风格扩展区块（journey/bento/marquee/accordion/before-after/showcase/tool-grid） ═══════════ */
+/* ── journey：编号步骤流（自动 CSS 计数器） ── */
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;counter-reset:stp}
+.steps>div{position:relative;display:flex;flex-direction:column;gap:10px;padding:22px 18px 18px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(12px) saturate(150%);transition:transform .25s var(--ease-out),border-color .25s}
+.steps>div:hover{transform:translateY(-3px);border-color:var(--accent)}
+.steps>div::before{counter-increment:stp;content:"0" counter(stp);font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent)}
+.steps>div h3{font-size:16.5px;font-weight:800;letter-spacing:-.01em;line-height:1.4}
+.steps>div p{font-size:13.5px;color:var(--muted);line-height:1.75;margin:0}
+.steps>div img{width:100%;border-radius:var(--r-sm);object-fit:cover;aspect-ratio:4/3}
+.steps.s4{grid-template-columns:repeat(4,1fr)}
+.steps.s3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:900px){.steps,.steps.s4{grid-template-columns:repeat(2,1fr)}.steps.s3{grid-template-columns:1fr}}
+@media (max-width:560px){.steps{grid-template-columns:1fr}}
+/* ── bento：不等宽拼贴网格 ── */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.bento>div{display:flex;flex-direction:column;gap:8px;padding:22px;border-radius:var(--r-md);border:1px solid var(--border);background:linear-gradient(160deg,var(--accent-soft),transparent 55%),var(--surface);backdrop-filter:blur(12px);min-height:150px;overflow:hidden;transition:transform .25s var(--ease-out),box-shadow .25s}
+.bento>div:hover{transform:translateY(-3px);box-shadow:var(--shadow-sm)}
+.bento>div[data-w="2"]{grid-column:span 2}
+.bento>div[data-w="3"]{grid-column:span 3}
+.bento>div[data-w="4"]{grid-column:span 4}
+.bento>div[data-r="2"]{grid-row:span 2}
+.bento>div h3{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.bento>div p{font-size:13.5px;color:var(--muted);line-height:1.7;margin:0}
+.bento>div img{width:100%;border-radius:var(--r-sm);object-fit:cover;flex:1;min-height:0}
+.bento>div .bg{position:absolute;inset:0;z-index:-1;object-fit:cover}
+@media (max-width:900px){.bento{grid-template-columns:repeat(2,1fr)}.bento>div{grid-column:span 2!important}}
+/* ── marquee：无缝滚动横幅 ── */
+.marquee{overflow:hidden;border-radius:var(--r-md);border:1px solid var(--border);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.marquee-track{display:flex;gap:16px;width:max-content;padding:18px 0;animation:of-marquee 40s linear infinite}
+.marquee:hover .marquee-track{animation-play-state:paused}
+.marquee-track>*{flex:0 0 auto;width:240px;aspect-ratio:16/10;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border-soft)}
+.marquee-track>div{display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:20px;color:var(--muted);background:var(--surface)}
+@keyframes of-marquee{to{transform:translateX(calc(-50% - 8px))}}
+@media (prefers-reduced-motion:reduce){.marquee-track{animation:none}}
+/* ── hacc：手风琴（桌面横排展开，移动端纵向） ── */
+.hacc{display:flex;gap:10px;height:380px}
+.hacc details{flex:1;position:relative;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(12px);overflow:hidden;transition:flex .45s var(--ease-spring);cursor:pointer}
+.hacc details[open],.hacc details:hover{flex:3.2}
+.hacc summary{list-style:none;writing-mode:vertical-rl;padding:20px 0;font-size:15px;font-weight:800;letter-spacing:.04em;height:100%;display:flex;align-items:center;color:var(--fg);white-space:nowrap}
+.hacc summary::-webkit-details-marker{display:none}
+.hacc details>*:not(summary){opacity:0;transition:opacity .3s .15s}
+.hacc details[open]>*:not(summary),.hacc details:hover>*:not(summary){opacity:1}
+.hacc .hacc-body{position:absolute;top:0;right:0;bottom:0;width:64%;padding:24px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;background:linear-gradient(180deg,transparent 30%,var(--hover) 140%)}
+.hacc .hacc-body img{position:absolute;inset:0;z-index:-1;width:100%;height:100%;object-fit:cover}
+.hacc .hacc-body p{font-size:13.5px;color:var(--muted);line-height:1.7;margin:0}
+.hacc .hacc-body a{font-size:13px;font-weight:700;color:var(--accent);text-decoration:none}
+@media (max-width:860px){.hacc{flex-direction:column;height:auto}.hacc summary{writing-mode:horizontal-tb;padding:14px 18px}.hacc .hacc-body{position:static;width:auto}}
+/* ── before-after：前后对比（悬停滑开） ── */
+.ba-wrap{position:relative;max-width:880px;margin:0 auto;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--border);aspect-ratio:16/9;--pos:50%}
+.ba-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ba-wrap img+img{clip-path:inset(0 0 0 var(--pos))}
+.ba-wrap::after{content:"";position:absolute;top:0;bottom:0;left:var(--pos);width:2px;background:#fff;box-shadow:0 0 12px oklch(0% 0 0/.4);pointer-events:none}
+.ba-labels{display:flex;justify-content:space-between;max-width:880px;margin:8px auto 0;font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.ba-labels span+span{color:var(--accent)}
+@media (hover:hover){.ba-wrap:hover{--pos:18%}}
+/* ── showcase：编号展示（图文交错） ── */
+.showcase{display:flex;flex-direction:column;gap:clamp(28px,5vw,56px);counter-reset:sc}
+.showcase>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center;counter-increment:sc}
+.showcase>div>img{width:100%;border-radius:var(--r-md);border:1px solid var(--border);object-fit:cover;aspect-ratio:16/10}
+.showcase>div:nth-child(even)>img{order:-1}
+.showcase>div>div{position:relative;padding-top:44px}
+.showcase>div>div::before{content:"0" counter(sc);position:absolute;top:0;left:0;font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:.1em;color:var(--accent)}
+.showcase>div h3{font-size:clamp(20px,2.4vw,26px);font-weight:800;letter-spacing:-.02em;line-height:1.3}
+.showcase>div p{font-size:15px;color:var(--muted);line-height:1.85;margin:10px 0 0}
+@media (max-width:760px){.showcase>div{grid-template-columns:1fr}.showcase>div:nth-child(even)>img{order:0}}
+/* ── toolgrid：工具网格（标签 + 评分） ── */
+.toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.toolgrid>div{display:flex;flex-direction:column;gap:8px;padding:22px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(12px);transition:border-color .2s,transform .2s}
+.toolgrid>div:hover{border-color:var(--accent);transform:translateY(-2px)}
+.toolgrid .tg-tag{align-self:flex-start;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);background:var(--hover);padding:3px 10px;border-radius:999px}
+.toolgrid>div h3{font-size:16.5px;font-weight:800;letter-spacing:-.01em}
+.toolgrid>div p{font-size:13.5px;color:var(--muted);line-height:1.7;margin:0;flex:1}
+.toolgrid>div em{font-style:normal;font-family:var(--font-mono);font-size:12.5px;font-weight:700;color:var(--warn)}
+@media (max-width:900px){.toolgrid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.toolgrid{grid-template-columns:1fr}}
