@@ -303,6 +303,48 @@ admin_header('落地页构建器');
           </div>
 
           <div style="margin-top:12px">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <b style="font-size:13px">模块面板</b>
+              <button type="button" class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="cfOpen()">🤖 组件工厂：AI 造新模块</button>
+            </div>
+            <!-- 组件工厂：AI 生成自定义模块（描述 / 粘贴HTML / 网址 / 截图），保存后自动进模块面板 -->
+            <div id="cfModal" style="display:none;position:fixed;inset:0;z-index:200;background:oklch(20% .02 70/.4);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)cfClose()">
+              <div style="width:min(760px,94vw);max-height:88vh;overflow:auto;border-radius:18px;border:1px solid var(--border);background:var(--surface-strong);box-shadow:var(--shadow);padding:22px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                  <b style="font-size:16px">🤖 组件工厂</b>
+                  <span class="text-sm text-muted">描述 / 粘贴 HTML / 网址 / 截图 → 生成可复用模块</span>
+                  <button type="button" class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="cfClose()">✕</button>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+                  <button type="button" class="btn btn-s btn-sm cf-tab" data-m="describe" onclick="cfTab('describe',this)">✍️ 文字描述</button>
+                  <button type="button" class="btn btn-s btn-sm cf-tab" data-m="html" onclick="cfTab('html',this)">粘贴 HTML</button>
+                  <button type="button" class="btn btn-s btn-sm cf-tab" data-m="url" onclick="cfTab('url',this)">从网址学习</button>
+                  <button type="button" class="btn btn-s btn-sm cf-tab" data-m="screenshot" onclick="cfTab('screenshot',this)">📷 截图还原</button>
+                </div>
+                <div class="cf-pane" data-pane="describe">
+                  <textarea id="cfDesc" rows="3" class="inp" style="height:auto;width:100%;font-size:13.5px" placeholder="描述你要的模块，例：三步流程卡片，每步有编号、标题、描述；整体一行三个，移动端竖排"></textarea>
+                </div>
+                <div class="cf-pane" data-pane="html" style="display:none">
+                  <textarea id="cfHtml" rows="7" class="inp" style="height:auto;width:100%;font-size:12.5px;font-family:var(--mono)" placeholder="粘贴你的 HTML 片段（本地写的、现有页面上的都行）——AI 会把固定内容抽成字段，变成可复用模块"></textarea>
+                </div>
+                <div class="cf-pane" data-pane="url" style="display:none">
+                  <input type="url" id="cfUrl" class="inp" style="width:100%" placeholder="https:// 网址 —— 只学习版式结构，文案自动换成占位内容（不复制原文案）">
+                  <p class="text-xs" style="color:var(--faint);margin-top:6px">抓取由服务端完成（约 10 秒）。生成的模块是原创占位版式，不含原站受版权保护的内容。</p>
+                </div>
+                <div class="cf-pane" data-pane="screenshot" style="display:none">
+                  <input type="file" id="cfShot" accept="image/png,image/jpeg,image/webp" style="width:100%;padding:8px;border:1.5px dashed var(--border);border-radius:10px;font-size:13px">
+                  <p class="text-sm text-muted" style="margin-top:6px">上传界面截图，视觉模型读图还原为模块。需要视觉模型（gpt-4o / claude / gemini 等）。</p>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;margin-top:14px">
+                  <button type="button" class="btn btn-primary" id="cfGo" onclick="cfRun()">🚀 生成模块</button>
+                  <span id="cfStatus" class="text-sm text-muted"></span>
+                </div>
+                <div id="cfResult" style="display:none;margin-top:14px;border:1.5px dashed var(--border);border-radius:10px;padding:12px;background:var(--bg)">
+                  <div class="text-xs" style="color:var(--faint);margin-bottom:6px">👁 渲染冒烟预览</div>
+                  <div id="cfPreview" style="border-radius:8px;overflow:hidden"></div>
+                </div>
+              </div>
+            </div>
             <input type="text" id="paletteSearch" placeholder="搜索模块…" oninput="paletteFilter()" style="width:100%;margin-bottom:8px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px">
             <div id="paletteTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
               <button type="button" class="btn btn-s btn-sm pal-tab" data-cat="all" onclick="paletteCat('all',this)">全部</button>
@@ -357,6 +399,62 @@ admin_header('落地页构建器');
 </div>
 
 <script>
+/* ── 组件工厂：AI 生成自定义模块 ── */
+var cfMode = 'describe';
+function cfOpen(){ document.getElementById('cfModal').style.display = 'flex'; }
+function cfClose(){ document.getElementById('cfModal').style.display = 'none'; }
+function cfTab(m, btn){
+  cfMode = m;
+  document.querySelectorAll('.cf-pane').forEach(function(p){ p.style.display = p.dataset.pane === m ? '' : 'none'; });
+  document.querySelectorAll('.cf-tab').forEach(function(b){ b.classList.toggle('primary', b === btn); });
+}
+function cfRun(){
+  var status = document.getElementById('cfStatus'), go = document.getElementById('cfGo');
+  var fd = new FormData(); fd.append('mode', cfMode);
+  if (cfMode === 'describe') {
+    var d = document.getElementById('cfDesc').value.trim();
+    if (!d) { status.textContent = '请先描述模块需求'; return; }
+    fd.append('desc', d);
+  } else if (cfMode === 'html') {
+    var h = document.getElementById('cfHtml').value.trim();
+    if (!h) { status.textContent = '请先粘贴 HTML'; return; }
+    fd.append('html', h);
+  } else if (cfMode === 'url') {
+    var u = document.getElementById('cfUrl').value.trim();
+    if (!/^https?:\/\//i.test(u)) { status.textContent = '请输入有效网址'; return; }
+    fd.append('url', u);
+  } else if (cfMode === 'screenshot') {
+    var f = document.getElementById('cfShot').files[0];
+    if (!f) { status.textContent = '请选择截图'; return; }
+    fd.append('image', f);
+  }
+  status.textContent = cfMode === 'screenshot' ? '视觉模型读图中…（约 20-40 秒）' : 'AI 生成中…（约 15-30 秒）';
+  go.disabled = true;
+  fetch('/api/ai-block.php', { method:'POST', body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      go.disabled = false;
+      if (d.ok) {
+        status.textContent = '✅ 模块「' + (d.module && d.module.name || '') + '」已创建';
+        // 渲染冒烟预览：用保存的 custom_html 粗略展示
+        var pv = document.getElementById('cfPreview'), box = document.getElementById('cfResult');
+        if (d.module && d.module.custom_html) {
+          pv.innerHTML = d.module.custom_html;
+          box.style.display = 'block';
+        }
+        setTimeout(function(){
+          status.textContent = '已加入模块面板——刷新页面后可从面板插入页面';
+          // 刷新面板：重新加载页面让 palette 出现新模块
+          if (confirm('模块已保存。是否刷新页面让新模块出现在面板里？')) location.reload();
+        }, 1800);
+      } else {
+        status.textContent = '失败：' + (d.error || '未知错误');
+        if (d.errors && d.errors.length) status.textContent += '（' + d.errors.join('；') + '）';
+      }
+    })
+    .catch(function(e){ go.disabled = false; status.textContent = '请求失败：' + e; });
+}
+
 function aiGenerate() {
   var desc = document.getElementById('aiDesc').value.trim();
   var msg = document.getElementById('aiMsg');
