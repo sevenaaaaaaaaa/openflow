@@ -11,6 +11,14 @@ require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
 
+// 能力二级目录 /capability/{key}：先 301 到总页锚点（融合形态落地后在此填真页）
+$__cap = preg_replace('/[^a-z0-9_-]/', '', (string)($_GET['cap'] ?? ''));
+if ($__cap !== '') {
+    header('Location: /capability#cap-' . $__cap, true, 301);
+    header('Cache-Control: public, max-age=86400');
+    exit;
+}
+
 $I = [
   'bolt'   => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg>',
   'users'  => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.5c2.8.3 5 2.6 5 5.5"/></svg>',

@@ -29,10 +29,10 @@ function upsert_page(string $slug, array $page): void {
 function matrix_block(string $self, callable $k): array {
     $items = [
         ['openflow',  'OpenFlow',  '全站增长操作系统', '四力合一 · all-in-one 人群', '/product'],
-        ['mflow',     'MFlow',     '轻量内容生产与分发', '不强依赖 CMS/CDP · 兼容现成生态', '/mflow'],
-        ['webs-flow', 'Webs Flow', '落地页专精', '投放承接页以小时计 · 无需 CMS', '/webs-flow'],
-        ['userloop',  'UserLoop',  '全域营销数据中枢', '独立运行 · 对接任何 MA', '/userloop'],
-        ['inflow',    'inFlow',    '情报增长站', '外部数据驱动 · 趋势/舆情/竞品', '/inflow'],
+        ['mflow',     'MFlow',     '轻量内容生产与分发', '不强依赖 CMS/CDP · 兼容现成生态', '/product/mflow'],
+        ['webs-flow', 'Webs Flow', '落地页专精', '投放承接页以小时计 · 无需 CMS', '/product/webs-flow'],
+        ['userloop',  'UserLoop',  '全域营销数据中枢', '独立运行 · 对接任何 MA', '/product/userloop'],
+        ['inflow',    'inFlow',    '情报增长站', '外部数据驱动 · 趋势/舆情/竞品', '/product/inflow'],
     ];
     $html = '';
     foreach ($items as $it) {
