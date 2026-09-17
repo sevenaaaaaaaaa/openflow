@@ -306,9 +306,45 @@ try {
 $agentPostRun = [];
 try { require_once __DIR__ . '/../lib/AgentPost.php'; $agentPostRun = agent_posts_cron(); } catch (Throwable $e) { $agentPostRun = ['error' => $e->getMessage()]; }
 
+// ── 定时备份（后台「⏰ 定时备份」设置的执行者；此前该设置无处理器、无执行者）──
+$backupRun = ['status' => 'skipped'];
+try {
+    require_once __DIR__ . '/../lib/BackupSystem.php';
+    $backupRun = backup_run_if_due();
+} catch (Throwable $e) { $backupRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
+
+// ── 站点巡检告警（每日一次；异常时走已配置的通知渠道）──
+$healthRun = ['status' => 'skipped'];
+try {
+    $hfile = DATA_DIR . '/health-alert.json';
+    $hst = json_read($hfile);
+    if (($hst['date'] ?? '') !== date('Y-m-d')) {
+        $paths = ['/', '/product', '/capability', '/courses', '/academy', '/community', '/events', '/pricing', '/help', '/api/public-content?type=articles&limit=1'];
+        $bad = [];
+        foreach ($paths as $hp) {
+            $ch = curl_init('https://127.0.0.1' . $hp);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8, CURLOPT_CONNECTTIMEOUT => 4,
+                CURLOPT_SSL_VERIFYPEER => false, CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_HTTPHEADER => ['Host: nownexts.com'],
+            ]);
+            $body = (string)curl_exec($ch);
+            $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if ($code !== 200 || $body === '') $bad[] = $hp . ' → ' . ($code ?: 'ERR');
+        }
+        if ($bad) {
+            require_once __DIR__ . '/../lib/NotifyChannels.php';
+            notify_channels_send('站点巡检异常 ' . date('m-d H:i'), implode("\n", $bad), rtrim(SITE_URL, '/') . '/xmp/site-health');
+        }
+        $healthRun = ['status' => $bad ? 'alerted' : 'ok', 'bad' => $bad];
+        json_write($hfile, ['date' => date('Y-m-d'), 'result' => $healthRun, 'ts' => date('Y-m-d H:i:s')]);
+    }
+} catch (Throwable $e) { $healthRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
+
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge,
                   'webhook_retry' => $webhookRetry, 'plugin_cron' => $pluginCron, 'product_scout' => $scout,
                   'geo_run' => $geoRun, 'conv_run' => $convRun, 'trend_run' => $trendRun,
-                  'agent_posts' => $agentPostRun,
+                  'agent_posts' => $agentPostRun, 'backup' => $backupRun, 'health' => $healthRun,
                   'time' => date('Y-m-d H:i:s')]);
