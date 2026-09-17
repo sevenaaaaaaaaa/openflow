@@ -131,3 +131,25 @@ SHELL 清单里列了 scope 外的 `tokens/modules/site-shell/inject`（缓存�
 两条规矩：
 1. **换图必须改 URL**——在页面/区块里给图片加 `?v=YYYYMMDD`（示例见 `scripts/seed-demo-hub-v2.php` 的 `$SHOT_V`）
 2. **sync-r2.py 已修**：源图变更时会重新生成 WebP（不再因已存在而跳过）
+
+### ⚠️ rsync 静默失败（2026-09-17 实测）
+
+本机 `rsync` 是 Apple **openrsync**（`protocol version 29`）。实测对 **子目录文件**（`assets/*.css`、`includes/*.php`）会出现「报告 Transfer starting / 退出码 0，但远端文件未变」的静默失败：
+
+```bash
+# 危险：可能什么都没传
+rsync -az assets/modules.css root@host:/www/wwwroot/nownexts_com/
+
+# 核对（必做）——md5 不一致就是没传
+md5 -q assets/modules.css
+ssh -p 28766 root@172.96.253.73 "md5sum /www/wwwroot/nownexts_com/assets/modules.css"
+```
+
+**结论**：改 `assets/` 或 `includes/` 下的文件时，**用 `scp`**，并在部署后核对 md5：
+
+```bash
+scp -P 28766 assets/modules.css root@172.96.253.73:/www/wwwroot/nownexts_com/assets/modules.css
+scp -P 28766 includes/site-nav.php root@172.96.253.73:/www/wwwroot/nownexts_com/includes/site-nav.php
+```
+
+根目录的页面文件（`*.php`）用 rsync 目前正常，但同样建议核对关键文件 md5。
