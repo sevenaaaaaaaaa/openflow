@@ -46,7 +46,8 @@ rsync -az --delete -e "ssh -p 28766" \
 
 # 2) 若改了 assets/tokens.css|modules.css|site-shell.js|inject.js 等前端资产：
 #    a. bump includes/site-nav.php 的 OF_SHELL_VER（否则用户 7 天看不到新样式）
-#    b. python3 sync-r2.py            # 上传到 R2
+#    b. export R2_KEY=... R2_SECRET=...   # 值见 DEPLOY-SECRETS.md（脚本已不硬编码）
+#       python3 sync-r2.py                 # 上传到 R2
 #    c. purge CF（见第 4 步）
 
 # 3) 清页面缓存
