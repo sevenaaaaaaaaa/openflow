@@ -83,10 +83,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>定价 | 芭乐派 · OpenFlow</title>
 <?php if (function_exists('seo_head')): seo_head(['title' => '定价 | 芭乐派 · OpenFlow', 'description' => 'OpenFlow 定价：开源自部署永久免费；云托管个人版 ¥99/月起、增长版 ¥299/月；私有化与定制按需报价。核心能力无功能锁，商业版卖的是托管与服务。', 'canonical' => site_config_get('site_url') . '/pricing']); endif; ?>
-<script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 定价页局部：方案卡 / 对比表 */
 .plans{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px;align-items:stretch}

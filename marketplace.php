@@ -74,10 +74,7 @@ if ($__pr['count'] > 0) $__ld['aggregateRating'] = ['@type' => 'AggregateRating'
 <title>生态市场 | <?=site_config_get("site_name")?></title>
 <meta name="description" content="OpenFlow 生态市场：官方与社区开发的插件、技能与主题，一键安装扩展你的增长系统能力。">
 <?php endif; ?>
-<script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 生态市场独有：资产卡、详情头、提示词块。其余全部来自 modules.css。 */
 .search{display:flex;gap:10px;max-width:520px}
