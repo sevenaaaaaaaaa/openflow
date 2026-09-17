@@ -22,6 +22,7 @@ $catLabels = [
     'ai-create' => 'AI 创作', 'content' => 'AI 创作', 'agent' => 'Agent 生态', 'ai' => 'Agent 生态', 'ai-agent' => 'Agent 生态',
     'trend' => '行业趋势', 'insight' => '行业趋势', 'ai-code' => 'AI 编程', 'ai-marketing' => 'AI 营销', 'ai-ops' => 'AI 运营',
     'ai-sell' => 'AI 销售', 'ai-data' => '数据分析', 'ai-user' => '用户运营', 'ai-build' => 'AI 建站',
+    'growth' => '增长策略', 'strategy' => '增长策略',
 ];
 foreach (get_categories('article') ?: [] as $c) { if (!empty($c['key']) && !empty($c['name'])) $catLabels[$c['key']] = $c['name']; }
 $catOf = function (array $a) use ($catLabels): array {
