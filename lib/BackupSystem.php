@@ -4,6 +4,11 @@
  */
 require_once __DIR__ . '/../admin/config.php';
 
+// ROOT_DIR：备份时用来定位 admin/config.php、.htaccess 等项目根文件。
+// 以前这个常量从未被定义 → createFullBackup() 一调用就抛 "Undefined constant ROOT_DIR"，
+// 也就是说后台的「创建备份」按钮从来没成功过。这里补上定义（幂等）。
+if (!defined('ROOT_DIR')) define('ROOT_DIR', dirname(__DIR__));
+
 class BackupSystem {
     private static string $backupDir = DATA_DIR . '/backups';
 
@@ -208,4 +213,86 @@ class BackupSystem {
         }
         return $size;
     }
+}
+
+/* ══════════════════════════════════════════════════════════════
+ * 定时备份（2026-09-17 补）
+ *
+ * 背景：后台「⏰ 定时备份」表单以前是个**死表单**——它的 POST action=save_schedule
+ * 没有任何处理器，配置存不下来；也没有任何执行者，所以永远不会有自动备份。
+ * 这里补上：日程持久化 + 到期判定 + 保留份数清理，由 /api/cron.php（每分钟）驱动。
+ * ══════════════════════════════════════════════════════════════ */
+
+function backup_schedule_file(): string { return DATA_DIR . '/backup-schedule.json'; }
+
+function backup_schedule_get(): array {
+    $d = json_read(backup_schedule_file());
+    return [
+        'enabled'   => (bool)($d['enabled'] ?? false),
+        'frequency' => in_array($d['frequency'] ?? 'daily', ['daily', 'weekly', 'monthly'], true) ? $d['frequency'] : 'daily',
+        'keep'      => max(1, min(30, (int)($d['keep'] ?? 7))),
+        'last_run'  => (string)($d['last_run'] ?? ''),
+    ];
+}
+
+function backup_schedule_set(array $in): array {
+    $cfg = backup_schedule_get();
+    $cfg['enabled']   = !empty($in['enabled']);
+    $cfg['frequency'] = in_array($in['frequency'] ?? '', ['daily', 'weekly', 'monthly'], true) ? $in['frequency'] : $cfg['frequency'];
+    $cfg['keep']      = max(1, min(30, (int)($in['keep'] ?? $cfg['keep'])));
+    json_write(backup_schedule_file(), $cfg);
+    return $cfg;
+}
+
+/** 是否到期：按频率比较 last_run */
+function backup_is_due(array $cfg, ?int $now = null): bool {
+    if (empty($cfg['enabled'])) return false;
+    $now = $now ?? time();
+    $last = strtotime($cfg['last_run'] ?: '1970-01-01');
+    if ($last === false) $last = 0;
+    return match ($cfg['frequency']) {
+        'weekly'  => ($now - $last) >= 7 * 86400,
+        'monthly' => ($now - $last) >= 28 * 86400,
+        default   => ($now - $last) >= 86400,
+    };
+}
+
+/** 清理旧的自动备份，只保留最近 keep 份（只动 auto_ 前缀，手动备份不碰） */
+function backup_prune_auto(int $keep): int {
+    $dir = defined('BACKUP_DIR') ? BACKUP_DIR : (DATA_DIR . '/backups');
+    $items = [];
+    foreach (glob($dir . '/auto_*') ?: [] as $p) $items[] = $p;
+    usort($items, fn($a, $b) => filemtime($b) <=> filemtime($a));   // 新→旧
+    $removed = 0;
+    foreach (array_slice($items, max(0, $keep)) as $p) {
+        if (is_dir($p)) { backup_rmdir_recursive($p); } else { @unlink($p); }
+        $removed++;
+    }
+    return $removed;
+}
+
+/** 到期则执行一次自动备份（cron 调用；返回执行结果用于上报） */
+function backup_run_if_due(): array {
+    $cfg = backup_schedule_get();
+    if (!backup_is_due($cfg)) return ['status' => 'skipped'];
+    try {
+        $path = BackupSystem::createFullBackup('auto_' . date('Ymd_His'));
+        $cfg['last_run'] = date('Y-m-d H:i:s');
+        json_write(backup_schedule_file(), $cfg);
+        $pruned = backup_prune_auto((int)$cfg['keep']);
+        return ['status' => 'done', 'file' => basename((string)$path), 'pruned' => $pruned];
+    } catch (Throwable $e) {
+        return ['status' => 'error', 'detail' => $e->getMessage()];
+    }
+}
+
+/** 递归删除（备份目录清理用；避免在类外调用私有方法） */
+function backup_rmdir_recursive(string $dir): void {
+    if (!is_dir($dir)) return;
+    foreach (scandir($dir) ?: [] as $f) {
+        if ($f === '.' || $f === '..') continue;
+        $p = $dir . '/' . $f;
+        is_dir($p) ? backup_rmdir_recursive($p) : @unlink($p);
+    }
+    @rmdir($dir);
 }
