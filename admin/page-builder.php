@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
                 }
             }
         } else {
-            foreach (['title','subtitle','content','image','bg_color','button_text','button_url','video_url','icon','columns','count','items','form_slug','layout','module_id'] as $fk) {
+            foreach (['title','subtitle','content','image','bg_color','button_text','button_url','button_text2','button_url2','video_url','icon','columns','count','items','form_slug','layout','module_id'] as $fk) {
                 if (isset($_POST['block_' . $fk][$bi])) $block[$fk] = $_POST['block_' . $fk][$bi];
             }
         }
@@ -280,6 +280,10 @@ admin_header('落地页构建器');
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                   <input type="text" name="block_button_text[]" value="<?=htmlspecialchars($blk['button_text']??'')?>" placeholder="按钮文字">
                   <input type="text" name="block_button_url[]" value="<?=htmlspecialchars($blk['button_url']??'')?>" placeholder="按钮链接">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <input type="text" name="block_button_text2[]" value="<?=htmlspecialchars($blk['button_text2']??'')?>" placeholder="次按钮文字（选填）">
+                  <input type="text" name="block_button_url2[]" value="<?=htmlspecialchars($blk['button_url2']??'')?>" placeholder="次按钮链接（选填）">
                 </div>
                 <?php endif; ?>
                 <?php /* 可视化所见即所得：每个块显示真实渲染预览（builder_render_block），随编辑实时更新 */ ?>

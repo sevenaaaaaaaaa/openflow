@@ -161,7 +161,14 @@ function builder_render_block(array $b): string {
     $btnUrl = htmlspecialchars($b['button_url'] ?? '');
     $bg = $b['bg_color'] ?? '';
     $bgStyle = $bg ? ' style="background:' . htmlspecialchars($bg) . ';border-radius:var(--r-lg);padding:clamp(28px,4vw,48px)"' : '';
-    $btn = $btnText && $btnUrl ? '<div class="cta-row"><a class="btn primary" href="' . $btnUrl . '">' . $btnText . '</a></div>' : '';
+    $btnText2 = htmlspecialchars($b['button_text2'] ?? '');
+    $btnUrl2  = htmlspecialchars($b['button_url2'] ?? '');
+    $btn = ($btnText && $btnUrl) || ($btnText2 && $btnUrl2)
+        ? '<div class="cta-row">'
+          . ($btnText && $btnUrl ? '<a class="btn primary" href="' . $btnUrl . '">' . $btnText . '</a>' : '')
+          . ($btnText2 && $btnUrl2 ? '<a class="btn ghost" href="' . $btnUrl2 . '">' . $btnText2 . '</a>' : '')
+          . '</div>'
+        : '';
     $head = fn(string $tag = 'h2', bool $center = true) => '<div class="sec-head' . ($center ? ' center' : '') . '">' . ($sub && $tag === 'h1' ? '<span class="kicker">' . $sub . '</span>' : '') . '<' . $tag . '>' . $title . '</' . $tag . '>' . ($sub && $tag !== 'h1' ? '<p class="lead">' . $sub . '</p>' : '') . '</div>';
     $muted = fn(string $html) => '<div class="prose" style="color:var(--muted)">' . $html . '</div>';
     // 用户自定义模块（模块工厂 schema）：非内置类型且能取到 schema → 走通用渲染
@@ -212,11 +219,24 @@ function builder_render_block(array $b): string {
         case 'stats':
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="stats">' . $content . '</div>' : '<div class="empty">配置数据</div>') . '</section>';
         case 'form':
-            return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . '<div class="form-card">' . ($content ?: '<p class="note" style="text-align:center">' . ($sub ?: '配置表单 slug') . '</p>') . '</div></section>';
+            // content 可为：①内联 HTML；②表单 slug/id（如 appointment）→ 渲染真实可提交表单
+            $formHtml = $content;
+            if ($formHtml !== '' && !str_contains($formHtml, '<')) {
+                require_once __DIR__ . '/BlockSchema.php';
+                $formHtml = blockschema_render_form(trim($formHtml));
+            }
+            // 锚点用 anchor 字段（不能叫 id：块契约里 id 是身份键，会被归一化吃掉）
+            $fId = !empty($b['anchor']) ? ' id="' . htmlspecialchars((string)$b['anchor'], ENT_QUOTES) . '"' : '';
+            return '<section' . $fId . ' class="sec reveal reader"' . $bgStyle . '>' . $head() . '<div class="form-card">' . ($formHtml !== '' ? $formHtml : '<p class="note" style="text-align:center">' . ($sub ?: '配置表单 slug') . '</p>') . '</div></section>';
         case 'video':
             return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . '<div class="sp-win">' . ($content ?: '<div class="empty" style="margin:18px;border:none">配置视频地址</div>') . '</div></section>';
         case 'contact':
-            return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . '<div class="form-card">' . ($content ?: '<p class="note" style="text-align:center">配置联系方式或表单 slug</p>') . '</div></section>';
+            $cHtml = $content;
+            if ($cHtml !== '' && !str_contains($cHtml, '<')) {
+                require_once __DIR__ . '/BlockSchema.php';
+                $cHtml = blockschema_render_form(trim($cHtml));
+            }
+            return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . '<div class="form-card">' . ($cHtml !== '' ? $cHtml : '<p class="note" style="text-align:center">配置联系方式或表单 slug</p>') . '</div></section>';
         case 'pricing':
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="cols n3">' . $content . '</div>' : '<div class="empty">配置价格方案</div>') . $btn . '</section>';
         case 'timeline':

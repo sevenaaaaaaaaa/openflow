@@ -65,7 +65,7 @@ HTML];
 
 /** 预约诊断表单（转化出口） */
 function block_form(callable $k): array {
-    return ['_type' => 'form', '_key' => $k(),
+    return ['_type' => 'form', '_key' => $k(), 'anchor' => 'diagnose',
         'title' => '不知道从哪开始？先做一次增长诊断',
         'subtitle' => '免费 · 30 分钟 · 由人给出判断',
         'content' => 'appointment'];
@@ -88,7 +88,7 @@ upsert_page('demo-products', [
     'seo_title' => '产品矩阵 — 七个独立产品，按需组合 | 芭乐派',
     'seo_desc' => '不必为不需要的能力付费：OpenFlow 全家桶、MFlow 内容分发、Webs Flow 落地页、UserLoop 全域数据、inFlow 情报、PayFlow 收款、LearnFlow 课程交付。零强制绑定，API 互通。',
     'blocks' => [
-        ['_type' => 'hero', '_key' => $k(), 'title' => '七个独立产品，按需组合成一套系统', 'subtitle' => '产品矩阵 · 总览', 'content' => '不必为一个用不上的大系统付费。每件产品都能单独跑、单独见效；组合起来，就是一套自转的增长系统。互通走 API——拔掉任何一个，其余照常运行。', 'button_text' => '看七个产品', 'button_url' => '#products'],
+        ['_type' => 'hero', '_key' => $k(), 'title' => '七个独立产品，按需组合成一套系统', 'subtitle' => '产品矩阵 · 总览', 'content' => '不必为一个用不上的大系统付费。每件产品都能单独跑、单独见效；组合起来，就是一套自转的增长系统。互通走 API——拔掉任何一个，其余照常运行。', 'button_text' => '看七个产品', 'button_url' => '#products', 'button_text2' => '预约增长诊断', 'button_url2' => '#diagnose'],
         ['_type' => 'proof', '_key' => $k(), 'content' => <<<HTML
 <div><b>7</b><span>独立产品</span></div>
 <div><b>0</b><span>强制绑定</span></div>
@@ -158,7 +158,7 @@ upsert_page('demo-capabilities', [
     'seo_title' => '能力全景 — TIPS 四力 + 三层支撑（42 个真实模块） | 芭乐派',
     'seo_desc' => 'TIPS 四力（触达/洞察/个性化/销售）+ 行动脊柱、增长引擎、永久开源。42 个模块全部可在代码与后台核验，每项能力标注承载产品。',
     'blocks' => [
-        ['_type' => 'hero', '_key' => $k(), 'title' => '四力加三层支撑，能力全部可核验', 'subtitle' => '能力 · 全景', 'content' => 'TIPS 四力回答「增长靠什么」：触达、洞察、个性化、销售。行动脊柱、增长引擎与开源底座保证它们真的跑起来。每一项能力都标注了由哪个产品承载、多少个真实模块。', 'button_text' => '看 42 个模块', 'button_url' => '#modules'],
+        ['_type' => 'hero', '_key' => $k(), 'title' => '四力加三层支撑，能力全部可核验', 'subtitle' => '能力 · 全景', 'content' => 'TIPS 四力回答「增长靠什么」：触达、洞察、个性化、销售。行动脊柱、增长引擎与开源底座保证它们真的跑起来。每一项能力都标注了由哪个产品承载、多少个真实模块。', 'button_text' => '看 42 个模块', 'button_url' => '#modules', 'button_text2' => '去产品矩阵', 'button_url2' => '/demo/products'],
         ['_type' => 'proof', '_key' => $k(), 'content' => <<<HTML
 <div><b>4</b><span>核心四力</span></div>
 <div><b>42</b><span>真实模块（可核验）</span></div>
@@ -217,7 +217,7 @@ upsert_page('demo-home-v2', [
     'seo_title' => '芭乐派 — 一人公司的增长系统矩阵',
     'seo_desc' => '一个人做不了所有事。芭乐派把增长拆成七件可组合的产品：整套系统、内容分发、落地页、全域数据、外部情报、收款变现、课程交付。开源、可自托管、数据主权在你。',
     'blocks' => [
-        ['_type' => 'hero', '_key' => $k(), 'title' => '一个人做不了所有事，但可以让系统替你跑', 'subtitle' => '芭乐派 · 增长系统矩阵', 'content' => '我们不卖万能工具，卖的是一套按需组合的增长系统：从整套操作系统到单点能力，七件产品各自独立、API 互通。核心开源、可自托管——你专注判断，其余交给系统。', 'button_text' => '免费开始（开源）', 'button_url' => '/courses'],
+        ['_type' => 'hero', '_key' => $k(), 'title' => '一个人做不了所有事，但可以让系统替你跑', 'subtitle' => '芭乐派 · 增长系统矩阵', 'content' => '我们不卖万能工具，卖的是一套按需组合的增长系统：从整套操作系统到单点能力，七件产品各自独立、API 互通。核心开源、可自托管——你专注判断，其余交给系统。', 'button_text' => '免费开始（开源）', 'button_url' => '/courses', 'button_text2' => '看产品矩阵', 'button_url2' => '/demo/products'],
         ['_type' => 'ticker', '_key' => $k(), 'title' => '现在就在跑的数字', 'subtitle' => '可核验', 'content' => <<<HTML
 <div data-n="502"><b>0</b><span>已发布文章</span></div>
 <div data-n="43"><b>0</b><span>展示区块</span></div>
