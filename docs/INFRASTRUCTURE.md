@@ -84,8 +84,14 @@ Worker 源码/部署脚本在仓库 `deploy/`（如 `r2-media-worker.js`、`depl
 |---|---|
 | 桶 | `nownexts-static` |
 | Endpoint | `https://00d02a54a3c0f7a3f6c3fc75068e29c5.r2.cloudflarestorage.com` |
-| 同步工具 | `python3 sync-r2.py`（本地 → R2，仅传变更） |
-| 视频上传 | `python3 deploy/upload-r2-video.py 本地.mp4` → `nownexts.com/media/…` |
+| 同步工具 | `python3 sync-r2.py`（本地 → R2，仅传变更）**需环境变量**（凭据已从代码移除） |
+| 视频上传 | `python3 deploy/upload-r2-video.py 本地.mp4` → `nownexts.com/media/…`（同样读环境变量） |
+
+```bash
+# 凭据从环境变量注入（值见 gitignored 的 docs/DEPLOY-SECRETS.md）
+export R2_KEY=... R2_SECRET=...
+python3 sync-r2.py
+```
 
 ### 2.4 常用操作
 
