@@ -66,7 +66,7 @@ HTML];
 /** 预约诊断表单（转化出口） */
 function block_form(callable $k): array {
     return ['_type' => 'form', '_key' => $k(), 'anchor' => 'diagnose',
-        'title' => '不知道从哪开始？先做一次增长诊断',
+        'title' => '30 分钟，告诉你哪一段最该交给 Agent',
         'subtitle' => '免费 · 30 分钟 · 由人给出判断',
         'content' => 'appointment'];
 }
@@ -89,6 +89,14 @@ function block_day(callable $k): array {
 <div data-tab="14:00 分发"><h3>一次编辑，多端出去</h3><p>按渠道适配分发（站内 / 公众号 / Newsletter），自动排版与定时发布；收录推送与 sitemap 同步更新。</p><p style="color:var(--muted);font-size:13.5px;margin-top:6px">产出：已发布 + 收录</p></div>
 <div data-tab="18:00 复盘"><h3>把效果收回来</h3><p>阅读、停留、线索、转化逐环回流；漏斗哪一环漏单直接标出来，增长引擎给出明天该动的那一件事。</p><p style="color:var(--muted);font-size:13.5px;margin-top:6px">产出：明日动作 + 归因</p></div>
 HTML];
+}
+
+
+/** 「跑一遍」运行演示（输出为已实现的真实机制，不编造） */
+function block_runlog(callable $k): array {
+    return ['_type' => 'runlog', '_key' => $k(), 'title' => '它一天在干什么：跑一遍', 'subtitle' => 'run',
+        'button_text' => '▶ 跑一遍',
+        'content' => "$ openflow loop --today\n✓ 采集     GEO 全网抓取新话题（RSS + 搜索 API 双通道）\n✓ 选题     按你的方向打分去重，产出候选 3 个\n✓ 初稿     AI 出结构化草稿，落进草稿箱待你审\n✓ 发布     多端分发 + 收录推送（sitemap / IndexNow）\n✓ 回收     阅读·线索·转化回流，标出漏单的那一环\n✓ 体检     SelfEvolve 列出该修的清单（只给建议，不自动改）\n→ 结论     今天最该动的一件事，交给你判断"];
 }
 
 $SHOT_ITEMS = [
@@ -151,6 +159,7 @@ HTML],
 <tr><td style="padding:12px 10px"><b>LearnFlow</b></td><td style="padding:12px 10px">课程与训练营交付</td><td style="padding:12px 10px">轻（收款接 PayFlow）</td><td style="padding:12px 10px">讲师 / 训练营主理人</td></tr>
 </tbody></table>
 HTML],
+        block_runlog($k),
         block_deploy($k),
         block_open($k),
         block_integrations($k),
@@ -225,6 +234,7 @@ HTML],
 <div><h3>新品验证</h3><p>Webs Flow 做承接页 → A/B 分流 → PayFlow 收款 → 数据回收判断。</p></div>
 <div><h3>复购与留存</h3><p>分群流转 + 自动化触达 + 会员权益，把一次成交变成长期关系。</p></div>
 HTML],
+        block_runlog($k),
         block_deploy($k),
         block_open($k),
         block_integrations($k),
@@ -239,14 +249,14 @@ upsert_page('demo-home-v2', [
     'seo_title' => '芭乐派 — 一人公司的增长系统矩阵',
     'seo_desc' => '一个人做不了所有事。芭乐派把增长拆成七件可组合的产品：整套系统、内容分发、落地页、全域数据、外部情报、收款变现、课程交付。开源、可自托管、数据主权在你。',
     'blocks' => [
-        ['_type' => 'hero', '_key' => $k(), 'title' => '一个人做不了所有事，但可以让系统替你跑', 'subtitle' => '芭乐派 · 增长系统矩阵', 'content' => '我们不卖万能工具，卖的是一套按需组合的增长系统：从整套操作系统到单点能力，七件产品各自独立、API 互通。核心开源、可自托管——你专注判断，其余交给系统。', 'button_text' => '免费开始（开源）', 'button_url' => '/courses', 'button_text2' => '看产品矩阵', 'button_url2' => '/demo/products'],
+        ['_type' => 'hero', '_key' => $k(), 'title' => '你不缺怎么做，你缺该做什么', 'subtitle' => '芭乐派 · 给一人公司的增长系统', 'content' => '市面上的增长工具都默认你有一支团队。芭乐派做的是另一套：它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。核心开源，数据在你自己的服务器。', 'button_text' => '免费开始（开源）', 'button_url' => '/courses', 'button_text2' => '先看它一天干什么', 'button_url2' => '/demo/home-v2#dayrun'],
         ['_type' => 'ticker', '_key' => $k(), 'title' => '现在就在跑的数字', 'subtitle' => '可核验', 'content' => <<<HTML
 <div data-n="502"><b>0</b><span>已发布文章</span></div>
 <div data-n="43"><b>0</b><span>展示区块</span></div>
 <div data-n="116"><b>0</b><span>API 端点</span></div>
 <div data-n="128"><b>0</b><span>契约测试</span></div>
 HTML],
-        ['_type' => 'cluster', '_key' => $k(), 'title' => '为什么一个人跑不动一整套增长', 'subtitle' => '现实', 'content' => <<<HTML
+        ['_type' => 'cluster', '_key' => $k(), 'title' => '一个人做不了所有事——为什么', 'subtitle' => '现实', 'content' => <<<HTML
 <div><h4>时间被切碎</h4><p>写内容、投广告、盯数据、回客户——每件事都要人，判断反而没时间做。</p></div>
 <div><h4>工具互相割裂</h4><p>内容在 A、数据在 B、收款在 C，接不上就等于没有。</p></div>
 <div><h4>重型系统用不动</h4><p>一体化系统很全，但对小团队太重，落地成本高于收益。</p></div>
@@ -276,6 +286,7 @@ HTML],
 <div><h3>销售</h3><p>把流量变成收入，把收入变成复购。</p></div>
 HTML],
         block_day($k),
+        block_runlog($k),
         ['_type' => 'comparison', '_key' => $k(), 'title' => '自己做 vs 用芭乐派', 'subtitle' => '对比', 'content' => <<<HTML
 <table style="width:100%;border-collapse:collapse;min-width:720px">
 <thead><tr style="text-align:left;border-bottom:1px solid var(--border)"><th style="padding:10px">环节</th><th style="padding:10px">自己拼工具</th><th style="padding:10px">用芭乐派</th></tr></thead>
