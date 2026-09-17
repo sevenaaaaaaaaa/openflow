@@ -150,6 +150,16 @@ function block_modules(): array {
 
 // 区块渲染器 —— v7：每种区块映射到 modules.css 的共享 archetype，后台搭出来的页与站点其他页同一套零件。
 function builder_render_block(array $b): string {
+    $html = builder_render_block_inner($b);
+    // 通用锚点：块字段 anchor（不能用 id——块契约里 id 是身份键，归一化时会被吃掉）
+    if (!empty($b['anchor']) && stripos($html, '<section') !== false) {
+        $html = preg_replace('/<section\b/', '<section id="' . htmlspecialchars((string)$b['anchor'], ENT_QUOTES) . '"', $html, 1);
+    }
+    return $html;
+}
+
+/** 实际渲染（外层 builder_render_block 负责锚点注入） */
+function builder_render_block_inner(array $b): string {
     require_once __DIR__ . '/BlockContract.php';
     $t = block_type_of($b);
     if ($t === '') $t = 'text';
