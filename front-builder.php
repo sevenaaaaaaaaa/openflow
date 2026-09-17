@@ -33,6 +33,12 @@ $siteName = site_config_get('site_name');
 // 区块渲染器与类型表已下沉到 lib/BlockRegistry.php（三处抄了三份，其中四种类型前台根本不认）
 require_once __DIR__ . '/lib/BlockRegistry.php';
 
+// Demo 预览页不进搜索引擎索引（避免与正式页重复内容；正式替换后此分支自然失效）
+if (str_starts_with($slug, 'demo-')) {
+    require_once __DIR__ . '/includes/site-head.php';
+    if (function_exists('of_seo_noindex')) of_seo_noindex();
+}
+
 ?>
 <!doctype html>
 <html lang="zh-CN" data-theme="light">
