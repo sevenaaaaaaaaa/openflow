@@ -6,8 +6,8 @@
 import boto3, os, sys, mimetypes
 
 R2_ENDPOINT = "https://00d02a54a3c0f7a3f6c3fc75068e29c5.r2.cloudflarestorage.com"
-R2_KEY = os.environ.get("R2_KEY", "bd8a5ecc09149dbbecc6390ab2d7f6f5")
-R2_SECRET = os.environ.get("R2_SECRET", "5ab14a7f0fcfb99f0b5111616389ffc244933df4154413cf672ca5f21940b20b")
+R2_KEY = os.environ["R2_KEY"]        # 从环境变量读取；禁止硬编码（曾泄露，需轮换）
+R2_SECRET = os.environ["R2_SECRET"]  # 从环境变量读取；禁止硬编码（曾泄露，需轮换）
 BUCKET = "nownexts-static"
 ASSETS_DIR = os.path.dirname(os.path.abspath(__file__)) + "/assets"
 EXCLUDE_EXTS = {'.map', '.ts', '.md', '.txt', '.sh'}
