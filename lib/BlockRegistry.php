@@ -216,6 +216,16 @@ function builder_render_block_inner(array $b): string {
 
     switch ($t) {
         case 'hero':
+            // 有 image → 左右分栏（文字 + 浏览器窗口化的真实截图）；无 image → 居中大字
+            if ($img !== '') {
+                $winTitle = htmlspecialchars((string)($b['image_caption'] ?? 'app.openflow'), ENT_QUOTES);
+                return '<section class="reveal in"' . $bgStyle . '><div class="hero">'
+                    . '<div class="hero-copy">' . ($sub ? '<span class="kicker">' . $sub . '</span>' : '') . '<h1>' . $title . '</h1>'
+                    . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div>'
+                    . '<div class="hero-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">' . $winTitle . '</div></div>'
+                    . '<img src="' . $img . '" alt="' . $title . '" loading="eager"></div>'
+                    . '</div></section>';
+            }
             return '<section class="reveal in"' . $bgStyle . '><div class="hero-center">' . ($sub ? '<span class="kicker">' . $sub . '</span>' : '') . '<h1>' . $title . '</h1>' . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div></section>';
         case 'features':
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="cols n4">' . $content . '</div>' : '<div class="empty">配置区块内容</div>') . '</section>';
