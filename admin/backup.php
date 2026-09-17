@@ -42,6 +42,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         header('Location: /xmp/backup');
         exit;
+    } elseif ($postAction === 'save_schedule') {
+        // 以前这个分支不存在 → 「定时备份」是死表单（配置存不下来、也没有执行者）
+        $cfg = backup_schedule_set([
+            'enabled'   => isset($_POST['enabled']),
+            'frequency' => $_POST['frequency'] ?? 'daily',
+            'keep'      => $_POST['keep'] ?? 7,
+        ]);
+        flash('success', '定时备份已' . ($cfg['enabled'] ? '开启' : '保存') . '：' . $cfg['frequency'] . ' · 保留 ' . $cfg['keep'] . ' 份（由 /api/cron.php 执行）');
+        header('Location: /xmp/backup');
+        exit;
     } elseif ($postAction === 'cloud_upload') {
         $name = $_POST['backup_name'] ?? '';
         $provider = $_POST['provider'] ?? '';
