@@ -132,3 +132,17 @@ curl -s -X POST -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: applicati
 | `Authorization` 头 | `.htaccess` 的 `CGIPassAuth On` 保证 Bearer 认证可用 |
 | 后台登录 | `/xmp/login`（用户名 + 密码 + 算术验证码；2FA 可开） |
 | Git 推送 | 含密钥会被 GitHub Push Protection 拦截（已踩过，密钥改环境变量） |
+
+---
+
+## 五、数据备份（现状 + 待办）
+
+| 项 | 现状 |
+|---|---|
+| 自动备份 | ✅ 已启用：`data/backups/auto_YYYYmmdd_His/`（含 `data/` + `config/admin/config.php` + `meta.json`） |
+| 触发者 | `/api/cron.php`（每分钟，内部按频率判定到期；后台「⏰ 定时备份」设置频率与保留份数） |
+| 保留策略 | 只清理 `auto_` 前缀，保留最近 N 份（默认 3） |
+| 巡检告警 | ✅ 每日一次抽检 10 个核心 URL（源站直连）；异常走 `notify_channels_send()`（企微/飞书/WhatsApp） |
+| ⚠️ 待办 | **异地备份**：当前备份与本站在同一块盘，整机故障即同时丢失。建议用宝塔「计划任务 → 备份到云端」(S3/OSS/R2) 把 `data/backups/` 同步出去 |
+
+修复记录（2026-09-17）：`BackupSystem` 曾使用从未定义的 `ROOT_DIR` → 备份功能**从未成功执行过**；后台「定时备份」表单也**没有处理器**（死表单）。两处均已修。
