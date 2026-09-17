@@ -3,6 +3,7 @@
  * API 文档生成器 — OpenAPI 3.0 规范
  */
 require_once __DIR__ . '/../admin/config.php';
+require_once __DIR__ . '/ApiPolicy.php';   // 档位表：自动生成的 security 依赖它
 
 class ApiDocs {
     /**
@@ -46,6 +47,18 @@ class ApiDocs {
                     'type' => 'apiKey',
                     'in' => 'header',
                     'name' => 'X-API-Key',
+                ],
+                'memberSession' => [
+                    'type' => 'apiKey',
+                    'in' => 'cookie',
+                    'name' => 'PHPSESSID',
+                    'description' => '前台会员登录态',
+                ],
+                'adminSession' => [
+                    'type' => 'apiKey',
+                    'in' => 'cookie',
+                    'name' => 'PHPSESSID',
+                    'description' => '后台登录态（/xmp 会话）',
                 ],
             ],
             'schemas' => [
@@ -113,181 +126,122 @@ class ApiDocs {
     /**
      * 获取 API 路径定义
      */
+    /**
+     * 路径定义：从 api/*.php **自动生成**（真实端点），鉴权档位取自 ApiPolicy。
+     * 人工整理的域分组与用途说明见 docs/API-INVENTORY.md。
+     */
     private static function getPaths(): array {
-        return [
-            // 文章 API
-            '/api/v1/articles' => [
-                'get' => [
-                    'tags' => ['Articles'],
-                    'summary' => '获取文章列表',
-                    'parameters' => [
-                        ['name' => 'page', 'in' => 'query', 'schema' => ['type' => 'integer', 'default' => 1]],
-                        ['name' => 'limit', 'in' => 'query', 'schema' => ['type' => 'integer', 'default' => 20]],
-                        ['name' => 'status', 'in' => 'query', 'schema' => ['type' => 'string', 'enum' => ['draft', 'published']]],
-                        ['name' => 'category', 'in' => 'query', 'schema' => ['type' => 'string']],
-                    ],
-                    'responses' => [
-                        '200' => [
-                            'description' => '成功',
-                            'content' => ['application/json' => ['schema' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/Article']]]],
-                        ],
-                    ],
-                ],
-                'post' => [
-                    'tags' => ['Articles'],
-                    'summary' => '创建文章',
-                    'security' => [['bearerAuth' => []]],
-                    'requestBody' => [
-                        'required' => true,
-                        'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/Article']]],
-                    ],
-                    'responses' => [
-                        '201' => ['description' => '创建成功'],
-                        '401' => ['description' => '未授权'],
-                    ],
-                ],
-            ],
-            '/api/v1/articles/{id}' => [
-                'get' => [
-                    'tags' => ['Articles'],
-                    'summary' => '获取文章详情',
-                    'parameters' => [
-                        ['name' => 'id', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'string']],
-                    ],
-                    'responses' => [
-                        '200' => ['description' => '成功', 'content' => ['application/json' => ['schema' => ['$ref' => '#/components/schemas/Article']]]],
-                        '404' => ['description' => '不存在'],
-                    ],
-                ],
-                'put' => [
-                    'tags' => ['Articles'],
-                    'summary' => '更新文章',
-                    'security' => [['bearerAuth' => []]],
-                    'parameters' => [
-                        ['name' => 'id', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'string']],
-                    ],
-                    'responses' => [
-                        '200' => ['description' => '更新成功'],
-                    ],
-                ],
-                'delete' => [
-                    'tags' => ['Articles'],
-                    'summary' => '删除文章',
-                    'security' => [['bearerAuth' => []]],
-                    'parameters' => [
-                        ['name' => 'id', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'string']],
-                    ],
-                    'responses' => [
-                        '200' => ['description' => '删除成功'],
-                    ],
-                ],
-            ],
-
-            // 会员 API
-            '/api/v1/members' => [
-                'get' => [
-                    'tags' => ['Members'],
-                    'summary' => '获取会员列表',
-                    'security' => [['bearerAuth' => []]],
-                    'responses' => [
-                        '200' => ['description' => '成功', 'content' => ['application/json' => ['schema' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/Member']]]]],
-                    ],
-                ],
-            ],
-            '/api/v1/members/{id}' => [
-                'get' => [
-                    'tags' => ['Members'],
-                    'summary' => '获取会员详情',
-                    'security' => [['bearerAuth' => []]],
-                    'parameters' => [
-                        ['name' => 'id', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'string']],
-                    ],
-                    'responses' => [
-                        '200' => ['description' => '成功'],
-                    ],
-                ],
-            ],
-
-            // 课程 API
-            '/api/v1/courses' => [
-                'get' => [
-                    'tags' => ['Courses'],
-                    'summary' => '获取课程列表',
-                    'responses' => [
-                        '200' => ['description' => '成功', 'content' => ['application/json' => ['schema' => ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/Course']]]]],
-                    ],
-                ],
-            ],
-
-            // CRM API
-            '/api/v1/leads' => [
-                'get' => [
-                    'tags' => ['CRM'],
-                    'summary' => '获取线索列表',
-                    'security' => [['bearerAuth' => []]],
-                    'responses' => [
-                        '200' => ['description' => '成功'],
-                    ],
-                ],
-                'post' => [
-                    'tags' => ['CRM'],
-                    'summary' => '创建线索',
-                    'responses' => [
-                        '201' => ['description' => '创建成功'],
-                    ],
-                ],
-            ],
-
-            // 行为追踪 API
-            '/api/v1/track' => [
-                'post' => [
-                    'tags' => ['CDP'],
-                    'summary' => '上报用户行为',
-                    'requestBody' => [
-                        'required' => true,
-                        'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => [
-                            'event' => ['type' => 'string'],
-                            'properties' => ['type' => 'object'],
-                        ]]]],
-                    ],
-                    'responses' => [
-                        '200' => ['description' => '成功'],
-                    ],
-                ],
-            ],
-
-            // 文件上传
-            '/api/v1/upload' => [
-                'post' => [
-                    'tags' => ['Media'],
-                    'summary' => '上传文件',
-                    'security' => [['bearerAuth' => []]],
-                    'requestBody' => [
-                        'content' => ['multipart/form-data' => ['schema' => ['type' => 'object', 'properties' => [
-                            'file' => ['type' => 'string', 'format' => 'binary'],
-                            'dir' => ['type' => 'string'],
-                        ]]]],
-                    ],
-                    'responses' => [
-                        '200' => ['description' => '上传成功'],
-                    ],
-                ],
-            ],
-        ];
+        $paths = [];
+        foreach (glob(__DIR__ . '/../api/*.php') ?: [] as $file) {
+            $slug = basename($file, '.php');
+            if (in_array($slug, ['plugin'], true)) continue;   // 插件路由：/api/plugin/{id}/{path}
+            $paths['/api/' . $slug] = self::buildPathItem($slug, $file);
+        }
+        ksort($paths);
+        return $paths;
     }
+
+    /** 单个端点的 OpenAPI Path Item */
+    private static function buildPathItem(string $slug, string $file): array {
+        $src = @file_get_contents($file) ?: '';
+        $summary = self::endpointSummary($src, $slug);
+        $tier = ['tier' => 'public', 'perm' => ''];
+        if (function_exists('api_policy_for')) {
+            try { $tier = api_policy_for($slug); } catch (\Throwable $e) {}
+        }
+        $security = self::securityForTier((string)($tier['tier'] ?? 'public'));
+        $params = self::endpointParams($src);
+        $tag = self::apiTagFor($slug);
+
+        $responses = [
+            '200' => ['description' => '成功（统一形状 {ok:true,data:…}）'],
+            '400' => ['description' => '参数或业务错误（{ok:false,error:…}）'],
+        ];
+        if ($security) $responses['401'] = ['description' => '未认证'];
+        if (($tier['tier'] ?? '') === 'admin') $responses['403'] = ['description' => '权限不足'];
+
+        $item = [];
+        $get = ['tags' => [$tag], 'summary' => $summary, 'parameters' => $params['query'], 'responses' => $responses];
+        if ($security) $get['security'] = $security;
+        $item['get'] = $get;
+
+        if (str_contains($src, '$_POST')) {
+            $props = [];
+            foreach ($params['body'] as $p) $props[$p['name']] = ['type' => 'string'];
+            $post = [
+                'tags' => [$tag],
+                'summary' => $summary . '（POST）',
+                'responses' => array_merge(['201' => ['description' => '创建/提交成功']], $responses),
+            ];
+            if ($security) $post['security'] = $security;
+            if ($props) $post['requestBody'] = ['required' => false, 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => $props]]]];
+            $item['post'] = $post;
+        }
+        return $item;
+    }
+
+    /** 文件 docblock 首句作为 summary */
+    private static function endpointSummary(string $src, string $slug): string {
+        if (preg_match('/\/\*\*(.*?)\*\//s', $src, $m)) {
+            foreach (preg_split('/\R/', $m[1]) as $line) {
+                $t = trim(preg_replace('#^\s*\*\s?#', '', $line));
+                if ($t === '' || str_starts_with($t, '@')) continue;
+                return mb_substr(preg_replace('/\s+/', ' ', $t), 0, 80);
+            }
+        }
+        return $slug;
+    }
+
+    /** 扫描 $_GET / $_POST 键名 → 参数清单（启发式，最多各 12 个） */
+    private static function endpointParams(string $src): array {
+        $q = []; $b = [];
+        if (preg_match_all('/\$_GET\[\s*[\'"]([a-zA-Z0-9_]+)[\'"]\s*\]/', $src, $m)) {
+            foreach (array_unique($m[1]) as $k) if (count($q) < 12) $q[] = ['name' => $k, 'in' => 'query', 'schema' => ['type' => 'string']];
+        }
+        if (preg_match_all('/\$_POST\[\s*[\'"]([a-zA-Z0-9_]+)[\'"]\s*\]/', $src, $m2)) {
+            foreach (array_unique($m2[1]) as $k) if (count($b) < 12) $b[] = ['name' => $k];
+        }
+        return ['query' => $q, 'body' => $b];
+    }
+
+    /** 鉴权档位 → OpenAPI security */
+    private static function securityForTier(string $tier): array {
+        return match ($tier) {
+            'member' => [['memberSession' => []]],
+            'admin'  => [['adminSession' => []]],
+            'token'  => [['apiKeyAuth' => []]],
+            default  => [],
+        };
+    }
+
+    /** 端点 → 域标签 */
+    private static function apiTagFor(string $slug): string {
+        $map = [
+            '内容/CMS' => ['article', 'import', 'rss', 'ingest', 'pages', 'landing', 'builder', 'templates', 'internal-links', 'calendar', 'cover', 'assign-covers', 'download', 'data-export', 'push', 'publish', 'content'],
+            'AI/Agent' => ['ai-', 'agent', 'assistant', 'mainline', 'morning', 'build-skill', 'geo-citable', 'create'],
+            '数据/CDP' => ['cdp', 'track', 'sdk', 'scripts', 'segments', 'realtime', 'reports', 'report', 'ask-data', 'trend-radar', 'growth-signal', 'evolution', 'recommend', 'dynamic-content', 'conversion', 'ab-event', 'click-tracks'],
+            '营销/触达' => ['newsletter', 'promo', 'ads', 'form-submit', 'leads', 'consultation', 'tob', 'wechat', 'wecom', 'campaigns', 'automation', 'mail-track', 'unsubscribe', 'notifications', 'message'],
+            '商业/交易' => ['cart', 'shop', 'mall', 'marketplace', 'activation', 'stock', 'subscription'],
+            '社区/活动/课程' => ['community', 'comment', 'event-register', 'course', 'survey', 'nps', 'help-feedback', 'nav-submit', 'nav-click', 'share'],
+            '账户' => ['member', 'sso', 'mp-login', 'consent', 'address', 'bookmark', 'follow'],
+            'SEO/搜索' => ['seo', 'indexnow', 'sitemap', 'search'],
+            '站点/运维' => ['site-', 'theme', 'lang', 'provision', 'plugin', 'developer', 'oauth', 'webhook', 'cron', 'health'],
+        ];
+        foreach ($map as $tag => $keys) {
+            foreach ($keys as $k) if (str_contains($slug, $k)) return $tag;
+        }
+        return '其他';
+    }
+
 
     /**
      * 获取标签分组
      */
     private static function getTags(): array {
-        return [
-            ['name' => 'Articles', 'description' => '文章管理'],
-            ['name' => 'Members', 'description' => '会员管理'],
-            ['name' => 'Courses', 'description' => '课程管理'],
-            ['name' => 'CRM', 'description' => 'CRM 线索'],
-            ['name' => 'CDP', 'description' => '用户行为追踪'],
-            ['name' => 'Media', 'description' => '媒体文件'],
-        ];
+        return array_map(
+            fn($t) => ['name' => $t, 'description' => $t . '类端点'],
+            ['内容/CMS', 'AI/Agent', '数据/CDP', '营销/触达', '商业/交易', '社区/活动/课程', '账户', 'SEO/搜索', '站点/运维', '其他']
+        );
     }
 
     /**
