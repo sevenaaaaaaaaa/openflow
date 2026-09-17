@@ -93,3 +93,32 @@ grep -rn "Alias\|RewriteRule" /www/server/panel/vhost/apache/extension/nownexts.
 2. 只**读**`OpenFlow Dev/data/cloudflare.json` 取凭证，不要写
 3. 需要独占路径时，优先申请**子域名**（隔离最好）
 4. 每次同步后自检：`nownexts.com/<your-product>/` 200、`nownexts.com/` 200、其他产品路径未被误伤
+
+---
+
+## 六、前端资产版本号纪律（P0，2026-09-17 补充）
+
+### 现状
+- 前台 CSS/JS 走 R2 + Cloudflare，缓存头 `immutable, max-age=604800`（**7 天**）
+- 版本号只有一处真源：`includes/site-nav.php` 的 **`OF_SHELL_VER`**
+  （`includes/site-head.php` 的 `of_head_assets()` 与 shell 脚本都用它）
+
+### 铁律
+1. **页面不许硬编码 `?v=`**——一律 `require includes/site-head.php` + `of_head_assets()`
+   （已用 `scripts/unify-head-assets.py` 把 18 页硬编码清零，该脚本可复跑）
+2. **改了 `tokens.css` / `modules.css` / `fonts.css` / `site-shell.js` / `inject.js`，
+   必须 bump `OF_SHELL_VER`**，否则浏览器 7 天不回源，出现「改了看不到」
+3. bump 之后照例：`python3 sync-r2.py` → purge CF 对应 URL → 清 `data/cache/*.cache`
+4. 后台资产同理，版本常量是 `OF_ADMIN_UI_VER`
+
+### 自查
+```bash
+grep -rn "tokens.css?v=\|modules.css?v=" --include="*.php" . | grep -v includes/   # 应为 0 行
+grep -n "OF_SHELL_VER" includes/site-nav.php                                        # 单一真源
+```
+
+### 附：PWA Service Worker（后台专用，低风险）
+`assets/pwa/sw.js` 只在 `admin_header()`（后台）注册，scope = `/assets/pwa/`；
+SHELL 清单里列了 scope 外的 `tokens/modules/site-shell/inject`（缓存了但拦不到，属冗余）。
+若将来要把 SW 扩到前台，需要 `Service-Worker-Allowed` 头 + 版本感知的缓存策略，
+否则会变成「改了看不到」的第二个来源。
