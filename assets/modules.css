@@ -1115,8 +1115,8 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 .bento>div a{margin-top:auto}
 .cluster>div{height:100%}
 .qwall>div{display:flex;flex-direction:column;justify-content:center;min-height:132px}
-.tab-p{min-height:220px}
-.tab-p>p:last-child{margin-bottom:0}
+.tabbed .tab-p{min-height:220px}
+.tabbed .tab-p>p:last-child{margin-bottom:0}
 .hacc .hacc-body{align-items:flex-start;text-align:left}
 .stats .st,.ticker-grid>div{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
 .ticker-grid>div{align-items:center}
@@ -1128,3 +1128,35 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 .hero-win img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;object-position:top left}
 .hero-win .win-bar{border-bottom:1px solid var(--border-soft)}
 @media (max-width:900px){.hero{grid-template-columns:1fr}.hero-win{order:-1}}
+
+/* ═════ 复用原版模式：Deck 轮播 / 纵向手风琴 / 诊断两栏表单（2026-09-18） ═════ */
+/* 纵向手风琴（替代横排：闭合态不再只剩竖排文字，避免"看着是空的"） */
+.vacc{display:flex;flex-direction:column;gap:10px;max-width:900px;margin:0 auto}
+.vacc details{border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);overflow:hidden;transition:border-color .2s}
+.vacc details[open]{border-color:var(--accent)}
+.vacc summary{list-style:none;cursor:pointer;padding:15px 18px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:10px}
+.vacc summary::-webkit-details-marker{display:none}
+.vacc summary::before{content:"＋";color:var(--accent);font-weight:800}
+.vacc details[open] summary::before{content:"－"}
+.vacc .vacc-body{padding:0 18px 16px;border-top:1px solid var(--border-soft);margin-top:0}
+.vacc .vacc-body ul{margin:10px 0 12px;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.vacc .vacc-body li{font-size:13.5px;color:var(--muted);line-height:1.7}
+.vacc .vacc-body a{font-size:13px;font-weight:700;color:var(--accent)}
+/* 诊断两栏（复用原版 contact-wrap/ct-pitch/ct-list；这里补表单两列栅格） */
+.contact-wrap .form-card form{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.contact-wrap .form-card .of-field{min-width:0}
+.contact-wrap .form-card .of-field textarea,
+.contact-wrap .form-card .of-field:has(textarea),
+.contact-wrap .form-card form>button{grid-column:1/-1}
+.contact-wrap .form-card .of-field select,
+.contact-wrap .form-card .of-field input{width:100%}
+@media (max-width:760px){.contact-wrap .form-card form{grid-template-columns:1fr}}
+/* CTA 区块里 diagnose 用同一套 */
+.diagnose .contact-wrap{align-items:start}
+.diagnose .ct-list li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;color:var(--fg);line-height:1.7}
+.diagnose .ck{flex:0 0 20px;width:20px;height:20px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;margin-top:2px}
+.diagnose .ck svg{width:12px;height:12px}
+/* Deck 进度条 */
+.deck .prog{height:3px;border-radius:99px;background:var(--hover);overflow:hidden}
+.deck .prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s linear}
+.deck .deck-p img{width:100%;border-radius:var(--r-md);border:1px solid var(--border);aspect-ratio:16/10;object-fit:cover;object-position:top left}
