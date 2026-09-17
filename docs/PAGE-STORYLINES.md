@@ -1,0 +1,212 @@
+# 页面故事线（PAGE-STORYLINES · SSOT）
+
+> 吸取自 MFlow `1-1 Harness/08-storyline`（本体/区块两层 + 命名故事线 + 不用清单 + 首屏选型 + 骨架审计），
+> 按 OpenFlow 的 47 个区块与 44 个页面重写。**改版/新建页面前必读**。
+>
+> 一句话规则：**先定页面类型 → 选一条命名故事线 → 按序列填本体 → 用「不用清单」砍掉多余段落。**
+
+---
+
+## 一、两个层级（别混）
+
+| 层级 | 是什么 | OpenFlow 里的东西 | 数量 |
+|------|--------|-------------------|------|
+| **本体** | 页面里一段 section 的**职责**（产品语言） | 「首屏」「能力 Tab」「证言」「收口 CTA」 | 18 |
+| **区块** | 真正渲染的组件（`BlockRegistry` 的 `type` / 页面级组件） | `hero` `tabs` `quote-wall` `cmp` … | 47 |
+
+**关系**：每个本体在落地时选 **1 个**区块（有多个候选就是「变体」）。
+**别混**：讨论「这页缺什么」用本体；讨论「换成哪个组件」用区块。
+
+---
+
+## 二、区块 → 本体映射（47 区块）
+
+| 本体 | 可用区块（首选加粗） | 判断依据 |
+|------|---------------------|----------|
+| 1 首屏 | **`hero`** · `hero-deck` · `deck` · `banner` · 页面级 arena 首屏 | 3 秒讲清是谁/解决什么/主按钮 |
+| 2 多栏特性区 | **`cluster`** · `features` · `bento` · `portrait` · `cols`(sp-list) | 首屏下第一层，多个卖点并列 |
+| 3 能力 Tab | **`tabs`** | 多能力/多产品切换深讲 |
+| 4 卡片网格 | **`tool-grid`** · `link-grid` · `gallery` | 工具/产品/资源卡片矩阵 |
+| 5 特性大卡 | **`feature-detail`** · `image-text` · `text` | 少量重点能力图文详解 |
+| 6 图库 / 真实界面 | **`bento`(bt-shot)** · `gallery` · `real-grid` · `showcase` · `canvas-wall` · `marquee` | 截图、作品、案例聚合 |
+| 7 试用 / 输入 | **`form`** · `diagnose` · `prompt` · `newsletter` | 让用户立刻留下信息/试用 |
+| 8 证明 / 数字 | **`proof`** · `stats` · `ticker` · `logo-wall` | 可核验的数字与信任证据 |
+| 9 对比 | **`cmp`** · `comparison` · `before-after` | 和替代方案比差异 |
+| 10 步骤 / 流程 | **`journey`** · `timeline` · `runlog` · `checklist` | 怎么用、几步完成、跑一遍 |
+| 11 动态图文 | **`showcase`** · `feature-detail` · `video` | 图文交错 / 横滑叙事 |
+| 12 证言 | **`quote-wall`** · `testimonials` · `reviews`(qr) | 用户原话、评价卡 |
+| 13 FAQ | **`accordion`** · `faq` | 解答顾虑 + SEO 长尾 |
+| 14 内容簇 | **`blog-grid`** · `changelog` · `cluster` | 文章/更新/能力的密集聚合 |
+| 15 收口 CTA | **`cta`** · `countdown` | 页面底部转化（全页唯一 primary） |
+| 16 定价 | **`pricing`** | 套餐价格（价格走后端） |
+| 17 人物 / 团队 | **`team`** · `portrait` | 创始人、团队、作者 |
+| 18 气氛 / 装饰 | `kbd` · `code` · `spotlight` · `quote-wall`(便签) | 提升质感，不承担信息 |
+
+---
+
+## 三、页面类型 × 命名故事线
+
+> 规则：每个分叉、每个变体单独计一条故事线，不合并成「扩展说明」。
+
+### 3.1 首页（`/`）
+
+| ID | 序列 | 用途 |
+|----|------|------|
+| `home-A` | 首屏 → 多栏特性区 → 能力Tab(四力) → 步骤 → 场景 → 对比 → 证言(为谁而做) → 内容簇(洞察) → 诊断 | 现行 `index.php` |
+| `home-B` | 首屏 → 多栏特性区 → 卡片网格(七件产品 bento) → 能力Tab → 步骤 → 场景 → 对比 → 证言(为谁而做) → 内容簇 → **证言(便签墙)** → **步骤(怎么开始)** → 诊断 | `home-v2.php` |
+
+**不用**：定价（归 `/pricing`）、Logo 墙、试用输入（首页用诊断代替）
+
+### 3.2 产品页（`/product`、`/product/{产品}`）
+
+| ID | 序列 | 用途 |
+|----|------|------|
+| `product-标准` | 首屏 → 证明 → 多栏特性区(痛点) → 步骤/框架 → 特性大卡 → 能力Tab → 卡片网格 → **对比** → **证言** → FAQ → 收口 CTA | 完整产品页（含差异化与口碑） |
+| `product-轻量` | 首屏 → 证明 → 多栏特性区 → 步骤 → 特性大卡 → 能力Tab → 卡片网格 → FAQ → 收口 CTA | 单点产品页（省对比/证言） |
+| `product-矩阵聚合` | 首屏 → 证明 → 卡片网格(7 件 bento) → 卡片网格(组合方案) → 图库(真实界面) → 步骤(跑一遍) → 定价区(部署三档) → 多栏(开放生态) → FAQ → 证言 → 诊断 → 收口 CTA | `/demo/products`、`/product` |
+
+**不用**：试用输入、图库墙(`canvas-wall`)、页内 CTA（**收口 CTA 全页只能一个**）
+
+### 3.3 能力页（`/capability`）
+
+| ID | 序列 | 用途 |
+|----|------|------|
+| `capability-A` | 首屏 → 能力Tab → 能力索引(手风琴) → 图库(真实界面) → 集成生态 → 部署方式 → 开放生态 → 场景 → 适用人群 → 证言 → FAQ → 诊断 → 收口 CTA | `capability.php` / `hub-capabilities.php` |
+
+**不用**：定价（只讲"怎么部署"，问价走联系）、Logo 墙
+
+### 3.4 矩阵聚合页（`/demo/*`）
+
+见 `product-矩阵聚合`。
+
+### 3.5 落地页（Webs Flow 场景，`/landing*`）
+
+| ID | 序列 | 用途 |
+|----|------|------|
+| `landing-A` | 首屏 → 证明 → 多栏特性区 → 图库 → 步骤 → 对比 → 证言 → FAQ → 收口 CTA | 单一活动/投放承接 |
+
+**不用**：定价、内容簇、Logo 墙
+
+### 3.6 课程页（`/courses`）
+
+| ID | 序列 | 用途 |
+|----|------|------|
+| `course-A` | 首屏 → 学习路径 → 课程目录 → 免费试学 → 适用人群 → 学完能做什么 → 证言 → 收口 CTA | 现行 `courses.php` |
+| `course-B` | `course-A` + 定价 + FAQ | 加上报名转化 |
+
+### 3.7 定价页（`/pricing`）
+
+| ID | 序列 | 用途 |
+|----|------|------|
+| `pricing-转化` | 首屏 → 适用人群 → 定价区 → 对比 → FAQ → 收口 CTA | 对应 MFlow 的 N5（价格转化） |
+
+### 3.8 内容枢纽（`/articles` `/topics` `/author` `/asset`）
+
+| ID | 序列 | 用途 |
+|----|------|------|
+| `topic-聚合` | 首屏 → 筛选 → 最新 → 全部 → 订阅 | 现行 `articles.php` |
+| `topic-深读` | 文章正文 → 评论 → 相关 → 发现 → 推荐 → 订阅 | 现行 `article.php` |
+| `topic-枢纽` | 话题头 → 文章聚合 → 工具网格 → 产品映射 → FAQ → 分流 CTA | 吸取 MFlow Topic（待建） |
+
+**不用**：定价（内容枢纽不卖产品）
+
+### 3.9 工具目录（`/tools` `/navigation` `/marketplace`）
+
+| ID | 序列 | 用途 |
+|----|------|------|
+| `directory-A` | 首屏 → 筛选/分类 → 卡片网格 → 步骤(怎么用) → 收口 CTA | 目录型页面 |
+
+---
+
+## 四、首屏怎么选
+
+| 首屏目标 | 首选区块 | 常配第二屏 |
+|----------|----------|------------|
+| 品牌 / 系统感（首页） | 页面级 arena 首屏（信号流画布） | 多栏特性区 |
+| 多能力轮播（首页 v2） | `hero-deck` / `deck` | 卡片网格 |
+| 产品总览（产品/聚合页） | `hero`（居中 + 全宽真实截图） | 证明（数字条） |
+| 单点产品 | `hero`（居中 + 一句话） | 多栏特性区 |
+| 落地页 / 活动 | `hero` + `form`（表单进首屏或第二屏) | 图库 |
+
+---
+
+## 五、跨类目叙事轴（第二维度）
+
+同一页面类型可换叙事轴，序列随之调整：
+
+| 叙事 | 序列 |
+|------|------|
+| AIDA | 首屏 → 证明/数字 → 特性大卡 → 收口 CTA |
+| 问题 → 方案 → 证明 | 多栏特性区(痛点) → 能力Tab → 证言 → FAQ |
+| 前后对比 | 首屏 → 对比 → 动态图文 → 收口 CTA |
+| 社会证明 | Logo 墙 → 证言 → 图库 → 收口 CTA |
+| 价格转化 | 首屏 → 定价 → 对比 → FAQ → 收口 CTA |
+| 内容 + 转化 | 内容簇 → 试用输入 → 收口 CTA |
+
+---
+
+## 六、选线流程
+
+```
+1. 定页面类型（首页/产品/能力/聚合/落地/课程/定价/内容枢纽/目录）
+2. 选故事线 ID（如 product-标准）
+3. 按序列列出每段「本体」
+4. 本体 → 区块（§二 选首选或变体）
+5. 对照「不用清单」删掉多余段落 → 检查：全页只有一个 primary CTA
+6. 跑 `php scripts/storyline-audit.php` 复核漂移
+```
+
+**勾选清单格式**（复制到 PR 描述里）：
+
+```
+[product-标准] 首屏 → 证明 → 多栏特性区 → 步骤 → 特性大卡 → 能力Tab
+→ 卡片网格 → 对比 → 证言 → FAQ → 收口 CTA
+```
+
+---
+
+## 七、现网骨架审计（2026-09-18）
+
+跑 `php scripts/storyline-audit.php` 可复现（36 个营销页；应用内页已跳过）。
+**当前：ERROR 9 · WARN 23**（MISSING 9 / ORDER 9 / DUPLICATE 7 / MULTI_CTA 7 / FORBIDDEN 0）。
+
+### 已对齐（序列与命名故事线一致）
+
+| 页面 | 命中 | 实际序列 |
+|------|------|----------|
+| `pricing.php` | `pricing-转化` | 首屏 → 多栏特性区 → 定价 → 对比 → FAQ → 收口 CTA |
+| `product.php` | `product-标准` | 首屏 → 多栏特性区 → 能力Tab → 特性大卡 → 图库 → 证明 → FAQ → 证言 → 收口 CTA |
+| `demo-products` | `product-矩阵聚合` | 首屏 → 证明 → 步骤 → 卡片网格 → 多栏特性区 ×3 → 对比 → 步骤 → 能力Tab → 证言 → FAQ → 试用输入 → 收口 CTA |
+| `course.php` 系 | `course-A` | 首屏 → 步骤 → 卡片网格 → … → 证言 → 收口 CTA |
+| 首页（`index.php` / `home-v2.php`） | `home-A` / `home-B` | 收口由「诊断表单」承担（试用输入），符合 `require_any` |
+
+### 漂移（待收敛 · 按审计证据排序）
+
+| # | 现象 | 命中页面（审计输出） | 建议 |
+|---|------|----------------------|------|
+| D1 | **收口 CTA 之后还有段落**（末尾重复卡片网格） | 6 个独立产品页 + `demo-products` / `demo-capabilities` / `demo-home-v2` | 末尾 `tool-grid` 移到收口 CTA 之前，或改成「内容簇」；跨产品推荐走页脚 |
+| D2 | **产品页缺证言** | `mflow` `webs-flow` `userloop` `inflow` `payflow` `learnflow` | 补 `quote-wall`（便签墙），对齐 `product-标准` |
+| D3 | **能力Tab 重复** | `demo-capabilities`、`demo-home-v2` | 第二个 `tabs` 改「场景」（`journey`） |
+| D4 | **收口 CTA 重复** | `demo-home-v2`、`growth-os-tour` | 只保留最后一个，其余降级为 `btn ghost` |
+| D5 | **多段各带主 CTA** | `hub-products`(5) / `hub-capabilities`(4) / `product.php`(3) / `capability.php`(3) / `pricing.php` / `index.php` / `home-v2.php` | 中段 CTA 一律 `btn ghost`，只留收口为 primary |
+| D6 | **目录页缺收口 CTA** | `marketplace.php` `navigation.php` | 补 `cta` 或订阅 `newsletter` |
+| D7 | **工具目录缺卡片网格** | `tools.php` | 补 `tool-grid`（工具卡矩阵） |
+
+### 判据（审计脚本怎么判）
+
+1. **缺失必需本体**：页面类型定义了 `必需`（如产品页必须有 收口 CTA、FAQ），缺则报警
+2. **出现禁用本体**：命中「不用清单」报警
+3. **本体重复**：同一本体累计 ≥2 段（装饰类除外）报警
+4. **primary CTA 数**：全页 `primary` 按钮 >1 报警（违反品牌声音护栏）
+
+---
+
+## 八、相关文件
+
+| 文件 | 用途 |
+|------|------|
+| `lib/BlockRegistry.php` | 47 个区块的实现与字段 |
+| `scripts/storyline-audit.php` | 骨架审计（本文件 §七 的可复现工具） |
+| `data/builder-pages.json` | builder 页的区块序列真源 |
+| `docs/BRAND-VOICE.md` | 文案护栏（CTA 词表 / 每页一个 primary） |
+| `docs/GTM.md` | 「可以说 / 不能说」硬约束 |
