@@ -122,3 +122,12 @@ grep -n "OF_SHELL_VER" includes/site-nav.php                                    
 SHELL 清单里列了 scope 外的 `tokens/modules/site-shell/inject`（缓存了但拦不到，属冗余）。
 若将来要把 SW 扩到前台，需要 `Service-Worker-Allowed` 头 + 版本感知的缓存策略，
 否则会变成「改了看不到」的第二个来源。
+
+### 附：图片也必须版本化（2026-09-17 踩坑）
+
+同一类坑踩在**图片**上：截图文件更新了，但 `<img src>` 没变 → 浏览器按 `immutable` 缓存（图片 30 天）继续显示旧图，
+**用户看到的是过期界面**。而且 `sync-r2.py` 之前「已有 WebP 就跳过」，源图更新后 WebP 永不刷新，问题更隐蔽。
+
+两条规矩：
+1. **换图必须改 URL**——在页面/区块里给图片加 `?v=YYYYMMDD`（示例见 `scripts/seed-demo-hub-v2.php` 的 `$SHOT_V`）
+2. **sync-r2.py 已修**：源图变更时会重新生成 WebP（不再因已存在而跳过）
