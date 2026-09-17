@@ -71,6 +71,26 @@ function block_form(callable $k): array {
         'content' => 'appointment'];
 }
 
+
+/** 接入信任条：你现有的模型与工具（均为已实现集成） */
+function block_integrations(callable $k): array {
+    return ['_type' => 'marquee', '_key' => $k(), 'title' => '不用推翻你现在在用的东西', 'subtitle' => '接入你现有的模型与工具', 'content' => <<<HTML
+<div>OpenAI</div><div>DeepSeek</div><div>GLM</div><div>Kimi</div><div>Claude</div><div>Qwen</div>
+<div>飞书</div><div>Notion</div><div>Obsidian</div><div>印象笔记</div><div>公众号</div><div>企业微信</div>
+<div>Webhook</div><div>MCP</div><div>自托管模型</div>
+HTML];
+}
+
+/** 「它一天干什么」走查（对标原页可点击闭环的叙事版） */
+function block_day(callable $k): array {
+    return ['_type' => 'tabs', '_key' => $k(), 'title' => '它一天在干什么', 'subtitle' => '增长闭环', 'content' => <<<HTML
+<div data-tab="09:00 采集"><h3>先把外部信号收进来</h3><p>GEO 全网采集（RSS + 搜索 API）抓回你所在方向的新话题与竞品动作，去重、打分、进选题库。</p><p style="color:var(--muted);font-size:13.5px;margin-top:6px">产出：今日候选选题 + 热点热度</p></div>
+<div data-tab="11:00 生成"><h3>AI 出初稿，人只把关</h3><p>按选题结构化产出初稿，接你配置的模型（OpenAI / DeepSeek / GLM / Kimi / 自托管均可），落进草稿箱等你审。</p><p style="color:var(--muted);font-size:13.5px;margin-top:6px">产出：草稿 + SEO 建议</p></div>
+<div data-tab="14:00 分发"><h3>一次编辑，多端出去</h3><p>按渠道适配分发（站内 / 公众号 / Newsletter），自动排版与定时发布；收录推送与 sitemap 同步更新。</p><p style="color:var(--muted);font-size:13.5px;margin-top:6px">产出：已发布 + 收录</p></div>
+<div data-tab="18:00 复盘"><h3>把效果收回来</h3><p>阅读、停留、线索、转化逐环回流；漏斗哪一环漏单直接标出来，增长引擎给出明天该动的那一件事。</p><p style="color:var(--muted);font-size:13.5px;margin-top:6px">产出：明日动作 + 归因</p></div>
+HTML];
+}
+
 $SHOT_ITEMS = [
     [2, 'workspace.png', '控制台 · 今日主线', 'KPI、主线任务与 Agent 运行状态，一屏看完'],
     [2, 'content-hub.png', '内容中心', '文章 · 课程 · 资料 · 播客 一处管理'],
@@ -133,6 +153,7 @@ HTML],
 HTML],
         block_deploy($k),
         block_open($k),
+        block_integrations($k),
         ['_type' => 'quote-wall', '_key' => $k(), 'title' => '用过的人怎么说', 'subtitle' => '真实反馈', 'content' => <<<HTML
 <div>「以前每天 3 小时找选题改文章，现在爬完信号直接给草稿，我只管把关。」— 陈默，内容工作室</div>
 <div>「第一次一个人跑完整条内容流水线，从采集到收录没换过工具。」— 独立开发者</div>
@@ -206,6 +227,7 @@ HTML],
 HTML],
         block_deploy($k),
         block_open($k),
+        block_integrations($k),
         block_form($k),
         ['_type' => 'cta', '_key' => $k(), 'title' => '能力是框架，产品是交付', 'subtitle' => '能力全景', 'content' => '想清楚要哪些能力，再去产品矩阵挑，组合成你自己的系统。', 'button_text' => '去产品矩阵', 'button_url' => '/demo/products'],
     ],
@@ -253,6 +275,7 @@ HTML],
 <div><h3>个性化</h3><p>同一套系统，给每个人不同的答案。</p></div>
 <div><h3>销售</h3><p>把流量变成收入，把收入变成复购。</p></div>
 HTML],
+        block_day($k),
         ['_type' => 'comparison', '_key' => $k(), 'title' => '自己做 vs 用芭乐派', 'subtitle' => '对比', 'content' => <<<HTML
 <table style="width:100%;border-collapse:collapse;min-width:720px">
 <thead><tr style="text-align:left;border-bottom:1px solid var(--border)"><th style="padding:10px">环节</th><th style="padding:10px">自己拼工具</th><th style="padding:10px">用芭乐派</th></tr></thead>
