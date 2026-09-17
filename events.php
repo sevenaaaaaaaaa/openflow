@@ -41,10 +41,7 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>活动 · 线上直播 / 线下聚会 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="芭乐派活动：线上直播、线下聚会。和同类人碰个面，报名即获增长打法。">
-<script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 活动页独有：活动行（日期块 + 标题 + 元信息）。其余全部来自 modules.css。 */
 .ev-list{display:flex;flex-direction:column;border-top:1px solid var(--border-soft)}

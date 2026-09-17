@@ -59,10 +59,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 <meta name="description" content="收录国内外优秀的网站增长、SEO、AI 运营工具与学习资源，一站直达高质量增长资源。">
 <?php if ($region !== 'all' || $cat !== '' || $q !== ''): ?><meta name="robots" content="noindex,follow"><?php endif; ?>
 <link rel="canonical" href="<?=htmlspecialchars(rtrim(site_config_get('site_url', ''), '/') . '/navigation')?>">
-<script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 导航站独有：搜索框、热搜、站点卡评分。分类/地区/热门/收录标准已迁入全站侧栏（modules.css 的 .sb-w）。 */
 .search{display:flex;gap:10px;width:min(560px,100%);margin:0 auto}

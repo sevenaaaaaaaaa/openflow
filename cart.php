@@ -19,8 +19,6 @@ $siteName = site_config_get('site_name', 'OpenFlow');
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>购物车 | <?=htmlspecialchars($siteName)?></title>
-<link rel="stylesheet" href="/assets/tokens.css?v=20260907a">
-<link rel="stylesheet" href="/assets/modules.css?v=20260907a">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 .cart-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border-soft)}
