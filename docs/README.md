@@ -57,6 +57,7 @@
 | `TECH-STRATEGY.md` | **技术选型与服务边界**：什么活归什么语言（PHP/Python/TypeScript/Go）、API 契约模板、渐进迁移路线、决策清单 |
 | `API-INVENTORY.md` | **116 个 API 端点 + MCP 能力**的完整清单（按域分组 + 鉴权档位 + 对外集成推荐入口） |
 | `AGENT-DEPLOY.md` | **Agent 怎么部署**：拓扑、标准命令、验证清单、绝对规则、常见故障、回滚 |
+| `MCP-SETUP.md` | **把 OpenFlow 接到 AI Agent**：HTTP SSE / stdio 两种接入、23 工具速览、鉴权与安全、排障 |
 | `SERVICE-INTEGRATION.md` | **服务之间怎么对接**：矩阵服务地图、已打通通道、新增对接规范、数据归属 |
 | `INFRASTRUCTURE.md` | **服务器与 Cloudflare 配置**：站点/别名、systemd 服务、DNS、Workers、R2、常用运维命令 |
 | `DEPLOY-CONVENTIONS.md` | 多会话协作约定 + 前端资产版本号纪律（多人/多 Agent 并行时必读） |
