@@ -1198,3 +1198,26 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 .bento>div.bt-shot img{border-radius:var(--r-md);border:1px solid var(--border);aspect-ratio:auto;width:100%;height:100%;object-fit:cover;object-position:top left}
 @media(max-width:900px){.bento{grid-template-columns:repeat(2,1fr)}.bento>div[data-w="3"],.bento>div[data-w="4"],.bento>div[data-w="6"]{grid-column:span 2}.bento>div[data-r="2"]{grid-row:auto}}
 @media(max-width:620px){.bento{grid-template-columns:1fr}.bento>div[data-w]{grid-column:auto}}
+
+/* hacc 精修：闭合态不再“看着空”（图标 + 竖向标题 + 模块数），展开态强调 */
+.hacc{height:420px}
+.hacc details[open],.hacc details:hover{border-color:var(--accent)}
+.hacc summary{gap:14px;justify-content:space-between;padding:22px 0}
+.hacc summary .hi-ic{width:34px;height:34px;flex:0 0 auto;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;writing-mode:horizontal-tb}
+.hacc summary .hi-ic svg{width:17px;height:17px}
+.hacc summary .hi-t{font-size:15px;font-weight:800;letter-spacing:.04em}
+.hacc summary .hi-n{writing-mode:horizontal-tb;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--faint);white-space:nowrap}
+.hacc details[open] summary .hi-n,.hacc details:hover summary .hi-n{color:var(--accent)}
+.hacc .hacc-body{gap:10px}
+.hacc .hacc-body p{font-size:13.5px;color:var(--muted);line-height:1.75;margin:0}
+.hacc .hacc-body ul{list-style:none;padding:0;margin:2px 0 4px;display:grid;grid-template-columns:1fr;gap:6px}
+.hacc .hacc-body li{font-size:12.8px;color:var(--muted);line-height:1.6;padding-left:13px;position:relative}
+.hacc .hacc-body li::before{content:"";position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:.7}
+.hacc .hacc-body li b{color:var(--fg)}
+@media (max-width:860px){
+  .hacc{height:auto}
+  .hacc summary{flex-direction:row;writing-mode:horizontal-tb;padding:15px 18px;justify-content:flex-start}
+  .hacc summary .hi-n{margin-left:auto}
+  .hacc .hacc-body{position:static;width:auto;opacity:1}
+  .hacc details>*:not(summary){opacity:1}
+}

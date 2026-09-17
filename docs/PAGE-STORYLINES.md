@@ -168,7 +168,8 @@
 ## 七、现网骨架审计（2026-09-18）
 
 跑 `php scripts/storyline-audit.php` 可复现（36 个营销页；应用内页已跳过）。
-**当前：ERROR 9 · WARN 23**（MISSING 9 / ORDER 9 / DUPLICATE 7 / MULTI_CTA 7 / FORBIDDEN 0）。
+**当前：ERROR 3 · WARN 14**（MISSING 3 / ORDER 0 / DUPLICATE 7 / MULTI_CTA 7 / FORBIDDEN 0）。
+修复记录：2026-09-18 修 D1+D2（6 个产品页补证言、末尾卡片网格移到收口 CTA 前）→ ERROR 9→3、ORDER 9→0。
 
 ### 已对齐（序列与命名故事线一致）
 
@@ -182,15 +183,15 @@
 
 ### 漂移（待收敛 · 按审计证据排序）
 
-| # | 现象 | 命中页面（审计输出） | 建议 |
-|---|------|----------------------|------|
-| D1 | **收口 CTA 之后还有段落**（末尾重复卡片网格） | 6 个独立产品页 + `demo-products` / `demo-capabilities` / `demo-home-v2` | 末尾 `tool-grid` 移到收口 CTA 之前，或改成「内容簇」；跨产品推荐走页脚 |
-| D2 | **产品页缺证言** | `mflow` `webs-flow` `userloop` `inflow` `payflow` `learnflow` | 补 `quote-wall`（便签墙），对齐 `product-标准` |
-| D3 | **能力Tab 重复** | `demo-capabilities`、`demo-home-v2` | 第二个 `tabs` 改「场景」（`journey`） |
-| D4 | **收口 CTA 重复** | `demo-home-v2`、`growth-os-tour` | 只保留最后一个，其余降级为 `btn ghost` |
-| D5 | **多段各带主 CTA** | `hub-products`(5) / `hub-capabilities`(4) / `product.php`(3) / `capability.php`(3) / `pricing.php` / `index.php` / `home-v2.php` | 中段 CTA 一律 `btn ghost`，只留收口为 primary |
-| D6 | **目录页缺收口 CTA** | `marketplace.php` `navigation.php` | 补 `cta` 或订阅 `newsletter` |
-| D7 | **工具目录缺卡片网格** | `tools.php` | 补 `tool-grid`（工具卡矩阵） |
+| # | 状态 | 现象 | 命中页面 | 建议 |
+|---|------|------|----------|------|
+| D1 | ✅ 已修 | 收口 CTA 之后还有段落（末尾重复卡片网格） | 6 产品页 + 3 个 demo builder 页 | 末尾 `tool-grid` 移到收口 CTA 之前（已做） |
+| D2 | ✅ 已修 | 产品页缺证言 | 6 个独立产品页 | 补 `quote-wall` 便签墙（已做，位于 FAQ 之前） |
+| D3 | 待修 | 能力Tab 重复 | `demo-capabilities`、`demo-home-v2`（builder 数据，路由已切 PHP 页） | 第二个 `tabs` 改「场景」（`journey`），或删（内容已在 `journey`） |
+| D4 | 待修 | 收口 CTA 重复 | `demo-home-v2`、`growth-os-tour` | 只留最后一个，其余降级为 `btn ghost` |
+| D5 | 待修 | 多段各带主 CTA | `hub-products`(5) / `hub-capabilities`(4) / `product.php`(3) / `capability.php`(3) / `pricing.php` / `index.php` / `home-v2.php` | 中段 CTA 一律 `btn ghost`，只留收口为 primary |
+| D6 | 待修 | 目录页缺收口 CTA | `marketplace.php` `navigation.php` | 补 `cta` 或订阅 `newsletter` |
+| D7 | 待修 | 工具目录缺卡片网格 | `tools.php` | 补 `tool-grid`（工具卡矩阵） |
 
 ### 判据（审计脚本怎么判）
 

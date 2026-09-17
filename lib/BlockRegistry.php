@@ -273,11 +273,17 @@ function builder_render_block_inner(array $b): string {
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="bento">' . ($content ?: '<div class="empty">每张卡一个 &lt;div&gt;，data-w=&quot;2&quot; 表示跨两列</div>') . '</div></section>';
         case 'marquee':   // 滚动横幅：子项 <img>/<div>，无缝滚动（悬停暂停）
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="marquee"><div class="marquee-track">' . $content . $content . '</div></div></section>';
-        case 'accordion': // 手风琴：子项 <details><summary>标题</summary><p>内容</p></details>
+        case 'accordion':  // 手风琴（自适应）：内容里写了 hacc-body → 桌面横排展开；否则纵向
+        case 'accordion-h': { // 强制横向手风琴：桌面横排 hover 展开（flex 1→3.2），移动端纵向
             $cnt = $content;
-            // 兼容 hacc-body 写法：纵向手风琴用 vacc-body
-            $cnt = str_replace(['class="hacc-body"', "hacc-body"], ['class="vacc-body"', 'vacc-body'], $cnt);
-            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="vacc">' . ($cnt ?: '<details open><summary>面板标题</summary><div class="vacc-body"><p>面板内容</p></div></details>') . '</div></section>';
+            $horizontal = ($type === 'accordion-h') || str_contains($cnt, 'hacc-body');
+            if (!$horizontal) $cnt = str_replace(['class="hacc-body"', 'hacc-body'], ['class="vacc-body"', 'vacc-body'], $cnt);
+            $wrap = $horizontal ? 'hacc' : 'vacc';
+            $body = $horizontal ? 'hacc-body' : 'vacc-body';
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="' . $wrap . '">'
+                . ($cnt ?: '<details open><summary>面板标题</summary><div class="' . $body . '"><p>面板内容</p></div></details>')
+                . '</div></section>';
+        }
         case 'before-after': // 前后对比：前两个 <img>（前/后），悬停或拖动查看
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="ba-wrap">' . ($content ?: '<div class="empty">放两张 &lt;img&gt;：改版前 / 改版后</div>') . '</div><div class="ba-labels"><span>Before</span><span>After</span></div></section>';
         case 'showcase':  // 编号展示：子项 <div><h3>标题</h3><p>描述</p></div><img>，图文交错 + 自动编号
