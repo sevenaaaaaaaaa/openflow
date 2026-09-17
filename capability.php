@@ -12,12 +12,15 @@ $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
 
 // 能力二级目录 /capability/{key}：先 301 到总页锚点（融合形态落地后在此填真页）
+// 能力二级页 /capability/{key}：直接渲染对应能力的 tab（不再是 301，SEO 可索引）
+$__capOrder = ['touch', 'insight', 'personality', 'sales', 'spine', 'engine', 'open'];
 $__cap = preg_replace('/[^a-z0-9_-]/', '', (string)($_GET['cap'] ?? ''));
-if ($__cap !== '') {
-    header('Location: /capability#cap-' . $__cap, true, 301);
-    header('Cache-Control: public, max-age=86400');
+$__capIdx = $__cap === '' ? 0 : array_search($__cap, $__capOrder, true);
+if ($__cap !== '' && $__capIdx === false) {
+    header('Location: /capability', true, 301);   // 未知 key → 回总页
     exit;
 }
+$__capIdx = (int)$__capIdx;
 
 $I = [
   'bolt'   => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg>',
@@ -95,9 +98,16 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '产品能力 | OpenFlow', 'description' => 'OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、增长引擎与永久开源生态，42 个真实模块全部可在代码与后台中核验。', 'canonical' => site_config_get('site_url') . '/capability']); endif; ?>
-<title>能力 · TIPS 四力 | 芭乐派 · OpenFlow</title>
-<meta name="description" content="OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、增长引擎与永久开源生态，42 个真实模块全部可在代码与后台中核验。">
+<?php
+$__capName = $__cap !== '' && isset($CAPS[$__capIdx]) ? $CAPS[$__capIdx][1] : '';
+$__capDesc = $__cap !== '' && isset($CAPS[$__capIdx]) ? $CAPS[$__capIdx][2] : '';
+$__capTitle = $__capName !== '' ? ($__capName . ' | 产品能力 · OpenFlow') : '产品能力 | OpenFlow';
+$__capMeta  = $__capDesc !== '' ? $__capDesc : 'OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、增长引擎与永久开源生态，42 个真实模块全部可在代码与后台中核验。';
+$__capCanon = site_config_get('site_url') . '/capability' . ($__cap !== '' ? '/' . $__cap : '');
+if (function_exists('of_seo_canonical')) of_seo_canonical($__capCanon);
+if (function_exists('seo_head')): seo_head(['title' => $__capTitle, 'description' => $__capMeta, 'canonical' => $__capCanon]); endif; ?>
+<title><?=htmlspecialchars($__capName !== '' ? ('能力 · ' . $__capName . ' | 芭乐派 · OpenFlow') : '能力 · TIPS 四力 | 芭乐派 · OpenFlow')?></title>
+<meta name="description" content="<?=htmlspecialchars($__capMeta)?>">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 能力页独有：连接器 chips（与产品页同款，等第三处出现再收进共享层） */
