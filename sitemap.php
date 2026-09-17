@@ -55,6 +55,11 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <url><loc><?=$base?>/articles</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
   <url><loc><?=$base?>/lp/solo-growth.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 
+  <!-- 能力二级页（TIPS 四力 + 三层支撑） -->
+  <?php foreach (['touch', 'insight', 'personality', 'sales', 'spine', 'engine', 'open'] as $ckey): ?>
+  <url><loc><?=$base?>/capability/<?=htmlspecialchars($ckey)?></loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
+  <?php endforeach; ?>
+
   <!-- 产品矩阵二级页（产品营销页；后台 page-builder 维护） -->
   <?php foreach (['mflow', 'webs-flow', 'userloop', 'inflow', 'payflow', 'learnflow'] as $pslug): ?>
   <url><loc><?=$base?>/product/<?=htmlspecialchars($pslug)?></loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
