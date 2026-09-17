@@ -909,7 +909,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 .bento>div[data-r="2"]{grid-row:span 2}
 .bento>div h3{font-size:16px;font-weight:800;letter-spacing:-.01em}
 .bento>div p{font-size:13.5px;color:var(--muted);line-height:1.7;margin:0}
-.bento>div img{width:100%;border-radius:var(--r-sm);object-fit:cover;flex:1;min-height:0}
+.bento>div img{width:100%;border-radius:var(--r-sm);object-fit:cover;aspect-ratio:16/10;flex:0 0 auto;height:auto;display:block}
 .bento>div .bg{position:absolute;inset:0;z-index:-1;object-fit:cover}
 @media (max-width:900px){.bento{grid-template-columns:repeat(2,1fr)}.bento>div{grid-column:span 2!important}}
 /* ── marquee：无缝滚动横幅 ── */

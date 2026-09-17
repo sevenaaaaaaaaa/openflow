@@ -65,10 +65,11 @@ def main():
                     errors += 1
 
             # 图片自动生成 WebP 版本（>15KB 的 png/jpg/jpeg）
+            # 注意：这里**不能**因为「已有 WebP」就跳过——源图更新后 WebP 会永远陈旧，
+            # 而浏览器优先取 WebP，结果就是「换了图，页面还是旧的」。只在源图未变更时跳过。
             if ext in ('.png', '.jpg', '.jpeg') and os.path.getsize(local_path) > 15000:
                 webp_key = key.rsplit('.', 1)[0] + '.webp'
-                if existing.get(webp_key):
-                    continue  # 已有 WebP
+                src_unchanged = existing.get(key) == local_md5
                 try:
                     from PIL import Image
                     import io as _io
