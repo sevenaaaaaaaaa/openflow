@@ -108,9 +108,9 @@ RewriteRule ^courses/?$ courses.php [L,QSA]
 RewriteRule ^about/?$ about.php [L,QSA]
 RewriteRule ^product/?$ product.php [L,QSA]
 # ── Demo 预览(不取代现有页面): 总产品聚合 / 总能力聚合 / v2 首页 ──
-RewriteRule ^demo/products/?$       front-builder.php?slug=demo-products       [L,QSA]
-RewriteRule ^demo/capabilities/?$   front-builder.php?slug=demo-capabilities   [L,QSA]
-RewriteRule ^demo/home-v2/?$        front-builder.php?slug=demo-home-v2        [L,QSA]
+RewriteRule ^demo/products/?$       hub-products.php       [L,QSA]
+RewriteRule ^demo/capabilities/?$   hub-capabilities.php   [L,QSA]
+RewriteRule ^demo/home-v2/?$        home-v2.php            [L,QSA]
 # ── 芭乐派产品矩阵：前台产品页统一二级目录 /product/{产品}（后台 page-builder 可继续打磨） ──
 RewriteRule ^product/mflow/?$      front-builder.php?slug=mflow      [L,QSA]
 RewriteRule ^product/webs-flow/?$  front-builder.php?slug=webs-flow  [L,QSA]
