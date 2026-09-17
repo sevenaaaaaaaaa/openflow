@@ -444,8 +444,8 @@ function cfRun(){
         }
         setTimeout(function(){
           status.textContent = '已加入模块面板——刷新页面后可从面板插入页面';
-          // 刷新面板：重新加载页面让 palette 出现新模块
-          if (confirm('模块已保存。是否刷新页面让新模块出现在面板里？')) location.reload();
+          var ask = (window.ofConfirm ? window.ofConfirm({ title: '模块已保存', message: '是否刷新页面让新模块出现在面板里？', okText: '刷新' }) : Promise.resolve(true));
+          ask.then(function(ok){ if (ok) location.reload(); });
         }, 1800);
       } else {
         status.textContent = '失败：' + (d.error || '未知错误');
