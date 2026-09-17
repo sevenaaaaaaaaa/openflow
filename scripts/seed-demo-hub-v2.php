@@ -95,7 +95,7 @@ HTML];
 /** 「跑一遍」运行演示（输出为已实现的真实机制，不编造） */
 function block_runlog(callable $k): array {
     return ['_type' => 'runlog', '_key' => $k(), 'title' => '它一天在干什么：跑一遍', 'subtitle' => 'run',
-        'button_text' => '▶ 跑一遍',
+        'anchor' => 'dayrun', 'button_text' => '▶ 跑一遍',
         'content' => "$ openflow loop --today\n✓ 采集     GEO 全网抓取新话题（RSS + 搜索 API 双通道）\n✓ 选题     按你的方向打分去重，产出候选 3 个\n✓ 初稿     AI 出结构化草稿，落进草稿箱待你审\n✓ 发布     多端分发 + 收录推送（sitemap / IndexNow）\n✓ 回收     阅读·线索·转化回流，标出漏单的那一环\n✓ 体检     SelfEvolve 列出该修的清单（只给建议，不自动改）\n→ 结论     今天最该动的一件事，交给你判断"];
 }
 
@@ -128,7 +128,7 @@ HTML],
 <div><h3>你的依赖假设是什么？</h3><p>已有 CMS / 商城 / MA 的，选零依赖单点产品（PayFlow、Webs Flow、inFlow、UserLoop）；想数据在一处的，走 OpenFlow 底座。</p></div>
 <div><h3>谁在用、几个人用？</h3><p>一个人用单点产品更快见效；团队协作、要统一数据与权限，用 OpenFlow + 按需嵌入其余产品。</p></div>
 HTML],
-        ['_type' => 'tool-grid', '_key' => $k(), 'id' => 'products', 'title' => '七个独立产品', 'subtitle' => '产品矩阵', 'content' => <<<HTML
+        ['_type' => 'tool-grid', '_key' => $k(), 'anchor' => 'products', 'title' => '七个独立产品', 'subtitle' => '产品矩阵', 'content' => <<<HTML
 <div><span class="tg-tag">全家桶</span><h3>OpenFlow · 增长操作系统</h3><p>内容·数据·触达·销售四力合一。<b>依赖</b>：深度（自家 CMS+CDP）·<b>为谁</b>：要一整套系统的团队</p><a href="/product" style="color:var(--accent);font-size:13px;font-weight:700">进入 OpenFlow →</a></div>
 <div><span class="tg-tag">轻量内容</span><h3>MFlow · 内容生产与分发</h3><p>不换 CMS、不建 CDP、不锁模型。<b>依赖</b>：低 ·<b>为谁</b>：内容创作者、电商卖家</p><a href="/product/mflow" style="color:var(--accent);font-size:13px;font-weight:700">进入 MFlow →</a></div>
 <div><span class="tg-tag">落地页</span><h3>Webs Flow · 落地页专精</h3><p>素材到上线以小时计，投放原生。<b>依赖</b>：无 ·<b>为谁</b>：投手、活动运营</p><a href="/product/webs-flow" style="color:var(--accent);font-size:13px;font-weight:700">进入 Webs Flow →</a></div>
@@ -195,14 +195,14 @@ upsert_page('demo-capabilities', [
 <div><b>43</b><span>展示区块</span></div>
 <div><b>116</b><span>API 端点</span></div>
 HTML],
-        ['_type' => 'tabs', '_key' => $k(), 'id' => 'map', 'title' => '四力：每一项能力解决什么', 'subtitle' => 'TIPS', 'content' => <<<HTML
+        ['_type' => 'tabs', '_key' => $k(), 'anchor' => 'map', 'title' => '四力：每一项能力解决什么', 'subtitle' => 'TIPS', 'content' => <<<HTML
 <div data-tab="触达 Touch"><h3>把对的内容递到对的人面前</h3><p><b>内容引擎</b>：文章/课程/资料/播客一站式生产管理。<b>创作台</b>：深度专栏、口播脚本、品牌幻灯片，AI 结构化产出。<b>SEO/GEO</b>：四大搜索引擎接入 + 全网话题采集。<b>Newsletter</b>：选文章自动排版定时发送。</p><p style="margin-top:8px;color:var(--accent);font-weight:700">承载产品：MFlow（轻量） · OpenFlow（全家桶） · Webs Flow（承接页）</p></div>
 <div data-tab="洞察 Insight"><h3>从几百个指标捞出该看的那 3-5 个</h3><p><b>CDP 画像</b>：身份合并、一人一册行为时间线。<b>分群与 RFM</b>：行为驱动动态标签。<b>转化漏斗</b>：访客→注册→加购→支付→复购。<b>问数据</b>：自然语言直接问经营数据。<b>外部情报</b>：趋势/舆情/竞品。</p><p style="margin-top:8px;color:var(--accent);font-weight:700">承载产品：inFlow（外部情报） · UserLoop（全域数据） · OpenFlow（自有数据）</p></div>
 <div data-tab="个性化 Personality"><h3>同一套系统，给每个人不同的答案</h3><p><b>人群定向</b>：任何页面区块按登录态/分群/UTM 显示不同内容。<b>推荐引擎</b>：按画像与行为推荐内容与商品。<b>动态内容</b>：规则驱动的个性化呈现。</p><p style="margin-top:8px;color:var(--accent);font-weight:700">承载产品：UserLoop（数据底座） · OpenFlow（全站个性化）</p></div>
 <div data-tab="销售 Sales"><h3>把流量变成收入，把收入变成复购</h3><p><b>CRM 与线索</b>：线索池、管道、跟进。<b>商业闭环</b>：购物车、订阅计费、优惠券、推荐码、佣金结算。<b>会员体系</b>：等级与权益。<b>集市</b>：数字商品上架交付。</p><p style="margin-top:8px;color:var(--accent);font-weight:700">承载产品：PayFlow（收款变现） · LearnFlow（课程交付） · OpenFlow（全站商业）</p></div>
 HTML],
         block_screens('能力长什么样：真实后台截图', $k, $SHOT, $SHOT_V, array_merge($SHOT_ITEMS, $SHOT_ITEMS2)),
-        ['_type' => 'accordion', '_key' => $k(), 'id' => 'modules', 'title' => '42 个模块，全部真实存在', 'subtitle' => '能力索引', 'content' => <<<HTML
+        ['_type' => 'accordion', '_key' => $k(), 'anchor' => 'modules', 'title' => '42 个模块，全部真实存在', 'subtitle' => '能力索引', 'content' => <<<HTML
 <details open><summary>触达 Touch · 6 模块</summary><div class="hacc-body"><p>内容引擎 · 创作台 · 直播带货 · SEO/GEO · 多语言站群 · Newsletter 分发</p><a href="/academy">去学院看内容形态 →</a></div></details>
 <details><summary>洞察 Insight · 6 模块</summary><div class="hacc-body"><p>CDP 画像 · 分群与 RFM · 转化漏斗 · 驾驶舱 · 问数据 AskData · 归因与 A/B</p><a href="/product#demo">看数据怎么驱动决策 →</a></div></details>
 <details><summary>个性化 Personality · 6 模块</summary><div class="hacc-body"><p>人群定向 · 推荐引擎 · 动态内容 · 落地页变体 · 会员分层 · 权益解锁</p></div></details>
