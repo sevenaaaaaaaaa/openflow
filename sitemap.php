@@ -55,14 +55,10 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <url><loc><?=$base?>/articles</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
   <url><loc><?=$base?>/lp/solo-growth.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 
-  <!-- Category 分类页 -->
-  <?php
-  $navContent = file_exists($dataDir . '/site-nav-content.php') ? require $dataDir . '/site-nav-content.php' : [];
-  foreach ($navContent as $secKey => $sec):
-    foreach ($sec['subs'] ?? [] as $sub):
-  ?>
-  <url><loc><?=$base?>/category/<?=htmlspecialchars($secKey)?>/<?=htmlspecialchars($sub['key'])?></loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
-  <?php endforeach; endforeach; ?>
+  <!-- 产品矩阵二级页（产品营销页；后台 page-builder 维护） -->
+  <?php foreach (['mflow', 'webs-flow', 'userloop', 'inflow', 'payflow', 'learnflow'] as $pslug): ?>
+  <url><loc><?=$base?>/product/<?=htmlspecialchars($pslug)?></loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
+  <?php endforeach; ?>
 
   <!-- Articles -->
   <?php
