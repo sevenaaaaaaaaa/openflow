@@ -264,7 +264,8 @@ function builder_render_block(array $b): string {
             $name = 'tb' . substr(md5($title . $sub), 0, 6);
             preg_match_all('/<div\s+data-tab="([^"]*)"[^>]*>(.*?)<\/div>/s', $content, $tabs, PREG_SET_ORDER);
             if (!$tabs) return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="empty">面板需带 data-tab 属性</div></section>';
-            $tabsHtml = '<div class="tabs">';
+            // 结构必须让 input 与 .tab-panels 成为兄弟（CSS 用 :checked ~ .tab-panels 切换面板）
+            $tabsHtml = '';
             $panelsHtml = '<div class="tab-panels">';
             foreach ($tabs as $i => $tb) {
                 $id = $name . $i;
@@ -272,7 +273,8 @@ function builder_render_block(array $b): string {
                 $tabsHtml .= '<input class="tab-i" type="radio" name="' . $name . '" id="' . $id . '"' . $checked . '><label for="' . $id . '">' . htmlspecialchars($tb[1]) . '</label>';
                 $panelsHtml .= '<div class="tab-p">' . $tb[2] . '</div>';
             }
-            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="tabbed">' . $tabsHtml . '<div style="flex-basis:100%"></div>' . $panelsHtml . '</div></section>';
+            $panelsHtml .= '</div>';
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="tabbed">' . $tabsHtml . $panelsHtml . '</div></section>';
         }
         case 'portrait':  // 竖版卡片：子项 <div><img><h3>标题</h3><p>描述</p><a>链接</a></div>，4列(可 data-cols)
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="pgrid">' . ($content ?: '<div class="empty">每张竖版卡一个 &lt;div&gt;</div>') . '</div></section>';
