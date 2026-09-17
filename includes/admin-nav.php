@@ -339,6 +339,7 @@ function admin_nav_build(bool $includeSystem): array {
             ['label' => '站点与安全', 'items' => [
                 ['id' => 'settings', 'label' => '系统设置', 'perm' => 'settings'],
                 ['id' => 'site-builder', 'label' => '站点结构', 'perm' => 'site-builder'],
+                ['id' => 'nav-editor', 'label' => '顶栏导航', 'perm' => 'site-builder'],
                 ['id' => 'themes', 'label' => '主题', 'perm' => 'themes'],
                 ['id' => 'plugins', 'label' => '插件', 'perm' => 'plugins'],
                 ['id' => 'users', 'label' => '后台用户', 'perm' => 'users'],
