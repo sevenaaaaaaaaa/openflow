@@ -98,10 +98,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 <?php if (function_exists('seo_head')): seo_head(['title' => '产品能力 | OpenFlow', 'description' => 'OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、增长引擎与永久开源生态，42 个真实模块全部可在代码与后台中核验。', 'canonical' => site_config_get('site_url') . '/capability']); endif; ?>
 <title>能力 · TIPS 四力 | 芭乐派 · OpenFlow</title>
 <meta name="description" content="OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、增长引擎与永久开源生态，42 个真实模块全部可在代码与后台中核验。">
-<script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 能力页独有：连接器 chips（与产品页同款，等第三处出现再收进共享层） */
 .conn-chips{display:flex;flex-wrap:wrap;gap:8px;padding:22px}

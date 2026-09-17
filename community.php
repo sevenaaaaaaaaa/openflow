@@ -59,10 +59,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>增长社区 | <?=site_config_get('site_name')?> · 讨论</title>
 <meta name="description" content="芭乐派增长社区：一人公司与增长从业者的实战讨论区，分享 OpenFlow 玩法、增长案例与工具经验。">
-<script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 社区页独有：帖子卡与投票列、发帖框。话题/热议/公约已迁入全站侧栏（modules.css 的 .sb-w）。 */
 .stream{display:flex;flex-direction:column;gap:14px}

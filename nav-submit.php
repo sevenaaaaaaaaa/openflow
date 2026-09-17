@@ -17,10 +17,7 @@ $siteName = site_config_get('site_name', 'OpenFlow');
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>提交收录 · 增长导航 | <?=htmlspecialchars($siteName)?></title>
 <meta name="description" content="提交你正在用的增长工具，审核通过后收录进导航站。">
-<script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
-<link rel="stylesheet" id="of-fonts-css" href="/assets/fonts/fonts.css?v=20260903a">
-<link rel="stylesheet" id="of-tokens-css" href="/assets/tokens.css?v=20260903a">
-<link rel="stylesheet" id="of-modules-css" href="/assets/modules.css?v=20260911a">
+<?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 收录申请页独有：表单卡。其余全部来自 modules.css。 */
 .submit-wrap{max-width:640px;margin:0 auto}
