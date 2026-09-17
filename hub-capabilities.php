@@ -216,17 +216,16 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
       <h2>42 个模块，全部真实存在</h2>
       <p class="lead">不写「规划中」、不写「敬请期待」。下面每一个名词，都能在后台界面或 GitHub 代码里找到对应实现。</p>
     </div>
-    <div class="faq-bar"><button type="button" id="capExpand">全部展开</button></div>
-    <div class="faq" id="capIndex">
+    <div class="hacc">
       <?php foreach ($CAPS as $i => $c): ?>
-      <div class="fq<?=$i===0?' open':''?>">
-        <button class="fq-q" aria-expanded="<?=$i===0?'true':'false'?>"><span class="ic"><?=$I[$c[0]]?></span><span><?=htmlspecialchars($c[1])?></span><span class="fq-n"><?=count($c[3])?> 个模块</span><span class="fx"><?=$plus?></span></button>
-        <div class="fq-a"><div>
-          <p style="padding:2px 48px 14px 4px;color:var(--muted);font-size:14px;line-height:1.8"><?=htmlspecialchars($c[2])?></p>
+      <details<?=$i===0?' open':''?>>
+        <summary><span class="hi-ic"><?=$I[$c[0]]?></span><span class="hi-t"><?=htmlspecialchars($c[1])?></span><span class="hi-n"><?=count($c[3])?> 模块</span></summary>
+        <div class="hacc-body">
+          <p><?=htmlspecialchars($c[2])?></p>
           <ul><?php foreach ($c[3] as $m): ?><li><b><?=htmlspecialchars($m[0])?></b> — <?=htmlspecialchars($m[1])?></li><?php endforeach; ?></ul>
-          <a class="fq-cta" href="<?=htmlspecialchars($c[6])?>"><?=htmlspecialchars($c[7])?></a>
-        </div></div>
-      </div>
+          <a href="<?=htmlspecialchars($c[6])?>"><?=htmlspecialchars($c[7])?></a>
+        </div>
+      </details>
       <?php endforeach; ?>
     </div>
   </section>
