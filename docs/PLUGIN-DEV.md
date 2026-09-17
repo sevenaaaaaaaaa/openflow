@@ -100,3 +100,111 @@ PluginSystem::register_schedule('my-cleanup', 'daily', function () {
 - **性能**：`plugin.php` 每次请求都加载，只做注册，别在顶层跑重逻辑。
 - **隔离**：回调异常被捕获，不影响主站；但请自己处理好边界。
 - **参考**：`plugins/example-plugin/plugin.php` 是覆盖全部 API 的活示例。
+
+---
+
+## 9. 从 0 写一个插件（实操）
+
+以「文章保存时自动打标签 + 提供一个只读 API + 后台一个小设置页」为例。
+
+### 9.1 建目录与元信息
+
+```bash
+mkdir -p plugins/auto-tagger
+```
+
+`plugins/auto-tagger/plugin.json`：
+
+```json
+{
+  "id": "auto-tagger",
+  "name": "自动打标",
+  "version": "1.0.0",
+  "author": "you",
+  "description": "文章保存时按关键词自动补标签；提供 /auto-tagger/tags 只读接口",
+  "enabled_by_default": false,
+  "permissions": ["hooks", "api", "log"]
+}
+```
+
+> `permissions` 决定插件能调用哪些能力（`hooks`/`api`/`http`/`log`/`config`/`schedule`/`slot`）。
+> 权限在 `PluginSystem::plugin_can()` 处强制，插件越权会被拒绝并记日志。
+
+### 9.2 入口 `plugins/auto-tagger/plugin.php`
+
+```php
+<?php
+/**
+ * 自动打标插件 —— 演示：filter 钩子 + 只读 API + 后台设置页
+ */
+if (!class_exists('PluginSystem')) return;
+
+$PLUGIN_ID = 'auto-tagger';
+
+// ① filter：文章保存前补标签（必须 return 修改后的值）
+PluginSystem::add_filter('article_save_before', function (array $article) {
+    $kw = ['增长', '转化', '留存'];
+    $tags = $article['tags'] ?? [];
+    $text = ($article['title'] ?? '') . ($article['content'] ?? '');
+    foreach ($kw as $k) {
+        if (mb_strpos($text, $k) !== false && !in_array($k, $tags, true)) $tags[] = $k;
+    }
+    $article['tags'] = array_values(array_unique($tags));
+    return $article;
+});
+
+// ② 只读 API：GET /api/plugin/auto-tagger/tags
+PluginSystem::register_api_route($PLUGIN_ID, 'GET', 'tags', function () {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['ok' => true, 'keywords' => ['增长', '转化', '留存']], JSON_UNESCAPED_UNICODE);
+});
+
+// ③ 后台设置页（出现在「系统 → 插件管理」该插件下）
+PluginSystem::register_admin_page($PLUGIN_ID, function () {
+    echo '<h2>自动打标</h2><p class="sub">关键词可在代码中调整；命中即自动补标签。</p>';
+});
+```
+
+### 9.3 启用与自检
+
+1. 后台「系统 → 插件管理」找到该插件 → **启用**
+2. 编辑一篇文章保存 → 检查标签是否自动补上
+3. `curl https://nownexts.com/api/plugin/auto-tagger/tags` → 应返回 JSON
+4. 禁用插件 → 上述行为应全部消失（**禁用即全部失效**是契约）
+
+### 9.4 可用的扩展点（速查）
+
+| 能力 | API |
+|---|---|
+| 事件钩子 | `add_action($hook, $cb)` / `add_filter($hook, $value, ...)` |
+| API 路由 | `register_api_route($id, 'GET\|POST', 'path', $cb)` → `/api/plugin/{id}/path` |
+| 后台菜单/页面 | `register_admin_menu([...])` / `register_admin_page($id, $cb)` |
+| 前台插槽 | `register_front_slot('head\|body_end', $cb)` + `register_front_assets('css\|js')` |
+| 定时任务 | `register_schedule(...)`（由 `/api/cron.php` 驱动） |
+| 区块类型 | `register_block($pluginId, ['name'=>..., 'render'=>callable])`（进建站模块面板） |
+
+### 9.5 参考实现（本仓现有 6 个插件）
+
+| 插件 | 适合学什么 |
+|---|---|
+| `plugins/insight-flow/` | HMAC 出站推送 + 回读 API + 定时任务（**旁路 + 超时 + 失败静默**的范例） |
+| `plugins/userloop-tracker/` | 前台插槽注入脚本（`body_end`）+ 权限声明 |
+| `plugins/seo-enhancer/` | 内容后处理（filter） |
+| `plugins/deal-notifier/` | 事件 → 通知渠道 |
+| `plugins/event-firewall/` | 请求侧拦截 |
+| `plugins/example-plugin/` | 最小骨架 |
+
+### 9.6 发布到生态市场
+
+1. 把插件目录打包（含 `plugin.json`）
+2. 后台「生态市场」或 `admin/plugins.php` 上传安装（`PluginSystem::install_plugin()`）
+3. 上架后其他人可在 `/marketplace?type=plugin` 看到并安装
+
+### 9.7 调试
+
+| 手段 | 说明 |
+|---|---|
+| `PluginSystem::plugin_can($id, 'perm')` | 排查权限不足 |
+| `plugin_backups($id)` / `rollback_plugin($id)` | 安装/升级前自动备份，可回滚 |
+| 日志 | 声明了 `log` 权限的插件写日志；失败路径要显式记录 |
+| 关掉插件对照 | 行为消失即确认是插件所致（契约） |
