@@ -55,8 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($postAction === 'cloud_upload') {
         $name = $_POST['backup_name'] ?? '';
         $provider = $_POST['provider'] ?? '';
-        // TODO: 实现云上传
-        flash('success', "正在上传到 {$provider}...");
+        // 异地备份：待接入（两条路，二选一）
+        //   A. 宝塔面板「计划任务 → 备份到云端」（S3/OSS/R2 均可，零代码，推荐）
+        //   B. 本系统内实现：需要把对象存储凭据放到服务器 data/r2.json（不入库），再用签名 PUT 上传 zip
+        // 现状：备份只落在本机 data/backups（同一块盘），保留份数见「定时备份」设置。
+        flash('error', '云上传尚未接入：请用宝塔「计划任务→备份到云端」，或先配置 data/r2.json');
         header('Location: /xmp/backup');
         exit;
     }
