@@ -38,7 +38,7 @@ function block_types(): array {
         'checklist' => '对勾清单', 'countdown' => '倒计时', 'banner' => '公告横条',
         'team' => '团队网格', 'code' => '代码展示', 'kbd' => '快捷键组',
         'spotlight' => '聚光大字', 'ticker' => '数字滚动', 'quote-wall' => '便签墙',
-        'changelog' => '更新日志', 'runlog' => '运行演示',
+        'changelog' => '更新日志', 'runlog' => '运行演示', 'deck' => '轮播 Deck', 'hero-deck' => 'Hero + 轮播', 'cmp' => '组合对比表', 'diagnose' => '诊断两栏',
         'module' => '引用模块库',
     ];
     // 合并用户自定义模块（模块工厂）：key 不与内置冲突时加入
@@ -74,7 +74,7 @@ function block_builtin_categories(): array {
         'proof' => 'social', 'blog-grid' => 'content', 'canvas-wall' => 'media', 'feature-detail' => 'content',
         'checklist' => 'convert', 'countdown' => 'convert', 'banner' => 'convert', 'team' => 'social',
         'code' => 'content', 'kbd' => 'content', 'spotlight' => 'layout', 'ticker' => 'content',
-        'quote-wall' => 'social', 'changelog' => 'layout', 'runlog' => 'content',
+        'quote-wall' => 'social', 'changelog' => 'layout', 'runlog' => 'content', 'deck' => 'layout', 'hero-deck' => 'layout', 'cmp' => 'commerce', 'diagnose' => 'convert',
     ];
 }
 
@@ -261,8 +261,11 @@ function builder_render_block_inner(array $b): string {
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="cols n3">' . $content . '</div>' : '<div class="empty">配置价格方案</div>') . $btn . '</section>';
         case 'timeline':
             return '<section class="sec reveal reader"' . $bgStyle . '>' . $head() . ($content ? '<div class="prose timeline">' . $content . '</div>' : '<div class="empty">配置时间线条目</div>') . '</section>';
-        case 'comparison':
-            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="scroll-x">' . $content . '</div>' : '<div class="empty">配置对比项</div>') . '</section>';
+        case 'comparison': {
+            // 带 class="cmp" 的表用原版对比表容器（.cmp-wrap），其余走通用横向滚动
+            $wrap = str_contains($content, 'class="cmp"') ? 'cmp-wrap' : 'scroll-x';
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . ($content ? '<div class="' . $wrap . '">' . $content . '</div>' : '<div class="empty">配置对比项</div>') . '</section>';
+        }
         /* ── 展示区块扩展组：内容 = 子项 HTML，CSS archetype 负责布局 ── */
         case 'journey':   // 旅程步骤：子项 <div><h4>01</h4><h3>标题</h3><p>描述</p></div>，自动编号
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="steps">' . ($content ?: '<div class="empty">每步一个 &lt;div&gt;：&lt;h3&gt;标题&lt;/h3&gt;&lt;p&gt;描述&lt;/p&gt;</div>') . '</div></section>';
@@ -271,7 +274,10 @@ function builder_render_block_inner(array $b): string {
         case 'marquee':   // 滚动横幅：子项 <img>/<div>，无缝滚动（悬停暂停）
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="marquee"><div class="marquee-track">' . $content . $content . '</div></div></section>';
         case 'accordion': // 手风琴：子项 <details><summary>标题</summary><p>内容</p></details>
-            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="hacc">' . ($content ?: '<details open><summary>面板标题</summary><p>面板内容</p></details>') . '</div></section>';
+            $cnt = $content;
+            // 兼容 hacc-body 写法：纵向手风琴用 vacc-body
+            $cnt = str_replace(['class="hacc-body"', "hacc-body"], ['class="vacc-body"', 'vacc-body'], $cnt);
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="vacc">' . ($cnt ?: '<details open><summary>面板标题</summary><div class="vacc-body"><p>面板内容</p></div></details>') . '</div></section>';
         case 'before-after': // 前后对比：前两个 <img>（前/后），悬停或拖动查看
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="ba-wrap">' . ($content ?: '<div class="empty">放两张 &lt;img&gt;：改版前 / 改版后</div>') . '</div><div class="ba-labels"><span>Before</span><span>After</span></div></section>';
         case 'showcase':  // 编号展示：子项 <div><h3>标题</h3><p>描述</p></div><img>，图文交错 + 自动编号
@@ -333,6 +339,101 @@ function builder_render_block_inner(array $b): string {
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="ticker-grid">' . ($content ?: '<div class="empty">每个数字一个 &lt;div data-n=&quot;10000&quot;&gt;</div>') . '</div><script>document.querySelectorAll(".ticker-grid [data-n]").forEach(function(el){var n=parseFloat(el.dataset.n)||0,s=el.dataset.suffix||"",b=el.querySelector("b"),st=null;requestAnimationFrame(function f(t){if(st===null)st=t;var p=Math.min((t-st)/1600,1),v=Math.floor(n*(1-Math.pow(1-p,3)));b.textContent=v.toLocaleString()+s;if(p<1)requestAnimationFrame(f)})});</script></section>';
         case 'quote-wall': // 便签墙：子项 <div>短句</div>，随机小角度旋转
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="qwall">' . ($content ?: '<div class="empty">每张便签一个 &lt;div&gt;</div>') . '</div><script>document.querySelectorAll(".qwall>div").forEach(function(el,i,a){el.style.setProperty("--tilt",((i*53)%9-4)*0.8+"deg")});</script></section>';
+        case 'hero-deck': { // 居中大标题首屏 + 自动轮播 Deck（复用原版 .deck 模式，不用左右分栏）
+            $slides = [];
+            $deckSrc = (string)($b['deck'] ?? $content);   // 轮播内容放 deck 字段；content 作引导语
+            preg_match_all('/<div\s+data-tab="([^"]*)"(?:\s+data-img="([^"]*)")?[^>]*>(.*?)<\/div>/s', $deckSrc, $m, PREG_SET_ORDER);
+            foreach ($m as $x) $slides[] = ['label' => $x[1], 'img' => $x[2] ?? '', 'body' => $x[3]];
+            if (!$slides) {
+                // 没有轮播内容时退化为居中 hero（标题/正文/按钮照常渲染，不能输出空 section）
+                return '<section class="reveal in"' . $bgStyle . '><div class="hero-center">'
+                    . ($sub ? '<span class="kicker">' . $sub . '</span>' : '') . '<h1>' . $title . '</h1>'
+                    . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div></section>';
+            }
+            $id = 'hd' . substr(md5($title), 0, 6);
+            $tabs = ''; $panels = '';
+            foreach ($slides as $i => $sl) {
+                $on = $i === 0 ? ' on' : '';
+                $tabs .= '<button type="button" class="tab-p' . $on . '" role="tab" aria-selected="' . ($i === 0 ? 'true' : 'false') . '" data-t="' . $i . '">' . htmlspecialchars($sl['label']) . '</button>';
+                $vis = $sl['img'] !== '' ? '<div class="sp-vis"><img src="' . htmlspecialchars($sl['img'], ENT_QUOTES) . '" alt="' . htmlspecialchars($sl['label'], ENT_QUOTES) . '" loading="lazy"></div>' : '<div class="sp-vis"></div>';
+                $panels .= '<div class="deck-p' . $on . '" data-p="' . $i . '"><div class="sp-txt">' . $sl['body'] . '</div>' . $vis . '</div>';
+            }
+            $trust = htmlspecialchars((string)($b['trust'] ?? ''));
+            $js = '<script>(function(){var d=document.getElementById("' . $id . '");if(!d)return;var tabs=[].slice.call(d.querySelectorAll(".tab-p")),ps=[].slice.call(d.querySelectorAll(".deck-p")),bar=d.querySelector(".prog i"),n=ps.length,i=0,iv=(+d.dataset.interval)||5000,t=null,s=Date.now();'
+                . 'function go(k){i=(k+n)%n;tabs.forEach(function(x,j){x.classList.toggle("on",j===i);x.setAttribute("aria-selected",j===i?"true":"false")});ps.forEach(function(x,j){x.classList.toggle("on",j===i)});s=Date.now()}'
+                . 'function tick(){var p=Math.min(1,(Date.now()-s)/iv);bar.style.width=(p*100)+"%";if(p>=1)go(i+1)}'
+                . 'tabs.forEach(function(x){x.addEventListener("click",function(){go(+x.dataset.t)})});'
+                . 'try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches){setInterval(tick,120);}}catch(e){}'
+                . 'go(0)})();</script>';
+            return '<section class="reveal in"' . $bgStyle . '><div class="hero-center">'
+                . ($sub ? '<span class="kicker">' . $sub . '</span>' : '') . '<h1>' . $title . '</h1>'
+                . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn
+                . ($trust !== '' ? '<div class="trust"><span class="dot"></span>' . $trust . '</div>' : '')
+                . '</div>'
+                . '<div class="deck auto" id="' . $id . '" data-interval="5000" style="margin-top:26px">'
+                . '<div class="tab-bar" role="tablist">' . $tabs . '</div><div class="prog" aria-hidden="true"><i></i></div>'
+                . '<div class="deck-stage">' . $panels . '</div></div>' . $js . '</section>';
+        }
+        case 'deck': { // 通用自动轮播 Deck（复用 .deck）
+            $slides = [];
+            preg_match_all('/<div\s+data-tab="([^"]*)"(?:\s+data-img="([^"]*)")?[^>]*>(.*?)<\/div>/s', $content, $m, PREG_SET_ORDER);
+            foreach ($m as $x) $slides[] = ['label' => $x[1], 'img' => $x[2] ?? '', 'body' => $x[3]];
+            if (!$slides) return '<section class="sec reveal">' . $head() . '<div class="empty">每个面板一个 &lt;div data-tab=&quot;标题&quot; data-img=&quot;图片&quot;&gt;</div></section>';
+            $id = 'dk' . substr(md5($title), 0, 6);
+            $tabs = ''; $panels = '';
+            foreach ($slides as $i => $sl) {
+                $on = $i === 0 ? ' on' : '';
+                $tabs .= '<button type="button" class="tab-p' . $on . '" role="tab" aria-selected="' . ($i === 0 ? 'true' : 'false') . '" data-t="' . $i . '">' . htmlspecialchars($sl['label']) . '</button>';
+                $vis = $sl['img'] !== '' ? '<div class="sp-vis"><img src="' . htmlspecialchars($sl['img'], ENT_QUOTES) . '" alt="' . htmlspecialchars($sl['label'], ENT_QUOTES) . '" loading="lazy"></div>' : '<div class="sp-vis"></div>';
+                $panels .= '<div class="deck-p' . $on . '" data-p="' . $i . '"><div class="sp-txt">' . $sl['body'] . '</div>' . $vis . '</div>';
+            }
+            $js = '<script>(function(){var d=document.getElementById("' . $id . '");if(!d)return;var tabs=[].slice.call(d.querySelectorAll(".tab-p")),ps=[].slice.call(d.querySelectorAll(".deck-p")),bar=d.querySelector(".prog i"),n=ps.length,i=0,iv=(+d.dataset.interval)||5000,s=Date.now();'
+                . 'function go(k){i=(k+n)%n;tabs.forEach(function(x,j){x.classList.toggle("on",j===i)});ps.forEach(function(x,j){x.classList.toggle("on",j===i)});s=Date.now()}'
+                . 'function tick(){var p=Math.min(1,(Date.now()-s)/iv);bar.style.width=(p*100)+"%";if(p>=1)go(i+1)}'
+                . 'tabs.forEach(function(x){x.addEventListener("click",function(){go(+x.dataset.t)})});try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches)setInterval(tick,120)}catch(e){}go(0)})();</script>';
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head()
+                . '<div class="deck auto" id="' . $id . '" data-interval="5000">'
+                . '<div class="tab-bar" role="tablist">' . $tabs . '</div><div class="prog" aria-hidden="true"><i></i></div>'
+                . '<div class="deck-stage">' . $panels . '</div></div>' . $js . '</section>';
+        }
+        case 'cmp': { // 组合对比表（复用原版 .cmp 结构：原生/—/需集成 + 底座列解释 + 口径声明）
+            if ($content !== '' && str_contains($content, '<table')) {
+                return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="cmp-wrap">' . $content . '</div></section>';
+            }
+            $rows = [
+                ['内容发布与管理', '原生', '—', '—', '—', '—', '写完即被其余四块共用'],
+                ['营销自动化', '—', '原生', '—', '—', '—', '拖出流程，直接读得到画像'],
+                ['客户数据与分群', '—', '—', '原生', '—', '—', '匿名到成交是同一个人'],
+                ['搜索与 AI 优化', '—', '—', '—', '—', '原生', '发布时就已经优化好'],
+                ['线索与转化', '—', '—', '—', '原生', '—', '成交结果反哺前面四块'],
+                ['跨模块数据打通', '需集成', '需集成', '需集成', '需集成', '需集成', '一套数据 · 原生打通'],
+            ];
+            $t = '<table class="cmp"><thead><tr><th scope="col">能力维度</th><th scope="col">内容引擎</th><th scope="col">营销自动化</th><th scope="col">客户数据 CDP</th><th scope="col">线索 CRM</th><th scope="col">SEO · GEO</th><th scope="col" class="ol">OpenFlow 底座</th></tr></thead><tbody>';
+            foreach ($rows as $r) {
+                $cells = '';
+                for ($c = 1; $c <= 5; $c++) {
+                    $v = $r[$c];
+                    $cls = $v === '原生' ? 'y' : 'na';
+                    $cells .= '<td class="' . $cls . '">' . htmlspecialchars($v) . '</td>';
+                }
+                $t .= '<tr><th scope="row">' . htmlspecialchars($r[0]) . '</th>' . $cells . '<td class="ol y">' . htmlspecialchars($r[6]) . '</td></tr>';
+            }
+            $t .= '</tbody></table><p class="cmp-note">对比口径：单点工具以各自官方能力描述为准，「—」表示不覆盖该维度，「需集成」表示依赖第三方打通。OpenFlow 是组合式开源底座，各模块共用一套数据层。</p>';
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="cmp-wrap">' . $t . '</div></section>';
+        }
+        case 'diagnose': { // 诊断两栏：左卖点 + 右表单（复用原版 .contact-wrap/.ct-pitch/.ct-list）
+            $pts = ['O.L.B 评分卡：三分钟自查增长健康度', '标出 Agent 化收益最高的环节', '带走一份可执行的改造顺序'];
+            $lis = '';
+            foreach ($pts as $pt) $lis .= '<li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg></span>' . htmlspecialchars($pt) . '</li>';
+            require_once __DIR__ . '/BlockSchema.php';
+            $slug = trim((string)($b['form'] ?? '')) ?: 'appointment';
+            $form = blockschema_render_form($slug);
+            return '<section class="sec reveal diagnose"' . $bgStyle . '><div class="contact-wrap">'
+                . '<div class="ct-pitch"><span class="kicker">' . htmlspecialchars($sub ?: 'O.L.B 增长诊断') . '</span><h2>' . $title . '</h2>'
+                . ($content !== '' ? '<p class="lead">' . $content . '</p>' : '')
+                . '<ul class="ct-list">' . $lis . '</ul></div>'
+                . '<div class="form-card">' . $form . '</div></div></section>';
+        }
         case 'runlog': {   // 运行演示：点击「跑一遍」，逐行打字展示真实引擎输出
             $lines = array_values(array_filter(array_map('trim', explode("\n", (string)$content)), fn($l) => $l !== ''));
             if (!$lines) return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="empty">配置运行输出（每行一条）</div></section>';
