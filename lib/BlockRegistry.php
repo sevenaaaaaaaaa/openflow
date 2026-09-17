@@ -38,7 +38,7 @@ function block_types(): array {
         'checklist' => '对勾清单', 'countdown' => '倒计时', 'banner' => '公告横条',
         'team' => '团队网格', 'code' => '代码展示', 'kbd' => '快捷键组',
         'spotlight' => '聚光大字', 'ticker' => '数字滚动', 'quote-wall' => '便签墙',
-        'changelog' => '更新日志',
+        'changelog' => '更新日志', 'runlog' => '运行演示',
         'module' => '引用模块库',
     ];
     // 合并用户自定义模块（模块工厂）：key 不与内置冲突时加入
@@ -74,7 +74,7 @@ function block_builtin_categories(): array {
         'proof' => 'social', 'blog-grid' => 'content', 'canvas-wall' => 'media', 'feature-detail' => 'content',
         'checklist' => 'convert', 'countdown' => 'convert', 'banner' => 'convert', 'team' => 'social',
         'code' => 'content', 'kbd' => 'content', 'spotlight' => 'layout', 'ticker' => 'content',
-        'quote-wall' => 'social', 'changelog' => 'layout',
+        'quote-wall' => 'social', 'changelog' => 'layout', 'runlog' => 'content',
     ];
 }
 
@@ -313,6 +313,29 @@ function builder_render_block(array $b): string {
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="ticker-grid">' . ($content ?: '<div class="empty">每个数字一个 &lt;div data-n=&quot;10000&quot;&gt;</div>') . '</div><script>document.querySelectorAll(".ticker-grid [data-n]").forEach(function(el){var n=parseFloat(el.dataset.n)||0,s=el.dataset.suffix||"",b=el.querySelector("b"),st=null;requestAnimationFrame(function f(t){if(st===null)st=t;var p=Math.min((t-st)/1600,1),v=Math.floor(n*(1-Math.pow(1-p,3)));b.textContent=v.toLocaleString()+s;if(p<1)requestAnimationFrame(f)})});</script></section>';
         case 'quote-wall': // 便签墙：子项 <div>短句</div>，随机小角度旋转
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="qwall">' . ($content ?: '<div class="empty">每张便签一个 &lt;div&gt;</div>') . '</div><script>document.querySelectorAll(".qwall>div").forEach(function(el,i,a){el.style.setProperty("--tilt",((i*53)%9-4)*0.8+"deg")});</script></section>';
+        case 'runlog': {   // 运行演示：点击「跑一遍」，逐行打字展示真实引擎输出
+            $lines = array_values(array_filter(array_map('trim', explode("\n", (string)$content)), fn($l) => $l !== ''));
+            if (!$lines) return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="empty">配置运行输出（每行一条）</div></section>';
+            $rid = 'rl' . substr(md5($title . count($lines)), 0, 6);
+            $pre = '';
+            foreach ($lines as $i => $ln) {
+                $cls = str_starts_with($ln, '$') ? 't-cmd' : (str_starts_with($ln, '✓') || str_starts_with($ln, '✅') ? 't-ok' : '');
+                $pre .= '<span class="' . $cls . '" data-i="' . $i . '">' . htmlspecialchars($ln) . '</span>' . "\n";
+            }
+            $btn = htmlspecialchars($btnText ?: '▶ 跑一遍');
+            $js = '<script>(function(){var b=document.getElementById("' . $rid . '-btn"),pre=document.getElementById("' . $rid . '-pre");if(!b||!pre)return;'
+                . 'var spans=[].slice.call(pre.querySelectorAll("span"));spans.forEach(function(s){s.style.opacity=0});'
+                . 'pre.style.minHeight=(spans.length*1.9)+"em";'
+                . 'function run(){spans.forEach(function(s){s.style.opacity=0});b.disabled=true;var i=0;'
+                . '(function next(){if(i>=spans.length){b.disabled=false;b.textContent="↻ 再跑一遍";return}'
+                . 'spans[i].style.opacity=1;setTimeout(next,340);i++})()}'
+                . 'b.addEventListener("click",run);})();</script>';
+            return '<section class="sec reveal"' . $bgStyle . '>' . $head()
+                . '<div class="code-show" style="max-width:880px">'
+                . '<div class="cs-bar"><span class="cs-dot"></span><span class="cs-dot"></span><span class="cs-dot"></span><span class="cs-lang">' . htmlspecialchars($sub ?: 'run') . '</span>'
+                . '<button type="button" id="' . $rid . '-btn" class="btn btn-ghost btn-sm" style="margin-left:10px;height:26px;padding:0 12px;font-size:12px">' . $btn . '</button></div>'
+                . '<pre class="cs-body" id="' . $rid . '-pre">' . $pre . '</pre></div>' . $js . '</section>';
+        }
         case 'changelog': // 更新日志：子项 <div data-v="v2.1"><b>日期</b><h4>标题</h4><p>描述</p></div>
             return '<section class="sec reveal"' . $bgStyle . '>' . $head() . '<div class="changelog">' . ($content ?: '<div class="empty">每个版本一个 &lt;div&gt;</div>') . '</div></section>';
         case 'testimonials':
