@@ -964,12 +964,12 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 
 /* ═════════ 展示区块扩展第二批（tabs/portrait/cluster/prompt/proof/blog-grid/canvas-wall/feature-detail） ═════════ */
 /* ── tabs：纯 CSS 标签页 ── */
-.tabbed{display:flex;flex-direction:column;gap:18px;max-width:880px;margin:0 auto}
+.tabbed{display:flex;flex-wrap:wrap;gap:10px;max-width:880px;margin:0 auto;align-items:flex-start}
 .tabbed .tab-i{position:absolute;opacity:0;pointer-events:none}
 .tabbed label{display:inline-flex;padding:9px 20px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;transition:.2s var(--ease-out)}
 .tabbed label:hover{border-color:var(--accent)}
 .tabbed .tab-i:checked+label{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
-.tabbed .tab-panels{display:grid}
+.tabbed .tab-panels{flex:1 0 100%;display:grid;margin-top:8px}
 .tabbed .tab-p{grid-area:1/1;padding:22px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(12px);opacity:0;transform:translateY(6px);transition:.35s var(--ease-out);visibility:hidden}
 .tabbed .tab-i:nth-of-type(1):checked~.tab-panels .tab-p:nth-of-type(1),
 .tabbed .tab-i:nth-of-type(2):checked~.tab-panels .tab-p:nth-of-type(2),
