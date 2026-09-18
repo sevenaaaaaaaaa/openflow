@@ -25,12 +25,35 @@ class GrowthEngine {
                 'milestones' => [],
                 'shape' => null,
                 'last_shaped' => 0,
+                'activity' => [],   // 24 桶活跃时段直方图（hour => 次数）
             ];
         }
         return $s;
     }
 
     /* ─── 信号采集（保留兼容，但权重更新）─── */
+
+    /* ─── 活跃时段记录（24 桶直方图）：api/growth-signal.php 每次页面浏览调用 ─── */
+    public static function recordActivity(int $hour): void {
+        if ($hour < 0 || $hour > 23) return;
+        $s = self::state();
+        if (!isset($s['activity']) || !is_array($s['activity'])) $s['activity'] = [];
+        $k = (string) $hour;
+        $s['activity'][$k] = (int) ($s['activity'][$k] ?? 0) + 1;
+        json_write(self::$file, $s);
+    }
+
+    /** 活跃时段摘要：返回按小时升序的 [hour => count]，供后台/建议使用 */
+    public static function activityHours(): array {
+        $a = self::state()['activity'] ?? [];
+        $out = [];
+        foreach ((array) $a as $h => $n) {
+            $hi = (int) $h;
+            if ($hi >= 0 && $hi <= 23) $out[$hi] = (int) $n;
+        }
+        ksort($out);
+        return $out;
+    }
 
     public static function signal(string $type, string $key, int $weight = 1): void {
         $s = self::state();

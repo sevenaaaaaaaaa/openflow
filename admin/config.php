@@ -645,8 +645,13 @@ function user_send_reset_email(string $username): array {
 
     $settings = site_config();
     if (!empty($settings['smtp_host']) && !empty($settings['smtp_user'])) {
+        // 邮件发送实现缺失时优雅降级（此前会直接 Fatal），并把链接交给管理员转达
+        if (!function_exists('smtp_send')) {
+            error_log('[openflow] smtp_send() 未实现，密码重置邮件无法发送（to=' . $u['email'] . '）');
+            return ['ok' => false, 'error' => '邮件发送功能尚未实现，请联系管理员手动重置', 'token_url' => $url];
+        }
         $sent = smtp_send($u['email'], $subject, $body, $settings);
-        return $sent ? ['ok' => true] : ['ok' => false, 'error' => '邮件发送失败'];
+        return $sent ? ['ok' => true] : ['ok' => false, 'error' => '邮件发送失败', 'token_url' => $url];
     }
     return ['ok' => false, 'error' => 'SMTP 未配置，请联系管理员手动重置', 'token_url' => $url];
 }

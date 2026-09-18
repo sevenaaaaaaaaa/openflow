@@ -177,3 +177,53 @@ z-index 目前**散落硬编码**：`.modal` 92 / `.palette` 91 / `.overlay` 90 
 | P1 | 断点收敛（5 档）+ 组件清单 CI | 见 §四 |
 | P2 | 清理 `TODO/XXX`、`print_r`、`console.log` | 低风险，顺手做 |
 | P2 | 数据体检脚本（slug 碰撞等） | 已知 1 处 `uniclipboard` 待人工决策 |
+
+---
+
+## 七、语言选型与静态分析（2026-09-18）
+
+### 7.1 JS vs TS：判据（写死，避免后续会话各行其是）
+
+| 判据 | 结论 |
+|------|------|
+| **抽成 TS** | 纯逻辑 / 有数据契约 / 被多处消费 / 是状态机 / 将被重构 / 单测能证明价值 |
+| **留在 JS** | 命令式 DOM 胶水、一次性页面行为、vendor、churn≈0 的代码 |
+| **不迁移** | PHP 页面内联 `<script>`（271 处）；vendor（live2d / sw.js）；`inject.js` 整体（776 行、49 个页面硬编码引用，胶水为主——只抽其中纯函数） |
+| **边界风险** | TS 类型是"带注释的信任"：`window.OF_NAV / OF_ROLES` 由 PHP 注入，**运行时形状未被校验**，需要运行时校验或类型生成 |
+
+现状：TS 只覆盖前端最值得的一层（`site-shell` 弹窗状态机、`palette` 过滤、`roles` 角色/UTM）＝ **32 个 TS 单测**。
+而本仓 83% 代码是 PHP（835 文件 / 2% 开 strict_types），**最大的静态分析杠杆在 PHP 侧**。
+
+### 7.2 PHPStan 分级摸底（level 0 / 2 / 5）
+
+| 级别 | 首测 | 处理 | 现状 |
+|------|------|------|------|
+| 0 | 15 | 修掉 3 个真 bug（见下）+ 清掉误入仓库的 composer-setup.php | **10** |
+| 2 | 1135 | 加 `phpstan-bootstrap.php` 声明运行时常量（`DATA_DIR` 等） | — |
+| 5 | 1394 | 同上：**1040/1394（75%）只是 `constant.notFound` 噪音** | **354 → 已生成基线** |
+
+- 配置：`phpstan.neon`（level 5、`phpVersion: 80300` 对齐生产、排除 vendor/data/tests/src）
+- 基线：`phpstan-baseline.neon`（354 条），基线内 **0 错误** → CI 只拦**新增**问题
+- 接入：`scripts/ci.sh` 第 0.6 步
+
+### 7.3 PHPStan 抓到的真 bug（level 0 就能抓到）
+
+| 位置 | 问题 | 影响 | 处理 |
+|------|------|------|------|
+| `api/growth-signal.php:33` | 调用不存在的 `GrowthEngine::recordActivity()` | 被 try/catch 吞掉 → **活跃时段记录一直静默失败**（数据从未落盘） | 实现 `recordActivity()` + `activityHours()`（24 桶直方图）+ 6 项契约测试 |
+| `admin/config.php:648` | 调用不存在的 `smtp_send()` | 配了 SMTP 时**密码重置直接 Fatal** | 缺实现时优雅降级（返回明确错误 + `error_log`）；SMTP 实现列为待补 |
+| `admin/inbound.php:124` | 调用不存在的 `site_url_base()` | 入站连接器页面 **Fatal** | 改用既有 `site_config_get('site_url')` |
+
+### 7.4 Ruff（Python，21 个脚本）
+
+| 项 | 首测 | 现状 |
+|----|------|------|
+| 全部 | 257 | — |
+| 真实缺陷 | `F401/F841/F541/B005/E722/F601` | 全部修掉 |
+| 风格噪音（`W293/E701/E702`） | 106+76 | 配置忽略（运维脚本刻意保持紧凑） |
+| 范围 | 全仓 | 收敛为维护中脚本（`bin/`、`tests/visual/` 为历史一次性脚本，排除） |
+| 现状 | — | **All checks passed**（接入 CI 第 0.7 步） |
+
+**顺带修掉一个性能 + 潜在缺陷**：`sync-r2.py` 里 `src_unchanged` 变量定义了却没用
+（正是我上次改 WebP 逻辑时的漏改）→ 每次同步都**重建 440 张 WebP**（耗时约 5 分钟）。
+修复后源图未变更即复用：实测 **6 秒**完成，输出 `WebP 0（复用 440）`。

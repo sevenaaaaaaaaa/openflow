@@ -246,7 +246,7 @@ def do_rollback(stamp: str) -> int:
     bad = 0
     for rel in files:
         src = backup / rel
-        cp = run(["scp", "-P", PORT, *SSH_OPTS, str(src), f"root@{HOST}:{remote_path(rel)}"])
+        run(["scp", "-P", PORT, *SSH_OPTS, str(src), f"root@{HOST}:{remote_path(rel)}"])
         got = md5_remote([rel])[rel]
         want = md5_local(src)
         flag = "✓" if got == want else "✗"
