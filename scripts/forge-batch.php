@@ -22,11 +22,13 @@ require_once __DIR__ . '/../lib/AdapterIntake.php';
 require_once __DIR__ . '/../lib/AdapterForge.php';
 require_once __DIR__ . '/../lib/AdapterVerify.php';
 
-$opts = ['per_class' => 1, 'phpstan' => true, 'classes' => []];
+$opts = ['per_class' => 1, 'phpstan' => true, 'classes' => [], 'complete' => false, 'only' => []];
 foreach (array_slice($argv, 1) as $a) {
     if (preg_match('/^--per-class=(\d+)$/', $a, $m) === 1) $opts['per_class'] = max(1, (int) $m[1]);
     elseif ($a === '--no-phpstan') $opts['phpstan'] = false;
     elseif (str_starts_with($a, '--classes=')) $opts['classes'] = array_filter(explode(',', (string) substr($a, 10)));
+    elseif ($a === '--complete') $opts['complete'] = true;
+    elseif (str_starts_with($a, '--only=')) $opts['only'] = array_filter(array_map('trim', explode(',', (string) substr($a, 7))));
 }
 
 $candFile = dirname(__DIR__) . '/data/ecosystem/candidates.json';
@@ -40,6 +42,8 @@ $all = (array) (json_decode((string) file_get_contents($candFile), true)['candid
 $byClass = [];
 foreach ($all as $c) {
     $cls = (string) ($c['category'] ?? '');
+    if ($opts['only'] !== [] && !in_array((string) ($c['name'] ?? ''), (array) $opts['only'], true)
+        && !in_array((string) ($c['slug'] ?? ''), (array) $opts['only'], true)) continue;
     if ($opts['classes'] !== [] && !in_array($cls, (array) $opts['classes'], true)) continue;
     if (count($byClass[$cls] ?? []) >= $opts['per_class']) continue;
     $byClass[$cls][] = $c;
@@ -79,6 +83,21 @@ foreach ($picked as $c) {
     $report = adapter_verify_gate($dir, $manifest, ['skip_phpstan' => !$opts['phpstan']]);
     adapter_verify_stamp($dir, $report);
 
+    // 第二轮（可选）：AI 补全真实调用，闸门不过会自动回滚
+    $completeInfo = '';
+    $todosBefore = (int) substr_count((string) file_get_contents($dir . '/plugin.php'), 'TODO');
+    $todosAfter = $todosBefore;
+    if ($opts['complete'] && class_exists('AiCenter')) {
+        $ai = static function (string $sys, string $usr, array $o): array {
+            $r = AiCenter::chat($sys, $usr, ['feature' => 'adapter_forge_complete', 'max_tokens' => 8000]);
+            return ['ok' => (bool) ($r['ok'] ?? false), 'text' => (string) ($r['text'] ?? ''), 'error' => (string) ($r['error'] ?? '')];
+        };
+        $done = adapter_forge_complete($profile, $dir, $ai);
+        $completeInfo = ($done['applied'] ? '已补全' : '未补全') . '：' . $done['note'];
+        if ($done['applied']) { $report = (array) $done['report']; }
+        $todosAfter = (int) substr_count((string) file_get_contents($dir . '/plugin.php'), 'TODO');
+    }
+
     $failed = (array) ($report['failed'] ?? []);
     $phpPath = $dir . '/plugin.php';
     $todoCount = is_file($phpPath) ? substr_count((string) file_get_contents($phpPath), 'TODO') : 0;
@@ -90,12 +109,15 @@ foreach ($picked as $c) {
         'surfaces' => implode('/', array_keys((array) ($manifest['surfaces'] ?? []))),
         'permissions' => implode(',', (array) ($manifest['permissions'] ?? [])),
         'failed' => $failed,
-        'todos' => $todoCount,
+        'todos' => $todosAfter,
+        'todos_before' => $todosBefore,
+        'complete' => $completeInfo,
         'dir' => 'plugins/_drafts/' . (string) ($manifest['id'] ?? ''),
     ];
     $rows[] = $line;
-    printf("  %s %-42s %-12s %s\n", $report['status'] === 'passed' ? '✓' : ($report['status'] === 'needs-review' ? '△' : '✗'),
-        $name, $report['status'], $failed !== [] ? ('失败项：' . implode(',', $failed)) : '');
+    printf("  %s %-34s %-12s TODO %d→%d %s\n", $report['status'] === 'passed' ? '✓' : ($report['status'] === 'needs-review' ? '△' : '✗'),
+        $name, $report['status'], $todosBefore, $todosAfter,
+        $completeInfo !== '' ? ('· ' . mb_substr($completeInfo, 0, 60)) : ($failed !== [] ? ('失败项：' . implode(',', $failed)) : ''));
 }
 
 /* ── 汇总 ── */
