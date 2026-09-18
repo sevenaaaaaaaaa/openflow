@@ -902,7 +902,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 @media (max-width:560px){.steps{grid-template-columns:1fr}}
 /* ── bento：不等宽拼贴网格 ── */
 .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
-.bento>div{display:flex;flex-direction:column;gap:8px;padding:22px;border-radius:var(--r-md);border:1px solid var(--border);background:linear-gradient(160deg,var(--accent-soft),transparent 55%),var(--surface);backdrop-filter:blur(12px);min-height:150px;overflow:hidden;transition:transform .25s var(--ease-out),box-shadow .25s}
+.bento>div{display:flex;flex-direction:column;gap:8px;padding:22px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(12px);min-height:150px;overflow:hidden;transition:transform .25s var(--ease-out),box-shadow .25s}
 .bento>div:hover{transform:translateY(-3px);box-shadow:var(--shadow-sm)}
 .bento>div[data-w="2"]{grid-column:span 2}
 .bento>div[data-w="3"]{grid-column:span 3}
@@ -1144,14 +1144,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 .vacc .vacc-body li{font-size:13.5px;color:var(--muted);line-height:1.7}
 .vacc .vacc-body a{font-size:13px;font-weight:700;color:var(--accent)}
 /* 诊断两栏（复用原版 contact-wrap/ct-pitch/ct-list；这里补表单两列栅格） */
-.contact-wrap .form-card form{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
-.contact-wrap .form-card .of-field{min-width:0}
-.contact-wrap .form-card .of-field textarea,
-.contact-wrap .form-card .of-field:has(textarea),
-.contact-wrap .form-card form>button{grid-column:1/-1}
-.contact-wrap .form-card .of-field select,
-.contact-wrap .form-card .of-field input{width:100%}
-@media (max-width:760px){.contact-wrap .form-card form{grid-template-columns:1fr}}
+/* 诊断表单布局由 .form-grid + .grid.g2 负责；勿再加 form 级栅格覆盖（会打乱两行两列 + 文本域 + 按钮结构）*/
 /* CTA 区块里 diagnose 用同一套 */
 .diagnose .contact-wrap{align-items:start}
 .diagnose .ct-list li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;color:var(--fg);line-height:1.7}
@@ -1181,7 +1174,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 
 /* 便签墙：复用原版 .qr/.q-i 内部结构（av / blockquote / who），改成卡片 + 微倾斜 + 悬停回正 */
 .qr.notes{grid-template-columns:repeat(3,1fr);gap:16px}
-.qr.notes .q-i{padding:20px 22px;border:1px solid var(--border);border-left:1px solid var(--border);border-radius:var(--r-md);background:linear-gradient(165deg,var(--accent-soft),transparent 62%),var(--surface);box-shadow:var(--shadow-sm);transform:rotate(var(--tilt,0deg));transition:transform .32s var(--ease-out),box-shadow .32s,border-color .2s}
+.qr.notes .q-i{padding:20px 22px;border:1px solid var(--border);border-left:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);box-shadow:var(--shadow-sm);transform:rotate(var(--tilt,0deg));transition:transform .32s var(--ease-out),box-shadow .32s,border-color .2s}
 .qr.notes .q-i:hover{transform:rotate(0) translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--border-strong)}
 .qr.notes .q-i:last-child{padding-right:22px}
 .qr.notes .q-i blockquote{font-size:15.5px;line-height:1.85}
@@ -1190,7 +1183,7 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
 @media(max-width:620px){.qr.notes{grid-template-columns:1fr}}
 
 /* Bento 错落：补 高亮卡 / 角标 / 列表 / 截图卡 / 响应式降列，避免拼贴留空 */
-.bento>div.bt-hi{border-color:var(--border-strong);background:linear-gradient(160deg,var(--accent-soft),transparent 58%),var(--surface)}
+.bento>div.bt-hi{border-color:var(--border-strong);background:linear-gradient(160deg,color-mix(in oklab,var(--accent-soft),transparent 45%),transparent 62%),var(--surface)}
 .bento .bt-k{font-family:var(--font-mono);font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
 .bento>div ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
 .bento>div ul li{font-size:13px;color:var(--muted);line-height:1.65}
