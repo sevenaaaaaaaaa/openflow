@@ -106,3 +106,7 @@ package-lock.json.bak
 
 plugins/_drafts/
 .deploy/phpstan-draft-*
+
+# 运行时数据（摆渡/演示卡片等），不入库
+decks/
+data/backups/
