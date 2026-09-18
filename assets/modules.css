@@ -1222,3 +1222,38 @@ html.rm .auto[data-auto="on"] .prog::after{animation:none}
   .hacc .hacc-body{position:static;width:auto;opacity:1}
   .hacc details>*:not(summary){opacity:1}
 }
+
+/* ═════════ hub 三页收编（home-v2 / hub-products / hub-capabilities 共用，2026-09-18） ═════════ */
+/* ── 真实界面截图网格（原 product.php 私有拷贝，hub 两页复用 → 收编；值与原私有版逐字相同） ── */
+.real-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.real-shot{display:flex;flex-direction:column}
+.real-shot img{width:100%;height:auto;display:block;aspect-ratio:1520/950;object-fit:cover;object-position:top}
+.real-shot .sp-win{overflow:hidden;flex:1}
+.real-shot figcaption{padding:12px 6px 0;font-size:13px;color:var(--muted);line-height:1.6}
+.real-shot figcaption b{color:var(--fg)}
+@media (max-width:860px){.real-grid{grid-template-columns:1fr}}
+/* ── 连接器 chips（原 product / capability 各一份私有拷贝，第三四处出现 → 收编） ── */
+.conn-chips{display:flex;flex-wrap:wrap;gap:8px;padding:22px}
+.conn-chips .cc{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-size:13px;font-weight:600}
+.conn-chips .cc .cd{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+/* ── 部署决策表（hub 两页同款 → 收编；.dep-wrap 让 ≤640 横向滚动而不是挤爆） ── */
+.dep-wrap{overflow-x:auto;margin-top:22px}
+.dep-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.dep-table th,.dep-table td{padding:13px 18px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.7}
+.dep-table tr:last-child th,.dep-table tr:last-child td{border-bottom:none}
+.dep-table thead th{background:var(--surface-2);font-size:14px}
+.dep-table tbody th{width:120px;color:var(--faint);font-weight:500;font-size:12.5px;background:var(--surface-2)}
+.dep-table td b{color:var(--accent-strong)}
+.dep-table .btn{height:38px;padding:0 18px;font-size:12.5px}
+@media (max-width:640px){.dep-table{min-width:620px}}
+/* ── bento 卡内链接（原 15 处行内样式 → 收编） ── */
+.bento .bt-go{margin-top:auto;font-size:13px;font-weight:700;color:var(--accent);text-decoration:none}
+.bento .bt-go:hover{color:var(--accent-strong)}
+/* ── 首屏证据数字条（原 capability.php 私有，hub-capabilities 复用 → 收编） ── */
+.proof-strip{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 26px;margin-top:22px;font-family:var(--font-mono);font-size:12.5px;color:var(--faint)}
+.proof-strip b{color:var(--accent-strong);font-size:15px;font-weight:800;margin-right:5px}
+/* ── tab 面板切换淡入（含首页场景 / 能力页七 tab；html.rm 由全局规则关闭） ── */
+.tab-panel.on{animation:tp-in .35s var(--ease-out)}
+@keyframes tp-in{from{opacity:0;transform:translateY(8px)}}
+/* ── hacc 手风琴 summary 焦点环（summary 不在全局 a/button 规则内） ── */
+.hacc summary:focus-visible{outline:none;box-shadow:inset 0 0 0 3px color-mix(in oklab,var(--accent),transparent 70%)}

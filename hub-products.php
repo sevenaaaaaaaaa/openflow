@@ -33,20 +33,10 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。 -->
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-/* 产品页独有：四个演示部件。其余全部来自 modules.css。 */
-.mock-canvas{position:relative;border-radius:14px;background:var(--bg-soft);border:1px solid var(--border);height:190px;overflow:hidden;margin:18px}
-.mnode{position:absolute;background:var(--surface-strong);border:1.5px solid var(--border-strong);border-radius:12px;padding:8px 12px;font-size:12px;font-weight:700;box-shadow:var(--shadow-sm)}
-.mchat{display:flex;flex-direction:column;gap:12px;padding:20px}
-.mchat .bub{max-width:88%;border-radius:14px;padding:12px 15px;font-size:13.5px;line-height:1.65;width:auto;height:auto;cursor:default}
-.mchat .bub.u{align-self:flex-start;background:var(--surface-strong);border:1px solid var(--border)}
-.mchat .bub.a{align-self:flex-end;background:var(--accent);color:var(--on-accent)}
-.mchat .gen{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-.mchat .gen span{font-family:var(--font-mono);font-size:11px;padding:6px 10px;border-radius:9px;background:var(--ok-soft);color:var(--ok);font-weight:700}
-.conn-chips{display:flex;flex-wrap:wrap;gap:8px;padding:20px}
-.conn-chips .cc{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-size:13px;font-weight:600}
-.conn-chips .cc .cd{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.flow-row .badge{margin-left:auto;flex:0 0 auto}
-/* 闭环演示 */
+/* 产品页独有：闭环演示（流程图 + 执行日志）与首屏证据图。
+   .real-grid / .conn-chips / .dep-table / .bt-go 已收编进 modules.css，本页不再私有。 */
+.hero-shot{max-width:980px;margin:36px auto 0;text-align:left}
+.hero-shot img{width:100%;height:auto;display:block;aspect-ratio:1520/950;object-fit:cover;object-position:top}
 .demo-wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:stretch}
 .demo-fig{display:flex;flex-direction:column;gap:14px}
 .demo-svg{width:100%;height:auto;padding:14px 18px 6px}
@@ -69,25 +59,6 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 .demo-log .t-dim{color:oklch(60% .01 140)}
 .demo-log::before{content:'执行日志 · 演示环境';position:absolute;top:12px;right:16px;font-size:9.5px;letter-spacing:.14em;color:oklch(55% .01 140)}
 @media (max-width:1080px){.demo-wrap{grid-template-columns:1fr}}
-/* 真实界面证据区 */
-.hero-shot{max-width:980px;margin:36px auto 0;text-align:left}
-.hero-shot img,.real-shot img{width:100%;height:auto;display:block;aspect-ratio:1520/950;object-fit:cover;object-position:top}
-.real-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.real-shot{display:flex;flex-direction:column}
-.real-shot .sp-win{overflow:hidden;flex:1}
-.real-shot figcaption{padding:12px 6px 0;font-size:13px;color:var(--muted);line-height:1.6}
-.real-shot figcaption b{color:var(--fg)}
-@media(max-width:900px){.real-grid{grid-template-columns:1fr}}
-      
-.dep-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:22px}
-      .dep-table th,.dep-table td{padding:13px 18px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.7}
-      .dep-table tr:last-child th,.dep-table tr:last-child td{border-bottom:none}
-      .dep-table thead th{background:var(--surface-2);font-size:14px}
-      .dep-table tbody th{width:120px;color:var(--faint);font-weight:500;font-size:12.5px;background:var(--surface-2)}
-      .dep-table td b{color:var(--accent-strong)}
-      .conn-chips{display:flex;flex-wrap:wrap;gap:8px;padding:22px}
-      .conn-chips .cc{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-size:13px;font-weight:600}
-      .conn-chips .cc .cd{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 </style>
 <script src="/assets/seo-inject.js?v=20260830b" defer></script>
 </head>
@@ -144,14 +115,14 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   </section>
 
   <!-- ══ 七个独立产品（预览版核心） ══ -->
-  <section id="products" class="sec reveal" data-od-anchor data-od-anchor data-od-id="product-matrix">
+  <section id="products" class="sec reveal" data-od-anchor data-od-id="product-matrix">
     <div class="sec-head center">
       <span class="kicker">产品矩阵</span>
       <h2>七件独立产品，按需组合</h2>
       <p class="lead">同一个增长问题，七种解法。先看你缺哪一环，再决定要不要整套。</p>
     </div>
     <div class="bento" style="margin-top:26px">
-<div data-w="3" data-r="2" class="bt-hi"><span class="bt-k">全家桶 · 四力合一</span><h3>OpenFlow · 增长操作系统</h3><p>要一整套系统、数据要在一处、团队要一个后台——四力合一，其余六件按需嵌入。</p><ul><li><b>交付</b>：内容引擎 + CDP + 自动化 + CRM + 商城</li><li><b>适合</b>：要一整套系统的团队</li><li><b>依赖</b>：深度（自家 CMS + CDP）</li><li><b>上手</b>：30 分钟上线</li></ul><a href="/product" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 OpenFlow →</a></div><div data-w="3"><span class="bt-k">轻量内容</span><h3>MFlow · 内容生产与分发</h3><p>AI 生成 + 多平台分发 + 轻触达，不换 CMS、不锁模型。</p><ul><li><b>交付</b>：生成 + 多平台分发 + 轻触达</li><li><b>适合</b>：创作者 · 电商卖家</li><li><b>依赖</b>：低</li></ul><a href="/product/mflow" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 MFlow →</a></div><div data-w="3"><span class="bt-k">落地页</span><h3>Webs Flow · 落地页专精</h3><p>44 种展示区块 + 组件工厂，承接页以小时计上线。</p><ul><li><b>交付</b>：落地页 / 活动页</li><li><b>适合</b>：投手 · 活动运营</li><li><b>依赖</b>：无</li></ul><a href="/product/webs-flow" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 Webs Flow →</a></div><div data-w="2"><span class="bt-k">全域数据</span><h3>UserLoop · 全域营销数据中枢</h3><p>埋点 + 身份合并 + 分群，对接任何 MA。</p><ul><li><b>适合</b>：多平台团队 · 代理商</li><li><b>依赖</b>：无</li></ul><a href="/product/userloop" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 UserLoop →</a></div><div data-w="2"><span class="bt-k">外部情报</span><h3>inFlow · 情报增长站</h3><p>趋势 / 舆情 / 竞品 + 每日情报。</p><ul><li><b>适合</b>：品牌方 · 内容策划</li><li><b>依赖</b>：无</li></ul><a href="/product/inflow" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 inFlow →</a></div><div data-w="2"><span class="bt-k">收款变现</span><h3>PayFlow · 商业变现引擎</h3><p>一行嵌入收款 + 订阅 + 裂变佣金。</p><ul><li><b>适合</b>：创作者 · 独立开发者</li><li><b>依赖</b>：无</li></ul><a href="/product/payflow" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 PayFlow →</a></div><div data-w="6"><span class="bt-k">课程交付</span><h3>LearnFlow · 课程与训练营</h3><p>上课 → 进度 → 测验 → 证书，交付闭环。</p><ul><li><b>适合</b>：讲师 · 教练 · 训练营主理人</li><li><b>依赖</b>：轻（收款接 PayFlow）</li></ul><a href="/product/learnflow" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 LearnFlow →</a></div>    </div>
+<div data-w="3" data-r="2" class="bt-hi"><span class="bt-k">全家桶 · 四力合一</span><h3>OpenFlow · 增长操作系统</h3><p>要一整套系统、数据要在一处、团队要一个后台——四力合一，其余六件按需嵌入。</p><ul><li><b>交付</b>：内容引擎 + CDP + 自动化 + CRM + 商城</li><li><b>适合</b>：要一整套系统的团队</li><li><b>依赖</b>：深度（自家 CMS + CDP）</li><li><b>上手</b>：30 分钟上线</li></ul><a href="/product" class="bt-go">进入 OpenFlow →</a></div><div data-w="3"><span class="bt-k">轻量内容</span><h3>MFlow · 内容生产与分发</h3><p>AI 生成 + 多平台分发 + 轻触达，不换 CMS、不锁模型。</p><ul><li><b>交付</b>：生成 + 多平台分发 + 轻触达</li><li><b>适合</b>：创作者 · 电商卖家</li><li><b>依赖</b>：低</li></ul><a href="/product/mflow" class="bt-go">进入 MFlow →</a></div><div data-w="3"><span class="bt-k">落地页</span><h3>Webs Flow · 落地页专精</h3><p>44 种展示区块 + 组件工厂，承接页以小时计上线。</p><ul><li><b>交付</b>：落地页 / 活动页</li><li><b>适合</b>：投手 · 活动运营</li><li><b>依赖</b>：无</li></ul><a href="/product/webs-flow" class="bt-go">进入 Webs Flow →</a></div><div data-w="2"><span class="bt-k">全域数据</span><h3>UserLoop · 全域营销数据中枢</h3><p>埋点 + 身份合并 + 分群，对接任何 MA。</p><ul><li><b>适合</b>：多平台团队 · 代理商</li><li><b>依赖</b>：无</li></ul><a href="/product/userloop" class="bt-go">进入 UserLoop →</a></div><div data-w="2"><span class="bt-k">外部情报</span><h3>inFlow · 情报增长站</h3><p>趋势 / 舆情 / 竞品 + 每日情报。</p><ul><li><b>适合</b>：品牌方 · 内容策划</li><li><b>依赖</b>：无</li></ul><a href="/product/inflow" class="bt-go">进入 inFlow →</a></div><div data-w="2"><span class="bt-k">收款变现</span><h3>PayFlow · 商业变现引擎</h3><p>一行嵌入收款 + 订阅 + 裂变佣金。</p><ul><li><b>适合</b>：创作者 · 独立开发者</li><li><b>依赖</b>：无</li></ul><a href="/product/payflow" class="bt-go">进入 PayFlow →</a></div><div data-w="6"><span class="bt-k">课程交付</span><h3>LearnFlow · 课程与训练营</h3><p>上课 → 进度 → 测验 → 证书，交付闭环。</p><ul><li><b>适合</b>：讲师 · 教练 · 训练营主理人</li><li><b>依赖</b>：轻（收款接 PayFlow）</li></ul><a href="/product/learnflow" class="bt-go">进入 LearnFlow →</a></div>    </div>
   </section>
 
   <!-- ══ 常见组合：按场景拼装（bento 错落） ══ -->
@@ -166,8 +137,9 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <div data-w="3"><span class="bt-k">电商增长</span><h3>投放 → 收款 → 沉淀</h3><ul><li>承接页：<b>Webs Flow</b></li><li>收款：<b>PayFlow</b></li><li>数据：<b>UserLoop</b></li></ul><p>一条线跑完，不用手工搬数据。</p></div>
       <div data-w="3"><span class="bt-k">内容营销</span><h3>选题到收录一条线</h3><ul><li>情报：<b>inFlow</b></li><li>生产分发：<b>MFlow</b></li><li>效果回流：<b>UserLoop</b></li></ul><p>一个人当编辑部。</p></div>
       <div data-w="3"><span class="bt-k">知识变现</span><h3>开营到复购</h3><ul><li>交付：<b>LearnFlow</b></li><li>收款：<b>PayFlow</b></li><li>触达：<b>MFlow</b></li></ul><p>学员进度与转化都在一处。</p></div>
-      <div data-w="6" class="bt-hi"><span class="bt-k">全家桶</span><h3>一整套自转系统：OpenFlow</h3><ul><li>要一整套系统、数据要在一处、团队要统一后台 → <b>OpenFlow 四力合一</b></li><li>其余六件按需嵌入；所有产品的数据都能平滑并入，不重复建设</li></ul><a href="/demo/capabilities" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">看能力全景 →</a></div>
+      <div data-w="6" class="bt-hi"><span class="bt-k">全家桶</span><h3>一整套自转系统：OpenFlow</h3><ul><li>要一整套系统、数据要在一处、团队要统一后台 → <b>OpenFlow 四力合一</b></li><li>其余六件按需嵌入；所有产品的数据都能平滑并入，不重复建设</li></ul><a href="/demo/capabilities" class="bt-go">看能力全景 →</a></div>
     </div>
+  </section>
 
   <!-- ══ 真实界面 ══ -->
   <section id="real" class="sec reveal" data-od-anchor data-od-id="product-real">
@@ -232,14 +204,14 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   </section>
 
   <!-- ══ 部署方式 ══ -->
-  <section id="deploy" class="sec reveal" data-od-anchor data-od-id="capability-deploy">
+  <section id="deploy" class="sec reveal" data-od-anchor data-od-id="product-deploy">
     <div class="sec-head center">
       <span class="kicker">部署方式</span>
       <h2>托管还是自己装，你说了算</h2>
     </div>
     <div class="cols">
       <div>
-        <span class="ic"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span></span>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
         <span class="w-tag">SAAS</span>
         <h3>云端 SaaS</h3>
         <p>最快上手，自动更新，无需运维。适合希望一周内跑起来的一人公司。</p>
@@ -260,7 +232,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         <ul class="sp-list"><li><?=$ck?><span>核心引擎私有部署</span></li><li><?=$ck?><span>云端弹性扩缩容</span></li><li><?=$ck?><span>灰度发布与回滚</span></li></ul>
       </div>
     </div>
-    <table class="dep-table">
+    <div class="dep-wrap"><table class="dep-table">
       <thead><tr><th></th><th>云端 SaaS</th><th>私有化部署</th><th>混合架构</th></tr></thead>
       <tbody>
         <tr><th>上手时间</th><td><b>当天</b>，注册即用</td><td>1-3 天，含环境准备</td><td>3-7 天，含架构评审</td></tr>
@@ -268,15 +240,15 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         <tr><th>数据归属</th><td>云端加密存储，可随时导出</td><td><b>完全出不了你的域</b></td><td>核心数据私有，匿名化上云</td></tr>
         <tr><th>适合谁</th><td>想立刻跑起来的一人公司</td><td>重视自主可控的团队</td><td>既要安全又要弹性的成长型团队</td></tr>
         <tr><th>起步价</th><td><b>免费</b></td><td>开源免费 · 支持服务另议</td><td>按需评估</td></tr>
-        <tr><th></th><td><button class="btn ghost" data-act="start" style="font-size:12.5px;padding:8px 18px">免费开始</button></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 自取</a></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="/about">聊聊需求 →</a></td></tr>
+        <tr><th></th><td><button class="btn ghost" data-act="start">免费开始</button></td><td><a class="btn ghost" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 自取</a></td><td><a class="btn ghost" href="/about">聊聊需求 →</a></td></tr>
       </tbody>
-    </table>
+    </table></div>
   </section>
 
 
 
   <!-- ══ 开放生态 ══ -->
-  <section id="open" class="sec reveal" data-od-anchor data-od-id="capability-open">
+  <section id="open" class="sec reveal" data-od-anchor data-od-id="product-open">
     <div class="sec-head center">
       <span class="kicker">开放生态</span>
       <h2>开放，是默认值（也是芭乐派的坚持）</h2>

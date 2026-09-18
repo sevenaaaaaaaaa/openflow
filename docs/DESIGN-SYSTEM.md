@@ -136,7 +136,7 @@ live → `events`，consultation → `enterprise`，course-player → `courses`�
 ### 新增零件的规则
 
 - 第二个页面要用同一个东西时，才进 modules.css；只有一页用的留在页面 `<style>`。
-  （产品页与能力页的 `.conn-chips` 现在是两份私有拷贝，第三处出现就收编。）
+  （`.conn-chips` / `.dep-table` / `.real-grid` / `.bt-go` / `.proof-strip` 已随 hub 三页（home-v2 / hub-products / hub-capabilities，2026-09-18）收编进 modules.css 尾部。）
 - 必须用 token：**零 hex、零 rgb、零 tailwind 类**。颜色派生用 `color-mix(in oklab, …)`。
 - 必须给 ≤1080 / ≤860 / ≤640 三档降档，并同时在亮暗两色下检查。
 - 命名沿用首页的短名风格（`.tl-n` 不是 `.timeline-node-number`）。
