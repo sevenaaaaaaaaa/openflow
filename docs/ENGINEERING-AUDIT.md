@@ -107,6 +107,13 @@ z-index 目前**散落硬编码**：`.modal` 92 / `.palette` 91 / `.overlay` 90 
 > **命令面板输入框此前只有 placeholder、没有任何过滤逻辑**，现已支持过滤 + ↑↓ 高亮 + Enter 打开。
 > 命令：`npm run typecheck` / `npm test` / `npm run build`；`scripts/ci.sh` 已把三者纳入门禁
 > （含「构建产物是否最新」校验，防止忘记构建就提交）。
+>
+> **第 2 步（角色系统）已完成**：`role-content.js`（纯数据）→ `src/roles/content.ts`（类型化），
+> `role-switch.js` → `src/roles/switch.js`，纯逻辑抽到 `src/lib/roles.ts`
+> （角色校验/落地页/CTA 绑定/顺序循环/首次浮层判定/UTM 渠道推断），**累计 32 个 TS 单测**。
+> 构建改为多入口（一表加一行即接入新迁移），banner 改为**确定性**（不含日期/commit，
+> 否则每次提交都会让「产物是否最新」校验失效）。两个首页的角色脚本版本号也从硬编码
+> `?v=3/?v=4` 统一为 `?v=OF_SHELL_VER`。
 
 ### 5.1 Python 优先（低风险、立即可做）
 
