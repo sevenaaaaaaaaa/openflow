@@ -85,11 +85,20 @@ $dir = sys_get_temp_dir() . '/of-adapter-' . getmypid() . '/' . $plan['id'];
 $w = adapter_forge_write((array) $out['files'], $dir);
 check('落盘成功', ($w['ok'] ?? false) === true && count((array) $w['written']) === 3, (string) ($w['error'] ?? ''));
 $report = adapter_verify_gate($dir, $m, ['skip_phpstan' => true]);
-check('良好草稿 → passed', $report['status'] === 'passed', json_encode($report['failed'] ?? []));
-check('passed 才有 verified 徽章', $report['badge'] === 'verified');
+// 模板骨架仍含 TODO(适配) → 按诚信规则只能是 needs-review（不得 verified）
+check('骨架（有 TODO）→ needs-review', $report['status'] === 'needs-review', (string) $report['status']);
+check('骨架不拿 verified 徽章', $report['badge'] === 'unverified');
+check('报告含 TODO 计数', ($report['todos'] ?? 0) > 0);
+// 把 TODO 去掉后应升级为 passed
+$donePhp = str_replace(['TODO(适配)', 'TODO'], 'done', (string) file_get_contents($dir . '/plugin.php'));
+file_put_contents($dir . '/plugin.php', $donePhp);
+$report2 = adapter_verify_gate($dir, $m, ['skip_phpstan' => true]);
+check('补完后 → passed + verified', $report2['status'] === 'passed' && $report2['badge'] === 'verified', (string) $report2['status']);
+file_put_contents($dir . '/plugin.php', (string) $out['files']['plugin.php']);
+$report = $report2;
 
 /* 7. 篡改后闸门应拦截 */
-$stampOk = adapter_verify_stamp($dir, $report);
+$stampOk = adapter_verify_stamp($dir, $report2);
 check('stamp 写回成功', $stampOk === true);
 $stamped = json_decode((string) file_get_contents($dir . '/plugin.json'), true);
 check('plugin.json 已带上徽章', ($stamped['verification']['badge'] ?? '') === 'verified');
