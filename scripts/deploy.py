@@ -28,6 +28,7 @@ import os
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -310,17 +311,35 @@ def main() -> int:
     stamp = time.strftime("%Y%m%d-%H%M%S")
     ensure_remote_dirs([e.rel for e in plan.uploads])
 
-    # 1) 备份 → 2) 上传 → 3) 逐个 md5 断言
-    failed: list[str] = []
-    for e in plan.uploads:
-        backup_remote(e.rel, stamp)
+    # 1) 备份 + 上传（并发 6）→ 2) 一次批量 md5 断言
+    #    注：逐文件 ssh 校验会让 200+ 文件变成 400+ 次远程调用（曾导致部署超时）
+    def push(entry: Entry) -> tuple[str, str | None]:
         try:
-            scp_upload(e.rel)
+            backup_remote(entry.rel, stamp)
+            scp_upload(entry.rel)
+            return entry.rel, None
         except RuntimeError as err:
-            print(f"  ✗ {err}", file=sys.stderr)
-            failed.append(e.rel)
+            return entry.rel, str(err)
+
+    workers = min(6, max(1, len(plan.uploads)))
+    print(f"→ 并行上传（{workers} 并发）…")
+    failed: list[str] = []
+    done = 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for rel, err in pool.map(push, plan.uploads):
+            done += 1
+            if err:
+                print(f"  ✗ {err}", file=sys.stderr)
+                failed.append(rel)
+            elif done % 25 == 0 or done == len(plan.uploads):
+                print(f"  … {done}/{len(plan.uploads)}")
+
+    rels = [e.rel for e in plan.uploads]
+    got_all = md5_remote(rels)
+    for e in plan.uploads:
+        if e.rel in failed:
             continue
-        got = md5_remote([e.rel])[e.rel]
+        got = got_all.get(e.rel)
         if got != e.local_md5:
             print(f"  ✗ md5 不一致 {e.rel}：期望 {e.local_md5[:8]} 实际 {(got or 'MISSING')[:8]}", file=sys.stderr)
             failed.append(e.rel)
