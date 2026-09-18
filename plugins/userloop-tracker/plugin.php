@@ -26,16 +26,23 @@ if ($UL_TOKEN !== '') $headers[] = 'X-UserLoop-Token: ' . $UL_TOKEN;
 /** 旁路转发：失败静默，永不阻塞主链路 */
 $forward = function (array $event) use ($p, $UL_URL, $headers, $FORWARD) {
     if (!$FORWARD || $UL_URL === '') return;
+    $props = (array)($event['properties'] ?? []);
     $payload = [
         'distinct_id' => $event['visitor_id'] ?? ('of_' . substr(md5((string)($event['member_id'] ?? '')), 0, 12)),
         'event'       => $event['event'] ?? 'unknown',
-        'props'       => array_merge((array)($event['properties'] ?? []), [
+        'props'       => array_merge($props, [
             'url' => $event['url'] ?? '', 'referrer' => $event['referrer'] ?? '',
+            // 跨系统身份映射：会员 id + 访客 id（命名空间化，避免与 WebsFlow 的 visitor_id 语义冲突）
+            'openflow_member_id'  => (string)($event['member_id'] ?? ''),
+            'openflow_visitor_id' => (string)($event['visitor_id'] ?? ''),
         ]),
         'source'      => 'openflow',
         'event_id'    => $event['message_id'] ?? ('of_' . md5(json_encode($event))),
         'ts'          => isset($event['timestamp']) ? date('c', strtotime($event['timestamp'])) : null,
     ];
+    // 事件带邮箱/手机号 → 顶层透传，UserLoop 侧自动实名并归并
+    if (!empty($props['email'])) $payload['email'] = (string)$props['email'];
+    if (!empty($props['phone'])) $payload['props']['phone'] = (string)$props['phone'];
     $r = $p->httpPost($UL_URL . '/api/v1/ingest', $payload, $headers, 2);
     if (!$r['ok']) $p->log('UserLoop 转发失败：' . ($r['error'] ?: ('HTTP ' . $r['status'])));
 };
