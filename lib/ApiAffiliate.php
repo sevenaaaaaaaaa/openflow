@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * API 分佣系统 — 推荐 API 聚合平台 + 赚取分佣
  */

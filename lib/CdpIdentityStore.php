@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CdpIdentityStore —— CDP 身份图谱的 SQLite 存储层（P1-1）
  *

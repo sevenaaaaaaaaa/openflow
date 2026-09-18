@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CoverRenderer — 生成式封面（无图文章 / 课程 / 资产用）
  *

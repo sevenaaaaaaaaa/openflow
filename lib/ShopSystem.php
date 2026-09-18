@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 商城系统 — 课程订单 + 虎皮椒支付 + 分销佣金
  */

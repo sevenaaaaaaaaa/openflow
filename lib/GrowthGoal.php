@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GrowthGoal —— 共享增长目标（AUDIT-07 P1-5）
  *

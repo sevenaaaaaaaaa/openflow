@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 评论/点评 前端组件（复用）
  * 用法：fc_comment_widget('article', $articleId, ['rating' => true]);

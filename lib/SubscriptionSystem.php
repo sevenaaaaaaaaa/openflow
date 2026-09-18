@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 付费订阅系统（v2.1 商业化核心）
  *

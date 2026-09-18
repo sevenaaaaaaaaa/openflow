@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 站点品牌配置 — 统一读取 + 默认值
  * 所有与品牌/公司相关的字段集中在此，前端/后台调用 site_config() 获取

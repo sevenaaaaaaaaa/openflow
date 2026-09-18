@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * SiteAgent —— 会卖的站点 Agent（AUDIT-04 创新三 / BACKLOG T1-10）
  *

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * AgentRuntime — Agentic 运行时（工具链 + 计划/执行循环 + 重试自愈 + 审批门）
  *
@@ -129,7 +130,7 @@ function agent_do_publish(array $a): array {
     if (!$art) return ['ok' => false, 'error' => '文章不存在'];
     $art['status'] = 'published'; $art['updated_at'] = date('Y-m-d H:i:s');
     if (empty($art['published_at'])) $art['published_at'] = date('Y-m-d H:i:s');
-    save_article($art);
+    save_article((string)$art['id'], $art);
     return ['ok' => true, 'result' => '已发布 ' . ($art['title'] ?? $a['article_id'])];
 }
 function agent_do_conn(string $id, array $a): array {

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * FrequencyCap — 跨渠道触达频控 + 疲劳度管理
  * 限制每个用户每日/每周各渠道接收上限，避免过度触达

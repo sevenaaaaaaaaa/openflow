@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MainlineAi — 控制台的「小福判断」层
  *

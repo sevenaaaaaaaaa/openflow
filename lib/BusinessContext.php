@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BusinessContext — 给「小福控制台」用的真实业务快照
  *

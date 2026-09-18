@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * SegmentApi — 分群即服务的纯逻辑（供 api/segments.php 复用，可单测）
  */

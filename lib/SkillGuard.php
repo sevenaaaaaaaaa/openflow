@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * SkillGuard —— 「描述即造」的安全护栏（AUDIT-06 创新二 / BACKLOG T1-15）
  *

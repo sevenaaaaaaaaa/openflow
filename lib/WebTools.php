@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 前端增长工具箱 WebTools
  * 免费工具集：SEO 检查 / Meta 生成 / 可读性分析 / LTV-CAC 计算 / 关键词难度估算

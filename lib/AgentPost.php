@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * AgentPost — AI 员工(岗位)体系 v1
  *

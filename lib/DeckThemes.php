@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * DeckThemes — 幻灯片主题系统（F1）
  *

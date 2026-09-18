@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Backup System — 备份、恢复、云同步
  */

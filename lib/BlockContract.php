@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 块契约 —— Portable Text 兼容形状（2026-09-04）
  *

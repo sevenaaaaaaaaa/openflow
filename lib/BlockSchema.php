@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BlockSchema —— 模块工厂核心（2026-09-05）
  *

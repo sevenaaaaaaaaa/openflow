@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Read-only projection from existing Flow facts into shared domain contracts. */
 
 require_once __DIR__ . '/DomainContract.php';

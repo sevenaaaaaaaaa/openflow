@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * AI 业务助手 AIBusiness
  * 内容生产：标题优化 / 摘要生成 / 标签推荐 / 多语言

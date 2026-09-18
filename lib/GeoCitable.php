@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GeoCitable — 可引用格式改写（GEO：让内容变成 AI 引擎愿意直接引用/摘录的结构）
  *
@@ -116,6 +117,6 @@ function geo_citable_apply(string $articleId, array $blocks): array {
     if ($faq) $a['geo_faq'] = $faq;
     $a['geo_citable_at'] = date('Y-m-d H:i:s');
     $a['updated_at'] = date('Y-m-d H:i:s');
-    save_article($a);
+    save_article((string)$a['id'], $a);
     return ['ok' => true, 'faq' => (bool)$faq];
 }

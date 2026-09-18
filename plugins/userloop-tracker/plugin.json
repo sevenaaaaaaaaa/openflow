@@ -5,5 +5,5 @@
     "description": "全站页脚注入 UserLoop tracker：page_view/element_click 批量上报 → nownexts.com/userloop 事件总线（CDP 建档→旅程→Loop）",
     "author": "UserLoop",
     "enabled_by_default": true,
-    "permissions": ["hooks", "slot"]
+    "permissions": ["hooks", "slot", "http", "log", "config"]
 }

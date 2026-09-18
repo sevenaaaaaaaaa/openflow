@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * DecisionTrace —— Agent 决策的可解释轨道（AUDIT-03 创新 / BACKLOG T2-5）
  *

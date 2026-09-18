@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * PlatformOps —— 平台运营 Agent · 选品驾驶舱（AUDIT-05 创新二 / BACKLOG T1-12）
  *

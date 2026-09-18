@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CreatorGrowth —— 创作者增长后台（AUDIT-05 创新一 / BACKLOG T1-11）
  *

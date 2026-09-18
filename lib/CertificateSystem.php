@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CertificateSystem — 结业证书（完课自动颁发 + 可验证）
  *

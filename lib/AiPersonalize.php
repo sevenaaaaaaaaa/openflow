@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * AiPersonalize —— 规则个性化 → AI 个性化（AUDIT-03 / BACKLOG T1-1）
  *

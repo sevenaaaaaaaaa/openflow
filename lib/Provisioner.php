@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Provisioner — 自动装配（压轴）
  *

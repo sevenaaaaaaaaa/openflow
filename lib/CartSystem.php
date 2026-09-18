@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 购物车系统 — A2 商业化核心
  *

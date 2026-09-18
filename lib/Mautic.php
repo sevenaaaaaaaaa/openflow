@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Mautic PHP SDK — 联系人管理 & 邮件发送 & 营销活动
  * 依赖 Composer: composer require mautic/api-library

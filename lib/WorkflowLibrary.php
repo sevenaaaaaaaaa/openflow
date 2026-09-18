@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Flow/Skill capability metadata, safe promotion and shareable template export. */
 require_once __DIR__ . '/DomainContract.php';
 

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * FlowSystem — 全站统一事件总线（三条流动的联动中枢）
  *
@@ -139,7 +140,7 @@ function flow_handle(string $event, array $ctx = []): array {
         if (isset($convMap[$event]) && !empty($email)) {
             try {
                 require_once __DIR__ . '/ConversionApi.php';
-                $conv_track([
+                conv_track([
                     'event_name' => $convMap[$event],
                     'user_id' => $memberId,
                     'email' => $email,

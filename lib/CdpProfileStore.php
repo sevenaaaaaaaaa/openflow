@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CdpProfileStore —— CDP 画像的 SQLite 存储层（AUDIT-02 P0 / BACKLOG T0-1）
  *

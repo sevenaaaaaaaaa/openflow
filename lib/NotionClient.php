@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * NotionClient — Notion API 通用客户端（支持分页/速率限制/CRUD）
  */

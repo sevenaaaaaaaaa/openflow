@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BuilderWorkspace —— 参与者工作台 / OIA（AUDIT-06 创新一 / BACKLOG T1-14）
  *

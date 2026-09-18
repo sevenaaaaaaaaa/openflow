@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Dynamic Content System — 基于 URL 参数的动态内容替换
  * 支持：卡片显隐、文字替换、UTM 追踪、A/B 测试

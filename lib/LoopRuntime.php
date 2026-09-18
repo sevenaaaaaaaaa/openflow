@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Loop Runtime v1: one deterministic, read-only Observe -> TIPS Plan cycle. */
 
 require_once __DIR__ . '/DomainContract.php';

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 商城系统 — 实体商品 + 积分商城
  *

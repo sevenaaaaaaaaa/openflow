@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * SalesPlaybook —— 销售话术 / 物料草稿（AUDIT-04 / BACKLOG T1-9）
  *

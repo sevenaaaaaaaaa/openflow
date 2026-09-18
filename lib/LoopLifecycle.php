@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Persistent, fail-closed lifecycle store for Loop definitions and runs. No business executor is called here. */
 require_once __DIR__ . '/DomainContract.php';
 

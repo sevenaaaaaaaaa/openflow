@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ObjectGraph — 统一「人」对象投影 + 跨模块时间线
  *

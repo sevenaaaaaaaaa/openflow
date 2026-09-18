@@ -95,6 +95,7 @@ if ($topicSlug) {
         if (($t['slug'] ?? '') === $topicSlug) { $currentTopic = $t; break; }
     }
 }
+$topicArticles = [];
 if ($currentTopic) {
     $topicArticles = [];
     foreach (($currentTopic['article_ids'] ?? $currentTopic['articles'] ?? []) as $aid) {

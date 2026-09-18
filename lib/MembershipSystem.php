@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 会员体系 — 全站统一的权益模型
  *

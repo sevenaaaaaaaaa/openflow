@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * IngestAdapters —— 第三方数据源导入（P1-2）
  *

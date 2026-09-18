@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CourseSystem — 课程领域层（类型单一真源 / 数据分析 / 先修与学习路径）
  *

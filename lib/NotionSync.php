@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * NotionSync — 全内容类型双向同步管理器
  * 支持：导航站、文章、课程、活动、落地页、技能

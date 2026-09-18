@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CopilotActions — 小福增长 Copilot 可执行动作
  * 自然语言 → 创建自动化流程 / 查询数据 / 生成回复建议

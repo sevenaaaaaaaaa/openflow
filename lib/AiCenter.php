@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * AI 中心 - 统一 AI 调用封装
  * 支持多 provider（OpenAI 兼容 / Claude / MiniMax 等）

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * SEO 头部生成器 SeoHead
  * 统一生成：关键词 / Canonical / OpenGraph / 结构化数据 / favicon

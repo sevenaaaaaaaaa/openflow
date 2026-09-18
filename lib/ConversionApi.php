@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 转化回传闭环（CAPI，对标 Meta/Google 转化 API）
  * 支付/线索等关键转化事件 → PII 哈希 + 点击ID → 回传广告平台，幂等+重试

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ConversionGoal — 转化目标对象（把"目标事件 + 作用域 + 价值"变成一等对象）
  *

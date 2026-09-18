@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MorningBriefing — 每日增长晨会 v0
  *

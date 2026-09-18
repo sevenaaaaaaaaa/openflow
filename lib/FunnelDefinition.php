@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * FunnelDefinition — 转化漏斗的可配置定义
  *

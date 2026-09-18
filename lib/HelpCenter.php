@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * HelpCenter — 帮助中心数据层
  * 数据：data/help-center.json {categories:[], articles:[]}

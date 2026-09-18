@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MailCampaign — 邮件营销闭环
  * 退订链接/端点 · 打开(px)统计 · 点击统计 · 模板管理 · 邮件序列
