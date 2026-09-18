@@ -299,6 +299,7 @@ function adapter_intake_github(string $slug, int $timeout = 12): array
             if (is_array($d)) {
                 $meta = adapter_intake_normalize($d, $slug);
                 $meta['version'] = adapter_intake_latest_version($slug);
+                $meta['readme'] = adapter_fetch_readme($slug);
                 return $meta;
             }
         }
@@ -325,6 +326,28 @@ function adapter_intake_github(string $slug, int $timeout = 12): array
     $d = json_decode($body, true);
     if (!is_array($d)) return ['ok' => false, 'error' => '响应不是 JSON'];
     return adapter_intake_normalize($d, $slug);
+}
+
+/** 取 README 全文（截断 8000 字；失败返回空串） */
+function adapter_fetch_readme(string $slug, int $limit = 8000): string
+{
+    if (!function_exists('exec')) return '';
+    $out = [];
+    $code = 0;
+    @exec('gh api ' . escapeshellarg('repos/' . $slug . '/readme')
+        . " -H 'Accept: application/vnd.github.raw' 2>/dev/null", $out, $code);
+    if ($code !== 0 || $out === []) {
+        // curl 回退（raw 端点，无需 token）
+        if (function_exists('curl_init')) {
+            $ch = curl_init('https://raw.githubusercontent.com/' . $slug . '/HEAD/README.md');
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 12, CURLOPT_USERAGENT => 'OpenFlow-Adapter-Intake']);
+            $body = curl_exec($ch);
+            if (is_string($body) && $body !== '') return mb_substr($body, 0, $limit);
+        }
+        return '';
+    }
+    return mb_substr(implode("\n", $out), 0, $limit);
 }
 
 /** 取最新 release tag（失败返回空串，不阻塞） */

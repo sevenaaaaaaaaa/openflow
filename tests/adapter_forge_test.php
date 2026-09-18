@@ -73,6 +73,12 @@ check('自称 verified → 不通过', adapter_verify_manifest($self)['ok'] === 
 $noVer = $m;
 $noVer['source'] = ['repo' => 'a/b', 'license' => 'apache-2.0', 'version' => ''];
 check('缺版本 pin → 不通过', adapter_verify_manifest($noVer)['ok'] === false);
+$verBad = $m;
+$verBad['source'] = ['repo' => 'a/b', 'license' => 'mit', 'version' => '@scope/pkg@1.0.0'];
+check('非 tag 形式版本 → 不通过', adapter_verify_manifest($verBad)['ok'] === false);
+$verTag = $m;
+$verTag['source'] = ['repo' => 'a/b', 'license' => 'mit', 'version' => 'killbill-0.24.0'];
+check('带前缀的 tag → 通过', adapter_verify_manifest($verTag)['ok'] === true);
 
 /* 6. 落盘 + 完整闸门（跳 PHPStan 保持快速） */
 $dir = sys_get_temp_dir() . '/of-adapter-' . getmypid() . '/' . $plan['id'];
@@ -94,7 +100,7 @@ check('blocked 明确指出失败项', in_array('permissions:superset', (array) 
 
 /* 8. copyleft 许可证 → needs-review（不是 blocked，但要人审） */
 $copyleft = $m;
-$copyleft['source'] = ['repo' => 'a/b', 'license' => 'agpl-3.0', 'version' => 'v1'];
+$copyleft['source'] = ['repo' => 'a/b', 'license' => 'agpl-3.0', 'version' => 'v1.0.0'];
 $rc = adapter_verify_gate($dir, $copyleft, ['skip_phpstan' => true]);
 check('AGPL → needs-review', $rc['status'] === 'needs-review', $rc['status']);
 
