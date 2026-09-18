@@ -2,7 +2,11 @@
 # 上传视频/大文件到 Cloudflare R2 的 media/ 前缀，供 < 视频 > 播放
 # 用法: python3 deploy/upload-r2-video.py 本地.mp4 [course-id/slug.mp4]
 # 上传后在后台课程课时填 https://nownexts.com/media/<key>
-import os, sys, boto3, mimetypes
+import mimetypes
+import os
+import sys
+
+import boto3
 
 R2_ENDPOINT = "https://00d02a54a3c0f7a3f6c3fc75068e29c5.r2.cloudflarestorage.com"
 R2_KEY = os.environ.get("R2_KEY", "")       # 从环境变量读取，勿硬编码提交到 git

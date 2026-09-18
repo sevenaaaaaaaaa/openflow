@@ -4,7 +4,9 @@
 
 做法：单次正则替换 [主题脚本 + 注释 + 3 条 link] → 共享调用，避免索引错位。
 """
-import re, sys, pathlib
+import pathlib
+import re
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 APPLY = '--apply' in sys.argv
