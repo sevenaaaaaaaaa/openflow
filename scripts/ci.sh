@@ -33,6 +33,11 @@ else
   echo "（跳过：未安装 node_modules，运行 npm install 启用前端检查）"
 fi
 
+hdr "0.5/5 运维脚本：deploy.py 纯逻辑单测"
+if python3 -m unittest discover -s scripts/tests >/tmp/of_ci_py.log 2>&1; then
+  tail -3 /tmp/of_ci_py.log | tr '\n' ' '; echo; grn "✓ deploy.py 单测"
+else red "✗ deploy.py 单测"; tail -12 /tmp/of_ci_py.log; FAIL=1; fi
+
 hdr "1/5 契约与单元测试（tests/*_test.php）"
 P=0; F=0
 for t in tests/*_test.php; do
