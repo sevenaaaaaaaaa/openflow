@@ -131,4 +131,26 @@
 | 4. 验证闸门与报告 | `verification-report.json` + 徽章 | ⏳ 待建 `lib/AdapterVerify.php` |
 | 5. 人审与上架 | 草稿进 `data/ecosystem/review-queue.json` → 市场 | ⏳ 待建 `admin/ecosystem.php` |
 
+### 7.1 第二轮：AI 补全真实调用（已跑通）
+
+```bash
+php scripts/forge-adapter.php binwiederhier/ntfy --complete
+```
+
+**试点结果（ntfy）**：模板骨架 3 处 `TODO(适配)` → AI 依据官方文档补全 → **TODO 归零**，
+代码使用 ntfy 官方 publish API（`POST /<topic>`，字段 topic/message/title/priority/tags/click）、
+连接超时 5s / 总超时 15s（可配）、仅网络错误与 5xx 指数退避重试（4xx 快速失败）、
+凭据只经 `plugin_config()`（Bearer/Basic），**零硬编码密钥** → 通过 level 5 静态分析与契约测试 → `passed / verified`。
+
+**安全设计（三道闸门，缺一不可）**
+
+| 闸门 | 作用 | 不过时 |
+|------|------|--------|
+| 安全栅栏 `adapter_forge_guard()` | 拒绝硬编码密钥/带凭据 URL；拒绝新增未声明落点；拒绝删除既有注册 | 不落盘 |
+| 重新验证前撤章 | 旧 `verified` 会让 `no-self-claim` 误判，故重验前必须置回 `pending` | — |
+| 闸门复核 + 回滚 | 新代码必须过 5 项闸门；否则从 `plugin.php.prev.bak` 回滚 | 回到调用前版本 |
+
+**留档**：`plugin.template.php.bak`（模板，供对比）、`plugin.php.prev.bak`（本次调用前快照，回滚用）、
+`plugin.ai.php`（AI 原始产物，**即使被拦下也保留**供人审）。
+
 **第一步只做通 1→2→4（合成可先用模板 + 人工补）**，验证闸门先行，避免"AI 写完没人验"。
