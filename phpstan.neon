@@ -1,0 +1,27 @@
+# PHPStan 配置 —— 只在本机/CI 跑静态分析，不进部署产物（vendor/ 已 gitignore）
+# 用法：php vendor/bin/phpstan analyse            （读本文件；基线见 phpstan-baseline.neon）
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    phpVersion: 80300          # 与生产一致（服务器 PHP 8.3.33）
+    paths:
+        - .
+    excludePaths:
+        - vendor
+        - data
+        - tests
+        - src
+        - node_modules
+        - deploy
+        - scripts
+        - docs
+        - .deploy
+        - phpstan-bootstrap.php
+        - uploads
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
+    tmpDir: /tmp/phpstan-openflow
