@@ -289,9 +289,9 @@
     ui.innerHTML =
       '<div class="scrim" id="scrim"></div>' +
       '<div class="overlay" id="palOverlay"></div>' +
-      '<div class="palette" id="palette" role="dialog" aria-label="命令面板"><input id="palInput" placeholder="搜索页面或命令…" autocomplete="off"><div class="p-list" id="palList"></div></div>' +
+      '<div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="命令面板" data-of-dialog><input id="palInput" placeholder="搜索页面或命令…" autocomplete="off"><div class="p-list" id="palList"></div></div>' +
       '<div id="toasts" aria-live="polite"></div>' +
-      '<div class="modal" id="authModal" role="dialog" aria-modal="true" aria-label="登录"><div class="mbox">' +
+      '<div class="modal" id="authModal" role="dialog" aria-modal="true" aria-label="登录" data-of-dialog><div class="mbox">' +
         '<div class="mhead"><h3 id="authTitle">登录 OpenFlow</h3><button class="mx" data-close="authModal" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>' +
         '<div class="mbody">' +
           '<div class="auth-tabs"><button type="button" class="auth-tab on" id="tabLogin">登录</button><button type="button" class="auth-tab" id="tabReg">注册</button></div>' +
@@ -304,7 +304,7 @@
           '<p class="auth-foot">登录即开通 OpenFlow 社区账号，课程与社区内容跨站同步。</p>' +
         '</div>' +
       '</div></div>' +
-      '<div class="modal" id="profileModal" role="dialog" aria-modal="true" aria-label="个人中心"><div class="mbox">' +
+      '<div class="modal" id="profileModal" role="dialog" aria-modal="true" aria-label="个人中心" data-of-dialog><div class="mbox">' +
         '<div class="mhead"><h3>个人中心</h3><button class="mx" data-close="profileModal" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>' +
         '<div class="mbody">' +
           '<div style="display:flex;align-items:center;gap:14px;margin-bottom:4px"><div class="drop-av" id="pfAv">?</div><div style="min-width:0"><div class="drop-name" id="pfName"></div><div class="drop-mail" id="pfMail"></div></div></div>' +
@@ -809,6 +809,65 @@
       }
       if (e.key === 'Escape') { closePalette(); drop.classList.remove('open'); }
     });
+
+    /* ── 通用弹窗行为层：ESC / 遮罩点击 / 滚动锁（含滚动条补偿）/ 焦点进入 ──
+       只补行为，不动任何视觉：靠 [data-of-dialog] 标记 + 已有开关函数委托。 */
+    (function () {
+      function lock(on) {
+        if (on) {
+          var w = window.innerWidth - document.documentElement.clientWidth;
+          document.documentElement.style.setProperty('--of-sbw', (w > 0 ? w : 0) + 'px');
+          document.body.style.overflow = 'hidden';
+          document.body.style.paddingRight = w > 0 ? w + 'px' : '';
+        } else {
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        }
+      }
+      function openOne() { return document.querySelector('[data-of-dialog].open, [data-of-dialog].on'); }
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        var el = openOne(); if (!el) return;
+        e.preventDefault(); close(el);
+      });
+      document.addEventListener('click', function (e) {
+        var el = openOne(); if (!el) return;
+        if (e.target !== el && el.contains(e.target)) return;   // 点在浮层内容里 → 不关
+        close(el);                                              // 点全屏遮罩本身，或点在浮层之外 → 关
+      });
+      function close(el) {
+        if (el.__ofClose) el.__ofClose();
+        else { el.classList.remove('open'); el.classList.remove('on'); lock(false); }
+      }
+      window.OFDialog = {
+        lock: lock,
+        register: function (el, name, opts) {
+          if (!el || el.__ofReg) return; el.__ofReg = true;
+          el.setAttribute('data-of-dialog', '');
+          if (!el.getAttribute('role')) el.setAttribute('role', 'dialog');
+          if (!el.getAttribute('aria-modal')) el.setAttribute('aria-modal', 'true');
+          var baseClose = (opts && opts.close) || function () { el.classList.remove('open'); };
+          var baseOpen = (opts && opts.open) || function () { el.classList.add('open'); };
+          el.__ofClose = function () { try { baseClose(); } finally { lock(false); } };
+          el.__ofOpen = function () {
+            baseOpen(); lock(true);
+            try { document.dispatchEvent(new CustomEvent('of:dialog-open', { detail: { el: el } })); } catch (e) {}
+            var f = el.querySelector('input:not([type=hidden]),button:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])');
+            if (f) setTimeout(function () { try { f.focus(); } catch (e) {} }, 30);
+          };
+        }
+      };
+      /* 注册三个既有弹窗：开关仍走原函数，行为统一由本层兜底 */
+      window.OFDialog.register(authModal, 'auth', { open: function () { openAuth('login'); }, close: closeAuth });
+      window.OFDialog.register(g('profileModal'), 'profile', { open: openProfile, close: closePf });
+      window.OFDialog.register(g('palette'), 'palette', { open: openPalette, close: closePalette });
+      /* 对外暴露 open，便于页面脚本 / 自动化调用统一入口 */
+      window.OFShellDialogs = {
+        openAuth: function () { authModal.__ofOpen && authModal.__ofOpen(); },
+        openProfile: function () { var e = g('profileModal'); e && e.__ofOpen && e.__ofOpen(); },
+        openPalette: function () { var e = g('palette'); e && e.__ofOpen && e.__ofOpen(); }
+      };
+    })();
 
     /* ── 对外最小 API：页面级脚本复用外壳能力，不再自绘 ── */
     window.OFShell = {
