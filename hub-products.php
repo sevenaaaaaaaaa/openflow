@@ -208,7 +208,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
           </svg>
         </div>
         <div class="demo-ctrl">
-          <button class="btn primary" id="demoRun" data-od-id="demo-run"><span class="ic"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg></span><span>运行一轮</span></button>
+          <button class="btn subtle" id="demoRun" data-od-id="demo-run"><span class="ic"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg></span><span>运行一轮</span></button>
           <span class="note" id="demoState">就绪 · 点击运行</span>
         </div>
       </div>
@@ -268,7 +268,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         <tr><th>数据归属</th><td>云端加密存储，可随时导出</td><td><b>完全出不了你的域</b></td><td>核心数据私有，匿名化上云</td></tr>
         <tr><th>适合谁</th><td>想立刻跑起来的一人公司</td><td>重视自主可控的团队</td><td>既要安全又要弹性的成长型团队</td></tr>
         <tr><th>起步价</th><td><b>免费</b></td><td>开源免费 · 支持服务另议</td><td>按需评估</td></tr>
-        <tr><th></th><td><button class="btn primary" data-act="start" style="font-size:12.5px;padding:8px 18px">免费开始</button></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 自取</a></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="/about">聊聊需求 →</a></td></tr>
+        <tr><th></th><td><button class="btn ghost" data-act="start" style="font-size:12.5px;padding:8px 18px">免费开始</button></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 自取</a></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="/about">聊聊需求 →</a></td></tr>
       </tbody>
     </table>
   </section>
@@ -349,7 +349,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
           <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
           <div id="form-msg" role="status" aria-live="polite"></div>
           <div class="f-row">
-            <button type="submit" class="btn primary" data-od-id="lead-submit">提交预约 →</button>
+            <button type="submit" class="btn ghost" data-od-id="lead-submit">提交预约 →</button>
             <span class="f-note">提交后进入顾问队列，1 个工作日内联系</span>
           </div>
         </form>
@@ -366,7 +366,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <h2>装完即用，今天就能长出你的增长引擎</h2>
       <p class="lead">免费开始，无需信用卡。安装后 OpenFlow 自动开始爬取信号、主动洞察、主动转化——每个人都能改造成专属自己的增长系统。</p>
       <div class="cta-row">
-        <button class="btn primary" data-act="start">免费开始</button>
+        <button class="btn ghost" data-act="start">免费开始</button>
         <a class="btn ghost" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 源码</a>
         <a class="btn ghost" href="/capability">了解 TIPS 能力</a>
         <a class="btn subtle" href="/consultation">预约演示 →</a>

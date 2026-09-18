@@ -206,7 +206,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
       <h2>先免费用起来，<i class="si">有效果再谈付费</i></h2>
       <p class="lead">开源版今天就能装；拿不准哪个方案，留个需求我们帮你选。</p>
       <div class="cta-row">
-        <a class="btn primary" href="/register">免费开始（开源）</a>
+        <a class="btn ghost" href="/register">免费开始（开源）</a>
         <a class="btn ghost" href="/consultation">预约诊断 →</a>
       </div>
     </div>
