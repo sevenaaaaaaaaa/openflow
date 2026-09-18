@@ -129,7 +129,7 @@
 | 2. 源接入与能力画像 | `capability-profile.json` | ✅ `lib/AdapterIntake.php` |
 | 3. 映射与合成 | `plugins/_drafts/<id>/{plugin.json,plugin.php}` + 契约测试 | ⏳ 待建 `lib/AdapterForge.php` |
 | 4. 验证闸门与报告 | `verification-report.json` + 徽章 | ⏳ 待建 `lib/AdapterVerify.php` |
-| 5. 人审与上架 | 草稿进 `data/ecosystem/review-queue.json` → 市场 | ⏳ 待建 `admin/ecosystem.php` |
+| 5. 人审与上架 | 草稿进 `data/ecosystem/review-queue.json` → 市场 | ✅ `admin/ecosystem.php`（`/xmp/ecosystem`）+ `scripts/review-adapters.php` |
 
 ### 7.1 第二轮：AI 补全真实调用（已跑通）
 
@@ -175,4 +175,25 @@ php scripts/forge-adapter.php binwiederhier/ntfy --complete
 | PHPStan 报错 | 错误信息被截断（120 字）无法自修 | 回喂最多 6 条「文件:行 错误」；修复轮据此改 |
 | 用框架专属函数（`wp_remote_get` 等） | 未声明运行环境 | 系统提示词写明：PHP 8.3 + 自研 PluginSystem，非 WordPress/Laravel，HTTP 用 curl_* |
 
-**第一步只做通 1→2→4（合成可先用模板 + 人工补）**，验证闸门先行，避免"AI 写完没人验"。
+### 7.3 人审上架闭环（已完成）
+
+```
+草稿(plugins/_drafts/<id>) → 队列(data/ecosystem/review-queue.json)
+   → 后台 /xmp/ecosystem 或 CLI（批准 / 拒绝 / 上架）
+   → plugins/<id> + 注册表 data/plugins.json（enabled=false）
+   → 生态市场以「官方适配 · 免费」展示
+```
+
+**队列规则**：`blocked` 不可上架；`needs-review` 需人工批准；`passed` 可直接上架；同名目标拒绝；
+上架后 **默认不启用**，需到后台「插件」页开启（安装即执行第三方代码，交给显式动作）。
+
+**诚信规则（新增）**：骨架里还有 `TODO(适配)` → 闸门只给 `needs-review`，**不得 verified**；
+队列读取时对历史草稿同样按 TODO 降级。上架页会拦并提示。
+
+**官方适配 vs 社区投稿**：两者走**同一套插件能力与验证闸门**，区别只在这三处——
+① 来源：官方适配由上架流程写入 `adapter: true` / `official: true`（清单自描述，市场据此展示徽章）；
+② 定价：官方适配 `price: 0`（免费）；
+③ 责任：官方适配带上游来源与许可证标注（详情页可见），社区投稿作者自负其责。
+
+**已验证**：`binwiederhier/ntfy`（Apache-2.0，v2.28.0，AI 补全 0 TODO，99 行）上架 →
+市场列表出现「官方适配」徽章、详情页显示"官方主动适配"与上游链接、后台「已上架适配」表格可跳到插件页启用。

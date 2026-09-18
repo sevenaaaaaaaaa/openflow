@@ -25,8 +25,13 @@ function mkt_assets(): array {
 
     // 插件（来自 PluginSystem）
     try {
+        // 注册表里的 adapter=true 是「官方主动适配」：免费、标注上游来源与许可证
+        $reg = is_file(DATA_DIR . '/plugins.json') ? (array) (json_decode((string) @file_get_contents(DATA_DIR . '/plugins.json'), true) ?: []) : [];
+        $regInstalled = (array) ($reg['installed'] ?? []);
         foreach (PluginSystem::get_plugins() as $p) {
-            $items[] = [
+            $meta = (array) ($regInstalled[$p['id']] ?? []);
+            $isAdapter = !empty($p['adapter']) || !empty($meta['adapter']);   // 清单自描述优先，注册表兜底
+            $item = [
                 'type' => 'plugin',
                 'id' => $p['id'],
                 'title' => $p['name'] ?? $p['id'],
@@ -39,6 +44,17 @@ function mkt_assets(): array {
                 'url' => '/plugin/' . urlencode($p['id']),
                 'tags' => ['插件'],
             ];
+            if ($isAdapter) {
+                $item['adapter'] = true;
+                $item['official'] = true;
+                $item['author_type'] = 'official_adapter';
+                $item['price'] = 0;
+                $item['source'] = (string) ($meta['source'] ?? '');
+                $item['license'] = (string) ($meta['license'] ?? '');
+                $item['verified_badge'] = (string) ($meta['badge'] ?? '');
+                $item['tags'] = ['插件', '官方适配', '免费'];
+            }
+            $items[] = $item;
         }
     } catch (Exception $e) {}
 

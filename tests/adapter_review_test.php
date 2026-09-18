@@ -105,6 +105,13 @@ $badEntry = adapter_review_entry($drafts . '/bad-adapter');
 $pubBad = adapter_review_publish($badEntry, $plugins, $reg);
 check('blocked 草稿不可上架', ($pubBad['ok'] ?? true) === false && !is_dir($plugins . '/bad-adapter'));
 
+/* 7. 已上架适配列表（供后台「已上架」与生态市场复用） */
+$pubList = adapter_review_published($reg);
+check('只列 adapter=true 的插件', count($pubList) === 1 && $pubList[0]['id'] === 'done-adapter', json_encode($pubList));
+check('带上游来源与许可证', $pubList[0]['source'] === 'o/r' && $pubList[0]['license'] === 'mit');
+check('带启用状态（默认未启用）', $pubList[0]['enabled'] === false);
+check('缺注册表时返回空', adapter_review_published($tmp . '/nope.json') === []);
+
 @exec('rm -rf ' . escapeshellarg($tmp));
 echo "\n合计：{$pass} 通过，{$fail} 失败\n";
 exit($fail === 0 ? 0 : 1);
