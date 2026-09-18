@@ -43,5 +43,9 @@
         "badge": "verified",
         "tests": "tests/plugin_binwiederhier_ntfy_contract_test.php",
         "checked_at": "2026-09-19T01:19:53+08:00"
-    }
+    },
+    "adapter": true,
+    "official": true,
+    "price": 0,
+    "adapted_at": "2026-09-18T17:35:10+00:00"
 }

@@ -30,6 +30,7 @@ if ($view === 'skill') { $gid = req_str('id'); if ($gid !== '') $skill = skill_g
 
 // 插件详情页（从 PluginSystem 读取）
 $plugin = null;
+$__adapter = false;   // 官方适配标记（在下方找到插件后置位；此处初始化以便模板任意分支安全引用）
 if ($view === 'plugin') { $gid = req_str('id'); if ($gid !== '') {
     $plugin = null;
     foreach (mkt_assets() as $a) {
@@ -52,6 +53,7 @@ $typeNames = mkt_categories();
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <?php if ($view === 'plugin' && $plugin): ?>
+<?php $__adapter = !empty($plugin['adapter']); ?>
 <title><?=htmlspecialchars($plugin['title'] ?? '插件')?> | 生态市场 | <?=site_config_get("site_name")?></title>
 <meta name="description" content="<?=htmlspecialchars(mb_substr(trim((string)($plugin['description'] ?? '')), 0, 120) ?: 'OpenFlow 插件详情')?>">
 <?php
@@ -64,7 +66,7 @@ $__ld = [
   'applicationCategory' => 'BusinessApplication',
   'operatingSystem' => 'OpenFlow',
   'description' => mb_substr(trim((string)($plugin['description'] ?? '')), 0, 200),
-  'author' => ['@type' => 'Organization', 'name' => $plugin['author'] ?? 'OpenFlow'],
+  'author' => ['@type' => 'Organization', 'name' => $__adapter ? 'OpenFlow 官方适配' : ($plugin['author'] ?? 'OpenFlow')],
   'offers' => ['@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'CNY'],
 ];
 if ($__pr['count'] > 0) $__ld['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => round($__pr['avg'], 1), 'ratingCount' => $__pr['count'], 'bestRating' => 5, 'worstRating' => 1];
@@ -184,10 +186,20 @@ if ($__pr['count'] > 0) $__ld['aggregateRating'] = ['@type' => 'AggregateRating'
           <h1><?=htmlspecialchars($plugin['title'] ?? '')?></h1>
           <div class="row">
             <span class="pill neutral">插件</span>
-            <span class="badge ok"><?=htmlspecialchars($plugin['author'] ?? 'OpenFlow')?></span>
+            <?php if ($__adapter): ?>
+            <span class="badge ok">官方适配 · 免费</span>
+            <?php if (($plugin['verified_badge'] ?? '') === 'verified'): ?><span class="badge ok">已验证</span><?php endif; ?>
+            <?php else: ?><span class="badge ok"><?=htmlspecialchars($plugin['author'] ?? 'OpenFlow')?></span><?php endif; ?>
             <span class="note">v<?=htmlspecialchars($plugin['version'] ?? '1.0.0')?></span>
           </div>
           <p class="desc"><?=htmlspecialchars($plugin['description'] ?? '')?></p>
+          <?php if ($__adapter): ?>
+          <p class="note" style="margin-top:8px">这是 <b>OpenFlow 官方主动适配</b>的插件：上游开源能力经适配代理编译，通过验证闸门（清单合法 / 许可证白名单 / 契约测试 / 静态分析 / 沙箱），与社区作者投稿走同一套插件能力。<br>
+            上游：<a href="https://github.com/<?=htmlspecialchars((string)($plugin['source'] ?? ''))?>" target="_blank" rel="noopener" style="color:var(--accent)"><?=htmlspecialchars((string)($plugin['source'] ?? '—'))?></a>
+            · 许可证：<code><?=htmlspecialchars((string)($plugin['license'] ?? '—'))?></code>
+            · 价格：<b>免费</b>
+          </p>
+          <?php endif; ?>
           <?php $pr = comment_rating_summary('plugin', $plugin['id']); if ($pr['count'] > 0): ?>
           <div class="row"><span class="dt-side stars" style="min-width:0"><?=str_repeat('★', max(0, min(5, (int)round($pr['avg']))))?><?=str_repeat('☆', max(0, 5 - (int)round($pr['avg'])))?></span><b style="color:var(--warn)"><?=number_format($pr['avg'], 1)?></b><span class="note"><?=$pr['count']?> 人评分</span></div>
           <?php endif; ?>
@@ -314,9 +326,9 @@ if ($__pr['count'] > 0) $__ld['aggregateRating'] = ['@type' => 'AggregateRating'
     <div class="a-grid mk-grid">
       <?php foreach ($assets as $a): $tm = mkt_type_meta($a['type'] ?? ''); $price = (float)($a['price'] ?? 0); ?>
       <article class="a-card mk" data-od-id="mkt-asset-<?=htmlspecialchars($a['id'] ?? '')?>">
-        <a href="<?=htmlspecialchars($a['url'])?>" class="cov"><?=mkt_asset_cover($a, $typeNames)?><?php if (!empty($a['installed'])): ?><span class="badge ok tag-r">已安装</span><?php elseif ($price <= 0): ?><span class="pill neutral tag-r">免费</span><?php else: ?><span class="pill hl tag-r">¥<?=number_format($price,0)?></span><?php endif; ?></a>
+        <a href="<?=htmlspecialchars($a['url'])?>" class="cov"><?=mkt_asset_cover($a, $typeNames)?><?php if (!empty($a['adapter'])): ?><span class="badge ok tag-r">官方适配</span><?php elseif (!empty($a['installed'])): ?><span class="badge ok tag-r">已安装</span><?php elseif ($price <= 0): ?><span class="pill neutral tag-r">免费</span><?php else: ?><span class="pill hl tag-r">¥<?=number_format($price,0)?></span><?php endif; ?></a>
         <div class="bd">
-          <span class="cat" style="color:var(--<?=$tm['hue']==='neutral'?'muted':$tm['hue']?>)"><?=htmlspecialchars($a['author'] ?? 'OpenFlow')?><?=($a['author_type'] ?? '') === 'user' ? ' · 用户发布' : ''?><?=($a['source'] ?? '') === 'remote' ? ' · 远程' : ''?></span>
+          <span class="cat" style="color:var(--<?=$tm['hue']==='neutral'?'muted':$tm['hue']?>)"><?=($a['author_type'] ?? '') === 'official_adapter' ? '官方适配 · 免费' : htmlspecialchars($a['author'] ?? 'OpenFlow')?><?=($a['author_type'] ?? '') === 'user' ? ' · 用户发布' : ''?><?=($a['source'] ?? '') === 'remote' && empty($a['adapter']) ? ' · 远程' : ''?></span>
           <h3><a href="<?=htmlspecialchars($a['url'])?>" style="color:inherit"><?=htmlspecialchars($a['title'])?></a></h3>
           <p><?=htmlspecialchars($a['description'] ?? '')?></p>
           <?php if (($a['type'] ?? '') === 'bundle'): ?><span class="note" style="color:var(--accent);margin:0">包含 <?=$a['items_count'] ?? 0?> 个产品</span><?php endif; ?>
