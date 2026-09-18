@@ -3,7 +3,11 @@
 同步本地 assets/ 到 Cloudflare R2（仅上传变更文件）
 用法：python3 sync-r2.py
 """
-import boto3, os, sys, mimetypes
+import mimetypes
+import os
+import sys
+
+import boto3
 
 R2_ENDPOINT = "https://00d02a54a3c0f7a3f6c3fc75068e29c5.r2.cloudflarestorage.com"
 R2_KEY = os.environ["R2_KEY"]        # 从环境变量读取；禁止硬编码（曾泄露，需轮换）
@@ -35,8 +39,8 @@ def main():
         if not r.get('IsTruncated'): break
         ContinuationToken = r.get('NextContinuationToken')
 
-    uploaded = 0; skipped = 0; errors = 0; webp_count = 0
-    for root, dirs, files in os.walk(ASSETS_DIR):
+    uploaded = 0; skipped = 0; errors = 0; webp_count = 0; webp_skipped = 0
+    for root, _dirs, files in os.walk(ASSETS_DIR):
         for f in files:
             ext = os.path.splitext(f)[1].lower()
             if ext in EXCLUDE_EXTS: continue
@@ -69,10 +73,14 @@ def main():
             # 而浏览器优先取 WebP，结果就是「换了图，页面还是旧的」。只在源图未变更时跳过。
             if ext in ('.png', '.jpg', '.jpeg') and os.path.getsize(local_path) > 15000:
                 webp_key = key.rsplit('.', 1)[0] + '.webp'
-                src_unchanged = existing.get(key) == local_md5
+                # 源图未变更且已有 WebP → 跳过重建（否则每次同步都重转 440+ 张，白白拉长 5 分钟）
+                if existing.get(key) == local_md5 and webp_key in existing:
+                    webp_skipped += 1
+                    continue
                 try:
-                    from PIL import Image
                     import io as _io
+
+                    from PIL import Image
                     img = Image.open(local_path)
                     if img.mode not in ('RGB', 'RGBA'): img = img.convert('RGB')
                     buf = _io.BytesIO()
@@ -88,7 +96,7 @@ def main():
                 except Exception:
                     pass  # skip conversion errors
 
-    print(f"\nR2 同步完成: 上传 {uploaded} / 跳过 {skipped} / WebP {webp_count} / 失败 {errors}")
+    print(f"\nR2 同步完成: 上传 {uploaded} / 跳过 {skipped} / WebP {webp_count}（复用 {webp_skipped}） / 失败 {errors}")
     return 0 if errors == 0 else 1
 
 if __name__ == '__main__':

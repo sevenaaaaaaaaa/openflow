@@ -121,7 +121,7 @@ admin_header('入站连接器');
 
     <div class="card" style="margin-top:16px">
       <h2 style="margin-bottom:8px">📮 调用方式</h2>
-      <pre style="background:var(--bg);padding:14px;border-radius:10px;font-size:12px;overflow:auto;line-height:1.7">POST <?=site_url_base()?>/api/webhook.php
+      <pre style="background:var(--bg);padding:14px;border-radius:10px;font-size:12px;overflow:auto;line-height:1.7">POST <?=htmlspecialchars(site_config_get('site_url'))?>/api/webhook.php
 Headers:
   X-Inbound-Id: <b><?=htmlspecialchars($edit['id'] ?? 'conn_xxx')?></b>
   X-Inbound-Signature: hash_hmac('sha256', body, secret)

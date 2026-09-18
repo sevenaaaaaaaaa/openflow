@@ -269,7 +269,7 @@ SLUG_MAP = {
     '截图': 'screenshot', '录屏': 'screen-recording', '压缩': 'compress',
     '下载': 'download', '搜索': 'search', '浏览器': 'browser',
     '手机': 'mobile', '电脑': 'desktop', 'Mac': 'mac', 'Windows': 'windows',
-    '免费': 'free', '开源': 'open-source', '付费': 'paid', '价格': 'pricing',
+    '免费': 'free', '付费': 'paid', '价格': 'pricing',
     '怎么选': 'how-to-choose', '怎么用': 'how-to-use', '好不好': 'is-it-good',
     '值得': 'worth-it', '平替': 'alternative', '替代': 'alternative',
     '大全': 'collection', '合集': 'collection', '合辑': 'collection',

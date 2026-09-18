@@ -73,7 +73,7 @@ def search_github(query: str) -> str:
             items = data.get('items', [])
             if items:
                 return items[0]['full_name']
-    except:
+    except Exception:
         pass
     return ''
 
@@ -184,7 +184,7 @@ def build_article_html(title: str, readme: str, gh: dict) -> str:
             elif block.startswith('# '):
                 html_parts.append(f'<h2>{html_mod.escape(block[2:])}</h2>')
             elif block.startswith('- ') or block.startswith('* '):
-                items = [l.strip('- * ') for l in block.split('\n') if l.strip()]
+                items = [re.sub(r'^[-*]\s+', '', l).strip() for l in block.split('\n') if l.strip()]
                 html_parts.append('<ul>' + ''.join(f'<li>{html_mod.escape(i)}</li>' for i in items[:10]) + '</ul>')
             elif block.startswith('```'):
                 code = re.sub(r'^```\w*\n?', '', block).rstrip('`').strip()

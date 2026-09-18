@@ -38,6 +38,25 @@ if python3 -m unittest discover -s scripts/tests >/tmp/of_ci_py.log 2>&1; then
   tail -3 /tmp/of_ci_py.log | tr '\n' ' '; echo; grn "✓ deploy.py 单测"
 else red "✗ deploy.py 单测"; tail -12 /tmp/of_ci_py.log; FAIL=1; fi
 
+hdr "0.6/5 静态分析：PHPStan（基线内 0 错误）"
+if [ -f vendor/bin/phpstan ]; then
+  if php vendor/bin/phpstan analyse -c phpstan.neon --no-progress --memory-limit=1G >/tmp/of_ci_phpstan.log 2>&1; then
+    grn "✓ PHPStan 通过（基线内无新增）"
+  else
+    red "✗ PHPStan 有新增错误"; grep -E '^ *[0-9]+ ' /tmp/of_ci_phpstan.log | head -15; FAIL=1
+  fi
+else
+  echo "（跳过：未安装 PHPStan；composer install 后启用）"
+fi
+
+hdr "0.7/5 Python：ruff lint"
+if command -v uvx >/dev/null 2>&1; then
+  if uvx ruff check --no-cache . >/tmp/of_ci_ruff.log 2>&1; then grn "✓ ruff 通过"
+  else red "✗ ruff 有问题"; tail -12 /tmp/of_ci_ruff.log; FAIL=1; fi
+else
+  echo "（跳过：未安装 uv/uvx）"
+fi
+
 hdr "1/5 契约与单元测试（tests/*_test.php）"
 P=0; F=0
 for t in tests/*_test.php; do

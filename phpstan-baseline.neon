@@ -1,0 +1,1603 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: '404.php'
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/abtests.php
+
+		-
+			message: '#^Variable \$wasPublished might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: admin/article-edit.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/articles.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/automation.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: admin/brain.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/canvas.php
+
+		-
+			message: '#^Offset ''type'' on array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, action_id\?\: string\|null\}\|array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, delay_minutes\: int\}\|array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, field\: mixed, op\: mixed, value\: mixed, true_next\: int\|null, \.\.\.\}\|array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, rollout_percent\: int, variant_a_percent\: int, a_next\: int\|null, b_next\: int\|null\}\|array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, score\: int\}\|array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, stage\: mixed\}\|array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, subject\: mixed, content\: mixed\}\|array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, tag\: mixed\}\|array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, title\: mixed\}\|array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, trigger\: mixed, form_slug\: mixed, threshold\: int\}\|array\{id\: non\-falsy\-string, type\: mixed, x\: int, y\: int, url\: mixed\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: admin/canvas.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 4
+			path: admin/canvas.php
+
+		-
+			message: '#^Offset ''value'' on array\{type\: string, field\: mixed, operator\: mixed, value\: int, event\: string, window\: int\}\|array\{type\: string, field\: mixed, operator\: mixed, value\: mixed\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: admin/cdp.php
+
+		-
+			message: '#^Variable \$flife might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: admin/cdp.php
+
+		-
+			message: '#^Variable \$fq might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: admin/cdp.php
+
+		-
+			message: '#^Variable \$ftag might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: admin/cdp.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: admin/config.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between non\-empty\-string\|false and '''' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: admin/config.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/coupons.php
+
+		-
+			message: '#^Call to function is_numeric\(\) with int will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: admin/crm-lead-detail.php
+
+		-
+			message: '#^Variable \$result might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: admin/data-export.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/developers.php
+
+		-
+			message: '#^Offset 1 on array\{list\<string\>, list\<non\-falsy\-string\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: admin/devops.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/driver.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 2
+			path: admin/evolution.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between array and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: admin/health-check.php
+
+		-
+			message: '#^Variable \$badJson in empty\(\) always exists and is always falsy\.$#'
+			identifier: empty.variable
+			count: 2
+			path: admin/health-check.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 3
+			path: admin/index.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between int\<0, max\> and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: admin/index.php
+
+		-
+			message: '#^Parameter \#2 \$options of function curl_setopt_array expects array\{47\: bool, 10015\: array\|string, 10023\: array\<int, string\>, 19913\: bool, 78\: int, 13\: int\}, array\{47\: true, 10015\: non\-empty\-string\|false, 10023\: array\{0\: ''Content\-Type\:…'', 78\: 5, 13\: 20\}, 19913\: true, 78\: 5, 13\: 20\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: admin/ingest.php
+
+		-
+			message: '#^Offset ''status'' on array\{title\: mixed, count\: int\<0, max\>, status\: mixed\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 3
+			path: admin/insights.php
+
+		-
+			message: '#^Offset ''status'' on array\{title\: mixed, stats\: array, status\: mixed\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: admin/insights.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: admin/ma-platforms.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/ma-platforms.php
+
+		-
+			message: '#^Offset ''name'' on array\{id\: non\-empty\-string, name\: string, platform\: ''douyin''\|''google''\|''meta'', enabled\: bool, pixel_id\: mixed, customer_id\: mixed, conversion_action_id\: mixed, advertiser_id\: mixed, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: admin/ma-platforms.php
+
+		-
+			message: '#^Offset ''period'' on array\{id\: string, type\: mixed, title\: string, description\: string, author\: string, author_type\: mixed, icon\: string, tags\: array, \.\.\.\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: admin/marketplace.php
+
+		-
+			message: '#^Offset ''csv''\|''doc''\|''docx''\|''gif''\|''ico''\|''jpeg''\|''jpg''\|''pdf''\|''png''\|''ppt''\|''pptx''\|''rar''\|''svg''\|''txt''\|''webp''\|''xls''\|''xlsx''\|''zip'' on array\{jpg\: ''image/jpeg'', jpeg\: ''image/jpeg'', png\: ''image/png'', gif\: ''image/gif'', webp\: ''image/webp'', ico\: ''image/x\-icon'', svg\: ''image/svg\+xml'', pdf\: ''application/pdf'', \.\.\.\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: admin/media-upload.php
+
+		-
+			message: '#^Variable \$fields might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: admin/migrate.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: admin/newsletter-editor.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/nps.php
+
+		-
+			message: '#^Variable \$total on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 2
+			path: admin/orders.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/orgs.php
+
+		-
+			message: '#^Variable \$fv on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 4
+			path: admin/pages.php
+
+		-
+			message: '#^Offset ''status'' on array\{id\: string, title\: string, price\: float, description\: string, cover\: string, asset_id\: string, type\: string, sales\: int, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: admin/platform-ops.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/podcasts.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: admin/profile-detail.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/refunds.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/reviews.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: admin/roles.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 2
+			path: admin/safefix.php
+
+		-
+			message: '#^Variable \$neg might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: admin/sentiment-report.php
+
+		-
+			message: '#^Variable \$neu might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: admin/sentiment-report.php
+
+		-
+			message: '#^Variable \$pos might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: admin/sentiment-report.php
+
+		-
+			message: '#^Variable \$risk might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: admin/sentiment-report.php
+
+		-
+			message: '#^Variable \$rows might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: admin/sentiment-report.php
+
+		-
+			message: '#^Variable \$sentimentPct might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: admin/sentiment-report.php
+
+		-
+			message: '#^Variable \$topWords might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: admin/sentiment-report.php
+
+		-
+			message: '#^Variable \$total might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: admin/sentiment-report.php
+
+		-
+			message: '#^Anonymous function has an unused use \$kwTpl\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: admin/seo-batch.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: admin/seo-functions.php
+
+		-
+			message: '#^Offset ''slug'' on array\{title\: mixed, slug\: mixed, url\: non\-falsy\-string, matched_text\: mixed, from_tag\: true\}\|array\{title\: mixed, slug\: mixed, url\: non\-falsy\-string, position\: int\<0, max\>, matched_text\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: admin/seo-functions.php
+
+		-
+			message: '#^Variable \$slug might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: admin/seo-functions.php
+
+		-
+			message: '#^Offset ''at'' on array\{page\: mixed, props\: non\-empty\-array\<mixed, mixed\>, at\: mixed\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: admin/session-replay.php
+
+		-
+			message: '#^Offset ''page'' on array\{page\: mixed, props\: non\-empty\-array\<mixed, mixed\>, at\: mixed\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: admin/session-replay.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between '''' and '''' will always evaluate to false\.$#'
+			identifier: notIdentical.alwaysFalse
+			count: 1
+			path: admin/session-replay.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: admin/studio.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<mixed, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: admin/studio.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/subscription.php
+
+		-
+			message: '#^Anonymous function has an unused use \$me\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: admin/survey-stats.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/survey.php
+
+		-
+			message: '#^Parameter \#2 \$haystack of function in_array expects array, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: admin/survey.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: admin/tag-rules.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/tag-rules.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: admin/tasks.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 2
+			path: admin/themes.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between non\-falsy\-string and '''' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: admin/themes.php
+
+		-
+			message: '#^Variable \$tags might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: admin/wechat-tags.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: admin/workspace.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: api/ai-block.php
+
+		-
+			message: '#^Variable \$apiTokens on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: api/ai-generate.php
+
+		-
+			message: '#^Offset ''api\-batch\.php''\|''article\-edit\.php''\|''articles\.php''\|''courses\.php''\|''email\.php''\|''forms\.php''\|''health\-check\.php''\|''knowledge\.php''\|''leads\.php''\|''media\.php''\|''notify\-channels\.php''\|''seo\.php''\|''sms\.php''\|''stock\-photos\.php''\|''survey\.php''\|''topics\.php''\|''wechat\.php'' on array\{''articles\.php''\: ''articles'', ''api\-batch\.php''\: ''articles'', ''article\-edit\.php''\: ''articles'', ''courses\.php''\: ''courses'', ''leads\.php''\: ''leads'', ''knowledge\.php''\: ''knowledge'', ''topics\.php''\: ''articles'', ''forms\.php''\: ''forms'', \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: api/assistant.php
+
+		-
+			message: '#^Variable \$msg might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: api/calendar.php
+
+		-
+			message: '#^Cannot access offset ''id'' on \(CurlHandle\|false\)\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: api/push-article.php
+
+		-
+			message: '#^Offset 1 on array\{list\<string\>, list\<non\-empty\-string\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: api/site-health.php
+
+		-
+			message: '#^Parameter \#1 \$string of function htmlspecialchars expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: article.php
+
+		-
+			message: '#^Variable \$articleUrl on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: article.php
+
+		-
+			message: '#^Variable \$argv might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: bin/import.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: bin/seed-cdp.php
+
+		-
+			message: '#^Variable \$argv might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: bin/seed-help.php
+
+		-
+			message: '#^Offset ''reason'' on array\{name\: ''5118''\|''Activepieces''\|''AFFiNE''\|''Ahrefs''\|''Amplitude''\|''AutoGen''\|''automatisch''\|''Brevo''\|''Canva''\|''claude\-seo''\|''Cloudflare''\|''Composio''\|''Contentful''\|''Crawlee''\|''Cursor''\|''deep\-research''\|''Directus''\|''Felo''\|''Gemini''\|''geo\-seo\-claude''\|''Ghost''\|''Gitee''\|''GitHub''\|''GLM 智谱''\|''Google Analytics''\|''Google Trends''\|''GrowingIO''\|''Hotjar''\|''HubSpot''\|''Huginn''\|''IFTTT''\|''Indie Hackers''\|''Intercom''\|''Kestra''\|''Kimi''\|''LangGraph''\|''listmonk''\|''LiteLLM''\|''Llama''\|''Lobe Chat''\|''Mailchimp''\|''Make''\|''Mastra''\|''maxun''\|''MetaGPT''\|''Microsoft Clarity''\|''Mistral''\|''ModelScope''\|''nanobot''\|''nanobrowser''\|''Netlify''\|''Node\-RED''\|''Notion''\|''Ollama''\|''open\-seo''\|''OpenPanel''\|''OpenReplay''\|''Paddle''\|''pathway''\|''Pipedream''\|''Plausible''\|''Poe''\|''Product Hunt''\|''Salesforce''\|''Search Console''\|''Segment''\|''Semrush''\|''seomachine''\|''Shopify''\|''SimilarWeb''\|''Skyvern''\|''Stable Diffusion''\|''Strapi''\|''Strikingly''\|''Superset''\|''Tableau''\|''Trilium''\|''Umami''\|''Vercel''\|''vLLM''\|''VWO''\|''Wechaty''\|''Windmill''\|''Wix''\|''WordPress''\|''Zapier''\|''Zendesk''\|''企业微信''\|''宝塔''\|''小报童''\|''小鹅通''\|''微伴助手''\|''思源笔记''\|''支付宝''\|''文心一言''\|''易观方舟''\|''智齿客服''\|''有赞''\|''爱发电''\|''爱站''\|''知识星球''\|''神策''\|''秘塔 AI''\|''稿定设计''\|''纷享销客''\|''虎皮椒''\|''语雀''\|''豆包''\|''通义千问''\|''销售易''\|''飞书文档'', name_en\: ''5118''\|''Activepieces''\|''Afadian''\|''AFFiNE''\|''Ahrefs''\|''Aizhan''\|''Alipay''\|''Amplitude''\|''Analysys''\|''AutoGen''\|''automatisch''\|''Brevo''\|''BT Panel''\|''Canva''\|''Clarity''\|''claude\-seo''\|''Cloudflare''\|''Composio''\|''Contentful''\|''Crawlee''\|''Cursor''\|''deep\-research''\|''Directus''\|''Doubao''\|''Ernie Bot''\|''Feishu''\|''Felo''\|''Fenxiang''\|''GA4''\|''Gaoding''\|''Gemini''\|''geo\-seo\-claude''\|''Ghost''\|''Gitee''\|''GitHub''\|''GLM''\|''GrowingIO''\|''Hotjar''\|''HubSpot''\|''Huginn''\|''IFTTT''\|''Indie Hackers''\|''Intercom''\|''Kestra''\|''Kimi''\|''LangGraph''\|''listmonk''\|''LiteLLM''\|''Llama''\|''Lobe Chat''\|''Mailchimp''\|''Make''\|''Mastra''\|''maxun''\|''MetaGPT''\|''Metaso''\|''Mistral''\|''ModelScope''\|''nanobot''\|''nanobrowser''\|''Netlify''\|''Node\-RED''\|''Notion''\|''Ollama''\|''open\-seo''\|''OpenPanel''\|''OpenReplay''\|''Paddle''\|''pathway''\|''Pipedream''\|''Plausible''\|''Poe''\|''Product Hunt''\|''Qwen Chat''\|''Salesforce''\|''Search Console''\|''Segment''\|''Semrush''\|''Sensors''\|''seomachine''\|''Shopify''\|''SimilarWeb''\|''SiYuan''\|''Skyvern''\|''Sobot''\|''Stable Diffusion…''\|''Strapi''\|''Strikingly''\|''Superset''\|''Tableau''\|''Trends''\|''Trilium''\|''Umami''\|''Vercel''\|''vLLM''\|''VWO''\|''WeBan''\|''Wechaty''\|''WeCom''\|''Windmill''\|''Wix''\|''WordPress''\|''Xiaobaotong''\|''Xiaoe''\|''Xiaoshouyi''\|''XunhuPay''\|''Youzan''\|''Yuque''\|''Zapier''\|''Zendesk''\|''ZhiShiXingQiu'', url\: ''https\://afdian\.com''\|''https\://ahrefs\.com''\|''https\://amplitude…''\|''https\://analytics…''\|''https\://clarity…''\|''https\://cursor\.com''\|''https\://felo\.ai''\|''https\://gemini…''\|''https\://ghost\.org''\|''https\://gitee\.com''\|''https\://github\.com''\|''https\://github\.com…''\|''https\://ifttt\.com''\|''https\://kimi…''\|''https\://mailchimp…''\|''https\://metaso\.cn''\|''https\://mistral\.ai''\|''https\://modelscope…''\|''https\://nodered\.org''\|''https\://ollama\.com''\|''https\://open\.alipay…''\|''https\://pipedream…''\|''https\://plausible\.io''\|''https\://poe\.com''\|''https\://search…''\|''https\://segment\.com''\|''https\://strapi\.io''\|''https\://tongyi…''\|''https\://trends…''\|''https\://vercel\.com''\|''https\://vwo\.com''\|''https\://weban\.work''\|''https\://wordpress…''\|''https\://work\.weixin…''\|''https\://www\.5118\.com''\|''https\://www\.aizhan…''\|''https\://www…''\|''https\://www\.brevo…''\|''https\://www\.bt\.cn''\|''https\://www\.canva…''\|''https\://www\.doubao…''\|''https\://www\.feishu…''\|''https\://www\.fxiaoke…''\|''https\://www\.gaoding…''\|''https\://www\.hotjar…''\|''https\://www\.hubspot…''\|''https\://www\.make\.com''\|''https\://www\.netlify…''\|''https\://www\.notion…''\|''https\://www\.paddle…''\|''https\://www\.semrush…''\|''https\://www\.shopify…''\|''https\://www\.sobot…''\|''https\://www\.tableau…''\|''https\://www\.wix\.com''\|''https\://www\.xiaoe…''\|''https\://www\.youzan…''\|''https\://www\.yuque…''\|''https\://www\.zendesk…''\|''https\://www\.zsxq\.com''\|''https\://xiaobot\.com''\|''https\://yiyan\.baidu…''\|''https\://zapier\.com'', desc\: ''AB 测试\+转化优化''\|''Agent 工具接入平台''\|''AI 代码编辑器，Agent 编码''\|''AI 深度研究助手，迭代式搜索''\|''All\-in\-one 工作台''\|''Apache 开源 BI''\|''CDN\+安全''\|''CDP 客户数据''\|''CRM 标杆''\|''Google 免费分析''\|''Google 多模态 AI''\|''Google 官方收录工具''\|''LangChain 图编排''\|''LLM 推理加速''\|''Meta 开源大模型''\|''Quora 聚合多模型''\|''SEO 分析标杆''\|''⭐12k 开源会话回放''\|''⭐13k 开源 Semrush 替代''\|''⭐14k SEO 技能，25 子技能''\|''⭐14k 开源自动化''\|''⭐17k 无代码 AI 爬虫''\|''⭐23k 低代码事件流''\|''⭐24k 开源 Zapier 替代''\|''⭐25k AI 网页抓取框架''\|''⭐27k TS 原生 AI 框架''\|''⭐28k 轻量隐私分析''\|''⭐37k 开源个人知识库''\|''⭐38k 隐私优先分析''\|''⭐47k 轻量自部署个人 Agent''\|''⭐60k 微软 Agent 框架''\|''⭐62k 实时数据分析引擎''\|''⭐6k 开源产品分析''\|''⭐70k 多 Agent 框架''\|''⭐7k SEO 长文工作台''\|''⭐9k GEO 优化技能''\|''个人聚合支付''\|''中文关键词数据''\|''产品内客服\+消息''\|''产品分析标杆''\|''代码级工作流平台''\|''企业无头 CMS''\|''企业级可视化''\|''企微客户运营''\|''企微私域''\|''免费热力图\+录屏''\|''入站营销\+CRM''\|''全球 CMS''\|''全球开源代码托管''\|''关键词与竞品研究''\|''内容订阅付费''\|''创作者打赏/订阅''\|''前端部署平台''\|''协同办公\+文档''\|''单页建站''\|''可视化自动化，多步场景''\|''国内 AI 搜索，学术强''\|''国内 CDP/分析''\|''国内 SEO 查询''\|''国内云 CRM''\|''国内代码托管''\|''国内在线设计''\|''国内增长分析''\|''国内支付''\|''国内数据洞察''\|''国内智能客服''\|''国内服务器面板''\|''国内电商私域''\|''国内销售 CRM''\|''多语言 AI 搜索助手''\|''大众建站''\|''字节系 AI 助手，免费易用''\|''工单客服标杆''\|''开源 AI 浏览器扩展，自动化网页''\|''开源 AI 绘图''\|''开源 LLM 网关，统一 API''\|''开源 Newsletter''\|''开源 Notion 替代''\|''开源代理系统，自建监控''\|''开源开发者平台\+自动化''\|''开源微信机器人框架''\|''开源数据编排''\|''开源无头 CMS''\|''开源无头数据 CMS''\|''开源本地优先笔记''\|''开源网页自动化 Agent''\|''开源聊天界面，多模型''\|''搜索趋势洞察''\|''新品发布社区''\|''无代码自动化标杆''\|''月之暗面，长文本处理强''\|''本地跑大模型''\|''欧洲开源大模型''\|''清华系开源大模型''\|''热力图\+问卷''\|''独立开发者社区''\|''电商建站标杆''\|''百度 AI，中文知识丰富''\|''知识付费\+私域''\|''知识付费社群''\|''竞品流量研究''\|''订阅\+税务处理''\|''订阅式博客平台''\|''设计小白神器''\|''轻量触发式自动化''\|''邮件\+自动化''\|''邮件营销标杆''\|''阿里大模型，开源权重''\|''阿里知识库''\|''阿里魔搭开源社区''\|''静态托管'', cat\: ''agent''\|''ai''\|''content''\|''crm''\|''data''\|''flow''\|''growth''\|''open''\|''site'', sub\: ''AB 实验''\|''Agent 应用''\|''Agent 框架''\|''AI 营销''\|''API 聚合''\|''BI 可视化''\|''CDP''\|''CRM''\|''RAG 知识库''\|''SEO 工具''\|''产品分析''\|''博客发布''\|''增长社区''\|''客服工单''\|''对话模型''\|''建站平台''\|''开源 AI 应用''\|''开源大模型''\|''开源社区''\|''开源部署''\|''微信私域''\|''托管部署''\|''搜索问答''\|''支付变现''\|''文档协作''\|''无代码集成''\|''无头 CMS''\|''本地 AI''\|''流程编排''\|''浏览器 Agent''\|''私域自动化''\|''竞品洞察''\|''网站分析''\|''行为分析''\|''设计工具''\|''邮件营销'', region\: ''cn''\|''intl'', tags\: array\{''AB'', ''CRO'', ''商业''\}\|array\{''AI'', ''Agent''\|''API''\|''SEO''\|''对话''\|''抓取''\|''搜索''\|''本地'', ''商业''\|''小众''\|''开源''\}\|array\{''CDN'', ''安全''\}\|array\{''CMS''\|''创作者''\|''博客''\|''客服''\|''支付''\|''电商''\|''知识付费''\|''笔记''\|''设计''\|''邮件'', ''商业''\|''国内''\|''开源''\|''社群''\|''私域''\|''聚合''\|''自动化''\|''订阅''\}\|array\{''GEO''\|''SEO'', ''AI'', ''开源''\}\|array\{''建站'', ''单页''\|''无代码''\}\|array\{''开源'', ''数据'', ''AI''\}\|array\{''托管'', ''部署''\}\|array\{''文档'', ''协同''\|''生产力''\|''知识库''\}\|array\{''服务器'', ''运维''\}\|array\{''社区'', ''发布''\|''独立开发''\}\|array\{''私域'', ''企微''\|''微信''\|''知识付费''\}\|array\{''竞品'', ''研究''\}\|array\{''自动化'', ''微信'', ''开源''\}\|array\{0\: ''BI''\|''CDP''\|''CRM''\|''SEO''\|''分析''\|''自动化''\|''行为''\|''趋势'', 1\: ''Google''\|''中文''\|''免费''\|''商业''\|''国内''\|''开发''\|''开源''\|''数据''\|''营销'', 2\?\: ''低代码''\|''小众''\|''数据''\|''隐私''\}\|array\{0\: ''开源'', 1\: ''AI绘图''\|''大模型''\|''推理''\|''社区'', 2\?\: ''开发''\}\|array\{0\: ''开源'', 1\: ''知识库'', 2\?\: ''小众''\}\}\|array\{name\: ''Astro''\|''BillionMail''\|''browser\-use''\|''ChatGPT''\|''Claude''\|''Coze 扣子''\|''CrewAI''\|''DeepSeek''\|''Dify''\|''GrowthBook''\|''Hugging Face''\|''Manus''\|''marketing\-skills''\|''Metabase''\|''n8n''\|''Open WebUI''\|''OpenRouter''\|''Perplexity''\|''PostHog''\|''Qwen''\|''RAGFlow''\|''Stripe''\|''Webflow'', name_en\: ''Astro''\|''BillionMail''\|''browser\-use''\|''ChatGPT''\|''Claude''\|''Coze''\|''CrewAI''\|''DeepSeek''\|''Dify''\|''GrowthBook''\|''Hugging Face''\|''Manus''\|''marketing\-skills''\|''Metabase''\|''n8n''\|''Open WebUI''\|''OpenRouter''\|''Perplexity''\|''PostHog''\|''Qwen''\|''RAGFlow''\|''Stripe''\|''Webflow'', url\: ''https\://astro\.build''\|''https\://chat…''\|''https\://chat\.openai…''\|''https\://claude\.ai''\|''https\://github\.com…''\|''https\://huggingface…''\|''https\://manus\.im''\|''https\://n8n\.io''\|''https\://openrouter…''\|''https\://stripe\.com''\|''https\://webflow\.com''\|''https\://www\.coze\.cn''\|''https\://www…'', desc\: ''AI 搜索，带引用的答案''\|''Anthropic 安全可靠的 AI…''\|''OpenAI 对话助手，AI 时代的入口''\|''⭐109k 让 AI Agent…''\|''⭐149k 本地 AI 界面，自托管''\|''⭐153k 开源 LLM 应用平台''\|''⭐15k 开源邮件…''\|''⭐201k 开源工作流自动化''\|''⭐45k Claude…''\|''⭐50k 内容优先建站框架''\|''⭐57k 角色扮演 Agent 编排''\|''⭐88k 开源 RAG 知识库''\|''⭐8k 开源 AB 实验…''\|''可视化建站标杆''\|''国产开源大模型，性价比之选''\|''国际支付标杆''\|''字节 Agent 平台，工作流\+插件''\|''开源 AI 模型社区''\|''开源 BI 工具''\|''开源产品分析\+实验\+录屏''\|''聚合 300\+ 大模型 API''\|''通用 Agent，自主完成复杂任务''\|''阿里开源大模型系列'', cat\: ''agent''\|''ai''\|''content''\|''data''\|''flow''\|''growth''\|''open''\|''site'', sub\: ''AB 实验''\|''Agent 平台''\|''Agent 应用''\|''Agent 框架''\|''AI 营销''\|''API 聚合''\|''BI 可视化''\|''RAG 知识库''\|''产品分析''\|''博客发布''\|''对话模型''\|''建站平台''\|''开源大模型''\|''开源社区''\|''搜索问答''\|''支付变现''\|''本地 AI''\|''流程编排''\|''浏览器 Agent''\|''邮件自动化'', region\: ''cn''\|''intl'', tags\: array\{''AB''\|''BI''\|''分析''\|''建站''\|''自动化''\|''邮件'', ''开源''\|''无代码''\}\|array\{''AI'', ''Agent''\|''对话''\|''搜索''\|''本地''\|''营销'', ''商业''\|''开源''\}\|array\{''AI'', ''API'', ''小众''\}\|array\{''开源'', ''RAG'', ''AI''\}\|array\{''开源'', ''大模型''\|''社区''\}\|array\{''支付'', ''商业''\}, \.\.\.\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: bin/seed-navigation.php
+
+		-
+			message: '#^Offset ''region'' on array\{name\: ''5118''\|''Activepieces''\|''AFFiNE''\|''Ahrefs''\|''Amplitude''\|''AutoGen''\|''automatisch''\|''Brevo''\|''Canva''\|''claude\-seo''\|''Cloudflare''\|''Composio''\|''Contentful''\|''Crawlee''\|''Cursor''\|''deep\-research''\|''Directus''\|''Felo''\|''Gemini''\|''geo\-seo\-claude''\|''Ghost''\|''Gitee''\|''GitHub''\|''GLM 智谱''\|''Google Analytics''\|''Google Trends''\|''GrowingIO''\|''Hotjar''\|''HubSpot''\|''Huginn''\|''IFTTT''\|''Indie Hackers''\|''Intercom''\|''Kestra''\|''Kimi''\|''LangGraph''\|''listmonk''\|''LiteLLM''\|''Llama''\|''Lobe Chat''\|''Mailchimp''\|''Make''\|''Mastra''\|''maxun''\|''MetaGPT''\|''Microsoft Clarity''\|''Mistral''\|''ModelScope''\|''nanobot''\|''nanobrowser''\|''Netlify''\|''Node\-RED''\|''Notion''\|''Ollama''\|''open\-seo''\|''OpenPanel''\|''OpenReplay''\|''Paddle''\|''pathway''\|''Pipedream''\|''Plausible''\|''Poe''\|''Product Hunt''\|''Salesforce''\|''Search Console''\|''Segment''\|''Semrush''\|''seomachine''\|''Shopify''\|''SimilarWeb''\|''Skyvern''\|''Stable Diffusion''\|''Strapi''\|''Strikingly''\|''Superset''\|''Tableau''\|''Trilium''\|''Umami''\|''Vercel''\|''vLLM''\|''VWO''\|''Wechaty''\|''Windmill''\|''Wix''\|''WordPress''\|''Zapier''\|''Zendesk''\|''企业微信''\|''宝塔''\|''小报童''\|''小鹅通''\|''微伴助手''\|''思源笔记''\|''支付宝''\|''文心一言''\|''易观方舟''\|''智齿客服''\|''有赞''\|''爱发电''\|''爱站''\|''知识星球''\|''神策''\|''秘塔 AI''\|''稿定设计''\|''纷享销客''\|''虎皮椒''\|''语雀''\|''豆包''\|''通义千问''\|''销售易''\|''飞书文档'', name_en\: ''5118''\|''Activepieces''\|''Afadian''\|''AFFiNE''\|''Ahrefs''\|''Aizhan''\|''Alipay''\|''Amplitude''\|''Analysys''\|''AutoGen''\|''automatisch''\|''Brevo''\|''BT Panel''\|''Canva''\|''Clarity''\|''claude\-seo''\|''Cloudflare''\|''Composio''\|''Contentful''\|''Crawlee''\|''Cursor''\|''deep\-research''\|''Directus''\|''Doubao''\|''Ernie Bot''\|''Feishu''\|''Felo''\|''Fenxiang''\|''GA4''\|''Gaoding''\|''Gemini''\|''geo\-seo\-claude''\|''Ghost''\|''Gitee''\|''GitHub''\|''GLM''\|''GrowingIO''\|''Hotjar''\|''HubSpot''\|''Huginn''\|''IFTTT''\|''Indie Hackers''\|''Intercom''\|''Kestra''\|''Kimi''\|''LangGraph''\|''listmonk''\|''LiteLLM''\|''Llama''\|''Lobe Chat''\|''Mailchimp''\|''Make''\|''Mastra''\|''maxun''\|''MetaGPT''\|''Metaso''\|''Mistral''\|''ModelScope''\|''nanobot''\|''nanobrowser''\|''Netlify''\|''Node\-RED''\|''Notion''\|''Ollama''\|''open\-seo''\|''OpenPanel''\|''OpenReplay''\|''Paddle''\|''pathway''\|''Pipedream''\|''Plausible''\|''Poe''\|''Product Hunt''\|''Qwen Chat''\|''Salesforce''\|''Search Console''\|''Segment''\|''Semrush''\|''Sensors''\|''seomachine''\|''Shopify''\|''SimilarWeb''\|''SiYuan''\|''Skyvern''\|''Sobot''\|''Stable Diffusion…''\|''Strapi''\|''Strikingly''\|''Superset''\|''Tableau''\|''Trends''\|''Trilium''\|''Umami''\|''Vercel''\|''vLLM''\|''VWO''\|''WeBan''\|''Wechaty''\|''WeCom''\|''Windmill''\|''Wix''\|''WordPress''\|''Xiaobaotong''\|''Xiaoe''\|''Xiaoshouyi''\|''XunhuPay''\|''Youzan''\|''Yuque''\|''Zapier''\|''Zendesk''\|''ZhiShiXingQiu'', url\: ''https\://afdian\.com''\|''https\://ahrefs\.com''\|''https\://amplitude…''\|''https\://analytics…''\|''https\://clarity…''\|''https\://cursor\.com''\|''https\://felo\.ai''\|''https\://gemini…''\|''https\://ghost\.org''\|''https\://gitee\.com''\|''https\://github\.com''\|''https\://github\.com…''\|''https\://ifttt\.com''\|''https\://kimi…''\|''https\://mailchimp…''\|''https\://metaso\.cn''\|''https\://mistral\.ai''\|''https\://modelscope…''\|''https\://nodered\.org''\|''https\://ollama\.com''\|''https\://open\.alipay…''\|''https\://pipedream…''\|''https\://plausible\.io''\|''https\://poe\.com''\|''https\://search…''\|''https\://segment\.com''\|''https\://strapi\.io''\|''https\://tongyi…''\|''https\://trends…''\|''https\://vercel\.com''\|''https\://vwo\.com''\|''https\://weban\.work''\|''https\://wordpress…''\|''https\://work\.weixin…''\|''https\://www\.5118\.com''\|''https\://www\.aizhan…''\|''https\://www…''\|''https\://www\.brevo…''\|''https\://www\.bt\.cn''\|''https\://www\.canva…''\|''https\://www\.doubao…''\|''https\://www\.feishu…''\|''https\://www\.fxiaoke…''\|''https\://www\.gaoding…''\|''https\://www\.hotjar…''\|''https\://www\.hubspot…''\|''https\://www\.make\.com''\|''https\://www\.netlify…''\|''https\://www\.notion…''\|''https\://www\.paddle…''\|''https\://www\.semrush…''\|''https\://www\.shopify…''\|''https\://www\.sobot…''\|''https\://www\.tableau…''\|''https\://www\.wix\.com''\|''https\://www\.xiaoe…''\|''https\://www\.youzan…''\|''https\://www\.yuque…''\|''https\://www\.zendesk…''\|''https\://www\.zsxq\.com''\|''https\://xiaobot\.com''\|''https\://yiyan\.baidu…''\|''https\://zapier\.com'', desc\: ''AB 测试\+转化优化''\|''Agent 工具接入平台''\|''AI 代码编辑器，Agent 编码''\|''AI 深度研究助手，迭代式搜索''\|''All\-in\-one 工作台''\|''Apache 开源 BI''\|''CDN\+安全''\|''CDP 客户数据''\|''CRM 标杆''\|''Google 免费分析''\|''Google 多模态 AI''\|''Google 官方收录工具''\|''LangChain 图编排''\|''LLM 推理加速''\|''Meta 开源大模型''\|''Quora 聚合多模型''\|''SEO 分析标杆''\|''⭐12k 开源会话回放''\|''⭐13k 开源 Semrush 替代''\|''⭐14k SEO 技能，25 子技能''\|''⭐14k 开源自动化''\|''⭐17k 无代码 AI 爬虫''\|''⭐23k 低代码事件流''\|''⭐24k 开源 Zapier 替代''\|''⭐25k AI 网页抓取框架''\|''⭐27k TS 原生 AI 框架''\|''⭐28k 轻量隐私分析''\|''⭐37k 开源个人知识库''\|''⭐38k 隐私优先分析''\|''⭐47k 轻量自部署个人 Agent''\|''⭐60k 微软 Agent 框架''\|''⭐62k 实时数据分析引擎''\|''⭐6k 开源产品分析''\|''⭐70k 多 Agent 框架''\|''⭐7k SEO 长文工作台''\|''⭐9k GEO 优化技能''\|''个人聚合支付''\|''中文关键词数据''\|''产品内客服\+消息''\|''产品分析标杆''\|''代码级工作流平台''\|''企业无头 CMS''\|''企业级可视化''\|''企微客户运营''\|''企微私域''\|''免费热力图\+录屏''\|''入站营销\+CRM''\|''全球 CMS''\|''全球开源代码托管''\|''关键词与竞品研究''\|''内容订阅付费''\|''创作者打赏/订阅''\|''前端部署平台''\|''协同办公\+文档''\|''单页建站''\|''可视化自动化，多步场景''\|''国内 AI 搜索，学术强''\|''国内 CDP/分析''\|''国内 SEO 查询''\|''国内云 CRM''\|''国内代码托管''\|''国内在线设计''\|''国内增长分析''\|''国内支付''\|''国内数据洞察''\|''国内智能客服''\|''国内服务器面板''\|''国内电商私域''\|''国内销售 CRM''\|''多语言 AI 搜索助手''\|''大众建站''\|''字节系 AI 助手，免费易用''\|''工单客服标杆''\|''开源 AI 浏览器扩展，自动化网页''\|''开源 AI 绘图''\|''开源 LLM 网关，统一 API''\|''开源 Newsletter''\|''开源 Notion 替代''\|''开源代理系统，自建监控''\|''开源开发者平台\+自动化''\|''开源微信机器人框架''\|''开源数据编排''\|''开源无头 CMS''\|''开源无头数据 CMS''\|''开源本地优先笔记''\|''开源网页自动化 Agent''\|''开源聊天界面，多模型''\|''搜索趋势洞察''\|''新品发布社区''\|''无代码自动化标杆''\|''月之暗面，长文本处理强''\|''本地跑大模型''\|''欧洲开源大模型''\|''清华系开源大模型''\|''热力图\+问卷''\|''独立开发者社区''\|''电商建站标杆''\|''百度 AI，中文知识丰富''\|''知识付费\+私域''\|''知识付费社群''\|''竞品流量研究''\|''订阅\+税务处理''\|''订阅式博客平台''\|''设计小白神器''\|''轻量触发式自动化''\|''邮件\+自动化''\|''邮件营销标杆''\|''阿里大模型，开源权重''\|''阿里知识库''\|''阿里魔搭开源社区''\|''静态托管'', cat\: ''agent''\|''ai''\|''content''\|''crm''\|''data''\|''flow''\|''growth''\|''open''\|''site'', sub\: ''AB 实验''\|''Agent 应用''\|''Agent 框架''\|''AI 营销''\|''API 聚合''\|''BI 可视化''\|''CDP''\|''CRM''\|''RAG 知识库''\|''SEO 工具''\|''产品分析''\|''博客发布''\|''增长社区''\|''客服工单''\|''对话模型''\|''建站平台''\|''开源 AI 应用''\|''开源大模型''\|''开源社区''\|''开源部署''\|''微信私域''\|''托管部署''\|''搜索问答''\|''支付变现''\|''文档协作''\|''无代码集成''\|''无头 CMS''\|''本地 AI''\|''流程编排''\|''浏览器 Agent''\|''私域自动化''\|''竞品洞察''\|''网站分析''\|''行为分析''\|''设计工具''\|''邮件营销'', region\: ''cn''\|''intl'', tags\: array\{''AB'', ''CRO'', ''商业''\}\|array\{''AI'', ''Agent''\|''API''\|''SEO''\|''对话''\|''抓取''\|''搜索''\|''本地'', ''商业''\|''小众''\|''开源''\}\|array\{''CDN'', ''安全''\}\|array\{''CMS''\|''创作者''\|''博客''\|''客服''\|''支付''\|''电商''\|''知识付费''\|''笔记''\|''设计''\|''邮件'', ''商业''\|''国内''\|''开源''\|''社群''\|''私域''\|''聚合''\|''自动化''\|''订阅''\}\|array\{''GEO''\|''SEO'', ''AI'', ''开源''\}\|array\{''建站'', ''单页''\|''无代码''\}\|array\{''开源'', ''数据'', ''AI''\}\|array\{''托管'', ''部署''\}\|array\{''文档'', ''协同''\|''生产力''\|''知识库''\}\|array\{''服务器'', ''运维''\}\|array\{''社区'', ''发布''\|''独立开发''\}\|array\{''私域'', ''企微''\|''微信''\|''知识付费''\}\|array\{''竞品'', ''研究''\}\|array\{''自动化'', ''微信'', ''开源''\}\|array\{0\: ''BI''\|''CDP''\|''CRM''\|''SEO''\|''分析''\|''自动化''\|''行为''\|''趋势'', 1\: ''Google''\|''中文''\|''免费''\|''商业''\|''国内''\|''开发''\|''开源''\|''数据''\|''营销'', 2\?\: ''低代码''\|''小众''\|''数据''\|''隐私''\}\|array\{0\: ''开源'', 1\: ''AI绘图''\|''大模型''\|''推理''\|''社区'', 2\?\: ''开发''\}\|array\{0\: ''开源'', 1\: ''知识库'', 2\?\: ''小众''\}\}\|array\{name\: ''Astro''\|''BillionMail''\|''browser\-use''\|''ChatGPT''\|''Claude''\|''Coze 扣子''\|''CrewAI''\|''DeepSeek''\|''Dify''\|''GrowthBook''\|''Hugging Face''\|''Manus''\|''marketing\-skills''\|''Metabase''\|''n8n''\|''Open WebUI''\|''OpenRouter''\|''Perplexity''\|''PostHog''\|''Qwen''\|''RAGFlow''\|''Stripe''\|''Webflow'', name_en\: ''Astro''\|''BillionMail''\|''browser\-use''\|''ChatGPT''\|''Claude''\|''Coze''\|''CrewAI''\|''DeepSeek''\|''Dify''\|''GrowthBook''\|''Hugging Face''\|''Manus''\|''marketing\-skills''\|''Metabase''\|''n8n''\|''Open WebUI''\|''OpenRouter''\|''Perplexity''\|''PostHog''\|''Qwen''\|''RAGFlow''\|''Stripe''\|''Webflow'', url\: ''https\://astro\.build''\|''https\://chat…''\|''https\://chat\.openai…''\|''https\://claude\.ai''\|''https\://github\.com…''\|''https\://huggingface…''\|''https\://manus\.im''\|''https\://n8n\.io''\|''https\://openrouter…''\|''https\://stripe\.com''\|''https\://webflow\.com''\|''https\://www\.coze\.cn''\|''https\://www…'', desc\: ''AI 搜索，带引用的答案''\|''Anthropic 安全可靠的 AI…''\|''OpenAI 对话助手，AI 时代的入口''\|''⭐109k 让 AI Agent…''\|''⭐149k 本地 AI 界面，自托管''\|''⭐153k 开源 LLM 应用平台''\|''⭐15k 开源邮件…''\|''⭐201k 开源工作流自动化''\|''⭐45k Claude…''\|''⭐50k 内容优先建站框架''\|''⭐57k 角色扮演 Agent 编排''\|''⭐88k 开源 RAG 知识库''\|''⭐8k 开源 AB 实验…''\|''可视化建站标杆''\|''国产开源大模型，性价比之选''\|''国际支付标杆''\|''字节 Agent 平台，工作流\+插件''\|''开源 AI 模型社区''\|''开源 BI 工具''\|''开源产品分析\+实验\+录屏''\|''聚合 300\+ 大模型 API''\|''通用 Agent，自主完成复杂任务''\|''阿里开源大模型系列'', cat\: ''agent''\|''ai''\|''content''\|''data''\|''flow''\|''growth''\|''open''\|''site'', sub\: ''AB 实验''\|''Agent 平台''\|''Agent 应用''\|''Agent 框架''\|''AI 营销''\|''API 聚合''\|''BI 可视化''\|''RAG 知识库''\|''产品分析''\|''博客发布''\|''对话模型''\|''建站平台''\|''开源大模型''\|''开源社区''\|''搜索问答''\|''支付变现''\|''本地 AI''\|''流程编排''\|''浏览器 Agent''\|''邮件自动化'', region\: ''cn''\|''intl'', tags\: array\{''AB''\|''BI''\|''分析''\|''建站''\|''自动化''\|''邮件'', ''开源''\|''无代码''\}\|array\{''AI'', ''Agent''\|''对话''\|''搜索''\|''本地''\|''营销'', ''商业''\|''开源''\}\|array\{''AI'', ''API'', ''小众''\}\|array\{''开源'', ''RAG'', ''AI''\}\|array\{''开源'', ''大模型''\|''社区''\}\|array\{''支付'', ''商业''\}, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: bin/seed-navigation.php
+
+		-
+			message: '#^Offset ''sub_en'' on array\{name\: ''5118''\|''Activepieces''\|''AFFiNE''\|''Ahrefs''\|''Amplitude''\|''AutoGen''\|''automatisch''\|''Brevo''\|''Canva''\|''claude\-seo''\|''Cloudflare''\|''Composio''\|''Contentful''\|''Crawlee''\|''Cursor''\|''deep\-research''\|''Directus''\|''Felo''\|''Gemini''\|''geo\-seo\-claude''\|''Ghost''\|''Gitee''\|''GitHub''\|''GLM 智谱''\|''Google Analytics''\|''Google Trends''\|''GrowingIO''\|''Hotjar''\|''HubSpot''\|''Huginn''\|''IFTTT''\|''Indie Hackers''\|''Intercom''\|''Kestra''\|''Kimi''\|''LangGraph''\|''listmonk''\|''LiteLLM''\|''Llama''\|''Lobe Chat''\|''Mailchimp''\|''Make''\|''Mastra''\|''maxun''\|''MetaGPT''\|''Microsoft Clarity''\|''Mistral''\|''ModelScope''\|''nanobot''\|''nanobrowser''\|''Netlify''\|''Node\-RED''\|''Notion''\|''Ollama''\|''open\-seo''\|''OpenPanel''\|''OpenReplay''\|''Paddle''\|''pathway''\|''Pipedream''\|''Plausible''\|''Poe''\|''Product Hunt''\|''Salesforce''\|''Search Console''\|''Segment''\|''Semrush''\|''seomachine''\|''Shopify''\|''SimilarWeb''\|''Skyvern''\|''Stable Diffusion''\|''Strapi''\|''Strikingly''\|''Superset''\|''Tableau''\|''Trilium''\|''Umami''\|''Vercel''\|''vLLM''\|''VWO''\|''Wechaty''\|''Windmill''\|''Wix''\|''WordPress''\|''Zapier''\|''Zendesk''\|''企业微信''\|''宝塔''\|''小报童''\|''小鹅通''\|''微伴助手''\|''思源笔记''\|''支付宝''\|''文心一言''\|''易观方舟''\|''智齿客服''\|''有赞''\|''爱发电''\|''爱站''\|''知识星球''\|''神策''\|''秘塔 AI''\|''稿定设计''\|''纷享销客''\|''虎皮椒''\|''语雀''\|''豆包''\|''通义千问''\|''销售易''\|''飞书文档'', name_en\: ''5118''\|''Activepieces''\|''Afadian''\|''AFFiNE''\|''Ahrefs''\|''Aizhan''\|''Alipay''\|''Amplitude''\|''Analysys''\|''AutoGen''\|''automatisch''\|''Brevo''\|''BT Panel''\|''Canva''\|''Clarity''\|''claude\-seo''\|''Cloudflare''\|''Composio''\|''Contentful''\|''Crawlee''\|''Cursor''\|''deep\-research''\|''Directus''\|''Doubao''\|''Ernie Bot''\|''Feishu''\|''Felo''\|''Fenxiang''\|''GA4''\|''Gaoding''\|''Gemini''\|''geo\-seo\-claude''\|''Ghost''\|''Gitee''\|''GitHub''\|''GLM''\|''GrowingIO''\|''Hotjar''\|''HubSpot''\|''Huginn''\|''IFTTT''\|''Indie Hackers''\|''Intercom''\|''Kestra''\|''Kimi''\|''LangGraph''\|''listmonk''\|''LiteLLM''\|''Llama''\|''Lobe Chat''\|''Mailchimp''\|''Make''\|''Mastra''\|''maxun''\|''MetaGPT''\|''Metaso''\|''Mistral''\|''ModelScope''\|''nanobot''\|''nanobrowser''\|''Netlify''\|''Node\-RED''\|''Notion''\|''Ollama''\|''open\-seo''\|''OpenPanel''\|''OpenReplay''\|''Paddle''\|''pathway''\|''Pipedream''\|''Plausible''\|''Poe''\|''Product Hunt''\|''Qwen Chat''\|''Salesforce''\|''Search Console''\|''Segment''\|''Semrush''\|''Sensors''\|''seomachine''\|''Shopify''\|''SimilarWeb''\|''SiYuan''\|''Skyvern''\|''Sobot''\|''Stable Diffusion…''\|''Strapi''\|''Strikingly''\|''Superset''\|''Tableau''\|''Trends''\|''Trilium''\|''Umami''\|''Vercel''\|''vLLM''\|''VWO''\|''WeBan''\|''Wechaty''\|''WeCom''\|''Windmill''\|''Wix''\|''WordPress''\|''Xiaobaotong''\|''Xiaoe''\|''Xiaoshouyi''\|''XunhuPay''\|''Youzan''\|''Yuque''\|''Zapier''\|''Zendesk''\|''ZhiShiXingQiu'', url\: ''https\://afdian\.com''\|''https\://ahrefs\.com''\|''https\://amplitude…''\|''https\://analytics…''\|''https\://clarity…''\|''https\://cursor\.com''\|''https\://felo\.ai''\|''https\://gemini…''\|''https\://ghost\.org''\|''https\://gitee\.com''\|''https\://github\.com''\|''https\://github\.com…''\|''https\://ifttt\.com''\|''https\://kimi…''\|''https\://mailchimp…''\|''https\://metaso\.cn''\|''https\://mistral\.ai''\|''https\://modelscope…''\|''https\://nodered\.org''\|''https\://ollama\.com''\|''https\://open\.alipay…''\|''https\://pipedream…''\|''https\://plausible\.io''\|''https\://poe\.com''\|''https\://search…''\|''https\://segment\.com''\|''https\://strapi\.io''\|''https\://tongyi…''\|''https\://trends…''\|''https\://vercel\.com''\|''https\://vwo\.com''\|''https\://weban\.work''\|''https\://wordpress…''\|''https\://work\.weixin…''\|''https\://www\.5118\.com''\|''https\://www\.aizhan…''\|''https\://www…''\|''https\://www\.brevo…''\|''https\://www\.bt\.cn''\|''https\://www\.canva…''\|''https\://www\.doubao…''\|''https\://www\.feishu…''\|''https\://www\.fxiaoke…''\|''https\://www\.gaoding…''\|''https\://www\.hotjar…''\|''https\://www\.hubspot…''\|''https\://www\.make\.com''\|''https\://www\.netlify…''\|''https\://www\.notion…''\|''https\://www\.paddle…''\|''https\://www\.semrush…''\|''https\://www\.shopify…''\|''https\://www\.sobot…''\|''https\://www\.tableau…''\|''https\://www\.wix\.com''\|''https\://www\.xiaoe…''\|''https\://www\.youzan…''\|''https\://www\.yuque…''\|''https\://www\.zendesk…''\|''https\://www\.zsxq\.com''\|''https\://xiaobot\.com''\|''https\://yiyan\.baidu…''\|''https\://zapier\.com'', desc\: ''AB 测试\+转化优化''\|''Agent 工具接入平台''\|''AI 代码编辑器，Agent 编码''\|''AI 深度研究助手，迭代式搜索''\|''All\-in\-one 工作台''\|''Apache 开源 BI''\|''CDN\+安全''\|''CDP 客户数据''\|''CRM 标杆''\|''Google 免费分析''\|''Google 多模态 AI''\|''Google 官方收录工具''\|''LangChain 图编排''\|''LLM 推理加速''\|''Meta 开源大模型''\|''Quora 聚合多模型''\|''SEO 分析标杆''\|''⭐12k 开源会话回放''\|''⭐13k 开源 Semrush 替代''\|''⭐14k SEO 技能，25 子技能''\|''⭐14k 开源自动化''\|''⭐17k 无代码 AI 爬虫''\|''⭐23k 低代码事件流''\|''⭐24k 开源 Zapier 替代''\|''⭐25k AI 网页抓取框架''\|''⭐27k TS 原生 AI 框架''\|''⭐28k 轻量隐私分析''\|''⭐37k 开源个人知识库''\|''⭐38k 隐私优先分析''\|''⭐47k 轻量自部署个人 Agent''\|''⭐60k 微软 Agent 框架''\|''⭐62k 实时数据分析引擎''\|''⭐6k 开源产品分析''\|''⭐70k 多 Agent 框架''\|''⭐7k SEO 长文工作台''\|''⭐9k GEO 优化技能''\|''个人聚合支付''\|''中文关键词数据''\|''产品内客服\+消息''\|''产品分析标杆''\|''代码级工作流平台''\|''企业无头 CMS''\|''企业级可视化''\|''企微客户运营''\|''企微私域''\|''免费热力图\+录屏''\|''入站营销\+CRM''\|''全球 CMS''\|''全球开源代码托管''\|''关键词与竞品研究''\|''内容订阅付费''\|''创作者打赏/订阅''\|''前端部署平台''\|''协同办公\+文档''\|''单页建站''\|''可视化自动化，多步场景''\|''国内 AI 搜索，学术强''\|''国内 CDP/分析''\|''国内 SEO 查询''\|''国内云 CRM''\|''国内代码托管''\|''国内在线设计''\|''国内增长分析''\|''国内支付''\|''国内数据洞察''\|''国内智能客服''\|''国内服务器面板''\|''国内电商私域''\|''国内销售 CRM''\|''多语言 AI 搜索助手''\|''大众建站''\|''字节系 AI 助手，免费易用''\|''工单客服标杆''\|''开源 AI 浏览器扩展，自动化网页''\|''开源 AI 绘图''\|''开源 LLM 网关，统一 API''\|''开源 Newsletter''\|''开源 Notion 替代''\|''开源代理系统，自建监控''\|''开源开发者平台\+自动化''\|''开源微信机器人框架''\|''开源数据编排''\|''开源无头 CMS''\|''开源无头数据 CMS''\|''开源本地优先笔记''\|''开源网页自动化 Agent''\|''开源聊天界面，多模型''\|''搜索趋势洞察''\|''新品发布社区''\|''无代码自动化标杆''\|''月之暗面，长文本处理强''\|''本地跑大模型''\|''欧洲开源大模型''\|''清华系开源大模型''\|''热力图\+问卷''\|''独立开发者社区''\|''电商建站标杆''\|''百度 AI，中文知识丰富''\|''知识付费\+私域''\|''知识付费社群''\|''竞品流量研究''\|''订阅\+税务处理''\|''订阅式博客平台''\|''设计小白神器''\|''轻量触发式自动化''\|''邮件\+自动化''\|''邮件营销标杆''\|''阿里大模型，开源权重''\|''阿里知识库''\|''阿里魔搭开源社区''\|''静态托管'', cat\: ''agent''\|''ai''\|''content''\|''crm''\|''data''\|''flow''\|''growth''\|''open''\|''site'', sub\: ''AB 实验''\|''Agent 应用''\|''Agent 框架''\|''AI 营销''\|''API 聚合''\|''BI 可视化''\|''CDP''\|''CRM''\|''RAG 知识库''\|''SEO 工具''\|''产品分析''\|''博客发布''\|''增长社区''\|''客服工单''\|''对话模型''\|''建站平台''\|''开源 AI 应用''\|''开源大模型''\|''开源社区''\|''开源部署''\|''微信私域''\|''托管部署''\|''搜索问答''\|''支付变现''\|''文档协作''\|''无代码集成''\|''无头 CMS''\|''本地 AI''\|''流程编排''\|''浏览器 Agent''\|''私域自动化''\|''竞品洞察''\|''网站分析''\|''行为分析''\|''设计工具''\|''邮件营销'', region\: ''cn''\|''intl'', tags\: array\{''AB'', ''CRO'', ''商业''\}\|array\{''AI'', ''Agent''\|''API''\|''SEO''\|''对话''\|''抓取''\|''搜索''\|''本地'', ''商业''\|''小众''\|''开源''\}\|array\{''CDN'', ''安全''\}\|array\{''CMS''\|''创作者''\|''博客''\|''客服''\|''支付''\|''电商''\|''知识付费''\|''笔记''\|''设计''\|''邮件'', ''商业''\|''国内''\|''开源''\|''社群''\|''私域''\|''聚合''\|''自动化''\|''订阅''\}\|array\{''GEO''\|''SEO'', ''AI'', ''开源''\}\|array\{''建站'', ''单页''\|''无代码''\}\|array\{''开源'', ''数据'', ''AI''\}\|array\{''托管'', ''部署''\}\|array\{''文档'', ''协同''\|''生产力''\|''知识库''\}\|array\{''服务器'', ''运维''\}\|array\{''社区'', ''发布''\|''独立开发''\}\|array\{''私域'', ''企微''\|''微信''\|''知识付费''\}\|array\{''竞品'', ''研究''\}\|array\{''自动化'', ''微信'', ''开源''\}\|array\{0\: ''BI''\|''CDP''\|''CRM''\|''SEO''\|''分析''\|''自动化''\|''行为''\|''趋势'', 1\: ''Google''\|''中文''\|''免费''\|''商业''\|''国内''\|''开发''\|''开源''\|''数据''\|''营销'', 2\?\: ''低代码''\|''小众''\|''数据''\|''隐私''\}\|array\{0\: ''开源'', 1\: ''AI绘图''\|''大模型''\|''推理''\|''社区'', 2\?\: ''开发''\}\|array\{0\: ''开源'', 1\: ''知识库'', 2\?\: ''小众''\}\}\|array\{name\: ''Astro''\|''BillionMail''\|''browser\-use''\|''ChatGPT''\|''Claude''\|''Coze 扣子''\|''CrewAI''\|''DeepSeek''\|''Dify''\|''GrowthBook''\|''Hugging Face''\|''Manus''\|''marketing\-skills''\|''Metabase''\|''n8n''\|''Open WebUI''\|''OpenRouter''\|''Perplexity''\|''PostHog''\|''Qwen''\|''RAGFlow''\|''Stripe''\|''Webflow'', name_en\: ''Astro''\|''BillionMail''\|''browser\-use''\|''ChatGPT''\|''Claude''\|''Coze''\|''CrewAI''\|''DeepSeek''\|''Dify''\|''GrowthBook''\|''Hugging Face''\|''Manus''\|''marketing\-skills''\|''Metabase''\|''n8n''\|''Open WebUI''\|''OpenRouter''\|''Perplexity''\|''PostHog''\|''Qwen''\|''RAGFlow''\|''Stripe''\|''Webflow'', url\: ''https\://astro\.build''\|''https\://chat…''\|''https\://chat\.openai…''\|''https\://claude\.ai''\|''https\://github\.com…''\|''https\://huggingface…''\|''https\://manus\.im''\|''https\://n8n\.io''\|''https\://openrouter…''\|''https\://stripe\.com''\|''https\://webflow\.com''\|''https\://www\.coze\.cn''\|''https\://www…'', desc\: ''AI 搜索，带引用的答案''\|''Anthropic 安全可靠的 AI…''\|''OpenAI 对话助手，AI 时代的入口''\|''⭐109k 让 AI Agent…''\|''⭐149k 本地 AI 界面，自托管''\|''⭐153k 开源 LLM 应用平台''\|''⭐15k 开源邮件…''\|''⭐201k 开源工作流自动化''\|''⭐45k Claude…''\|''⭐50k 内容优先建站框架''\|''⭐57k 角色扮演 Agent 编排''\|''⭐88k 开源 RAG 知识库''\|''⭐8k 开源 AB 实验…''\|''可视化建站标杆''\|''国产开源大模型，性价比之选''\|''国际支付标杆''\|''字节 Agent 平台，工作流\+插件''\|''开源 AI 模型社区''\|''开源 BI 工具''\|''开源产品分析\+实验\+录屏''\|''聚合 300\+ 大模型 API''\|''通用 Agent，自主完成复杂任务''\|''阿里开源大模型系列'', cat\: ''agent''\|''ai''\|''content''\|''data''\|''flow''\|''growth''\|''open''\|''site'', sub\: ''AB 实验''\|''Agent 平台''\|''Agent 应用''\|''Agent 框架''\|''AI 营销''\|''API 聚合''\|''BI 可视化''\|''RAG 知识库''\|''产品分析''\|''博客发布''\|''对话模型''\|''建站平台''\|''开源大模型''\|''开源社区''\|''搜索问答''\|''支付变现''\|''本地 AI''\|''流程编排''\|''浏览器 Agent''\|''邮件自动化'', region\: ''cn''\|''intl'', tags\: array\{''AB''\|''BI''\|''分析''\|''建站''\|''自动化''\|''邮件'', ''开源''\|''无代码''\}\|array\{''AI'', ''Agent''\|''对话''\|''搜索''\|''本地''\|''营销'', ''商业''\|''开源''\}\|array\{''AI'', ''API'', ''小众''\}\|array\{''开源'', ''RAG'', ''AI''\}\|array\{''开源'', ''大模型''\|''社区''\}\|array\{''支付'', ''商业''\}, \.\.\.\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: bin/seed-navigation.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: bin/seed-reviews.php
+
+		-
+			message: '#^Variable \$argv might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: bin/seed-reviews.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: bin/triage-404.php
+
+		-
+			message: '#^Variable \$argv might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: bin/triage-404.php
+
+		-
+			message: '#^Comparison operation "\<" between 1\|2\|3\|4\|5\|6 and 10 is always true\.$#'
+			identifier: smaller.alwaysTrue
+			count: 1
+			path: capability.php
+
+		-
+			message: '#^Offset 0\|1\|2\|3\|4\|5\|6 on array\{''cap\-touch'', ''cap\-insight'', ''cap\-personality'', ''cap\-sales'', ''cap\-spine'', ''cap\-engine'', ''cap\-open''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: capability.php
+
+		-
+			message: '#^Offset 4 on array\{''bolt'', ''触达 Touch'', ''内容引擎 \+ 直播带货 \+…'', array\{array\{''内容引擎'', ''文章 / 课程 / 资料 /…''\}, array\{''创作台'', ''深度专栏、口播脚本、品牌幻灯片，AI…''\}, array\{''直播带货'', ''横屏 / 竖屏 9\:16 /…''\}, array\{''SEO / GEO'', ''四大搜索引擎接入，RSS \+ 搜索…''\}, array\{''多语言站群'', ''一篇内容同步多语言版本，搜索可见性按语…''\}, array\{''Newsletter 分发'', ''选文章自动排版 → 可视化编辑 →…''\}\}, ''content\-hub'', ''内容中心 · 真实后台界面'', ''/academy'', ''去学院看看内容形态 →''\}\|array\{''box'', ''增长引擎'', ''按你设的周期自动推一轮：爬取信号 →…'', array\{array\{''产品发现 Loop'', ''每天自动发现 GitHub…''\}, array\{''GEO 话题采集'', ''行业信号自动抓取，AI 结构化提炼选题''\}, array\{''用户研究中心'', ''JTBD / 用户旅程图 / VoC…''\}, array\{''决策轨道'', ''每条建议可溯源、可采纳、可复盘，不黑箱''\}, array\{''Demo 陪跑沙盘'', ''与生产数据硬隔离的完整增长场景，可一键…''\}, array\{''多模型治理'', ''统一入口、调用计量、预算限制、超时降级''\}\}, ''studio'', ''编排画布 · 真实后台界面'', ''/product\#demo'', ''看增长闭环演示 →''\}\|array\{''check'', ''销售 Sales'', ''CRM、转化、商城、订阅。从触达到成交…'', array\{array\{''CRM 管道'', ''线索评分、360°…''\}, array\{''统一收件箱'', ''多渠道会话汇聚一处，销售话术 AI 辅助''\}, array\{''商城与支付'', ''购物车、优惠码，虎皮椒 / 微信 /…''\}, array\{''订阅计费'', ''自动续费、到期提醒、会员付费墙与升级引导''\}, array\{''课程交付'', ''报名 → 学习 → 结业，知识付费全链路''\}, array\{''推荐分销'', ''推荐码归因、佣金结算、提现，老客带新客''\}\}, ''crm'', ''CRM 管道 · 真实后台界面'', ''/courses'', ''看课程商品形态 →''\}\|array\{''doc'', ''永久开源'', ''核心能力永久开源，Tools 和…'', array\{array\{''MIT 开源'', ''核心能力全部公开，代码即证据''\}, array\{''插件平台 v2'', ''钩子 / API 路由 /…''\}, array\{''MCP Server'', ''18 个工具，外部 Agent…''\}, array\{''Skills 生态'', ''prompt / tool /…''\}, array\{''连接器'', ''飞书 / 企微 / Notion /…''\}, array\{''数据自主'', ''JSON \+ SQLite…''\}\}, ''github'', ''GitHub 仓库 · 代码即证据'', ''https\://github\.com…'', ''去 GitHub 验证 →''\}\|array\{''flag'', ''行动脊柱 Agentic'', ''统一人对象 → 今日主线 →…'', array\{array\{''统一「人」对象'', ''CDP \+ CRM \+ 会员 \+ 订单…''\}, array\{''今日主线'', ''全站信号收口为「立即 / 今日 /…''\}, array\{''一句话指挥'', ''控制台自然语言指令 → 可执行计划 →…''\}, array\{''自动装配'', ''投喂文本或站点，按 TIPS \+…''\}, array\{''Agent 运行时'', ''AI…''\}, array\{''热点雷达与全平台发布'', ''HN / GitHub / RSS…''\}\}, ''workspace'', ''控制台 · 今日主线与 Agent…'', ''/product\#feat\-spine'', ''看行动脊柱 →''\}\|array\{''refresh'', ''个性化 Personality'', ''画像、分群、自动化。给对的人，在对的时…'', array\{array\{''营销画布'', ''SVG 贝塞尔真流程图：拖拽、A/B…''\}, array\{''动态内容'', ''区块级定向，同一页面对不同人呈现不同内容''\}, array\{''频控与审批'', ''触达强度有闸门，高风险动作必须人工批准''\}, array\{''增长规则引擎'', ''WHEN × WHAT × HOW…''\}, array\{''Campaign 编排'', ''跨渠道活动统一编排、统一复盘''\}, array\{''人群激活'', ''沉默唤醒、加购未付召回，自动化里带温度''\}\}, ''automation'', ''营销自动化 · 真实后台界面'', ''/product'', ''看画布怎么跑 →''\}\|array\{''users'', ''洞察 Insight'', ''数据、CDP、舆情、分析。从几百个指标…'', array\{array\{''CDP 画像'', ''匿名访客与会员身份合并，一人一册行为时…''\}, array\{''分群与 RFM'', ''行为驱动动态标签，生命周期自动流转''\}, array\{''转化漏斗'', ''访客→注册→加购→支付→复购，五阶段转…''\}, array\{''驾驶舱'', ''KPI 带月目标与 delta，异常由…''\}, array\{''问数据 AskData'', ''用自然语言直接问经营数据，不用学报表''\}, array\{''归因与 A/B'', ''路径归因 \+ 实验评估，知道钱和人从哪来''\}\}, ''audience'', ''CDP 用户画像 · 真实后台界面'', ''/product\#demo'', ''看数据怎么驱动决策 →''\} in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.offset
+			count: 1
+			path: capability.php
+
+		-
+			message: '#^Offset 5 on array\{''bolt'', ''触达 Touch'', ''内容引擎 \+ 直播带货 \+…'', array\{array\{''内容引擎'', ''文章 / 课程 / 资料 /…''\}, array\{''创作台'', ''深度专栏、口播脚本、品牌幻灯片，AI…''\}, array\{''直播带货'', ''横屏 / 竖屏 9\:16 /…''\}, array\{''SEO / GEO'', ''四大搜索引擎接入，RSS \+ 搜索…''\}, array\{''多语言站群'', ''一篇内容同步多语言版本，搜索可见性按语…''\}, array\{''Newsletter 分发'', ''选文章自动排版 → 可视化编辑 →…''\}\}, ''content\-hub'', ''内容中心 · 真实后台界面'', ''/academy'', ''去学院看看内容形态 →''\}\|array\{''box'', ''增长引擎'', ''按你设的周期自动推一轮：爬取信号 →…'', array\{array\{''产品发现 Loop'', ''每天自动发现 GitHub…''\}, array\{''GEO 话题采集'', ''行业信号自动抓取，AI 结构化提炼选题''\}, array\{''用户研究中心'', ''JTBD / 用户旅程图 / VoC…''\}, array\{''决策轨道'', ''每条建议可溯源、可采纳、可复盘，不黑箱''\}, array\{''Demo 陪跑沙盘'', ''与生产数据硬隔离的完整增长场景，可一键…''\}, array\{''多模型治理'', ''统一入口、调用计量、预算限制、超时降级''\}\}, ''studio'', ''编排画布 · 真实后台界面'', ''/product\#demo'', ''看增长闭环演示 →''\}\|array\{''check'', ''销售 Sales'', ''CRM、转化、商城、订阅。从触达到成交…'', array\{array\{''CRM 管道'', ''线索评分、360°…''\}, array\{''统一收件箱'', ''多渠道会话汇聚一处，销售话术 AI 辅助''\}, array\{''商城与支付'', ''购物车、优惠码，虎皮椒 / 微信 /…''\}, array\{''订阅计费'', ''自动续费、到期提醒、会员付费墙与升级引导''\}, array\{''课程交付'', ''报名 → 学习 → 结业，知识付费全链路''\}, array\{''推荐分销'', ''推荐码归因、佣金结算、提现，老客带新客''\}\}, ''crm'', ''CRM 管道 · 真实后台界面'', ''/courses'', ''看课程商品形态 →''\}\|array\{''doc'', ''永久开源'', ''核心能力永久开源，Tools 和…'', array\{array\{''MIT 开源'', ''核心能力全部公开，代码即证据''\}, array\{''插件平台 v2'', ''钩子 / API 路由 /…''\}, array\{''MCP Server'', ''18 个工具，外部 Agent…''\}, array\{''Skills 生态'', ''prompt / tool /…''\}, array\{''连接器'', ''飞书 / 企微 / Notion /…''\}, array\{''数据自主'', ''JSON \+ SQLite…''\}\}, ''github'', ''GitHub 仓库 · 代码即证据'', ''https\://github\.com…'', ''去 GitHub 验证 →''\}\|array\{''flag'', ''行动脊柱 Agentic'', ''统一人对象 → 今日主线 →…'', array\{array\{''统一「人」对象'', ''CDP \+ CRM \+ 会员 \+ 订单…''\}, array\{''今日主线'', ''全站信号收口为「立即 / 今日 /…''\}, array\{''一句话指挥'', ''控制台自然语言指令 → 可执行计划 →…''\}, array\{''自动装配'', ''投喂文本或站点，按 TIPS \+…''\}, array\{''Agent 运行时'', ''AI…''\}, array\{''热点雷达与全平台发布'', ''HN / GitHub / RSS…''\}\}, ''workspace'', ''控制台 · 今日主线与 Agent…'', ''/product\#feat\-spine'', ''看行动脊柱 →''\}\|array\{''refresh'', ''个性化 Personality'', ''画像、分群、自动化。给对的人，在对的时…'', array\{array\{''营销画布'', ''SVG 贝塞尔真流程图：拖拽、A/B…''\}, array\{''动态内容'', ''区块级定向，同一页面对不同人呈现不同内容''\}, array\{''频控与审批'', ''触达强度有闸门，高风险动作必须人工批准''\}, array\{''增长规则引擎'', ''WHEN × WHAT × HOW…''\}, array\{''Campaign 编排'', ''跨渠道活动统一编排、统一复盘''\}, array\{''人群激活'', ''沉默唤醒、加购未付召回，自动化里带温度''\}\}, ''automation'', ''营销自动化 · 真实后台界面'', ''/product'', ''看画布怎么跑 →''\}\|array\{''users'', ''洞察 Insight'', ''数据、CDP、舆情、分析。从几百个指标…'', array\{array\{''CDP 画像'', ''匿名访客与会员身份合并，一人一册行为时…''\}, array\{''分群与 RFM'', ''行为驱动动态标签，生命周期自动流转''\}, array\{''转化漏斗'', ''访客→注册→加购→支付→复购，五阶段转…''\}, array\{''驾驶舱'', ''KPI 带月目标与 delta，异常由…''\}, array\{''问数据 AskData'', ''用自然语言直接问经营数据，不用学报表''\}, array\{''归因与 A/B'', ''路径归因 \+ 实验评估，知道钱和人从哪来''\}\}, ''audience'', ''CDP 用户画像 · 真实后台界面'', ''/product\#demo'', ''看数据怎么驱动决策 →''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: capability.php
+
+		-
+			message: '#^Offset 6 on array\{''bolt'', ''触达 Touch'', ''内容引擎 \+ 直播带货 \+…'', array\{array\{''内容引擎'', ''文章 / 课程 / 资料 /…''\}, array\{''创作台'', ''深度专栏、口播脚本、品牌幻灯片，AI…''\}, array\{''直播带货'', ''横屏 / 竖屏 9\:16 /…''\}, array\{''SEO / GEO'', ''四大搜索引擎接入，RSS \+ 搜索…''\}, array\{''多语言站群'', ''一篇内容同步多语言版本，搜索可见性按语…''\}, array\{''Newsletter 分发'', ''选文章自动排版 → 可视化编辑 →…''\}\}, ''content\-hub'', ''内容中心 · 真实后台界面'', ''/academy'', ''去学院看看内容形态 →''\}\|array\{''box'', ''增长引擎'', ''按你设的周期自动推一轮：爬取信号 →…'', array\{array\{''产品发现 Loop'', ''每天自动发现 GitHub…''\}, array\{''GEO 话题采集'', ''行业信号自动抓取，AI 结构化提炼选题''\}, array\{''用户研究中心'', ''JTBD / 用户旅程图 / VoC…''\}, array\{''决策轨道'', ''每条建议可溯源、可采纳、可复盘，不黑箱''\}, array\{''Demo 陪跑沙盘'', ''与生产数据硬隔离的完整增长场景，可一键…''\}, array\{''多模型治理'', ''统一入口、调用计量、预算限制、超时降级''\}\}, ''studio'', ''编排画布 · 真实后台界面'', ''/product\#demo'', ''看增长闭环演示 →''\}\|array\{''check'', ''销售 Sales'', ''CRM、转化、商城、订阅。从触达到成交…'', array\{array\{''CRM 管道'', ''线索评分、360°…''\}, array\{''统一收件箱'', ''多渠道会话汇聚一处，销售话术 AI 辅助''\}, array\{''商城与支付'', ''购物车、优惠码，虎皮椒 / 微信 /…''\}, array\{''订阅计费'', ''自动续费、到期提醒、会员付费墙与升级引导''\}, array\{''课程交付'', ''报名 → 学习 → 结业，知识付费全链路''\}, array\{''推荐分销'', ''推荐码归因、佣金结算、提现，老客带新客''\}\}, ''crm'', ''CRM 管道 · 真实后台界面'', ''/courses'', ''看课程商品形态 →''\}\|array\{''doc'', ''永久开源'', ''核心能力永久开源，Tools 和…'', array\{array\{''MIT 开源'', ''核心能力全部公开，代码即证据''\}, array\{''插件平台 v2'', ''钩子 / API 路由 /…''\}, array\{''MCP Server'', ''18 个工具，外部 Agent…''\}, array\{''Skills 生态'', ''prompt / tool /…''\}, array\{''连接器'', ''飞书 / 企微 / Notion /…''\}, array\{''数据自主'', ''JSON \+ SQLite…''\}\}, ''github'', ''GitHub 仓库 · 代码即证据'', ''https\://github\.com…'', ''去 GitHub 验证 →''\}\|array\{''flag'', ''行动脊柱 Agentic'', ''统一人对象 → 今日主线 →…'', array\{array\{''统一「人」对象'', ''CDP \+ CRM \+ 会员 \+ 订单…''\}, array\{''今日主线'', ''全站信号收口为「立即 / 今日 /…''\}, array\{''一句话指挥'', ''控制台自然语言指令 → 可执行计划 →…''\}, array\{''自动装配'', ''投喂文本或站点，按 TIPS \+…''\}, array\{''Agent 运行时'', ''AI…''\}, array\{''热点雷达与全平台发布'', ''HN / GitHub / RSS…''\}\}, ''workspace'', ''控制台 · 今日主线与 Agent…'', ''/product\#feat\-spine'', ''看行动脊柱 →''\}\|array\{''refresh'', ''个性化 Personality'', ''画像、分群、自动化。给对的人，在对的时…'', array\{array\{''营销画布'', ''SVG 贝塞尔真流程图：拖拽、A/B…''\}, array\{''动态内容'', ''区块级定向，同一页面对不同人呈现不同内容''\}, array\{''频控与审批'', ''触达强度有闸门，高风险动作必须人工批准''\}, array\{''增长规则引擎'', ''WHEN × WHAT × HOW…''\}, array\{''Campaign 编排'', ''跨渠道活动统一编排、统一复盘''\}, array\{''人群激活'', ''沉默唤醒、加购未付召回，自动化里带温度''\}\}, ''automation'', ''营销自动化 · 真实后台界面'', ''/product'', ''看画布怎么跑 →''\}\|array\{''users'', ''洞察 Insight'', ''数据、CDP、舆情、分析。从几百个指标…'', array\{array\{''CDP 画像'', ''匿名访客与会员身份合并，一人一册行为时…''\}, array\{''分群与 RFM'', ''行为驱动动态标签，生命周期自动流转''\}, array\{''转化漏斗'', ''访客→注册→加购→支付→复购，五阶段转…''\}, array\{''驾驶舱'', ''KPI 带月目标与 delta，异常由…''\}, array\{''问数据 AskData'', ''用自然语言直接问经营数据，不用学报表''\}, array\{''归因与 A/B'', ''路径归因 \+ 实验评估，知道钱和人从哪来''\}\}, ''audience'', ''CDP 用户画像 · 真实后台界面'', ''/product\#demo'', ''看数据怎么驱动决策 →''\} in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.offset
+			count: 1
+			path: capability.php
+
+		-
+			message: '#^Offset 7 on array\{''bolt'', ''触达 Touch'', ''内容引擎 \+ 直播带货 \+…'', array\{array\{''内容引擎'', ''文章 / 课程 / 资料 /…''\}, array\{''创作台'', ''深度专栏、口播脚本、品牌幻灯片，AI…''\}, array\{''直播带货'', ''横屏 / 竖屏 9\:16 /…''\}, array\{''SEO / GEO'', ''四大搜索引擎接入，RSS \+ 搜索…''\}, array\{''多语言站群'', ''一篇内容同步多语言版本，搜索可见性按语…''\}, array\{''Newsletter 分发'', ''选文章自动排版 → 可视化编辑 →…''\}\}, ''content\-hub'', ''内容中心 · 真实后台界面'', ''/academy'', ''去学院看看内容形态 →''\}\|array\{''box'', ''增长引擎'', ''按你设的周期自动推一轮：爬取信号 →…'', array\{array\{''产品发现 Loop'', ''每天自动发现 GitHub…''\}, array\{''GEO 话题采集'', ''行业信号自动抓取，AI 结构化提炼选题''\}, array\{''用户研究中心'', ''JTBD / 用户旅程图 / VoC…''\}, array\{''决策轨道'', ''每条建议可溯源、可采纳、可复盘，不黑箱''\}, array\{''Demo 陪跑沙盘'', ''与生产数据硬隔离的完整增长场景，可一键…''\}, array\{''多模型治理'', ''统一入口、调用计量、预算限制、超时降级''\}\}, ''studio'', ''编排画布 · 真实后台界面'', ''/product\#demo'', ''看增长闭环演示 →''\}\|array\{''check'', ''销售 Sales'', ''CRM、转化、商城、订阅。从触达到成交…'', array\{array\{''CRM 管道'', ''线索评分、360°…''\}, array\{''统一收件箱'', ''多渠道会话汇聚一处，销售话术 AI 辅助''\}, array\{''商城与支付'', ''购物车、优惠码，虎皮椒 / 微信 /…''\}, array\{''订阅计费'', ''自动续费、到期提醒、会员付费墙与升级引导''\}, array\{''课程交付'', ''报名 → 学习 → 结业，知识付费全链路''\}, array\{''推荐分销'', ''推荐码归因、佣金结算、提现，老客带新客''\}\}, ''crm'', ''CRM 管道 · 真实后台界面'', ''/courses'', ''看课程商品形态 →''\}\|array\{''doc'', ''永久开源'', ''核心能力永久开源，Tools 和…'', array\{array\{''MIT 开源'', ''核心能力全部公开，代码即证据''\}, array\{''插件平台 v2'', ''钩子 / API 路由 /…''\}, array\{''MCP Server'', ''18 个工具，外部 Agent…''\}, array\{''Skills 生态'', ''prompt / tool /…''\}, array\{''连接器'', ''飞书 / 企微 / Notion /…''\}, array\{''数据自主'', ''JSON \+ SQLite…''\}\}, ''github'', ''GitHub 仓库 · 代码即证据'', ''https\://github\.com…'', ''去 GitHub 验证 →''\}\|array\{''flag'', ''行动脊柱 Agentic'', ''统一人对象 → 今日主线 →…'', array\{array\{''统一「人」对象'', ''CDP \+ CRM \+ 会员 \+ 订单…''\}, array\{''今日主线'', ''全站信号收口为「立即 / 今日 /…''\}, array\{''一句话指挥'', ''控制台自然语言指令 → 可执行计划 →…''\}, array\{''自动装配'', ''投喂文本或站点，按 TIPS \+…''\}, array\{''Agent 运行时'', ''AI…''\}, array\{''热点雷达与全平台发布'', ''HN / GitHub / RSS…''\}\}, ''workspace'', ''控制台 · 今日主线与 Agent…'', ''/product\#feat\-spine'', ''看行动脊柱 →''\}\|array\{''refresh'', ''个性化 Personality'', ''画像、分群、自动化。给对的人，在对的时…'', array\{array\{''营销画布'', ''SVG 贝塞尔真流程图：拖拽、A/B…''\}, array\{''动态内容'', ''区块级定向，同一页面对不同人呈现不同内容''\}, array\{''频控与审批'', ''触达强度有闸门，高风险动作必须人工批准''\}, array\{''增长规则引擎'', ''WHEN × WHAT × HOW…''\}, array\{''Campaign 编排'', ''跨渠道活动统一编排、统一复盘''\}, array\{''人群激活'', ''沉默唤醒、加购未付召回，自动化里带温度''\}\}, ''automation'', ''营销自动化 · 真实后台界面'', ''/product'', ''看画布怎么跑 →''\}\|array\{''users'', ''洞察 Insight'', ''数据、CDP、舆情、分析。从几百个指标…'', array\{array\{''CDP 画像'', ''匿名访客与会员身份合并，一人一册行为时…''\}, array\{''分群与 RFM'', ''行为驱动动态标签，生命周期自动流转''\}, array\{''转化漏斗'', ''访客→注册→加购→支付→复购，五阶段转…''\}, array\{''驾驶舱'', ''KPI 带月目标与 delta，异常由…''\}, array\{''问数据 AskData'', ''用自然语言直接问经营数据，不用学报表''\}, array\{''归因与 A/B'', ''路径归因 \+ 实验评估，知道钱和人从哪来''\}\}, ''audience'', ''CDP 用户画像 · 真实后台界面'', ''/product\#demo'', ''看数据怎么驱动决策 →''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: capability.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: course-player.php
+
+		-
+			message: '#^Offset ''ebook''\|''report''\|''template''\|''toolkit''\|''whitepaper'' on array\{whitepaper\: ''白皮书'', template\: ''模板'', report\: ''报告'', ebook\: ''电子书'', toolkit\: ''工具包''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: downloads.php
+
+		-
+			message: '#^Variable \$plus might not be defined\.$#'
+			identifier: variable.undefined
+			count: 4
+			path: home-v2.php
+
+		-
+			message: '#^Comparison operation "\<" between 1\|2\|3\|4\|5\|6 and 10 is always true\.$#'
+			identifier: smaller.alwaysTrue
+			count: 1
+			path: hub-capabilities.php
+
+		-
+			message: '#^Offset 0\|1\|2\|3\|4\|5\|6 on array\{''cap\-touch'', ''cap\-insight'', ''cap\-personality'', ''cap\-sales'', ''cap\-spine'', ''cap\-engine'', ''cap\-open''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: hub-capabilities.php
+
+		-
+			message: '#^Offset 4 on array\{''bolt'', ''触达 Touch'', ''内容引擎 \+ 直播带货 \+…'', array\{array\{''内容引擎'', ''文章 / 课程 / 资料 /…''\}, array\{''创作台'', ''深度专栏、口播脚本、品牌幻灯片，AI…''\}, array\{''直播带货'', ''横屏 / 竖屏 9\:16 /…''\}, array\{''SEO / GEO'', ''四大搜索引擎接入，RSS \+ 搜索…''\}, array\{''多语言站群'', ''一篇内容同步多语言版本，搜索可见性按语…''\}, array\{''Newsletter 分发'', ''选文章自动排版 → 可视化编辑 →…''\}\}, ''content\-hub'', ''内容中心 · 真实后台界面'', ''/academy'', ''去学院看看内容形态 →''\}\|array\{''box'', ''增长引擎'', ''按你设的周期自动推一轮：爬取信号 →…'', array\{array\{''产品发现 Loop'', ''每天自动发现 GitHub…''\}, array\{''GEO 话题采集'', ''行业信号自动抓取，AI 结构化提炼选题''\}, array\{''用户研究中心'', ''JTBD / 用户旅程图 / VoC…''\}, array\{''决策轨道'', ''每条建议可溯源、可采纳、可复盘，不黑箱''\}, array\{''Demo 陪跑沙盘'', ''与生产数据硬隔离的完整增长场景，可一键…''\}, array\{''多模型治理'', ''统一入口、调用计量、预算限制、超时降级''\}\}, ''studio'', ''编排画布 · 真实后台界面'', ''/product\#demo'', ''看增长闭环演示 →''\}\|array\{''check'', ''销售 Sales'', ''CRM、转化、商城、订阅。从触达到成交…'', array\{array\{''CRM 管道'', ''线索评分、360°…''\}, array\{''统一收件箱'', ''多渠道会话汇聚一处，销售话术 AI 辅助''\}, array\{''商城与支付'', ''购物车、优惠码，虎皮椒 / 微信 /…''\}, array\{''订阅计费'', ''自动续费、到期提醒、会员付费墙与升级引导''\}, array\{''课程交付'', ''报名 → 学习 → 结业，知识付费全链路''\}, array\{''推荐分销'', ''推荐码归因、佣金结算、提现，老客带新客''\}\}, ''crm'', ''CRM 管道 · 真实后台界面'', ''/courses'', ''看课程商品形态 →''\}\|array\{''doc'', ''永久开源'', ''核心能力永久开源，Tools 和…'', array\{array\{''MIT 开源'', ''核心能力全部公开，代码即证据''\}, array\{''插件平台 v2'', ''钩子 / API 路由 /…''\}, array\{''MCP Server'', ''18 个工具，外部 Agent…''\}, array\{''Skills 生态'', ''prompt / tool /…''\}, array\{''连接器'', ''飞书 / 企微 / Notion /…''\}, array\{''数据自主'', ''JSON \+ SQLite…''\}\}, ''github'', ''GitHub 仓库 · 代码即证据'', ''https\://github\.com…'', ''去 GitHub 验证 →''\}\|array\{''flag'', ''行动脊柱 Agentic'', ''统一人对象 → 今日主线 →…'', array\{array\{''统一「人」对象'', ''CDP \+ CRM \+ 会员 \+ 订单…''\}, array\{''今日主线'', ''全站信号收口为「立即 / 今日 /…''\}, array\{''一句话指挥'', ''控制台自然语言指令 → 可执行计划 →…''\}, array\{''自动装配'', ''投喂文本或站点，按 TIPS \+…''\}, array\{''Agent 运行时'', ''AI…''\}, array\{''热点雷达与全平台发布'', ''HN / GitHub / RSS…''\}\}, ''workspace'', ''控制台 · 今日主线与 Agent…'', ''/product\#feat\-spine'', ''看行动脊柱 →''\}\|array\{''refresh'', ''个性化 Personality'', ''画像、分群、自动化。给对的人，在对的时…'', array\{array\{''营销画布'', ''SVG 贝塞尔真流程图：拖拽、A/B…''\}, array\{''动态内容'', ''区块级定向，同一页面对不同人呈现不同内容''\}, array\{''频控与审批'', ''触达强度有闸门，高风险动作必须人工批准''\}, array\{''增长规则引擎'', ''WHEN × WHAT × HOW…''\}, array\{''Campaign 编排'', ''跨渠道活动统一编排、统一复盘''\}, array\{''人群激活'', ''沉默唤醒、加购未付召回，自动化里带温度''\}\}, ''automation'', ''营销自动化 · 真实后台界面'', ''/product'', ''看画布怎么跑 →''\}\|array\{''users'', ''洞察 Insight'', ''数据、CDP、舆情、分析。从几百个指标…'', array\{array\{''CDP 画像'', ''匿名访客与会员身份合并，一人一册行为时…''\}, array\{''分群与 RFM'', ''行为驱动动态标签，生命周期自动流转''\}, array\{''转化漏斗'', ''访客→注册→加购→支付→复购，五阶段转…''\}, array\{''驾驶舱'', ''KPI 带月目标与 delta，异常由…''\}, array\{''问数据 AskData'', ''用自然语言直接问经营数据，不用学报表''\}, array\{''归因与 A/B'', ''路径归因 \+ 实验评估，知道钱和人从哪来''\}\}, ''audience'', ''CDP 用户画像 · 真实后台界面'', ''/product\#demo'', ''看数据怎么驱动决策 →''\} in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.offset
+			count: 1
+			path: hub-capabilities.php
+
+		-
+			message: '#^Offset 5 on array\{''bolt'', ''触达 Touch'', ''内容引擎 \+ 直播带货 \+…'', array\{array\{''内容引擎'', ''文章 / 课程 / 资料 /…''\}, array\{''创作台'', ''深度专栏、口播脚本、品牌幻灯片，AI…''\}, array\{''直播带货'', ''横屏 / 竖屏 9\:16 /…''\}, array\{''SEO / GEO'', ''四大搜索引擎接入，RSS \+ 搜索…''\}, array\{''多语言站群'', ''一篇内容同步多语言版本，搜索可见性按语…''\}, array\{''Newsletter 分发'', ''选文章自动排版 → 可视化编辑 →…''\}\}, ''content\-hub'', ''内容中心 · 真实后台界面'', ''/academy'', ''去学院看看内容形态 →''\}\|array\{''box'', ''增长引擎'', ''按你设的周期自动推一轮：爬取信号 →…'', array\{array\{''产品发现 Loop'', ''每天自动发现 GitHub…''\}, array\{''GEO 话题采集'', ''行业信号自动抓取，AI 结构化提炼选题''\}, array\{''用户研究中心'', ''JTBD / 用户旅程图 / VoC…''\}, array\{''决策轨道'', ''每条建议可溯源、可采纳、可复盘，不黑箱''\}, array\{''Demo 陪跑沙盘'', ''与生产数据硬隔离的完整增长场景，可一键…''\}, array\{''多模型治理'', ''统一入口、调用计量、预算限制、超时降级''\}\}, ''studio'', ''编排画布 · 真实后台界面'', ''/product\#demo'', ''看增长闭环演示 →''\}\|array\{''check'', ''销售 Sales'', ''CRM、转化、商城、订阅。从触达到成交…'', array\{array\{''CRM 管道'', ''线索评分、360°…''\}, array\{''统一收件箱'', ''多渠道会话汇聚一处，销售话术 AI 辅助''\}, array\{''商城与支付'', ''购物车、优惠码，虎皮椒 / 微信 /…''\}, array\{''订阅计费'', ''自动续费、到期提醒、会员付费墙与升级引导''\}, array\{''课程交付'', ''报名 → 学习 → 结业，知识付费全链路''\}, array\{''推荐分销'', ''推荐码归因、佣金结算、提现，老客带新客''\}\}, ''crm'', ''CRM 管道 · 真实后台界面'', ''/courses'', ''看课程商品形态 →''\}\|array\{''doc'', ''永久开源'', ''核心能力永久开源，Tools 和…'', array\{array\{''MIT 开源'', ''核心能力全部公开，代码即证据''\}, array\{''插件平台 v2'', ''钩子 / API 路由 /…''\}, array\{''MCP Server'', ''18 个工具，外部 Agent…''\}, array\{''Skills 生态'', ''prompt / tool /…''\}, array\{''连接器'', ''飞书 / 企微 / Notion /…''\}, array\{''数据自主'', ''JSON \+ SQLite…''\}\}, ''github'', ''GitHub 仓库 · 代码即证据'', ''https\://github\.com…'', ''去 GitHub 验证 →''\}\|array\{''flag'', ''行动脊柱 Agentic'', ''统一人对象 → 今日主线 →…'', array\{array\{''统一「人」对象'', ''CDP \+ CRM \+ 会员 \+ 订单…''\}, array\{''今日主线'', ''全站信号收口为「立即 / 今日 /…''\}, array\{''一句话指挥'', ''控制台自然语言指令 → 可执行计划 →…''\}, array\{''自动装配'', ''投喂文本或站点，按 TIPS \+…''\}, array\{''Agent 运行时'', ''AI…''\}, array\{''热点雷达与全平台发布'', ''HN / GitHub / RSS…''\}\}, ''workspace'', ''控制台 · 今日主线与 Agent…'', ''/product\#feat\-spine'', ''看行动脊柱 →''\}\|array\{''refresh'', ''个性化 Personality'', ''画像、分群、自动化。给对的人，在对的时…'', array\{array\{''营销画布'', ''SVG 贝塞尔真流程图：拖拽、A/B…''\}, array\{''动态内容'', ''区块级定向，同一页面对不同人呈现不同内容''\}, array\{''频控与审批'', ''触达强度有闸门，高风险动作必须人工批准''\}, array\{''增长规则引擎'', ''WHEN × WHAT × HOW…''\}, array\{''Campaign 编排'', ''跨渠道活动统一编排、统一复盘''\}, array\{''人群激活'', ''沉默唤醒、加购未付召回，自动化里带温度''\}\}, ''automation'', ''营销自动化 · 真实后台界面'', ''/product'', ''看画布怎么跑 →''\}\|array\{''users'', ''洞察 Insight'', ''数据、CDP、舆情、分析。从几百个指标…'', array\{array\{''CDP 画像'', ''匿名访客与会员身份合并，一人一册行为时…''\}, array\{''分群与 RFM'', ''行为驱动动态标签，生命周期自动流转''\}, array\{''转化漏斗'', ''访客→注册→加购→支付→复购，五阶段转…''\}, array\{''驾驶舱'', ''KPI 带月目标与 delta，异常由…''\}, array\{''问数据 AskData'', ''用自然语言直接问经营数据，不用学报表''\}, array\{''归因与 A/B'', ''路径归因 \+ 实验评估，知道钱和人从哪来''\}\}, ''audience'', ''CDP 用户画像 · 真实后台界面'', ''/product\#demo'', ''看数据怎么驱动决策 →''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: hub-capabilities.php
+
+		-
+			message: '#^Offset 6 on array\{''bolt'', ''触达 Touch'', ''内容引擎 \+ 直播带货 \+…'', array\{array\{''内容引擎'', ''文章 / 课程 / 资料 /…''\}, array\{''创作台'', ''深度专栏、口播脚本、品牌幻灯片，AI…''\}, array\{''直播带货'', ''横屏 / 竖屏 9\:16 /…''\}, array\{''SEO / GEO'', ''四大搜索引擎接入，RSS \+ 搜索…''\}, array\{''多语言站群'', ''一篇内容同步多语言版本，搜索可见性按语…''\}, array\{''Newsletter 分发'', ''选文章自动排版 → 可视化编辑 →…''\}\}, ''content\-hub'', ''内容中心 · 真实后台界面'', ''/academy'', ''去学院看看内容形态 →''\}\|array\{''box'', ''增长引擎'', ''按你设的周期自动推一轮：爬取信号 →…'', array\{array\{''产品发现 Loop'', ''每天自动发现 GitHub…''\}, array\{''GEO 话题采集'', ''行业信号自动抓取，AI 结构化提炼选题''\}, array\{''用户研究中心'', ''JTBD / 用户旅程图 / VoC…''\}, array\{''决策轨道'', ''每条建议可溯源、可采纳、可复盘，不黑箱''\}, array\{''Demo 陪跑沙盘'', ''与生产数据硬隔离的完整增长场景，可一键…''\}, array\{''多模型治理'', ''统一入口、调用计量、预算限制、超时降级''\}\}, ''studio'', ''编排画布 · 真实后台界面'', ''/product\#demo'', ''看增长闭环演示 →''\}\|array\{''check'', ''销售 Sales'', ''CRM、转化、商城、订阅。从触达到成交…'', array\{array\{''CRM 管道'', ''线索评分、360°…''\}, array\{''统一收件箱'', ''多渠道会话汇聚一处，销售话术 AI 辅助''\}, array\{''商城与支付'', ''购物车、优惠码，虎皮椒 / 微信 /…''\}, array\{''订阅计费'', ''自动续费、到期提醒、会员付费墙与升级引导''\}, array\{''课程交付'', ''报名 → 学习 → 结业，知识付费全链路''\}, array\{''推荐分销'', ''推荐码归因、佣金结算、提现，老客带新客''\}\}, ''crm'', ''CRM 管道 · 真实后台界面'', ''/courses'', ''看课程商品形态 →''\}\|array\{''doc'', ''永久开源'', ''核心能力永久开源，Tools 和…'', array\{array\{''MIT 开源'', ''核心能力全部公开，代码即证据''\}, array\{''插件平台 v2'', ''钩子 / API 路由 /…''\}, array\{''MCP Server'', ''18 个工具，外部 Agent…''\}, array\{''Skills 生态'', ''prompt / tool /…''\}, array\{''连接器'', ''飞书 / 企微 / Notion /…''\}, array\{''数据自主'', ''JSON \+ SQLite…''\}\}, ''github'', ''GitHub 仓库 · 代码即证据'', ''https\://github\.com…'', ''去 GitHub 验证 →''\}\|array\{''flag'', ''行动脊柱 Agentic'', ''统一人对象 → 今日主线 →…'', array\{array\{''统一「人」对象'', ''CDP \+ CRM \+ 会员 \+ 订单…''\}, array\{''今日主线'', ''全站信号收口为「立即 / 今日 /…''\}, array\{''一句话指挥'', ''控制台自然语言指令 → 可执行计划 →…''\}, array\{''自动装配'', ''投喂文本或站点，按 TIPS \+…''\}, array\{''Agent 运行时'', ''AI…''\}, array\{''热点雷达与全平台发布'', ''HN / GitHub / RSS…''\}\}, ''workspace'', ''控制台 · 今日主线与 Agent…'', ''/product\#feat\-spine'', ''看行动脊柱 →''\}\|array\{''refresh'', ''个性化 Personality'', ''画像、分群、自动化。给对的人，在对的时…'', array\{array\{''营销画布'', ''SVG 贝塞尔真流程图：拖拽、A/B…''\}, array\{''动态内容'', ''区块级定向，同一页面对不同人呈现不同内容''\}, array\{''频控与审批'', ''触达强度有闸门，高风险动作必须人工批准''\}, array\{''增长规则引擎'', ''WHEN × WHAT × HOW…''\}, array\{''Campaign 编排'', ''跨渠道活动统一编排、统一复盘''\}, array\{''人群激活'', ''沉默唤醒、加购未付召回，自动化里带温度''\}\}, ''automation'', ''营销自动化 · 真实后台界面'', ''/product'', ''看画布怎么跑 →''\}\|array\{''users'', ''洞察 Insight'', ''数据、CDP、舆情、分析。从几百个指标…'', array\{array\{''CDP 画像'', ''匿名访客与会员身份合并，一人一册行为时…''\}, array\{''分群与 RFM'', ''行为驱动动态标签，生命周期自动流转''\}, array\{''转化漏斗'', ''访客→注册→加购→支付→复购，五阶段转…''\}, array\{''驾驶舱'', ''KPI 带月目标与 delta，异常由…''\}, array\{''问数据 AskData'', ''用自然语言直接问经营数据，不用学报表''\}, array\{''归因与 A/B'', ''路径归因 \+ 实验评估，知道钱和人从哪来''\}\}, ''audience'', ''CDP 用户画像 · 真实后台界面'', ''/product\#demo'', ''看数据怎么驱动决策 →''\} in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.offset
+			count: 1
+			path: hub-capabilities.php
+
+		-
+			message: '#^Offset 7 on array\{''bolt'', ''触达 Touch'', ''内容引擎 \+ 直播带货 \+…'', array\{array\{''内容引擎'', ''文章 / 课程 / 资料 /…''\}, array\{''创作台'', ''深度专栏、口播脚本、品牌幻灯片，AI…''\}, array\{''直播带货'', ''横屏 / 竖屏 9\:16 /…''\}, array\{''SEO / GEO'', ''四大搜索引擎接入，RSS \+ 搜索…''\}, array\{''多语言站群'', ''一篇内容同步多语言版本，搜索可见性按语…''\}, array\{''Newsletter 分发'', ''选文章自动排版 → 可视化编辑 →…''\}\}, ''content\-hub'', ''内容中心 · 真实后台界面'', ''/academy'', ''去学院看看内容形态 →''\}\|array\{''box'', ''增长引擎'', ''按你设的周期自动推一轮：爬取信号 →…'', array\{array\{''产品发现 Loop'', ''每天自动发现 GitHub…''\}, array\{''GEO 话题采集'', ''行业信号自动抓取，AI 结构化提炼选题''\}, array\{''用户研究中心'', ''JTBD / 用户旅程图 / VoC…''\}, array\{''决策轨道'', ''每条建议可溯源、可采纳、可复盘，不黑箱''\}, array\{''Demo 陪跑沙盘'', ''与生产数据硬隔离的完整增长场景，可一键…''\}, array\{''多模型治理'', ''统一入口、调用计量、预算限制、超时降级''\}\}, ''studio'', ''编排画布 · 真实后台界面'', ''/product\#demo'', ''看增长闭环演示 →''\}\|array\{''check'', ''销售 Sales'', ''CRM、转化、商城、订阅。从触达到成交…'', array\{array\{''CRM 管道'', ''线索评分、360°…''\}, array\{''统一收件箱'', ''多渠道会话汇聚一处，销售话术 AI 辅助''\}, array\{''商城与支付'', ''购物车、优惠码，虎皮椒 / 微信 /…''\}, array\{''订阅计费'', ''自动续费、到期提醒、会员付费墙与升级引导''\}, array\{''课程交付'', ''报名 → 学习 → 结业，知识付费全链路''\}, array\{''推荐分销'', ''推荐码归因、佣金结算、提现，老客带新客''\}\}, ''crm'', ''CRM 管道 · 真实后台界面'', ''/courses'', ''看课程商品形态 →''\}\|array\{''doc'', ''永久开源'', ''核心能力永久开源，Tools 和…'', array\{array\{''MIT 开源'', ''核心能力全部公开，代码即证据''\}, array\{''插件平台 v2'', ''钩子 / API 路由 /…''\}, array\{''MCP Server'', ''18 个工具，外部 Agent…''\}, array\{''Skills 生态'', ''prompt / tool /…''\}, array\{''连接器'', ''飞书 / 企微 / Notion /…''\}, array\{''数据自主'', ''JSON \+ SQLite…''\}\}, ''github'', ''GitHub 仓库 · 代码即证据'', ''https\://github\.com…'', ''去 GitHub 验证 →''\}\|array\{''flag'', ''行动脊柱 Agentic'', ''统一人对象 → 今日主线 →…'', array\{array\{''统一「人」对象'', ''CDP \+ CRM \+ 会员 \+ 订单…''\}, array\{''今日主线'', ''全站信号收口为「立即 / 今日 /…''\}, array\{''一句话指挥'', ''控制台自然语言指令 → 可执行计划 →…''\}, array\{''自动装配'', ''投喂文本或站点，按 TIPS \+…''\}, array\{''Agent 运行时'', ''AI…''\}, array\{''热点雷达与全平台发布'', ''HN / GitHub / RSS…''\}\}, ''workspace'', ''控制台 · 今日主线与 Agent…'', ''/product\#feat\-spine'', ''看行动脊柱 →''\}\|array\{''refresh'', ''个性化 Personality'', ''画像、分群、自动化。给对的人，在对的时…'', array\{array\{''营销画布'', ''SVG 贝塞尔真流程图：拖拽、A/B…''\}, array\{''动态内容'', ''区块级定向，同一页面对不同人呈现不同内容''\}, array\{''频控与审批'', ''触达强度有闸门，高风险动作必须人工批准''\}, array\{''增长规则引擎'', ''WHEN × WHAT × HOW…''\}, array\{''Campaign 编排'', ''跨渠道活动统一编排、统一复盘''\}, array\{''人群激活'', ''沉默唤醒、加购未付召回，自动化里带温度''\}\}, ''automation'', ''营销自动化 · 真实后台界面'', ''/product'', ''看画布怎么跑 →''\}\|array\{''users'', ''洞察 Insight'', ''数据、CDP、舆情、分析。从几百个指标…'', array\{array\{''CDP 画像'', ''匿名访客与会员身份合并，一人一册行为时…''\}, array\{''分群与 RFM'', ''行为驱动动态标签，生命周期自动流转''\}, array\{''转化漏斗'', ''访客→注册→加购→支付→复购，五阶段转…''\}, array\{''驾驶舱'', ''KPI 带月目标与 delta，异常由…''\}, array\{''问数据 AskData'', ''用自然语言直接问经营数据，不用学报表''\}, array\{''归因与 A/B'', ''路径归因 \+ 实验评估，知道钱和人从哪来''\}\}, ''audience'', ''CDP 用户画像 · 真实后台界面'', ''/product\#demo'', ''看数据怎么驱动决策 →''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: hub-capabilities.php
+
+		-
+			message: '#^Anonymous function has an unused use \$miss\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: includes/admin-nav.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between non\-empty\-array\|int\<min, \-1\>\|int\<1, max\>\|non\-falsy\-string and '''' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: includes/site-nav.php
+
+		-
+			message: '#^Offset ''approved''\|''completed''\|''evaluated''\|''executing''\|''proposed''\|''rejected'' on array\{total\: int\<0, max\>, proposed\: int\<0, max\>, approved\: int\<0, max\>, executing\: int\<0, max\>, completed\: int\<0, max\>, evaluated\: int\<0, max\>, rejected\: int\<0, max\>\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: lib/ActionApprovalView.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: lib/AgentPost.php
+
+		-
+			message: '#^Offset ''step'' on non\-empty\-array\<mixed\> on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: lib/AgentPost.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: lib/AgentPost.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: lib/AgentRuntime.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''PluginSystem'' and ''mcp_tools'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/AgentRuntime.php
+
+		-
+			message: '#^Function save_article invoked with 1 parameter, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: lib/AgentRuntime.php
+
+		-
+			message: '#^Parameter \#1 \$id of function save_article expects string, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/AgentRuntime.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: lib/AnalyticsSystem.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: lib/AnalyticsSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/ArtifactSandbox.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: lib/AuthorSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/AutomationSystem.php
+
+		-
+			message: '#^Function automation_send_wechat not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: lib/AutomationSystem.php
+
+		-
+			message: '#^Function automation_send_wecom not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: lib/AutomationSystem.php
+
+		-
+			message: '#^Function save_article invoked with 1 parameter, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: lib/AutomationSystem.php
+
+		-
+			message: '#^Parameter \#1 \$id of function save_article expects string, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/AutomationSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/BlockModel.php
+
+		-
+			message: '#^Offset 1 on array\{list\<string\>, list\<string\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: lib/BlockModel.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''PluginSystem'' and ''blocks'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 4
+			path: lib/BlockRegistry.php
+
+		-
+			message: '#^Offset 2 on array\{string, string, string, string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: lib/BlockRegistry.php
+
+		-
+			message: '#^Variable \$type might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: lib/BlockRegistry.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/BlockSchema.php
+
+		-
+			message: '#^Variable \$values on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: lib/BlockSchema.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/BlockTemplate.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/BuilderPages.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: lib/BusinessContext.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: lib/CdpInsight.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/CdpProfileStore.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 2
+			path: lib/CdpSync.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Comparison operation "\<\=" between int\<min, 2\> and 2 is always true\.$#'
+			identifier: smallerOrEqual.alwaysTrue
+			count: 2
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 2
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Comparison operation "\>" between non\-empty\-array\<true\> and 0 results in an error\.$#'
+			identifier: greater.invalid
+			count: 1
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Comparison operation "\>\=" between int\<3, max\> and 3 is always true\.$#'
+			identifier: greaterOrEqual.alwaysTrue
+			count: 1
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Parameter \#2 \$haystack of function in_array expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Result of && is always true\.$#'
+			identifier: booleanAnd.alwaysTrue
+			count: 1
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Static property CdpSystem\:\:\$profilesFile is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Static property CdpSystem\:\:\$propertiesFile is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Variable \$value on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: lib/CdpSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/CertificateSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/ClickTracker.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/CollabAccess.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/CollabReview.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between lowercase\-string&non\-empty\-string and '''' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: lib/CommandPalette.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between non\-falsy\-string and '''' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: lib/CommerceSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/CommissionPolicy.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/ConnectionActions.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: lib/Connections.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/ContributionFlywheel.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/ContributionPipeline.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/ConversionGoal.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: lib/CptSystem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: lib/CptSystem.php
+
+		-
+			message: '#^Variable \$entry might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: lib/CptSystem.php
+
+		-
+			message: '#^Variable \$saved might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: lib/CptSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 4
+			path: lib/CrmSystem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between 0 and 0 will always evaluate to true\.$#'
+			identifier: identical.alwaysTrue
+			count: 1
+			path: lib/DataSync.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/DestinationSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/EditLock.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/EmailDeliverability.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/EventDictionary.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: lib/EventStore.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: lib/EvidenceProjection.php
+
+		-
+			message: '#^Variable \$conv_track might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: lib/FlowSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: lib/FlowWorkspace.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/FrequencyCap.php
+
+		-
+			message: '#^Parameter \#3 \$drop of function funnel_guard_suggest expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/FunnelGuard.php
+
+		-
+			message: '#^Function save_article invoked with 1 parameter, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: lib/GeoCitable.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<non\-empty\-string\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: lib/GeoCitable.php
+
+		-
+			message: '#^Parameter \#1 \$id of function save_article expects string, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/GeoCitable.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/GeoCompetitor.php
+
+		-
+			message: '#^Parameter \#2 \$options of function curl_setopt_array expects array\{19913\: bool, 13\: int, 64\: bool, 10023\: array\<int, string\>\}, array\{19913\: true, 13\: 20, 64\: false, 10023\: array\{0\: ''Content\-Type\:…'', Ocp\-Apim\-Subscription\-Key\?\: mixed\}\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/GeoSystem.php
+
+		-
+			message: '#^Variable \$url in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: lib/GeoSystem.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: lib/GoldenLeadLoopSandbox.php
+
+		-
+			message: '#^Parameter \#2 \$needle of function str_contains expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/GrowthEngine.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: lib/GrowthFlywheel.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: lib/GrowthFlywheel.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: lib/HealthRecord.php
+
+		-
+			message: '#^Static property IdentityResolver\:\:\$aliasFile is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: lib/IdentityResolver.php
+
+		-
+			message: '#^Comparison operation "\<" between int\<1, max\> and 1 is always false\.$#'
+			identifier: smaller.alwaysFalse
+			count: 2
+			path: lib/ImageVariants.php
+
+		-
+			message: '#^Result of \|\| is always false\.$#'
+			identifier: booleanOr.alwaysFalse
+			count: 1
+			path: lib/ImageVariants.php
+
+		-
+			message: '#^Variable \$anonymous on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: lib/IngestAdapters.php
+
+		-
+			message: '#^Variable \$type on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: lib/IngestAdapters.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/LiveInteractions.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: lib/LiveSystem.php
+
+		-
+			message: '#^Offset ''t'' on array\{t\: string, title\: non\-falsy\-string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: lib/LiveSystem.php
+
+		-
+			message: '#^Offset ''text'' on array\{ts\: int, text\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: lib/LiveSystem.php
+
+		-
+			message: '#^Variable \$bucketKey on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: lib/LiveSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/LoopLifecycle.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: lib/MailCampaign.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: lib/Mainline.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: lib/MainlineAi.php
+
+		-
+			message: '#^Variable \$key in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: lib/MarketplaceSystem.php
+
+		-
+			message: '#^Call to method newAuth\(\) on an unknown class Mautic\\Auth\\ApiAuth\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Mautic.php
+
+		-
+			message: '#^Instantiated class Mautic\\Auth\\ApiAuth not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: lib/Mautic.php
+
+		-
+			message: '#^Call to an undefined method PDO\:\:execute\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/ModerationSystem.php
+
+		-
+			message: '#^Offset ''high''\|''low''\|''mid'' on array\{low\: 0, mid\: 40, high\: 90\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: lib/ModerationSystem.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between \(int\|non\-empty\-string\) and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: lib/ObjectGraph.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: lib/OpsGuard.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/OrgSystem.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: lib/PaidContent.php
+
+		-
+			message: '#^Array has 2 duplicate keys with value ''client_reference_id'' \(''client_reference_id'', ''client_reference_id''\)\.$#'
+			identifier: array.duplicateKey
+			count: 1
+			path: lib/PaymentChannel.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between ''app_id''\|''biz_content''\|''charset''\|''format''\|''method''\|''notify_url''\|''return_url''\|''sign_type''\|''timestamp''\|''version'' and ''sign'' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: lib/PaymentChannel.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: lib/PlatformDistribution.php
+
+		-
+			message: '#^Right side of \|\| is always true\.$#'
+			identifier: booleanOr.rightAlwaysTrue
+			count: 1
+			path: lib/PluginSystem.php
+
+		-
+			message: '#^Variable \$regDir on left side of \?\? is never defined\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: lib/PluginSystem.php
+
+		-
+			message: '#^Method ProductScout\:\:saveDraft\(\) never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: lib/ProductScout.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: lib/ProductScout.php
+
+		-
+			message: '#^Variable \$nav on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: lib/ProductScout.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/ProfitLab.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: lib/PromoSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 5
+			path: lib/Provisioner.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/PublishAdapters.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: lib/QuoteSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/ReportEngine.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/SegmentEstimate.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''SegmentEngine'' and ''matchSegment'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/SegmentEstimate.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: lib/SegmentEstimate.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/SelfEvolve.php
+
+		-
+			message: '#^Offset int\<min, \-1\>\|int\<1, max\>\|non\-falsy\-string on array\<int\<1, max\>\> on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: lib/SelfEvolve.php
+
+		-
+			message: '#^Comparison operation "\>" between 13\.5 and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: lib/SeoAudit.php
+
+		-
+			message: '#^Function save_article invoked with 1 parameter, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: lib/SeoAudit.php
+
+		-
+			message: '#^Parameter \#1 \$id of function save_article expects string, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/SeoAudit.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/SiteConfig.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 3
+			path: lib/TrendRadar.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''Database'' and ''conn'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: lib/Txn.php
+
+		-
+			message: '#^Anonymous function has an unused use \$inject\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: lib/UnifiedInbox.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/UnifiedInbox.php
+
+		-
+			message: '#^Offset 1 on array\{list\<string\>, list\<non\-empty\-string\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: lib/WebTools.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function array_filter expects \(callable\(string\)\: bool\)\|null, Closure\(mixed\)\: string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: lib/WebTools.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: lib/WebhookDelivery.php
+
+		-
+			message: '#^Variable \$response on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: lib/WebhookSystem.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: lib/WorkspaceMode.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: mcp-server.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: mcp-server.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: member.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: member.php
+
+		-
+			message: '#^Variable \$next in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.variable
+			count: 1
+			path: member.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function array_filter expects \(callable\(mixed\)\: bool\)\|null, Closure\(mixed\)\: \(array\|null\) given\.$#'
+			identifier: argument.type
+			count: 1
+			path: navigation-compare.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: newsletter.php
+
+		-
+			message: '#^Offset ''about''\|''capability''\|''courses''\|''index'' on array\{index\: ''首页'', about\: ''关于我们'', capability\: ''产品'', courses\: ''解决方案''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: page-preview.php
+
+		-
+			message: '#^Anonymous function has an unused use \$p\.$#'
+			identifier: closure.unusedUse
+			count: 5
+			path: plugins/insight-flow/plugin.php
+
+		-
+			message: '#^Call to an undefined static method WechatMp\:\:sendCustomMessage\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: plugins/userloop-bridge/plugin.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: plugins/userloop-bridge/plugin.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''Wecom'' and ''sendAppMessage'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: plugins/userloop-bridge/plugin.php
+
+		-
+			message: '#^Parameter \#1 \$to of static method Wecom\:\:sendAppMessage\(\) expects array, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: plugins/userloop-bridge/plugin.php
+
+		-
+			message: '#^Static method Wecom\:\:sendAppMessage\(\) invoked with 2 parameters, 3\-4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: plugins/userloop-bridge/plugin.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: setup-wizard.php
+
+		-
+			message: '#^Right side of \|\| is always true\.$#'
+			identifier: booleanOr.rightAlwaysTrue
+			count: 1
+			path: setup-wizard.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: setup-wizard.php
+
+		-
+			message: '#^Variable \$id on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: share-card.php
+
+		-
+			message: '#^Offset ''btn'' on array\{type\: ''link'', icon\: ''book'', title\: ''先读几篇好文'', desc\: ''在等待期间，可以先看看社区精选文章。'', url\: ''/community'', btn\: ''去社区''\}\|array\{type\: ''link'', icon\: ''book'', title\: ''浏览社区'', desc\: ''网站增长洞察、AI 运营实践与专题报告。'', url\: ''/community'', btn\: ''去社区''\}\|array\{type\: ''link'', icon\: ''doc'', title\: ''先看一份增长报告样本'', desc\: ''在等待期间，可以先查看同行业脱敏增长报…'', url\: ''/downloads'', btn\: ''查看资料''\}\|array\{type\: ''link'', icon\: ''down'', title\: ''下载资料'', desc\: ''点击下载你申请的资料文件。'', url\: ''/downloads'', btn\: ''下载资料''\}\|array\{type\: ''link'', icon\: ''play'', title\: ''观看课程上手视频'', desc\: ''第一步先看这个 5 分钟的上手视频。'', url\: ''/courses\.html'', btn\: ''去学习''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: thank-you.php
+
+		-
+			message: '#^Offset ''type'' on array\{type\: ''link'', icon\: ''book'', title\: ''先读几篇好文'', desc\: ''在等待期间，可以先看看社区精选文章。'', url\: ''/community'', btn\: ''去社区''\}\|array\{type\: ''link'', icon\: ''book'', title\: ''浏览社区'', desc\: ''网站增长洞察、AI 运营实践与专题报告。'', url\: ''/community'', btn\: ''去社区''\}\|array\{type\: ''link'', icon\: ''doc'', title\: ''先看一份增长报告样本'', desc\: ''在等待期间，可以先查看同行业脱敏增长报…'', url\: ''/downloads'', btn\: ''查看资料''\}\|array\{type\: ''link'', icon\: ''down'', title\: ''下载资料'', desc\: ''点击下载你申请的资料文件。'', url\: ''/downloads'', btn\: ''下载资料''\}\|array\{type\: ''link'', icon\: ''play'', title\: ''观看课程上手视频'', desc\: ''第一步先看这个 5 分钟的上手视频。'', url\: ''/courses\.html'', btn\: ''去学习''\}\|array\{type\: ''tip'', icon\: ''bulb'', title\: ''学习建议'', desc\: ''建议每周投入 3…''\}\|array\{type\: ''tip'', icon\: ''cal'', title\: ''预约确认'', desc\: ''请留意你的邮箱或微信，顾问会确认最终时…''\}\|array\{type\: ''tip'', icon\: ''mail'', title\: ''请查收邮箱'', desc\: ''一封确认邮件已发送，请留意收件箱或垃圾…''\}\|array\{type\: ''tip'', icon\: ''pin'', title\: ''接下来会发生什么'', desc\: ''我们的增长顾问会通过你留下的联系方式联…''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: thank-you.php
+
+		-
+			message: '#^Variable \$topicArticles might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: topics.php

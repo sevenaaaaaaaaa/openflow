@@ -10,7 +10,9 @@
 
 输出：markdown 报告到 stdout（同时写 /tmp/audit-devices.json）
 """
-import sys, json, argparse
+import argparse
+import json
+
 from playwright.sync_api import sync_playwright
 
 WIDTHS = [360, 390, 414, 768, 1024, 1280, 1440]
@@ -162,7 +164,7 @@ def check_roles(browser, base):
     def new_ctx(storage=None):
         c = browser.new_context(viewport={"width": 1280, "height": 900})
         if storage:
-            c.add_init_script("try{localStorage.setItem('of_role','%s')}catch(e){}" % storage)
+            c.add_init_script(f"try{{localStorage.setItem('of_role','{storage}')}}catch(e){{}}")
         return c
 
     # 1) 首次访问：应出现浮层

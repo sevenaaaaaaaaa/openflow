@@ -1,0 +1,24 @@
+# Ruff 配置（只做 lint，不强制格式化）
+# 目标版本与部署脚本实际运行环境一致（Python 3.9）
+target-version = "py39"
+line-length = 120
+
+# 范围：仓库根 + scripts/ + deploy/（维护中的脚本）；历史一次性脚本与前端 TS 不在此管
+exclude = [
+    "vendor",
+    "node_modules",
+    ".deploy",
+    "bin",           # 一次性导入脚本（历史）
+    "tests/visual",  # 一次性截图脚本（历史）
+    "src",           # 前端 TS 由 tsc/esbuild 负责
+    "build",
+]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP"]      # pycodestyle + pyflakes + import 排序 + bugbear + pyupgrade
+ignore = [
+    "E501",   # 行宽交给编辑器；脚本里有长字符串常量
+    "E741",   # 允许 l/I/O 这类短名（历史脚本）
+    "E701",   # `if x: y` 紧凑写法：运维脚本刻意保持短小
+    "E702",   # `a=1; b=2` 同上
+]
