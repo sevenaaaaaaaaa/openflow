@@ -79,7 +79,7 @@ adapter_verify_stamp($dir, $report);
 if ($complete && class_exists('AiCenter')) {
     echo "④ 第二轮：AI 补全真实接口调用…\n";
     $ai2 = static function (string $system, string $user, array $opts): array {
-        $r = AiCenter::chat($system, $user, ['feature' => 'adapter_forge_complete', 'max_tokens' => 3000]);
+        $r = AiCenter::chat($system, $user, ['feature' => 'adapter_forge_complete', 'max_tokens' => 8000]);
         return ['ok' => (bool) ($r['ok'] ?? false), 'text' => (string) ($r['text'] ?? ''), 'error' => (string) ($r['error'] ?? '')];
     };
     $done = adapter_forge_complete($profile, $dir, $ai2);
