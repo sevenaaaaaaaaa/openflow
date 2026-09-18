@@ -308,6 +308,18 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     </div>
   </section>
 
+  <!-- ══ 对比：自建 / 拼接 / 外包 vs 底座（MFlow 故事线：卡片网格 → 对比 → 证言）══ -->
+  <section id="compare" class="sec reveal" data-od-anchor data-od-id="product-compare">
+    <div class="sec-head center">
+      <span class="kicker">为什么不是「自己拼」</span>
+      <h2>自建 · 拼接 · 外包 vs OpenFlow 底座</h2>
+      <p class="lead">同样一套能力，四种拿到它的方式。差别不在功能清单，在数据是不是一套、改动要不要重新报价。</p>
+    </div>
+    <div class="cmp-wrap">
+      <table class="cmp"><thead><tr><th scope="col">维度</th><th scope="col">招人自建</th><th scope="col">买 SaaS 拼接</th><th scope="col">外包定制</th><th scope="col" class="ol">OpenFlow 底座</th></tr></thead><tbody><tr><th scope="row">上手时间</th><td data-l="招人自建">3–6 个月自研</td><td data-l="买 SaaS 拼接">每件单独接入，逐一对账</td><td data-l="外包定制">2–4 周需求反复</td><td class="ol y" data-l="OpenFlow 底座">30 分钟上线，开源自托管</td></tr><tr><th scope="row">数据一致性</th><td data-l="招人自建">自己维护一套</td><td data-l="买 SaaS 拼接">五套数据、五次打通</td><td data-l="外包定制">交付即定型，改一次报一次价</td><td class="ol y" data-l="OpenFlow 底座">一套数据层，模块共用</td></tr><tr><th scope="row">内容与分发</th><td data-l="招人自建">另找人做内容</td><td data-l="买 SaaS 拼接">内容工具另买</td><td data-l="外包定制">外包逐次报价</td><td class="ol y" data-l="OpenFlow 底座">内容引擎 + 适配器原生</td></tr><tr><th scope="row">自动化</th><td data-l="招人自建">自己写脚本</td><td data-l="买 SaaS 拼接">按流程买高级版</td><td data-l="外包定制">定制流程加钱</td><td class="ol y" data-l="OpenFlow 底座">画布拖出流程，审批闸门在内</td></tr><tr><th scope="row">长期成本</th><td data-l="招人自建">人力持续投入</td><td data-l="买 SaaS 拼接">订阅叠加上涨</td><td data-l="外包定制">每次改动重新报价</td><td class="ol y" data-l="OpenFlow 底座">核心开源，按需扩展</td></tr></tbody></table><p class="cmp-note">对比口径：「招人自建」「外包定制」按常见项目周期与报价方式描述；「买 SaaS 拼接」指按能力分别采购单点工具。OpenFlow 定位组合式开源底座，各模块共用一套数据层。</p>
+    </div>
+  </section>
+
   <!-- ══ FAQ ══ -->
   <section id="faq-sec" class="sec reveal" data-od-anchor data-od-id="product-faq">
     <div class="sec-head center">

@@ -107,7 +107,7 @@
 |----|------|------|
 | `topic-聚合` | 首屏 → 筛选 → 最新 → 全部 → 订阅 | 现行 `articles.php` |
 | `topic-深读` | 文章正文 → 评论 → 相关 → 发现 → 推荐 → 订阅 | 现行 `article.php` |
-| `topic-枢纽` | 话题头 → 文章聚合 → 工具网格 → 产品映射 → FAQ → 分流 CTA | 吸取 MFlow Topic（待建） |
+| `topic-枢纽` | 话题头 → 文章聚合 → 工具网格 → 产品映射 → FAQ → 分流 CTA | ✅ 已落地 `/topic/{slug}`（`topics.php` + `scripts/seed-topics.php`） |
 
 **不用**：定价（内容枢纽不卖产品）
 
@@ -154,7 +154,8 @@
 3. 按序列列出每段「本体」
 4. 本体 → 区块（§二 选首选或变体）
 5. 对照「不用清单」删掉多余段落 → 检查：全页只有一个 primary CTA
-6. 跑 `php scripts/storyline-audit.php` 复核漂移
+6. 跑 `php scripts/design-guard.php <file.php>`：**新增 class 必须已在 CSS 定义**（= 不新造视觉）
+7. 跑 `php scripts/storyline-audit.php`：本体序列 / 缺必需 / 收口顺序（ERROR 必须为 0）
 ```
 
 **勾选清单格式**（复制到 PR 描述里）：
@@ -163,6 +164,25 @@
 [product-标准] 首屏 → 证明 → 多栏特性区 → 步骤 → 特性大卡 → 能力Tab
 → 卡片网格 → 对比 → 证言 → FAQ → 收口 CTA
 ```
+
+---
+
+## 六·五、增量不破版工作法（2026-09-18 起）
+
+新段落一律「**复用既有 archetype**」，不新造视觉。三条硬约束 + 可核验命令：
+
+| 约束 | 怎么做 | 怎么验（命令） |
+|------|--------|----------------|
+| **零新样式** | 只用 `modules.css` 已定义的 class；新增段落前先确认 archetype 存在 | `php scripts/design-guard.php <file.php>` → 「有风险」必须为 0 |
+| **只增不改** | 插入到故事线规定的槽位，不动既有段落 | `git diff --numstat <file>` 的**删除数应为 0**（或仅 class 替换） |
+| **位置正确** | 按 §三 的故事线序列落位（如 对比 → 证言 → FAQ） | `php scripts/storyline-audit.php` → ERROR 0 |
+| **视觉不回归** | 三档宽度截图人工过一眼 | 1440 / 1024 / 390 截图 |
+
+**为什么这样够稳**：`design-guard` 会对比 `git HEAD` 上一版，把「新增且 CSS 未定义」的 class 直接判为失败——
+也就是说，如果我随手造了个新样式，脚本会挡住；样式没变，视觉就不会跑偏。
+
+**多分支模板的良性告警**：`topics.php` 这类「详情 / 列表」双分支文件，审计会报一次 `DUPLICATE 首屏`
+（两个分支各有一个 hero）——属已知良性，不修。
 
 ---
 
@@ -215,6 +235,8 @@
 |------|------|
 | `lib/BlockRegistry.php` | 47 个区块的实现与字段 |
 | `scripts/storyline-audit.php` | 骨架审计（本文件 §七 的可复现工具） |
+| `scripts/design-guard.php` | 设计护栏：新增 class 必须已在 CSS 定义（§六·五） |
+| `scripts/seed-topics.php` | 内容枢纽数据：按已发布文章的分类聚合专题（覆盖前自动备份） |
 | `data/builder-pages.json` | builder 页的区块序列真源 |
 | `docs/BRAND-VOICE.md` | 文案护栏（CTA 词表 / 每页一个 primary） |
 | `docs/GTM.md` | 「可以说 / 不能说」硬约束 |
