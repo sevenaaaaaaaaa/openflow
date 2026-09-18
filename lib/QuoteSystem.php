@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * QuoteSystem —— 收款链接 / 报价单（Sales）
  *

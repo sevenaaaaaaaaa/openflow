@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CDP System — 客户数据中台
  * 行为追踪 · 用户分群 · 用户画像 · 数据接入 · 数据回传
@@ -888,7 +889,7 @@ class CdpSystem {
             $funnel[] = [
                 'step' => $def['event'],
                 'count' => $count,
-                'rate' => ($prevMatches && $prevMatches > 0) ? round($count / count($prevMatches) * 100, 1) : 100,
+                'rate' => (!empty($prevMatches)) ? round($count / count($prevMatches) * 100, 1) : 100,
                 'users' => array_keys($matches),
             ];
             $prevMatches = $matches;

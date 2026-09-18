@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * OAuth 2.0 客户端 —— 授权码 + PKCE（主线 A）
  *

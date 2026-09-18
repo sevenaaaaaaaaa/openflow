@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GEO 系统 — 话题监控 / AI 生成 / FAQ 结构化 / 自动提交
  */

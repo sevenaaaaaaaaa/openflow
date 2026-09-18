@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GeoEntities — 实体图（GEO：让品牌/产品/人物/话题以一致的实体形式被 AI 识别）
  *

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Mainline — 「今日主线」聚合引擎（加法层，不改动现有工作台）
  *

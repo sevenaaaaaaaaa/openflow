@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * PaidContent —— 付费 Newsletter / 会员专享内容（AUDIT-01 / BACKLOG T1-6）
  *

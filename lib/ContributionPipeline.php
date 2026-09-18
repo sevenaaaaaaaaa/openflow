@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ContributionPipeline —— 贡献自动三通（AUDIT-06 创新三 / BACKLOG T1-16）
  *

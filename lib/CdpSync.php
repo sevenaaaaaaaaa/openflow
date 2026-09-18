@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CDP 客户同步层
  * 提供 cdp_customers 表 + cdp_* 辅助函数（cdp_find / cdp_get_or_create / cdp_add_tag / cdp_set_score / cdp_add_ltv / cdp_merge_on_login 等）

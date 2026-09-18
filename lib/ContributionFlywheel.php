@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ContributionFlywheel —— 贡献即复利（AUDIT-06 创新四 / BACKLOG T2-10）
  *

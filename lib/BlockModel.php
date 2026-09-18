@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BlockModel —— 正文块模型 + 可复用区块（AUDIT-01 / BACKLOG T2-1）
  *

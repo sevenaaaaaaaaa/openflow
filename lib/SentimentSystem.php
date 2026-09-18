@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 舆情监测系统 — 复刻 BettaFish(微舆) 多 Agent 深度搜索思路
  *

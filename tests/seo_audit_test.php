@@ -13,7 +13,7 @@ $GLOBALS['ARTICLES'] = [
 ];
 function get_articles_list(): array { return $GLOBALS['ARTICLES']; }
 function get_article(string $id): ?array { foreach ($GLOBALS['ARTICLES'] as $a) if ($a['id'] === $id) return $a; return null; }
-function save_article(array $a): bool { foreach ($GLOBALS['ARTICLES'] as $i => $x) if ($x['id'] === $a['id']) { $GLOBALS['ARTICLES'][$i] = $a; return true; } return false; }
+function save_article(string $id, array $a): bool { foreach ($GLOBALS['ARTICLES'] as $i => $x) if ($x['id'] === $a['id']) { $GLOBALS['ARTICLES'][$i] = $a; return true; } return false; }
 
 $pass = 0; $fail = 0;
 function check(string $n, bool $ok, string $d = '') { global $pass, $fail; if ($ok) { $pass++; echo "  ✓ {$n}\n"; } else { $fail++; echo "  ✗ {$n}" . ($d ? " — {$d}" : '') . "\n"; } }

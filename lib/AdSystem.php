@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 广告位系统 — 文章顶/底、社区 banner、文章首页广告
  *

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ArtifactSandbox —— 生成物安全体系（AUDIT-06 / BACKLOG T2-9）
  *

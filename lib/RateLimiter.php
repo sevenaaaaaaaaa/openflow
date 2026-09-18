@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * API 限流器
  * 基于 Redis 或文件实现的请求限流

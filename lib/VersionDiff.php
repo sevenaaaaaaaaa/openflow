@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 文章版本对比 Diff 查看器
  * 支持任意两版本间的逐行对比

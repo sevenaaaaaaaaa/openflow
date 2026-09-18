@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * PromoSystem —— 统一站内营销投放（Touch）
  *

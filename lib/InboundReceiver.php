@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * InboundReceiver — 入站数据接收层
  * 外部系统（CRM / 投放平台 / 第三方 API / webhook）向本站推送数据：

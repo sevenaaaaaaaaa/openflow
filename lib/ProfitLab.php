@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ProfitLab — 利润公式推演器 v0(what-if)
  *

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 自我进化系统 SelfEvolve
  * 让平台定期"体检"前后端数据，自动发现改进点并产出结构化迭代建议。

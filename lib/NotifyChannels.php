@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 通知渠道扩展 — 企业微信 / 飞书 / WhatsApp
  * 通过 Webhook 发送站内通知到外部 IM

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Skill 生成器 — 用 AI 从一句描述生成可发布的 Skill 骨架
  * 降低创作门槛：用户只需描述想要什么能力，AI 生成 prompt/工作流/元信息

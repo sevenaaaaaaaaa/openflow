@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GeoCompetitor — 竞品引用分析（GEO：看清"同一话题里谁被更多地提及/引用"）
  *

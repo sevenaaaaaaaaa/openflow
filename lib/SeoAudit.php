@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * SeoAudit — 内容健康分 + 内链建议引擎 + 一键插链（对标 Canva 级内容 SEO）
  *
@@ -146,6 +147,6 @@ function seo_apply_internal_link(string $articleId, string $url, string $anchor)
     $link = '<a href="' . htmlspecialchars($url, ENT_QUOTES) . '" class="ilink">' . htmlspecialchars($anchor, ENT_QUOTES) . '</a>';
     $a['content'] = mb_substr($html, 0, $pos) . $link . mb_substr($html, $pos + mb_strlen($anchor));
     $a['updated_at'] = date('Y-m-d H:i:s');
-    save_article($a);
+    save_article((string)$a['id'], $a);
     return ['ok' => true, 'position' => $pos];
 }

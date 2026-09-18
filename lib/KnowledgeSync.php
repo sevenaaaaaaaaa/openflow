@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * KnowledgeSync — 知识平台双向同步（出站方向）
  * 站内文章发布/更新 → Notion 页面 / 通用 webhook（推送到外部知识库）

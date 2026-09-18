@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * EmailDeliverability — 送达率中心 + 邮件收入归因（对标 Klaviyo/Beehiiv）
  *

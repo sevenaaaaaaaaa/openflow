@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * DataSync — 外部数据连接器（主动拉取方向）
  * 支持：REST API 拉取 / CSV 导入

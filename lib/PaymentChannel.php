@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 支付渠道抽象层 — 统一的多支付渠道注册/配置/下单/验签
  *
@@ -266,7 +267,6 @@ function payment_stripe_create(array $ch, array $order): array {
         'line_items[0][price_data][product_data][name]' => mb_substr((string)($order['course_title'] ?? ($order['plan_id'] ?? '商品')), 0, 120),
         'line_items[0][quantity]' => 1,
         'line_items[0][unit_amount]' => $amount,
-        'client_reference_id' => (string)($order['id'] ?? ''),
     ]);
     $httpCurl = curl_init($url);
     curl_setopt_array($httpCurl, [

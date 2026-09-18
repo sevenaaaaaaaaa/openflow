@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ReceiptSystem — 交易收据（A3）
  *

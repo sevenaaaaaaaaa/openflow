@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ContentI18n —— 内容多语言（AUDIT-01 P0 / BACKLOG T0-3）
  *

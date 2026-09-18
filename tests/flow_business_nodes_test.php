@@ -20,7 +20,7 @@ function cdp_profile_put(string $id, array $p): void { $GLOBALS['PUT'][] = $p; }
 function flow_handle(string $ev, array $d = []): void { $GLOBALS['FLOWEV'] = $ev; }
 $GLOBALS['ART'] = ['id' => 'a1', 'title' => '旧文', 'status' => 'draft'];
 function get_article(string $id): ?array { return $id === 'a1' ? $GLOBALS['ART'] : null; }
-function save_article(array $a): bool { $GLOBALS['ART'] = $a; return true; }
+function save_article(string $id, array $a): bool { $GLOBALS['ART'] = $a; return true; }
 
 require_once __DIR__ . '/../lib/AutomationSystem.php';
 

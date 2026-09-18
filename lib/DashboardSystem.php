@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 经营驾驶舱数据聚合
  */

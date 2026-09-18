@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * FederatedGrowth —— 联邦增长智能的隐私骨架（AUDIT-07 P2 / BACKLOG T2-12）
  *

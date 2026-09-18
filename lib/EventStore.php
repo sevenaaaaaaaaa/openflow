@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * EventStore — events 行为事件表的统一读写层（分层存储第一步）
  *

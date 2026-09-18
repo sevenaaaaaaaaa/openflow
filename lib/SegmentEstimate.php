@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * SegmentEstimate —— 建群人数预估 + 群规模趋势（AUDIT-02 / BACKLOG T2-3）
  *

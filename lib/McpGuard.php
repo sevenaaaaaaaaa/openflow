@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MCP 治理层 —— 让 Agent 的每一次调用都可授权、可追责（P0-01，2026-09-03）
  *

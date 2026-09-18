@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 多平台内容发布器 SocialPublisher
  * 把文章/内容推送到各平台：

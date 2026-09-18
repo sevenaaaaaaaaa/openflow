@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GrowthBrain —— 中枢 NBA 提议器（大脑胚胎，AUDIT-07 P0-3）
  *

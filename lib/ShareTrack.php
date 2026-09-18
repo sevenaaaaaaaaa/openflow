@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 分享传播链追踪 — 谁分享、谁带来访问/转化、潜在 KOL 识别
  *

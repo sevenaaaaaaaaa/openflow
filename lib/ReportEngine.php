@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ReportEngine — 自定义报表：任意「维度 × 指标 × 筛选」+ 下钻
  *

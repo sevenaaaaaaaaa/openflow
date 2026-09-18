@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CRM 系统 — 线索阶段 / 打分 / 跟进 / 交接 / 商机转化
  */

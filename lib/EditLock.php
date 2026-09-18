@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * EditLock —— 轻量编辑锁（AUDIT-01 / BACKLOG T2-2）
  *

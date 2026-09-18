@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * API 文档生成器 — OpenAPI 3.0 规范
  */

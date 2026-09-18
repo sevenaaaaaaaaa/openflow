@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CptSystem —— 轻量自定义内容类型（AUDIT-01 P0 / BACKLOG T0-2）
  *
@@ -72,6 +73,7 @@ if (!function_exists('cpt_types')) {
         }
 
         $types = cpt_types();
+        $saved = null;
         $now = date('Y-m-d H:i:s');
         $found = false;
         foreach ($types as &$t) {
@@ -169,6 +171,7 @@ if (!function_exists('cpt_entries')) {
         if ($errs) return ['ok' => false, 'errors' => $errs];
 
         $list = cpt_entries($typeSlug);
+        $entry = null;
         $now = date('Y-m-d H:i:s');
         $id = (string)($data['id'] ?? '');
         $slug = cpt_slugify((string)($data['slug'] ?? $title));

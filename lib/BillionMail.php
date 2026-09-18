@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BillionMail PHP SDK — 邮件发送 & 联系人管理
  * 部署后实例化即可使用

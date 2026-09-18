@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 身份解析 Identity Resolution
  * 跨设备/跨渠道合并同一用户：

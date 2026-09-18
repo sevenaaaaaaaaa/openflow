@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Image Metadata System — 图片 SEO 元数据管理
  * 支持 alt 标签、title、描述等

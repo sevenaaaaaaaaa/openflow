@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Persistent demo-only golden Loop. Its executor can mutate demo profiles only. */
 require_once __DIR__ . '/DomainContract.php';
 

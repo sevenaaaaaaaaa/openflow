@@ -57,6 +57,15 @@ else
   echo "（跳过：未安装 uv/uvx）"
 fi
 
+hdr "0.8/5 strict_types 覆盖率（棘轮：只许升不许降）"
+STRICT_COV=$(grep -rl 'declare(strict_types=1)' --include='*.php' . 2>/dev/null | grep -v vendor | wc -l | tr -d ' ')
+STRICT_MIN=236   # 2026-09-18 基线：lib/ 全量 + 部分后台页；提升后同步上调此值
+if [ "$STRICT_COV" -lt "$STRICT_MIN" ]; then
+  red "✗ strict_types 覆盖下降：${STRICT_COV} < ${STRICT_MIN}（不要移除 declare）"; FAIL=1
+else
+  grn "✓ strict_types 覆盖 ${STRICT_COV}（>= ${STRICT_MIN}）"
+fi
+
 hdr "1/5 契约与单元测试（tests/*_test.php）"
 P=0; F=0
 for t in tests/*_test.php; do

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GrowthMemory —— 大脑的共享记忆层（AUDIT-07 P1-6 / BACKLOG T1-17）
  *

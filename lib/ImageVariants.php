@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ImageVariants —— 图片自动 WebP + 多尺寸（AUDIT-01 / BACKLOG T1-7）
  *

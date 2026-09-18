@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 主题系统 ThemeSystem
  * 主题不是"换皮"，而是不同的视觉 + 交互 + 布局，但完全兼容所有前后端功能。

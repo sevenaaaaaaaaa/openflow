@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** User-scoped workspace presentation preference. Never changes business state. */
 if (!function_exists('workspace_mode_current')) {
     function workspace_mode_file(): string { return DATA_DIR . '/ui-preferences.json'; }

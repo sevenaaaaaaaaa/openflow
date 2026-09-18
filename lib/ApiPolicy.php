@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ApiPolicy —— API 端点的权限矩阵（docs/ROADMAP.md 阶段三）
  *

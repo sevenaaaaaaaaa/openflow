@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 营销自动化引擎 — 触发条件 + 流程 + 动作执行
  * 触发器：表单提交 / 用户注册 / NPS 评分 / 定时
@@ -351,6 +352,49 @@ function automation_execute_flow(array $flow, array $context, int $startAt = 0):
 }
 
 // 发送邮件
+/** 变量替换：把 {key} 换成上下文值（与邮件节点同一套语义） */
+function automation_render_text(string $tpl, array $context): string {
+    foreach ($context as $k => $v) if (is_string($v) || is_numeric($v)) $tpl = str_replace('{' . $k . '}', (string)$v, $tpl);
+    return $tpl;
+}
+
+/** 企业微信应用消息（此前 step 引用了不存在的函数，运行到此步会 Fatal） */
+function automation_send_wecom(array $step, array $context, string $flowId): void {
+    try {
+        require_once __DIR__ . '/Wecom.php';
+        if (!class_exists('Wecom')) { automation_log($flowId, '企业微信未接入，跳过', 'error'); return; }
+        $to = $step['to'] ?? $context['wecom_users'] ?? $context['userids'] ?? [];
+        if (is_string($to)) $to = array_values(array_filter(array_map('trim', explode(',', $to))));
+        if (empty($to)) { automation_log($flowId, '企业微信：无接收人，跳过', 'error'); return; }
+        $content = automation_render_text((string)($step['content'] ?? ''), $context);
+        $r = Wecom::sendAppMessage(['touser' => implode('|', array_map('strval', $to))], 'text', ['content' => $content]);
+        automation_log($flowId, '企业微信：' . ((($r['ok'] ?? false)) ? '已发送' : ('发送失败 ' . ($r['message'] ?? ''))), (($r['ok'] ?? false) ? 'info' : 'error'));
+    } catch (\Throwable $e) {
+        automation_log($flowId, '企业微信发送异常: ' . $e->getMessage(), 'error');
+    }
+}
+
+/** 公众号/服务号：有 tag_id 用标签群发，否则用上下文里的 openids 群发 */
+function automation_send_wechat(array $step, array $context, string $flowId): void {
+    try {
+        require_once __DIR__ . '/WechatMp.php';
+        if (!class_exists('WechatMp')) { automation_log($flowId, '公众号未接入，跳过', 'error'); return; }
+        $text = automation_render_text((string)($step['content'] ?? ''), $context);
+        $tagId = (int)($step['tag_id'] ?? 0);
+        if ($tagId > 0) {
+            $r = WechatMp::massSendByTag(['content' => $text], 'text', $tagId);
+        } else {
+            $openids = $context['openids'] ?? $context['openid'] ?? [];
+            if (is_string($openids)) $openids = array_values(array_filter(array_map('trim', explode(',', $openids))));
+            if (empty($openids)) { automation_log($flowId, '公众号：无 tag_id 也无 openids，跳过', 'error'); return; }
+            $r = WechatMp::massSendByOpenids(array_map('strval', $openids), ['content' => $text], 'text');
+        }
+        automation_log($flowId, '公众号：' . ((($r['ok'] ?? false)) ? '已发送' : ('发送失败 ' . ($r['message'] ?? ''))), (($r['ok'] ?? false) ? 'info' : 'error'));
+    } catch (\Throwable $e) {
+        automation_log($flowId, '公众号发送异常: ' . $e->getMessage(), 'error');
+    }
+}
+
 function automation_send_email(array $step, array $context, string $flowId): void {
     $email = $context['email'] ?? '';
     if (empty($email)) { automation_log($flowId, '无邮箱，跳过邮件', 'error'); return; }
@@ -479,7 +523,7 @@ function automation_publish_content(array $step, array $context, string $flowId)
         $a['status'] = 'published';
         $a['updated_at'] = date('Y-m-d H:i:s');
         if (empty($a['published_at'])) $a['published_at'] = date('Y-m-d H:i:s');
-        save_article($a);
+        save_article((string)$a['id'], $a);
         automation_log($flowId, '发布内容：' . ($a['title'] ?? $aid));
     } catch (\Throwable $e) { automation_log($flowId, '发布内容失败：' . $e->getMessage(), 'error'); }
 }

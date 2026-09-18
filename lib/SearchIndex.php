@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * SearchIndex —— 站内搜索 FTS5 索引（AUDIT-01 P0 / BACKLOG T0-4）
  *

@@ -16,7 +16,7 @@ $GLOBALS['ARTICLES'] = [
 ];
 function get_articles_list(): array { return $GLOBALS['ARTICLES']; }
 function get_article(string $id): ?array { foreach ($GLOBALS['ARTICLES'] as $a) if ($a['id'] === $id) return $a; return null; }
-function save_article(array $a): bool { foreach ($GLOBALS['ARTICLES'] as $i => $x) if ($x['id'] === $a['id']) { $GLOBALS['ARTICLES'][$i] = $a; return true; } return false; }
+function save_article(string $id, array $a): bool { foreach ($GLOBALS['ARTICLES'] as $i => $x) if ($x['id'] === $a['id']) { $GLOBALS['ARTICLES'][$i] = $a; return true; } return false; }
 function geo_get_topics(): array { return [['topic' => '增长自动化', 'angle' => 'competitor.com 的替代方案']]; }
 
 require_once __DIR__ . '/../lib/GeoEntities.php';

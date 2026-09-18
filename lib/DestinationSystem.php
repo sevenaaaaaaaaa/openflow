@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * DestinationSystem —— 人群激活 / 反向 ETL（AUDIT-02 P0战略 / BACKLOG T0-6）
  *

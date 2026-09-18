@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * SEO 站长工具接入 — Google Search Console / Bing Webmaster / 百度站长
  * + 公开 SEO 看板 + 广告平台回传

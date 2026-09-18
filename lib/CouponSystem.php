@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 优惠券系统 CouponSystem
  * 满减/折扣/无门槛券，限时限量、每券总用量/每人限领、会员定向

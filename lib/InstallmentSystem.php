@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * InstallmentSystem —— 订金/尾款结构化 + 简单合同电子签（AUDIT-04 / BACKLOG T2-6）
  *

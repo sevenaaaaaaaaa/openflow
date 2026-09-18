@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * PlatformDistribution —— 平台级 AI 分发（AUDIT-05 创新三 / BACKLOG T2-7）
  *

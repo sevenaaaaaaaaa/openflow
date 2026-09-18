@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * PublishAdapters — 全平台发布适配器
  *

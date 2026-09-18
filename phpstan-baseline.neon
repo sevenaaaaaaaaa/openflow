@@ -283,54 +283,6 @@ parameters:
 			path: admin/safefix.php
 
 		-
-			message: '#^Variable \$neg might not be defined\.$#'
-			identifier: variable.undefined
-			count: 3
-			path: admin/sentiment-report.php
-
-		-
-			message: '#^Variable \$neu might not be defined\.$#'
-			identifier: variable.undefined
-			count: 3
-			path: admin/sentiment-report.php
-
-		-
-			message: '#^Variable \$pos might not be defined\.$#'
-			identifier: variable.undefined
-			count: 3
-			path: admin/sentiment-report.php
-
-		-
-			message: '#^Variable \$risk might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: admin/sentiment-report.php
-
-		-
-			message: '#^Variable \$rows might not be defined\.$#'
-			identifier: variable.undefined
-			count: 3
-			path: admin/sentiment-report.php
-
-		-
-			message: '#^Variable \$sentimentPct might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: admin/sentiment-report.php
-
-		-
-			message: '#^Variable \$topWords might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: admin/sentiment-report.php
-
-		-
-			message: '#^Variable \$total might not be defined\.$#'
-			identifier: variable.undefined
-			count: 2
-			path: admin/sentiment-report.php
-
-		-
 			message: '#^Anonymous function has an unused use \$kwTpl\.$#'
 			identifier: closure.unusedUse
 			count: 1
@@ -607,12 +559,6 @@ parameters:
 			path: downloads.php
 
 		-
-			message: '#^Variable \$plus might not be defined\.$#'
-			identifier: variable.undefined
-			count: 4
-			path: home-v2.php
-
-		-
 			message: '#^Comparison operation "\<" between 1\|2\|3\|4\|5\|6 and 10 is always true\.$#'
 			identifier: smaller.alwaysTrue
 			count: 1
@@ -647,12 +593,6 @@ parameters:
 			identifier: nullCoalesce.offset
 			count: 1
 			path: hub-capabilities.php
-
-		-
-			message: '#^Anonymous function has an unused use \$miss\.$#'
-			identifier: closure.unusedUse
-			count: 1
-			path: includes/admin-nav.php
 
 		-
 			message: '#^Strict comparison using \=\=\= between non\-empty\-array\|int\<min, \-1\>\|int\<1, max\>\|non\-falsy\-string and '''' will always evaluate to false\.$#'
@@ -697,18 +637,6 @@ parameters:
 			path: lib/AgentRuntime.php
 
 		-
-			message: '#^Function save_article invoked with 1 parameter, 2 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: lib/AgentRuntime.php
-
-		-
-			message: '#^Parameter \#1 \$id of function save_article expects string, array given\.$#'
-			identifier: argument.type
-			count: 1
-			path: lib/AgentRuntime.php
-
-		-
 			message: '#^If condition is always true\.$#'
 			identifier: if.alwaysTrue
 			count: 1
@@ -739,30 +667,6 @@ parameters:
 			path: lib/AutomationSystem.php
 
 		-
-			message: '#^Function automation_send_wechat not found\.$#'
-			identifier: function.notFound
-			count: 1
-			path: lib/AutomationSystem.php
-
-		-
-			message: '#^Function automation_send_wecom not found\.$#'
-			identifier: function.notFound
-			count: 1
-			path: lib/AutomationSystem.php
-
-		-
-			message: '#^Function save_article invoked with 1 parameter, 2 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: lib/AutomationSystem.php
-
-		-
-			message: '#^Parameter \#1 \$id of function save_article expects string, array given\.$#'
-			identifier: argument.type
-			count: 1
-			path: lib/AutomationSystem.php
-
-		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -784,12 +688,6 @@ parameters:
 			message: '#^Offset 2 on array\{string, string, string, string\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 2
-			path: lib/BlockRegistry.php
-
-		-
-			message: '#^Variable \$type might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
 			path: lib/BlockRegistry.php
 
 		-
@@ -856,12 +754,6 @@ parameters:
 			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
 			identifier: greater.alwaysTrue
 			count: 2
-			path: lib/CdpSystem.php
-
-		-
-			message: '#^Comparison operation "\>" between non\-empty\-array\<true\> and 0 results in an error\.$#'
-			identifier: greater.invalid
-			count: 1
 			path: lib/CdpSystem.php
 
 		-
@@ -997,18 +889,6 @@ parameters:
 			path: lib/CptSystem.php
 
 		-
-			message: '#^Variable \$entry might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: lib/CptSystem.php
-
-		-
-			message: '#^Variable \$saved might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: lib/CptSystem.php
-
-		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 4
@@ -1057,12 +937,6 @@ parameters:
 			path: lib/EvidenceProjection.php
 
 		-
-			message: '#^Variable \$conv_track might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: lib/FlowSystem.php
-
-		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 2
@@ -1081,20 +955,8 @@ parameters:
 			path: lib/FunnelGuard.php
 
 		-
-			message: '#^Function save_article invoked with 1 parameter, 2 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: lib/GeoCitable.php
-
-		-
 			message: '#^Parameter \#1 \$array \(list\<non\-empty\-string\>\) of array_values is already a list, call has no effect\.$#'
 			identifier: arrayValues.list
-			count: 1
-			path: lib/GeoCitable.php
-
-		-
-			message: '#^Parameter \#1 \$id of function save_article expects string, array given\.$#'
-			identifier: argument.type
 			count: 1
 			path: lib/GeoCitable.php
 
@@ -1249,12 +1111,6 @@ parameters:
 			path: lib/Mautic.php
 
 		-
-			message: '#^Call to an undefined method PDO\:\:execute\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: lib/ModerationSystem.php
-
-		-
 			message: '#^Offset ''high''\|''low''\|''mid'' on array\{low\: 0, mid\: 40, high\: 90\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
@@ -1285,12 +1141,6 @@ parameters:
 			path: lib/PaidContent.php
 
 		-
-			message: '#^Array has 2 duplicate keys with value ''client_reference_id'' \(''client_reference_id'', ''client_reference_id''\)\.$#'
-			identifier: array.duplicateKey
-			count: 1
-			path: lib/PaymentChannel.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between ''app_id''\|''biz_content''\|''charset''\|''format''\|''method''\|''notify_url''\|''return_url''\|''sign_type''\|''timestamp''\|''version'' and ''sign'' will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
@@ -1301,18 +1151,6 @@ parameters:
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: lib/PlatformDistribution.php
-
-		-
-			message: '#^Right side of \|\| is always true\.$#'
-			identifier: booleanOr.rightAlwaysTrue
-			count: 1
-			path: lib/PluginSystem.php
-
-		-
-			message: '#^Variable \$regDir on left side of \?\? is never defined\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: lib/PluginSystem.php
 
 		-
 			message: '#^Method ProductScout\:\:saveDraft\(\) never returns null so it can be removed from the return type\.$#'
@@ -1405,18 +1243,6 @@ parameters:
 			path: lib/SeoAudit.php
 
 		-
-			message: '#^Function save_article invoked with 1 parameter, 2 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: lib/SeoAudit.php
-
-		-
-			message: '#^Parameter \#1 \$id of function save_article expects string, array given\.$#'
-			identifier: argument.type
-			count: 1
-			path: lib/SeoAudit.php
-
-		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -1433,12 +1259,6 @@ parameters:
 			identifier: function.alreadyNarrowedType
 			count: 2
 			path: lib/Txn.php
-
-		-
-			message: '#^Anonymous function has an unused use \$inject\.$#'
-			identifier: closure.unusedUse
-			count: 1
-			path: lib/UnifiedInbox.php
 
 		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
@@ -1525,18 +1345,6 @@ parameters:
 			path: page-preview.php
 
 		-
-			message: '#^Anonymous function has an unused use \$p\.$#'
-			identifier: closure.unusedUse
-			count: 5
-			path: plugins/insight-flow/plugin.php
-
-		-
-			message: '#^Call to an undefined static method WechatMp\:\:sendCustomMessage\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 1
-			path: plugins/userloop-bridge/plugin.php
-
-		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -1545,18 +1353,6 @@ parameters:
 		-
 			message: '#^Call to function method_exists\(\) with ''Wecom'' and ''sendAppMessage'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
-			count: 1
-			path: plugins/userloop-bridge/plugin.php
-
-		-
-			message: '#^Parameter \#1 \$to of static method Wecom\:\:sendAppMessage\(\) expects array, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: plugins/userloop-bridge/plugin.php
-
-		-
-			message: '#^Static method Wecom\:\:sendAppMessage\(\) invoked with 2 parameters, 3\-4 required\.$#'
-			identifier: arguments.count
 			count: 1
 			path: plugins/userloop-bridge/plugin.php
 
@@ -1595,9 +1391,3 @@ parameters:
 			identifier: nullCoalesce.offset
 			count: 1
 			path: thank-you.php
-
-		-
-			message: '#^Variable \$topicArticles might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: topics.php

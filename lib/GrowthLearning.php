@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GrowthLearning — 结果回流学习（自生长的最小闭环）
  *

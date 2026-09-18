@@ -5,6 +5,13 @@
  */
 if (!isset($topic)) exit;
 
+// 防御性默认值：本文件由 sentiment.php 在分支内 include，单独静态分析看不到上游赋值
+$rows = $rows ?? [];
+$sources = $sources ?? [];
+$topWords = $topWords ?? [];
+$pos = $pos ?? 0; $neg = $neg ?? 0; $neu = $neu ?? 0;
+$total = $total ?? 0; $sentimentPct = $sentimentPct ?? 0; $risk = $risk ?? '';
+
 // CSV 导出
 if (isset($_GET['export'])) {
     header('Content-Type: text/csv; charset=utf-8');
