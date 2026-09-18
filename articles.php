@@ -167,7 +167,7 @@ function render_card(array $a, callable $catOf): string {
   <?php endif; ?>
 
   <section id="all" class="sec reveal" data-od-anchor data-od-id="articles-all" style="padding-top:8px">
-    <div class="sec-head row"><div><span class="kicker"><?=$lead ? '全部' : '结果'?></span><h2><?=$lead ? '按时间倒序' : ($list ? '匹配的文章' : '没有匹配的文章')?></h2></div><span class="res" id="artCount"><?=count($rest)?> 篇</span></div>
+    <div class="sec-head row"><div><span class="kicker"><?=$lead ? '全部' : '结果'?></span><h2><?=$lead ? '按时间倒序' : ($list ? '匹配的文章' : '没有匹配的文章')?></h2></div><span class="res" id="artCount"><?=count($rest)?> 篇</span><a class="more" href="/topics">按专题读 →</a></div>
     <?php if (!$rest && !$lead): ?>
       <div class="empty">没有找到「<?=htmlspecialchars($fCatName ?: ($fTag ?: $fQ))?>」相关的文章。<a href="/articles" style="color:var(--accent)">看全部</a>，或者去<a href="/search?q=<?=urlencode($fQ ?: $fTag ?: $fCatName)?>" style="color:var(--accent)">全站搜索</a>。</div>
     <?php elseif ($rest): ?>
