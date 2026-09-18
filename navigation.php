@@ -197,6 +197,15 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
       </div>
   </section>
 
+  <section class="reveal" data-od-anchor data-od-id="subscribe-cta">
+    <div class="cta-band">
+      <span class="kicker">订阅更新</span>
+      <h2>新站点每周进一次榜，别靠刷到的运气</h2>
+      <p class="lead">增长导航的新收录、评分变化与下架提醒，一封邮件讲完；你自己在用的站点也可以提交进来。</p>
+      <div class="cta-row"><a href="/newsletter" class="btn primary">订阅更新</a><a href="/nav-submit" class="btn ghost">提交站点</a></div>
+    </div>
+  </section>
+
 <?php require_once __DIR__ . '/includes/site-footer.php'; of_footer(); ?>
 </main>
 <button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>

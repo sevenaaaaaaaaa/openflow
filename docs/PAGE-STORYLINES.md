@@ -37,10 +37,11 @@
 | 12 证言 | **`quote-wall`** · `testimonials` · `reviews`(qr) | 用户原话、评价卡 |
 | 13 FAQ | **`accordion`** · `faq` | 解答顾虑 + SEO 长尾 |
 | 14 内容簇 | **`blog-grid`** · `changelog` · `cluster` | 文章/更新/能力的密集聚合 |
-| 15 收口 CTA | **`cta`** · `countdown` | 页面底部转化（全页唯一 primary） |
+| 15 收口 CTA | **`cta`** | 页面底部转化（全页唯一 primary） |
 | 16 定价 | **`pricing`** | 套餐价格（价格走后端） |
 | 17 人物 / 团队 | **`team`** · `portrait` | 创始人、团队、作者 |
 | 18 气氛 / 装饰 | `kbd` · `code` · `spotlight` · `quote-wall`(便签) | 提升质感，不承担信息 |
+| 19 限时 | **`countdown`** | 报名/活动倒计时（不占收口位） |
 
 ---
 
@@ -168,8 +169,14 @@
 ## 七、现网骨架审计（2026-09-18）
 
 跑 `php scripts/storyline-audit.php` 可复现（36 个营销页；应用内页已跳过）。
-**当前：ERROR 3 · WARN 14**（MISSING 3 / ORDER 0 / DUPLICATE 7 / MULTI_CTA 7 / FORBIDDEN 0）。
-修复记录：2026-09-18 修 D1+D2（6 个产品页补证言、末尾卡片网格移到收口 CTA 前）→ ERROR 9→3、ORDER 9→0。
+**当前：ERROR 0 · WARN 0**（36 个营销页全部通过）。
+修复记录（2026-09-18）：
+- D1+D2：6 个产品页补 `quote-wall`、末尾卡片网格移到收口 CTA 之前 → ERROR 9→3、ORDER 9→0
+- D5：7 个转化页收敛为「首屏唯一 primary，其后一律 ghost；运行演示控件用 subtle」→ MULTI_CTA 7→0
+- D6：`navigation.php` 补收口 CTA（订阅更新）
+- D3/D4/D7 复核为**映射误判**（非真实漂移），已修审计映射规则：
+  `tabs` 按标题/副标题区分本体（部署 Tab ≠ 能力 Tab）、`countdown` 独立为「限时」、
+  `banner`/页头 `topic-head` 归装饰、`tools-box` 归卡片网格 → ERROR 2→0
 
 ### 已对齐（序列与命名故事线一致）
 
@@ -181,17 +188,17 @@
 | `course.php` 系 | `course-A` | 首屏 → 步骤 → 卡片网格 → … → 证言 → 收口 CTA |
 | 首页（`index.php` / `home-v2.php`） | `home-A` / `home-B` | 收口由「诊断表单」承担（试用输入），符合 `require_any` |
 
-### 漂移（待收敛 · 按审计证据排序）
+### 漂移台账
 
-| # | 状态 | 现象 | 命中页面 | 建议 |
-|---|------|------|----------|------|
-| D1 | ✅ 已修 | 收口 CTA 之后还有段落（末尾重复卡片网格） | 6 产品页 + 3 个 demo builder 页 | 末尾 `tool-grid` 移到收口 CTA 之前（已做） |
-| D2 | ✅ 已修 | 产品页缺证言 | 6 个独立产品页 | 补 `quote-wall` 便签墙（已做，位于 FAQ 之前） |
-| D3 | 待修 | 能力Tab 重复 | `demo-capabilities`、`demo-home-v2`（builder 数据，路由已切 PHP 页） | 第二个 `tabs` 改「场景」（`journey`），或删（内容已在 `journey`） |
-| D4 | 待修 | 收口 CTA 重复 | `demo-home-v2`、`growth-os-tour` | 只留最后一个，其余降级为 `btn ghost` |
-| D5 | 待修 | 多段各带主 CTA | `hub-products`(5) / `hub-capabilities`(4) / `product.php`(3) / `capability.php`(3) / `pricing.php` / `index.php` / `home-v2.php` | 中段 CTA 一律 `btn ghost`，只留收口为 primary |
-| D6 | 待修 | 目录页缺收口 CTA | `marketplace.php` `navigation.php` | 补 `cta` 或订阅 `newsletter` |
-| D7 | 待修 | 工具目录缺卡片网格 | `tools.php` | 补 `tool-grid`（工具卡矩阵） |
+| # | 状态 | 现象 | 处理 |
+|---|------|------|------|
+| D1 | ✅ | 收口 CTA 之后还有段落（末尾重复卡片网格） | 移到收口 CTA 之前（6 产品页 + 3 demo builder 页） |
+| D2 | ✅ | 6 个独立产品页缺证言 | 补 `quote-wall` 便签墙（FAQ 之前） |
+| D3 | ✅ 误判 | 「能力Tab 重复」 | 实为「四力 Tab」+「部署 Tab」两种本体 → 审计改为按标题区分 |
+| D4 | ✅ 误判 | 「收口 CTA 重复」 | 实为 `countdown`（限时报名）→ 独立为「限时」本体 |
+| D5 | ✅ | 多段各带主 CTA | 7 页收敛：首屏保留唯一 primary，其后 ghost；控件 subtle |
+| D6 | ✅ | `navigation.php` 缺收口 CTA | 补订阅更新 CTA |
+| D7 | ✅ 误判 | 「tools 缺卡片网格」 | 实为 `#toolbox`（工具卡矩阵）→ 审计补映射 |
 
 ### 判据（审计脚本怎么判）
 

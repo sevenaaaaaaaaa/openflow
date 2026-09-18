@@ -510,7 +510,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
           <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
           <div id="form-msg" role="status" aria-live="polite"></div>
           <div class="f-row">
-            <button type="submit" class="btn primary" data-od-id="lead-submit">提交预约 →</button>
+            <button type="submit" class="btn ghost" data-od-id="lead-submit">提交预约 →</button>
             <span class="f-note">提交后进入顾问队列，1 个工作日内联系</span>
           </div>
         </form>

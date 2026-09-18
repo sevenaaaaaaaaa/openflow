@@ -46,6 +46,9 @@
 | 转化页 | `提交预约 →` | 「提交」「发送」 |
 
 > 规则：同一页面**只允许一个主 CTA**（primary 样式），其余一律 ghost/文字链。
+> 落地口径：**首屏的主 CTA 保持 primary**；页内其他 CTA 一律 `btn ghost`（含收口，用同一句词），
+> 交互控件（如「运行一轮」）用 `btn subtle` 或文字链。同词同动作重复出现不算第二个主 CTA，
+> 但样式不重复。例外：**定价/套餐卡内的 CTA 按档位区分**（付费档 primary、免费档 ghost），不计入本规则。审计：`php scripts/storyline-audit.php` 的 `MULTI_CTA` 项必须为 0。
 
 ---
 

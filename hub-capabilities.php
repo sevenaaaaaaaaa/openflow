@@ -291,7 +291,7 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
         <tr><th>数据归属</th><td>云端加密存储，可随时导出</td><td><b>完全出不了你的域</b></td><td>核心数据私有，匿名化上云</td></tr>
         <tr><th>适合谁</th><td>想立刻跑起来的一人公司</td><td>重视自主可控的团队</td><td>既要安全又要弹性的成长型团队</td></tr>
         <tr><th>起步价</th><td><b>免费</b></td><td>开源免费 · 支持服务另议</td><td>按需评估</td></tr>
-        <tr><th></th><td><button class="btn primary" data-act="start" style="font-size:12.5px;padding:8px 18px">免费开始</button></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 自取</a></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="/about">聊聊需求 →</a></td></tr>
+        <tr><th></th><td><button class="btn ghost" data-act="start" style="font-size:12.5px;padding:8px 18px">免费开始</button></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 自取</a></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="/about">聊聊需求 →</a></td></tr>
       </tbody>
     </table>
   </section>
@@ -382,7 +382,7 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
           <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
           <div id="form-msg" role="status" aria-live="polite"></div>
           <div class="f-row">
-            <button type="submit" class="btn primary" data-od-id="lead-submit">提交预约 →</button>
+            <button type="submit" class="btn ghost" data-od-id="lead-submit">提交预约 →</button>
             <span class="f-note">提交后进入顾问队列，1 个工作日内联系</span>
           </div>
         </form>
@@ -399,7 +399,7 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
       <h2>现在，让增长引擎替你跑起来</h2>
       <p class="lead">TIPS 四力不是宣传页上的名词——它们都能在你今天的业务里主动运行。</p>
       <div class="cta-row">
-        <button class="btn primary" data-act="start">免费开始</button>
+        <button class="btn ghost" data-act="start">免费开始</button>
         <a class="btn ghost" href="/courses">报名课程</a>
       </div>
     </div>
