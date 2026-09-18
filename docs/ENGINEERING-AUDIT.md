@@ -98,7 +98,15 @@ z-index 目前**散落硬编码**：`.modal` 92 / `.palette` 91 / `.overlay` 90 
 
 ## 五、非核心功能改用 Python / TypeScript（评估结论）
 
-前提：仓库**没有** `package.json` / `composer.json`。任何 TS 化都先要有构建与依赖管理，因此分两步走。
+前提：仓库原本**没有** `package.json` / `composer.json`。任何 TS 化都先要有构建与依赖管理。
+
+> **进展（2026-09-18）**：步骤 1 已完成 —— `package.json` + `tsconfig.json` + esbuild 构建链就位，
+> 首个 TS 样板已上线：`src/lib/dialog.ts`（弹窗状态机）、`src/lib/palette.ts`（命令面板过滤），
+> 由 `src/shell/index.js` 消费并打包回 **原路径** `assets/site-shell.js`（IIFE，HTML 零改动）。
+> 单测用 Node 24 原生 `node --test`（无需 vitest）。顺带修掉一个真 bug：
+> **命令面板输入框此前只有 placeholder、没有任何过滤逻辑**，现已支持过滤 + ↑↓ 高亮 + Enter 打开。
+> 命令：`npm run typecheck` / `npm test` / `npm run build`；`scripts/ci.sh` 已把三者纳入门禁
+> （含「构建产物是否最新」校验，防止忘记构建就提交）。
 
 ### 5.1 Python 优先（低风险、立即可做）
 
@@ -119,9 +127,11 @@ z-index 目前**散落硬编码**：`.modal` 92 / `.palette` 91 / `.overlay` 90 
 | 表单校验 / 过滤 / 搜索索引（纯逻辑） | 抽 `src/lib/*.ts` | 单测覆盖，跨页复用 | 低 |
 | **不建议迁移** | `live2d` vendor、PWA `sw.js`、`inject.js`（极短） | — | — |
 
-**建议节奏**：先补 `package.json`（esbuild + vitest + tsc --noEmit），**第一个样板**选 `site-shell.js` 里
-的纯逻辑片段（弹窗状态机/命令面板过滤）迁 TS 并加测试；验证流程后再批量。产出仍走现有
-`OF_SHELL_VER + sync-r2.py + purge` 资产纪律。
+**已完成的第 1 步（样板）**：`package.json`（esbuild + typescript + @types/node）+ `tsconfig.json`（strict）
++ `src/lib/{dialog,palette}.ts`（17 个单测）+ `src/shell/index.js`（原 site-shell.js 迁入，消费上述模块）
++ `scripts/build.mjs`（打包回 `assets/site-shell.js`，带构建 banner/rev）。
+第 2 步建议：把 `role-switch.js` / `role-content.js` 同样迁入 `src/`，并把 `inject.js` 的短逻辑并入；
+每次迁移都按「先抽纯函数 + 单测 → 再改 DOM 适配」的节奏，产物仍走 `OF_SHELL_VER + sync-r2 + purge`。
 
 ---
 
