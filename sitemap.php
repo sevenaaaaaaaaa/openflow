@@ -68,10 +68,13 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <!-- Articles -->
   <?php
   $articles = jread($dataDir . '/articles/index.json');
+  $__seenArticleSlug = [];
   foreach ($articles as $a):
     if (($a['status'] ?? 'draft') !== 'published') continue;
     $slug = $a['slug'] ?? '';
     if (empty($slug)) continue;
+    if (isset($__seenArticleSlug[$slug])) continue;   // 防御：内容侧 slug 碰撞时不重复输出
+    $__seenArticleSlug[$slug] = true;
   ?>
   <url>
     <loc><?=$base?>/article/<?=htmlspecialchars($slug)?></loc>
@@ -158,7 +161,8 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <url><loc><?=$base?>/event/<?=htmlspecialchars($evslug)?></loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
   <?php endforeach; ?>
 
-  <!-- Topics -->
+  <!-- Topics（内容枢纽：列表 + 每个专题） -->
+  <url><loc><?=$base?>/topics</loc><priority>0.7</priority><changefreq>daily</changefreq></url>
   <?php
   $topics = jread($dataDir . '/topics.json');
   foreach ($topics as $t):
@@ -166,7 +170,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     $tslug = $t['slug'] ?? '';
     if (!$tslug) continue;
   ?>
-  <url><loc><?=$base?>/topic/<?=htmlspecialchars($tslug)?></loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <url><loc><?=$base?>/topic/<?=htmlspecialchars($tslug)?></loc><priority>0.7</priority><changefreq>weekly</changefreq><?=$lastmod($t['updated_at'] ?? $t['created_at'] ?? '')?></url>
   <?php endforeach; ?>
 
   <!-- Help Center -->
