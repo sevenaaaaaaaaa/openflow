@@ -132,7 +132,20 @@ SHELL 清单里列了 scope 外的 `tokens/modules/site-shell/inject`（缓存�
 1. **换图必须改 URL**——在页面/区块里给图片加 `?v=YYYYMMDD`（示例见 `scripts/seed-demo-hub-v2.php` 的 `$SHOT_V`）
 2. **sync-r2.py 已修**：源图变更时会重新生成 WebP（不再因已存在而跳过）
 
-### ⚠️ rsync 静默失败（2026-09-17 实测）
+### ✅ 标准做法：用 `scripts/deploy.py`（2026-09-18 起）
+
+```bash
+python3 scripts/deploy.py --dry-run index.php assets/modules.css   # 先看计划
+python3 scripts/deploy.py index.php assets/modules.css             # 部署 + 核验
+python3 scripts/deploy.py --from-git HEAD                          # 部署上一提交改动的可部署文件
+python3 scripts/deploy.py --rollback 20260918-155902               # 回滚
+```
+
+它做对了这些事：逐文件 **scp + md5 双向断言**、拒绝 `data/`（需 `--with-data`）、
+替换前**备份**、写 manifest、assets 变更时自动 `sync-r2.py` + CF purge + 清缓存。
+**下面这段 rsync 静默失败的坑，用 deploy.py 即天然规避**（保留记录以便理解历史命令的风险）。
+
+### ⚠️ rsync 静默失败（2026-09-17 实测，历史记录）
 
 本机 `rsync` 是 Apple **openrsync**（`protocol version 29`）。实测对 **子目录文件**（`assets/*.css`、`includes/*.php`）会出现「报告 Transfer starting / 退出码 0，但远端文件未变」的静默失败：
 

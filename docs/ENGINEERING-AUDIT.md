@@ -150,11 +150,28 @@ z-index 目前**散落硬编码**：`.modal` 92 / `.palette` 91 / `.overlay` 90 
 - 弹窗行为层（§三）+ 首次浮层层级缺陷。
 - `scripts/audit-devices.py`：多设备 + 弹窗的可回归审计（可入 CI）。
 
+### 部署器（2026-09-18 完成）
+
+`scripts/deploy.py` 取代 shell + rsync：
+
+| 能力 | 说明 |
+|------|------|
+| **md5 双向断言** | 上传前后各比对一次远端 md5；不一致即失败（根治 rsync 静默失败） |
+| 逐文件 scp | 不用 rsync；文件级重试与失败清单 |
+| 安全清单 | 目录白名单 + 根文件白名单；拒绝 `src/ tests/ node_modules/ *.bak* *.old-*`；`data/` 需 `--with-data` 显式允许 |
+| 备份 / 回滚 | 替换前抓回远端旧版到 `.deploy/backups/<stamp>/`；`--rollback <stamp>` 一键还原并核验 |
+| manifest | 每次部署写 `.deploy/manifests/<stamp>.json`（路径 + md5） |
+| dry-run | 只打印计划（含"跳过/上传"判定），零副作用 |
+| 联动 | assets 变更 → 提醒 bump `OF_SHELL_VER` → 自动 `sync-r2.py` → 按文件推导 URL 做 CF purge → 清 `data/cache` |
+| 单测 | `python3 -m unittest discover -s scripts/tests`（10 项，已入 CI） |
+
+实测：dry-run 对真实服务器正确判定"跳过"；robots.txt 走完 上传→核验→备份→回滚 全链路。
+
 ### 下一步（按性价比排序）
 | 优先级 | 事项 | 说明 |
 |---|---|---|
 | P0 | `package.json` + esbuild/vitest/tsc | TS 化的前置；同时给前端加 lint |
-| P0 | `deploy.py` 取代 shell 部署 | 消除 rsync 静默失败；带 md5 断言与回滚点 |
+| ~~P0~~ | ~~`deploy.py` 取代 shell 部署~~ | ✅ **已完成**（见 §七）：逐文件 scp + md5 双向断言 + 备份/回滚 + dry-run + R2/purge 联动 |
 | P1 | 拆 `admin/config.php`（2,386 行） | 按职责拆 `lib/{auth,articles,forms,cache}.php`，保持函数签名不变 |
 | P1 | z-index 令牌 + `of-dialog` 共享化 | 见 §三/§四 |
 | P1 | 断点收敛（5 档）+ 组件清单 CI | 见 §四 |
