@@ -102,3 +102,4 @@ lovart-art-google-内部整改方案.md
 docs/DEPLOY-CONFIG.md
 node_modules/
 package-lock.json.bak
+.deploy/
