@@ -103,3 +103,6 @@ docs/DEPLOY-CONFIG.md
 node_modules/
 package-lock.json.bak
 .deploy/
+
+plugins/_drafts/
+.deploy/phpstan-draft-*
