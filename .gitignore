@@ -100,3 +100,5 @@ lovart-art-google-内部整改方案.md
 
 # 服务器部署配置含基础设施信息，不入库（本地保留）
 docs/DEPLOY-CONFIG.md
+node_modules/
+package-lock.json.bak

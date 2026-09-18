@@ -1,0 +1,20 @@
+{
+  "name": "openflow-frontend",
+  "private": true,
+  "description": "OpenFlow 前端构建与类型检查（产物写回 assets/，运行时无构建依赖）",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "ci": "npm run typecheck && npm test && npm run build && git diff --exit-code -- assets/site-shell.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.1",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.3"
+  }
+}

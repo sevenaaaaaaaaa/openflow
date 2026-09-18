@@ -103,6 +103,25 @@ def check_modals(browser, base):
     probe("登录弹窗", "() => (window.OFShellDialogs||window.OFShell).openAuth()", "#authModal")
     probe("个人中心", "() => (window.OFShellDialogs||window.OFShell).openProfile()", "#profileModal")
     probe("命令面板", "() => (window.OFShellDialogs||window.OFShell).openPalette()", "#palette")
+
+    # ── 命令面板过滤 + 键盘导航（此前输入框无效）──
+    pal = {"name": "面板过滤", "cls": "#palette"}
+    try:
+        pg.evaluate("() => (window.OFShellDialogs||window.OFShell).openPalette()")
+        pg.wait_for_timeout(300)
+        pal["all_items"] = len(pg.query_selector_all("#palList .p-item"))
+        pg.fill("#palInput", "产品")
+        pg.wait_for_timeout(250)
+        pal["filtered_items"] = len(pg.query_selector_all("#palList .p-item"))
+        pal["first_hit"] = pg.evaluate("() => { const e=document.querySelector('#palList .p-item'); return e ? e.textContent.trim() : null }")
+        pg.keyboard.press("ArrowDown"); pg.wait_for_timeout(200)
+        pal["active"] = pg.evaluate("() => { const e=document.querySelector('#palList .p-item.on'); return e ? e.textContent.trim() : null }")
+        pg.fill("#palInput", "zzzz"); pg.wait_for_timeout(250)
+        pal["empty_state"] = pg.evaluate("() => !!document.querySelector('#palList .p-none')")
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(200)
+    except Exception as e:
+        pal["error"] = str(e)[:90]
+    out.append(pal)
     ctx.close()
 
     # ── 首次角色浮层：出现 / ESC / 遮罩 / 与弹窗互斥 ──
@@ -168,7 +187,16 @@ def main():
         print("| 弹窗 | " + " | ".join(keys) + " |")
         print("|---" * (len(keys) + 1) + "|")
         for m in res["modals"]:
+            if m["name"] == "面板过滤":
+                continue
             print("| " + m["name"] + " | " + " | ".join(str(m.get(k, "-")) for k in keys) + " |")
+        pal = next((m for m in res["modals"] if m["name"] == "面板过滤"), None)
+        if pal:
+            print("\n### 命令面板（⌘K）过滤与键盘导航\n")
+            print(f"- 全部条目：{pal.get('all_items')}")
+            print(f"- 输入「产品」后：{pal.get('filtered_items')} 条，首条 = {pal.get('first_hit')}")
+            print(f"- ↓ 键高亮项：{pal.get('active')}")
+            print(f"- 无命中时空状态：{pal.get('empty_state')}")
 
 if __name__ == "__main__":
     main()
