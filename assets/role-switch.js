@@ -50,6 +50,18 @@
   }
 
   /* ── 5s 未选择自动默认通用角色 ── */
+  function dismissPicker(ov){
+    if (!ov) return;
+    if (ov.__ofTimer) clearTimeout(ov.__ofTimer);
+    if (ov.__ofYield) clearInterval(ov.__ofYield);
+    if (window.OFDialog) window.OFDialog.lock(false);
+    ov.classList.remove('open');
+    ov.style.transition = 'opacity .45s, transform .45s';
+    ov.style.opacity = '0';
+    ov.style.transform = 'scale(1.02)';
+    setTimeout(function(){ if (document.body.contains(ov)) ov.remove(); }, 460);
+  }
+
   function autoDefaultRole(ov){
     if (!ov || !document.body.contains(ov)) return;
     var rk = window.OF_DEFAULT_ROLE || 'power';
@@ -62,11 +74,7 @@
     tip.textContent = '已为你默认选择「' + (window.OF_ROLES[rk] ? window.OF_ROLES[rk].label : rk) + '」 · 点右下角可切换';
     document.body.appendChild(tip);
     setTimeout(function(){ try { tip.remove(); } catch(e){} }, 3500);
-    // 淡出浮层（不跳转）
-    ov.style.transition = 'opacity .45s, transform .45s';
-    ov.style.opacity = '0';
-    ov.style.transform = 'scale(1.02)';
-    setTimeout(function(){ if (document.body.contains(ov)) ov.remove(); }, 460);
+    dismissPicker(ov);   // 淡出浮层（不跳转）
   }
 
   /* ── 内容替换：只换文字，不动结构 ── */
@@ -158,9 +166,11 @@
   /* ── 角色选择浮层（首次访问） ── */
   function showRolePicker(){
     if (document.getElementById('of-role-overlay')) return;
+    // 不与弹窗抢层级：已有弹窗打开时不显示（弹窗 z 92 > 本浮层 91）
+    if (document.querySelector('[data-of-dialog].open')) return;
     var ov = document.createElement('div');
     ov.id = 'of-role-overlay';
-    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(20,20,24,.72);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:24px;';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:91;background:rgba(20,20,24,.72);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:24px;';
     var box = document.createElement('div');
     box.style.cssText = 'max-width:720px;width:100%;text-align:center;animation:ofRoleIn .6s cubic-bezier(.22,1,.36,1)';
     var style = document.createElement('style');
@@ -187,6 +197,7 @@
 
     // 5s 未选择 → 自动默认通用角色
     var autoTimer = setTimeout(function(){ autoDefaultRole(ov); }, 5000);
+    ov.__ofTimer = autoTimer;
 
     // 卡片 hover
     ov.querySelectorAll('.of-role-card').forEach(function(c){
@@ -213,11 +224,17 @@
         if (main) { main.style.transition='transform .45s'; main.style.transform='scale(.995)'; setTimeout(function(){ main.style.transform='none'; }, 460); }
       });
     });
-    document.getElementById('of-role-skip').addEventListener('click', function(){
-      clearTimeout(autoTimer);
-      ov.style.transition='opacity .4s'; ov.style.opacity='0';
-      setTimeout(function(){ ov.remove(); }, 400);
-    });
+    var skipPicker = function(){ dismissPicker(ov); };
+    document.getElementById('of-role-skip').addEventListener('click', skipPicker);
+    // 统一弹窗行为层：ESC / 遮罩点击 = 暂不选择（并锁滚动，避免背景跟着动）
+    if (window.OFDialog) {
+      window.OFDialog.register(ov, 'onboard', { close: skipPicker, open: function(){ ov.classList.add('open'); } });
+      if (ov.__ofOpen) ov.__ofOpen();
+    }
+    // 任何弹窗一出现就让位（轮询兜底：覆盖所有打开入口，含页面级脚本直接调用）
+    ov.__ofYield = setInterval(function(){
+      if (document.querySelector('[data-of-dialog].open:not(#of-role-overlay)')) skipPicker();
+    }, 700);
   }
 
   /* ── 常驻角色切换（页脚小按钮） ── */

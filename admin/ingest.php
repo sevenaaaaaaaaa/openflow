@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['md_file'])) {
         $title = pathinfo($f['name'], PATHINFO_FILENAME);
         // 调导入 API
         $ch = curl_init((isset($_SERVER['HTTPS'])&&$_SERVER['HTTPS']==='on'?'https':'http') . '://' . ($_SERVER['HTTP_HOST']??'') . '/api/ingest.php');
-        curl_setopt_array($ch, [CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>json_encode(['platform'=>'obsidian','title'=>$title,'content'=>$content,'status'=>$config['import_status']??'draft']), CURLOPT_HTTPHEADER=>['Content-Type: application/json'], CURLOPT_RETURNTRANSFER=>true]);
+        curl_setopt_array($ch, [CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>json_encode(['platform'=>'obsidian','title'=>$title,'content'=>$content,'status'=>$config['import_status']??'draft']), CURLOPT_HTTPHEADER=>['Content-Type: application/json', CURLOPT_CONNECTTIMEOUT=>5, CURLOPT_TIMEOUT=>20], CURLOPT_RETURNTRANSFER=>true, CURLOPT_CONNECTTIMEOUT=>5, CURLOPT_TIMEOUT=>20]);
         $resp = json_decode(curl_exec($ch), true);
         $message = $resp['ok'] ? "✅ 已从 Obsidian 导入：{$title}" : "❌ 导入失败：" . ($resp['error'] ?? '');
     } else { $message = '文件上传失败'; }
