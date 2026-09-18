@@ -241,3 +241,110 @@ function adapter_forge_write(array $files, string $dir): array
     }
     return ['ok' => true, 'dir' => $base, 'written' => $written, 'error' => ''];
 }
+
+/* ────────────────────────── 第二轮：AI 补全真实调用 ────────────────────────── */
+
+/** 生成物安全栅栏：拒绝新增未声明落点、拒绝硬编码密钥、拒绝删掉已有注册 */
+function adapter_forge_guard(string $before, string $after, array $manifest): array
+{
+    $errors = [];
+    if (!str_contains($after, '<?php') || !str_contains($after, 'declare(strict_types=1)')) {
+        $errors[] = '缺少 <?php 或 declare(strict_types=1)';
+    }
+    // 硬编码密钥（常见形态）
+    if (preg_match('/\b(sk-[A-Za-z0-9]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,})\b/', $after) === 1
+        || preg_match('#https?://[^"\'\s]*:[^"\'\s]*@#', $after) === 1) {
+        $errors[] = '疑似硬编码密钥/带凭据的 URL';
+    }
+    // 落点守卫：新出现的 register_* 必须都在 manifest.surfaces 里
+    $map = ['register_api_route' => 'api_route', 'register_schedule' => 'schedule',
+            'register_block' => 'block', 'register_mcp_tool' => 'mcp_tool', 'add_action' => 'hook', 'add_filter' => 'hook'];
+    $declared = array_keys((array) ($manifest['surfaces'] ?? []));
+    foreach ($map as $fn => $surface) {
+        $nAfter = substr_count($after, $fn);
+        $nBefore = substr_count($before, $fn);
+        if ($nAfter > $nBefore && !in_array($surface, $declared, true)) {
+            $errors[] = "新增了未声明落点的调用：{$fn}（{$surface}）";
+        }
+        if ($nAfter < $nBefore) {
+            $errors[] = "删除了既有注册：{$fn}";
+        }
+    }
+    return ['ok' => $errors === [], 'errors' => $errors];
+}
+
+/**
+ * 第二轮：让 AI 依据上游信息把 TODO(适配) 换成真实调用
+ *
+ * 安全设计：先备份模板版本 → 写入新代码 → 跑闸门；**闸门不过就回滚**，绝不让坏代码留在草稿里。
+ *
+ * @param array<string,mixed> $profile
+ * @param callable $ai fn(string $system, string $user, array $opts): array{ok:bool,text?:string,error?:string}
+ * @return array{ok:bool,applied:bool,note:string,bytes:int,report:array<string,mixed>|null}
+ */
+function adapter_forge_complete(array $profile, string $draftDir, callable $ai): array
+{
+    $dir = rtrim($draftDir, '/');
+    $pluginPath = $dir . '/plugin.php';
+    if (!is_file($pluginPath)) {
+        return ['ok' => false, 'applied' => false, 'note' => '草稿缺少 plugin.php', 'bytes' => 0, 'report' => null];
+    }
+    $manifest = [];
+    if (is_file($dir . '/plugin.json')) {
+        $decoded = json_decode((string) file_get_contents($dir . '/plugin.json'), true);
+        if (is_array($decoded)) $manifest = $decoded;
+    }
+    $before = (string) file_get_contents($pluginPath);
+
+    $user = "上游能力画像：\n" . json_encode($profile, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+        . "\n\n当前骨架（含 TODO(适配)）：\n```php\n" . mb_substr($before, 0, 6000) . "\n```\n\n"
+        . "任务：用该上游的**官方 API** 补全所有 TODO(适配)，产出可直接运行的完整 PHP 文件。\n"
+        . "硬约束：\n"
+        . "1) 不得新增落点（注册函数只能出现在骨架已有的地方）\n"
+        . "2) 凭据只从 plugin_config() 读；不得出现任何明文密钥\n"
+        . "3) 每个网络请求必须有超时、非 2xx 分支与重试/退避说明\n"
+        . "4) 保留 declare(strict_types=1) 与既有函数名；只输出完整 PHP 文件\n";
+
+    $res = $ai(adapter_forge_system_prompt(), $user, ['feature' => 'adapter_forge_complete', 'max_tokens' => 3000]);
+    if (!is_array($res) || !($res['ok'] ?? false)) {
+        return ['ok' => false, 'applied' => false, 'note' => 'AI 调用失败：' . (string) ($res['error'] ?? ''), 'bytes' => 0, 'report' => null];
+    }
+    $after = adapter_forge_extract_code((string) ($res['text'] ?? ''));
+    if (trim($after) === '') {
+        return ['ok' => false, 'applied' => false, 'note' => 'AI 未返回可解析的 PHP', 'bytes' => 0, 'report' => null];
+    }
+
+    $guard = adapter_forge_guard($before, $after, $manifest);
+    if (!($guard['ok'] ?? false)) {
+        return ['ok' => false, 'applied' => false, 'note' => '安全栅栏拦截：' . implode('；', (array) $guard['errors']), 'bytes' => strlen($after), 'report' => null];
+    }
+
+    // 备份：① 模板版本留档（只备一次，供对比）② 本次调用前的快照（回滚用，必须每次覆盖）
+    $templateBak = $dir . '/plugin.template.php.bak';
+    if (!is_file($templateBak)) @copy($pluginPath, $templateBak);
+    $prevBak = $dir . '/plugin.php.prev.bak';
+    @copy($pluginPath, $prevBak);
+    @file_put_contents($dir . '/plugin.ai.php', $after);
+    @file_put_contents($pluginPath, $after);
+
+    // 重新验证前必须撤章：徽章只能由闸门发放，旧章会让 no-self-claim 误判
+    $unstamped = $manifest;
+    $unstamped['verification'] = ['status' => 'pending', 'badge' => 'unverified', 'tests' => '', 'checked_at' => ''];
+    @file_put_contents($dir . '/plugin.json', adapter_forge_json_pretty($unstamped));
+
+    require_once __DIR__ . '/AdapterVerify.php';
+    $report = adapter_verify_gate($dir, $unstamped);
+    if (($report['status'] ?? 'blocked') === 'blocked') {
+        if (is_file($prevBak)) @copy($prevBak, $pluginPath);   // 回滚到本次调用前（AI 产物已在 plugin.ai.php 留档）
+        @file_put_contents($dir . '/plugin.json', adapter_forge_json_pretty($manifest));
+        $ps = '';
+        foreach ((array) ($report['checks'] ?? []) as $c) {
+            if (!$c['ok'] && $c['id'] === 'phpstan') $ps = ' · ' . (string) $c['note'];
+        }
+        return ['ok' => false, 'applied' => false,
+            'note' => '补全后未过闸门，已回滚：' . implode(',', (array) ($report['failed'] ?? [])) . $ps,
+            'bytes' => strlen($after), 'report' => $report];
+    }
+    adapter_verify_stamp($dir, $report);
+    return ['ok' => true, 'applied' => true, 'note' => '已补全并通过闸门', 'bytes' => strlen($after), 'report' => $report];
+}
