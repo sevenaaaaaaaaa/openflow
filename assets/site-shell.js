@@ -1,4 +1,4 @@
-/*! site-shell.js · built by esbuild @ 2026-09-18 · rev 4f558e0 */
+/*! site-shell.js · bundled from src/ by esbuild — 请勿手改；改 src/ 后运行 npm run build */
 "use strict";
 (() => {
   // src/lib/dialog.ts
