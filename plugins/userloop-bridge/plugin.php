@@ -118,6 +118,31 @@ PluginSystem::register_api_route('userloop-bridge', 'POST', 'suppress',
         return $ok ? $done(['email' => $email]) : $fail('写入抑制名单失败');
     }, ['auth' => 'none']);
 
+// ── 自动化触发：UserLoop 的旅程断点 → OpenFlow 自动化/画布（系统唯一入口 flow_handle）──
+PluginSystem::register_api_route('userloop-bridge', 'POST', 'automation',
+    function (array $req) use ($guard, $fail, $done, $p) {
+        if ($err = $guard()) return $fail($err['message']);
+        require_once __DIR__ . '/../../lib/FlowSystem.php';
+        if (!function_exists('flow_handle')) return $fail('FlowSystem 不可用');
+        $d = $req['body'] ?? [];
+        $event = trim((string)($d['event'] ?? ''));
+        if ($event === '') return $fail('缺少 event（OpenFlow 事件名，如 userloop_journey）');
+        $ctx = [
+            'uid' => (string)($d['visitor_id'] ?? ''),
+            'email' => (string)($d['email'] ?? ''),
+            'member_id' => (string)($d['member_id'] ?? ''),
+            'source' => 'userloop',
+            'loop_id' => (string)($d['loop_id'] ?? ''),
+            'template_id' => (string)($d['template_id'] ?? ''),
+            'message' => (string)($d['message'] ?? ''),
+            'extra' => (array)($d['extra'] ?? []),
+        ];
+        $r = flow_handle($event, $ctx);
+        $p->log('automation ' . $event . ' -> ' . json_encode(['triggers' => $r['triggers'] ?? []], JSON_UNESCAPED_UNICODE));
+        return $done(['triggered' => true, 'event' => $event,
+                      'triggers' => $r['triggers'] ?? [], 'tagged' => $r['tagged'] ?? []]);
+    }, ['auth' => 'none']);
+
 // ── 能力自述 ──
 PluginSystem::register_api_route('userloop-bridge', 'GET', 'capabilities',
     function (array $req) use ($guard, $fail, $done) {
@@ -133,5 +158,6 @@ PluginSystem::register_api_route('userloop-bridge', 'GET', 'capabilities',
             'wechat_mp' => class_exists('WechatMp') ? ['mass', 'preview', 'tags'] : [],
             'wecom' => class_exists('Wecom') ? ['tags', 'customers'] : [],
             'sms' => [],
+            'automation' => function_exists('flow_handle') ? ['flow_handle'] : [],
         ]]);
     }, ['auth' => 'none']);
