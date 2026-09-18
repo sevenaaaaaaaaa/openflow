@@ -25,7 +25,7 @@ const W = 'WARN';
 
 /** 区块 type → 本体（首选；同名区块只归一个本体） */
 const BLOCK_ROLE = [
-    'hero' => '首屏', 'hero-deck' => '首屏', 'deck' => '首屏', 'banner' => '首屏',
+    'hero' => '首屏', 'hero-deck' => '首屏', 'deck' => '首屏', 'banner' => '装饰',
     'cluster' => '多栏特性区', 'features' => '多栏特性区', 'bento' => '多栏特性区',
     'portrait' => '多栏特性区', 'text' => '多栏特性区', 'checklist' => '多栏特性区',
     'tabs' => '能力Tab',
@@ -39,7 +39,7 @@ const BLOCK_ROLE = [
     'quote-wall' => '证言', 'testimonials' => '证言',
     'accordion' => 'FAQ', 'faq' => 'FAQ',
     'blog-grid' => '内容簇', 'changelog' => '内容簇',
-    'cta' => '收口CTA', 'countdown' => '收口CTA', 'pricing' => '定价',
+    'cta' => '收口CTA', 'countdown' => '限时', 'pricing' => '定价',
     'team' => '人物', 'contact' => '试用输入',
     'code' => '装饰', 'kbd' => '装饰', 'spotlight' => '装饰',
 ];
@@ -60,11 +60,12 @@ const PAGE_TYPES = [
 
 /** PHP 页 section id 关键词 → 本体（启发式，按最长关键词优先） */
 const ID_ROLE = [
-    'hero' => '首屏', 'top' => '首屏', 'head' => '首屏', 'banner' => '首屏',
+    'hero' => '首屏', 'top' => '首屏', 'head' => '首屏', 'topic-head' => '装饰', 'banner' => '装饰', 'box' => '卡片网格',
     'pain' => '多栏特性区', 'story' => '多栏特性区', 'founder' => '人物', 'team' => '人物',
     'principles' => '多栏特性区', 'thinking' => '内容簇', 'timeline' => '步骤', 'join' => '试用输入',
     'proof' => '证明', 'stats' => '证明', 'metrics' => '证明', 'value' => '证明',
     'touch' => '能力Tab', 'tips' => '能力Tab', 'caps' => '能力Tab', 'features' => '特性大卡',
+    'toolbox' => '卡片网格', 'publish' => '收口CTA',
     'index' => 'FAQ', 'modules' => 'FAQ', 'connectors' => '证明', 'integrations' => '证明',
     'deploy' => '多栏特性区', 'open' => '多栏特性区', 'scenes' => '多栏特性区', 'fit' => '多栏特性区',
     'real' => '图库', 'gallery' => '图库', 'works' => '图库', 'carousel' => '图库', 'waterfall' => '图库',
@@ -137,7 +138,13 @@ if (is_file($bp)) {
         $slug = $p['slug'] ?? '?';
         if ($filter && stripos($slug, $filter) === false) continue;
         $roles = [];
-        foreach (($p['blocks'] ?? []) as $b) $roles[] = role_of_block((string) ($b['_type'] ?? ''));
+        foreach (($p['blocks'] ?? []) as $b) {
+            $t = (string) ($b['_type'] ?? '');
+            $title = (string) ($b['title'] ?? '') . ' ' . (string) ($b['subtitle'] ?? '');
+            if ($t === 'tabs' && (str_contains($title, '部署') || str_contains($title, '方式'))) { $roles[] = '定价'; continue; }
+            if ($t === 'tabs' && (str_contains($title, '场景') || str_contains($title, '人群'))) { $roles[] = '多栏特性区'; continue; }
+            $roles[] = role_of_block($t);
+        }
         $seqs[$slug] = $roles;
         $pt = classify($slug);
         $findings[$slug] = ['type' => $pt, 'roles' => $roles];
