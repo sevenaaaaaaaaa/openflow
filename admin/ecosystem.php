@@ -163,6 +163,34 @@ admin_header('生态适配');
       <?php endif; ?>
     </div>
     <?php endforeach; ?>
+
+    <?php $published = adapter_review_published($registryFile); ?>
+    <h2 style="margin-top:26px">已上架适配（<?=count($published)?>）</h2>
+    <p class="sub">这些是已经进入 <code>plugins/</code> 的官方适配插件：默认<b>未启用</b>，需要到「插件」页开启；同时会以「官方适配 · 免费」出现在生态市场。</p>
+    <?php if ($published === []): ?>
+    <div class="eco-empty">还没有上架的适配插件。</div>
+    <?php else: ?>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:13.5px">
+        <thead><tr style="background:var(--surface-2);text-align:left">
+          <th style="padding:10px 14px">插件</th><th style="padding:10px 14px">上游</th><th style="padding:10px 14px">许可证</th>
+          <th style="padding:10px 14px">状态</th><th style="padding:10px 14px">上架时间</th><th style="padding:10px 14px"></th>
+        </tr></thead>
+        <tbody>
+        <?php foreach ($published as $pub): ?>
+          <tr style="border-top:1px solid var(--border-soft)">
+            <td style="padding:10px 14px"><b><?=htmlspecialchars((string) $pub['name']) ?></b><br><span class="eco-id" style="font-size:12px;color:var(--muted)"><?=htmlspecialchars((string) $pub['id']) ?> v<?=htmlspecialchars((string) $pub['version']) ?></span></td>
+            <td style="padding:10px 14px"><?=htmlspecialchars((string) $pub['source']) ?: '—' ?></td>
+            <td style="padding:10px 14px"><code><?=htmlspecialchars((string) $pub['license']) ?: '—' ?></code></td>
+            <td style="padding:10px 14px"><?= $pub['enabled'] ? '<span class="eco-badge passed">已启用</span>' : '<span class="eco-badge needs-review">未启用</span>' ?></td>
+            <td style="padding:10px 14px;color:var(--muted)"><?=htmlspecialchars((string) $pub['installed_at']) ?></td>
+            <td style="padding:10px 14px;text-align:right"><a class="btn" href="/xmp/plugins">去启用 →</a></td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+    <?php endif; ?>
   </div>
 </div>
 <?php admin_footer(); ?>

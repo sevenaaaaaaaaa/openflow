@@ -187,6 +187,36 @@ function adapter_review_copy_tree(string $src, string $dst, array $skip = []): a
 }
 
 /**
+ * 已上架的适配器（读插件注册表）——供后台「已上架」区块与生态市场复用
+ * @return list<array{id:string,name:string,version:string,source:string,license:string,badge:string,enabled:bool,installed_at:string}>
+ */
+function adapter_review_published(string $registryFile): array
+{
+    if (!is_file($registryFile)) return [];
+    $reg = json_decode((string) file_get_contents($registryFile), true);
+    if (!is_array($reg)) return [];
+    $installed = (array) ($reg['installed'] ?? []);
+    $enabled = (array) ($reg['enabled'] ?? []);
+    $out = [];
+    foreach ($installed as $id => $meta) {
+        $m = (array) $meta;
+        if (empty($m['adapter'])) continue;   // 只列「官方适配」，社区作者投稿走市场的另一条路
+        $out[] = [
+            'id' => (string) ($m['id'] ?? $id),
+            'name' => (string) ($m['name'] ?? $id),
+            'version' => (string) ($m['version'] ?? ''),
+            'source' => (string) ($m['source'] ?? ''),
+            'license' => (string) ($m['license'] ?? ''),
+            'badge' => (string) ($m['badge'] ?? ''),
+            'enabled' => (bool) ($enabled[$id] ?? false),
+            'installed_at' => (string) ($m['installed_at'] ?? ''),
+        ];
+    }
+    usort($out, static fn (array $a, array $b): int => strcmp($a['id'], $b['id']));
+    return $out;
+}
+
+/**
  * 上架：把草稿复制到 plugins/<id> 并写入插件注册表（默认 enabled=false，等人在后台开启）
  * @return array{ok:bool,dir:string,error:string,written:list<string>}
  */
@@ -208,6 +238,19 @@ function adapter_review_publish(array $entry, string $pluginsRoot, string $regis
     $copy = adapter_review_copy_tree($src, $dst);
     if (!($copy['ok'] ?? false)) {
         return ['ok' => false, 'dir' => $dst, 'error' => (string) ($copy['error'] ?? '复制失败'), 'written' => []];
+    }
+
+    // 清单自描述：写入 adapter/official 标记（生态市场据此展示「官方适配 · 免费」）
+    $mf = $dst . '/plugin.json';
+    if (is_file($mf)) {
+        $m = json_decode((string) file_get_contents($mf), true);
+        if (is_array($m)) {
+            $m['adapter'] = true;
+            $m['official'] = true;
+            $m['price'] = 0;
+            $m['adapted_at'] = date('c');
+            @file_put_contents($mf, json_encode($m, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+        }
     }
 
     // 注册表：installed + enabled=false
