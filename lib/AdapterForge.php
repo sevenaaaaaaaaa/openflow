@@ -50,6 +50,9 @@ function adapter_forge_plan(array $profile): array
 function adapter_forge_system_prompt(): string
 {
     return "你是 OpenFlow 适配工程师，只输出 PHP 代码。"
+        . "运行环境：OpenFlow 基座（PHP 8.3，自研 PluginSystem），**不是 WordPress/Drupal/Laravel/Node**；"
+        . "HTTP 一律用 curl_*（含超时）；配置用 plugin_config()；读写数据用 json_read()/json_write() 或 Database::*；"
+        . "禁止使用任何框架专属函数（如 wp_remote_get、is_wp_error、Drupal/Laravel 助手）。"
         . "基座扩展点：PluginSystem::add_action/add_filter（钩子）、register_api_route(出站/入站 API)、"
         . "register_schedule（定时）、register_block（前台区块）、register_mcp_tool（Agent 工具）。"
         . "硬约束：只用官方 API；凭据只从 plugin_config() 读取；不得硬编码密钥；"
@@ -251,6 +254,25 @@ function adapter_forge_guard(string $before, string $after, array $manifest): ar
     if (!str_contains($after, '<?php') || !str_contains($after, 'declare(strict_types=1)')) {
         $errors[] = '缺少 <?php 或 declare(strict_types=1)';
     }
+    // 截断检测：花括号不平衡几乎总是 max_tokens 不足
+    if ($errors === [] && substr_count($after, '{') !== substr_count($after, '}')) {
+        $errors[] = '花括号不平衡（疑似被 max_tokens 截断，请提高额度重试）';
+    }
+    // 语法检查（php -l）：比 PHPStan 更快、原因更清楚；失败直接不落盘
+    if ($errors === [] && function_exists('exec')) {
+        $tmp = tempnam(sys_get_temp_dir(), 'adapter-lint-') ?: '';
+        if ($tmp !== '') {
+            @file_put_contents($tmp, $after);
+            $out = [];
+            $code = 0;
+            @exec('php -l ' . escapeshellarg($tmp) . ' 2>&1', $out, $code);
+            @unlink($tmp);
+            if ($code !== 0) {
+                $msg = trim((string) preg_replace('/^.*?error:\s*/i', '', implode(' ', array_slice($out, -2))));
+                $errors[] = '语法错误：' . mb_substr($msg, 0, 120);
+            }
+        }
+    }
     // 硬编码密钥（常见形态）
     if (preg_match('/\b(sk-[A-Za-z0-9]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,})\b/', $after) === 1
         || preg_match('#https?://[^"\'\s]*:[^"\'\s]*@#', $after) === 1) {
@@ -274,20 +296,22 @@ function adapter_forge_guard(string $before, string $after, array $manifest): ar
 }
 
 /**
- * 第二轮：让 AI 依据上游信息把 TODO(适配) 换成真实调用
+
+/**
+ * 第二轮：让 AI 依据上游信息把 TODO(适配) 换成真实调用（带一次自动修复重试）
  *
- * 安全设计：先备份模板版本 → 写入新代码 → 跑闸门；**闸门不过就回滚**，绝不让坏代码留在草稿里。
+ * 安全设计：语法/越权/闸门三重校验；不过则**回滚**到本次调用前；最多 2 次尝试（第 2 次把失败原因回喂给 AI）。
  *
  * @param array<string,mixed> $profile
  * @param callable $ai fn(string $system, string $user, array $opts): array{ok:bool,text?:string,error?:string}
- * @return array{ok:bool,applied:bool,note:string,bytes:int,report:array<string,mixed>|null}
+ * @return array{ok:bool,applied:bool,note:string,bytes:int,attempts:int,report:array<string,mixed>|null}
  */
-function adapter_forge_complete(array $profile, string $draftDir, callable $ai): array
+function adapter_forge_complete(array $profile, string $draftDir, callable $ai, int $maxAttempts = 2): array
 {
     $dir = rtrim($draftDir, '/');
     $pluginPath = $dir . '/plugin.php';
     if (!is_file($pluginPath)) {
-        return ['ok' => false, 'applied' => false, 'note' => '草稿缺少 plugin.php', 'bytes' => 0, 'report' => null];
+        return ['ok' => false, 'applied' => false, 'note' => '草稿缺少 plugin.php', 'bytes' => 0, 'attempts' => 0, 'report' => null];
     }
     $manifest = [];
     if (is_file($dir . '/plugin.json')) {
@@ -296,55 +320,89 @@ function adapter_forge_complete(array $profile, string $draftDir, callable $ai):
     }
     $before = (string) file_get_contents($pluginPath);
 
-    $user = "上游能力画像：\n" . json_encode($profile, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-        . "\n\n当前骨架（含 TODO(适配)）：\n```php\n" . mb_substr($before, 0, 6000) . "\n```\n\n"
-        . "任务：用该上游的**官方 API** 补全所有 TODO(适配)，产出可直接运行的完整 PHP 文件。\n"
-        . "硬约束：\n"
-        . "1) 不得新增落点（注册函数只能出现在骨架已有的地方）\n"
-        . "2) 凭据只从 plugin_config() 读；不得出现任何明文密钥\n"
-        . "3) 每个网络请求必须有超时、非 2xx 分支与重试/退避说明\n"
-        . "4) 保留 declare(strict_types=1) 与既有函数名；只输出完整 PHP 文件\n";
-
-    $res = $ai(adapter_forge_system_prompt(), $user, ['feature' => 'adapter_forge_complete', 'max_tokens' => 3000]);
-    if (!is_array($res) || !($res['ok'] ?? false)) {
-        return ['ok' => false, 'applied' => false, 'note' => 'AI 调用失败：' . (string) ($res['error'] ?? ''), 'bytes' => 0, 'report' => null];
-    }
-    $after = adapter_forge_extract_code((string) ($res['text'] ?? ''));
-    if (trim($after) === '') {
-        return ['ok' => false, 'applied' => false, 'note' => 'AI 未返回可解析的 PHP', 'bytes' => 0, 'report' => null];
-    }
-
-    $guard = adapter_forge_guard($before, $after, $manifest);
-    if (!($guard['ok'] ?? false)) {
-        return ['ok' => false, 'applied' => false, 'note' => '安全栅栏拦截：' . implode('；', (array) $guard['errors']), 'bytes' => strlen($after), 'report' => null];
-    }
-
-    // 备份：① 模板版本留档（只备一次，供对比）② 本次调用前的快照（回滚用，必须每次覆盖）
+    // 备份：① 模板版本留档（只备一次）② 本次调用前快照（回滚用，每次覆盖）
     $templateBak = $dir . '/plugin.template.php.bak';
     if (!is_file($templateBak)) @copy($pluginPath, $templateBak);
     $prevBak = $dir . '/plugin.php.prev.bak';
     @copy($pluginPath, $prevBak);
-    @file_put_contents($dir . '/plugin.ai.php', $after);
-    @file_put_contents($pluginPath, $after);
 
-    // 重新验证前必须撤章：徽章只能由闸门发放，旧章会让 no-self-claim 误判
-    $unstamped = $manifest;
-    $unstamped['verification'] = ['status' => 'pending', 'badge' => 'unverified', 'tests' => '', 'checked_at' => ''];
-    @file_put_contents($dir . '/plugin.json', adapter_forge_json_pretty($unstamped));
+    $baseUser = "上游能力画像：\n" . json_encode($profile, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+        . "\n\n当前骨架（含 TODO(适配)）：\n```php\n" . mb_substr($before, 0, 6000) . "\n```\n\n"
+        . "任务：用该上游的**官方 API** 补全所有 TODO(适配)，产出可直接运行的完整 PHP 文件。\n"
+        . "硬约束：\n"
+        . "1) 不得新增落点（注册函数只能出现在骨架已有的地方）；若该上游确实需要其他落点"
+        . "（如 hook/schedule/block/mcp_tool），**不要注册**，只在文件顶部注释一行 "
+        . "`@adapter-suggest: <surface> 理由`，交由人审决定是否扩权\n"
+        . "2) 凭据只从 plugin_config() 读；不得出现任何明文密钥\n"
+        . "3) 每个网络请求必须有超时、非 2xx 分支与重试/退避说明\n"
+        . "4) 保留 declare(strict_types=1) 与既有函数名；**实现保持精简（≤180 行）**，只实现骨架已有的落点\n"
+        . "5) 只输出完整 PHP 文件本身，不要解释、不要省略号\n";
 
-    require_once __DIR__ . '/AdapterVerify.php';
-    $report = adapter_verify_gate($dir, $unstamped);
-    if (($report['status'] ?? 'blocked') === 'blocked') {
-        if (is_file($prevBak)) @copy($prevBak, $pluginPath);   // 回滚到本次调用前（AI 产物已在 plugin.ai.php 留档）
-        @file_put_contents($dir . '/plugin.json', adapter_forge_json_pretty($manifest));
-        $ps = '';
-        foreach ((array) ($report['checks'] ?? []) as $c) {
-            if (!$c['ok'] && $c['id'] === 'phpstan') $ps = ' · ' . (string) $c['note'];
+    $reason = '';
+    $lastBytes = 0;
+    $lastReport = null;
+    for ($attempt = 1; $attempt <= max(1, $maxAttempts); $attempt++) {
+        $user = $baseUser;
+        if ($reason !== '') {
+            $user .= "\n曾尝试一次但未通过校验，请**修复后重新输出完整文件**。失败原因：\n- " . $reason . "\n";
         }
-        return ['ok' => false, 'applied' => false,
-            'note' => '补全后未过闸门，已回滚：' . implode(',', (array) ($report['failed'] ?? [])) . $ps,
-            'bytes' => strlen($after), 'report' => $report];
+        $res = $ai(adapter_forge_system_prompt(), $user, ['feature' => 'adapter_forge_complete', 'max_tokens' => 8000]);
+        if (!is_array($res) || !($res['ok'] ?? false)) {
+            $reason = 'AI 调用失败：' . (string) ($res['error'] ?? '');
+            continue;
+        }
+        $after = adapter_forge_extract_code((string) ($res['text'] ?? ''));
+        $lastBytes = strlen($after);
+        if (trim($after) === '') { $reason = 'AI 未返回可解析的 PHP'; continue; }
+
+        $guard = adapter_forge_guard($before, $after, $manifest);
+        if (!($guard['ok'] ?? false)) {
+            // 把栅栏错误翻译成可执行的修复指令（下一轮的提示词会带上）
+            $hints = [];
+            foreach ((array) $guard['errors'] as $err) {
+                if (preg_match('/新增了未声明落点的调用：(\w+)（(\w+)）/', (string) $err, $m) === 1) {
+                    $hints[] = "把 {$m[1]} 的注册改为文件顶部注释 `@adapter-suggest: {$m[2]} 理由`，不要真的注册";
+                } elseif (str_contains((string) $err, '语法错误') || str_contains((string) $err, '花括号不平衡')) {
+                    $hints[] = '修好语法（花括号闭合、字符串引号/插值正确），保持 ≤180 行';
+                } elseif (str_contains((string) $err, '密钥')) {
+                    $hints[] = '移除所有明文密钥与带凭据 URL，改用 plugin_config()';
+                } elseif (str_contains((string) $err, '删除了既有注册')) {
+                    $hints[] = '保留骨架里所有既有注册，不要删减';
+                } else {
+                    $hints[] = (string) $err;
+                }
+            }
+            $reason = '安全栅栏拦截：' . implode('；', (array) $guard['errors'])
+                . ($hints !== [] ? "
+请按此修正：" . implode('；', $hints) : '');
+            continue;
+        }
+
+        @file_put_contents($dir . '/plugin.ai.php', $after);
+        @file_put_contents($pluginPath, $after);
+        // 重验前撤章（旧 verified 会让 no-self-claim 误判）
+        $unstamped = $manifest;
+        $unstamped['verification'] = ['status' => 'pending', 'badge' => 'unverified', 'tests' => '', 'checked_at' => ''];
+        @file_put_contents($dir . '/plugin.json', adapter_forge_json_pretty($unstamped));
+
+        require_once __DIR__ . '/AdapterVerify.php';
+        $report = adapter_verify_gate($dir, $unstamped);
+        $lastReport = $report;
+        if (($report['status'] ?? 'blocked') === 'blocked') {
+            if (is_file($prevBak)) @copy($prevBak, $pluginPath);          // 回滚
+            @file_put_contents($dir . '/plugin.json', adapter_forge_json_pretty($manifest));
+            $detail = '';
+            foreach ((array) ($report['checks'] ?? []) as $c) {
+                if (!$c['ok']) $detail .= ($detail === '' ? '' : '；') . $c['id'] . '：' . mb_substr((string) $c['note'], 0, 120);
+            }
+            $reason = '闸门未通过（' . implode(',', (array) ($report['failed'] ?? [])) . '）' . $detail;
+            continue;
+        }
+        adapter_verify_stamp($dir, $report);
+        return ['ok' => true, 'applied' => true, 'note' => "已补全并通过闸门（第 {$attempt} 次尝试）", 'bytes' => strlen($after), 'attempts' => $attempt, 'report' => $report];
     }
-    adapter_verify_stamp($dir, $report);
-    return ['ok' => true, 'applied' => true, 'note' => '已补全并通过闸门', 'bytes' => strlen($after), 'report' => $report];
+
+    return ['ok' => false, 'applied' => false,
+        'note' => ($reason !== '' ? '未通过校验，已回滚：' . $reason : '未产出可用代码'),
+        'bytes' => $lastBytes, 'attempts' => max(1, $maxAttempts), 'report' => $lastReport];
 }

@@ -103,23 +103,19 @@ function adapter_verify_phpstan(string $draftDir, string $repoRoot, int $level =
     $dir = $repoRoot . '/.deploy';
     @mkdir($dir, 0777, true);
 
-    // 桩：草稿只面对基座暴露的这几类 API；用 scanFiles 提供符号但不分析
-    $stub = $dir . '/phpstan-draft-stub.php';
-    @file_put_contents($stub, "<?php\n"
-        . "class PluginSystem {\n"
-        . "  public static function add_action(string \$h, callable \$cb, int \$p = 10): void {}\n"
-        . "  public static function add_filter(string \$h, callable \$cb, int \$p = 10): void {}\n"
-        . "  public static function register_api_route(string \$id, string \$m, string \$path, callable \$cb, array \$o = []): void {}\n"
-        . "  public static function register_schedule(string \$n, string \$i, callable \$cb): void {}\n"
-        . "  public static function register_block(string \$id, array \$def): void {}\n"
-        . "  public static function register_mcp_tool(string \$id, string \$n, string \$d, array \$s, callable \$cb): void {}\n"
-        . "  public static function register_admin_menu(array \$item): void {}\n"
-        . "}\n"
-        . "function plugin_config(string \$id): array { return []; }\n");
+    // 用真实基座符号（scanFiles 只注册符号、不分析）：比手写桩更准，避免"冤枉"AI 代码
+    // 注意：PHPStan 2.x 的 scanFiles 只接受**文件**，目录需展开
+    $scanFiles = [];
+    foreach ([$repoRoot . '/lib/*.php', $repoRoot . '/includes/*.php'] as $glob) {
+        foreach ((array) glob($glob) as $f) $scanFiles[] = $f;
+    }
+    if (is_file($repoRoot . '/admin/config.php')) $scanFiles[] = $repoRoot . '/admin/config.php';
+    $scanYaml = '';
+    foreach ($scanFiles as $f) $scanYaml .= "        - " . $f . "\n";
 
     $neon = $dir . '/phpstan-draft-' . substr(md5($absDraft), 0, 8) . '.neon';
     @file_put_contents($neon, "parameters:\n    level: {$level}\n    phpVersion: 80300\n"
-        . "    scanFiles:\n        - " . $stub . "\n"
+        . "    scanFiles:\n" . $scanYaml
         . "    paths:\n        - " . $absDraft . "\n"
         . "    treatPhpDocTypesAsCertain: false\n    reportUnmatchedIgnoredErrors: false\n"
         . "    tmpDir: /tmp/phpstan-adapter-draft\n");
@@ -129,8 +125,14 @@ function adapter_verify_phpstan(string $draftDir, string $repoRoot, int $level =
     $code = 0;
     @exec($cmd, $out, $code);
     @unlink($neon);
-    $tail = trim(implode(' | ', array_slice($out, -3)));
-    return ['ok' => $code === 0, 'note' => $code === 0 ? '无静态错误' : 'PHPStan：' . mb_substr($tail, 0, 200)];
+    // 只保留「文件:行 错误信息」，便于回喂给修复轮
+    $lines = [];
+    foreach ($out as $ln) {
+        if (preg_match('/\.php:\d+/', (string) $ln) === 1) $lines[] = trim((string) $ln);
+        if (count($lines) >= 6) break;
+    }
+    $tail = $lines !== [] ? implode(' | ', $lines) : trim(implode(' | ', array_slice($out, -3)));
+    return ['ok' => $code === 0, 'note' => $code === 0 ? '无静态错误' : 'PHPStan：' . mb_substr($tail, 0, 900)];
 }
 
 /** 沙箱能力校验（草稿若声明 artifact 级能力） */
