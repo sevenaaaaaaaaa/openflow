@@ -488,6 +488,7 @@ foreach ((array)($room['products'] ?? []) as $line) {
   function closeShop(){ shopModal.classList.remove('on'); document.body.classList.remove('shop-open'); sheetFrame.src = 'about:blank'; }
   document.getElementById('sheetClose').onclick = closeShop;
   shopModal.addEventListener('click', function(e){ if (e.target === shopModal) closeShop(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && shopModal.classList.contains('on')) closeShop(); });
   // 商品卡点击 → 浮层打开（不跳走）
   document.querySelectorAll('.prod-link').forEach(function(a){
     a.addEventListener('click', function(e){ e.preventDefault(); openShop(a.getAttribute('href'), a.getAttribute('data-title') || ''); });
