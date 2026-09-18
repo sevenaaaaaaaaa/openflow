@@ -104,5 +104,48 @@ $copyleft['source'] = ['repo' => 'a/b', 'license' => 'agpl-3.0', 'version' => 'v
 $rc = adapter_verify_gate($dir, $copyleft, ['skip_phpstan' => true]);
 check('AGPL → needs-review', $rc['status'] === 'needs-review', $rc['status']);
 
+/* 9. 第二轮 AI 补全（注入桩，不调模型） */
+$dir2 = sys_get_temp_dir() . '/of-adapter-c-' . getmypid() . '/' . $plan['id'];
+adapter_forge_write((array) $out['files'], $dir2);
+$templatePhp = (string) file_get_contents($dir2 . '/plugin.php');
+
+// 桩代码必须保留骨架里的全部注册（否则栅栏会（正确地）拦下"删除既有注册"）
+$goodCode = "<?php\ndeclare(strict_types=1);\n"
+    . "function binwiederhier_ntfy_config(): array { return []; }\n"
+    . "PluginSystem::register_api_route('binwiederhier-ntfy', 'POST', 'send', function (array \$req): array {\n"
+    . "    \$cfg = binwiederhier_ntfy_config(); return ['ok' => true]; }, ['auth' => 'token']);\n"
+    . "PluginSystem::register_api_route('binwiederhier-ntfy', 'POST', 'webhook', function (array \$req): array {\n"
+    . "    return ['ok' => true, 'event' => (string) (\$req['body']['event'] ?? '')]; }, ['auth' => 'hmac']);\n";
+$aiGood = static fn (string $s2, string $u, array $o): array => ['ok' => true, 'text' => "```php\n" . $goodCode . "```"];
+$c1 = adapter_forge_complete($profile, $dir2, $aiGood);
+check('补全：合法补全被应用', $c1['applied'] === true, (string) $c1['note']);
+check('补全：AI 产物留档 plugin.ai.php', is_file($dir2 . '/plugin.ai.php'));
+check('补全：模板与调用前快照都有留档', is_file($dir2 . '/plugin.template.php.bak') && is_file($dir2 . '/plugin.php.prev.bak'));
+check('补全：应用后 TODO 归零', substr_count((string) file_get_contents($dir2 . '/plugin.php'), 'TODO') === 0);
+$applied = (string) file_get_contents($dir2 . '/plugin.php');
+
+$aiFail = static fn (string $s2, string $u, array $o): array => ['ok' => false, 'text' => '', 'error' => 'quota'];
+$c2 = adapter_forge_complete($profile, $dir2, $aiFail);
+check('补全：AI 失败 → 不应用且给出原因', $c2['applied'] === false && str_contains((string) $c2['note'], 'quota'));
+
+$aiSecret = static fn (string $s2, string $u, array $o): array => ['ok' => true, 'text' => "<?php\ndeclare(strict_types=1);\n\$k = 'sk-abcdefghijklmnopqrstuvwx';\n"];
+$c3 = adapter_forge_complete($profile, $dir2, $aiSecret);
+check('补全：硬编码密钥被栅栏拦下', $c3['applied'] === false && str_contains((string) $c3['note'], '栅栏'), (string) $c3['note']);
+
+$aiExtra = static fn (string $s2, string $u, array $o): array => ['ok' => true, 'text' => "<?php\ndeclare(strict_types=1);\nPluginSystem::register_block('x', ['type' => 'y']);\n"];
+$c4 = adapter_forge_complete($profile, $dir2, $aiExtra);
+check('补全：新增未声明落点被拦下', $c4['applied'] === false && str_contains((string) $c4['note'], '未声明落点'), (string) $c4['note']);
+
+// 过得了栅栏、但过不了闸门（引用未定义函数）→ 必须回滚到调用前的版本
+$badCode = "<?php\ndeclare(strict_types=1);\n"
+    . "function binwiederhier_ntfy_config(): array { return []; }\n"
+    . "PluginSystem::register_api_route('binwiederhier-ntfy', 'POST', 'send', function (array \$req): array { return undefined_helper_xyz(); }, ['auth' => 'token']);\n"
+    . "PluginSystem::register_api_route('binwiederhier-ntfy', 'POST', 'webhook', function (array \$req): array { return ['ok' => true]; }, ['auth' => 'hmac']);\n";
+$aiBad = static fn (string $s2, string $u, array $o): array => ['ok' => true, 'text' => $badCode];
+$c5 = adapter_forge_complete($profile, $dir2, $aiBad);
+check('补全：闸门不过 → 回滚且不应用', $c5['applied'] === false && str_contains((string) $c5['note'], '回滚'), (string) $c5['note']);
+check('补全：回滚后内容与调用前一致', (string) file_get_contents($dir2 . '/plugin.php') === $applied);
+check('补全：被拦下的 AI 代码仍留档（供人审）', str_contains((string) file_get_contents($dir2 . '/plugin.ai.php'), 'undefined_helper_xyz'));
+
 echo "\n合计：{$pass} 通过，{$fail} 失败\n";
 exit($fail === 0 ? 0 : 1);
