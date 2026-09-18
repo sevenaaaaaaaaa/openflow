@@ -227,3 +227,31 @@ z-index 目前**散落硬编码**：`.modal` 92 / `.palette` 91 / `.overlay` 90 
 **顺带修掉一个性能 + 潜在缺陷**：`sync-r2.py` 里 `src_unchanged` 变量定义了却没用
 （正是我上次改 WebP 逻辑时的漏改）→ 每次同步都**重建 440 张 WebP**（耗时约 5 分钟）。
 修复后源图未变更即复用：实测 **6 秒**完成，输出 `WebP 0（复用 440）`。
+
+### 7.5 strict_types 与 PHPStan 收敛（2026-09-18 续）
+
+| 项 | 之前 | 现在 |
+|----|------|------|
+| `lib/` strict_types | 1/219 | **219/219（100%）** |
+| 全仓 strict_types | 18/835（2%） | **236/836（28%）** |
+| PHPStan level 5 | 1394 | **354 → 303**（已入基线，基线内 0 错误） |
+| CI 门禁 | 6 道 | **9 道**（+PHPStan / ruff / strict_types 棘轮） |
+
+- 全量加 `declare(strict_types=1)` 后：**129 测试 + 60 页渲染烟测全绿**，PHPStan 无新增类型错误
+- CI 加**覆盖率棘轮**（`0.8/5`：strict_types 覆盖只许升不许降）
+
+**本轮 PHPStan 又抓到的真 bug（8 类）**
+| 位置 | 问题 | 影响 |
+|------|------|------|
+| AgentRuntime / AutomationSystem / GeoCitable / SeoAudit | `save_article()` 签名是 `(string $id, array $data)`，却只传数组 | 生产必然 TypeError（被 1 参测试桩掩盖，桩已统一） |
+| AutomationSystem `send_wecom` / `send_wechat` | 步骤引用了**不存在的函数** | 跑到该步 Fatal → 已补两个实现 |
+| ModerationSystem | 对 PDO 调 `execute()` | 屏蔽评论时致命 → 改 `prepare+execute` |
+| FlowSystem | `$conv_track([...])` 把变量当函数 | 转化回传失效 → 改 `conv_track()` |
+| GrowthEngine | 活跃分布 `str_contains($key, $k)` 用了 int 索引 | 分布统计错误 → 改 `$label` |
+| userloop-bridge | `Wecom::sendAppMessage()` 参数缺失 | ArgumentCountError → 按真实签名传参 |
+| PluginSystem / PaymentChannel / CdpSystem / CptSystem | 死代码 / 重复数组键 / 数组与 0 比较 / 变量未初始化 | 各 1 处 |
+
+### 7.6 deploy.py 实战与修正
+
+用新部署器上线本轮 225 个文件时发现**自身性能缺陷**：逐文件一次 ssh 校验 → 200+ 文件 = 400+ 次远程调用（首次执行 15 分钟超时）。
+已改为**并行上传（6 并发）+ 一次批量 md5 校验**，并加上进度输出。另发现 `url_for()` 只知道路径映射、不认识 `.htaccess` 重写路由（如 `home-v2.php → /demo/home-v2`），部署后需按实际路由补 purge。
