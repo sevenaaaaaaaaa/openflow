@@ -112,11 +112,8 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
 <meta name="description" content="<?=htmlspecialchars($__capMeta)?>">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
-/* 能力页独有：连接器 chips（与产品页同款，等第三处出现再收进共享层） */
-.conn-chips{display:flex;flex-wrap:wrap;gap:8px;padding:22px}
-.conn-chips .cc{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-size:13px;font-weight:600}
-.conn-chips .cc .cd{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-/* 能力 Tab 的真实界面证据图（整行跨列） */
+/* 能力页独有：tab 面板内的证据图 / 6 模块双列 / 首屏证据数字条。
+   .conn-chips / .dep-table / .real-grid / .bt-go 已收编进 modules.css，本页不再私有。 */
 .tab-panel .tp-vis{grid-column:1/-1;margin-top:6px}
 .tab-panel .tp-vis .sp-win{overflow:hidden}
 .tab-panel .tp-vis img{width:100%;height:auto;display:block;aspect-ratio:1520/950;object-fit:cover;object-position:top}
@@ -126,35 +123,9 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
 .tp-steps.grid .tp-step{padding:14px 0}
 .tp-steps.grid .tp-step:nth-last-child(2){border-bottom:none}
 .tp-link{grid-column:1/-1;justify-self:start;margin-top:10px}
-@media (max-width:900px){.tp-steps.grid{grid-template-columns:1fr}.tp-steps.grid .tp-step:nth-last-child(2){border-bottom:1px solid var(--border-soft)}}
-/* 能力索引 */
-.capidx{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}
-.capidx .ci{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 22px}
-.capidx .ci h3{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
-.capidx .ci h3 .ic{width:26px;height:26px}
-.capidx .ci .ci-n{font-family:var(--font-mono);font-size:11.5px;color:var(--faint);margin-bottom:10px}
-.capidx .ci ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
-.capidx .ci li{font-size:12.5px;padding:4px 10px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border-soft);color:var(--muted)}
-@media (max-width:1000px){.capidx{grid-template-columns:1fr 1fr}}
-@media (max-width:640px){.capidx{grid-template-columns:1fr}}
-/* 首屏证据数字条 */
-.proof-strip{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 26px;margin-top:22px;font-family:var(--font-mono);font-size:12.5px;color:var(--faint)}
-.proof-strip b{color:var(--accent-strong);font-size:15px;font-weight:800;margin-right:5px}
-/* 部署决策表 */
-.dep-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:22px}
-.dep-table th,.dep-table td{padding:13px 18px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.7}
-.dep-table tr:last-child th,.dep-table tr:last-child td{border-bottom:none}
-.dep-table thead th{background:var(--surface-2);font-size:14px}
-.dep-table tbody th{width:120px;color:var(--faint);font-weight:500;font-size:12.5px;background:var(--surface-2)}
-.dep-table td b{color:var(--accent-strong)}
-      
-.real-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.real-shot img{width:100%;height:auto;display:block;aspect-ratio:1520/950;object-fit:cover;object-position:top}
-      .real-shot{display:flex;flex-direction:column}
-      .real-shot .sp-win{overflow:hidden;flex:1}
-      .real-shot figcaption{padding:12px 6px 0;font-size:13px;color:var(--muted);line-height:1.6}
-      .real-shot figcaption b{color:var(--fg)}
-@media(max-width:900px){.real-grid{grid-template-columns:1fr}}
+@media (max-width:860px){.tp-steps.grid{grid-template-columns:1fr}.tp-steps.grid .tp-step:nth-last-child(2){border-bottom:1px solid var(--border-soft)}}
+/* 适合谁 · 步骤卡内链 */
+.tl-go{align-self:flex-start;margin-left:-14px}
 </style>
 <script src="/assets/seo-inject.js?v=20260830b" defer></script>
 </head>
@@ -182,12 +153,12 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
   <section id="caps" class="sec reveal" data-od-anchor data-od-id="capability-caps">
     <div class="tab-bar dense" id="cap-tabs" role="tablist" aria-label="七项能力" data-tabs>
       <?php foreach ($CAPS as $i => $c): ?>
-      <button type="button" class="tab-p" role="tab" id="cap-t<?=$i?>" data-hash="<?=['cap-touch','cap-insight','cap-personality','cap-sales','cap-spine','cap-engine','cap-open'][$i] ?? 'cap-'.$i?>" aria-selected="<?=$i===0?'true':'false'?>" aria-controls="cap-p<?=$i?>" data-od-id="cap-<?=$i?>"><span class="ic"><?=$I[$c[0]]?></span><?=htmlspecialchars($c[1])?></button>
+      <button type="button" class="tab-p" role="tab" id="cap-t<?=$i?>" data-hash="<?=['cap-touch','cap-insight','cap-personality','cap-sales','cap-spine','cap-engine','cap-open'][$i] ?? 'cap-'.$i?>" aria-selected="<?=$i===$__capIdx?'true':'false'?>" aria-controls="cap-p<?=$i?>" data-od-id="cap-<?=$i?>"><span class="ic"><?=$I[$c[0]]?></span><?=htmlspecialchars($c[1])?></button>
       <?php endforeach; ?>
     </div>
     <div class="tab-panels">
       <?php foreach ($CAPS as $i => $c): ?>
-      <div class="tab-panel<?=$i===0?' on':''?>" id="cap-p<?=$i?>" role="tabpanel" aria-labelledby="cap-t<?=$i?>">
+      <div class="tab-panel<?=$i===$__capIdx?' on':''?>" id="cap-p<?=$i?>" role="tabpanel" aria-labelledby="cap-t<?=$i?>">
         <div class="tp-txt">
           <span class="kicker"><?=htmlspecialchars($c[1])?></span>
           <h3><?=htmlspecialchars($c[2])?></h3>
@@ -237,8 +208,14 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
       <h2>不是效果图，是正在跑的系统</h2>
       <p class="lead">六张图全部截自真实后台。你装上的就是这一套。</p>
     </div>
-    <div class="bento" style="margin-top:24px">
-<div data-w="4" data-r="2" class="bt-shot"><img src="/assets/images/product/workspace.png" alt="工作台" loading="lazy"><p style="margin-top:8px;font-size:12.5px;color:var(--muted)"><b style="color:var(--fg)">工作台</b> · KPI、待办、增长动态一屏掌握</p></div><div data-w="2" class="bt-shot"><img src="/assets/images/product/studio.png" alt="编排画布" loading="lazy"><p style="margin-top:8px;font-size:12.5px;color:var(--muted)"><b style="color:var(--fg)">编排画布</b> · 触发器、条件、动作拖拽成流</p></div><div data-w="2" class="bt-shot"><img src="/assets/images/product/audience.png" alt="CDP 画像" loading="lazy"><p style="margin-top:8px;font-size:12.5px;color:var(--muted)"><b style="color:var(--fg)">CDP 画像</b> · 分群、标签、行为轨迹全记录</p></div><div data-w="2" class="bt-shot"><img src="/assets/images/product/content-hub.png" alt="内容中心" loading="lazy"><p style="margin-top:8px;font-size:12.5px;color:var(--muted)"><b style="color:var(--fg)">内容中心</b> · 文章、专题、SEO 一站式管理</p></div><div data-w="2" class="bt-shot"><img src="/assets/images/product/automation.png" alt="自动化任务" loading="lazy"><p style="margin-top:8px;font-size:12.5px;color:var(--muted)"><b style="color:var(--fg)">自动化任务</b> · 触发器到执行全链路可观测</p></div><div data-w="2" class="bt-shot"><img src="/assets/images/product/crm.png" alt="CRM 线索" loading="lazy"><p style="margin-top:8px;font-size:12.5px;color:var(--muted)"><b style="color:var(--fg)">CRM 线索</b> · 线索、阶段、跟进记录一处管理</p></div>    </div>
+    <div class="real-grid">
+      <figure class="real-shot"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">workspace</div></div><img src="/assets/images/product/workspace.png" alt="工作台真实界面" loading="lazy"></div><figcaption><b>工作台</b> · KPI、待办、增长动态一屏掌握</figcaption></figure>
+      <figure class="real-shot"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">studio</div></div><img src="/assets/images/product/studio.png" alt="编排画布真实界面" loading="lazy"></div><figcaption><b>编排画布</b> · 触发器、条件、动作拖拽成流</figcaption></figure>
+      <figure class="real-shot"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">audience</div></div><img src="/assets/images/product/audience.png" alt="CDP 画像真实界面" loading="lazy"></div><figcaption><b>CDP 画像</b> · 分群、标签、行为轨迹全记录</figcaption></figure>
+      <figure class="real-shot"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">content-hub</div></div><img src="/assets/images/product/content-hub.png" alt="内容中心真实界面" loading="lazy"></div><figcaption><b>内容中心</b> · 文章、专题、SEO 一站式管理</figcaption></figure>
+      <figure class="real-shot"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">automation</div></div><img src="/assets/images/product/automation.png" alt="自动化任务真实界面" loading="lazy"></div><figcaption><b>自动化任务</b> · 触发器到执行全链路可观测</figcaption></figure>
+      <figure class="real-shot"><div class="sp-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">crm</div></div><img src="/assets/images/product/crm.png" alt="CRM 线索真实界面" loading="lazy"></div><figcaption><b>CRM 线索</b> · 线索、阶段、跟进记录一处管理</figcaption></figure>
+    </div>
   </section>
 
   <!-- ══ 集成生态 ══ -->
@@ -283,7 +260,7 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
         <ul class="sp-list"><li><?=$ck?><span>核心引擎私有部署</span></li><li><?=$ck?><span>云端弹性扩缩容</span></li><li><?=$ck?><span>灰度发布与回滚</span></li></ul>
       </div>
     </div>
-    <table class="dep-table">
+    <div class="dep-wrap"><table class="dep-table">
       <thead><tr><th></th><th>云端 SaaS</th><th>私有化部署</th><th>混合架构</th></tr></thead>
       <tbody>
         <tr><th>上手时间</th><td><b>当天</b>，注册即用</td><td>1-3 天，含环境准备</td><td>3-7 天，含架构评审</td></tr>
@@ -291,9 +268,9 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
         <tr><th>数据归属</th><td>云端加密存储，可随时导出</td><td><b>完全出不了你的域</b></td><td>核心数据私有，匿名化上云</td></tr>
         <tr><th>适合谁</th><td>想立刻跑起来的一人公司</td><td>重视自主可控的团队</td><td>既要安全又要弹性的成长型团队</td></tr>
         <tr><th>起步价</th><td><b>免费</b></td><td>开源免费 · 支持服务另议</td><td>按需评估</td></tr>
-        <tr><th></th><td><button class="btn ghost" data-act="start" style="font-size:12.5px;padding:8px 18px">免费开始</button></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 自取</a></td><td><a class="btn ghost" style="font-size:12.5px;padding:8px 18px" href="/about">聊聊需求 →</a></td></tr>
+        <tr><th></th><td><button class="btn ghost" data-act="start">免费开始</button></td><td><a class="btn ghost" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 自取</a></td><td><a class="btn ghost" href="/about">聊聊需求 →</a></td></tr>
       </tbody>
-    </table>
+    </table></div>
   </section>
 
   <!-- ══ 开放生态 ══ -->
@@ -339,9 +316,9 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
       <p class="lead">不用先学会所有功能。先从最卡的一环开始，再把可复用的流程逐步接回增长链路。</p>
     </div>
     <div class="tl">
-      <div class="tl-step"><span class="tl-n">01</span><span class="tl-y">OPC</span><h3>一个人做增长</h3><p>选题、内容、触达和复盘都由你负责，希望把重复动作交给 Agent，把时间留给判断。</p><a class="btn subtle" style="align-self:flex-start;margin-left:-14px" href="/product#demo">看完整增长闭环 →</a></div>
-      <div class="tl-step"><span class="tl-n">02</span><span class="tl-y">SMALL TEAM</span><h3>小团队协同运转</h3><p>已有内容或销售流程，但数据散在多个工具里，需要统一触发、权限和交接。</p><a class="btn subtle" style="align-self:flex-start;margin-left:-14px" href="#connectors">查看连接与部署 →</a></div>
-      <div class="tl-step"><span class="tl-n">03</span><span class="tl-y">OPERATOR</span><h3>想把方法变成资产</h3><p>不只想买工具，而是希望把自己的增长打法沉淀成可复制、可迭代的工作流。</p><a class="btn subtle" style="align-self:flex-start;margin-left:-14px" href="#caps">展开六项能力 →</a></div>
+      <div class="tl-step"><span class="tl-n">01</span><span class="tl-y">OPC</span><h3>一个人做增长</h3><p>选题、内容、触达和复盘都由你负责，希望把重复动作交给 Agent，把时间留给判断。</p><a class="btn subtle tl-go" href="/product#demo">看完整增长闭环 →</a></div>
+      <div class="tl-step"><span class="tl-n">02</span><span class="tl-y">SMALL TEAM</span><h3>小团队协同运转</h3><p>已有内容或销售流程，但数据散在多个工具里，需要统一触发、权限和交接。</p><a class="btn subtle tl-go" href="#connectors">查看连接与部署 →</a></div>
+      <div class="tl-step"><span class="tl-n">03</span><span class="tl-y">OPERATOR</span><h3>想把方法变成资产</h3><p>不只想买工具，而是希望把自己的增长打法沉淀成可复制、可迭代的工作流。</p><a class="btn subtle tl-go" href="#caps">展开六项能力 →</a></div>
     </div>
   </section>
 
@@ -422,22 +399,6 @@ function openProfile(){var f=shell().openProfile;if(f)f();else openAuth('login')
 Array.prototype.slice.call(document.querySelectorAll('[data-act]')).forEach(function(el){el.addEventListener('click',function(e){e.preventDefault();
   if(el.dataset.act==='start'){var u=curUser();if(u){openProfile();toast('欢迎回来，'+(u.nick||u.email))}else{openAuth('register')}}
 })});
-})();
-</script>
-
-<script>
-(function(){
-  document.querySelectorAll('.fq').forEach(function(el){
-    var q=el.querySelector('.fq-q'); if(!q) return;
-    q.addEventListener('click',function(){var on=el.classList.toggle('open');q.setAttribute('aria-expanded',on?'true':'false');});
-  });
-  var bar=document.getElementById('capExpand');
-  if(bar){bar.addEventListener('click',function(){
-    var fs=document.querySelectorAll('#capIndex .fq');
-    var all=[].every.call(fs,function(f){return f.classList.contains('open');});
-    fs.forEach(function(f){f.classList.toggle('open',!all);});
-    bar.textContent=all?'全部展开':'全部收起';
-  });}
 })();
 </script>
 </body>
