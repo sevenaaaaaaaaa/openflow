@@ -259,7 +259,7 @@ function adapter_manifest_skeleton(array $profile): array
             'kind' => (string) ($src['kind'] ?? ''), 'repo' => $slug,
             'version' => (string) ($src['version'] ?? ''), 'license' => (string) ($src['license'] ?? ''),
         ],
-        'surfaces' => (array) ($profile['surfaces'] ?? []),
+        'surfaces' => (array) ($profile['surface_hits'] ?? []),   // {api_route: [...], publish: [...]}
         'capabilities' => ['network' => [], 'secrets' => [], 'data' => []],
         'compat' => ['openflow' => '>=2.1 <3'],
         'verification' => (array) ($profile['verification'] ?? []),
@@ -288,29 +288,67 @@ function adapter_ai_prompt(array $profile): string
  */
 function adapter_intake_github(string $slug, int $timeout = 12): array
 {
-    $url = 'https://api.github.com/repos/' . rawurlencode($slug);
+    // 1) 优先用 gh（已登录时限额高、数据全）
+    if (function_exists('exec')) {
+        $cmd = 'gh api ' . escapeshellarg('repos/' . $slug) . ' 2>/dev/null';
+        $out = [];
+        $code = 0;
+        @exec($cmd, $out, $code);
+        if ($code === 0 && $out !== []) {
+            $d = json_decode(implode('', $out), true);
+            if (is_array($d)) {
+                $meta = adapter_intake_normalize($d, $slug);
+                $meta['version'] = adapter_intake_latest_version($slug);
+                return $meta;
+            }
+        }
+    }
+    // 2) 回退公开 API（可带 GITHUB_TOKEN 提升限额）
     if (!function_exists('curl_init')) return ['ok' => false, 'error' => 'curl 不可用'];
-    $ch = curl_init($url);
+    $token = (string) (getenv('GITHUB_TOKEN') ?: '');
+    $headers = ['Accept: application/vnd.github+json'];
+    if ($token !== '') $headers[] = 'Authorization: Bearer ' . $token;
+    $ch = curl_init('https://api.github.com/repos/' . rawurlencode($slug));
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CONNECTTIMEOUT => 5,
         CURLOPT_TIMEOUT => $timeout,
         CURLOPT_USERAGENT => 'OpenFlow-Adapter-Intake',
-        CURLOPT_HTTPHEADER => ['Accept: application/vnd.github+json'],
+        CURLOPT_HTTPHEADER => $headers,
     ]);
     $body = curl_exec($ch);
     $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
     if (!is_string($body) || $code !== 200) {
-        return ['ok' => false, 'error' => "GitHub API {$code}"];
+        $hint = $code === 403 ? '（匿名限额 60/h，可设 GITHUB_TOKEN 或安装 gh）' : '';
+        return ['ok' => false, 'error' => "GitHub API {$code}{$hint}"];
     }
     $d = json_decode($body, true);
     if (!is_array($d)) return ['ok' => false, 'error' => '响应不是 JSON'];
+    return adapter_intake_normalize($d, $slug);
+}
+
+/** 取最新 release tag（失败返回空串，不阻塞） */
+function adapter_intake_latest_version(string $slug): string
+{
+    if (!function_exists('exec')) return '';
+    $out = [];
+    $code = 0;
+    @exec('gh api ' . escapeshellarg('repos/' . $slug . '/releases/latest') . ' 2>/dev/null', $out, $code);
+    if ($code === 0 && $out !== []) {
+        $d = json_decode(implode('', $out), true);
+        if (is_array($d) && !empty($d['tag_name'])) return (string) $d['tag_name'];
+    }
+    return '';
+}
+
+/** GitHub 响应 → 统一元数据结构 */
+function adapter_intake_normalize(array $d, string $slug): array
+{
     return [
         'ok' => true,
         'repo' => (string) ($d['full_name'] ?? $slug),
         'description' => (string) ($d['description'] ?? ''),
-        'license' => strtolower((string) ($d['license']['spdx_id'] ?? '')),
+        'license' => strtolower((string) (($d['license']['spdx_id'] ?? '') ?: '')),
         'stars' => (int) ($d['stargazers_count'] ?? 0),
         'pushed_at' => substr((string) ($d['pushed_at'] ?? ''), 0, 10),
         'topics' => (array) ($d['topics'] ?? []),
