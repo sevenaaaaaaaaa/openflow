@@ -53,7 +53,9 @@ function adapter_verify_manifest(array $manifest): array
 
     $src = (array) ($manifest['source'] ?? []);
     $add('source:repo', (string) ($src['repo'] ?? '') !== '', 'source.repo 必填（版本可追溯）');
-    $add('source:version', (string) ($src['version'] ?? '') !== '', 'source.version 必填（pin tag/commit，用于 Loop 检测上游变更）');
+    $ver = (string) ($src['version'] ?? '');
+    $verOk = $ver !== '' && (preg_match('/^[A-Za-z-]*v?\d+(\.\d+)*/', $ver) === 1 || preg_match('/^[0-9a-f]{7,40}$/i', $ver) === 1);
+    $add('source:version', $verOk, $ver === '' ? 'source.version 必填（pin tag/commit）' : "看起来不是 tag/commit：{$ver}");
     $license = (string) ($src['license'] ?? '');
     $gate = adapter_license_gate($license);
     // 未知/无证 = 硬失败；copyleft 或白名单外 = 可生成但需人审（由状态判定降为 needs-review）
