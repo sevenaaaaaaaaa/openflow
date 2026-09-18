@@ -1,0 +1,47 @@
+{
+    "id": "binwiederhier-ntfy",
+    "name": "触达/通知通道适配器",
+    "version": "0.1.0",
+    "description": "由适配代理生成的草稿：来源 binwiederhier/ntfy",
+    "author": "OpenFlow Adapter Agent",
+    "enabled_by_default": false,
+    "permissions": [
+        "api",
+        "config",
+        "http",
+        "log",
+        "notify"
+    ],
+    "source": {
+        "kind": "github",
+        "repo": "binwiederhier/ntfy",
+        "version": "v2.28.0",
+        "license": "apache-2.0"
+    },
+    "surfaces": {
+        "api_route": [
+            "api",
+            "rest"
+        ],
+        "publish": [
+            "publish",
+            "post",
+            "send",
+            "notify"
+        ]
+    },
+    "capabilities": {
+        "network": [],
+        "secrets": [],
+        "data": []
+    },
+    "compat": {
+        "openflow": ">=2.1 <3"
+    },
+    "verification": {
+        "status": "passed",
+        "badge": "verified",
+        "tests": "tests/plugin_binwiederhier_ntfy_contract_test.php",
+        "checked_at": "2026-09-19T01:19:53+08:00"
+    }
+}

@@ -1,0 +1,109 @@
+{
+    "status": "passed",
+    "badge": "verified",
+    "failed": [],
+    "todos": 0,
+    "checks": [
+        {
+            "id": "field:id",
+            "ok": true,
+            "note": "id 缺失"
+        },
+        {
+            "id": "field:name",
+            "ok": true,
+            "note": "name 缺失"
+        },
+        {
+            "id": "field:version",
+            "ok": true,
+            "note": "version 缺失"
+        },
+        {
+            "id": "field:description",
+            "ok": true,
+            "note": "description 缺失"
+        },
+        {
+            "id": "field:author",
+            "ok": true,
+            "note": "author 缺失"
+        },
+        {
+            "id": "field:permissions",
+            "ok": true,
+            "note": "permissions 缺失"
+        },
+        {
+            "id": "field:source",
+            "ok": true,
+            "note": "source 缺失"
+        },
+        {
+            "id": "field:surfaces",
+            "ok": true,
+            "note": "surfaces 缺失"
+        },
+        {
+            "id": "field:verification",
+            "ok": true,
+            "note": "verification 缺失"
+        },
+        {
+            "id": "id:format",
+            "ok": true,
+            "note": "binwiederhier-ntfy"
+        },
+        {
+            "id": "permissions:known",
+            "ok": true,
+            "note": "未知权限："
+        },
+        {
+            "id": "permissions:superset",
+            "ok": true,
+            "note": "缺少："
+        },
+        {
+            "id": "source:repo",
+            "ok": true,
+            "note": "source.repo 必填（版本可追溯）"
+        },
+        {
+            "id": "source:version",
+            "ok": true,
+            "note": "看起来不是 tag\/commit：v2.28.0"
+        },
+        {
+            "id": "source:license",
+            "ok": true,
+            "note": "apache-2.0 → permissive"
+        },
+        {
+            "id": "verification:no-self-claim",
+            "ok": true,
+            "note": "草稿不得自称 verified"
+        },
+        {
+            "id": "contract_test",
+            "ok": true,
+            "note": "通过 ·  合计：14 通过，0 失败"
+        },
+        {
+            "id": "phpstan",
+            "ok": true,
+            "note": "无静态错误"
+        },
+        {
+            "id": "sandbox",
+            "ok": true,
+            "note": "未声明 artifact 能力，n\/a"
+        },
+        {
+            "id": "implementation:no-todo",
+            "ok": true,
+            "note": "实现无待补 TODO"
+        }
+    ],
+    "checked_at": "2026-09-19T01:19:53+08:00"
+}

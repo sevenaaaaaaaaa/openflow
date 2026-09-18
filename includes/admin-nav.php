@@ -342,6 +342,7 @@ function admin_nav_build(bool $includeSystem): array {
                 ['id' => 'nav-editor', 'label' => '顶栏导航', 'perm' => 'site-builder'],
                 ['id' => 'themes', 'label' => '主题', 'perm' => 'themes'],
                 ['id' => 'plugins', 'label' => '插件', 'perm' => 'plugins'],
+                ['id' => 'ecosystem', 'label' => '生态适配', 'perm' => 'plugins'],
                 ['id' => 'users', 'label' => '后台用户', 'perm' => 'users'],
                 ['id' => 'roles', 'label' => '角色与权限', 'perm' => 'users'],
                 ['id' => 'security', 'label' => '账号安全（2FA）', 'perm' => ['themes', 'plugins', 'users', 'settings']],
