@@ -66,12 +66,15 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 .bub{position:relative;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--muted);display:grid;place-items:center;cursor:pointer;transition:transform .2s var(--ease-spring),border-color .2s,background .2s,color .2s,box-shadow .2s}
 .bub .mi{width:20px;height:20px}
 .bub .mi svg{width:20px;height:20px}
-.bub:hover{border-color:var(--border-strong);color:var(--fg);transform:translateY(-2px)}
-.bub.on{background:var(--accent);border-color:transparent;color:var(--on-accent);box-shadow:0 6px 18px oklch(52% .17 258/.32)}
+ .bub:hover{border-color:var(--border-strong);color:var(--fg);transform:translateY(-2px)}
+ .bub.on{background:var(--accent);border-color:transparent;color:var(--on-accent);box-shadow:0 6px 18px oklch(52% .17 258/.32)}
+ /* .bub.on 的实色阴影会盖掉全局 button:focus-visible 光环（特异性相同），单独补回 */
+ .bub:focus-visible{box-shadow:0 0 0 3px oklch(52% .17 258/.55)}
+ .bub.on:focus-visible{box-shadow:0 6px 18px oklch(52% .17 258/.32),0 0 0 3px oklch(52% .17 258/.55)}
 .bub::after{content:attr(data-m);position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--fg);color:var(--bg);font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;white-space:nowrap;z-index:6}
 .bub:hover::after,.bub:focus-visible::after{opacity:1;transform:translateX(-50%) translateY(0)}
 
-@media (max-width:960px){
+@media (max-width:860px){
   .arc{display:none}
   .arena .ghost{display:none}
   .arena-canvas{height:auto;display:grid;grid-template-columns:repeat(2,1fr);gap:18px;align-items:center;padding:8px 0}
@@ -79,7 +82,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
   .arena-canvas .nd>span:not(.nd-ic){display:inline}
   .bub{width:40px;height:40px}
 }
-@media (max-width:1199px){.nd>span:not(.nd-ic){display:none}}
+@media (max-width:1080px){.nd>span:not(.nd-ic){display:none}}
 @media (max-width:640px){
   .arena-driver{font-size:12px}
 }
@@ -127,10 +130,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
             <path class="ln" d="M 0 48 C 30 48 45 48 60 48"/>
             <path class="ln" d="M 0 184 C 30 184 45 184 60 184"/>
             <path class="ln" d="M 0 320 C 30 320 45 320 60 320"/>
-<path class="ln" d="M 0 48 C 25 48 35 48 60 48"/>
-<path class="ln" d="M 0 184 C 25 184 35 184 60 184"/>
-<path class="ln" d="M 0 320 C 25 320 35 320 60 320"/>
-<path class="ln" d="M 215 48 C 235 32 243 84 263 68"/>
+            <path class="ln" d="M 215 48 C 235 32 243 84 263 68"/>
 <path class="ln" d="M 215 116 C 235 100 243 164 263 148"/>
 <path class="ln" d="M 215 184 C 235 168 243 244 263 228"/>
 <path class="ln" d="M 215 252 C 235 236 243 324 263 308"/>
@@ -226,8 +226,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
       <p class="lead">不必为一个用不上的大系统付费：每件都能单独跑、单独见效；组合起来就是一套自转的增长系统。互通走 API——拔掉任何一个，其余照常运行。</p>
     </div>
     <div class="bento" style="margin-top:24px">
-<div data-w="3" data-r="2" class="bt-hi"><span class="bt-k">全家桶 · 四力合一</span><h3>OpenFlow · 增长操作系统</h3><p>要一整套系统、数据要在一处、团队要一个后台——四力合一，其余六件按需嵌入。</p><ul><li><b>交付</b>：内容引擎 + CDP + 自动化 + CRM + 商城</li><li><b>适合</b>：要一整套系统的团队</li><li><b>依赖</b>：深度（自家 CMS + CDP）</li></ul><a href="/product" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 OpenFlow →</a></div><div data-w="3"><span class="bt-k">轻量内容</span><h3>MFlow · 内容生产与分发</h3><p>AI 生成 + 多平台分发 + 轻触达。不换 CMS、不锁模型。</p><ul><li><b>适合</b>：内容创作者 · 电商卖家</li><li><b>上手</b>：当天</li></ul><a href="/product/mflow" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 MFlow →</a></div><div data-w="3"><span class="bt-k">落地页</span><h3>Webs Flow · 落地页专精</h3><p>44 种展示区块，承接页以小时计上线。</p><ul><li><b>适合</b>：投手 · 活动运营</li><li><b>依赖</b>：无</li></ul><a href="/product/webs-flow" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 Webs Flow →</a></div><div data-w="2"><span class="bt-k">全域数据</span><h3>UserLoop · 全域营销数据中枢</h3><p>埋点 + 身份合并 + 分群，对接任何 MA。</p><ul><li><b>适合</b>：多平台团队 · 代理商</li><li><b>依赖</b>：无</li></ul><a href="/product/userloop" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 UserLoop →</a></div><div data-w="2"><span class="bt-k">外部情报</span><h3>inFlow · 情报增长站</h3><p>趋势 / 舆情 / 竞品 + 每日情报。</p><ul><li><b>适合</b>：品牌方 · 内容策划</li><li><b>依赖</b>：无</li></ul><a href="/product/inflow" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 inFlow →</a></div><div data-w="2"><span class="bt-k">收款变现</span><h3>PayFlow · 商业变现引擎</h3><p>一行嵌入收款 + 订阅 + 裂变佣金。</p><ul><li><b>适合</b>：创作者 · 独立开发者</li><li><b>依赖</b>：无</li></ul><a href="/product/payflow" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 PayFlow →</a></div><div data-w="6"><span class="bt-k">课程交付</span><h3>LearnFlow · 课程与训练营</h3><p>上课 → 进度 → 测验 → 证书，交付闭环。</p><ul><li><b>适合</b>：讲师 · 教练 · 训练营主理人</li><li><b>依赖</b>：轻（收款接 PayFlow）</li></ul><a href="/product/learnflow" style="margin-top:auto;color:var(--accent);font-size:13px;font-weight:700">进入 LearnFlow →</a></div>    </div>
-    <p class="note" style="text-align:center;margin-top:18px">各产品的依赖与适用人群见 <a href="/demo/products">产品矩阵总览</a> · 想看它怎么跑，见 <a href="/demo/products#demo">运行演示</a></p>
+<div data-w="3" data-r="2" class="bt-hi"><span class="bt-k">全家桶 · 四力合一</span><h3>OpenFlow · 增长操作系统</h3><p>要一整套系统、数据要在一处、团队要一个后台——四力合一，其余六件按需嵌入。</p><ul><li><b>交付</b>：内容引擎 + CDP + 自动化 + CRM + 商城</li><li><b>适合</b>：要一整套系统的团队</li><li><b>依赖</b>：深度（自家 CMS + CDP）</li></ul><a href="/product" class="bt-go">进入 OpenFlow →</a></div><div data-w="3"><span class="bt-k">轻量内容</span><h3>MFlow · 内容生产与分发</h3><p>AI 生成 + 多平台分发 + 轻触达。不换 CMS、不锁模型。</p><ul><li><b>适合</b>：内容创作者 · 电商卖家</li><li><b>上手</b>：当天</li></ul><a href="/product/mflow" class="bt-go">进入 MFlow →</a></div><div data-w="3"><span class="bt-k">落地页</span><h3>Webs Flow · 落地页专精</h3><p>44 种展示区块，承接页以小时计上线。</p><ul><li><b>适合</b>：投手 · 活动运营</li><li><b>依赖</b>：无</li></ul><a href="/product/webs-flow" class="bt-go">进入 Webs Flow →</a></div><div data-w="2"><span class="bt-k">全域数据</span><h3>UserLoop · 全域营销数据中枢</h3><p>埋点 + 身份合并 + 分群，对接任何 MA。</p><ul><li><b>适合</b>：多平台团队 · 代理商</li><li><b>依赖</b>：无</li></ul><a href="/product/userloop" class="bt-go">进入 UserLoop →</a></div><div data-w="2"><span class="bt-k">外部情报</span><h3>inFlow · 情报增长站</h3><p>趋势 / 舆情 / 竞品 + 每日情报。</p><ul><li><b>适合</b>：品牌方 · 内容策划</li><li><b>依赖</b>：无</li></ul><a href="/product/inflow" class="bt-go">进入 inFlow →</a></div><div data-w="2"><span class="bt-k">收款变现</span><h3>PayFlow · 商业变现引擎</h3><p>一行嵌入收款 + 订阅 + 裂变佣金。</p><ul><li><b>适合</b>：创作者 · 独立开发者</li><li><b>依赖</b>：无</li></ul><a href="/product/payflow" class="bt-go">进入 PayFlow →</a></div><div data-w="6"><span class="bt-k">课程交付</span><h3>LearnFlow · 课程与训练营</h3><p>上课 → 进度 → 测验 → 证书，交付闭环。</p><ul><li><b>适合</b>：讲师 · 教练 · 训练营主理人</li><li><b>依赖</b>：轻（收款接 PayFlow）</li></ul><a href="/product/learnflow" class="bt-go">进入 LearnFlow →</a></div>    </div>
     <p class="note" style="text-align:center;margin-top:18px">各产品的依赖与适用人群见 <a href="/demo/products">产品矩阵总览</a> · 想看它怎么跑，见 <a href="/demo/products#demo">运行演示</a></p>
   </section>
 
@@ -645,6 +644,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
     tabs.forEach(function(t){panels[t.dataset.t]=document.getElementById(pre+'-'+t.dataset.t);t.tabIndex=-1;});
     if(tabs[0])tabs[0].tabIndex=0;
     var AUTO=box.dataset.auto==='on',IV=parseInt(box.dataset.interval||4500,10);
+    box.style.setProperty('--prog',(IV/1000)+'s'); // 进度条时长跟随 data-interval，不再依赖恰好等于默认值 4.5s
     function sel(t){
       tabs.forEach(function(x){var on=x===t;x.setAttribute('aria-selected',on?'true':'false');x.tabIndex=on?0:-1;});
       Object.keys(panels).forEach(function(k){panels[k].classList.toggle('on',k===t.dataset.t);});
