@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 二维码扫描追踪 — 扫描计数 / 扫码后注册归因
  *

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 站内信系统 — 会员收件箱 + 系统通知 + 后台广播
  * 数据：data/messages/index.json

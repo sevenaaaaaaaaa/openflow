@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 风控与内容审核系统
  *
@@ -220,7 +221,8 @@ function mod_scan_all(): array {
             $results['scanned']++;
             $check = mod_check_text($row['text'] ?? '');
             if (!$check['ok']) {
-                $db->execute("UPDATE comments SET status='hidden' WHERE id=?", [$row['id']]);
+                $stmt = $db->prepare("UPDATE comments SET status='hidden' WHERE id=?");
+                if ($stmt) $stmt->execute([$row['id']]);
                 $results['blocked']++;
                 mod_log('scan_block', ['target_type' => 'comment_sqlite', 'target_id' => $row['id']], $check['reason'], $check['score']);
             }

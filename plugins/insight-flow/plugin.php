@@ -56,12 +56,12 @@ $p->filter('cdp_event_received', function (array $events) use ($p, $pushToIF) {
     return $events; // filter 钩子：原样返回，绝不丢数据
 });
 
-$p->on('cdp_segment_enter', function ($segId, $profile, $seg) use ($p, $pushToIF) {
+$p->on('cdp_segment_enter', function ($segId, $profile, $seg) use ($pushToIF) {
     $pushToIF(['event' => 'cdp_event', 'visitor_id' => $profile['email'] ?? ($profile['visitor_id'] ?? ''),
                'name' => 'segment_enter', 'props' => ['segment' => $seg['name'] ?? (string)$segId]]);
 });
 
-$p->on('cdp_segment_exit', function ($segId, $profile, $seg) use ($p, $pushToIF) {
+$p->on('cdp_segment_exit', function ($segId, $profile, $seg) use ($pushToIF) {
     $pushToIF(['event' => 'cdp_event', 'visitor_id' => $profile['email'] ?? ($profile['visitor_id'] ?? ''),
                'name' => 'segment_exit', 'props' => ['segment' => $seg['name'] ?? (string)$segId]]);
 });
@@ -73,19 +73,19 @@ $p->on('payment_success', function (string $orderId, array $order, string $metho
                'props' => ['order_id' => $orderId, 'amount' => (float)($order['amount'] ?? 0), 'method' => $method]]);
 });
 
-$p->on('crm_deal_won', function (string $email, array $lead) use ($p, $pushToIF) {
+$p->on('crm_deal_won', function (string $email, array $lead) use ($pushToIF) {
     $pushToIF(['event' => 'cdp_event', 'visitor_id' => $email, 'name' => 'crm_deal_won',
                'props' => ['value' => (float)($lead['value'] ?? 0)]]);
 });
 
 // 获客漏斗 S1 诊断数据（签名：$formId, $type, $formData, $submission）
-$p->on('form_submitted', function ($formId, $type, $formData, $submission) use ($p, $pushToIF) {
+$p->on('form_submitted', function ($formId, $type, $formData, $submission) use ($pushToIF) {
     $pushToIF(['event' => 'cdp_event', 'visitor_id' => $formData['email'] ?? '', 'name' => 'form_submitted',
                'props' => ['form_id' => (string)$formId, 'form_type' => (string)$type]]);
 });
 
 // 签名：$memberId, $email, $member
-$p->on('user_registered', function ($memberId, string $email, array $member) use ($p, $pushToIF) {
+$p->on('user_registered', function ($memberId, string $email, array $member) use ($pushToIF) {
     $pushToIF(['event' => 'cdp_event', 'visitor_id' => $email, 'name' => 'user_registered',
                'props' => ['member_id' => (string)$memberId]]);
 });

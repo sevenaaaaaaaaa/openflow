@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 企业实体（ToB）— OpenFlow 商业发行版
  * 设计理念：all-in-one，不新增系统。企业客户与 C 端用户共享同一套账号体系，

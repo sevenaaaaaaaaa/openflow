@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * AdCampaign — 投放管理闭环
  * 投放计划 + 平台指标 + ROI 归因 + CAPI 转化打通

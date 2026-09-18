@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * NavGithub — 导航站条目的 GitHub 仓库元数据
  *

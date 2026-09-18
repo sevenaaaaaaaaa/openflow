@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 前台搜索引擎 SearchEngine
  * 跨文章/专题/课程/资料/技能 搜索，供 search.php 页面和 search-public.php API 共用

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Skill 系统 — 可复用的 AI/Agent 能力包
  *

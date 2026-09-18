@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * PluginSDK —— 插件作者的稳定门面（C2）
  *

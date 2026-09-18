@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ClickTracker —— 可视化圈选埋点（AUDIT-02 / BACKLOG T1-4）
  *

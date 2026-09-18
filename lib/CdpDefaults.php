@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CdpDefaults —— CDP 默认规则真源（P0：让深引擎开箱即用）
  *

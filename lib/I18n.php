@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * I18n — 轻量多语言支持
  * 语言检测：URL 前缀 /en/、/ja/ 优先，其次 cookie，最后浏览器语言

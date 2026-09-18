@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CommissionPolicy —— 统一分成/结算政策层（AUDIT-05 / BACKLOG T0-5）
  *

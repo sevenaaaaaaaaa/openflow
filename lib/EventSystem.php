@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * EventSystem — 活动领域层（从"独立 CMS 模块"接进增长系统）
  *

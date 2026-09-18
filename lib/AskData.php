@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * AskData —— 自然语言问数据（AUDIT-02 / BACKLOG T1-3）
  *

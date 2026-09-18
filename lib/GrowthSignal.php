@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GrowthSignal —— 传出神经第一环：成交反哺 CDP
  *

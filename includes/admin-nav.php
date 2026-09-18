@@ -411,7 +411,7 @@ function admin_nav_system_area(): array {
 function admin_nav_locate(string $current, string $script = ''): array {
     $tree = admin_nav_tree();
     $miss = ['area' => 'touch', 'item' => null, 'sub' => null, 'pinned' => false, 'label' => '', 'areaLabel' => '', 'subs' => [], 'clusterLabel' => ''];
-    $find = function (string $id) use ($tree, $miss): ?array {
+    $find = function (string $id) use ($tree): ?array {
         if ($id === '') return null;
         if (isset(ADMIN_NAV_ALIAS[$id])) $id = ADMIN_NAV_ALIAS[$id];
         // 置顶条目也能定位（工作台 / 驾驶舱 / 日历 / 进化）

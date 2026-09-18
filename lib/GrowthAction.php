@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GrowthAction —— 一键采纳：大脑提议 → 行动闭环（AUDIT-07 P1-7）
  *

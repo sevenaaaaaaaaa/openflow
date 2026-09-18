@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 数字商品系统 CommerceSystem
  * 统一管理四类数字资产商品：Skill / 插件 / 主题 / API 套餐

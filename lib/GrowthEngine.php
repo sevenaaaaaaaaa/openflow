@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GrowthEngine — 增长规则引擎（实用性重写）
  *
@@ -300,7 +301,7 @@ class GrowthEngine {
         $strengths = [];
         foreach (['bug'=>'修复', 'content'=>'内容', 'perf'=>'性能', 'routing'=>'路由', 'interaction'=>'交互'] as $k=>$label) {
             $cnt = 0;
-            foreach ($sig as $key=>$v) if (str_contains($key, $k)) $cnt += $v;
+            foreach ($sig as $key=>$v) if (str_contains((string)$key, $label)) $cnt += $v;
             if ($cnt > 0) $strengths[] = $label . '×' . $cnt;
         }
         if (empty($strengths)) $strengths[] = '新生';

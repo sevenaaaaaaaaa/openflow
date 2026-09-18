@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ProductScout — 每日新产品发现 Loop（E1）
  *

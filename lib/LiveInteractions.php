@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * LiveInteractions — 直播互动与成交（对标并超越国内私域直播的运营能力）
  *

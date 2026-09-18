@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * OpsGuard —— 平台运营的渐进自治护栏（AUDIT-05 / BACKLOG T2-8）
  *

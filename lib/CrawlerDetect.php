@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 爬虫 / AI 爬虫检测与友好响应工具
  *

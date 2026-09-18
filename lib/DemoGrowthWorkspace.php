@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Isolated, deterministic demo workspace. Never reads or writes production customer stores. */
 require_once __DIR__ . '/GrowthBrain.php';
 require_once __DIR__ . '/GrowthSignal.php';

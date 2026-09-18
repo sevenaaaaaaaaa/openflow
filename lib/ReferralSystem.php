@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 推荐码体系 — B1 商业化核心
  *

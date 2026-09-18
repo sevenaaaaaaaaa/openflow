@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Read-only Flow workspace projection. It composes existing stores; it never owns execution or storage. */
 require_once __DIR__ . '/DomainContract.php';
 require_once __DIR__ . '/EvidenceProjection.php';

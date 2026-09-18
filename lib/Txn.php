@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 跨 SQLite 与 JSON 文件的一致性写入 —— P0-05（2026-09-03）
  *

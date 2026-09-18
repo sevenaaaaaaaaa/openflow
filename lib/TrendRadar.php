@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * TrendRadar — 社媒/多源热点雷达
  *

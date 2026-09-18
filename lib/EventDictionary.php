@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 事件字典 EventDictionary
  * 可视化维护事件定义：名称/分类/属性/启用状态/采集统计

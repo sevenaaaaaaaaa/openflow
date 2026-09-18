@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * UnifiedCatalog —— 统一商品目录（AUDIT-05 / BACKLOG T1-13）
  *

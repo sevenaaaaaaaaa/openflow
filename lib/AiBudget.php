@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * AiBudget —— AI 的电表与保险丝（docs/ROADMAP.md 阶段一第 2 件）
  *

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * TOTP —— 基于时间的一次性密码（RFC 6238），零依赖。
  *

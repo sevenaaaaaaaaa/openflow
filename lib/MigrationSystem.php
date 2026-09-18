@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 历史数据迁移助手 — 老系统 → OpenFlow 切换
  * 支持导入：文章 / 页面 / 线索 / 用户会员 / 评论

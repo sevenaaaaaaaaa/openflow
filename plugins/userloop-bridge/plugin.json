@@ -1,0 +1,9 @@
+{
+    "id": "userloop-bridge",
+    "name": "UserLoop 触达桥接",
+    "version": "1.0.0",
+    "description": "为 UserLoop 提供邮件/微信/企微/短信的触达出口：复用 OpenFlow 多通道邮件 + 抑制名单 + 追踪归因，服务间以 HMAC token 鉴权",
+    "author": "UserLoop",
+    "enabled_by_default": true,
+    "permissions": ["hooks", "slot", "http", "log", "config", "api", "email", "notify"]
+}

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * CDP AI 洞察
  * 汇总 CDP 关键指标 → 交给 AI 生成自然语言运营洞察 / 异常发现 / 行动建议

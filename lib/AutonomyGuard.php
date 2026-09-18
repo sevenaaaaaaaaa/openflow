@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * AutonomyGuard —— 渐进自治护栏 + 目标制回路（AUDIT-03 / BACKLOG T2-4）
  *

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 数据连接器 DataConnector
  * 把 CRM 线索 / 商城订单 / 课程进度 / 会员资料 自动回填到 CDP 画像

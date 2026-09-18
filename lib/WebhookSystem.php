@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Webhook 系统
  * 支持创建、管理、触发 Webhook

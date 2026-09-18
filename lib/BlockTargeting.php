@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BlockTargeting —— 落地页/建站区块级人群定向（AUDIT-01 / BACKLOG T1-8）
  *

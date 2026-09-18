@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ConsentSystem —— 同意管理 + 数据保留（AUDIT-02 / BACKLOG T1-5）
  *

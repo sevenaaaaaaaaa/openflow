@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Read-only action approval projection for the dedicated governance workspace. */
 require_once __DIR__ . '/EvidenceProjection.php';
 

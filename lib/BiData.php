@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BiData — 全站经营数据集（对话式 BI 的数据底座）
  *

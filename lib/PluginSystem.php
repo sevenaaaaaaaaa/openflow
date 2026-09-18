@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * OpenFlow Plugin System — hooks, actions, filters engine
  *
@@ -371,7 +372,6 @@ class PluginSystem {
         // 更新注册表版本
         $m = is_file($targetDir . '/plugin.json') ? (json_decode((string)file_get_contents($targetDir . '/plugin.json'), true) ?: []) : [];
         $regFile = __DIR__ . '/../data/plugins.json';
-        if (is_file($regDir = dirname($regDir ?? $regFile)) || true) {}
         $registry = function_exists('json_read') ? json_read($regFile) : (is_file($regFile) ? (json_decode((string)file_get_contents($regFile), true) ?: []) : []);
         if (is_array($registry) && isset($registry['installed'][$pluginId])) {
             $registry['installed'][$pluginId]['version'] = (string)($m['version'] ?? '0');

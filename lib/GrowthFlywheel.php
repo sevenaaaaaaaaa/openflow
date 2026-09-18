@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * GrowthFlywheel —— 内容自动线（Content Autopilot）
  *

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * API Key 认证系统
  * 支持 API Key 生成、验证、权限控制

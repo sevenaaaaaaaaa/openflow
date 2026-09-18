@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BlockTemplate — 模块组合模板（一个模板 = 一组成套区块，一次插入）
  *

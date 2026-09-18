@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Optional stable identity shared by event ingestion and Flow dispatch. */
 
 if (!function_exists('event_identity')) {

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * UnifiedInbox —— 统一会话收件箱（AUDIT-04 创新三 / BACKLOG T1-10）
  *
@@ -55,7 +56,7 @@ if (!function_exists('uinbox_state_file')) {
      * 返回按时间倒序的条目数组。
      */
     function uinbox_all(?array $inject = null): array {
-        $read = function (string $rel) use ($inject) {
+        $read = function (string $rel) {
             return function_exists('json_read') ? json_read(DATA_DIR . $rel) : [];
         };
         $items = [];

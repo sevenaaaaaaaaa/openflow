@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 直播系统 — OBS/RTMP 推流 + 线上直播 + 售卖课程
  *

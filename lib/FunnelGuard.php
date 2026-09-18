@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * FunnelGuard — 转化漏斗级 AI 巡检
  * 对比近7天 vs 前7天：落地页访问→转化率、渠道转化效率，自动告警 + AI 根因建议

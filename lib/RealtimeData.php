@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 实时数据采集层 RealtimeData
  * 提供：

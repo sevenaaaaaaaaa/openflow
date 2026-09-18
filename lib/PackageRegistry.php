@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * PackageRegistry —— 版本 / 依赖 / 兼容管理（AUDIT-06 / BACKLOG T2-11）
  *

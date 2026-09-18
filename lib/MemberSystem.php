@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 前台用户体系 — 注册/登录/验证码/防攻击白名单/会话
  * 数据存储：data/members/index.json

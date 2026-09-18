@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 文章导出与分享
  * - 导出 Markdown / NotebookLM（支持网页导入的 markdown 或纯文本）

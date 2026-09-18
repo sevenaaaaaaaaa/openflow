@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 区块注册表 —— 模块化的单一真源（2026-09-03）
  *
@@ -276,7 +277,7 @@ function builder_render_block_inner(array $b): string {
         case 'accordion':  // 手风琴（自适应）：内容里写了 hacc-body → 桌面横排展开；否则纵向
         case 'accordion-h': { // 强制横向手风琴：桌面横排 hover 展开（flex 1→3.2），移动端纵向
             $cnt = $content;
-            $horizontal = ($type === 'accordion-h') || str_contains($cnt, 'hacc-body');
+            $horizontal = ($t === 'accordion-h') || str_contains($cnt, 'hacc-body');
             if (!$horizontal) $cnt = str_replace(['class="hacc-body"', 'hacc-body'], ['class="vacc-body"', 'vacc-body'], $cnt);
             $wrap = $horizontal ? 'hacc' : 'vacc';
             $body = $horizontal ? 'hacc-body' : 'vacc-body';

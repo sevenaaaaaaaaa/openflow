@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 数据导入/导出系统
  * 支持 CSV / JSON 格式的数据导入和导出

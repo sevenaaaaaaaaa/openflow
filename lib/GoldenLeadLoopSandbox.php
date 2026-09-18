@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Golden Loop sandbox: synthetic high-intent lead -> sale scenario, no production I/O. */
 
 require_once __DIR__ . '/LoopRuntime.php';

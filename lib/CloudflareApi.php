@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Cloudflare API 封装
  * 清缓存 / DNS 管理 / 站点性能与状态 / Zone 信息

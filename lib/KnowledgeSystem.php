@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 公司知识库 — 供 AI agent 检索（RAG）
  * 文档存储 + 关键词检索 + AI 增强

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** Shared action planning boundary. V1 is dry-run only and executes nothing. */
 
 require_once __DIR__ . '/DomainContract.php';

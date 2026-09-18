@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 文章互动数据 — 阅读/点赞/收藏/分享 统计
  * 存储：SQLite (data/db/openflow.db) → article_stats 表

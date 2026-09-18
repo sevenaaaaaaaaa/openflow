@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * OpenFlow 短代码系统 — 文章正文内嵌卡片
  *

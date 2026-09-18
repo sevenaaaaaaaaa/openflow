@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * PrivacySystem — 隐私中心（个保法合规）
  * 用户自助：数据导出请求 / 账号注销

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 课程学习进度 — 章节打勾 / 断点续播 / 完成度
  * 数据：data/courses/progress.json  (member_id => course_id => lesson_id => state)

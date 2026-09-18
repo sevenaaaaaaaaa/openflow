@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 个性化推荐引擎 Personalizer
  * 基于用户画像（标签偏好/分类偏好/会员等级/消费行为/来源渠道）

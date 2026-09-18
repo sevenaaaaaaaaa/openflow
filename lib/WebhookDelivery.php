@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Webhook 投递保障 —— 重试 / 退避 / 死信 / 幂等（P0-02，2026-09-03）
  *

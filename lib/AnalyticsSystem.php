@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * 数据分析系统 — 转化漏斗 / RFM 分层 / 流失预警
  */

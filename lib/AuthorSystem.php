@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * AuthorSystem —— 作者 / 创作者 / 开发者的统一身份（生态地基）
  *

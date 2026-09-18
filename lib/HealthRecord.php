@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * HealthRecord — 系统体检的历史与趋势
  *
