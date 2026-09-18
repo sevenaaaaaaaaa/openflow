@@ -697,8 +697,8 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 })();
 </script>
 <!-- 角色化内容 + 角色切换 -->
-<script src="/assets/role-content.js?v=3"></script>
-<script src="/assets/role-switch.js?v=4"></script>
+<script src="/assets/role-content.js?v=<?=OF_SHELL_VER?>"></script>
+<script src="/assets/role-switch.js?v=<?=OF_SHELL_VER?>"></script>
 
 <script>
 (function(){
