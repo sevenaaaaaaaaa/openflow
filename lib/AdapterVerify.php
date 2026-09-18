@@ -185,13 +185,19 @@ function adapter_verify_gate(string $draftDir, array $manifest, array $opts = []
     $sb = adapter_verify_sandbox($manifest);
     $checks[] = ['id' => 'sandbox', 'ok' => $sb['ok'], 'note' => $sb['note']];
 
+    // 实现完整度：骨架里的 TODO(适配) 还没补完 → 只能 needs-review（不得拿 verified）
+    $code = is_file(rtrim($draftDir, '/') . '/plugin.php') ? (string) file_get_contents(rtrim($draftDir, '/') . '/plugin.php') : '';
+    $todos = substr_count($code, 'TODO');
+    $checks[] = ['id' => 'implementation:no-todo', 'ok' => $todos === 0,
+        'note' => $todos === 0 ? '实现无待补 TODO' : "仍有 {$todos} 处 TODO(适配)：属骨架，需补完或人工接受"];
+
     // 状态判定
-    $failed = array_values(array_filter($checks, static fn ($c) => !$c['ok']));
+    $failed = array_values(array_filter($checks, static fn ($c) => !$c['ok'] && $c['id'] !== 'implementation:no-todo'));
     $licenseGate = adapter_license_gate((string) (((array) ($manifest['source'] ?? []))['license'] ?? ''));
     if ($failed !== []) {
         $status = 'blocked';
-    } elseif ($licenseGate['level'] !== 'permissive') {
-        $status = 'needs-review';
+    } elseif ($licenseGate['level'] !== 'permissive' || $todos > 0) {
+        $status = 'needs-review';   // 许可证需人审，或骨架未补完
     } else {
         $status = 'passed';
     }
@@ -199,6 +205,7 @@ function adapter_verify_gate(string $draftDir, array $manifest, array $opts = []
         'status' => $status,
         'badge' => $status === 'passed' ? 'verified' : 'unverified',
         'failed' => array_map(static fn ($c) => (string) $c['id'], $failed),
+        'todos' => $todos,
         'checks' => $checks,
         'checked_at' => date('c'),
     ];
