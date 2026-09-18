@@ -1,5 +1,6 @@
 """deploy.py 纯逻辑单测（不触网）：python3 -m unittest discover -s scripts/tests"""
-import sys, unittest
+import sys
+import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))

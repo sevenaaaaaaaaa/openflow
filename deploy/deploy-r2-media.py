@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 # 部署 r2-media Worker + 绑定 R2 桶 + 添加 media/* 路由
 # 用法: CF_TOKEN=xxx python3 deploy/deploy-r2-media.py
-import json, sys, os, urllib.request, urllib.error
+import json
+import os
+import sys
+import urllib.error
+import urllib.request
 
 CF_TOKEN = os.environ.get("CF_TOKEN", "")   # 从环境变量读取，勿硬编码提交到 git
 ACCOUNT_ID = "00d02a54a3c0f7a3f6c3fc75068e29c5"
