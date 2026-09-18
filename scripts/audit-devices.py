@@ -147,10 +147,72 @@ def check_modals(browser, base):
     out.append(onboard)
     return out
 
+ROLES_JS = """
+() => ({
+  role: document.documentElement.getAttribute('data-role'),
+  picker: !!document.getElementById('of-role-overlay'),
+  switcher: !!document.getElementById('of-role-switch')
+})
+"""
+
+def check_roles(browser, base):
+    """角色系统：首次浮层 / 记忆角色 / UTM 推断 / 切换按钮"""
+    out = {}
+
+    def new_ctx(storage=None):
+        c = browser.new_context(viewport={"width": 1280, "height": 900})
+        if storage:
+            c.add_init_script("try{localStorage.setItem('of_role','%s')}catch(e){}" % storage)
+        return c
+
+    # 1) 首次访问：应出现浮层
+    c1 = new_ctx(); pg = c1.new_page()
+    pg.goto(base + "/", wait_until="domcontentloaded", timeout=25000)
+    for _ in range(24):
+        pg.wait_for_timeout(250)
+        if pg.evaluate(ROLES_JS)["picker"]:
+            break
+    out["fresh_picker"] = pg.evaluate(ROLES_JS)["picker"]
+    # 选第一个角色 → 应写入 data-role（可能伴随跳转）
+    try:
+        pg.click(".of-role-card", timeout=3000)      # 选择后会跳转到该角色推荐落地页
+        pg.wait_for_timeout(1600)
+        # 在同一个 context 里开新标签读 localStorage（避开跳转时的上下文销毁竞态）
+        pg2 = c1.new_page()
+        pg2.goto(base + "/", wait_until="domcontentloaded", timeout=25000)
+        out["after_pick_role"] = pg2.evaluate("() => { try { return localStorage.getItem('of_role') } catch(e) { return null } }")
+        pg2.close()
+    except Exception as e:
+        out["after_pick_role"] = "ERR " + str(e)[:40]
+    c1.close()
+
+    # 2) 老访客：有记忆 → 不弹浮层，直接应用
+    c2 = new_ctx("power"); pg = c2.new_page()
+    pg.goto(base + "/", wait_until="domcontentloaded", timeout=25000); pg.wait_for_timeout(2600)
+    st = pg.evaluate(ROLES_JS)
+    out["returning_role"] = st["role"]; out["returning_picker"] = st["picker"]
+    out["switcher_present"] = st["switcher"]
+    # 切换按钮 → 下一个角色（power → dev）
+    try:
+        pg.click("#of-role-switch", timeout=3000); pg.wait_for_timeout(500)
+        out["after_switch_role"] = pg.evaluate("() => document.documentElement.getAttribute('data-role')")
+    except Exception as e:
+        out["after_switch_role"] = "ERR " + str(e)[:40]
+    c2.close()
+
+    # 3) UTM 渠道：预判 dev，不弹浮层
+    c3 = new_ctx(); pg = c3.new_page()
+    pg.goto(base + "/?utm_source=github", wait_until="domcontentloaded", timeout=25000); pg.wait_for_timeout(2600)
+    st = pg.evaluate(ROLES_JS)
+    out["utm_role"] = st["role"]; out["utm_picker"] = st["picker"]
+    c3.close()
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="https://nownexts.com")
-    ap.add_argument("--only", default="all", choices=["all", "overflow", "modals"])
+    ap.add_argument("--only", default="all", choices=["all", "overflow", "modals", "roles"])
     a = ap.parse_args()
     res = {}
     with sync_playwright() as p:
@@ -159,6 +221,8 @@ def main():
             res["overflow"] = check_overflow(b, a.base)
         if a.only in ("all", "modals"):
             res["modals"] = check_modals(b, a.base)
+        if a.only in ("all", "roles"):
+            res["roles"] = check_roles(b, a.base)
         b.close()
     json.dump(res, open("/tmp/audit-devices.json", "w"), ensure_ascii=False, indent=1)
 
@@ -181,6 +245,8 @@ def main():
             ofm = ", ".join(f"{o['tag']}.{o['cls']}(+{o['over']})" for o in r["offenders"][:2])
             print(f"  - {r['page']} @{r['w']}px: +{r['overflow']}px ← {ofm}")
 
+    print_roles(res)
+
     if "modals" in res:
         print("\n## 弹窗行为（390px 移动端）\n")
         keys = ["opened", "role", "aria_modal", "scroll_locked", "active_in_modal", "esc_closes", "backdrop_closes", "error"]
@@ -197,6 +263,25 @@ def main():
             print(f"- 输入「产品」后：{pal.get('filtered_items')} 条，首条 = {pal.get('first_hit')}")
             print(f"- ↓ 键高亮项：{pal.get('active')}")
             print(f"- 无命中时空状态：{pal.get('empty_state')}")
+
+def print_roles(res):
+    r = res.get("roles")
+    if not r:
+        return
+    print("\n## 角色系统（首次浮层 / 记忆 / UTM / 切换）\n")
+    checks = [
+        ("首次访问出现角色浮层", r.get("fresh_picker") is True),
+        ("选择角色后已写入偏好（localStorage）", bool(r.get("after_pick_role")) and "ERR" not in str(r.get("after_pick_role"))),
+        ("老访客直接应用记忆角色", r.get("returning_role") == "power"),
+        ("老访客不再弹浮层", r.get("returning_picker") is False),
+        ("切换按钮存在", r.get("switcher_present") is True),
+        ("切换按钮轮换角色（power→dev）", r.get("after_switch_role") == "dev"),
+        ("UTM=github 推断为 dev", r.get("utm_role") == "dev"),
+        ("UTM 来源不弹浮层", r.get("utm_picker") is False),
+    ]
+    for name, ok in checks:
+        print(f"- {'✓' if ok else '✗'} {name}" + ("" if ok else f"  （实测：{r}）"))
+
 
 if __name__ == "__main__":
     main()
