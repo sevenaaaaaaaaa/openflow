@@ -193,7 +193,7 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
         <summary><span class="hi-ic"><?=$I[$c[0]]?></span><span class="hi-t"><?=htmlspecialchars($c[1])?></span><span class="hi-n"><?=count($c[3])?> 模块</span></summary>
         <div class="hacc-body">
           <p><?=htmlspecialchars($c[2])?></p>
-          <ul><?php foreach ($c[3] as $m): ?><li><b><?=htmlspecialchars($m[0])?></b> — <?=htmlspecialchars($m[1])?></li><?php endforeach; ?></ul>
+          <ul><?php foreach ($c[3] as $m): ?><li><b><?=htmlspecialchars($m[0])?></b></li><?php endforeach; ?></ul>
           <a href="<?=htmlspecialchars($c[6])?>"><?=htmlspecialchars($c[7])?></a>
         </div>
       </details>
