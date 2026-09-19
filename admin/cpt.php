@@ -190,6 +190,22 @@ admin_header('自定义内容类型');
           </div>
           <?php endforeach; ?>
           <button class="btn btn-primary btn-sm"><?=$editEntry?'更新条目':'新建条目'?></button>
+          <?php if ($editEntry && is_file(__DIR__ . '/../lib/ProjectSystem.php')): require_once __DIR__ . '/../lib/ProjectSystem.php'; $refs = function_exists('ps_tasks_referencing') ? ps_tasks_referencing('cpt:' . $curType, (string) ($editEntry['id'] ?? '')) : []; ?>
+          <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px">
+            <b style="font-size:12.5px">引用此记录的任务（<?=count($refs)?>）</b>
+            <?php if ($refs): ?>
+            <ul style="margin:6px 0 0;padding-left:18px;font-size:12.5px">
+              <?php foreach ($refs as $rf): $tk = (array) $rf['task']; ?>
+              <li><a href="/xmp/today?view=team&project=<?=urlencode((string) $rf['project'])?>"><?=htmlspecialchars((string) ($tk['title'] ?? ''))?></a>
+                <span class="text-xs text-muted">· <?=htmlspecialchars((string) $rf['project_name'])?> · <?=htmlspecialchars(ps_task_statuses()[(string) ($tk['status'] ?? 'todo')] ?? (string) ($tk['status'] ?? ''))?>
+                <?=!empty($tk['assignee']) ? '· @' . htmlspecialchars((string) $tk['assignee']) : ''?></span></li>
+              <?php endforeach; ?>
+            </ul>
+            <?php else: ?>
+            <p class="text-xs text-muted" style="margin:6px 0 0">还没有任务引用它。在 <a href="/xmp/today?view=team">团队视角</a> 新增任务时，关联选这个内容类型、ID 填本记录即可。</p>
+            <?php endif; ?>
+          </div>
+          <?php endif; ?>
           <?php if ($editEntry): ?><a href="/xmp/cpt?type=<?=urlencode($type['slug'])?>" class="btn btn-ghost btn-sm">取消</a><?php endif; ?>
         </form>
       </div>
