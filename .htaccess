@@ -135,6 +135,9 @@ RewriteRule ^capability/?$ hub-capabilities.php [L,QSA]
 
 # 更新日志（含老首页纪念快照入口）
 RewriteRule ^changelog/?$ changelog.php [L,QSA]
+
+# 只读分享页：/s/{token}（无需登录；token 为 32 位十六进制）
+RewriteRule ^s/([a-f0-9]{16,64})/?$ share.php?t=$1 [L,QSA]
 RewriteRule ^downloads/?$ downloads.php [L,QSA]
 RewriteRule ^podcasts/?$ podcasts.php [L,QSA]
 RewriteRule ^survey/?$ survey.php [L,QSA]

@@ -35,7 +35,9 @@ $_SESSION['admin_user']  = getenv('OF_PREVIEW_USER') ?: 'Seven';
 $rel = ltrim(basename($path), '/');
 if ($rel !== '' && !str_contains($rel, '.')) $rel .= '.php';   // /xmp/teams → teams.php
 $file = getenv('OF_PREVIEW_ROOT') . '/admin/' . $rel;
-if ($path === '/' || !is_file($file)) $file = getenv('OF_PREVIEW_ROOT') . '/admin/today.php';
+// 根目录页（share.php / changelog.php 等）也支持预览
+if (!is_file($file) && $rel !== '') $file = getenv('OF_PREVIEW_ROOT') . '/' . $rel;
+if ($path === '/' || !is_file($file)) $file = getenv('OF_PREVIEW_ROOT') . '/index.php';
 require $file;
 PHPEOF
 

@@ -104,6 +104,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ps_action'])) {
         }
     } elseif ($act === 'comment_delete' && $pid !== '') {
         ps_task_comment_delete($pid, (string) ($_POST['id'] ?? ''), (string) ($_POST['cid'] ?? ''), ps_current_user(), $siteAdmin);
+    } elseif ($act === 'share_create' && $pid !== '') {
+        ps_share_create($pid, (string) ($_POST['view'] ?? 'board'), (string) ($_POST['expires'] ?? ''), ps_current_user(), $siteAdmin || ps_can($pid, 'manage', ps_current_user(), false));
+    } elseif ($act === 'share_revoke' && $pid !== '') {
+        ps_share_revoke($pid, (string) ($_POST['token'] ?? ''), $siteAdmin || ps_can($pid, 'manage', ps_current_user(), false));
     } elseif ($act === 'member_set' && $pid !== '') {
         ps_member_set($pid, (string) ($_POST['user'] ?? ''), (string) ($_POST['role'] ?? 'editor'));
     } elseif ($act === 'member_remove' && $pid !== '') {
@@ -365,6 +369,41 @@ admin_header('今日主线');
       <div class="p-body" style="border-top:1px solid var(--border);font-size:11.5px;color:var(--muted)">
         注意区分：<b>负责人</b>是「谁在做这件事」（任务上的名字，可以是外部同事）；<b>成员</b>是「谁的登录账号能改这个项目」。
       </div>
+      <?php $shares = ps_shares($curId); ?>
+      <?php if ($canManage || $shares !== []): ?>
+      <div class="p-body" style="border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <b style="font-size:13px">只读分享</b>
+        <?php if ($shares === []): ?><span class="note">生成一条只读链接给外部看（无需登录、不含备注/关联/评论、可随时撤销）</span><?php endif; ?>
+        <?php foreach ($shares as $stok => $smeta): ?>
+        <span class="pill" title="<?=htmlspecialchars((string) ($smeta['created_by'] !== '' ? '由 ' . ps_user_display((string) $smeta['created_by']) . ' 创建' : ''))?>">
+          <?=htmlspecialchars((string) (ps_share_views()[$smeta['view']] ?? $smeta['view']))?>
+          · <?=$smeta['expires'] !== '' ? ('至 ' . htmlspecialchars((string) $smeta['expires'])) : '长期'?>
+          · 打开 <?=(int) $smeta['opens']?> 次
+        </span>
+        <input class="inp sm" readonly value="/s/<?=htmlspecialchars($stok)?>" onclick="this.select()" style="width:190px;font-size:11px" title="点一下全选，复制给外部">
+        <?php if ($smeta['expires'] !== '' && $smeta['expires'] < date('Y-m-d')): ?><span class="pill hl">已过期</span><?php endif; ?>
+        <?php if ($canManage): ?>
+        <form method="post" class="tw-inline" data-confirm="撤销这条分享链接？外部将立即无法打开。">
+          <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+          <input type="hidden" name="ps_action" value="share_revoke">
+          <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+          <input type="hidden" name="token" value="<?=htmlspecialchars($stok)?>">
+          <button class="btn btn-s btn-sm" title="撤销">×</button>
+        </form>
+        <?php endif; ?>
+        <?php endforeach; ?>
+        <?php if ($canManage): ?>
+        <form method="post" style="margin-left:auto;display:flex;gap:6px">
+          <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+          <input type="hidden" name="ps_action" value="share_create">
+          <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+          <select name="view" class="inp sm" style="width:92px"><?php foreach (ps_share_views() as $svk => $svl): ?><option value="<?=$svk?>"><?=htmlspecialchars($svl)?></option><?php endforeach; ?></select>
+          <input class="inp sm" type="date" name="expires" style="width:132px" title="留空=长期有效">
+          <button class="btn btn-s btn-sm">生成只读链接</button>
+        </form>
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
     </div>
     <?php endif; ?>
 
