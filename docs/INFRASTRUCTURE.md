@@ -146,3 +146,15 @@ curl -s -X POST -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: applicati
 | ⚠️ 待办 | **异地备份**：当前备份与本站在同一块盘，整机故障即同时丢失。建议用宝塔「计划任务 → 备份到云端」(S3/OSS/R2) 把 `data/backups/` 同步出去 |
 
 修复记录（2026-09-17）：`BackupSystem` 曾使用从未定义的 `ROOT_DIR` → 备份功能**从未成功执行过**；后台「定时备份」表单也**没有处理器**（死表单）。两处均已修。
+
+## Cloudflare：只读分享页必须绕过缓存（2026-09-19）
+
+zone 的 Cache Rules（ruleset `e1d4b108650e409daff68bbc3f0f1b82`，"Cache Dynamic HTML for Anonymous Visitors"）
+对匿名 HTML 统一缓存，edge TTL 覆盖源站（`override_origin`, 600s）。这条规则会把 `/s/{token}`
+（只读分享页）也缓存下来，导致**撤销后外部还能打开最多 10 分钟**——与页面上「可随时撤销」的承诺不符。
+
+处置：在该宽规则的表达式中加入 `and not starts_with(http.request.uri.path, "/s/")`。
+注意 Cache Rules 的语义是**最后匹配者优先**：因此在前置位置加一条 `cache:false` 规则会被后面的
+宽规则覆盖（实测仍 HIT），必须写成宽规则的排除条件。
+
+验证：`cf-cache-status: DYNAMIC`（三次连续请求都不缓存）；撤销 token 后 CF 立即返回 404。
