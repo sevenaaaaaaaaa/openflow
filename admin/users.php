@@ -15,6 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($users[$u])) {
             $users[$u]['name'] = $_POST['name'] ?? $users[$u]['name'];
             $users[$u]['role'] = $_POST['role'] ?? $users[$u]['role'];
+            $em = trim((string) ($_POST['email'] ?? ''));
+            if ($em !== '' && filter_var($em, FILTER_VALIDATE_EMAIL) === false) {
+                $message = '邮箱格式不对，未保存邮箱（其余已更新）';
+            } else {
+                $users[$u]['email'] = $em;   // 任务提醒要用它
+            }
             if (!empty($_POST['password'])) {
                 $users[$u]['password_hash'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
             }
@@ -31,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'password_hash' => password_hash($newPassword, PASSWORD_DEFAULT),
                 'role' => $_POST['new_role'] ?? 'marketing',
                 'name' => $_POST['new_name'] ?? $u,
+                'email' => trim((string) ($_POST['new_email'] ?? '')),
             ];
             save_users($users);
             $message = "用户已添加，初始密码: {$newPassword}";
@@ -66,15 +73,16 @@ admin_header('权限管理');
 
     <div class="card lst-card">
       <table class="lst-table">
-        <thead><tr><th style="width:200px">用户名</th><th class="c-title">显示名称</th><th style="width:140px">角色</th><th class="c-act" style="width:150px"></th></tr></thead>
+        <thead><tr><th style="width:170px">用户名</th><th class="c-title">显示名称</th><th style="width:200px">邮箱 <span class="hint">任务到期提醒发到这里</span></th><th style="width:130px">角色</th><th class="c-act" style="width:150px"></th></tr></thead>
         <tbody>
           <?php foreach ($users as $uk => $uv): ?>
           <tr>
             <td class="lst-slug"><?=htmlspecialchars($uk)?></td>
             <td class="c-title"><div class="lst-title"><?=htmlspecialchars($uv['name'])?><?php if ($uk === ($_SESSION['admin_user'] ?? '')): ?> <span class="badge badge-blue" style="margin-left:6px">我</span><?php endif; ?></div></td>
+            <td><?=!empty($uv['email']) ? htmlspecialchars((string) $uv['email']) : '<span class="hint">未填</span>'?></td>
             <td><span class="badge badge-<?=$uv['role']==='admin'?'green':($uv['role']==='marketing'?'yellow':'gray')?>"><?=htmlspecialchars($roleLabels[$uv['role']] ?? $uv['role'])?></span></td>
             <td class="c-act">
-              <button class="btn btn-ghost btn-sm" onclick="editUser('<?=htmlspecialchars($uk)?>','<?=htmlspecialchars($uv['name'])?>','<?=$uv['role']?>')">编辑</button>
+              <button class="btn btn-ghost btn-sm" onclick="editUser('<?=htmlspecialchars($uk, ENT_QUOTES)?>','<?=htmlspecialchars($uv['name'], ENT_QUOTES)?>','<?=$uv['role']?>','<?=htmlspecialchars((string) ($uv['email'] ?? ''), ENT_QUOTES)?>')">编辑</button>
               <?php if ($uk !== 'admin'): ?>
               <form method="post" style="display:inline" data-confirm="确认删除用户 <?=htmlspecialchars($uk)?>？">
                 <?= csrf_field() ?>
@@ -101,6 +109,7 @@ admin_header('权限管理');
           <div class="field"><label>显示名称</label><input type="text" name="name" id="edit_name" required></div>
           <div class="field"><label>角色</label><select name="role" id="edit_role"><?php foreach (array_keys(role_perms()) as $r): ?><option value="<?=htmlspecialchars($r)?>"><?=htmlspecialchars(role_label($r))?></option><?php endforeach; ?></select></div>
         </div>
+        <div class="field"><label>邮箱 <span class="hint">任务到期提醒的收件地址；留空则不给他发邮件</span></label><input type="email" name="email" id="edit_email" placeholder="name@example.com"></div>
         <div class="field"><label>新密码 <span class="hint">留空则不修改</span></label><input type="password" name="password" placeholder="输入新密码"></div>
         <button type="submit" class="btn btn-primary">保存</button>
         <button type="button" class="btn btn-ghost" onclick="document.getElementById('editForm').style.display='none'">取消</button>
@@ -118,6 +127,7 @@ admin_header('权限管理');
         </div>
         <div class="field-row">
           <div class="field"><label>密码 <span class="hint">留空则自动生成</span></label><input type="text" name="new_password" placeholder="留空自动生成随机密码"></div>
+          <div class="field"><label>邮箱 <span class="hint">选填</span></label><input type="email" name="new_email" placeholder="name@example.com"></div>
           <div class="field"><label>角色</label><select name="new_role"><?php foreach (array_keys(role_perms()) as $r): ?><option value="<?=htmlspecialchars($r)?>"<?=$r==='marketing'?' selected':''?>><?=htmlspecialchars(role_label($r))?></option><?php endforeach; ?></select></div>
         </div>
         <button type="submit" class="btn btn-primary">添加用户</button>
@@ -127,10 +137,11 @@ admin_header('权限管理');
 </div>
 
 <script>
-function editUser(username, name, role) {
+function editUser(username, name, role, email) {
   document.getElementById('edit_username').value = username;
   document.getElementById('edit_name').value = name;
   document.getElementById('edit_role').value = role;
+  document.getElementById('edit_email').value = email || '';
   document.getElementById('editForm').style.display = 'block';
   document.getElementById('editForm').scrollIntoView({behavior:'smooth'});
 }

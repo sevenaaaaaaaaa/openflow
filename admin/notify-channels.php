@@ -18,6 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         'wecom' => ['enabled'=>isset($_POST['wecom_enabled']), 'webhook'=>trim($_POST['wecom_webhook'] ?? ''), 'name'=>'企业微信'],
         'feishu' => ['enabled'=>isset($_POST['feishu_enabled']), 'webhook'=>trim($_POST['feishu_webhook'] ?? ''), 'name'=>'飞书'],
         'slack' => ['enabled'=>isset($_POST['slack_enabled']), 'webhook'=>trim($_POST['slack_webhook'] ?? ''), 'channel'=>trim($_POST['slack_channel'] ?? ''), 'name'=>'Slack'],
+        // 任务到期提醒的邮件收件人（负责人邮箱之外再抄送谁；留空=只发负责人）
+        'task_email' => ['enabled'=>isset($_POST['te_enabled']), 'to'=>trim($_POST['te_to'] ?? ''), 'name'=>'任务到期邮件'],
         'whatsapp' => ['enabled'=>isset($_POST['wa_enabled']), 'webhook'=>trim($_POST['wa_webhook'] ?? ''), 'token'=>trim($_POST['wa_token'] ?? ''), 'to'=>trim($_POST['wa_to'] ?? ''), 'name'=>'WhatsApp'],
     ];
     notify_channels_save($channels);
@@ -60,6 +62,14 @@ admin_header('通知渠道');
         <p class="text-sm text-muted mb-4">群机器人 Webhook（飞书群 → 设置 → 群机器人 → 添加自定义机器人）</p>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px"><input type="checkbox" name="feishu_enabled" value="1" <?=!empty($channels['feishu']['enabled'])?'checked':''?> style="width:16px;height:16px"> 启用飞书通知</label>
         <div class="field"><label>Webhook 地址</label><input type="text" name="feishu_webhook" value="<?=htmlspecialchars($channels['feishu']['webhook'] ?? '')?>" placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/xxx"></div>
+      </div>
+
+      <div class="card">
+        <h2>⏰ 任务到期邮件</h2>
+        <p class="text-sm text-muted mb-4">团队视角的任务到期/逾期时，发给<strong>任务负责人</strong>（邮箱在 <a href="/xmp/users">用户与权限</a> 里填）；下面的收件人再抄送一份，负责人没填邮箱时他们是唯一的收件人。</p>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px"><input type="checkbox" name="te_enabled" value="1" <?=(!array_key_exists('task_email', $channels) || !empty($channels['task_email']['enabled'])) ? 'checked' : ''?> style="width:16px;height:16px"> 启用任务到期邮件</label>
+        <div class="field"><label>抄送收件人 <span class="hint">多个用逗号分隔；留空=只发负责人</span></label><input type="text" name="te_to" value="<?=htmlspecialchars($channels['task_email']['to'] ?? '')?>" placeholder="ops@example.com, lead@example.com"></div>
+        <p class="text-xs text-muted" style="margin-top:8px">需要先在 <a href="/xmp/mail-settings">邮件设置</a> 里启用一个发信渠道；没有可用渠道时提醒不会发送，也不会被标记为已提醒（配好后照常发）。</p>
       </div>
 
       <div class="card">
