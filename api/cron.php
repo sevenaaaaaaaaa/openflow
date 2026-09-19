@@ -68,6 +68,36 @@ try {
     }
 } catch (Exception $e) {}
 
+// 项目任务到期提醒（每 15 分钟扫一次；同一任务同一到期日只提醒一次）
+// 只有「至少启用了一个外部渠道」才发并落幂等键——否则等用户配好渠道再提醒，避免静默吞掉。
+try {
+    if (is_file(__DIR__ . '/../lib/ProjectSystem.php')) {
+        require_once __DIR__ . '/../lib/ProjectSystem.php';
+        require_once __DIR__ . '/../lib/NotifyChannels.php';
+        $trFile = DATA_DIR . '/project_reminder_run.json';
+        if (time() - (int) (json_read($trFile)['ts'] ?? 0) >= 900) {
+            $ch = notify_channels();
+            $hasChannel = false;
+            foreach (['wecom', 'feishu', 'slack', 'whatsapp'] as $c) {
+                if (!empty($ch[$c]['enabled']) && !empty($ch[$c]['webhook'])) { $hasChannel = true; break; }
+            }
+            $sent = [];
+            if ($hasChannel) {
+                $sent = ps_notify_due_reminders(static function (array $r): bool {
+                    $m = ps_reminder_text($r);
+                    try {
+                        notify_channels_send($m['title'], $m['body'], rtrim(SITE_URL, '/') . '/xmp/today?view=team&project=' . urlencode((string) ($r['project'] ?? '')));
+                    } catch (\Throwable $e) {
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            json_write($trFile, ['ts' => time(), 'has_channel' => $hasChannel, 'sent' => $sent]);
+        }
+    }
+} catch (Exception $e) {}
+
 // 外部数据连接器定时同步（REST API / CSV 拉取）
 try {
     require_once __DIR__ . '/../lib/DataSync.php';

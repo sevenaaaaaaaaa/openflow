@@ -1,6 +1,6 @@
 <?php
 /**
- * 通知渠道 — 企业微信 / 飞书 / WhatsApp
+ * 通知渠道 — 企业微信 / 飞书 / Slack / WhatsApp
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/NotifyChannels.php';
@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     $channels = [
         'wecom' => ['enabled'=>isset($_POST['wecom_enabled']), 'webhook'=>trim($_POST['wecom_webhook'] ?? ''), 'name'=>'企业微信'],
         'feishu' => ['enabled'=>isset($_POST['feishu_enabled']), 'webhook'=>trim($_POST['feishu_webhook'] ?? ''), 'name'=>'飞书'],
+        'slack' => ['enabled'=>isset($_POST['slack_enabled']), 'webhook'=>trim($_POST['slack_webhook'] ?? ''), 'channel'=>trim($_POST['slack_channel'] ?? ''), 'name'=>'Slack'],
         'whatsapp' => ['enabled'=>isset($_POST['wa_enabled']), 'webhook'=>trim($_POST['wa_webhook'] ?? ''), 'token'=>trim($_POST['wa_token'] ?? ''), 'to'=>trim($_POST['wa_to'] ?? ''), 'name'=>'WhatsApp'],
     ];
     notify_channels_save($channels);
@@ -35,7 +36,7 @@ admin_header('通知渠道');
   <?php admin_sidebar('notify-channels'); ?>
   <div class="main">
     <h1>通知渠道</h1>
-    <p class="sub">站内通知自动转发到企业微信 / 飞书 / WhatsApp</p>
+    <p class="sub">站内通知自动转发到企业微信 / 飞书 / Slack / WhatsApp</p>
     <?php if ($message): ?><?=msg('success', $message)?><?php endif; ?>
     <?php if ($testMsg): ?><?=msg('success', $testMsg)?><?php endif; ?>
 
@@ -59,6 +60,16 @@ admin_header('通知渠道');
         <p class="text-sm text-muted mb-4">群机器人 Webhook（飞书群 → 设置 → 群机器人 → 添加自定义机器人）</p>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px"><input type="checkbox" name="feishu_enabled" value="1" <?=!empty($channels['feishu']['enabled'])?'checked':''?> style="width:16px;height:16px"> 启用飞书通知</label>
         <div class="field"><label>Webhook 地址</label><input type="text" name="feishu_webhook" value="<?=htmlspecialchars($channels['feishu']['webhook'] ?? '')?>" placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/xxx"></div>
+      </div>
+
+      <div class="card">
+        <h2>🧵 Slack</h2>
+        <p class="text-sm text-muted mb-4">Incoming Webhook（Slack → Apps → Incoming Webhooks → 复制 Webhook URL）</p>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px"><input type="checkbox" name="slack_enabled" value="1" <?=!empty($channels['slack']['enabled'])?'checked':''?> style="width:16px;height:16px"> 启用 Slack 通知</label>
+        <div class="field-row">
+          <div class="field"><label>Webhook 地址</label><input type="text" name="slack_webhook" value="<?=htmlspecialchars($channels['slack']['webhook'] ?? '')?>" placeholder="https://hooks.slack.com/services/xxx"></div>
+          <div class="field"><label>频道（可留空）</label><input type="text" name="slack_channel" value="<?=htmlspecialchars($channels['slack']['channel'] ?? '')?>" placeholder="#ops"></div>
+        </div>
       </div>
 
       <div class="card">

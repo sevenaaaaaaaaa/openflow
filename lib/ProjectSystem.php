@@ -331,6 +331,38 @@ function ps_assignees(): array
     return $out;
 }
 
+/**
+ * 扫描到期任务并逐个通知（编排层，便于测试与复用）
+ *
+ * @param callable $notify 接收一条提醒数组；返回 false 表示未送达 → 不写幂等键，下次重试
+ * @return array 已送达并落键的提醒列表
+ */
+function ps_notify_due_reminders(callable $notify, string $now = '', int $withinHours = 24): array
+{
+    $out = [];
+    foreach (ps_due_reminders($now, $withinHours) as $r) {
+        $task = (array) ($r['task'] ?? []);
+        if ($notify($r) === false) continue;
+        ps_mark_reminded((string) $r['project'], (string) ($task['id'] ?? ''), (string) $r['key']);
+        $out[] = ['project' => (string) $r['project'], 'id' => (string) ($task['id'] ?? ''), 'kind' => (string) $r['kind'], 'key' => (string) $r['key']];
+    }
+    return $out;
+}
+
+/** 提醒文案（cron 与站内共用同一份，避免两处措辞漂移） */
+function ps_reminder_text(array $r): array
+{
+    $t = (array) ($r['task'] ?? []);
+    $p = ps_project_get((string) ($r['project'] ?? ''));
+    $kind = (string) ($r['kind'] ?? 'due_soon');
+    $lines = [(string) ($t['title'] ?? '')];
+    $lines[] = '项目：' . (string) ($p['name'] ?? ($r['project'] ?? ''));
+    if ((string) ($t['due'] ?? '') !== '') $lines[] = '截止：' . (string) $t['due'];
+    if ((string) ($t['assignee'] ?? '') !== '') $lines[] = '负责人：' . (string) $t['assignee'];
+    if ((string) ($t['ref']['label'] ?? '') !== '') $lines[] = '关联：' . (string) $t['ref']['label'];
+    return ['title' => $kind === 'overdue' ? '⏰ 任务已逾期' : '🔔 任务即将到期', 'body' => implode("\n", $lines)];
+}
+
 /* ────────────── 种子：把「我们正在做的事」建成第一个项目 ────────────── */
 
 /**

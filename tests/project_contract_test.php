@@ -78,6 +78,42 @@ check('扫描覆盖到期任务（≥2 条）', count($rem) >= 2, (string) count
 foreach ($rem as $x) ps_mark_reminded((string) $x['project'], (string) ($x['task']['id'] ?? ''), (string) $x['key']);
 check('标记后不再提醒（幂等）', count(ps_due_reminders()) === 0);
 
+/* 7.5 通知编排与文案 */
+$n1 = ps_task_save($pid, ['title' => '编排测试-逾期', 'due' => date('Y-m-d', time() - 86400), 'assignee' => 'Seven', 'ref' => ['type' => 'order', 'id' => 'o9', 'label' => '订单 #9']]);
+$n2 = ps_task_save($pid, ['title' => '编排测试-即将', 'due' => date('Y-m-d', time() + 3600)]);
+$seen = [];
+$sentList = ps_notify_due_reminders(function (array $r) use (&$seen): bool {
+    $m = ps_reminder_text($r);
+    $seen[] = $m;
+    return $m['title'] !== '📵';   // 全部送达
+});
+$titles = array_column($seen, 'title');
+check('逾期文案标题正确', in_array('⏰ 任务已逾期', $titles, true));
+check('到期文案标题正确', in_array('🔔 任务即将到期', $titles, true));
+$overdueBody = '';
+foreach ($seen as $m) if ($m['title'] === '⏰ 任务已逾期' && str_contains($m['body'], '编排测试-逾期')) $overdueBody = $m['body'];
+check('文案含项目名', str_contains($overdueBody, '产品迭代'), $overdueBody);
+check('文案含截止/负责人/关联', str_contains($overdueBody, '截止：') && str_contains($overdueBody, '负责人：Seven') && str_contains($overdueBody, '关联：订单 #9'), $overdueBody);
+check('送达后落幂等键（扫描转空）', count($sentList) >= 2 && ps_due_reminders() === [], json_encode(['sent' => count($sentList), 'left' => count(ps_due_reminders())]));
+foreach (ps_due_reminders() as $x) ps_mark_reminded((string) $x['project'], (string) ($x['task']['id'] ?? ''), (string) $x['key']);
+check('全部落键后扫描为空', ps_due_reminders() === []);
+
+/* 7.6 未送达不落键（下次重试） */
+$n3 = ps_task_save($pid, ['title' => '编排测试-失败重试', 'due' => date('Y-m-d', time() + 3600)]);
+$n3Id = (string) ($n3['task']['id'] ?? '');
+$failOnce = ps_notify_due_reminders(fn(array $r): bool => false);
+check('未送达时不落键', $failOnce === [] && count(array_filter(ps_due_reminders(), fn(array $r): bool => (string) ($r['task']['id'] ?? '') === $n3Id)) === 1);
+$retry = ps_notify_due_reminders(fn(array $r): bool => true);
+check('下次扫描能重试送达', count(array_filter($retry, fn(array $r): bool => $r['id'] === $n3Id)) === 1);
+
+/* 7.7 Slack 渠道（空配置不发送、不报错） */
+require_once __DIR__ . '/../lib/NotifyChannels.php';
+$noop = true;
+try { notify_slack(['webhook' => ''], 'x'); } catch (\Throwable $e) { $noop = false; }
+check('Slack 空配置安全跳过', $noop && function_exists('notify_slack'));
+$src = (string) file_get_contents(__DIR__ . '/../lib/NotifyChannels.php');
+check('Slack 已在广播列表里', str_contains($src, "'wecom','feishu','slack','whatsapp'"));
+
 /* 8. 指派候选 & 删除 */
 check('指派候选可读（无 users.json 时为空数组）', is_array(ps_assignees()));
 check('删任务', ps_task_delete($pid, $tid) === true);

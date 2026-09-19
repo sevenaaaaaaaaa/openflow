@@ -253,15 +253,15 @@ admin_header('今日主线');
       </div>
       <?php endforeach; ?>
     </div>
-    <p class="text-xs text-muted" style="margin-top:14px">任务可关联既有对象（线索/订单/发布任务/文章/课程…），所以「发布、分发、CRM 状态」都能挂在同一条任务上；到期与逾期由 cron 扫描后走邮件 / 飞书 / 企微 / Slack 提醒（同一任务同一提醒只发一次）。</p>
+    <p class="text-xs text-muted" style="margin-top:14px">任务可关联既有对象（线索/订单/发布任务/文章/课程…），所以「发布、分发、CRM 状态」都能挂在同一条任务上；到期与逾期由 cron 每 15 分钟扫描，走飞书 / 企微 / Slack / WhatsApp 外部渠道提醒（同一任务同一到期日只发一次；未配置渠道时不会静默标记，配好后照常提醒）。</p>
 
     <!-- 能力路线：这个视图还要长成什么样（诚实标注进度） -->
     <div class="panel" style="margin-top:16px">
       <div class="p-body">
         <b style="font-size:13px">这个视图接下来会长成什么</b>
         <div class="kb-road">
-          <div><span class="pill">已就绪</span><ul><li>项目 / 任务 / 看板（拖拽改状态）</li><li>任务关联既有对象（发布 · 分发 · CRM · 订单）</li><li>多用户登录与角色权限（复用 <code>tasks</code> 权限）</li><li>提醒引擎（邮件 / 飞书 / 企微，幂等）</li></ul></div>
-          <div><span class="pill">进行中</span><ul><li>Slack 通知渠道</li><li>到期/逾期 cron 提醒接进本页</li><li>看板视觉与设计系统对齐</li></ul></div>
+          <div><span class="pill">已就绪</span><ul><li>项目 / 任务 / 看板（拖拽改状态）</li><li>任务关联既有对象（发布 · 分发 · CRM · 订单）</li><li>多用户登录与角色权限（复用 <code>tasks</code> 权限）</li><li>提醒引擎与 cron 扫描（飞书 / 企微 / Slack / WhatsApp，幂等，未配渠道不误标）</li></ul></div>
+          <div><span class="pill">进行中</span><ul><li>本页内到期提醒（角标 / 待办聚合，不只靠外部渠道）</li><li>任务负责人邮件提醒（复用现有邮件链路）</li><li>看板视觉与设计系统对齐</li></ul></div>
           <div><span class="pill">规划中</span><ul><li>多维表格：relation / rollup / lookup 字段</li><li>多视图切换：表格 / 日历 / 甘特</li><li>记录级层级（父/子任务与树视图）</li><li>项目级成员权限（owner / editor / viewer）</li></ul></div>
         </div>
       </div>
