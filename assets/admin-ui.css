@@ -348,3 +348,5 @@ body[data-sb="closed"] .of-selbar{left:14px}
 .cmt-at{color:var(--accent);font-weight:600}
 .kb-cmt-form{display:flex;gap:5px;margin-top:7px;align-items:center}
 .kb-cmt-form .inp{flex:1;min-width:0;font-size:12px}
+/* 汇总视图里标识任务来自哪个项目 */
+.kb-proj{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:600;padding:0 6px;border-radius:99px;background:color-mix(in srgb,var(--border) 55%,transparent);color:var(--muted);vertical-align:1px}
