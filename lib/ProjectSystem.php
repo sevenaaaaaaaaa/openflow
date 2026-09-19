@@ -36,6 +36,80 @@ function ps_ref_types(): array
     ];
 }
 
+/**
+ * 关联目标全集：内置对象 + 自定义内容类型的记录（键形如 cpt:<typeSlug>）。
+ * 内置目标是稳定枚举；内容类型是用户自己建的，所以动态拼进来。
+ */
+function ps_ref_targets(): array
+{
+    $out = ps_ref_types();
+    if (function_exists('cpt_types')) {
+        foreach ((array) cpt_types() as $t) {
+            $slug = (string) ($t['slug'] ?? '');
+            if ($slug === '') continue;
+            $out['cpt:' . $slug] = (string) ($t['name'] ?? $slug);
+        }
+    }
+    return $out;
+}
+
+/** 关联类型 → 展示名（含 cpt:<slug>） */
+function ps_ref_label(string $type): string
+{
+    return (string) (ps_ref_targets()[$type] ?? $type);
+}
+
+/** 关联是否指向自定义内容类型；是则返回类型 slug，否则空串 */
+function ps_ref_cpt_slug(string $type): string
+{
+    return str_starts_with($type, 'cpt:') ? substr($type, 4) : '';
+}
+
+/**
+ * 解析关联为可读信息：内容类型的标题**现取**（对方改名后任务卡片跟着变），
+ * 目标已被删则标 missing，并用存下来的 label 兜底。
+ */
+function ps_ref_resolve(array $ref): array
+{
+    $type = (string) ($ref['type'] ?? '');
+    $id = (string) ($ref['id'] ?? '');
+    $stored = (string) ($ref['label'] ?? '');
+    if ($type === '') return ['type' => '', 'id' => '', 'label' => '', 'missing' => false, 'type_label' => ''];
+    $out = ['type' => $type, 'id' => $id, 'label' => $stored !== '' ? $stored : $id, 'missing' => false, 'type_label' => ps_ref_label($type)];
+    $slug = ps_ref_cpt_slug($type);
+    if ($slug !== '' && $id !== '' && function_exists('cpt_entry')) {
+        $e = cpt_entry($slug, $id);
+        if ($e === null) {
+            $out['missing'] = true;
+            $out['label'] = ($stored !== '' ? $stored : $id) . '（已删除）';
+        } else {
+            $out['label'] = (string) ($e['title'] ?? $out['label']);
+        }
+    }
+    return $out;
+}
+
+/** 反向查询：哪些任务引用了这条记录（跨全部项目，含已归档） */
+function ps_tasks_referencing(string $type, string $id): array
+{
+    $out = [];
+    foreach (ps_projects(true) as $p) {
+        $pid = ps_safe_id((string) ($p['id'] ?? ''));
+        if ($pid === '') continue;
+        foreach (ps_tasks($pid) as $t) {
+            $ref = (array) ($t['ref'] ?? []);
+            if ((string) ($ref['type'] ?? '') !== $type) continue;
+            if ((string) ($ref['id'] ?? '') !== $id) continue;
+            $out[] = [
+                'project' => $pid,
+                'project_name' => (string) ($p['name'] ?? $pid),
+                'task' => $t,
+            ];
+        }
+    }
+    return $out;
+}
+
 function ps_dir(): string { return DATA_DIR . '/projects'; }
 function ps_index_file(): string { return ps_dir() . '/index.json'; }
 function ps_project_file(string $id): string { return ps_dir() . '/' . ps_safe_id($id) . '.json'; }
@@ -154,7 +228,18 @@ function ps_task_errors(array $t): array
     $due = (string) ($t['due'] ?? '');
     if ($due !== '' && preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2})?$/', $due) !== 1) $e[] = '截止时间格式应为 YYYY-MM-DD 或 YYYY-MM-DD HH:MM';
     $ref = (array) ($t['ref'] ?? []);
-    if ($ref !== [] && !isset(ps_ref_types()[(string) ($ref['type'] ?? '')])) $e[] = '关联对象类型不合法';
+    if ($ref !== [] && (string) ($ref['type'] ?? '') !== '') {
+        $rt = (string) $ref['type'];
+        if (!isset(ps_ref_targets()[$rt])) {
+            $e[] = '关联对象类型不合法';
+        } else {
+            $rid = (string) ($ref['id'] ?? '');
+            $slug = ps_ref_cpt_slug($rt);
+            if ($slug !== '' && $rid !== '' && function_exists('cpt_entry') && cpt_entry($slug, $rid) === null) {
+                $e[] = '关联的内容记录不存在';
+            }
+        }
+    }
     return $e;
 }
 
@@ -179,6 +264,23 @@ function ps_task_save(string $projectId, array $data): array
         'remind' => array_intersect_key((array) ($data['remind'] ?? []), array_flip(['before_days', 'on_due', 'channels'])),
     ];
     $errors = ps_task_errors($incoming + ['status' => $incoming['status'], 'priority' => $incoming['priority']]);
+    // 历史悬空关联：如果任务原本就指向这条已删记录、且这次没改关联，
+    // 放行编辑——否则一条任务会因为「关联对象被删」而连标题都改不了。
+    if ($errors !== []) {
+        $dangling = '关联的内容记录不存在';
+        if (in_array($dangling, $errors, true) && $id !== '' && count($errors) === 1) {
+            foreach ((array) $p['tasks'] as $t) {
+                if ((string) ($t['id'] ?? '') !== $id) continue;
+                $oldRef = (array) ($t['ref'] ?? []);
+                $newRef = (array) $incoming['ref'];
+                if ((string) ($oldRef['type'] ?? '') === (string) ($newRef['type'] ?? '')
+                    && (string) ($oldRef['id'] ?? '') === (string) ($newRef['id'] ?? '')) {
+                    $errors = [];
+                }
+                break;
+            }
+        }
+    }
     if ($errors !== []) return ['ok' => false, 'error' => implode('；', $errors), 'task' => []];
 
     $tasks = $p['tasks'];
@@ -359,7 +461,11 @@ function ps_reminder_text(array $r): array
     $lines[] = '项目：' . (string) ($p['name'] ?? ($r['project'] ?? ''));
     if ((string) ($t['due'] ?? '') !== '') $lines[] = '截止：' . (string) $t['due'];
     if ((string) ($t['assignee'] ?? '') !== '') $lines[] = '负责人：' . (string) $t['assignee'];
-    if ((string) ($t['ref']['label'] ?? '') !== '') $lines[] = '关联：' . (string) $t['ref']['label'];
+    $refInfo = ps_ref_resolve((array) ($t['ref'] ?? []));
+    if ($refInfo['type'] !== '' && $refInfo['label'] !== '') {
+        $prefix = ($refInfo['type_label'] !== '' && !str_contains($refInfo['label'], $refInfo['type_label'])) ? $refInfo['type_label'] . ' · ' : '';
+        $lines[] = '关联：' . $prefix . $refInfo['label'];
+    }
     return ['title' => $kind === 'overdue' ? '⏰ 任务已逾期' : '🔔 任务即将到期', 'body' => implode("\n", $lines)];
 }
 
