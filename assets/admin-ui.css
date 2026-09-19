@@ -352,3 +352,12 @@ body[data-sb="closed"] .of-selbar{left:14px}
 .kb-proj{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:600;padding:0 6px;border-radius:99px;background:color-mix(in srgb,var(--border) 55%,transparent);color:var(--muted);vertical-align:1px}
 /* 重复任务标识 */
 .kb-rep{margin-top:5px;font-size:11px;color:var(--muted)}
+/* 待前置（依赖未完成） */
+.kb-block{color:#b45309;font-weight:650}
+/* 分享访问统计 */
+.sh-stat summary{cursor:pointer;font-size:11.5px;color:var(--muted);list-style:none}
+.sh-stat summary::-webkit-details-marker{display:none}
+.sh-stat[open] summary{color:var(--accent)}
+.sh-bars{display:flex;align-items:flex-end;gap:3px;height:26px;margin-top:6px}
+.sh-bars .sh-bar{width:7px;border-radius:2px 2px 0 0;background:var(--accent);opacity:.75}
+.sh-bars-l{font-size:10.5px;color:var(--muted);margin-left:6px;align-self:center}
