@@ -26,9 +26,8 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '产品矩阵总览（预览）· 芭乐派', 'description' => '七个独立产品按需组合：OpenFlow 全家桶、MFlow 内容分发、Webs Flow 落地页、UserLoop 全域数据、inFlow 情报、PayFlow 收款、LearnFlow 课程交付。零强制绑定，API 互通。', 'canonical' => site_config_get('site_url') . '/demo/products']); endif; ?>
-<meta name="robots" content="noindex,follow">
-<title>产品矩阵总览（预览）· 芭乐派</title>
+<?php if (function_exists('seo_head')): seo_head(['title' => '产品矩阵总览· 芭乐派', 'description' => '七个独立产品按需组合：OpenFlow 全家桶、MFlow 内容分发、Webs Flow 落地页、UserLoop 全域数据、inFlow 情报、PayFlow 收款、LearnFlow 课程交付。零强制绑定，API 互通。', 'canonical' => site_config_get('site_url') . '/product']); endif; ?>
+<title>产品矩阵总览· 芭乐派</title>
 <meta name="description" content="七个独立产品按需组合：OpenFlow 全家桶、MFlow 内容分发、Webs Flow 落地页、UserLoop 全域数据、inFlow 情报、PayFlow 收款、LearnFlow 课程交付。零强制绑定，API 互通。">
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。 -->
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
@@ -137,7 +136,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <div data-w="2"><span class="bt-k">电商增长</span><h3>投放 → 收款 → 沉淀</h3><ul><li>承接页：<b>Webs Flow</b></li><li>收款：<b>PayFlow</b></li><li>数据：<b>UserLoop</b></li></ul><p>一条线跑完，不用手工搬数据。</p></div>
       <div data-w="2"><span class="bt-k">内容营销</span><h3>选题到收录一条线</h3><ul><li>情报：<b>inFlow</b></li><li>生产分发：<b>MFlow</b></li><li>效果回流：<b>UserLoop</b></li></ul><p>一个人当编辑部。</p></div>
       <div data-w="2"><span class="bt-k">知识变现</span><h3>开营到复购</h3><ul><li>交付：<b>LearnFlow</b></li><li>收款：<b>PayFlow</b></li><li>触达：<b>MFlow</b></li></ul><p>学员进度与转化都在一处。</p></div>
-      <div data-w="4" class="bt-hi"><span class="bt-k">全家桶</span><h3>一整套自转系统：OpenFlow</h3><ul><li>要一整套系统、数据要在一处、团队要统一后台 → <b>OpenFlow 四力合一</b></li><li>其余六件按需嵌入；所有产品的数据都能平滑并入，不重复建设</li></ul><a href="/demo/capabilities" class="bt-go">看能力全景 →</a></div>
+      <div data-w="4" class="bt-hi"><span class="bt-k">全家桶</span><h3>一整套自转系统：OpenFlow</h3><ul><li>要一整套系统、数据要在一处、团队要统一后台 → <b>OpenFlow 四力合一</b></li><li>其余六件按需嵌入；所有产品的数据都能平滑并入，不重复建设</li></ul><a href="/capability" class="bt-go">看能力全景 →</a></div>
     </div>
   </section>
 

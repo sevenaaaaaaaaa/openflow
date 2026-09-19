@@ -1,6 +1,8 @@
 <?php
 /**
- * 首页（动态版）— 与 index.html 视觉一致，提供 SSR SEO + 缓存控制
+ * 首页 —— 芭乐派 · OpenFlow：七件可组合产品 + 增长链路（SSR SEO + 缓存控制）
+ *
+ * 2026-09-19 转正：内容来自 demo/home-v2（原第一代首页归档在 /legacy/home-gen1-2026-09-01.html）
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
@@ -33,12 +35,13 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>芭乐派 · OpenFlow 增长操作系统</title>
-<meta name="description" content="芭乐派给一人公司的增长系统。OpenFlow 用稳定 Flow 连接内容、数据与销售，并以受控的 TIPS Agent Loop 辅助判断和优化。">
-<?php if (function_exists('seo_head')): seo_head(['title' => '芭乐派 · OpenFlow 增长操作系统', 'description' => '芭乐派给一人公司的增长系统。OpenFlow 用稳定 Flow 连接内容、数据与销售，并以受控的 TIPS Agent Loop 辅助判断和优化。', 'canonical' => site_config_get('site_url') . '/']); endif; ?>
+<meta name="description" content="一个人做不了所有事。芭乐派把增长拆成七件可组合的产品：整套系统、内容分发、落地页、全域数据、外部情报、收款变现、课程交付。开源、可自托管、数据主权在你。">
+<?php if (function_exists('seo_head')): seo_head(['title' => '芭乐派 · OpenFlow 增长操作系统', 'description' => '一个人做不了所有事。芭乐派把增长拆成七件可组合的产品：整套系统、内容分发、落地页、全域数据、外部情报、收款变现、课程交付。开源、可自托管、数据主权在你。', 'canonical' => site_config_get('site_url') . '/']); endif; ?>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='2' y1='16' x2='30' y2='16' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='oklch(52%25 .17 258)'/%3E%3Cstop offset='1' stop-color='oklch(58%25 .16 285)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='16' fill='oklch(16%25 0 0)'/%3E%3Cpath d='M16 6.5a9.5 9.5 0 1 1-9.5 9.5' stroke='url(%23g)' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M11.5 10.5v12M11.5 14h7.6M11.5 18.5h7.6' stroke='oklch(96%25 0 0)' stroke-width='2.2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。
      id 与 site-shell.js 的注入判重一致，故 site-shell 不会重复插入。 -->
+<?php $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'; ?>
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* ══ 首页独有：arena 信号流画布（其余样式全部在 tokens.css / modules.css）══ */
@@ -64,12 +67,15 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 .bub{position:relative;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--muted);display:grid;place-items:center;cursor:pointer;transition:transform .2s var(--ease-spring),border-color .2s,background .2s,color .2s,box-shadow .2s}
 .bub .mi{width:20px;height:20px}
 .bub .mi svg{width:20px;height:20px}
-.bub:hover{border-color:var(--border-strong);color:var(--fg);transform:translateY(-2px)}
-.bub.on{background:var(--accent);border-color:transparent;color:var(--on-accent);box-shadow:0 6px 18px oklch(52% .17 258/.32)}
+ .bub:hover{border-color:var(--border-strong);color:var(--fg);transform:translateY(-2px)}
+ .bub.on{background:var(--accent);border-color:transparent;color:var(--on-accent);box-shadow:0 6px 18px oklch(52% .17 258/.32)}
+ /* .bub.on 的实色阴影会盖掉全局 button:focus-visible 光环（特异性相同），单独补回 */
+ .bub:focus-visible{box-shadow:0 0 0 3px oklch(52% .17 258/.55)}
+ .bub.on:focus-visible{box-shadow:0 6px 18px oklch(52% .17 258/.32),0 0 0 3px oklch(52% .17 258/.55)}
 .bub::after{content:attr(data-m);position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--fg);color:var(--bg);font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;white-space:nowrap;z-index:6}
 .bub:hover::after,.bub:focus-visible::after{opacity:1;transform:translateX(-50%) translateY(0)}
 
-@media (max-width:960px){
+@media (max-width:860px){
   .arc{display:none}
   .arena .ghost{display:none}
   .arena-canvas{height:auto;display:grid;grid-template-columns:repeat(2,1fr);gap:18px;align-items:center;padding:8px 0}
@@ -77,7 +83,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
   .arena-canvas .nd>span:not(.nd-ic){display:inline}
   .bub{width:40px;height:40px}
 }
-@media (max-width:1199px){.nd>span:not(.nd-ic){display:none}}
+@media (max-width:1080px){.nd>span:not(.nd-ic){display:none}}
 @media (max-width:640px){
   .arena-driver{font-size:12px}
 }
@@ -93,10 +99,13 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
   <div class="sec-title"><span>本页</span></div>
   <a class="s-item" href="#top" data-od-id="s-home"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span><b>增长系统首页</b></a>
   <a class="s-item" href="#pain" data-od-id="s-pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg></span><b>两个世界</b></a>
+<a class="s-item" href="#products" data-od-id="s-matrix"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.6"/></svg></span><b>产品矩阵</b></a>
   <a class="s-item" href="#touch" data-od-id="s-quick"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg></span><b>TIPS 增长力</b></a>
   <a class="s-item" href="#loop" data-od-id="s-loop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg></span><b>三步增长闭环</b></a>
   <a class="s-item" href="#scenes" data-od-id="s-scenes"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><b>应用场景</b></a>
-  <a class="s-item" href="#reviews" data-od-id="s-reviews"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h8M8 14h5M9 4h6a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/></svg></span><b>真实反馈</b></a>
+  <a class="s-item" href="#reviews" data-od-id="s-reviews"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h8M8 14h5M9 4h6a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/></svg></span><b>为谁而做</b></a>
+<a class="s-item" href="#voices" data-od-id="s-voices"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H8l-4 3V11.5a8.5 8.5 0 0 1 17 0Z"/><path d="M9 10h7M9 14h4"/></svg></span><b>用过的人怎么说</b></a>
+<a class="s-item" href="#start" data-od-id="s-start"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h6"/></svg></span><b>怎么开始</b></a>
   <a class="s-item" href="#contact" data-od-id="s-contact"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/></svg></span><b>预约增长诊断</b></a>
 </template>
 
@@ -122,10 +131,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
             <path class="ln" d="M 0 48 C 30 48 45 48 60 48"/>
             <path class="ln" d="M 0 184 C 30 184 45 184 60 184"/>
             <path class="ln" d="M 0 320 C 30 320 45 320 60 320"/>
-<path class="ln" d="M 0 48 C 25 48 35 48 60 48"/>
-<path class="ln" d="M 0 184 C 25 184 35 184 60 184"/>
-<path class="ln" d="M 0 320 C 25 320 35 320 60 320"/>
-<path class="ln" d="M 215 48 C 235 32 243 84 263 68"/>
+            <path class="ln" d="M 215 48 C 235 32 243 84 263 68"/>
 <path class="ln" d="M 215 116 C 235 100 243 164 263 148"/>
 <path class="ln" d="M 215 184 C 235 168 243 244 263 228"/>
 <path class="ln" d="M 215 252 C 235 236 243 324 263 308"/>
@@ -211,6 +217,19 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
         <p class="w-q">2026 年开年，全国 26 个城市冒出 39 个 OPC 社区。一人公司、超级个体正在把「一个人就是一支队伍」变成现实。</p>
       </div>
     </div>
+    <div class="proof-strip"><span><b>≤6 个月</b>现金储备警戒线</span><span><b>100–1000 万</b>一人公司营收带</span><span><b>39 个</b>2026 年新出现的 OPC 社区</span></div>
+  </section>
+
+  <!-- ══ 产品矩阵：七件独立产品，按需组合 ══ -->
+  <section id="products" class="sec reveal" data-od-anchor data-od-id="matrix">
+    <div class="sec-head center">
+      <span class="kicker">产品矩阵</span>
+      <h2>七件独立产品，按需组合</h2>
+      <p class="lead">不必为一个用不上的大系统付费：每件都能单独跑、单独见效；组合起来就是一套自转的增长系统。互通走 API——拔掉任何一个，其余照常运行。</p>
+    </div>
+    <div class="bento" style="margin-top:24px">
+<div data-w="4" data-r="2" class="bt-hi"><span class="bt-k">全家桶 · 四力合一</span><h3>OpenFlow · 增长操作系统</h3><p>要一整套系统、数据要在一处、团队要一个后台——四力合一，其余六件按需嵌入。</p><ul><li><b>交付</b>：内容引擎 + CDP + 自动化 + CRM + 商城</li><li><b>适合</b>：要一整套系统的团队</li><li><b>依赖</b>：深度（自家 CMS + CDP）</li></ul><a href="/product" class="bt-go">进入 OpenFlow →</a></div><div data-w="2"><span class="bt-k">轻量内容</span><h3>MFlow · 内容生产与分发</h3><p>AI 生成 + 多平台分发 + 轻触达。不换 CMS、不锁模型。</p><ul><li><b>适合</b>：内容创作者 · 电商卖家</li><li><b>上手</b>：当天</li></ul><a href="/product/mflow" class="bt-go">进入 MFlow →</a></div><div data-w="2"><span class="bt-k">落地页</span><h3>Webs Flow · 落地页专精</h3><p>44 种展示区块，承接页以小时计上线。</p><ul><li><b>适合</b>：投手 · 活动运营</li><li><b>依赖</b>：无</li></ul><a href="/product/webs-flow" class="bt-go">进入 Webs Flow →</a></div><div data-w="3"><span class="bt-k">全域数据</span><h3>UserLoop · 全域营销数据中枢</h3><p>埋点 + 身份合并 + 分群，对接任何 MA。</p><ul><li><b>适合</b>：多平台团队 · 代理商</li><li><b>依赖</b>：无</li></ul><a href="/product/userloop" class="bt-go">进入 UserLoop →</a></div><div data-w="3"><span class="bt-k">外部情报</span><h3>inFlow · 情报增长站</h3><p>趋势 / 舆情 / 竞品 + 每日情报。</p><ul><li><b>适合</b>：品牌方 · 内容策划</li><li><b>依赖</b>：无</li></ul><a href="/product/inflow" class="bt-go">进入 inFlow →</a></div><div data-w="3"><span class="bt-k">收款变现</span><h3>PayFlow · 商业变现引擎</h3><p>一行嵌入收款 + 订阅 + 裂变佣金。</p><ul><li><b>适合</b>：创作者 · 独立开发者</li><li><b>依赖</b>：无</li></ul><a href="/product/payflow" class="bt-go">进入 PayFlow →</a></div><div data-w="3"><span class="bt-k">课程交付</span><h3>LearnFlow · 课程与训练营</h3><p>上课 → 进度 → 测验 → 证书，交付闭环。</p><ul><li><b>适合</b>：讲师 · 教练 · 训练营主理人</li><li><b>依赖</b>：轻（收款接 PayFlow）</li></ul><a href="/product/learnflow" class="bt-go">进入 LearnFlow →</a></div>    </div>
+    <p class="note" style="text-align:center;margin-top:18px">各产品的依赖与适用人群见 <a href="/product">产品矩阵总览</a> · 想看它怎么跑，见 <a href="/product#demo">运行演示</a></p>
   </section>
 
   <!-- ══ TIPS 增长力 · 四力覆盖式滑动 Deck（下一块覆盖上一块） ══ -->
@@ -337,11 +356,11 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
       <span class="kicker">从 flow 到 loop</span>
       <h2>三步，把它接进你现在的活法</h2>
     </div>
-    <div class="wf">
-      <div class="wf-step"><span class="wf-n">01</span><h3>告诉它盯什么</h3><p>接入舆情、搜索热点、你自己的客户行为。配一次，之后它自己盯。</p><span class="wf-driver"><span class="pill hl">Webhook · RSS 接入</span></span></div>
-      <div class="wf-step"><span class="wf-n">02</span><h3>划清自动与审批边界</h3><p>用 Flow 配置确定性动作；发布、群发、报价等关键环节继续等待确认。</p><span class="wf-driver"><span class="pill hl">Flow · 审批边界</span></span></div>
-      <div class="wf-step"><span class="wf-n">03</span><h3>让系统按边界推进</h3><p>Flow 按已批准规则稳定执行；Loop 从只读建议和沙盘开始，验证后再逐步接入审批与执行。</p><span class="wf-driver"><span class="pill hl">Policy · 可审计</span></span></div>
-    </div>
+    <ol class="wf">
+      <li class="wf-step"><span class="wf-n">01</span><h3>告诉它盯什么</h3><p>接入舆情、搜索热点、你自己的客户行为。配一次，之后它自己盯。</p><span class="wf-driver"><span class="pill hl">Webhook · RSS 接入</span></span></li>
+      <li class="wf-step"><span class="wf-n">02</span><h3>划清自动与审批边界</h3><p>用 Flow 配置确定性动作；发布、群发、报价等关键环节继续等待确认。</p><span class="wf-driver"><span class="pill hl">Flow · 审批边界</span></span></li>
+      <li class="wf-step"><span class="wf-n">03</span><h3>让系统按边界推进</h3><p>Flow 按已批准规则稳定执行；Loop 从只读建议和沙盘开始，验证后再逐步接入审批与执行。</p><span class="wf-driver"><span class="pill hl">Policy · 可审计</span></span></li>
+    </ol>
   </section>
 
 
@@ -484,6 +503,31 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
     </div>
   </section>
 
+  <!-- ══ 用过的人怎么说（便签墙：复用原版 .qr/.q-i，卡片化 + 微倾斜 + 悬停回正） ══ -->
+  <section id="voices" class="sec reveal" data-od-anchor data-od-id="voices">
+    <div class="sec-head center">
+      <span class="kicker">真实反馈</span>
+      <h2>用过的人怎么说</h2>
+      <p class="lead">不是案例包装，是他们在自己业务里跑出来的话。</p>
+    </div>
+    <div class="qr notes"><div class="q-i q-hi" style="--tilt:-1.2deg"><div class="av">陈</div><blockquote>「以前每天 3 小时找选题改文章，现在爬完信号直接给草稿，我只管把关。」</blockquote><div class="who"><div><b>内容工作室 · 陈默</b><span>真实反馈</span></div></div></div><div class="q-i " style="--tilt:0.9deg"><div class="av">独</div><blockquote>「第一次一个人跑完整条内容流水线，从采集到收录没换过工具。」</blockquote><div class="who"><div><b>独立开发者</b><span>真实反馈</span></div></div></div><div class="q-i " style="--tilt:-0.6deg"><div class="av">增</div><blockquote>「漏斗终于看得见了：哪个环节漏单，面板直接告诉你。」</blockquote><div class="who"><div><b>增长负责人</b><span>真实反馈</span></div></div></div><div class="q-i " style="--tilt:1.1deg"><div class="av">D</div><blockquote>「不用换我的商城，接上就收款。」</blockquote><div class="who"><div><b>DTC 卖家</b><span>真实反馈</span></div></div></div><div class="q-i " style="--tilt:-0.9deg"><div class="av">前</div><blockquote>「组件工厂太顺了——贴一段 HTML 就变成可复用模块。」</blockquote><div class="who"><div><b>前端工程师</b><span>真实反馈</span></div></div></div><div class="q-i " style="--tilt:0.7deg"><div class="av">训</div><blockquote>「课程播放器拖进度条很流畅，学员完课率肉眼可见在涨。」</blockquote><div class="who"><div><b>训练营主理人</b><span>真实反馈</span></div></div></div></div>
+  </section>
+
+  <!-- ══ 三条路（手风琴：复用原版 .faq/.fq 平滑展开） ══ -->
+  <section id="start" class="sec reveal" data-od-anchor data-od-id="start">
+    <div class="sec-head center">
+      <span class="kicker">怎么开始</span>
+      <h2>三条路，通向同一个地方</h2>
+    </div>
+    <div class="faq-bar"><button type="button" id="startExpand">全部展开</button></div>
+    <div class="faq" id="startAcc">
+      <div class="fq open"><button class="fq-q" aria-expanded="true"><span>要一整套</span><span class="fq-n">四力合一</span><span class="fx"><?=$plus?></span></button><div class="fq-a"><div><ul><li><b>内容 · 数据 · 自动化 · 销售</b>：连成一条链路，数据只在一处</li><li><b>统一后台</b>：团队权限、审批闸门、审计留痕都在</li><li><b>其余六件按需嵌入</b>：不重复建设</li></ul><a class="fq-cta" href="/product">看 OpenFlow →</a></div></div></div>
+      <div class="fq"><button class="fq-q" aria-expanded="false"><span>要单点</span><span class="fq-n">七件产品</span><span class="fx"><?=$plus?></span></button><div class="fq-a"><div><ul><li><b>哪件缺用哪件</b>：七件独立可用，零强制绑定</li><li><b>零依赖产品</b>：PayFlow / Webs Flow / inFlow 今天就能跑</li><li><b>随时升级</b>：数据可平滑并入整套</li></ul><a class="fq-cta" href="/product">看产品矩阵 →</a></div></div></div>
+      <div class="fq"><button class="fq-q" aria-expanded="false"><span>要方法论</span><span class="fq-n">学院 + 课程</span><span class="fx"><?=$plus?></span></button><div class="fq-a"><div><ul><li><b>学院</b>：讲清楚增长方法论与内容形态</li><li><b>课程与训练营</b>：从利润公式到 Agent 系统</li><li><b>鱼与渔结合</b>：工具之外，知道为什么这么做</li></ul><a class="fq-cta" href="/academy">去学院 →</a></div></div></div>
+      <div class="fq"><button class="fq-q" aria-expanded="false"><span>要开源自托管</span><span class="fq-n">MIT</span><span class="fx"><?=$plus?></span></button><div class="fq-a"><div><ul><li><b>核心开源</b>：代码即证据，MIT 许可</li><li><b>数据在你服务器</b>：JSON + SQLite 起步，可演进 MySQL</li><li><b>可扩展</b>：插件、Skill、MCP 六类扩展点</li></ul><a class="fq-cta" href="/docs">看文档 →</a></div></div></div>
+    </div>
+  </section>
+
   <!-- ══ 预约诊断（原 60+ 行 inline style → .field/.inp 模块） ══ -->
   <section id="contact" class="reveal" data-od-anchor data-od-id="contact">
     <div class="contact-wrap">
@@ -603,6 +647,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
     tabs.forEach(function(t){panels[t.dataset.t]=document.getElementById(pre+'-'+t.dataset.t);t.tabIndex=-1;});
     if(tabs[0])tabs[0].tabIndex=0;
     var AUTO=box.dataset.auto==='on',IV=parseInt(box.dataset.interval||4500,10);
+    box.style.setProperty('--prog',(IV/1000)+'s'); // 进度条时长跟随 data-interval，不再依赖恰好等于默认值 4.5s
     function sel(t){
       tabs.forEach(function(x){var on=x===t;x.setAttribute('aria-selected',on?'true':'false');x.tabIndex=on?0:-1;});
       Object.keys(panels).forEach(function(k){panels[k].classList.toggle('on',k===t.dataset.t);});
@@ -658,5 +703,21 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 <!-- 角色化内容 + 角色切换 -->
 <script src="/assets/role-content.js?v=<?=OF_SHELL_VER?>"></script>
 <script src="/assets/role-switch.js?v=<?=OF_SHELL_VER?>"></script>
+
+<script>
+(function(){
+  document.querySelectorAll('.fq').forEach(function(el){
+    var q=el.querySelector('.fq-q'); if(!q) return;
+    q.addEventListener('click',function(){var on=el.classList.toggle('open');q.setAttribute('aria-expanded',on?'true':'false');});
+  });
+  var bar=document.getElementById('startExpand');
+  if(bar){bar.addEventListener('click',function(){
+    var fs=document.querySelectorAll('#startAcc .fq');
+    var all=[].every.call(fs,function(f){return f.classList.contains('open');});
+    fs.forEach(function(f){f.classList.toggle('open',!all);});
+    bar.textContent=all?'全部展开':'全部收起';
+  });}
+})();
+</script>
 </body>
 </html>
