@@ -151,6 +151,11 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
 
   <!-- ══ 六项能力（tab） ══ -->
   <section id="caps" class="sec reveal" data-od-anchor data-od-id="capability-caps">
+    <div class="sec-head center">
+      <span class="kicker">四力全景</span>
+      <h2>每一力，都能在后台点开</h2>
+      <p class="lead">四力不是四个名词：每一项都对应后台里可点开、可配置的模块。逐个切换，看它具体管什么、由哪个产品承载。</p>
+    </div>
     <div class="tab-bar dense" id="cap-tabs" role="tablist" aria-label="七项能力" data-tabs>
       <?php foreach ($CAPS as $i => $c): ?>
       <button type="button" class="tab-p" role="tab" id="cap-t<?=$i?>" data-hash="<?=['cap-touch','cap-insight','cap-personality','cap-sales','cap-spine','cap-engine','cap-open'][$i] ?? 'cap-'.$i?>" aria-selected="<?=$i===$__capIdx?'true':'false'?>" aria-controls="cap-p<?=$i?>" data-od-id="cap-<?=$i?>"><span class="ic"><?=$I[$c[0]]?></span><?=htmlspecialchars($c[1])?></button>
@@ -234,56 +239,51 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
   <!-- ══ 部署方式 ══ -->
   <section id="deploy" class="sec reveal" data-od-anchor data-od-id="capability-deploy">
     <div class="sec-head center">
-      <span class="kicker">部署方式</span>
-      <h2>托管还是自己装，你说了算</h2>
+      <span class="kicker">能力跑在哪</span>
+      <h2>能力在谁的机器上跑，由你决定</h2>
+      <p class="lead">同一套能力，三种运行位置。差别不在功能，在**谁能碰数据、谁负责运维、出事怎么回滚**。</p>
     </div>
     <div class="cols">
       <div>
-        <span class="ic"><?=$I['box']?></span>
-        <span class="w-tag">SAAS</span>
-        <h3>云端 SaaS</h3>
-        <p>最快上手，自动更新，无需运维。适合希望一周内跑起来的一人公司。</p>
-        <ul class="sp-list"><li><?=$ck?><span>开箱即用，免费起步</span></li><li><?=$ck?><span>功能随版本自动更新</span></li><li><?=$ck?><span>免运维，专注增长</span></li></ul>
+        <span class="w-tag">MANAGED</span>
+        <h3>跑在我们的机器上</h3>
+        <p>你只负责业务：升级、证书、备份、监控由我们做。适合没有运维人手的一人公司。</p>
+        <ul class="sp-list"><li><span>数据：加密存储，可随时导出</span></li><li><span>回滚：版本可回退，变更留痕</span></li><li><span>日志：保留 30 天，可按需延长</span></li></ul>
       </div>
       <div>
-        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
-        <span class="w-tag">PRIVATE</span>
-        <h3>私有化部署</h3>
-        <p>数据不出域，核心能力永久开源。适合重视自主可控的团队。</p>
-        <ul class="sp-list"><li><?=$ck?><span>数据完全留在内网</span></li><li><?=$ck?><span>核心能力开源自托管</span></li><li><?=$ck?><span>专属技术支持</span></li></ul>
+        <span class="w-tag">SELF-HOSTED</span>
+        <h3>跑在你自己的机器上</h3>
+        <p>本项目即开源底座，rsync + Apache 即可上线；数据、日志、模型调用全在你域内。</p>
+        <ul class="sp-list"><li><span>要求：一台服务器 + PHP 8.3（SQLite 起步）</span></li><li><span>密钥：仅存本机配置，不进第三方</span></li><li><span>审计：谁改了什么可回溯</span></li></ul>
       </div>
       <div>
-        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.2 2.2m8.4 8.4 2.2 2.2M18.4 5.6l-2.2 2.2M7.8 16.2l-2.2 2.2"/><circle cx="12" cy="12" r="3"/></svg></span>
         <span class="w-tag">HYBRID</span>
-        <h3>混合架构</h3>
-        <p>核心增长引擎私有化，弹性能力走云端。兼顾自主与扩展。</p>
-        <ul class="sp-list"><li><?=$ck?><span>核心引擎私有部署</span></li><li><?=$ck?><span>云端弹性扩缩容</span></li><li><?=$ck?><span>灰度发布与回滚</span></li></ul>
+        <h3>核心私有 + 重活上云</h3>
+        <p>客户与订单数据留内网，采集/生成这类重活走云端弹性，兼顾合规与成本。</p>
+        <ul class="sp-list"><li><span>边界：核心数据不出域</span></li><li><span>扩展：峰值时自动扩容</span></li><li><span>迁移：三种形态之间可切换</span></li></ul>
       </div>
     </div>
-    <div class="dep-wrap"><table class="dep-table">
-      <thead><tr><th></th><th>云端 SaaS</th><th>私有化部署</th><th>混合架构</th></tr></thead>
-      <tbody>
-        <tr><th>上手时间</th><td><b>当天</b>，注册即用</td><td>1-3 天，含环境准备</td><td>3-7 天，含架构评审</td></tr>
-        <tr><th>运维成本</th><td><b>零</b>，平台托管</td><td>自己运维（或购买托管运维）</td><td>核心自控 + 云端弹性</td></tr>
-        <tr><th>数据归属</th><td>云端加密存储，可随时导出</td><td><b>完全出不了你的域</b></td><td>核心数据私有，匿名化上云</td></tr>
-        <tr><th>适合谁</th><td>想立刻跑起来的一人公司</td><td>重视自主可控的团队</td><td>既要安全又要弹性的成长型团队</td></tr>
-        <tr><th>起步价</th><td><b>免费</b></td><td>开源免费 · 支持服务另议</td><td>按需评估</td></tr>
-        <tr><th></th><td><button class="btn ghost" data-act="start">免费开始</button></td><td><a class="btn ghost" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener">GitHub 自取</a></td><td><a class="btn ghost" href="/about">聊聊需求 →</a></td></tr>
-      </tbody>
-    </table></div>
+    <ul class="sp-list" style="max-width:900px;margin:22px auto 0"><li><span>自托管上线清单：备份 cron 已配 · 静态资源走 CDN · database 文件在 data/ 下且不入库 · 升级前打快照</span></li></ul>
   </section>
 
   <!-- ══ 开放生态 ══ -->
   <section id="open" class="sec reveal" data-od-anchor data-od-id="capability-open">
     <div class="sec-head center">
-      <span class="kicker">开放生态</span>
-      <h2>开放，是默认值（也是芭乐派的坚持）</h2>
+      <span class="kicker">接口与扩展点</span>
+      <h2>能力不止在页面上，也能被程序调用</h2>
+      <p class="lead">后台能点的，基本都有对应接口。以下是三类最常用的入口；完整清单见 <a href="/api/v1/docs" style="color:var(--accent)">/api/v1/docs</a>。</p>
     </div>
     <div class="cols n4">
-      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v12a4 4 0 0 0 8 0V4M8 8h8"/></svg></span><h3>开放 API</h3><p>完整 REST API，把 OpenFlow 嵌入你的增长系统。</p></div>
-      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16"/></svg></span><h3>Webhook</h3><p>双向触发与回调，与任意系统实时对接。</p></div>
-      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 9h16M9 4v5"/></svg></span><h3>Skill / 模板</h3><p>社区与芭乐派模板，一键复用增长打法。</p></div>
-      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4m0 12v4M2 12h4m12 0h4M5 5l3 3m8 8 3 3M19 5l-3 3M8 16l-3 3"/><circle cx="12" cy="12" r="3"/></svg></span><h3>永久开源</h3><p>核心能力开源，鱼与渔相结合，策略随工具迭代。</p></div>
+      <div><span class="ic"><?=$I['bolt']?></span><h3>REST API · 116 端点</h3><p>公开内容、事件上报、分群服务、表单回传；鉴权走 API Key 或会话。</p></div>
+      <div><span class="ic"><?=$I['refresh']?></span><h3>Webhook · 双向</h3><p>事件出站（成交、订阅、表单）与入站触发（外部系统唤起流程）。</p></div>
+      <div><span class="ic"><?=$I['box']?></span><h3>MCP · 23 个工具</h3><p>把能力暴露给 Agent：读写内容、查分群、跑工作流，受权限与审计约束。</p></div>
+      <div><span class="ic"><?=$I['doc']?></span><h3>插件 · 六类扩展点</h3><p>钩子 / API 路由 / 后台页 / 前端插槽 / 区块 / 定时，写一个目录即可扩展。</p></div>
+    </div>
+    <div class="code-show" style="max-width:900px">
+      <div class="cs-bar"><span class="cs-dot"></span><span class="cs-dot"></span><span class="cs-dot"></span><span class="cs-lang">curl · 取内容</span></div>
+      <pre class="cs-body"><code>$ curl -H "Authorization: Bearer $OF_KEY" \
+    https://nownexts.com/api/v1/content?limit=3
+{ "ok": true, "items": [ { "title": "…", "url": "/articles/…" } ] }</code></pre>
     </div>
   </section>
 
@@ -315,11 +315,11 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
       <h2>这三种状态下，它见效最快</h2>
       <p class="lead">不用先学会所有功能。先从最卡的一环开始，再把可复用的流程逐步接回增长链路。</p>
     </div>
-    <div class="tl">
-      <div class="tl-step"><span class="tl-n">01</span><span class="tl-y">OPC</span><h3>一个人做增长</h3><p>选题、内容、触达和复盘都由你负责，希望把重复动作交给 Agent，把时间留给判断。</p><a class="btn subtle tl-go" href="/product#demo">看完整增长闭环 →</a></div>
-      <div class="tl-step"><span class="tl-n">02</span><span class="tl-y">SMALL TEAM</span><h3>小团队协同运转</h3><p>已有内容或销售流程，但数据散在多个工具里，需要统一触发、权限和交接。</p><a class="btn subtle tl-go" href="#connectors">查看连接与部署 →</a></div>
-      <div class="tl-step"><span class="tl-n">03</span><span class="tl-y">OPERATOR</span><h3>想把方法变成资产</h3><p>不只想买工具，而是希望把自己的增长打法沉淀成可复制、可迭代的工作流。</p><a class="btn subtle tl-go" href="#caps">展开六项能力 →</a></div>
-    </div>
+    <ol class="tl">
+      <li class="tl-step"><span class="tl-n">01</span><span class="tl-y">OPC</span><h3>一个人做增长</h3><p>选题、内容、触达和复盘都由你负责，希望把重复动作交给 Agent，把时间留给判断。</p><a class="btn subtle tl-go" href="/product#demo">看完整增长闭环 →</a></li>
+      <li class="tl-step"><span class="tl-n">02</span><span class="tl-y">SMALL TEAM</span><h3>小团队协同运转</h3><p>已有内容或销售流程，但数据散在多个工具里，需要统一触发、权限和交接。</p><a class="btn subtle tl-go" href="#connectors">查看连接与部署 →</a></li>
+      <li class="tl-step"><span class="tl-n">03</span><span class="tl-y">OPERATOR</span><h3>想把方法变成资产</h3><p>不只想买工具，而是希望把自己的增长打法沉淀成可复制、可迭代的工作流。</p><a class="btn subtle tl-go" href="#caps">展开六项能力 →</a></li>
+    </ol>
   </section>
 
   <!-- ══ 用过的人怎么说（便签墙） ══ -->
@@ -329,7 +329,7 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
       <h2>用过的人怎么说</h2>
       <p class="lead">不是案例包装，是他们在自己业务里跑出来的话。</p>
     </div>
-    <div class="qr notes"><div class="q-i q-hi" style="--tilt:-1.2deg"><div class="av">陈</div><blockquote>「以前每天 3 小时找选题改文章，现在爬完信号直接给草稿，我只管把关。」</blockquote><div class="who"><div><b>内容工作室 · 陈默</b><span>真实反馈</span></div></div></div><div class="q-i " style="--tilt:0.9deg"><div class="av">独</div><blockquote>「第一次一个人跑完整条内容流水线，从采集到收录没换过工具。」</blockquote><div class="who"><div><b>独立开发者</b><span>真实反馈</span></div></div></div><div class="q-i " style="--tilt:-0.6deg"><div class="av">增</div><blockquote>「漏斗终于看得见了：哪个环节漏单，面板直接告诉你。」</blockquote><div class="who"><div><b>增长负责人</b><span>真实反馈</span></div></div></div><div class="q-i " style="--tilt:1.1deg"><div class="av">D</div><blockquote>「不用换我的商城，接上就收款。」</blockquote><div class="who"><div><b>DTC 卖家</b><span>真实反馈</span></div></div></div><div class="q-i " style="--tilt:-0.9deg"><div class="av">前</div><blockquote>「组件工厂太顺了——贴一段 HTML 就变成可复用模块。」</blockquote><div class="who"><div><b>前端工程师</b><span>真实反馈</span></div></div></div><div class="q-i " style="--tilt:0.7deg"><div class="av">训</div><blockquote>「课程播放器拖进度条很流畅，学员完课率肉眼可见在涨。」</blockquote><div class="who"><div><b>训练营主理人</b><span>真实反馈</span></div></div></div></div>
+    <div class="qr notes"><div class="q-i" style="--tilt:-1deg"><div class="av">运</div><blockquote>「自托管装在自己机器上，密钥不进第三方，日志我能自己翻——合规这关过了。」</blockquote><div class="who"><div><b>运维负责人 · 某机构</b><span>私有化部署</span></div></div></div><div class="q-i" style="--tilt:0.8deg"><div class="av">集</div><blockquote>「对接没找我们开发：官方 REST + Webhook 直接接进现有系统，两天跑通。」</blockquote><div class="who"><div><b>后端工程师 · SaaS 服务商</b><span>接口集成</span></div></div></div><div class="q-i" style="--tilt:-0.6deg"><div class="av">审</div><blockquote>「Agent 只能动白名单里的动作，发布和报价要人批，出错能回溯到哪一步。」</blockquote><div class="who"><div><b>数据合规 · 财税咨询</b><span>审计留痕</span></div></div></div><div class="q-i" style="--tilt:1.1deg"><div class="av">核</div><blockquote>「宣传里写的模块，我一个个在后台找到了——42 个没有水分。」</blockquote><div class="who"><div><b>技术选型 · 独立开发者</b><span>能力核验</span></div></div></div><div class="q-i q-hi" style="--tilt:-0.9deg"><div class="av">迁</div><blockquote>「数据是 JSON + SQLite，随时能导出迁走，这才敢把增长放上去。」</blockquote><div class="who"><div><b>创始人 · 内容工作室</b><span>数据主权</span></div></div></div><div class="q-i" style="--tilt:0.7deg"><div class="av">扩</div><blockquote>「缺的形态自己写插件补：钩子、路由、后台页、区块四类扩展点够用。」</blockquote><div class="who"><div><b>全栈工程师 · 代理商</b><span>插件扩展</span></div></div></div></div>
   </section>
 
   <!-- ══ 预约诊断（原 60+ 行 inline style → .field/.inp 模块） ══ -->
@@ -374,7 +374,8 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
     <div class="cta-band">
       <span class="kicker">能力在手</span>
       <h2>现在，让增长引擎替你跑起来</h2>
-      <p class="lead">TIPS 四力不是宣传页上的名词——它们都能在你今天的业务里主动运行。</p>
+      <p class="lead">TIPS 四力不是宣传页上的名词——它们都能在你今天的业务里主动运行：内容出稿、漏斗归因、分群触达、成交回流，每一步都有后台页面可核验。</p>
+      <ul class="sp-list" style="max-width:820px;margin:14px auto 0;text-align:left"><li><span>42 个模块全部可在后台或代码里找到对应实现，不写「规划中」</span></li><li><span>开放 API 116 个端点 + 23 个 MCP 工具，能力可被 Agent 调用</span></li><li><span>核心开源（MIT）：可自托管、可审计、可迁走</span></li></ul>
       <div class="cta-row">
         <button class="btn ghost" data-act="start">免费开始</button>
         <a class="btn ghost" href="/courses">报名课程</a>

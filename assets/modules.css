@@ -198,6 +198,7 @@ section+section{margin-top:clamp(64px,8vw,110px)}
 .card.hov:hover{transform:translateY(-3px);border-color:var(--border-strong);box-shadow:var(--shadow)}
 /* ── Archetype: timeline（无框 · 单轨 + 节点编号） ── */
 .tl{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;position:relative}
+ol.wf,ol.tl{list-style:none;margin:0;padding:0}
 .tl::before{content:"";position:absolute;top:14px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--border-strong),var(--border-soft))}
 .tl-step{position:relative;padding-top:40px;display:flex;flex-direction:column;gap:14px}
 .tl-n{position:absolute;top:-14px;left:0;width:28px;height:28px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-family:var(--font-mono);font-size:12px;font-weight:700}
