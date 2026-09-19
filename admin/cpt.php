@@ -18,7 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ((array)($_POST['f_key'] ?? []) as $i => $k) {
             if (trim((string)$k) === '') continue;
             $fields[] = ['key' => $k, 'label' => $_POST['f_label'][$i] ?? $k, 'type' => $_POST['f_type'][$i] ?? 'text',
-                         'required' => !empty($_POST['f_req'][$i]), 'options' => $_POST['f_opts'][$i] ?? ''];
+                         'required' => !empty($_POST['f_req'][$i]), 'options' => $_POST['f_opts'][$i] ?? '',
+                         // 关联三件套（其它字段类型会忽略这些键）
+                         'target' => $_POST['f_target'][$i] ?? '', 'multiple' => $_POST['f_multi'][$i] ?? '',
+                         'relation_field' => $_POST['f_rel'][$i] ?? '', 'function' => $_POST['f_fn'][$i] ?? '',
+                         'target_field' => $_POST['f_tfield'][$i] ?? ''];
         }
         $r = cpt_type_save(['name' => $_POST['name'] ?? '', 'name_plural' => $_POST['name_plural'] ?? '',
             'slug' => $_POST['slug'] ?? '', 'icon' => $_POST['icon'] ?? '📄',
@@ -43,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $types = cpt_types();
 $type  = $curType ? cpt_type($curType) : null;
 $editEntry = ($type && !empty($_GET['edit'])) ? cpt_entry($curType, $_GET['edit']) : null;
+$editResolved = ($type && $editEntry !== null) ? cpt_resolve_entry($curType, $editEntry) : null;
 
 admin_header('自定义内容类型');
 ?>
@@ -79,6 +84,7 @@ admin_header('自定义内容类型');
           <label style="font-size:13px"><input type="checkbox" name="menu" <?=!empty($type['menu'])?'checked':''?>> 显示入口</label>
 
           <div style="font-weight:700;margin:12px 0 6px;font-size:13px">字段</div>
+          <p class="text-xs text-muted" style="margin:0 0 8px">字段类型选「关联记录 / 汇总 / 查值」时，右侧的「目标类型 / 多选 / 基于关联字段 / 汇总方式 / 对方字段」才有意义：先建关联字段，汇总与查值填它的 key。</p>
           <div id="fields">
             <?php $defs = $type['fields'] ?? [['key'=>'','label'=>'','type'=>'text']]; foreach ($defs as $f): ?>
             <div class="frow" style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
@@ -87,6 +93,20 @@ admin_header('自定义内容类型');
               <select name="f_type[]" style="width:110px"><?php foreach (cpt_field_types() as $k=>$lab): ?><option value="<?=$k?>" <?=($f['type']??'')===$k?'selected':''?>><?=$lab?></option><?php endforeach; ?></select>
               <input name="f_opts[]" placeholder="选项(逗号分隔)" value="<?=htmlspecialchars(is_array($f['options']??'')?implode(',',$f['options']):'')?>" style="width:130px">
               <label style="font-size:12px"><input type="checkbox" name="f_req[]" value="1" <?=!empty($f['required'])?'checked':''?>>必填</label>
+              <?php // 关联记录 / 汇总 / 查值 用得到的配置（其它类型留空即可）?>
+              <select name="f_target[]" title="关联目标类型" style="width:110px">
+                <option value="">目标类型…</option>
+                <?php foreach ($types as $tt): ?><option value="<?=htmlspecialchars($tt['slug'])?>" <?=($f['target']??'')===$tt['slug']?'selected':''?>>→ <?=htmlspecialchars($tt['name'])?></option><?php endforeach; ?>
+              </select>
+              <select name="f_multi[]" title="单选/多选" style="width:78px">
+                <option value="1" <?=($f['multiple']??true)?'selected':''?>>多选</option>
+                <option value="0" <?=(isset($f['multiple']) && !$f['multiple'])?'selected':''?>>单选</option>
+              </select>
+              <input name="f_rel[]" placeholder="基于关联字段key" value="<?=htmlspecialchars($f['relation_field'] ?? '')?>" style="width:140px">
+              <select name="f_fn[]" title="汇总方式" style="width:76px">
+                <?php foreach (cpt_relation_functions() as $fk=>$fl): ?><option value="<?=$fk?>" <?=($f['function']??'count')===$fk?'selected':''?>><?=$fl?></option><?php endforeach; ?>
+              </select>
+              <input name="f_tfield[]" placeholder="对方字段key" value="<?=htmlspecialchars($f['target_field'] ?? '')?>" style="width:110px">
             </div>
             <?php endforeach; ?>
           </div>
@@ -111,7 +131,15 @@ admin_header('自定义内容类型');
       <div style="font-weight:700;margin-bottom:8px"><?=htmlspecialchars($type['name'])?> · 条目（<?=count(cpt_entries($type['slug']))?>）</div>
       <?php foreach (cpt_entries($type['slug']) as $e): ?>
       <div class="card" style="padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-        <div><strong><?=htmlspecialchars($e['title'])?></strong> <span style="font-size:11px;padding:1px 6px;border-radius:999px;background:<?=($e['status']??'')==='published'?'#dcfce7':'#f1f5f9'?>;color:<?=($e['status']??'')==='published'?'#166534':'#64748b'?>"><?=($e['status']??'')==='published'?'已发布':'草稿'?></span></div>
+        <div><strong><?=htmlspecialchars($e['title'])?></strong> <span style="font-size:11px;padding:1px 6px;border-radius:999px;background:<?=($e['status']??'')==='published'?'#dcfce7':'#f1f5f9'?>;color:<?=($e['status']??'')==='published'?'#166534':'#64748b'?>"><?=($e['status']??'')==='published'?'已发布':'草稿'?></span>
+          <?php $er = cpt_resolve_entry($type['slug'], $e)['resolved'] ?? []; $bits = [];
+          foreach ((array)($type['fields'] ?? []) as $rf) {
+              $rk = (string)($rf['key'] ?? '');
+              if (($rf['type'] ?? '') === 'relation') { $n = count((array)($er[$rk] ?? [])); if ($n) $bits[] = $rf['label'] . '：' . implode('/', array_map(fn($x) => (string)($x['title'] ?? ''), (array)$er[$rk])); }
+              elseif (($rf['type'] ?? '') === 'rollup' || ($rf['type'] ?? '') === 'lookup') { $cv = $er[$rk] ?? ''; $bits[] = $rf['label'] . '：' . (is_array($cv) ? implode(', ', array_map(fn($x) => (string)$x, $cv)) : (string)$cv); }
+          } ?>
+          <?php if ($bits): ?><div class="text-xs text-muted" style="margin-top:2px"><?=htmlspecialchars(implode(' · ', $bits))?></div><?php endif; ?>
+        </div>
         <div style="display:flex;gap:6px">
           <a href="/xmp/cpt?type=<?=urlencode($type['slug'])?>&edit=<?=urlencode($e['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
           <form method="post" data-confirm="删除?" style="margin:0"><?= csrf_field() ?><input type="hidden" name="action" value="delete_entry"><input type="hidden" name="id" value="<?=htmlspecialchars($e['id'])?>"><button class="btn btn-ghost btn-sm" style="color:#dc2626">×</button></form>
@@ -139,6 +167,23 @@ admin_header('自定义内容类型');
               <label><input type="checkbox" name="fields[<?=$f['key']?>]" value="1" <?=$val?'checked':''?>> 是</label>
             <?php elseif ($f['type']==='select'): ?>
               <select name="fields[<?=$f['key']?>]" style="width:100%"><option value="">—</option><?php foreach ($f['options'] ?? [] as $o): ?><option value="<?=htmlspecialchars($o)?>" <?=$val===$o?'selected':''?>><?=htmlspecialchars($o)?></option><?php endforeach; ?></select>
+            <?php elseif ($f['type']==='relation'): $selIds = cpt_normalize_relation($val); $tType = cpt_type((string)($f['target'] ?? '')); ?>
+              <?php if ($tType === null): ?>
+                <p class="text-xs" style="color:#dc2626;margin:0">目标类型「<?=htmlspecialchars((string)($f['target'] ?? ''))?>」不存在，请先创建。</p>
+              <?php else: ?>
+                <select name="fields[<?=$f['key']?>]<?=($f['multiple'] ?? true) ? '[]' : ''?>" style="width:100%" <?=($f['multiple'] ?? true)?'multiple size=4':''?>>
+                  <?php if (($f['multiple'] ?? true)): ?><?php else: ?><option value="">—</option><?php endif; ?>
+                  <?php foreach (cpt_entries((string)$f['target']) as $te): ?>
+                  <option value="<?=htmlspecialchars((string)$te['id'])?>" <?=in_array((string)$te['id'], $selIds, true)?'selected':''?>><?=htmlspecialchars((string)$te['title'])?></option>
+                  <?php endforeach; ?>
+                </select>
+                <span class="text-xs text-muted">来自「<?=htmlspecialchars((string)$tType['name'])?>」共 <?=count(cpt_entries((string)$f['target']))?> 条</span>
+              <?php endif; ?>
+            <?php elseif ($f['type']==='rollup' || $f['type']==='lookup'): $cv = $editResolved['resolved'][$f['key']] ?? ''; ?>
+              <div style="font-size:13px;padding:6px 8px;background:var(--surface-2,#f8fafc);border-radius:6px">
+                <?=is_array($cv) ? htmlspecialchars(implode(', ', array_map(fn($x) => is_array($x) ? (string)($x['title'] ?? '') : (string)$x, $cv))) : htmlspecialchars((string)$cv)?>
+                <span class="text-xs text-muted">（<?=$f['type']==='rollup'?'汇总':'查值'?>，根据关联自动计算）</span>
+              </div>
             <?php else: ?>
               <input type="<?=$f['type']==='number'?'number':($f['type']==='date'?'date':($f['type']==='url'?'url':'text'))?>" name="fields[<?=$f['key']?>]" value="<?=htmlspecialchars((string)$val)?>" style="width:100%" <?=$f['type']==='number'?'step=any':''?>>
             <?php endif; ?>
