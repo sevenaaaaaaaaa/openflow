@@ -68,6 +68,18 @@ try {
     }
 } catch (Exception $e) {}
 
+// 重复任务：完成的实例 → 生成下一个实例（幂等；页面里完成时也会即时生成一次）
+try {
+    if (is_file(__DIR__ . '/../lib/ProjectSystem.php')) {
+        require_once __DIR__ . '/../lib/ProjectSystem.php';
+        $rpFile = DATA_DIR . '/project_repeat_run.json';
+        if (time() - (int) (json_read($rpFile)['ts'] ?? 0) >= 900) {
+            $made = ps_repeat_spawn_due();
+            json_write($rpFile, ['ts' => time(), 'spawned' => $made]);
+        }
+    }
+} catch (Exception $e) {}
+
 // 项目任务到期提醒（每 15 分钟扫一次；同一任务同一到期日只提醒一次）
 // 两条腿：外部 IM 渠道 + 负责人邮件。**只要有一条腿能送达就落幂等键**，
 // 两条都不通（没配渠道 / 负责人没填邮箱 / 没配备用收件人）就不落键——等配好再提醒，不静默吞掉。

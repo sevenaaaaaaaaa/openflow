@@ -60,16 +60,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ps_action'])) {
     }
     $by = function_exists('member_current') ? (string) ((member_current()['name'] ?? '') ?: '') : '';
     if ($act === 'task_save' && $pid !== '') {
-        ps_task_save($pid, [
-            'title' => (string) ($_POST['title'] ?? ''),
-            'note' => (string) ($_POST['note'] ?? ''),
-            'status' => (string) ($_POST['status'] ?? 'todo'),
-            'priority' => (string) ($_POST['priority'] ?? 'normal'),
-            'assignee' => (string) ($_POST['assignee'] ?? ''),
-            'due' => (string) ($_POST['due'] ?? ''),
-            'parent' => (string) ($_POST['parent'] ?? ''),
-            'ref' => ['type' => (string) ($_POST['ref_type'] ?? ''), 'id' => (string) ($_POST['ref_id'] ?? ''), 'label' => (string) ($_POST['ref_label'] ?? '')],
-        ]);
+        // 只传 POST 里真正出现的字段：没传的键 ps_task_save 会保留原值
+        $payload = [];
+        foreach (['title', 'note', 'status', 'priority', 'assignee', 'due', 'parent'] as $k) {
+            if (array_key_exists($k, $_POST)) $payload[$k] = (string) $_POST[$k];
+        }
+        if (array_key_exists('ref_type', $_POST)) {
+            $payload['ref'] = ['type' => (string) $_POST['ref_type'], 'id' => (string) ($_POST['ref_id'] ?? ''), 'label' => (string) ($_POST['ref_label'] ?? '')];
+        }
+        if ((string) ($_POST['id'] ?? '') !== '') $payload['id'] = (string) $_POST['id'];
+        if (array_key_exists('repeat_pick', $_POST)) {
+            $pick = (string) $_POST['repeat_pick'];
+            if ($pick === '' || $pick === 'none') {
+                $payload['repeat'] = ['freq' => 'none'];
+            } else {
+                $parts = explode(':', $pick);
+                $payload['repeat'] = ['freq' => (string) ($parts[0] ?? 'none'), 'interval' => (int) ($parts[1] ?? 1), 'until' => trim((string) ($_POST['repeat_until'] ?? ''))];
+            }
+        }
+        ps_task_save($pid, $payload);
     } elseif ($act === 'task_reparent' && $pid !== '') {
         // 只改层级：把原任务整条读出来，换 parent 后存回（其余字段原样）
         $cur = null;
@@ -101,6 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ps_action'])) {
         ps_member_remove($pid, (string) ($_POST['user'] ?? ''));
     } elseif ($act === 'task_move' && $pid !== '') {
         ps_task_move($pid, (string) ($_POST['id'] ?? ''), (string) ($_POST['status'] ?? 'todo'), $by);
+        // 完成带重复规则的任务 → 立刻生成下一个实例（cron 只是兜底）
+        if ((string) ($_POST['status'] ?? '') === 'done') ps_repeat_spawn_due($pid);
     } elseif ($act === 'task_delete' && $pid !== '') {
         ps_task_delete($pid, (string) ($_POST['id'] ?? ''));
     }
@@ -378,6 +389,16 @@ admin_header('今日主线');
         <?php $builtinTargets = ps_ref_types(); $cptTargets = array_diff_key(ps_ref_targets(), $builtinTargets); ?>
         <label class="kb-f">关联<select class="inp sm" name="ref_type"><option value="">不关联</option><optgroup label="内置对象"><?php foreach ($builtinTargets as $rk => $rl): ?><option value="<?=htmlspecialchars((string) $rk)?>"><?=htmlspecialchars((string) $rl)?></option><?php endforeach; ?></optgroup><?php if ($cptTargets): ?><optgroup label="内容类型"><?php foreach ($cptTargets as $rk => $rl): ?><option value="<?=htmlspecialchars((string) $rk)?>"><?=htmlspecialchars((string) $rl)?></option><?php endforeach; ?></optgroup><?php endif; ?></select></label>
         <label class="kb-f">对象 ID<input class="inp sm" name="ref_id" placeholder="如 lead_123 / cpt_…" list="kbRefIds" style="width:120px"></label>
+        <label class="kb-f">重复<select class="inp sm" name="repeat_pick" style="width:96px">
+          <option value="none">不重复</option>
+          <option value="daily:1">每天</option>
+          <option value="daily:2">每 2 天</option>
+          <option value="weekly:1">每周</option>
+          <option value="weekly:2">每 2 周</option>
+          <option value="monthly:1">每月</option>
+          <option value="monthly:3">每季度</option>
+        </select></label>
+        <label class="kb-f">重复至<input class="inp sm" type="date" name="repeat_until" style="width:132px" title="留空=一直重复"></label>
         <datalist id="kbRefIds"><?php foreach (ps_ref_targets() as $rk => $rl): $rslug = ps_ref_cpt_slug((string) $rk); if ($rslug === '' || !function_exists('cpt_entries')) continue; foreach (cpt_entries($rslug) as $ce): ?><option value="<?=htmlspecialchars((string) ($ce['id'] ?? ''))?>"><?=htmlspecialchars((string) $rl . ' · ' . (string) ($ce['title'] ?? ''))?></option><?php endforeach; endforeach; ?></datalist>
         <button class="btn btn-p btn-sm">+ 加任务</button>
       </form>
@@ -402,13 +423,30 @@ admin_header('今日主线');
 
     <?php if ($teamView === 'grid'): ?>
     <table class="tv-grid">
-      <thead><tr><th>任务</th><?php if ($scopeAll): ?><th>项目</th><?php endif; ?><th>状态</th><?php foreach ($tvFields as $f): ?><th><?=htmlspecialchars((string) $f['label'])?></th><?php endforeach; ?><th>评论</th><th></th></tr></thead>
+      <thead><tr><th>任务</th><?php if ($scopeAll): ?><th>项目</th><?php endif; ?><th>状态</th><th>重复</th><?php foreach ($tvFields as $f): ?><th><?=htmlspecialchars((string) $f['label'])?></th><?php endforeach; ?><th>评论</th><th></th></tr></thead>
       <tbody>
         <?php foreach ($curTasks as $t): $status = (string) ($t['status'] ?? 'todo'); $due = (string) ($t['due'] ?? ''); ?>
         <tr>
           <td><b><?=htmlspecialchars((string) ($t['title'] ?? ''))?></b><?php $cr = $cardRoll[(string) ($t['id'] ?? '')] ?? []; if ((int) ($cr['total'] ?? 0) > 0): ?><span class="text-xs text-muted"> · 子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?></span><?php endif; ?><?php if ((string) ($t['note'] ?? '') !== ''): ?><div class="text-xs text-muted"><?=htmlspecialchars(mb_substr((string) $t['note'], 0, 70))?></div><?php endif; ?></td>
           <?php if ($scopeAll): ?><td><span class="kb-proj"><?=htmlspecialchars((string) ($t['_project_name'] ?? ''))?></span></td><?php endif; ?>
           <td><?=htmlspecialchars(ps_task_statuses()[$status] ?? $status)?></td>
+          <td>
+            <?php if ($canEditTask($t)): $rp = ps_repeat_normalize($t['repeat'] ?? []);
+              $rpVal = (string) $rp['freq'] === 'none' ? 'none' : ((string) $rp['freq'] . ':' . (int) $rp['interval']); ?>
+            <form method="post" class="tw-inline">
+              <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="ps_action" value="task_save">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($taskProj($t))?>">
+              <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+              <select name="repeat_pick" class="inp sm" style="width:88px">
+                <?php foreach (['none' => '不重复', 'daily:1' => '每天', 'daily:2' => '每 2 天', 'weekly:1' => '每周', 'weekly:2' => '每 2 周', 'monthly:1' => '每月', 'monthly:3' => '每季度'] as $rv => $rlab): ?>
+                <option value="<?=$rv?>" <?=$rv === $rpVal ? 'selected' : ''?>><?=htmlspecialchars($rlab)?></option>
+                <?php endforeach; ?>
+              </select>
+              <button class="btn btn-s btn-sm" title="保存重复规则">✓</button>
+            </form>
+            <?php else: ?><span class="text-xs text-muted"><?=htmlspecialchars(ps_repeat_label(ps_repeat_normalize($t['repeat'] ?? [])) ?: '—')?></span><?php endif; ?>
+          </td>
           <td><?=htmlspecialchars((string) ($t['assignee'] ?? ''))?></td>
           <td><?=htmlspecialchars((string) (ps_priorities()[(string) ($t['priority'] ?? 'normal')] ?? ''))?></td>
           <td><?=htmlspecialchars((string) ($t['start'] ?? ''))?></td>
@@ -536,6 +574,7 @@ admin_header('今日主线');
           <?php endif; ?>
           <span class="tw-acts">
             <?php if (($canEditTask($t) && !$scopeAll)): ?>
+            <?php $rlab2 = ps_repeat_label(ps_repeat_normalize($t['repeat'] ?? [])); if ($rlab2 !== ''): ?><span class="tw-a" title="重复规则">🔁 <?=htmlspecialchars($rlab2)?></span><?php endif; ?>
             <?php $cc = count(ps_task_comments($taskProj($t), $tk)); ?>
             <a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'board']))?>" title="到看板里评论">💬 <?=$cc?></a>
             <a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'tree', 'parent' => $tk]))?>#teamAdd">+ 子任务</a>
@@ -578,6 +617,7 @@ admin_header('今日主线');
         <div class="kanban-card<?=$sk === 'done' ? ' kb-done' : ''?>" draggable="<?=$canEditTask($t) ? 'true' : 'false'?>" data-id="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>" data-project="<?=htmlspecialchars($taskProj($t))?>">
           <div class="kb-t"><?=htmlspecialchars((string) ($t['title'] ?? ''))?></div>
           <?php if ($scopeAll): ?><span class="kb-proj"><?=htmlspecialchars((string) ($t['_project_name'] ?? ''))?></span><?php endif; ?>
+          <?php $rl = ps_repeat_label(ps_repeat_normalize($t['repeat'] ?? [])); if ($rl !== ''): ?><div class="kb-rep" title="完成这条后自动生成下一实例">🔁 <?=htmlspecialchars($rl)?></div><?php endif; ?>
           <div class="kb-m">
             <?php $prioCls = ['urgent' => 'prio-urgent', 'high' => 'prio-high', 'low' => 'prio-low'][$prio] ?? ''; ?>
             <?php if ($prio !== 'normal'): ?><span class="pill <?=$prioCls?>"><?=htmlspecialchars(ps_priorities()[$prio] ?? $prio)?></span><?php endif; ?>
