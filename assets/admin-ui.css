@@ -313,3 +313,24 @@ body[data-sb="closed"] .of-selbar{left:14px}
 .tw-a{font-size:11.5px;color:var(--accent);text-decoration:none;white-space:nowrap}
 .tw-a:hover{text-decoration:underline}
 .tw-inline{margin:0;display:flex;gap:4px;align-items:center}
+
+/* ── Teams+：顶栏入口 + 入口页卡片 ── */
+/* .cbtn 是 36px 方框，这里必须盖掉它的宽高与换行 */
+.bar-end .teams-entry,#chrome .teams-entry{width:auto;height:32px;min-width:0;padding:0 11px;gap:6px;display:inline-flex;align-items:center;white-space:nowrap;
+  font-size:12.5px;font-weight:650;letter-spacing:.01em;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 38%,var(--border));border-radius:99px}
+.bar-end .teams-entry:hover,#chrome .teams-entry:hover{background:color-mix(in srgb,var(--accent) 11%,transparent);border-color:color-mix(in srgb,var(--accent) 55%,var(--border))}
+.bar-end .teams-entry svg{flex:0 0 auto}
+@media (max-width:1100px){.bar-end .teams-entry span{display:none}.bar-end .teams-entry{padding:0 8px}}
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.teams-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 15px;display:flex;flex-direction:column;gap:9px;transition:border-color .15s,box-shadow .15s}
+.teams-card:hover{border-color:color-mix(in srgb,var(--accent) 35%,var(--border));box-shadow:0 3px 14px -8px color-mix(in srgb,var(--accent) 45%,transparent)}
+.teams-card-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.teams-card-h b{font-size:13.5px}
+.teams-desc{margin:0;font-size:12.5px;color:var(--muted);line-height:1.65}
+.teams-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted)}
+.teams-meta b{color:inherit}
+.teams-meta b.over{color:var(--danger,#dc2626)}
+.teams-prog{height:5px;border-radius:99px;background:color-mix(in srgb,var(--border) 65%,transparent);overflow:hidden}
+.teams-prog span{display:block;height:100%;border-radius:99px;background:var(--accent);opacity:.85}
+.teams-members{display:flex;gap:6px;flex-wrap:wrap}
+.teams-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
