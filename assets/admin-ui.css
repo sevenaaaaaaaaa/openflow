@@ -209,3 +209,36 @@ body[data-sb="closed"] .of-selbar{left:14px}
 .of-busy{position:relative;pointer-events:none;opacity:.72}
 .of-busy::after{content:'';display:inline-block;width:.85em;height:.85em;margin-left:.45em;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;vertical-align:-.12em;animation:ofspin .7s linear infinite}
 @keyframes ofspin{to{transform:rotate(360deg)}}
+
+/* ── 多维表格视图（表格 / 看板 / 日历 / 甘特）── */
+.tv-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+.tv-bar .note{font-size:12px;color:var(--muted)}
+.tv-grid{width:100%;border-collapse:collapse;font-size:13px}
+.tv-grid th,.tv-grid td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.tv-grid th{font-size:11.5px;color:var(--muted);font-weight:700;white-space:nowrap;background:var(--surface-2)}
+.tv-grid tr:hover td{background:var(--surface-2)}
+.tv-grid td{max-width:260px;overflow-wrap:anywhere}
+.tv-kb{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;align-items:flex-start}
+.tv-kb-col{min-width:230px;max-width:270px;flex:1;background:var(--surface-2);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.tv-kb-h{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:2px 4px}
+.tv-kb-h span{margin-left:auto;background:var(--border);border-radius:99px;padding:1px 8px;font-size:11px}
+.tv-kb-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px}
+.tv-kb-card b{font-size:13px;font-weight:650;overflow-wrap:anywhere}
+.tv-kb-card p{margin:5px 0 0;font-size:11.5px;color:var(--muted)}
+.tv-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.tv-cal-head{text-align:center;font-size:11.5px;color:var(--muted);font-weight:700;padding:2px 0}
+.tv-cal-cell{min-height:96px;background:var(--surface-2);border-radius:8px;padding:6px 7px}
+.tv-cal-cell.empty{background:transparent}
+.tv-cal-cell.today{outline:2px solid var(--accent);outline-offset:-2px}
+.tv-cal-day{font-size:11.5px;color:var(--muted);margin-bottom:4px}
+.tv-cal-ev{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 6px;font-size:11.5px;margin-bottom:4px;overflow-wrap:anywhere}
+.tv-gantt{position:relative;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.tv-gantt-row{display:grid;grid-template-columns:200px 1fr;align-items:center;border-bottom:1px solid var(--border);min-height:38px}
+.tv-gantt-row:last-child{border-bottom:none}
+.tv-gantt-label{font-size:12.5px;padding:6px 10px;border-right:1px solid var(--border);overflow-wrap:anywhere}
+.tv-gantt-track{position:relative;height:34px}
+.tv-gantt-bar{position:absolute;top:10px;height:14px;border-radius:7px;background:var(--accent);opacity:.85;min-width:3px}
+.tv-gantt-bar.ms{width:12px;height:12px;border-radius:50%;top:11px}
+.tv-gantt-today{position:absolute;top:0;bottom:0;width:2px;background:#dc2626;opacity:.7}
+.tv-gantt-scale{display:grid;grid-template-columns:200px 1fr}
+.tv-gantt-scale .ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding:4px 0}
