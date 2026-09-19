@@ -666,7 +666,14 @@ function json_write(string $path, array $data): bool {
     if (!is_dir($dir)) {
         @mkdir($dir, 0755, true);
     }
-    return file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) !== false;
+    // 编码守卫：json_encode 失败（例如数据里混入非 UTF-8 二进制）时**绝不落盘**——
+    // 否则会把文件写成空字符串，静默丢掉整份数据。这种情况记一条日志，返回 false 让调用方知道。
+    $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    if ($json === false) {
+        @error_log('[json_write] 编码失败，已跳过写入：' . $path . '（' . json_last_error_msg() . '）');
+        return false;
+    }
+    return file_put_contents($path, $json) !== false;
 }
 
 function is_installed(): bool {
@@ -925,7 +932,7 @@ function save_tags(array $data): bool {
 }
 
 // ─── UI ───────────────────────────────────────────
-if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260919i');   // 20260919b: 团队视角看板/树视觉对齐
+if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260919k');   // 20260919b: 团队视角看板/树视觉对齐
 
 function admin_header(string $title): void {
 security_headers();
