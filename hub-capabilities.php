@@ -190,7 +190,7 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）
     <div class="sec-head center">
       <span class="kicker">能力索引</span>
       <h2>42 个模块，全部真实存在</h2>
-      <p class="lead">不写「规划中」、不写「敬请期待」。下面每一个名词，都能在后台界面或 GitHub 代码里找到对应实现。</p>
+      <p class="lead">不写「规划中」、不写「敬请期待」。每一类点开就是该类下的 6 个模块；同一个名词，你在后台页面和 GitHub 代码里都能找到对应实现。</p>
     </div>
     <div class="hacc">
       <?php foreach ($CAPS as $i => $c): ?>
