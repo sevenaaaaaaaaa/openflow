@@ -268,6 +268,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="sec-head center">
       <span class="kicker">常见问题</span>
       <h2>你可能会关心</h2>
+      <p class="lead">下面 4 个问题是我们被问得最多的：要不要写代码、能不能只买一件、数据放在哪、多久能跑起来。</p>
     </div>
     <div class="faq-bar"><button type="button" id="faqExpand">全部展开</button></div>
     <div class="faq" id="faq">

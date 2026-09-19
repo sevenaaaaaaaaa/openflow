@@ -486,6 +486,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
       <span class="kicker">增长洞察</span>
       <h2>关于增长系统与 Agent 的思考</h2>
     </div>
+    <p class="note" style="text-align:center;max-width:720px;margin:10px auto 20px">每次只放 3 篇：一篇讲系统怎么搭，一篇讲杠杆在哪（销转/复购），一篇讲 Agent 落在具体环节的实操。读完能动手，不做资讯堆砌。</p>
     <div class="art-list" id="homeArts">
       <?php
       // 2026-09-02 修复：这一节原注释写着「JS 注入 → SSR」，但 SSR 从未落地，$homeArticlesJson 算完没人渲染，线上是空白一节。
