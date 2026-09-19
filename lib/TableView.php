@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 if (!function_exists('tv_views')) {
     function tv_views(): array {
-        return ['grid' => '表格', 'board' => '看板', 'calendar' => '日历', 'gantt' => '甘特'];
+        return ['grid' => '表格', 'board' => '看板', 'calendar' => '日历', 'gantt' => '甘特', 'tree' => '树视图'];
     }
 
     /** 记录行：原值 + 解析值 + 展示文本，视图层统一吃这个结构 */

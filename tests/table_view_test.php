@@ -14,7 +14,7 @@ function check(string $n, bool $ok, string $d = ''): void {
     if ($ok) { $pass++; echo "  ✓ {$n}\n"; } else { $fail++; echo "  ✗ {$n}" . ($d !== '' ? " — {$d}" : "") . "\n"; }
 }
 echo "多视图布局\n";
-check('四种视图', array_keys(tv_views()) === ['grid', 'board', 'calendar', 'gantt']);
+check('五种视图（含树）', array_keys(tv_views()) === ['grid', 'board', 'calendar', 'gantt', 'tree']);
 
 cpt_type_save(['name' => '任务', 'slug' => 'tasks', 'fields' => [
     ['key' => 'state', 'label' => '状态', 'type' => 'select', 'options' => ['待办', '进行中', '完成']],
