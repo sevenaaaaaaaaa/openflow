@@ -533,6 +533,80 @@ function ps_stats(string $projectId, string $today = ''): array
     return ['by_status' => $by, 'total' => $total, 'overdue' => $overdue, 'roots' => $roots, 'nodes' => $total, 'leaf_total' => $leafTotal, 'leaf_done' => $leafDone];
 }
 
+/* ────────────── 到期分桶（页内角标 / 待办聚合，不依赖外部渠道） ────────────── */
+
+/**
+ * 按到期时间分桶：逾期 / 今天 / 近 N 天。已完成跳过。
+ * 与 ps_due_reminders 的区别：这里**不考虑是否已提醒过**——角标要一直显示，
+ * 提醒只发一次是另一件事。
+ *
+ * @return array{overdue:list<array>,today:list<array>,soon:list<array>,counts:array{overdue:int,today:int,soon:int}}
+ */
+function ps_due_buckets(string $projectId = '', string $now = '', int $soonDays = 7): array
+{
+    $ts = $now !== '' ? (strtotime($now) ?: time()) : time();
+    $today = date('Y-m-d', $ts);
+    $limit = date('Y-m-d', $ts + $soonDays * 86400);
+    $out = ['overdue' => [], 'today' => [], 'soon' => []];
+    $projects = $projectId !== '' ? [['id' => $projectId, 'name' => (string) ((ps_project_get($projectId)['name'] ?? $projectId))]] : ps_projects(true);
+    foreach ($projects as $p) {
+        $pid = ps_safe_id((string) ($p['id'] ?? ''));
+        if ($pid === '') continue;
+        foreach (ps_tasks($pid) as $t) {
+            if ((string) ($t['status'] ?? 'todo') === 'done') continue;
+            $due = (string) ($t['due'] ?? '');
+            if ($due === '') continue;
+            $d = substr($due, 0, 10);
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $d) !== 1) continue;
+            $item = ['project' => $pid, 'project_name' => (string) ($p['name'] ?? $pid), 'task' => $t];
+            if ($d < $today) $out['overdue'][] = $item;
+            elseif ($d === $today) $out['today'][] = $item;
+            elseif ($d <= $limit) $out['soon'][] = $item;
+        }
+    }
+    usort($out['overdue'], static fn(array $a, array $b): int => strcmp((string) ($a['task']['due'] ?? ''), (string) ($b['task']['due'] ?? '')));
+    usort($out['soon'], static fn(array $a, array $b): int => strcmp((string) ($a['task']['due'] ?? ''), (string) ($b['task']['due'] ?? '')));
+    return $out + ['counts' => ['overdue' => count($out['overdue']), 'today' => count($out['today']), 'soon' => count($out['soon'])]];
+}
+
+/** 负责人邮箱：按显示名或登录名在 users.json 里找 */
+function ps_assignee_email(string $assignee): string
+{
+    $needle = strtolower(trim($assignee));
+    if ($needle === '') return '';
+    foreach ((array) json_read(DATA_DIR . '/users.json') as $uk => $u) {
+        if (!is_array($u)) continue;
+        $name = strtolower(trim((string) ($u['name'] ?? '')));
+        if ($name === $needle || strtolower(trim((string) $uk)) === $needle) {
+            return trim((string) ($u['email'] ?? ''));
+        }
+    }
+    return '';
+}
+
+/**
+ * 一条任务该发给谁：负责人邮箱优先；另外始终带上配置里的备用收件人
+ * （负责人没填邮箱时至少还有人收得到，避免提醒悄悄消失）。
+ */
+function ps_reminder_recipients(array $task): array
+{
+    $out = [];
+    $who = trim((string) ($task['assignee'] ?? ''));
+    if ($who !== '') {
+        $em = ps_assignee_email($who);
+        if ($em !== '' && filter_var($em, FILTER_VALIDATE_EMAIL) !== false) $out[] = $em;
+    }
+    $extra = '';
+    if (function_exists('notify_channels')) {
+        $extra = (string) (notify_channels()['task_email']['to'] ?? '');
+    }
+    foreach (preg_split('/[,;\s]+/', $extra) ?: [] as $em) {
+        $em = trim((string) $em);
+        if ($em !== '' && filter_var($em, FILTER_VALIDATE_EMAIL) !== false && !in_array($em, $out, true)) $out[] = $em;
+    }
+    return $out;
+}
+
 /* ────────────── 提醒（幂等） ────────────── */
 
 /**

@@ -69,31 +69,48 @@ try {
 } catch (Exception $e) {}
 
 // 项目任务到期提醒（每 15 分钟扫一次；同一任务同一到期日只提醒一次）
-// 只有「至少启用了一个外部渠道」才发并落幂等键——否则等用户配好渠道再提醒，避免静默吞掉。
+// 两条腿：外部 IM 渠道 + 负责人邮件。**只要有一条腿能送达就落幂等键**，
+// 两条都不通（没配渠道 / 负责人没填邮箱 / 没配备用收件人）就不落键——等配好再提醒，不静默吞掉。
 try {
     if (is_file(__DIR__ . '/../lib/ProjectSystem.php')) {
         require_once __DIR__ . '/../lib/ProjectSystem.php';
         require_once __DIR__ . '/../lib/NotifyChannels.php';
+        require_once __DIR__ . '/../lib/MailChannel.php';
         $trFile = DATA_DIR . '/project_reminder_run.json';
         if (time() - (int) (json_read($trFile)['ts'] ?? 0) >= 900) {
             $ch = notify_channels();
-            $hasChannel = false;
+            $imReady = false;
             foreach (['wecom', 'feishu', 'slack', 'whatsapp'] as $c) {
-                if (!empty($ch[$c]['enabled']) && !empty($ch[$c]['webhook'])) { $hasChannel = true; break; }
+                if (!empty($ch[$c]['enabled']) && !empty($ch[$c]['webhook'])) { $imReady = true; break; }
             }
+            $mc = mail_channels();
+            $mkey = (string) ($mc['_default'] ?? 'smtp');
+            $mailReady = !empty($mc[$mkey]['enabled']) || !empty($mc['smtp']['enabled']);
             $sent = [];
-            if ($hasChannel) {
-                $sent = ps_notify_due_reminders(static function (array $r): bool {
+            if ($imReady || $mailReady) {
+                $sent = ps_notify_due_reminders(static function (array $r) use ($imReady, $mailReady): bool {
                     $m = ps_reminder_text($r);
-                    try {
-                        notify_channels_send($m['title'], $m['body'], rtrim(SITE_URL, '/') . '/xmp/today?view=team&project=' . urlencode((string) ($r['project'] ?? '')));
-                    } catch (\Throwable $e) {
-                        return false;
+                    $link = rtrim(SITE_URL, '/') . '/xmp/today?view=team&project=' . urlencode((string) ($r['project'] ?? ''));
+                    $delivered = false;
+                    if ($imReady) {
+                        try { notify_channels_send($m['title'], $m['body'], $link); $delivered = true; } catch (\Throwable $e) {}
                     }
-                    return true;
+                    if ($mailReady) {
+                        $to = ps_reminder_recipients((array) ($r['task'] ?? []));
+                        if ($to !== []) {
+                            $html = '<p style="font-size:15px;font-weight:600;margin:0 0 8px">' . htmlspecialchars($m['title']) . '</p>'
+                                . '<p style="margin:0 0 10px;line-height:1.7">' . nl2br(htmlspecialchars($m['body'])) . '</p>'
+                                . '<p style="margin:0 0 4px"><a href="' . htmlspecialchars($link) . '">在团队视角打开</a></p>'
+                                . '<p style="color:#888;font-size:12px;margin:12px 0 0">来自团队视角的任务提醒，可在后台「通知渠道」里关闭或改收件人。</p>';
+                            foreach ($to as $em) {
+                                try { if (mail_send($em, $m['title'], $html)) $delivered = true; } catch (\Throwable $e) {}
+                            }
+                        }
+                    }
+                    return $delivered;
                 });
             }
-            json_write($trFile, ['ts' => time(), 'has_channel' => $hasChannel, 'sent' => $sent]);
+            json_write($trFile, ['ts' => time(), 'im' => $imReady, 'mail' => $mailReady, 'sent' => $sent]);
         }
     }
 } catch (Exception $e) {}

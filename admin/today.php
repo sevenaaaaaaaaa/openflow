@@ -272,6 +272,9 @@ admin_header('今日主线');
       <div class="p-body" style="border-top:1px solid var(--border-soft,var(--border));display:flex;gap:16px;flex-wrap:wrap;align-items:center">
         <span class="note">共 <b><?=$kbStats['total']?></b> 条<?=((int) ($kbStats['roots'] ?? 0)) > 0 && (int) $kbStats['roots'] !== (int) $kbStats['total'] ? '（' . (int) $kbStats['roots'] . ' 条顶层）' : ''?></span>
         <span class="note">逾期 <b style="color:<?=$kbStats['overdue'] > 0 ? 'var(--danger,#dc2626)' : 'inherit'?>"><?=$kbStats['overdue']?></b></span>
+        <?php $kbDue = ps_due_buckets($curId); ?>
+        <span class="note">今天 <b<?=$kbDue['counts']['today'] > 0 ? ' style="color:var(--danger,#dc2626)"' : ''?>><?=$kbDue['counts']['today']?></b></span>
+        <span class="note">近 7 天 <b><?=$kbDue['counts']['soon']?></b></span>
         <?php foreach (ps_task_statuses() as $sk => $sl): ?>
         <span class="note"><?=htmlspecialchars($sl)?> <b><?=$kbStats['by_status'][$sk] ?? 0?></b></span>
         <?php endforeach; ?>
@@ -481,14 +484,39 @@ admin_header('今日主线');
       <div class="p-body">
         <b style="font-size:13px">这个视图接下来会长成什么</b>
         <div class="kb-road">
-          <div><span class="pill">已就绪</span><ul><li>项目 / 任务 / 看板（拖拽改状态）</li><li>任务关联既有对象（发布 · 分发 · CRM · 订单）</li><li>多用户登录与角色权限（复用 <code>tasks</code> 权限）</li><li>提醒引擎与 cron 扫描（飞书 / 企微 / Slack / WhatsApp，幂等，未配渠道不误标）</li><li>多视图：表格 / 看板 / 日历 / 甘特（与自定义内容类型共用布局层）</li><li>多维表格三件套：关联 / 汇总 / 查值（已可用于自定义内容类型）</li><li>父子任务 + 树视图（层级、逐层进度汇总、级联删除）</li><li>任务 ↔ 内容类型记录互相关联（双向可查）</li><li>内容类型记录也能分层级 / 看树视图（自关联即层级，删除只断链不删子记录）</li></ul></div>
-          <div><span class="pill">进行中</span><ul><li>本页内到期提醒（角标 / 待办聚合，不只靠外部渠道）</li><li>任务负责人邮件提醒（复用现有邮件链路）</li><li>看板视觉与设计系统对齐</li></ul></div>
+          <div><span class="pill">已就绪</span><ul><li>项目 / 任务 / 看板（拖拽改状态）</li><li>任务关联既有对象（发布 · 分发 · CRM · 订单）</li><li>多用户登录与角色权限（复用 <code>tasks</code> 权限）</li><li>提醒引擎与 cron 扫描（飞书 / 企微 / Slack / WhatsApp + 负责人邮件，幂等，两条腿都不通就不误标）</li><li>页内到期提醒：主线页任务到期面板 + 团队视角「今天 / 近 7 天」角标</li><li>多视图：表格 / 看板 / 日历 / 甘特（与自定义内容类型共用布局层）</li><li>多维表格三件套：关联 / 汇总 / 查值（已可用于自定义内容类型）</li><li>父子任务 + 树视图（层级、逐层进度汇总、级联删除）</li><li>任务 ↔ 内容类型记录互相关联（双向可查）</li><li>内容类型记录也能分层级 / 看树视图（自关联即层级，删除只断链不删子记录）</li></ul></div>
+          <div><span class="pill">进行中</span><ul><li>看板视觉与设计系统对齐</li></ul></div>
           <div><span class="pill">规划中</span><ul><li>项目级成员权限（owner / editor / viewer）</li></ul></div>
         </div>
       </div>
     </div>
     <?php endif; ?>
     <?php else: ?>
+
+    <?php $dueBuckets = ps_due_buckets(); $dueTop = array_slice(array_merge($dueBuckets['overdue'], $dueBuckets['today']), 0, 5); ?>
+    <?php if ($dueTop !== []): ?>
+    <!-- 页内到期提醒：外部渠道之外，打开这一页也能看到（角标 + 待办聚合） -->
+    <div class="panel" style="margin-bottom:12px;border-left:3px solid var(--danger,#dc2626)">
+      <div class="p-body">
+        <b style="font-size:13px">任务到期 · 逾期 <?=count($dueBuckets['overdue'])?> · 今天 <?=count($dueBuckets['today'])?> · 近 7 天 <?=count($dueBuckets['soon'])?></b>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+          <?php foreach ($dueTop as $d): $dt = (array) $d['task']; $od = substr((string) ($dt['due'] ?? ''), 0, 10) < date('Y-m-d'); ?>
+          <div style="display:flex;gap:8px;align-items:center;font-size:12.5px;flex-wrap:wrap">
+            <span class="pill<?=$od ? ' hl' : ''?>"><?=$od ? '逾期' : '今天'?></span>
+            <b><?=htmlspecialchars((string) ($dt['title'] ?? ''))?></b>
+            <span class="text-muted">· <?=htmlspecialchars((string) $d['project_name'])?></span>
+            <?php if ((string) ($dt['assignee'] ?? '') !== ''): ?><span class="text-muted">· @<?=htmlspecialchars((string) $dt['assignee'])?></span><?php endif; ?>
+            <?php if ((string) ($dt['due'] ?? '') !== ''): ?><span class="text-muted">· <?=htmlspecialchars(substr((string) $dt['due'], 0, 16))?></span><?php endif; ?>
+            <a href="/xmp/today?view=team&project=<?=urlencode((string) $d['project'])?>" style="margin-left:auto">去处理 →</a>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <?php if (count($dueBuckets['overdue']) + count($dueBuckets['today']) > count($dueTop)): ?>
+        <p class="text-xs text-muted" style="margin:8px 0 0">还有更多，去 <a href="/xmp/today?view=team">团队视角</a> 看全部。</p>
+        <?php endif; ?>
+      </div>
+    </div>
+    <?php endif; ?>
 
     <!-- 每日晨会:岗位干活 → 小福汇报 的闭环入口 -->
     <div class="panel" style="margin-bottom:12px" id="briefPanel">
