@@ -925,7 +925,7 @@ function save_tags(array $data): bool {
 }
 
 // ─── UI ───────────────────────────────────────────
-if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260919f');   // 20260919b: 团队视角看板/树视觉对齐
+if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260919g');   // 20260919b: 团队视角看板/树视觉对齐
 
 function admin_header(string $title): void {
 security_headers();

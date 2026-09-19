@@ -334,3 +334,17 @@ body[data-sb="closed"] .of-selbar{left:14px}
 .teams-prog span{display:block;height:100%;border-radius:99px;background:var(--accent);opacity:.85}
 .teams-members{display:flex;gap:6px;flex-wrap:wrap}
 .teams-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+
+/* ── 任务评论 ── */
+.kb-cmts{margin-top:8px;border-top:1px solid color-mix(in srgb,var(--border) 70%,transparent);padding-top:6px}
+.kb-cmts>summary{cursor:pointer;font-size:11.5px;color:var(--muted);list-style:none}
+.kb-cmts>summary::-webkit-details-marker{display:none}
+.kb-cmts>summary::before{content:'💬 ';opacity:.85}
+.kb-cmts[open]>summary{color:var(--accent);margin-bottom:6px}
+.kb-cmt{margin:7px 0;font-size:11.5px}
+.kb-cmt-h{display:flex;gap:6px;align-items:center;color:var(--muted)}
+.kb-cmt-h b{color:inherit}
+.kb-cmt-t{margin-top:2px;line-height:1.6;overflow-wrap:anywhere}
+.cmt-at{color:var(--accent);font-weight:600}
+.kb-cmt-form{display:flex;gap:5px;margin-top:7px;align-items:center}
+.kb-cmt-form .inp{flex:1;min-width:0;font-size:12px}

@@ -142,8 +142,7 @@ admin_header('Teams+');
   <h2 style="font-size:14px;margin:24px 0 10px">接下来要做</h2>
   <div class="panel"><div class="p-body">
     <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.9;color:var(--muted)">
-      <li>记录评论与 @提及（任务下面能讨论，通知到人）</li>
-      <li>跨项目汇总视图（一次看所有项目的任务，同一套多视图）</li>
+      <li>跨项目汇总视图（一次看所有项目的任务，同一套多视图）—— 下一步就做</li>
       <li>视图级公开只读分享（把某个视图给外部看）</li>
       <li>任务重复规则（每周 / 每月自动生成）</li>
     </ul>
