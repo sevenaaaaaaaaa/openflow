@@ -32,7 +32,9 @@ $_SESSION['admin_login'] = true;
 $_SESSION['admin_role']  = 'admin';
 $_SESSION['admin_user']  = getenv('OF_PREVIEW_USER') ?: 'Seven';
 
-$file = getenv('OF_PREVIEW_ROOT') . '/admin/' . ltrim(basename($path), '/');
+$rel = ltrim(basename($path), '/');
+if ($rel !== '' && !str_contains($rel, '.')) $rel .= '.php';   // /xmp/teams → teams.php
+$file = getenv('OF_PREVIEW_ROOT') . '/admin/' . $rel;
 if ($path === '/' || !is_file($file)) $file = getenv('OF_PREVIEW_ROOT') . '/admin/today.php';
 require $file;
 PHPEOF
