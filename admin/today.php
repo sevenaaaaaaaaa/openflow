@@ -50,11 +50,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ps_action'])) {
     $act = (string) $_POST['ps_action'];
     $pid = ps_safe_id((string) ($_POST['project'] ?? ''));
     $back = '/xmp/today?view=team' . ($pid !== '' ? '&project=' . urlencode($pid) : '');
+    $siteAdmin = ps_is_site_admin();
+    // 项目级授权：改任务要 edit，管成员/改项目要 manage。没权限就退回（不静默改数据）
+    $need = in_array($act, ['task_save', 'task_move', 'task_reparent', 'task_delete'], true) ? 'edit'
+        : (in_array($act, ['member_set', 'member_remove', 'project_save'], true) ? 'manage' : 'edit');
+    if ($act !== 'project_save' && !ps_can($pid, $need, ps_current_user(), $siteAdmin)) {
+        header('Location: ' . $back . '&denied=1');
+        exit;
+    }
     $by = function_exists('member_current') ? (string) ((member_current()['name'] ?? '') ?: '') : '';
-    if ($act === 'project_save') {
-        $r = ps_project_save(['name' => (string) ($_POST['name'] ?? ''), 'desc' => (string) ($_POST['desc'] ?? '')]);
-        if ($r['ok'] ?? false) $back = '/xmp/today?view=team&project=' . urlencode((string) $r['id']);
-    } elseif ($act === 'task_save' && $pid !== '') {
+    if ($act === 'task_save' && $pid !== '') {
         ps_task_save($pid, [
             'title' => (string) ($_POST['title'] ?? ''),
             'note' => (string) ($_POST['note'] ?? ''),
@@ -77,6 +82,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ps_action'])) {
                 'ref' => (array) ($cur['ref'] ?? []), 'parent' => (string) ($_POST['parent'] ?? ''),
             ]);
         }
+    } elseif ($act === 'project_save' && $pid === '') {
+        // 新建项目：创建者自动成为 owner
+        $r = ps_project_save(['name' => (string) ($_POST['name'] ?? ''), 'desc' => (string) ($_POST['desc'] ?? '')]);
+        if ($r['ok'] ?? false) $back = '/xmp/today?view=team&project=' . urlencode((string) $r['id']);
+    } elseif ($act === 'member_set' && $pid !== '') {
+        ps_member_set($pid, (string) ($_POST['user'] ?? ''), (string) ($_POST['role'] ?? 'editor'));
+    } elseif ($act === 'member_remove' && $pid !== '') {
+        ps_member_remove($pid, (string) ($_POST['user'] ?? ''));
     } elseif ($act === 'task_move' && $pid !== '') {
         ps_task_move($pid, (string) ($_POST['id'] ?? ''), (string) ($_POST['status'] ?? 'todo'), $by);
     } elseif ($act === 'task_delete' && $pid !== '') {
@@ -94,12 +107,19 @@ $judgeCache = mainline_ai_cache();
 $receipts = mainline_ai_receipts(6);
 
 // 团队视角数据
-$projects = $viewMode === 'team' ? ps_projects() : [];
+$siteAdmin = ps_is_site_admin();
+$myUser = ps_current_user();
+$projects = $viewMode === 'team' ? ps_visible_projects($myUser, $siteAdmin) : [];
 $curId = ps_safe_id((string) ($_GET['project'] ?? ''));
 if ($viewMode === 'team') {
     if ($curId === '' || ps_project_get($curId) === null) $curId = (string) ($projects[0]['id'] ?? '');
 }
-$curProject = ($viewMode === 'team' && $curId !== '') ? ps_project_get($curId) : null;
+$curProject = ($viewMode === 'team' && $curId !== '' && ps_can($curId, 'view', $myUser, $siteAdmin)) ? ps_project_get($curId) : null;
+if ($viewMode === 'team' && $curId !== '' && $curProject === null) $curId = (string) ($projects[0]['id'] ?? '');
+$canEdit = $curProject !== null && ps_can($curId, 'edit', $myUser, $siteAdmin);
+$canManage = $curProject !== null && ps_can($curId, 'manage', $myUser, $siteAdmin);
+$myRole = $curProject !== null ? ps_project_role($curId, $myUser) : '';
+$members = $curProject !== null ? ps_project_members($curId) : [];
 $curTasks = $curProject !== null ? ps_tasks($curId) : [];
 $kbStats = $curProject !== null ? ps_stats($curId) : ['by_status' => [], 'total' => 0, 'overdue' => 0];
 $assignees = $viewMode === 'team' ? ps_assignees() : [];
@@ -262,7 +282,7 @@ admin_header('今日主线');
         </a>
         <?php endforeach; ?>
         <form method="post" style="margin-left:auto;display:flex;gap:6px">
-          <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+          <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
           <input type="hidden" name="ps_action" value="project_save">
           <input class="inp sm" name="name" placeholder="新项目名" style="min-width:150px" required>
           <button class="btn btn-s btn-sm">+ 建项目</button>
@@ -282,12 +302,57 @@ admin_header('今日主线');
       <?php endif; ?>
     </div>
 
+    <?php if (isset($_GET['denied'])): ?>
+      <div class="panel" style="margin-bottom:12px;border-left:3px solid var(--danger,#dc2626)"><div class="p-body" style="font-size:12.5px">这个动作需要更高的项目权限，已拦下（没有改任何数据）。<?=$myRole !== '' ? '你在本项目的角色：' . htmlspecialchars(ps_project_roles()[$myRole] ?? $myRole) : '你不是本项目成员。'?></div></div>
+    <?php endif; ?>
+
+    <?php if ($curProject !== null): $roster = ps_user_options(); ?>
+    <div class="panel" style="margin-bottom:12px">
+      <div class="p-body" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <b style="font-size:13px">成员</b>
+        <?php if ($members === []): ?>
+        <span class="note">未设成员 → 公共项目：凡有「任务」权限的人都能改（设了成员后就按成员角色来）</span>
+        <?php endif; ?>
+        <?php foreach ($members as $mu => $mr): ?>
+        <span class="pill" title="<?=htmlspecialchars((string) $mu)?>"><?=htmlspecialchars(ps_user_display((string) $mu))?> · <?=htmlspecialchars(ps_project_roles()[$mr] ?? $mr)?></span>
+        <?php if ($canManage): ?>
+        <form method="post" style="margin:0">
+          <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+          <input type="hidden" name="ps_action" value="member_remove">
+          <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+          <input type="hidden" name="user" value="<?=htmlspecialchars((string) $mu)?>">
+          <button class="btn btn-s btn-sm" title="移除成员" style="padding:0 6px">×</button>
+        </form>
+        <?php endif; ?>
+        <?php endforeach; ?>
+        <?php if ($myRole !== '' && !$siteAdmin): ?><span class="note">我：<?=htmlspecialchars(ps_project_roles()[$myRole] ?? $myRole)?></span><?php endif; ?>
+        <?php if (!$canEdit): ?><span class="pill hl">只读</span><?php endif; ?>
+        <?php if ($canManage): ?>
+        <form method="post" style="margin-left:auto;display:flex;gap:6px">
+          <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+          <input type="hidden" name="ps_action" value="member_set">
+          <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+          <select name="user" class="inp sm" style="width:130px">
+            <?php foreach ($roster as $uk => $uname): if (isset($members[(string) $uk])) continue; ?><option value="<?=htmlspecialchars((string) $uk)?>"><?=htmlspecialchars($uname)?></option><?php endforeach; ?>
+          </select>
+          <select name="role" class="inp sm" style="width:96px"><?php foreach (ps_project_roles() as $rk => $rl): ?><option value="<?=$rk?>"<?=$rk === 'editor' ? ' selected' : ''?>><?=htmlspecialchars($rl)?></option><?php endforeach; ?></select>
+          <button class="btn btn-s btn-sm">+ 加成员</button>
+        </form>
+        <?php endif; ?>
+      </div>
+      <div class="p-body" style="border-top:1px solid var(--border);font-size:11.5px;color:var(--muted)">
+        注意区分：<b>负责人</b>是「谁在做这件事」（任务上的名字，可以是外部同事）；<b>成员</b>是「谁的登录账号能改这个项目」。
+      </div>
+    </div>
+    <?php endif; ?>
+
     <?php if ($curProject === null): ?>
-      <div class="empty">还没有项目。用上面的「+ 建项目」新建一个；或运行 <code>php scripts/seed-projects.php</code> 种入示例。</div>
+      <div class="empty"><?=$projects === [] ? '你没有可见的项目（不是任何项目的成员）。可以新建一个，你就是它的负责人。' : '还没有项目。用上面的「+ 建项目」新建一个；或运行 <code>php scripts/seed-projects.php</code> 种入示例。'?></div>
     <?php else: ?>
+    <?php if ($canEdit): ?>
     <div class="panel" style="margin-bottom:12px" id="teamAdd">
       <form method="post" class="p-body" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-        <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+        <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
         <input type="hidden" name="ps_action" value="task_save">
         <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
         <?php $preTask = null; foreach ($curTasks as $ct) if ((string) ($ct['id'] ?? '') === $tvParent) $preTask = $ct; ?>
@@ -307,12 +372,14 @@ admin_header('今日主线');
       </form>
     </div>
 
+    <?php endif; ?>
+
     <div class="tv-bar" style="margin-bottom:10px">
       <span class="note" style="font-size:12px;color:var(--muted)">同一批任务：</span>
       <?php foreach ($teamViews as $vk => $vl): ?>
       <a href="<?=htmlspecialchars($tvQ(['vt' => $vk]))?>" class="btn btn-s btn-sm<?=$vk === $teamView ? ' btn-p' : ''?>"><?=htmlspecialchars($vl)?></a>
       <?php endforeach; ?>
-      <?php if ($teamView === 'board'): ?><span class="note" style="font-size:12px;color:var(--muted)">拖拽卡片到别的列即可改状态</span><?php endif; ?>
+      <?php if ($teamView === 'board' && $canEdit): ?><span class="note" style="font-size:12px;color:var(--muted)">拖拽卡片到别的列即可改状态</span><?php endif; ?>
       <?php if ($teamView === 'calendar'): ?>
       <a href="<?=htmlspecialchars($tvQ(['vt' => 'calendar', 'm' => tv_month_shift($tvYm, -1)]))?>" class="btn btn-s btn-sm">←</a>
       <b style="font-size:12.5px"><?=htmlspecialchars($tvYm)?></b>
@@ -334,13 +401,15 @@ admin_header('今日主线');
           <td<?=$due !== '' && substr($due, 0, 10) < date('Y-m-d') ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars($due !== '' ? substr($due, 0, 16) : '')?></td>
           <td><?=htmlspecialchars($tvRefLabel($t))?></td>
           <td>
+            <?php if ($canEdit): ?>
             <form method="post" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=((int) ($subCounts[(string) ($t['id'] ?? '')] ?? 0)) > 0 ? '及其 ' . (int) $subCounts[(string) ($t['id'] ?? '')] . ' 个子任务' : ''?>？" style="margin:0">
-              <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
               <input type="hidden" name="ps_action" value="task_delete">
               <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
               <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
               <button class="btn btn-s btn-sm" title="删除">×</button>
             </form>
+            <?php endif; ?>
           </td>
         </tr>
         <?php endforeach; ?>
@@ -415,9 +484,10 @@ admin_header('今日主线');
           </span>
           <?php endif; ?>
           <span class="tw-acts">
+            <?php if ($canEdit): ?>
             <a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'tree', 'parent' => $tk]))?>#teamAdd">+ 子任务</a>
             <form method="post" class="tw-inline">
-              <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
               <input type="hidden" name="ps_action" value="task_reparent">
               <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
               <input type="hidden" name="id" value="<?=htmlspecialchars($tk)?>">
@@ -430,12 +500,13 @@ admin_header('今日主线');
               <button class="btn btn-s btn-sm">移动</button>
             </form>
             <form method="post" class="tw-inline" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=$subCount > 0 ? '及其 ' . $subCount . ' 个子任务' : ''?>？">
-              <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
               <input type="hidden" name="ps_action" value="task_delete">
               <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
               <input type="hidden" name="id" value="<?=htmlspecialchars($tk)?>">
               <button class="btn btn-s btn-sm" title="删除">×</button>
             </form>
+            <?php endif; ?>
           </span>
         </div>
         <?php endforeach; ?>
@@ -450,7 +521,7 @@ admin_header('今日主线');
         <?php foreach ($curTasks as $t): if ((string) ($t['status'] ?? 'todo') !== $sk) continue;
           $due = (string) ($t['due'] ?? ''); $overdue = $due !== '' && substr($due, 0, 10) < date('Y-m-d');
           $prio = (string) ($t['priority'] ?? 'normal'); $ref = (array) ($t['ref'] ?? []); ?>
-        <div class="kanban-card" draggable="true" data-id="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+        <div class="kanban-card" draggable="<?=$canEdit ? 'true' : 'false'?>" data-id="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
           <div class="kb-t"><?=htmlspecialchars((string) ($t['title'] ?? ''))?></div>
           <div class="kb-m">
             <?php if ($prio !== 'normal'): ?><span class="pill <?=$prio === 'urgent' ? 'hl' : ''?>"><?=htmlspecialchars(ps_priorities()[$prio] ?? $prio)?></span><?php endif; ?>
@@ -464,13 +535,15 @@ admin_header('今日主线');
           <?php $cr = $cardRoll[(string) ($t['id'] ?? '')] ?? []; if ((int) ($cr['total'] ?? 0) > 0): ?>
           <div class="text-xs text-muted" style="margin-top:6px">子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?> · <?=(int) $cr['pct']?>%<?=((int) ($cr['overdue'] ?? 0)) > 0 ? ' · 逾期 ' . (int) $cr['overdue'] : ''?></div>
           <?php endif; ?>
+          <?php if ($canEdit): ?>
           <form method="post" class="kb-del" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=((int) ($subCounts[(string) ($t['id'] ?? '')] ?? 0)) > 0 ? '及其 ' . (int) $subCounts[(string) ($t['id'] ?? '')] . ' 个子任务' : ''?>？">
-            <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+            <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
             <input type="hidden" name="ps_action" value="task_delete">
             <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
             <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
             <button class="btn btn-s btn-sm" title="删除">×</button>
           </form>
+          <?php endif; ?>
         </div>
         <?php endforeach; ?>
       </div>
