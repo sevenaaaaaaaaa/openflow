@@ -121,8 +121,9 @@ check('Slack 已在广播列表里', str_contains($src, "'wecom','feishu','slack
 
 /* 8. 指派候选 & 删除 */
 check('指派候选可读（无 users.json 时为空数组）', is_array(ps_assignees()));
-check('删任务', ps_task_delete($pid, $tid) === true);
+check('删任务（返回删除条数）', ps_task_delete($pid, $tid) === 1);
 check('删项目', ps_project_delete($pid) === true && ps_project_get($pid) === null);
+check('删不存在的任务返回 0', ps_task_delete($pid, 't_not_exist') === 0);
 
 @exec('rm -rf ' . escapeshellarg(DATA_DIR));
 echo "\n合计：{$pass} 通过，{$fail} 失败\n";

@@ -114,6 +114,9 @@ function ps_dir(): string { return DATA_DIR . '/projects'; }
 function ps_index_file(): string { return ps_dir() . '/index.json'; }
 function ps_project_file(string $id): string { return ps_dir() . '/' . ps_safe_id($id) . '.json'; }
 
+/** 任务 id 清洗（同安全 id 规则，语义单列） */
+function ps_safe_task_id(string $id): string { return ps_safe_id($id); }
+
 /** 只允许安全 id（防目录穿越） */
 function ps_safe_id(string $id): string
 {
@@ -227,6 +230,8 @@ function ps_task_errors(array $t): array
     if (!isset(ps_priorities()[(string) ($t['priority'] ?? 'normal')])) $e[] = '优先级不合法';
     $due = (string) ($t['due'] ?? '');
     if ($due !== '' && preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2})?$/', $due) !== 1) $e[] = '截止时间格式应为 YYYY-MM-DD 或 YYYY-MM-DD HH:MM';
+    $parent = ps_safe_task_id((string) ($t['parent'] ?? ''));
+    if ($parent !== '' && $parent === ps_safe_task_id((string) ($t['id'] ?? ''))) $e[] = '父任务不能是自己';
     $ref = (array) ($t['ref'] ?? []);
     if ($ref !== [] && (string) ($ref['type'] ?? '') !== '') {
         $rt = (string) $ref['type'];
@@ -261,9 +266,23 @@ function ps_task_save(string $projectId, array $data): array
         'start' => (string) ($data['start'] ?? ''),
         'due' => (string) ($data['due'] ?? ''),
         'ref' => array_intersect_key((array) ($data['ref'] ?? []), array_flip(['type', 'id', 'label'])),
+        'parent' => ps_safe_task_id((string) ($data['parent'] ?? '')),
         'remind' => array_intersect_key((array) ($data['remind'] ?? []), array_flip(['before_days', 'on_due', 'channels'])),
     ];
-    $errors = ps_task_errors($incoming + ['status' => $incoming['status'], 'priority' => $incoming['priority']]);
+    $errors = ps_task_errors($incoming + ['id' => $id, 'status' => $incoming['status'], 'priority' => $incoming['priority']]);
+    // 层级校验：父任务必须在本项目内、不能挂到自己的子孙下（否则成环）、深度有上限
+    $parent = (string) $incoming['parent'];
+    if ($parent !== '' && $errors === []) {
+        $ids = array_map(static fn(array $t): string => (string) ($t['id'] ?? ''), (array) $p['tasks']);
+        if (!in_array($parent, $ids, true)) {
+            $errors[] = '父任务不存在';
+        } elseif ($id !== '' && in_array($parent, ps_task_subtree_ids($projectId, $id), true)) {
+            $errors[] = '父任务不能是它自己的子任务';
+        } else {
+            $depth = count(ps_task_ancestors($projectId, $parent)) + 1;
+            if ($depth >= 9) $errors[] = '层级太深（最多 8 层）';
+        }
+    }
     // 历史悬空关联：如果任务原本就指向这条已删记录、且这次没改关联，
     // 放行编辑——否则一条任务会因为「关联对象被删」而连标题都改不了。
     if ($errors !== []) {
@@ -341,14 +360,154 @@ function ps_task_move(string $projectId, string $taskId, string $toStatus, strin
     return ['ok' => false, 'error' => '任务不存在'];
 }
 
-function ps_task_delete(string $projectId, string $taskId): bool
+/**
+ * 删除任务及其全部子任务（返回删除条数，0 表示没找到）。
+ * 子任务单独留着会变成悬空层级，所以级联删——UI 提示里会写明会带走几条。
+ */
+function ps_task_delete(string $projectId, string $taskId): int
 {
     $p = ps_project_get($projectId);
-    if ($p === null) return false;
-    $tasks = array_values(array_filter($p['tasks'], static fn(array $t): bool => (string) ($t['id'] ?? '') !== $taskId));
+    if ($p === null) return 0;
+    $tasks = $p['tasks'];
+    $has = false;
+    foreach ($tasks as $t) if ((string) ($t['id'] ?? '') === $taskId) { $has = true; break; }
+    if (!$has) return 0;
+    $kill = ps_task_subtree_ids($projectId, $taskId);
+    $tasks = array_values(array_filter($tasks, static fn(array $t): bool => !in_array((string) ($t['id'] ?? ''), $kill, true)));
     json_write(ps_project_file($projectId), ['tasks' => $tasks]);
     ps_touch_project($projectId);
-    return true;
+    return count($kill);
+}
+
+/** 子树 id（含自己） */
+function ps_task_subtree_ids(string $projectId, string $taskId): array
+{
+    $tasks = ps_tasks($projectId);
+    $kids = [];
+    foreach ($tasks as $t) $kids[(string) ($t['parent'] ?? '')][] = (string) ($t['id'] ?? '');
+    $out = [];
+    $stack = [$taskId];
+    while ($stack !== []) {
+        $cur = (string) array_pop($stack);
+        if (in_array($cur, $out, true)) continue;   // 防环兜底
+        $out[] = $cur;
+        foreach ($kids[$cur] ?? [] as $k) $stack[] = $k;
+    }
+    return $out;
+}
+
+/** 祖先链（由近及远） */
+function ps_task_ancestors(string $projectId, string $taskId): array
+{
+    $byId = [];
+    foreach (ps_tasks($projectId) as $t) $byId[(string) ($t['id'] ?? '')] = $t;
+    $out = [];
+    $cur = (string) ($byId[$taskId]['parent'] ?? '');
+    $guard = 0;
+    while ($cur !== '' && isset($byId[$cur]) && $guard < 32) {
+        $out[] = $cur;
+        $cur = (string) ($byId[$cur]['parent'] ?? '');
+        $guard++;
+    }
+    return $out;
+}
+
+/**
+ * 树结构：[['task'=>..., 'depth'=>int, 'children'=>[...], 'rollup'=>[...]]]
+ * 顶层是 parent 为空（或指向不存在的任务）的根。
+ */
+function ps_task_tree(string $projectId): array
+{
+    $tasks = ps_tasks($projectId);
+    $byId = [];
+    foreach ($tasks as $t) $byId[(string) ($t['id'] ?? '')] = $t;
+    // 有效父：空 / 自指 / 指向不存在的任务 → 当根
+    $parentOf = [];
+    foreach ($byId as $id => $t) {
+        $parent = (string) ($t['parent'] ?? '');
+        $parentOf[$id] = ($parent === '' || $parent === $id || !isset($byId[$parent])) ? '' : $parent;
+    }
+    // 破环：沿父链走，走回自己就把该节点升为根（坏数据也不丢节点、不转不出来）
+    foreach ($parentOf as $id => $pid) {
+        if ($pid === '') continue;
+        $seen = [$id => true];
+        $cur = $pid;
+        while ($cur !== '') {
+            if (isset($seen[$cur])) { $parentOf[$id] = ''; break; }
+            $seen[$cur] = true;
+            $cur = $parentOf[$cur] ?? '';
+        }
+    }
+    $kids = [];
+    $roots = [];
+    foreach ($parentOf as $id => $pid) {
+        if ($pid === '') $roots[] = $id;
+        else $kids[$pid][] = $id;
+    }
+    $build = static function (string $id, int $depth) use (&$build, $kids, $byId, $projectId): array {
+        $children = [];
+        foreach ($kids[$id] ?? [] as $k) $children[] = $build($k, $depth + 1);
+        return ['task' => $byId[$id], 'depth' => $depth, 'children' => $children, 'rollup' => ps_task_rollup($projectId, $id)];
+    };
+    return array_map(static fn(string $id): array => $build($id, 0), $roots);
+}
+
+/** 树 → 渲染用的扁平行（DFS 顺序 + 深度），页面据此缩进，无需递归模板 */
+function ps_task_tree_flat(string $projectId, string $today = ''): array
+{
+    $out = [];
+    $walk = static function (array $nodes) use (&$walk, &$out, $today, $projectId): void {
+        foreach ($nodes as $n) {
+            $t = (array) ($n['task'] ?? []);
+            $roll = (array) ($n['rollup'] ?? []);
+            $out[] = [
+                'task' => $t,
+                'depth' => (int) ($n['depth'] ?? 0),
+                'children' => count((array) ($n['children'] ?? [])),
+                'rollup' => $roll,
+                'progress' => ps_task_progress($projectId, $t, $roll, $today),
+                'subtree_ids' => ps_task_subtree_ids($projectId, (string) ($t['id'] ?? '')),
+            ];
+            $walk((array) ($n['children'] ?? []));
+        }
+    };
+    $walk(ps_task_tree($projectId));
+    return $out;
+}
+
+/** 一条任务的“进度”：有子任务看子任务完成度，没有就看自己的状态 */
+function ps_task_progress(string $projectId, array $task, array $rollup, string $today = ''): array
+{
+    $total = (int) ($rollup['total'] ?? 0);
+    if ($total > 0) {
+        return ['mode' => 'rollup', 'total' => $total, 'done' => (int) ($rollup['done'] ?? 0), 'pct' => (int) ($rollup['pct'] ?? 0), 'overdue' => (int) ($rollup['overdue'] ?? 0)];
+    }
+    $done = (string) ($task['status'] ?? 'todo') === 'done' ? 1 : 0;
+    return ['mode' => 'self', 'total' => 1, 'done' => $done, 'pct' => $done * 100, 'overdue' => 0];
+}
+
+/**
+ * 子任务汇总（含所有后代）：总数 / 已完成 / 逾期 / 进度%。
+ * 自己算不算？不算——「3/7 完成」说的是这条任务下面的事。
+ */
+function ps_task_rollup(string $projectId, string $taskId, string $today = ''): array
+{
+    $today = $today !== '' ? $today : date('Y-m-d');
+    $ids = ps_task_subtree_ids($projectId, $taskId);
+    $ids = array_values(array_filter($ids, static fn(string $x): bool => $x !== $taskId));
+    $byId = [];
+    foreach (ps_tasks($projectId) as $t) $byId[(string) ($t['id'] ?? '')] = $t;
+    $total = 0; $done = 0; $overdue = 0;
+    foreach ($ids as $id) {
+        $t = $byId[$id] ?? null;
+        if ($t === null) continue;
+        $total++;
+        $st = (string) ($t['status'] ?? 'todo');
+        if ($st === 'done') $done++;
+        $due = (string) ($t['due'] ?? '');
+        if ($st !== 'done' && $due !== '' && substr($due, 0, 10) < $today) $overdue++;
+    }
+    return ['total' => $total, 'done' => $done, 'overdue' => $overdue, 'pct' => $total > 0 ? (int) round($done / $total * 100) : 0];
 }
 
 /** 看板统计：每列数量 + 逾期数 */
@@ -364,7 +523,14 @@ function ps_stats(string $projectId, string $today = ''): array
         $due = (string) ($t['due'] ?? '');
         if ($st !== 'done' && $due !== '' && substr($due, 0, 10) < $today) $overdue++;
     }
-    return ['by_status' => $by, 'total' => $total, 'overdue' => $overdue];
+    $roots = 0;
+    $leafDone = 0; $leafTotal = 0;
+    foreach (ps_tasks($projectId) as $t) {
+        if ((string) ($t['parent'] ?? '') === '') $roots++;
+        $sub = ps_task_subtree_ids($projectId, (string) ($t['id'] ?? ''));
+        if (count($sub) === 1) { $leafTotal++; if ((string) ($t['status'] ?? '') === 'done') $leafDone++; }
+    }
+    return ['by_status' => $by, 'total' => $total, 'overdue' => $overdue, 'roots' => $roots, 'nodes' => $total, 'leaf_total' => $leafTotal, 'leaf_done' => $leafDone];
 }
 
 /* ────────────── 提醒（幂等） ────────────── */
