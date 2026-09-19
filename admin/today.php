@@ -119,18 +119,56 @@ $receipts = mainline_ai_receipts(6);
 $siteAdmin = ps_is_site_admin();
 $myUser = ps_current_user();
 $projects = $viewMode === 'team' ? ps_visible_projects($myUser, $siteAdmin) : [];
-$curId = ps_safe_id((string) ($_GET['project'] ?? ''));
-if ($viewMode === 'team') {
+$scopeAll = ($viewMode === 'team' && (string) ($_GET['project'] ?? '') === 'all');   // 跨项目汇总
+$curId = $scopeAll ? 'all' : ps_safe_id((string) ($_GET['project'] ?? ''));
+if ($viewMode === 'team' && !$scopeAll) {
     if ($curId === '' || ps_project_get($curId) === null) $curId = (string) ($projects[0]['id'] ?? '');
 }
-$curProject = ($viewMode === 'team' && $curId !== '' && ps_can($curId, 'view', $myUser, $siteAdmin)) ? ps_project_get($curId) : null;
-if ($viewMode === 'team' && $curId !== '' && $curProject === null) $curId = (string) ($projects[0]['id'] ?? '');
+$curProject = ($viewMode === 'team' && !$scopeAll && $curId !== '' && ps_can($curId, 'view', $myUser, $siteAdmin)) ? ps_project_get($curId) : null;
+if ($viewMode === 'team' && !$scopeAll && $curId !== '' && $curProject === null) $curId = (string) ($projects[0]['id'] ?? '');
 $canEdit = $curProject !== null && ps_can($curId, 'edit', $myUser, $siteAdmin);
 $canManage = $curProject !== null && ps_can($curId, 'manage', $myUser, $siteAdmin);
 $myRole = $curProject !== null ? ps_project_role($curId, $myUser) : '';
 $members = $curProject !== null ? ps_project_members($curId) : [];
-$curTasks = $curProject !== null ? ps_tasks($curId) : [];
+
+// 汇总模式：把可见项目的任务并到一起，每条带上它所属项目（表单/评论都要按各自项目走）
+$curTasks = [];
+if ($scopeAll) {
+    foreach ($projects as $pj) {
+        $pjId = ps_safe_id((string) ($pj['id'] ?? ''));
+        if ($pjId === '') continue;
+        foreach (ps_tasks($pjId) as $t) {
+            $t['_project'] = $pjId;
+            $t['_project_name'] = (string) ($pj['name'] ?? $pjId);
+            $curTasks[] = $t;
+        }
+    }
+    $ord = array_flip(array_keys(ps_task_statuses()));
+    usort($curTasks, static function (array $a, array $b) use ($ord): int {
+        $sa = $ord[(string) ($a['status'] ?? 'todo')] ?? 99;
+        $sb = $ord[(string) ($b['status'] ?? 'todo')] ?? 99;
+        if ($sa !== $sb) return $sa <=> $sb;
+        return strcmp((string) ($a['due'] ?? '9999'), (string) ($b['due'] ?? '9999'));
+    });
+} elseif ($curProject !== null) {
+    $curTasks = ps_tasks($curId);
+}
 $kbStats = $curProject !== null ? ps_stats($curId) : ['by_status' => [], 'total' => 0, 'overdue' => 0];
+if ($scopeAll) {
+    $kbStats = ['by_status' => array_fill_keys(array_keys(ps_task_statuses()), 0), 'total' => 0, 'overdue' => 0, 'roots' => 0, 'nodes' => 0];
+    foreach ($curTasks as $t) {
+        $stt = (string) ($t['status'] ?? 'todo');
+        $kbStats['by_status'][$stt] = ($kbStats['by_status'][$stt] ?? 0) + 1;
+        if ((string) ($t['parent'] ?? '') === '') $kbStats['roots']++;
+        $dueT = (string) ($t['due'] ?? '');
+        if ($stt !== 'done' && $dueT !== '' && substr($dueT, 0, 10) < date('Y-m-d')) $kbStats['overdue']++;
+        $kbStats['total']++;
+    }
+}
+/** 这条任务属于哪个项目（单项目模式=当前项目） */
+$taskProj = static fn(array $t): string => (string) ($t['_project'] ?? $curId);
+/** 权限也按任务自己的项目算（汇总模式下可能有的能改有的只能看） */
+$canEditTask = static fn(array $t): bool => ps_can($taskProj($t), 'edit', $myUser, $siteAdmin);
 $assignees = $viewMode === 'team' ? ps_assignees() : [];
 $teamViews = tv_views();   // 表格/看板/日历/甘特/树
 $teamView = (string) ($_GET['vt'] ?? 'board');
@@ -162,14 +200,14 @@ foreach ($curTasks as $t) {
     ];
     $cells = [];
     foreach ($tvFields as $f) $cells[(string) $f['key']] = tv_display($f, $values[(string) $f['key']]);
-    $tvRows[] = ['id' => (string) ($t['id'] ?? ''), 'title' => (string) ($t['title'] ?? ''), 'slug' => '', 'status' => (string) ($t['status'] ?? 'todo'), 'values' => $values, 'resolved' => [], 'cells' => $cells];
+    $tvRows[] = ['id' => (string) ($t['id'] ?? ''), 'title' => (string) ($t['title'] ?? ''), 'slug' => '', 'status' => (string) ($t['status'] ?? 'todo'), 'values' => $values, 'resolved' => [], 'cells' => $cells, 'proj' => (string) ($t['_project_name'] ?? ''), 'proj_id' => $taskProj($t)];
 }
 $subCounts = [];
 $cardRoll = [];
 foreach ($curTasks as $ct) {
     $cid = (string) ($ct['id'] ?? '');
-    $subCounts[$cid] = count(ps_task_subtree_ids($curId, $cid)) - 1;
-    $cardRoll[$cid] = ps_task_rollup($curId, $cid);
+    $subCounts[$cid] = count(ps_task_subtree_ids($taskProj($ct), $cid)) - 1;
+    $cardRoll[$cid] = ps_task_rollup($taskProj($ct), $cid);
 }
 $tvQ = static fn(array $extra = []): string => '/xmp/today?' . http_build_query(array_merge(['view' => 'team', 'project' => $curId, 'vt' => $teamView], $extra));
 
@@ -251,6 +289,9 @@ admin_header('今日主线');
           <?=htmlspecialchars((string) ($pj['name'] ?? $pjId))?> <span class="note">· <?=$st['total']?><?=$st['overdue'] > 0 ? ' ⚠' . $st['overdue'] : ''?></span>
         </a>
         <?php endforeach; ?>
+        <?php if (count($projects) > 1): ?>
+        <a href="/xmp/today?view=team&project=all" class="btn btn-s btn-sm<?=$scopeAll ? ' btn-p' : ''?>" title="把可见项目的任务并到一起看">所有项目 <span class="note">· <?=array_sum(array_map(static fn(array $x): int => (int) (ps_stats((string) $x['id'])['total'] ?? 0), $projects))?></span></a>
+        <?php endif; ?>
         <form method="post" style="margin-left:auto;display:flex;gap:6px">
           <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
           <input type="hidden" name="ps_action" value="project_save">
@@ -262,7 +303,7 @@ admin_header('今日主线');
       <div class="p-body" style="border-top:1px solid var(--border-soft,var(--border));display:flex;gap:16px;flex-wrap:wrap;align-items:center">
         <span class="note">共 <b><?=$kbStats['total']?></b> 条<?=((int) ($kbStats['roots'] ?? 0)) > 0 && (int) $kbStats['roots'] !== (int) $kbStats['total'] ? '（' . (int) $kbStats['roots'] . ' 条顶层）' : ''?></span>
         <span class="note">逾期 <b style="color:<?=$kbStats['overdue'] > 0 ? 'var(--danger,#dc2626)' : 'inherit'?>"><?=$kbStats['overdue']?></b></span>
-        <?php $kbDue = ps_due_buckets($curId); ?>
+        <?php $kbDue = ps_due_buckets($scopeAll ? '' : $curId); ?>
         <span class="note">今天 <b<?=$kbDue['counts']['today'] > 0 ? ' style="color:var(--danger,#dc2626)"' : ''?>><?=$kbDue['counts']['today']?></b></span>
         <span class="note">近 7 天 <b><?=$kbDue['counts']['soon']?></b></span>
         <?php foreach (ps_task_statuses() as $sk => $sl): ?>
@@ -316,10 +357,10 @@ admin_header('今日主线');
     </div>
     <?php endif; ?>
 
-    <?php if ($curProject === null): ?>
+    <?php if ($curProject === null && !$scopeAll): ?>
       <div class="empty"><?=$projects === [] ? '你没有可见的项目（不是任何项目的成员）。可以新建一个，你就是它的负责人。' : '还没有项目。用上面的「+ 建项目」新建一个；或运行 <code>php scripts/seed-projects.php</code> 种入示例。'?></div>
     <?php else: ?>
-    <?php if ($canEdit): ?>
+    <?php if ($canEdit && !$scopeAll): ?>
     <div class="panel" style="margin-bottom:12px" id="teamAdd">
       <form method="post" class="p-body" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
         <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
@@ -342,6 +383,8 @@ admin_header('今日主线');
       </form>
     </div>
 
+    <?php elseif ($scopeAll): ?>
+    <div class="panel" style="margin-bottom:12px"><div class="p-body" style="font-size:12.5px;color:var(--muted)">这是<b>所有项目</b>的汇总视图：可以看、改状态、评论；新建任务请切到具体项目。</div></div>
     <?php endif; ?>
 
     <div class="tv-bar" style="margin-bottom:10px">
@@ -359,11 +402,12 @@ admin_header('今日主线');
 
     <?php if ($teamView === 'grid'): ?>
     <table class="tv-grid">
-      <thead><tr><th>任务</th><th>状态</th><?php foreach ($tvFields as $f): ?><th><?=htmlspecialchars((string) $f['label'])?></th><?php endforeach; ?><th>评论</th><th></th></tr></thead>
+      <thead><tr><th>任务</th><?php if ($scopeAll): ?><th>项目</th><?php endif; ?><th>状态</th><?php foreach ($tvFields as $f): ?><th><?=htmlspecialchars((string) $f['label'])?></th><?php endforeach; ?><th>评论</th><th></th></tr></thead>
       <tbody>
         <?php foreach ($curTasks as $t): $status = (string) ($t['status'] ?? 'todo'); $due = (string) ($t['due'] ?? ''); ?>
         <tr>
           <td><b><?=htmlspecialchars((string) ($t['title'] ?? ''))?></b><?php $cr = $cardRoll[(string) ($t['id'] ?? '')] ?? []; if ((int) ($cr['total'] ?? 0) > 0): ?><span class="text-xs text-muted"> · 子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?></span><?php endif; ?><?php if ((string) ($t['note'] ?? '') !== ''): ?><div class="text-xs text-muted"><?=htmlspecialchars(mb_substr((string) $t['note'], 0, 70))?></div><?php endif; ?></td>
+          <?php if ($scopeAll): ?><td><span class="kb-proj"><?=htmlspecialchars((string) ($t['_project_name'] ?? ''))?></span></td><?php endif; ?>
           <td><?=htmlspecialchars(ps_task_statuses()[$status] ?? $status)?></td>
           <td><?=htmlspecialchars((string) ($t['assignee'] ?? ''))?></td>
           <td><?=htmlspecialchars((string) (ps_priorities()[(string) ($t['priority'] ?? 'normal')] ?? ''))?></td>
@@ -371,17 +415,17 @@ admin_header('今日主线');
           <td<?=$due !== '' && substr($due, 0, 10) < date('Y-m-d') ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars($due !== '' ? substr($due, 0, 16) : '')?></td>
           <td><?=htmlspecialchars($tvRefLabel($t))?></td>
           <td style="min-width:180px">
-            <?php $cmts = ps_task_comments($curId, (string) ($t['id'] ?? '')); ?>
+            <?php $cmts = ps_task_comments($taskProj($t), (string) ($t['id'] ?? '')); ?>
             <details class="kb-cmts" style="margin:0;border:none;padding:0">
               <summary><?=count($cmts) > 0 ? ('评论 ' . count($cmts)) : '写评论'?></summary>
               <?php foreach ($cmts as $c): ?>
               <div class="kb-cmt"><div class="kb-cmt-h"><b><?=htmlspecialchars(ps_user_display((string) ($c['by'] ?? '')))?></b><span><?=htmlspecialchars(substr((string) ($c['at'] ?? ''), 5, 11))?></span></div><div class="kb-cmt-t"><?=ps_comment_html((string) ($c['text'] ?? ''))?></div></div>
               <?php endforeach; ?>
-              <?php if ($canEdit): ?>
+              <?php if ($canEditTask($t)): ?>
               <form method="post" class="kb-cmt-form">
                 <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
                 <input type="hidden" name="ps_action" value="comment_add">
-                <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+                <input type="hidden" name="project" value="<?=htmlspecialchars($taskProj($t))?>">
                 <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
                 <input class="inp sm" name="text" placeholder="@谁 说点什么…" maxlength="2000" required>
                 <button class="btn btn-s btn-sm">发送</button>
@@ -390,11 +434,11 @@ admin_header('今日主线');
             </details>
           </td>
           <td>
-            <?php if ($canEdit): ?>
+            <?php if ($canEditTask($t)): ?>
             <form method="post" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=((int) ($subCounts[(string) ($t['id'] ?? '')] ?? 0)) > 0 ? '及其 ' . (int) $subCounts[(string) ($t['id'] ?? '')] . ' 个子任务' : ''?>？" style="margin:0">
               <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
               <input type="hidden" name="ps_action" value="task_delete">
-              <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($taskProj($t))?>">
               <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
               <button class="btn btn-s btn-sm" title="删除">×</button>
             </form>
@@ -413,7 +457,7 @@ admin_header('今日主线');
       <div class="tv-cal-cell<?=$c['date'] === date('Y-m-d') ? ' today' : ''?>">
         <div class="tv-cal-day"><?=$c['day']?></div>
         <?php foreach ($c['rows'] as $r): ?>
-        <div class="tv-cal-ev"><b><?=htmlspecialchars($r['title'])?></b><?php if (($r['cells']['assignee'] ?? '') !== ''): ?><div class="text-xs text-muted">@<?=htmlspecialchars((string) $r['cells']['assignee'])?></div><?php endif; ?></div>
+        <div class="tv-cal-ev"><b><?=htmlspecialchars($r['title'])?></b><?php if (($r['proj'] ?? '') !== ''): ?><span class="kb-proj"><?=htmlspecialchars((string) $r['proj'])?></span><?php endif; ?><?php if (($r['cells']['assignee'] ?? '') !== ''): ?><div class="text-xs text-muted">@<?=htmlspecialchars((string) $r['cells']['assignee'])?></div><?php endif; ?></div>
         <?php endforeach; ?>
       </div>
       <?php endforeach; ?>
@@ -424,7 +468,9 @@ admin_header('今日主线');
     </div>
     <?php endif; ?>
 
-    <?php elseif ($teamView === 'gantt'): $g = tv_gantt_of($tvFields, $tvRows, ['start', 'due']); $todayPct = tv_gantt_today($g); ?>
+    <?php elseif ($teamView === 'gantt'): $g = tv_gantt_of($tvFields, $tvRows, ['start', 'due']); $todayPct = tv_gantt_today($g);
+      $projById = [];
+      foreach ($tvRows as $rr) $projById[(string) $rr['id']] = (string) $rr['proj']; ?>
       <?php if ($g['bars'] === []): ?>
         <div class="empty">还没有带「开始 / 截止」的任务，填上日期后这里会按时间跨度画出来。</div>
       <?php else: ?>
@@ -433,7 +479,7 @@ admin_header('今日主线');
         <div class="tv-gantt-scale"><div></div><div class="ticks"><span><?=htmlspecialchars($g['start'])?></span><span><?=htmlspecialchars($g['end'])?></span></div></div>
         <?php foreach ($g['bars'] as $b): ?>
         <div class="tv-gantt-row">
-          <div class="tv-gantt-label"><?=htmlspecialchars($b['title'])?><div class="text-xs text-muted"><?=htmlspecialchars($b['start'])?><?=$b['milestone'] ? '' : ' → ' . htmlspecialchars($b['end'])?></div></div>
+          <div class="tv-gantt-label"><?=htmlspecialchars($b['title'])?><?php if (($projById[(string) $b['id']] ?? '') !== ''): ?><span class="kb-proj"><?=htmlspecialchars((string) $projById[(string) $b['id']])?></span><?php endif; ?><div class="text-xs text-muted"><?=htmlspecialchars($b['start'])?><?=$b['milestone'] ? '' : ' → ' . htmlspecialchars($b['end'])?></div></div>
           <div class="tv-gantt-track"><div class="tv-gantt-bar<?=$b['milestone'] ? ' ms' : ''?>" style="left:<?=round($b['offset'] / max(1, $g['days']) * 100, 3)?>%;width:<?=round($b['span'] / max(1, $g['days']) * 100, 3)?>%"></div></div>
         </div>
         <?php endforeach; ?>
@@ -441,7 +487,22 @@ admin_header('今日主线');
       </div>
       <?php endif; ?>
 
-    <?php elseif ($teamView === 'tree'): $treeRows = ps_task_tree_flat($curId); ?>
+    <?php elseif ($teamView === 'tree'): $treeRows = [];
+      if ($scopeAll) {
+          // 汇总模式：按项目拼接各自的树（子树结构保持，顶层按项目分组）
+          foreach ($projects as $pj) {
+              $pjId = ps_safe_id((string) ($pj['id'] ?? ''));
+              if ($pjId === '') continue;
+              foreach (ps_task_tree_flat($pjId) as $rr) {
+                  $rr['task']['_project'] = $pjId;
+                  $rr['task']['_project_name'] = (string) ($pj['name'] ?? $pjId);
+                  $treeRows[] = $rr;
+              }
+          }
+      } else {
+          $treeRows = ps_task_tree_flat($curId);
+      }
+    ?>
       <?php if ($treeRows === []): ?>
         <div class="empty">还没有任务。</div>
       <?php else: ?>
@@ -461,6 +522,7 @@ admin_header('今日主线');
           <button type="button" class="tw-tog" data-id="<?=htmlspecialchars($tk)?>" data-closed="0" title="折叠/展开">▾</button>
           <?php else: ?><span class="tw-tog ph">·</span><?php endif; ?>
           <b class="tw-t"><?=htmlspecialchars((string) ($t['title'] ?? ''))?></b>
+          <?php if ($scopeAll): ?><span class="kb-proj"><?=htmlspecialchars((string) ($t['_project_name'] ?? ''))?></span><?php endif; ?>
           <span class="st<?=$status !== 'todo' ? ' st-' . htmlspecialchars($status) : ''?>"><?=htmlspecialchars(ps_task_statuses()[$status] ?? $status)?></span>
           <?php if ($prio !== 'normal'): ?><span class="pill<?=$prio === 'urgent' ? ' hl' : ''?>"><?=htmlspecialchars(ps_priorities()[$prio] ?? $prio)?></span><?php endif; ?>
           <?php if ((string) ($t['assignee'] ?? '') !== ''): ?><span class="note">@<?=htmlspecialchars((string) $t['assignee'])?></span><?php endif; ?>
@@ -473,14 +535,14 @@ admin_header('今日主线');
           </span>
           <?php endif; ?>
           <span class="tw-acts">
-            <?php if ($canEdit): ?>
-            <?php $cc = count(ps_task_comments($curId, $tk)); ?>
+            <?php if (($canEditTask($t) && !$scopeAll)): ?>
+            <?php $cc = count(ps_task_comments($taskProj($t), $tk)); ?>
             <a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'board']))?>" title="到看板里评论">💬 <?=$cc?></a>
             <a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'tree', 'parent' => $tk]))?>#teamAdd">+ 子任务</a>
             <form method="post" class="tw-inline">
               <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
               <input type="hidden" name="ps_action" value="task_reparent">
-              <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($taskProj($t))?>">
               <input type="hidden" name="id" value="<?=htmlspecialchars($tk)?>">
               <select name="parent" class="inp sm" style="width:142px">
                 <option value="">→ 顶层</option>
@@ -493,7 +555,7 @@ admin_header('今日主线');
             <form method="post" class="tw-inline" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=$subCount > 0 ? '及其 ' . $subCount . ' 个子任务' : ''?>？">
               <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
               <input type="hidden" name="ps_action" value="task_delete">
-              <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($taskProj($t))?>">
               <input type="hidden" name="id" value="<?=htmlspecialchars($tk)?>">
               <button class="btn btn-s btn-sm" title="删除">×</button>
             </form>
@@ -513,8 +575,9 @@ admin_header('今日主线');
         <?php foreach ($curTasks as $t): if ((string) ($t['status'] ?? 'todo') !== $sk) continue;
           $due = (string) ($t['due'] ?? ''); $overdue = $due !== '' && substr($due, 0, 10) < date('Y-m-d');
           $prio = (string) ($t['priority'] ?? 'normal'); $ref = (array) ($t['ref'] ?? []); ?>
-        <div class="kanban-card<?=$sk === 'done' ? ' kb-done' : ''?>" draggable="<?=$canEdit ? 'true' : 'false'?>" data-id="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+        <div class="kanban-card<?=$sk === 'done' ? ' kb-done' : ''?>" draggable="<?=$canEditTask($t) ? 'true' : 'false'?>" data-id="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>" data-project="<?=htmlspecialchars($taskProj($t))?>">
           <div class="kb-t"><?=htmlspecialchars((string) ($t['title'] ?? ''))?></div>
+          <?php if ($scopeAll): ?><span class="kb-proj"><?=htmlspecialchars((string) ($t['_project_name'] ?? ''))?></span><?php endif; ?>
           <div class="kb-m">
             <?php $prioCls = ['urgent' => 'prio-urgent', 'high' => 'prio-high', 'low' => 'prio-low'][$prio] ?? ''; ?>
             <?php if ($prio !== 'normal'): ?><span class="pill <?=$prioCls?>"><?=htmlspecialchars(ps_priorities()[$prio] ?? $prio)?></span><?php endif; ?>
@@ -531,17 +594,17 @@ admin_header('今日主线');
             <div class="txt">子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?> · <?=(int) $cr['pct']?>%<?=((int) ($cr['overdue'] ?? 0)) > 0 ? ' · 逾期 ' . (int) $cr['overdue'] : ''?></div>
           </div>
           <?php endif; ?>
-          <?php $cmts = ps_task_comments($curId, (string) ($t['id'] ?? '')); ?>
+          <?php $cmts = ps_task_comments($taskProj($t), (string) ($t['id'] ?? '')); ?>
           <details class="kb-cmts">
             <summary><?=count($cmts) > 0 ? ('评论 ' . count($cmts) . ' · ' . htmlspecialchars(mb_substr((string) ($cmts[count($cmts) - 1]['text'] ?? ''), 0, 22))) : '写评论'?></summary>
             <?php foreach ($cmts as $c): ?>
             <div class="kb-cmt">
               <div class="kb-cmt-h"><b><?=htmlspecialchars(ps_user_display((string) ($c['by'] ?? '')))?></b><span><?=htmlspecialchars(substr((string) ($c['at'] ?? ''), 5, 11))?></span>
-                <?php if ($canEdit && ($siteAdmin || ps_current_user() === (string) ($c['by'] ?? ''))): ?>
+                <?php if ($canEditTask($t) && ($siteAdmin || ps_current_user() === (string) ($c['by'] ?? ''))): ?>
                 <form method="post" class="tw-inline" style="margin-left:auto" data-confirm="删除这条评论？">
                   <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
                   <input type="hidden" name="ps_action" value="comment_delete">
-                  <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+                  <input type="hidden" name="project" value="<?=htmlspecialchars($taskProj($t))?>">
                   <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
                   <input type="hidden" name="cid" value="<?=htmlspecialchars((string) ($c['id'] ?? ''))?>">
                   <button class="btn btn-s btn-sm" title="删除评论" style="padding:0 5px">×</button>
@@ -551,22 +614,22 @@ admin_header('今日主线');
               <div class="kb-cmt-t"><?=ps_comment_html((string) ($c['text'] ?? ''))?></div>
             </div>
             <?php endforeach; ?>
-            <?php if ($canEdit): ?>
+            <?php if ($canEditTask($t)): ?>
             <form method="post" class="kb-cmt-form">
               <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
               <input type="hidden" name="ps_action" value="comment_add">
-              <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($taskProj($t))?>">
               <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
               <input class="inp sm" name="text" placeholder="@谁 说点什么…" maxlength="2000" required>
               <button class="btn btn-s btn-sm">发送</button>
             </form>
             <?php endif; ?>
           </details>
-          <?php if ($canEdit): ?>
+          <?php if ($canEditTask($t)): ?>
           <form method="post" class="kb-del" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=((int) ($subCounts[(string) ($t['id'] ?? '')] ?? 0)) > 0 ? '及其 ' . (int) $subCounts[(string) ($t['id'] ?? '')] . ' 个子任务' : ''?>？">
             <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
             <input type="hidden" name="ps_action" value="task_delete">
-            <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+            <input type="hidden" name="project" value="<?=htmlspecialchars($taskProj($t))?>">
             <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
             <button class="btn btn-s btn-sm" title="删除">×</button>
           </form>
@@ -982,7 +1045,7 @@ async function mlEvaluate(traceId, verdict, btn) {
 (function () {
   const board = document.getElementById('kbBoard');
   if (!board) return;
-  const uid = <?=json_encode((string) $curId)?>;
+  const fallbackProj = <?=json_encode((string) ($scopeAll ? '' : $curId))?>;
   let dragEl = null;
   board.querySelectorAll('.kanban-card').forEach(function (card) {
     card.addEventListener('dragstart', function (e) {
@@ -1006,7 +1069,7 @@ async function mlEvaluate(traceId, verdict, btn) {
       if (dragEl.closest('.kanban-col') === col) return;
       const fd = new FormData();
       fd.append('csrf', ML_CSRF); fd.append('ps_action', 'task_move');
-      fd.append('project', uid); fd.append('id', id); fd.append('status', status);
+      fd.append('project', dragEl.dataset.project || fallbackProj); fd.append('id', id); fd.append('status', status);
       col.appendChild(dragEl);
       fetch(location.pathname + location.search, { method: 'POST', body: fd, redirect: 'manual' })
         .then(function () { location.reload(); }).catch(function () { location.reload(); });
