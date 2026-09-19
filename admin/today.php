@@ -215,45 +215,6 @@ admin_header('今日主线');
 .ml-goal .p-body{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
 @media(max-width:720px){.ml-item .ml-act{width:100%;justify-content:flex-start;padding-left:36px}}
 
-/* ── 团队视角：看板与表单（本页局部样式）── */
-.kb-f{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted);font-weight:600}
-.kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;align-items:flex-start}
-.kanban-col{min-width:238px;max-width:280px;flex:1;background:var(--surface-2);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
-.kanban-col.kb-over{outline:2px dashed var(--accent);outline-offset:-2px}
-.kb-h{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:2px 4px}
-.kb-h .note{margin-left:auto;background:var(--border);border-radius:99px;padding:1px 8px;font-size:11px}
-.kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 11px;cursor:grab;position:relative}
-.kanban-card:hover{border-color:var(--accent)}
-.kanban-card.kb-dragging{opacity:.45}
-.kb-t{font-size:13px;font-weight:650;line-height:1.45;overflow-wrap:anywhere;padding-right:16px}
-.kb-m{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px;font-size:11.5px}
-.kb-ref{display:inline-block;margin-top:6px;font-size:11.5px;color:var(--accent);text-decoration:none;background:rgba(37,99,235,.09);border-radius:6px;padding:1px 6px}
-.kb-note{margin:6px 0 0;font-size:11.5px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
-.kb-del{position:absolute;top:6px;right:6px;margin:0;opacity:0;transition:opacity .15s}
-.kanban-card:hover .kb-del{opacity:1}
-.kb-del .btn{padding:1px 7px;line-height:1.5}
-.kb-road{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:12px}
-.kb-road ul{margin:8px 0 0;padding-left:18px;font-size:12.5px;line-height:1.75;color:var(--muted)}
-
-/* ── 团队视角：树视图（父子任务）── */
-.tw{background:var(--surface-2);border-radius:12px;padding:8px}
-.tw-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);margin-bottom:5px;position:relative}
-.tw-row:hover{border-color:var(--accent)}
-.tw-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px;background:transparent}
-.tw-row[data-depth="1"]::before{background:color-mix(in srgb,var(--accent) 35%,transparent)}
-.tw-row[data-depth="2"]::before{background:color-mix(in srgb,var(--accent) 60%,transparent)}
-.tw-row[data-depth="3"]::before{background:var(--accent)}
-.tw-tog{width:18px;height:18px;line-height:1;border:1px solid var(--border);background:var(--surface);border-radius:5px;cursor:pointer;font-size:11px;padding:0;color:var(--muted)}
-.tw-tog.ph{border:none;background:transparent;cursor:default;text-align:center}
-.tw-t{font-size:13px;font-weight:650;overflow-wrap:anywhere;max-width:46%}
-.tw-prog{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
-.tw-prog .tw-bar{display:block;width:56px;height:6px;min-width:0;border-radius:99px;background:var(--accent);opacity:.75}
-.tw-prog{position:relative}
-.tw-prog .tw-bar{position:absolute;left:0;top:50%;transform:translateY(-50%);max-width:56px}
-.tw-prog .tw-pct{padding-left:64px}
-.tw-acts{margin-left:auto;display:flex;align-items:center;gap:6px}
-.tw-a{font-size:11.5px;color:var(--accent);text-decoration:none;white-space:nowrap}
-.tw-inline{margin:0;display:flex;gap:4px;align-items:center}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('today'); ?>
@@ -472,7 +433,7 @@ admin_header('今日主线');
           <button type="button" class="tw-tog" data-id="<?=htmlspecialchars($tk)?>" data-closed="0" title="折叠/展开">▾</button>
           <?php else: ?><span class="tw-tog ph">·</span><?php endif; ?>
           <b class="tw-t"><?=htmlspecialchars((string) ($t['title'] ?? ''))?></b>
-          <span class="pill" style="<?=$status === 'done' ? 'opacity:.6' : ''?>"><?=htmlspecialchars(ps_task_statuses()[$status] ?? $status)?></span>
+          <span class="st<?=$status !== 'todo' ? ' st-' . htmlspecialchars($status) : ''?>"><?=htmlspecialchars(ps_task_statuses()[$status] ?? $status)?></span>
           <?php if ($prio !== 'normal'): ?><span class="pill<?=$prio === 'urgent' ? ' hl' : ''?>"><?=htmlspecialchars(ps_priorities()[$prio] ?? $prio)?></span><?php endif; ?>
           <?php if ((string) ($t['assignee'] ?? '') !== ''): ?><span class="note">@<?=htmlspecialchars((string) $t['assignee'])?></span><?php endif; ?>
           <?php if ($due !== ''): ?><span class="note"<?=$overdue ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars(substr($due, 0, 16))?><?=$overdue ? ' · 逾期' : ''?></span><?php endif; ?>
@@ -491,7 +452,7 @@ admin_header('今日主线');
               <input type="hidden" name="ps_action" value="task_reparent">
               <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
               <input type="hidden" name="id" value="<?=htmlspecialchars($tk)?>">
-              <select name="parent" class="inp sm" style="width:126px">
+              <select name="parent" class="inp sm" style="width:142px">
                 <option value="">→ 顶层</option>
                 <?php foreach ($curTasks as $c2): $cid = (string) ($c2['id'] ?? ''); if (in_array($cid, (array) $r['subtree_ids'], true)) continue; ?>
                 <option value="<?=htmlspecialchars($cid)?>" <?=((string) ($t['parent'] ?? '') === $cid) ? 'selected' : ''?>>→ <?=htmlspecialchars(mb_substr((string) ($c2['title'] ?? ''), 0, 12))?></option>
@@ -517,23 +478,28 @@ admin_header('今日主线');
     <div class="kanban" id="kbBoard">
       <?php foreach (ps_task_statuses() as $sk => $sl): ?>
       <div class="kanban-col" data-status="<?=$sk?>">
-        <div class="kb-h"><b><?=htmlspecialchars($sl)?></b><span class="note"><?=$kbStats['by_status'][$sk] ?? 0?></span></div>
+        <div class="kb-h"><span class="dot"></span><b><?=htmlspecialchars($sl)?></b><span class="note"><?=$kbStats['by_status'][$sk] ?? 0?></span></div>
+        <?php if (($kbStats['by_status'][$sk] ?? 0) === 0): ?><div class="kb-empty"><?=$canEdit ? '拖到这里' : '暂无'?></div><?php endif; ?>
         <?php foreach ($curTasks as $t): if ((string) ($t['status'] ?? 'todo') !== $sk) continue;
           $due = (string) ($t['due'] ?? ''); $overdue = $due !== '' && substr($due, 0, 10) < date('Y-m-d');
           $prio = (string) ($t['priority'] ?? 'normal'); $ref = (array) ($t['ref'] ?? []); ?>
-        <div class="kanban-card" draggable="<?=$canEdit ? 'true' : 'false'?>" data-id="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+        <div class="kanban-card<?=$sk === 'done' ? ' kb-done' : ''?>" draggable="<?=$canEdit ? 'true' : 'false'?>" data-id="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
           <div class="kb-t"><?=htmlspecialchars((string) ($t['title'] ?? ''))?></div>
           <div class="kb-m">
-            <?php if ($prio !== 'normal'): ?><span class="pill <?=$prio === 'urgent' ? 'hl' : ''?>"><?=htmlspecialchars(ps_priorities()[$prio] ?? $prio)?></span><?php endif; ?>
+            <?php $prioCls = ['urgent' => 'prio-urgent', 'high' => 'prio-high', 'low' => 'prio-low'][$prio] ?? ''; ?>
+            <?php if ($prio !== 'normal'): ?><span class="pill <?=$prioCls?>"><?=htmlspecialchars(ps_priorities()[$prio] ?? $prio)?></span><?php endif; ?>
             <?php if ((string) ($t['assignee'] ?? '') !== ''): ?><span class="note">@<?=htmlspecialchars((string) $t['assignee'])?></span><?php endif; ?>
-            <?php if ($due !== ''): ?><span class="note"<?=$overdue ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars(substr($due, 0, 16))?><?=$overdue ? ' · 逾期' : ''?></span><?php endif; ?>
+            <?php if ($due !== ''): ?><span class="note due<?=$overdue ? ' over' : ''?>"><?=htmlspecialchars(substr($due, 0, 16))?><?=$overdue ? ' · 逾期' : ''?></span><?php endif; ?>
           </div>
           <?php if ($ref !== [] && (string) ($ref['type'] ?? '') !== ''): $ri = ps_ref_resolve($ref); ?>
           <span class="kb-ref"<?=$ri['missing'] ? ' style="color:var(--muted)"' : ''?>><?=htmlspecialchars($ri['type_label'])?>：<?=htmlspecialchars($ri['label'])?></span>
           <?php endif; ?>
           <?php if ((string) ($t['note'] ?? '') !== ''): ?><p class="kb-note"><?=htmlspecialchars(mb_substr((string) $t['note'], 0, 90))?></p><?php endif; ?>
           <?php $cr = $cardRoll[(string) ($t['id'] ?? '')] ?? []; if ((int) ($cr['total'] ?? 0) > 0): ?>
-          <div class="text-xs text-muted" style="margin-top:6px">子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?> · <?=(int) $cr['pct']?>%<?=((int) ($cr['overdue'] ?? 0)) > 0 ? ' · 逾期 ' . (int) $cr['overdue'] : ''?></div>
+          <div class="kb-prog<?=((int) ($cr['overdue'] ?? 0)) > 0 ? ' over' : ''?>">
+            <div class="bar"><span class="fill" style="width:<?=(int) $cr['pct']?>%"></span></div>
+            <div class="txt">子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?> · <?=(int) $cr['pct']?>%<?=((int) ($cr['overdue'] ?? 0)) > 0 ? ' · 逾期 ' . (int) $cr['overdue'] : ''?></div>
+          </div>
           <?php endif; ?>
           <?php if ($canEdit): ?>
           <form method="post" class="kb-del" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=((int) ($subCounts[(string) ($t['id'] ?? '')] ?? 0)) > 0 ? '及其 ' . (int) $subCounts[(string) ($t['id'] ?? '')] . ' 个子任务' : ''?>？">
