@@ -141,9 +141,13 @@ admin_header('Teams+');
   </div>
 
   <h2 style="font-size:14px;margin:24px 0 10px">接下来要做</h2>
+  <p class="text-xs text-muted" style="margin:-6px 0 10px">已就绪：项目 / 任务 · 五种视图（看板/表格/日历/甘特/树）· 关联与层级 · 评论与 @提及 · 到期提醒（站内 + IM + 邮件）· 项目成员权限 · 跨项目汇总 · 重复任务 · 任务依赖 · 只读分享（含访问统计）</p>
   <div class="panel"><div class="p-body">
     <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.9;color:var(--muted)">
-          </ul>
+      <li>关键路径高亮（依赖链上最长的一条）</li>
+      <li>分享字段白名单可调（现在固定只出标题/状态/负责人/截止/优先级/进度）</li>
+      <li>评论回复线程与「已读」标记</li>
+    </ul>
   </div></div>
 </div>
 <?php admin_footer(); ?>

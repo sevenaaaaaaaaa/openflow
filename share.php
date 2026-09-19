@@ -20,6 +20,15 @@ header('Set-Cookie: of_share_view=1; Path=/; SameSite=Lax; HttpOnly');
 
 $token = preg_replace('/[^a-f0-9]/', '', (string) ($_GET['t'] ?? '')) ?? '';
 $data = $token !== '' ? ps_share_payload($token) : null;
+if ($data !== null) {
+    // 访问统计：只落聚合数据 + 哈希访客指纹（不存原始 IP）
+    ps_share_track($token, [
+        'ip' => (string) ($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? ''),
+        'country' => (string) ($_SERVER['HTTP_CF_IPCOUNTRY'] ?? ''),
+        'ref' => (string) ($_SERVER['HTTP_REFERER'] ?? ''),
+        'ua' => substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 120),
+    ]);
+}
 
 if ($data === null) {
     http_response_code(404);
@@ -86,6 +95,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans
 .sh-pill{font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:99px;background:rgba(0,0,0,.06);color:var(--muted)}
 .sh-pill.p-urgent{background:rgba(192,57,43,.14);color:#a5301f}
 .sh-pill.p-high{background:rgba(214,137,16,.18);color:#9a6410}
+.sh-pill.sh-block{background:rgba(180,83,9,.14);color:#b45309}
 .sh-prog{margin-top:7px}
 .sh-prog .bar{height:5px;border-radius:99px;background:rgba(0,0,0,.08);overflow:hidden}
 .sh-prog .fill{display:block;height:100%;border-radius:99px;background:var(--accent)}
@@ -142,6 +152,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans
           <?php if ($t['priority_label'] !== ''): ?><span class="sh-pill <?=$prioCls[$t['priority']] ?? ''?>"><?=htmlspecialchars($t['priority_label'])?></span><?php endif; ?>
           <?php if ($t['assignee'] !== ''): ?><span>@<?=htmlspecialchars($t['assignee'])?></span><?php endif; ?>
           <?php if ($t['due_has_date']): ?><span class="sh-due<?=$t['overdue'] ? ' over' : ''?>"><?=htmlspecialchars($t['due'])?></span><?php endif; ?>
+          <?php if ((int) ($t['blocked'] ?? 0) > 0): ?><span class="sh-pill sh-block">🔒 待前置</span><?php endif; ?>
         </div>
         <?php if ($t['sub_total'] > 0): ?>
         <div class="sh-prog"><div class="bar"><span class="fill" style="width:<?=$t['sub_pct']?>%"></span></div><div class="txt">子任务 <?=$t['sub_done']?>/<?=$t['sub_total']?> · <?=$t['sub_pct']?>%</div></div>
@@ -161,7 +172,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans
         <td><b><?=htmlspecialchars($t['title'])?></b></td>
         <td><?=htmlspecialchars($t['status_label'])?></td>
         <td><?=htmlspecialchars($t['assignee'])?></td>
-        <td class="sh-due<?=$t['overdue'] ? ' over' : ''?>"><?=htmlspecialchars($t['due'])?></td>
+        <td class="sh-due<?=$t['overdue'] ? ' over' : ''?>"><?=htmlspecialchars($t['due'])?><?php if ((int) ($t['blocked'] ?? 0) > 0): ?> <span class="sh-pill sh-block">🔒</span><?php endif; ?></td>
         <td><?php if ($t['priority_label'] !== ''): ?><span class="sh-pill <?=$prioCls[$t['priority']] ?? ''?>"><?=htmlspecialchars($t['priority_label'])?></span><?php endif; ?></td>
         <td><?=$t['sub_total'] > 0 ? ($t['sub_done'] . '/' . $t['sub_total'] . ' · ' . $t['sub_pct'] . '%') : ''?></td>
       </tr>
@@ -202,6 +213,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans
       <?php if ($t['priority_label'] !== ''): ?><span class="sh-pill <?=$prioCls[$t['priority']] ?? ''?>"><?=htmlspecialchars($t['priority_label'])?></span><?php endif; ?>
       <?php if ($t['assignee'] !== ''): ?><span style="font-size:11.5px;color:var(--muted)">@<?=htmlspecialchars($t['assignee'])?></span><?php endif; ?>
       <?php if ($t['due_has_date']): ?><span class="sh-due sh-pill<?=$t['overdue'] ? ' over' : ''?>"><?=htmlspecialchars($t['due'])?></span><?php endif; ?>
+      <?php if ((int) ($t['blocked'] ?? 0) > 0): ?><span class="sh-pill sh-block">🔒 待前置</span><?php endif; ?>
       <?php if ($t['sub_total'] > 0): ?><span style="font-size:11.5px;color:var(--muted)">子任务 <?=$t['sub_done']?>/<?=$t['sub_total']?></span><?php endif; ?>
     </div>
     <?php endforeach; ?>

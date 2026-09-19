@@ -69,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ps_action'])) {
             $payload['ref'] = ['type' => (string) $_POST['ref_type'], 'id' => (string) ($_POST['ref_id'] ?? ''), 'label' => (string) ($_POST['ref_label'] ?? '')];
         }
         if ((string) ($_POST['id'] ?? '') !== '') $payload['id'] = (string) $_POST['id'];
+        if (array_key_exists('deps', $_POST)) $payload['deps'] = array_values((array) $_POST['deps']);
         if (array_key_exists('repeat_pick', $_POST)) {
             $pick = (string) $_POST['repeat_pick'];
             if ($pick === '' || $pick === 'none') {
@@ -95,7 +96,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ps_action'])) {
         // 新建项目：创建者自动成为 owner
         $r = ps_project_save(['name' => (string) ($_POST['name'] ?? ''), 'desc' => (string) ($_POST['desc'] ?? '')]);
         if ($r['ok'] ?? false) $back = '/xmp/today?view=team&project=' . urlencode((string) $r['id']);
+    } elseif ($act === 'comment_policy' && $pid !== '') {
+        ps_comment_policy_set($pid, (string) ($_POST['policy'] ?? 'members'), $siteAdmin || ps_can($pid, 'manage', ps_current_user(), false));
     } elseif ($act === 'comment_add' && $pid !== '') {
+        $curTask = [];
+        foreach (ps_tasks($pid) as $x) if ((string) ($x['id'] ?? '') === (string) ($_POST['id'] ?? '')) $curTask = $x;
+        if (!ps_can_write_comments($pid, $curTask, ps_current_user(), $siteAdmin)) { header('Location: ' . $back . '&denied=1'); exit; }
         $r = ps_task_comment_add($pid, (string) ($_POST['id'] ?? ''), (string) ($_POST['text'] ?? ''), ps_current_user());
         if (($r['ok'] ?? false) === true) {
             $task = [];
@@ -369,6 +375,23 @@ admin_header('今日主线');
       <div class="p-body" style="border-top:1px solid var(--border);font-size:11.5px;color:var(--muted)">
         注意区分：<b>负责人</b>是「谁在做这件事」（任务上的名字，可以是外部同事）；<b>成员</b>是「谁的登录账号能改这个项目」。
       </div>
+      <div class="p-body" style="border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <b style="font-size:13px">评论可见性</b>
+        <?php $cpol = ps_project_comment_policy($curId); ?>
+        <span class="note">当前：<?=htmlspecialchars(ps_comment_policies()[$cpol] ?? $cpol)?><?=$cpol === 'editors' ? '（只读成员看不到评论）' : ($cpol === 'off' ? '（谁都不能看/写）' : '')?></span>
+        <?php if ($canManage): ?>
+        <form method="post" style="margin-left:auto;display:flex;gap:6px">
+          <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+          <input type="hidden" name="ps_action" value="comment_policy">
+          <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+          <select name="policy" class="inp sm" style="width:120px">
+            <?php foreach (ps_comment_policies() as $pk => $pl): ?><option value="<?=$pk?>" <?=$pk === $cpol ? 'selected' : ''?>><?=htmlspecialchars($pl)?></option><?php endforeach; ?>
+          </select>
+          <button class="btn btn-s btn-sm">保存</button>
+        </form>
+        <?php endif; ?>
+        <span class="note" style="width:100%">任务级可单独覆盖：表格视图「评论」列下方的权限下拉（仅影响这条任务的评论）。</span>
+      </div>
       <?php $shares = ps_shares($curId); ?>
       <?php if ($canManage || $shares !== []): ?>
       <div class="p-body" style="border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -381,6 +404,22 @@ admin_header('今日主线');
           · 打开 <?=(int) $smeta['opens']?> 次
         </span>
         <input class="inp sm" readonly value="/s/<?=htmlspecialchars($stok)?>" onclick="this.select()" style="width:190px;font-size:11px" title="点一下全选，复制给外部">
+        <?php $sstat = ps_share_stats($curId, $stok); ?>
+        <details class="sh-stat">
+          <summary>打开 <?=(int) $sstat['opens']?> · 独立 <?=(int) $sstat['visitors']?><?=$sstat['last_open'] !== '' ? ' · 最近 ' . htmlspecialchars(substr((string) $sstat['last_open'], 5, 11)) : ''?></summary>
+          <div class="sh-bars">
+            <?php $maxD = max(1, max(array_values((array) $sstat['days']))); foreach ((array) $sstat['days'] as $d => $n): ?>
+            <span class="sh-bar" style="height:<?=max(2, (int) round($n / $maxD * 22))?>px" title="<?=htmlspecialchars((string) $d)?>：<?=(int) $n?> 次"></span>
+            <?php endforeach; ?>
+            <span class="sh-bars-l">近 14 天共 <?=(int) $sstat['total_14d']?> 次</span>
+          </div>
+          <?php if (($sstat['countries'] ?? []) !== []): ?>
+          <div class="text-xs text-muted" style="margin-top:4px">地区：<?php $i = 0; foreach ((array) $sstat['countries'] as $cc => $n): if ($i++ >= 3) break; ?><?=htmlspecialchars((string) $cc)?> <?=(int) $n?>　<?php endforeach; ?></div>
+          <?php endif; ?>
+          <?php if (($sstat['refs'] ?? []) !== []): ?>
+          <div class="text-xs text-muted">来源：<?php $i = 0; foreach ((array) $sstat['refs'] as $rf => $n): if ($i++ >= 3) break; ?><?=htmlspecialchars((string) $rf)?> <?=(int) $n?>　<?php endforeach; ?></div>
+          <?php endif; ?>
+        </details>
         <?php if ($smeta['expires'] !== '' && $smeta['expires'] < date('Y-m-d')): ?><span class="pill hl">已过期</span><?php endif; ?>
         <?php if ($canManage): ?>
         <form method="post" class="tw-inline" data-confirm="撤销这条分享链接？外部将立即无法打开。">
@@ -462,13 +501,34 @@ admin_header('今日主线');
 
     <?php if ($teamView === 'grid'): ?>
     <table class="tv-grid">
-      <thead><tr><th>任务</th><?php if ($scopeAll): ?><th>项目</th><?php endif; ?><th>状态</th><th>重复</th><?php foreach ($tvFields as $f): ?><th><?=htmlspecialchars((string) $f['label'])?></th><?php endforeach; ?><th>评论</th><th></th></tr></thead>
+      <thead><tr><th>任务</th><?php if ($scopeAll): ?><th>项目</th><?php endif; ?><th>状态</th><th>依赖</th><th>重复</th><?php foreach ($tvFields as $f): ?><th><?=htmlspecialchars((string) $f['label'])?></th><?php endforeach; ?><th>评论</th><th></th></tr></thead>
       <tbody>
         <?php foreach ($curTasks as $t): $status = (string) ($t['status'] ?? 'todo'); $due = (string) ($t['due'] ?? ''); ?>
         <tr>
           <td><b><?=htmlspecialchars((string) ($t['title'] ?? ''))?></b><?php $cr = $cardRoll[(string) ($t['id'] ?? '')] ?? []; if ((int) ($cr['total'] ?? 0) > 0): ?><span class="text-xs text-muted"> · 子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?></span><?php endif; ?><?php if ((string) ($t['note'] ?? '') !== ''): ?><div class="text-xs text-muted"><?=htmlspecialchars(mb_substr((string) $t['note'], 0, 70))?></div><?php endif; ?></td>
           <?php if ($scopeAll): ?><td><span class="kb-proj"><?=htmlspecialchars((string) ($t['_project_name'] ?? ''))?></span></td><?php endif; ?>
           <td><?=htmlspecialchars(ps_task_statuses()[$status] ?? $status)?></td>
+          <td style="min-width:150px">
+            <?php $depIds = ps_task_deps_raw($t); $blk2 = ps_task_blockers($taskProj($t), (string) ($t['id'] ?? '')); ?>
+            <?php if ($blk2 !== []): ?><div class="kb-block" style="margin-bottom:4px">🔒 待前置 <?=count($blk2)?></div><?php endif; ?>
+            <?php if ($depIds === [] && $canEditTask($t)): ?><span class="text-xs text-muted">—</span><?php endif; ?>
+            <?php if ($canEditTask($t)): ?>
+            <form method="post" class="tw-inline">
+              <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="ps_action" value="task_save">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($taskProj($t))?>">
+              <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+              <select name="deps[]" class="inp sm" multiple size="3" style="width:150px">
+                <?php foreach (ps_dep_candidates($taskProj($t), (string) ($t['id'] ?? '')) as $cid => $ctitle): ?>
+                <option value="<?=htmlspecialchars((string) $cid)?>" <?=in_array((string) $cid, $depIds, true) ? 'selected' : ''?>><?=htmlspecialchars(mb_substr((string) $ctitle, 0, 14))?></option>
+                <?php endforeach; ?>
+              </select>
+              <button class="btn btn-s btn-sm" title="保存依赖">✓</button>
+            </form>
+            <?php elseif ($depIds !== []): ?>
+            <span class="text-xs text-muted"><?=htmlspecialchars(implode('、', array_map(static fn(array $x): string => (string) $x['title'], ps_task_deps($taskProj($t), (string) ($t['id'] ?? '')))))?></span>
+            <?php endif; ?>
+          </td>
           <td>
             <?php if ($canEditTask($t)): $rp = ps_repeat_normalize($t['repeat'] ?? []);
               $rpVal = (string) $rp['freq'] === 'none' ? 'none' : ((string) $rp['freq'] . ':' . (int) $rp['interval']); ?>
@@ -492,7 +552,23 @@ admin_header('今日主线');
           <td<?=$due !== '' && substr($due, 0, 10) < date('Y-m-d') ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars($due !== '' ? substr($due, 0, 16) : '')?></td>
           <td><?=htmlspecialchars($tvRefLabel($t))?></td>
           <td style="min-width:180px">
-            <?php $cmts = ps_task_comments($taskProj($t), (string) ($t['id'] ?? '')); ?>
+            <?php $canReadC = ps_can_read_comments($taskProj($t), $t, $myUser, $siteAdmin); ?>
+            <?php $cmts = $canReadC ? ps_task_comments($taskProj($t), (string) ($t['id'] ?? '')) : []; ?>
+            <?php if (!$canReadC): ?><span class="text-xs text-muted">🔒 评论不可见</span><?php endif; ?>
+            <?php if ($canEditTask($t)): ?>
+            <form method="post" class="tw-inline" style="margin-bottom:4px">
+              <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="ps_action" value="task_save">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($taskProj($t))?>">
+              <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+              <select name="comment_policy" class="inp sm" style="width:118px;font-size:11px" title="这条任务的评论权限">
+                <option value="inherit" <?=(string) ($t['comment_policy'] ?? 'inherit') === 'inherit' ? 'selected' : ''?>>跟随项目</option>
+                <?php foreach (ps_comment_policies() as $pk2 => $pl2): ?><option value="<?=$pk2?>" <?=(string) ($t['comment_policy'] ?? '') === $pk2 ? 'selected' : ''?>><?=htmlspecialchars($pl2)?></option><?php endforeach; ?>
+              </select>
+              <button class="btn btn-s btn-sm" title="保存这条任务的评论权限">✓</button>
+            </form>
+            <?php endif; ?>
+            <?php if ($canReadC): ?>
             <details class="kb-cmts" style="margin:0;border:none;padding:0">
               <summary><?=count($cmts) > 0 ? ('评论 ' . count($cmts)) : '写评论'?></summary>
               <?php foreach ($cmts as $c): ?>
@@ -509,6 +585,7 @@ admin_header('今日主线');
               </form>
               <?php endif; ?>
             </details>
+            <?php endif; ?>
           </td>
           <td>
             <?php if ($canEditTask($t)): ?>
@@ -547,7 +624,8 @@ admin_header('今日主线');
 
     <?php elseif ($teamView === 'gantt'): $g = tv_gantt_of($tvFields, $tvRows, ['start', 'due']); $todayPct = tv_gantt_today($g);
       $projById = [];
-      foreach ($tvRows as $rr) $projById[(string) $rr['id']] = (string) $rr['proj']; ?>
+      $projIdById = [];
+      foreach ($tvRows as $rr) { $projById[(string) $rr['id']] = (string) $rr['proj']; $projIdById[(string) $rr['id']] = (string) $rr['proj_id']; } ?>
       <?php if ($g['bars'] === []): ?>
         <div class="empty">还没有带「开始 / 截止」的任务，填上日期后这里会按时间跨度画出来。</div>
       <?php else: ?>
@@ -556,7 +634,8 @@ admin_header('今日主线');
         <div class="tv-gantt-scale"><div></div><div class="ticks"><span><?=htmlspecialchars($g['start'])?></span><span><?=htmlspecialchars($g['end'])?></span></div></div>
         <?php foreach ($g['bars'] as $b): ?>
         <div class="tv-gantt-row">
-          <div class="tv-gantt-label"><?=htmlspecialchars($b['title'])?><?php if (($projById[(string) $b['id']] ?? '') !== ''): ?><span class="kb-proj"><?=htmlspecialchars((string) $projById[(string) $b['id']])?></span><?php endif; ?><div class="text-xs text-muted"><?=htmlspecialchars($b['start'])?><?=$b['milestone'] ? '' : ' → ' . htmlspecialchars($b['end'])?></div></div>
+          <?php $blkG = ps_task_blockers($scopeAll ? (string) ($projIdById[(string) $b['id']] ?? $curId) : $curId, (string) $b['id']); ?>
+          <div class="tv-gantt-label"><?=htmlspecialchars($b['title'])?><?php if (($projById[(string) $b['id']] ?? '') !== ''): ?><span class="kb-proj"><?=htmlspecialchars((string) $projById[(string) $b['id']])?></span><?php endif; ?><?php if ($blkG !== []): ?><span class="kb-block">🔒 <?=count($blkG)?></span><?php endif; ?><div class="text-xs text-muted"><?=htmlspecialchars($b['start'])?><?=$b['milestone'] ? '' : ' → ' . htmlspecialchars($b['end'])?></div></div>
           <div class="tv-gantt-track"><div class="tv-gantt-bar<?=$b['milestone'] ? ' ms' : ''?>" style="left:<?=round($b['offset'] / max(1, $g['days']) * 100, 3)?>%;width:<?=round($b['span'] / max(1, $g['days']) * 100, 3)?>%"></div></div>
         </div>
         <?php endforeach; ?>
@@ -614,8 +693,9 @@ admin_header('今日主线');
           <span class="tw-acts">
             <?php if (($canEditTask($t) && !$scopeAll)): ?>
             <?php $rlab2 = ps_repeat_label(ps_repeat_normalize($t['repeat'] ?? [])); if ($rlab2 !== ''): ?><span class="tw-a" title="重复规则">🔁 <?=htmlspecialchars($rlab2)?></span><?php endif; ?>
-            <?php $cc = count(ps_task_comments($taskProj($t), $tk)); ?>
-            <a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'board']))?>" title="到看板里评论">💬 <?=$cc?></a>
+            <?php $blk3 = ps_task_blockers($taskProj($t), $tk); if ($blk3 !== []): ?><span class="tw-a kb-block" title="待前置：<?=htmlspecialchars(implode('、', array_map(static fn(array $x): string => (string) $x['title'], $blk3)))?>">🔒 <?=count($blk3)?></span><?php endif; ?>
+            <?php $canReadC2 = ps_can_read_comments($taskProj($t), $t, $myUser, $siteAdmin); $cc = $canReadC2 ? count(ps_task_comments($taskProj($t), $tk)) : 0; ?>
+            <?php if ($canReadC2): ?><a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'board']))?>" title="到看板里评论">💬 <?=$cc?></a><?php else: ?><span class="tw-a" title="评论不可见">🔒</span><?php endif; ?>
             <a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'tree', 'parent' => $tk]))?>#teamAdd">+ 子任务</a>
             <form method="post" class="tw-inline">
               <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
@@ -657,6 +737,9 @@ admin_header('今日主线');
           <div class="kb-t"><?=htmlspecialchars((string) ($t['title'] ?? ''))?></div>
           <?php if ($scopeAll): ?><span class="kb-proj"><?=htmlspecialchars((string) ($t['_project_name'] ?? ''))?></span><?php endif; ?>
           <?php $rl = ps_repeat_label(ps_repeat_normalize($t['repeat'] ?? [])); if ($rl !== ''): ?><div class="kb-rep" title="完成这条后自动生成下一实例">🔁 <?=htmlspecialchars($rl)?></div><?php endif; ?>
+          <?php $blk = ps_task_blockers($taskProj($t), (string) ($t['id'] ?? '')); if ($blk !== []): ?>
+          <div class="kb-rep kb-block" title="待前置：<?=htmlspecialchars(implode('、', array_map(static fn(array $x): string => (string) $x['title'], $blk)))?>">🔒 待前置 <?=count($blk)?></div>
+          <?php endif; ?>
           <div class="kb-m">
             <?php $prioCls = ['urgent' => 'prio-urgent', 'high' => 'prio-high', 'low' => 'prio-low'][$prio] ?? ''; ?>
             <?php if ($prio !== 'normal'): ?><span class="pill <?=$prioCls?>"><?=htmlspecialchars(ps_priorities()[$prio] ?? $prio)?></span><?php endif; ?>
@@ -673,7 +756,10 @@ admin_header('今日主线');
             <div class="txt">子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?> · <?=(int) $cr['pct']?>%<?=((int) ($cr['overdue'] ?? 0)) > 0 ? ' · 逾期 ' . (int) $cr['overdue'] : ''?></div>
           </div>
           <?php endif; ?>
-          <?php $cmts = ps_task_comments($taskProj($t), (string) ($t['id'] ?? '')); ?>
+          <?php $canReadC = ps_can_read_comments($taskProj($t), $t, $myUser, $siteAdmin); ?>
+          <?php $canWriteC = ps_can_write_comments($taskProj($t), $t, $myUser, $siteAdmin); ?>
+          <?php $cmts = $canReadC ? ps_task_comments($taskProj($t), (string) ($t['id'] ?? '')) : []; ?>
+          <?php if ($canReadC): ?>
           <details class="kb-cmts">
             <summary><?=count($cmts) > 0 ? ('评论 ' . count($cmts) . ' · ' . htmlspecialchars(mb_substr((string) ($cmts[count($cmts) - 1]['text'] ?? ''), 0, 22))) : '写评论'?></summary>
             <?php foreach ($cmts as $c): ?>
@@ -693,7 +779,7 @@ admin_header('今日主线');
               <div class="kb-cmt-t"><?=ps_comment_html((string) ($c['text'] ?? ''))?></div>
             </div>
             <?php endforeach; ?>
-            <?php if ($canEditTask($t)): ?>
+            <?php if ($canWriteC): ?>
             <form method="post" class="kb-cmt-form">
               <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
               <input type="hidden" name="ps_action" value="comment_add">
@@ -704,6 +790,7 @@ admin_header('今日主线');
             </form>
             <?php endif; ?>
           </details>
+          <?php elseif (!$canReadC): ?><div class="kb-rep">🔒 评论仅成员可见</div><?php endif; ?>
           <?php if ($canEditTask($t)): ?>
           <form method="post" class="kb-del" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=((int) ($subCounts[(string) ($t['id'] ?? '')] ?? 0)) > 0 ? '及其 ' . (int) $subCounts[(string) ($t['id'] ?? '')] . ' 个子任务' : ''?>？">
             <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">

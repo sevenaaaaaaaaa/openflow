@@ -172,6 +172,9 @@ function ps_project_save(array $data): array
         $index[$i]['status'] = (string) ($data['status'] ?? ($p['status'] ?? 'active'));
         $index[$i]['members'] = ps_members_normalize($data['members'] ?? ($p['members'] ?? []));
         if (array_key_exists('shares', $data)) $index[$i]['shares'] = (array) $data['shares'];
+        if (array_key_exists('comment_policy', $data) && isset(ps_comment_policies()[(string) $data['comment_policy']])) {
+            $index[$i]['comment_policy'] = (string) $data['comment_policy'];
+        }
         // 只有显式传了 archived 才改它：否则「改个成员」会把归档项目顺手解档
         $index[$i]['archived'] = array_key_exists('archived', $data) ? !empty($data['archived']) : !empty($p['archived']);
         $index[$i]['updated_at'] = $now;
@@ -296,8 +299,27 @@ function ps_task_save(string $projectId, array $data): array
         'remind' => array_key_exists('remind', $data)
             ? array_intersect_key((array) $data['remind'], array_flip(['before_days', 'on_due', 'channels']))
             : (array) ($base['remind'] ?? $defaults['remind']),
+        'comment_policy' => (static function () use ($data, $base): string {
+            if (!array_key_exists('comment_policy', $data)) return (string) ($base['comment_policy'] ?? 'inherit');
+            $v = (string) $data['comment_policy'];
+            // inherit 是「跟随项目」的合法取值（不在策略枚举里，但要能显式设回）
+            return ($v === 'inherit' || isset(ps_comment_policies()[$v])) ? $v : (string) ($base['comment_policy'] ?? 'inherit');
+        })(),
+        'deps' => array_key_exists('deps', $data)
+            ? array_values(array_unique(array_filter(array_map(static fn($d): string => ps_safe_task_id((string) $d), (array) $data['deps']))))
+            : ps_task_deps_raw($base),
     ];
     $errors = ps_task_errors($incoming + ['id' => $id, 'status' => $incoming['status'], 'priority' => $incoming['priority']]);
+    // 依赖校验：前置必须存在、不能是自己、不能成环
+    $deps = (array) $incoming['deps'];
+    if ($deps !== [] && $errors === []) {
+        $ids2 = array_map(static fn(array $t): string => (string) ($t['id'] ?? ''), (array) $p['tasks']);
+        foreach ($deps as $d) {
+            if ($d === $id) { $errors[] = '前置任务不能是自己'; break; }
+            if (!in_array($d, $ids2, true)) { $errors[] = '前置任务不存在'; break; }
+        }
+        if ($errors === [] && $id !== '' && ps_deps_would_cycle($projectId, $id, $deps)) $errors[] = '依赖成环';
+    }
     // 层级校验：父任务必须在本项目内、不能挂到自己的子孙下（否则成环）、深度有上限
     $parent = (string) $incoming['parent'];
     if ($parent !== '' && $errors === []) {
@@ -404,6 +426,10 @@ function ps_task_delete(string $projectId, string $taskId): int
     foreach ($tasks as $t) if ((string) ($t['id'] ?? '') === $taskId) { $has = true; break; }
     if (!$has) return 0;
     $kill = ps_task_subtree_ids($projectId, $taskId);
+    foreach ($tasks as $i => $t) {
+        $deps2 = array_values(array_filter(ps_task_deps_raw($t), static fn(string $d): bool => !in_array($d, $kill, true)));
+        if (count($deps2) !== count(ps_task_deps_raw($t))) $tasks[$i]['deps'] = $deps2;
+    }
     $tasks = array_values(array_filter($tasks, static fn(array $t): bool => !in_array((string) ($t['id'] ?? ''), $kill, true)));
     json_write(ps_project_file($projectId), ['tasks' => $tasks]);
     ps_touch_project($projectId);
@@ -564,6 +590,146 @@ function ps_stats(string $projectId, string $today = ''): array
     return ['by_status' => $by, 'total' => $total, 'overdue' => $overdue, 'roots' => $roots, 'nodes' => $total, 'leaf_total' => $leafTotal, 'leaf_done' => $leafDone];
 }
 
+/* ────────────── 评论可见性权限（项目策略 + 记录级覆盖） ────────────── */
+/**
+ * 【为什么】评论常常是内部讨论（预算、客户名、谁是难缠的对接人）。
+ * 项目默认「成员都能看」，敏感项目或敏感任务可以收紧到「仅可编辑者」或直接关掉。
+ *
+ * 与项目成员权限的关系：能否**写**评论沿用 edit 权限（owner/editor）；这里额外决定**读**的范围。
+ */
+
+function ps_comment_policies(): array
+{
+    return ['members' => '成员都能看', 'editors' => '仅可编辑者', 'off' => '关闭评论'];
+}
+
+function ps_project_comment_policy(string $projectId): string
+{
+    $p = ps_project_get($projectId);
+    $v = (string) ($p['comment_policy'] ?? 'members');
+    return isset(ps_comment_policies()[$v]) ? $v : 'members';
+}
+
+/** 生效策略：任务级覆盖 > 项目策略 > members */
+function ps_comment_policy(string $projectId, array $task = []): string
+{
+    $own = (string) ($task['comment_policy'] ?? 'inherit');
+    if ($own !== '' && $own !== 'inherit' && isset(ps_comment_policies()[$own])) return $own;
+    return ps_project_comment_policy($projectId);
+}
+
+function ps_comment_policy_set(string $projectId, string $policy, bool $canManage = false): bool
+{
+    if (!$canManage || !isset(ps_comment_policies()[$policy])) return false;
+    $p = ps_project_get($projectId);
+    if ($p === null) return false;
+    $r = ps_project_save(['id' => $projectId, 'name' => (string) ($p['name'] ?? $projectId), 'desc' => (string) ($p['desc'] ?? ''), 'comment_policy' => $policy]);
+    return (bool) ($r['ok'] ?? false);
+}
+
+/** 能不能看评论 */
+function ps_can_read_comments(string $projectId, array $task, string $user = '', bool $siteAdmin = false): bool
+{
+    $policy = ps_comment_policy($projectId, $task);
+    if ($policy === 'off') return false;
+    if ($siteAdmin) return true;
+    if ($policy === 'editors') {
+        $role = ps_project_role($projectId, $user);
+        $members = ps_project_members($projectId);
+        if ($members === []) return ps_can($projectId, 'edit', $user, false);   // 公共项目：能改的人能看
+        return $role === 'owner' || $role === 'editor';
+    }
+    return ps_can($projectId, 'view', $user, false);
+}
+
+/** 能不能写评论（沿用 edit 权限，且策略不能是 off） */
+function ps_can_write_comments(string $projectId, array $task, string $user = '', bool $siteAdmin = false): bool
+{
+    if (ps_comment_policy($projectId, $task) === 'off') return false;
+    return ps_can($projectId, 'edit', $user, $siteAdmin);
+}
+
+/* ────────────── 任务依赖（甘特前置关系） ────────────── */
+/**
+ * 【为什么】排期里「这条得等那条」是最常见的约束，靠人记就会有人做了白工。
+ * deps = 前置任务 id 列表；前置没完成的任务标记为「待前置」，但不硬拦（人可能知道可以先动）。
+ */
+
+function ps_task_deps_raw(array $t): array
+{
+    $ids = [];
+    foreach ((array) ($t['deps'] ?? []) as $d) {
+        $d = ps_safe_task_id((string) $d);
+        if ($d !== '' && !in_array($d, $ids, true)) $ids[] = $d;
+    }
+    return $ids;
+}
+
+/** 前置任务详情（含完成状态），已删除的会被标 missing */
+function ps_task_deps(string $projectId, string $taskId): array
+{
+    $tasks = ps_tasks($projectId);
+    $byId = [];
+    foreach ($tasks as $t) $byId[(string) ($t['id'] ?? '')] = $t;
+    $out = [];
+    foreach ($tasks as $t) {
+        if ((string) ($t['id'] ?? '') !== $taskId) continue;
+        foreach (ps_task_deps_raw($t) as $d) {
+            $dt = $byId[$d] ?? null;
+            $out[] = [
+                'id' => $d,
+                'title' => $dt === null ? '（已删除）' : (string) ($dt['title'] ?? ''),
+                'status' => $dt === null ? '' : (string) ($dt['status'] ?? ''),
+                'done' => $dt !== null && (string) ($dt['status'] ?? '') === 'done',
+                'missing' => $dt === null,
+            ];
+        }
+        break;
+    }
+    return $out;
+}
+
+/** 未完成的前置（阻塞原因）；空数组 = 未被阻塞 */
+function ps_task_blockers(string $projectId, string $taskId): array
+{
+    return array_values(array_filter(ps_task_deps($projectId, $taskId), static fn(array $d): bool => !$d['done']));
+}
+
+/** 可选前置：排除自己、自己的子孙、以及会形成环的任务 */
+function ps_dep_candidates(string $projectId, string $taskId): array
+{
+    $out = [];
+    $banned = $taskId !== '' ? ps_task_subtree_ids($projectId, $taskId) : [];
+    foreach (ps_tasks($projectId) as $t) {
+        $tid = (string) ($t['id'] ?? '');
+        if ($tid === '' || in_array($tid, $banned, true)) continue;
+        if ($taskId !== '' && ps_deps_would_cycle($projectId, $taskId, [$tid])) continue;
+        $out[$tid] = (string) ($t['title'] ?? '');
+    }
+    return $out;
+}
+
+/** 加这些前置会不会成环：从每个前置沿 deps 往下走，若回到自己就是环 */
+function ps_deps_would_cycle(string $projectId, string $taskId, array $deps): bool
+{
+    if ($taskId === '') return false;
+    $depsOf = [];
+    foreach (ps_tasks($projectId) as $t) {
+        $depsOf[(string) ($t['id'] ?? '')] = ps_task_deps_raw($t);
+    }
+    $depsOf[$taskId] = array_values(array_unique(array_map(static fn($d): string => ps_safe_task_id((string) $d), $deps)));
+    $seen = [];
+    $stack = $depsOf[$taskId];
+    while ($stack !== []) {
+        $cur = (string) array_pop($stack);
+        if ($cur === $taskId) return true;          // 走回自己 → 环
+        if ($cur === '' || isset($seen[$cur])) continue;
+        $seen[$cur] = true;
+        foreach ($depsOf[$cur] ?? [] as $nxt) $stack[] = $nxt;
+    }
+    return false;
+}
+
 /* ────────────── 视图级公开只读分享 ────────────── */
 /**
  * 【为什么】客户要看排期、外包要看进度，但不该给他后台账号。
@@ -602,6 +768,13 @@ function ps_shares(string $projectId): array
             'created_at' => (string) ($meta['created_at'] ?? ''),
             'created_by' => (string) ($meta['created_by'] ?? ''),
             'opens' => (int) ($meta['opens'] ?? 0),
+            // 访问统计（ps_share_stats 读这些）
+            'first_open' => (string) ($meta['first_open'] ?? ''),
+            'last_open' => (string) ($meta['last_open'] ?? ''),
+            'days' => (array) ($meta['days'] ?? []),
+            'visitors' => (array) ($meta['visitors'] ?? []),
+            'countries' => (array) ($meta['countries'] ?? []),
+            'refs' => (array) ($meta['refs'] ?? []),
         ];
     }
     return $out;
@@ -671,6 +844,96 @@ function ps_share_get(string $token, bool $countOpen = false): ?array
     return null;
 }
 
+/**
+ * 记录一次分享打开（聚合统计，**不存原始 IP**）。
+ * 访客去重用 sha1(token|ip|ua|日期)，只用于「独立访客」计数；日桶保留 30 天。
+ */
+function ps_share_track(string $token, array $ctx = []): void
+{
+    $tok = preg_replace('/[^a-f0-9]/', '', $token) ?? '';
+    if (strlen($tok) < 16) return;
+    foreach (ps_projects(true) as $p) {
+        $pid = ps_safe_id((string) ($p['id'] ?? ''));
+        if ($pid === '') continue;
+        $shares = (array) ($p['shares'] ?? []);
+        if (!isset($shares[$tok]) || !is_array($shares[$tok])) continue;
+        $meta = $shares[$tok];
+        $today = date('Y-m-d');
+        $meta['opens'] = (int) ($meta['opens'] ?? 0) + 1;
+        $meta['first_open'] = (string) ($meta['first_open'] ?? '') !== '' ? (string) $meta['first_open'] : date('c');
+        $meta['last_open'] = date('c');
+
+        // 日桶（保留 30 天）
+        $days = (array) ($meta['days'] ?? []);
+        $days[$today] = (int) ($days[$today] ?? 0) + 1;
+        if (count($days) > 30) {
+            ksort($days);
+            $days = array_slice($days, -30, null, true);
+        }
+        $meta['days'] = $days;
+
+        // 访客指纹（不存 IP；上限 200 个）
+        $ip = (string) ($ctx['ip'] ?? '');
+        $ua = (string) ($ctx['ua'] ?? '');
+        if ($ip !== '' || $ua !== '') {
+            $fp = substr(sha1($tok . '|' . $ip . '|' . $ua), 0, 16);   // 十六进制（二进制指纹会让 json_encode 失败 → 索引被写坏）
+            $vset = (array) ($meta['visitors'] ?? []);
+            if (!in_array($fp, $vset, true) && count($vset) < 200) {
+                $vset[] = $fp;
+                $meta['visitors'] = array_values($vset);
+            }
+        }
+
+        // 国家（CF-IPCountry）与来源主机（只留主机名，不留完整 URL）
+        $cc = strtoupper(trim((string) ($ctx['country'] ?? '')));
+        if (preg_match('/^[A-Z]{2}$/', $cc) !== 1) $cc = '未知';
+        $countries = (array) ($meta['countries'] ?? []);
+        $countries[$cc] = (int) ($countries[$cc] ?? 0) + 1;
+        arsort($countries);
+        $meta['countries'] = array_slice($countries, 0, 10, true);
+
+        $refHost = '';
+        $ref = (string) ($ctx['ref'] ?? '');
+        if ($ref !== '') {
+            $h = parse_url($ref, PHP_URL_HOST);
+            $refHost = is_string($h) ? preg_replace('/^www\./', '', strtolower($h)) : '';
+        }
+        if ($refHost === '' || $refHost === (string) parse_url('https://' . ($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST)) $refHost = '直接打开';
+        $refs = (array) ($meta['refs'] ?? []);
+        $refs[$refHost] = (int) ($refs[$refHost] ?? 0) + 1;
+        arsort($refs);
+        $meta['refs'] = array_slice($refs, 0, 10, true);
+
+        $shares[$tok] = $meta;
+        ps_project_save(['id' => $pid, 'name' => (string) ($p['name'] ?? $pid), 'desc' => (string) ($p['desc'] ?? ''), 'shares' => $shares]);
+        return;
+    }
+}
+
+/** 某条分享的统计（给分享面板用）。没有记录时返回零值。 */
+function ps_share_stats(string $projectId, string $token): array
+{
+    $shares = ps_shares($projectId);
+    $m = (array) ($shares[$token] ?? []);
+    $days = (array) ($m['days'] ?? []);
+    ksort($days);
+    $last14 = [];
+    for ($i = 13; $i >= 0; $i--) {
+        $d = date('Y-m-d', strtotime('-' . $i . ' day'));
+        $last14[$d] = (int) ($days[$d] ?? 0);
+    }
+    return [
+        'opens' => (int) ($m['opens'] ?? 0),
+        'visitors' => count((array) ($m['visitors'] ?? [])),
+        'first_open' => (string) ($m['first_open'] ?? ''),
+        'last_open' => (string) ($m['last_open'] ?? ''),
+        'days' => $last14,
+        'total_14d' => array_sum($last14),
+        'countries' => (array) ($m['countries'] ?? []),
+        'refs' => (array) ($m['refs'] ?? []),
+    ];
+}
+
 /** 公开视图模型（白名单；页面只渲染这里出现过的字段） */
 function ps_share_payload(string $token): ?array
 {
@@ -700,6 +963,8 @@ function ps_share_payload(string $token): ?array
             'sub_done' => (int) ($roll['done'] ?? 0),
             'sub_total' => (int) ($roll['total'] ?? 0),
             'sub_pct' => (int) ($roll['pct'] ?? 0),
+            // 依赖只公开「被几条未完成前置挡住」，不公开前置是谁（那是内部排期细节）
+            'blocked' => count(ps_task_blockers($pid, (string) ($t['id'] ?? ''))),
         ];
     };
     $rows = array_map($row, $tasks);
@@ -905,7 +1170,8 @@ function ps_repeat_spawn_due(string $projectId = '', string $today = ''): array
             $copy['status'] = 'todo';
             $copy['due'] = $next . $timePart;
             $copy['start'] = $start !== '' ? ps_repeat_shift($next, -$offset) : '';
-            $copy['repeat'] = array_diff_key($rep, ['spawned' => 1]);    // 新实例继续沿用规则
+            $copy['repeat'] = array_diff_key($rep, ['spawned' => 1]);
+            $copy['deps'] = [];   // 依赖是实例级的，不照抄    // 新实例继续沿用规则
             $copy['repeat_src'] = (string) (($t['repeat_src'] ?? '') !== '' ? $t['repeat_src'] : ($t['id'] ?? ''));
             $copy['repeat_from'] = (string) ($t['id'] ?? '');
             $copy['created_at'] = date('c');
