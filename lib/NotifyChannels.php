@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * 通知渠道扩展 — 企业微信 / 飞书 / WhatsApp
+ * 通知渠道扩展 — 企业微信 / 飞书 / Slack / WhatsApp
  * 通过 Webhook 发送站内通知到外部 IM
  */
 
@@ -17,12 +17,13 @@ function notify_channels_save(array $cfg): bool {
 // 发送到所有启用的渠道
 function notify_channels_send(string $title, string $message, string $link = ''): void {
     $channels = notify_channels();
-    foreach (['wecom','feishu','whatsapp'] as $type) {
+    foreach (['wecom','feishu','slack','whatsapp'] as $type) {
         if (empty($channels[$type]['enabled']) || empty($channels[$type]['webhook'])) continue;
         $text = "🔔 {$title}\n{$message}" . ($link ? "\n🔗 {$link}" : '');
         switch ($type) {
             case 'wecom': notify_wecom($channels['wecom'], $text); break;
             case 'feishu': notify_feishu($channels['feishu'], $text); break;
+            case 'slack': notify_slack($channels['slack'], $text); break;
             case 'whatsapp': notify_whatsapp($channels['whatsapp'], $text); break;
         }
     }
@@ -43,6 +44,19 @@ function notify_feishu(array $cfg, string $text): void {
     $ch = curl_init($cfg['webhook']);
     curl_setopt_array($ch, [
         CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>json_encode(['msg_type'=>'text','content'=>['text'=>$text]]),
+        CURLOPT_HTTPHEADER=>['Content-Type: application/json'], CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>10,
+    ]);
+    curl_exec($ch);
+}
+
+// Slack Incoming Webhook（可选 #channel 覆盖默认频道）
+function notify_slack(array $cfg, string $text): void {
+    if (empty($cfg['webhook'])) return;
+    $payload = ['text' => $text];
+    if (!empty($cfg['channel'])) $payload['channel'] = $cfg['channel'];
+    $ch = curl_init($cfg['webhook']);
+    curl_setopt_array($ch, [
+        CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>json_encode($payload),
         CURLOPT_HTTPHEADER=>['Content-Type: application/json'], CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>10,
     ]);
     curl_exec($ch);
