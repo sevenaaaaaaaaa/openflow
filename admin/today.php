@@ -86,6 +86,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ps_action'])) {
         // 新建项目：创建者自动成为 owner
         $r = ps_project_save(['name' => (string) ($_POST['name'] ?? ''), 'desc' => (string) ($_POST['desc'] ?? '')]);
         if ($r['ok'] ?? false) $back = '/xmp/today?view=team&project=' . urlencode((string) $r['id']);
+    } elseif ($act === 'comment_add' && $pid !== '') {
+        $r = ps_task_comment_add($pid, (string) ($_POST['id'] ?? ''), (string) ($_POST['text'] ?? ''), ps_current_user());
+        if (($r['ok'] ?? false) === true) {
+            $task = [];
+            foreach (ps_tasks($pid) as $x) if ((string) ($x['id'] ?? '') === (string) ($_POST['id'] ?? '')) $task = $x;
+            ps_comment_notify($pid, $task, (array) $r['comment']);
+        }
+    } elseif ($act === 'comment_delete' && $pid !== '') {
+        ps_task_comment_delete($pid, (string) ($_POST['id'] ?? ''), (string) ($_POST['cid'] ?? ''), ps_current_user(), $siteAdmin);
     } elseif ($act === 'member_set' && $pid !== '') {
         ps_member_set($pid, (string) ($_POST['user'] ?? ''), (string) ($_POST['role'] ?? 'editor'));
     } elseif ($act === 'member_remove' && $pid !== '') {
@@ -350,7 +359,7 @@ admin_header('今日主线');
 
     <?php if ($teamView === 'grid'): ?>
     <table class="tv-grid">
-      <thead><tr><th>任务</th><th>状态</th><?php foreach ($tvFields as $f): ?><th><?=htmlspecialchars((string) $f['label'])?></th><?php endforeach; ?><th></th></tr></thead>
+      <thead><tr><th>任务</th><th>状态</th><?php foreach ($tvFields as $f): ?><th><?=htmlspecialchars((string) $f['label'])?></th><?php endforeach; ?><th>评论</th><th></th></tr></thead>
       <tbody>
         <?php foreach ($curTasks as $t): $status = (string) ($t['status'] ?? 'todo'); $due = (string) ($t['due'] ?? ''); ?>
         <tr>
@@ -361,6 +370,25 @@ admin_header('今日主线');
           <td><?=htmlspecialchars((string) ($t['start'] ?? ''))?></td>
           <td<?=$due !== '' && substr($due, 0, 10) < date('Y-m-d') ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars($due !== '' ? substr($due, 0, 16) : '')?></td>
           <td><?=htmlspecialchars($tvRefLabel($t))?></td>
+          <td style="min-width:180px">
+            <?php $cmts = ps_task_comments($curId, (string) ($t['id'] ?? '')); ?>
+            <details class="kb-cmts" style="margin:0;border:none;padding:0">
+              <summary><?=count($cmts) > 0 ? ('评论 ' . count($cmts)) : '写评论'?></summary>
+              <?php foreach ($cmts as $c): ?>
+              <div class="kb-cmt"><div class="kb-cmt-h"><b><?=htmlspecialchars(ps_user_display((string) ($c['by'] ?? '')))?></b><span><?=htmlspecialchars(substr((string) ($c['at'] ?? ''), 5, 11))?></span></div><div class="kb-cmt-t"><?=ps_comment_html((string) ($c['text'] ?? ''))?></div></div>
+              <?php endforeach; ?>
+              <?php if ($canEdit): ?>
+              <form method="post" class="kb-cmt-form">
+                <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+                <input type="hidden" name="ps_action" value="comment_add">
+                <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+                <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+                <input class="inp sm" name="text" placeholder="@谁 说点什么…" maxlength="2000" required>
+                <button class="btn btn-s btn-sm">发送</button>
+              </form>
+              <?php endif; ?>
+            </details>
+          </td>
           <td>
             <?php if ($canEdit): ?>
             <form method="post" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=((int) ($subCounts[(string) ($t['id'] ?? '')] ?? 0)) > 0 ? '及其 ' . (int) $subCounts[(string) ($t['id'] ?? '')] . ' 个子任务' : ''?>？" style="margin:0">
@@ -446,6 +474,8 @@ admin_header('今日主线');
           <?php endif; ?>
           <span class="tw-acts">
             <?php if ($canEdit): ?>
+            <?php $cc = count(ps_task_comments($curId, $tk)); ?>
+            <a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'board']))?>" title="到看板里评论">💬 <?=$cc?></a>
             <a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'tree', 'parent' => $tk]))?>#teamAdd">+ 子任务</a>
             <form method="post" class="tw-inline">
               <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
@@ -501,6 +531,37 @@ admin_header('今日主线');
             <div class="txt">子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?> · <?=(int) $cr['pct']?>%<?=((int) ($cr['overdue'] ?? 0)) > 0 ? ' · 逾期 ' . (int) $cr['overdue'] : ''?></div>
           </div>
           <?php endif; ?>
+          <?php $cmts = ps_task_comments($curId, (string) ($t['id'] ?? '')); ?>
+          <details class="kb-cmts">
+            <summary><?=count($cmts) > 0 ? ('评论 ' . count($cmts) . ' · ' . htmlspecialchars(mb_substr((string) ($cmts[count($cmts) - 1]['text'] ?? ''), 0, 22))) : '写评论'?></summary>
+            <?php foreach ($cmts as $c): ?>
+            <div class="kb-cmt">
+              <div class="kb-cmt-h"><b><?=htmlspecialchars(ps_user_display((string) ($c['by'] ?? '')))?></b><span><?=htmlspecialchars(substr((string) ($c['at'] ?? ''), 5, 11))?></span>
+                <?php if ($canEdit && ($siteAdmin || ps_current_user() === (string) ($c['by'] ?? ''))): ?>
+                <form method="post" class="tw-inline" style="margin-left:auto" data-confirm="删除这条评论？">
+                  <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+                  <input type="hidden" name="ps_action" value="comment_delete">
+                  <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+                  <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+                  <input type="hidden" name="cid" value="<?=htmlspecialchars((string) ($c['id'] ?? ''))?>">
+                  <button class="btn btn-s btn-sm" title="删除评论" style="padding:0 5px">×</button>
+                </form>
+                <?php endif; ?>
+              </div>
+              <div class="kb-cmt-t"><?=ps_comment_html((string) ($c['text'] ?? ''))?></div>
+            </div>
+            <?php endforeach; ?>
+            <?php if ($canEdit): ?>
+            <form method="post" class="kb-cmt-form">
+              <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="ps_action" value="comment_add">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+              <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+              <input class="inp sm" name="text" placeholder="@谁 说点什么…" maxlength="2000" required>
+              <button class="btn btn-s btn-sm">发送</button>
+            </form>
+            <?php endif; ?>
+          </details>
           <?php if ($canEdit): ?>
           <form method="post" class="kb-del" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=((int) ($subCounts[(string) ($t['id'] ?? '')] ?? 0)) > 0 ? '及其 ' . (int) $subCounts[(string) ($t['id'] ?? '')] . ' 个子任务' : ''?>？">
             <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">

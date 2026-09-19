@@ -539,6 +539,165 @@ function ps_stats(string $projectId, string $today = ''): array
     return ['by_status' => $by, 'total' => $total, 'overdue' => $overdue, 'roots' => $roots, 'nodes' => $total, 'leaf_total' => $leafTotal, 'leaf_done' => $leafDone];
 }
 
+/* ────────────── 任务评论与 @提及 ────────────── */
+/**
+ * 【为什么】任务只能改状态、不能讨论，团队协作就还是「派活」而不是「一起干」。
+ * 评论存在任务里（同一个 JSON），@提及 解析成登录名后定向通知到人 + 邮件。
+ */
+
+function ps_comment_roles_ok(): array
+{
+    return ['owner' => '负责人', 'editor' => '可编辑', 'viewer' => '只读'];
+}
+
+/** 一条任务的评论（按时间正序） */
+function ps_task_comments(string $projectId, string $taskId): array
+{
+    $p = ps_project_get($projectId);
+    if ($p === null) return [];
+    foreach ((array) $p['tasks'] as $t) {
+        if ((string) ($t['id'] ?? '') !== $taskId) continue;
+        $out = array_values(array_filter((array) ($t['comments'] ?? []), 'is_array'));
+        usort($out, static fn(array $a, array $b): int => strcmp((string) ($a['at'] ?? ''), (string) ($b['at'] ?? '')));
+        return $out;
+    }
+    return [];
+}
+
+/** 评论文本 → id 列表：匹配 @登录名 或 @显示名（整词，不被后续字母数字粘连） */
+function ps_comment_mentions(string $text): array
+{
+    $out = [];
+    foreach (ps_user_options() as $uk => $disp) {
+        foreach (array_unique([(string) $uk, (string) $disp]) as $name) {
+            if ($name === '') continue;
+            $re = '/@' . preg_quote($name, '/') . '(?![\p{L}\p{N}_])/iu';
+            if (preg_match($re, $text) === 1) { $out[] = (string) $uk; break; }
+        }
+    }
+    return array_values(array_unique($out));
+}
+
+/** 评论渲染：转义 + 高亮 @提及（XSS 安全：先 htmlspecialchars） */
+function ps_comment_html(string $text): string
+{
+    $safe = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    $names = [];
+    foreach (ps_user_options() as $uk => $disp) {
+        foreach (array_unique([(string) $uk, (string) $disp]) as $name) {
+            if ($name !== '') $names[] = (string) $name;
+        }
+    }
+    usort($names, static fn(string $a, string $b): int => strlen($b) <=> strlen($a));   // 长名优先，避免截胡
+    foreach ($names as $name) {
+        $safe = preg_replace(
+            '/' . preg_quote('@' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8'), '/') . '(?![\p{L}\p{N}_])/iu',
+            '<span class="cmt-at">@' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '</span>',
+            $safe
+        ) ?? $safe;
+    }
+    return nl2br($safe, false);
+}
+
+/** 新增评论：校验 + 落库 + 返回被提及的人 */
+function ps_task_comment_add(string $projectId, string $taskId, string $text, string $by = ''): array
+{
+    $text = trim($text);
+    if ($text === '') return ['ok' => false, 'error' => '评论不能为空', 'comment' => [], 'mentioned' => []];
+    if (mb_strlen($text) > 2000) return ['ok' => false, 'error' => '评论太长（最多 2000 字）', 'comment' => [], 'mentioned' => []];
+    $p = ps_project_get($projectId);
+    if ($p === null) return ['ok' => false, 'error' => '项目不存在', 'comment' => [], 'mentioned' => []];
+    if ($by === '') $by = ps_current_user();
+    $mentions = array_values(array_filter(ps_comment_mentions($text), static fn(string $u): bool => $u !== $by));
+    $cmt = [
+        'id' => 'c' . date('ymdHis') . substr((string) random_int(100, 999), 0, 3),
+        'by' => $by,
+        'at' => date('Y-m-d H:i:s'),
+        'text' => $text,
+        'mentions' => $mentions,
+    ];
+    $tasks = $p['tasks'];
+    $hit = false;
+    foreach ($tasks as $i => $t) {
+        if ((string) ($t['id'] ?? '') !== $taskId) continue;
+        $list = (array) ($t['comments'] ?? []);
+        $list[] = $cmt;
+        if (count($list) > 200) $list = array_slice($list, -200);   // 单任务最多留 200 条
+        $tasks[$i]['comments'] = array_values($list);
+        $tasks[$i]['updated_at'] = date('c');
+        $hit = true;
+        break;
+    }
+    if (!$hit) return ['ok' => false, 'error' => '任务不存在', 'comment' => [], 'mentioned' => []];
+    json_write(ps_project_file($projectId), ['tasks' => $tasks]);
+    ps_touch_project($projectId);
+    return ['ok' => true, 'error' => '', 'comment' => $cmt, 'mentioned' => $mentions];
+}
+
+/** 删评论：作者本人或站点管理员 */
+function ps_task_comment_delete(string $projectId, string $taskId, string $commentId, string $by = '', bool $isAdmin = false): bool
+{
+    $p = ps_project_get($projectId);
+    if ($p === null) return false;
+    if ($by === '') $by = ps_current_user();
+    $tasks = $p['tasks'];
+    $ok = false;
+    foreach ($tasks as $i => $t) {
+        if ((string) ($t['id'] ?? '') !== $taskId) continue;
+        $list = (array) ($t['comments'] ?? []);
+        foreach ($list as $j => $c) {
+            if ((string) ($c['id'] ?? '') !== $commentId) continue;
+            if (!$isAdmin && (string) ($c['by'] ?? '') !== $by) return false;
+            unset($list[$j]);
+            $ok = true;
+            break;
+        }
+        if (!$ok) return false;
+        $tasks[$i]['comments'] = array_values($list);
+        $tasks[$i]['updated_at'] = date('c');
+        break;
+    }
+    if (!$ok) return false;
+    json_write(ps_project_file($projectId), ['tasks' => $tasks]);
+    ps_touch_project($projectId);
+    return true;
+}
+
+/**
+ * 评论通知：被 @ 的人在后台收到定向通知（audience=user:<登录名>），
+ * 有邮箱且邮件渠道可用时再发一封邮件。返回实际通知到的人。
+ * notify()/mail_send() 不存在时静默降级（CLI/测试环境）。
+ */
+function ps_comment_notify(string $projectId, array $task, array $comment): array
+{
+    $notified = [];
+    $mentions = (array) ($comment['mentions'] ?? []);
+    if ($mentions === []) return $notified;
+    $p = ps_project_get($projectId);
+    $projectName = (string) ($p['name'] ?? $projectId);
+    $by = (string) ($comment['by'] ?? '');
+    $title = '@' . ps_user_display($by) . ' 在任务里提到了你';
+    $body = mb_substr((string) ($comment['text'] ?? ''), 0, 200);
+    $link = '/xmp/today?view=team&project=' . urlencode($projectId);
+    foreach ($mentions as $u) {
+        $u = (string) $u;
+        if ($u === '' || $u === $by) continue;
+        if (function_exists('notify')) {
+            notify('team', $title, "【{$projectName}】" . (string) ($task['title'] ?? '') . "\n" . $body, $link, ['user:' . $u]);
+        }
+        if (function_exists('mail_send')) {
+            $em = ps_assignee_email($u);
+            if ($em !== '' && filter_var($em, FILTER_VALIDATE_EMAIL) !== false) {
+                try {
+                    mail_send($em, $title, '<p><b>' . htmlspecialchars($title) . '</b></p><p>任务：' . htmlspecialchars((string) ($task['title'] ?? '')) . '</p><p>' . nl2br(htmlspecialchars($body)) . '</p><p><a href="' . htmlspecialchars('https://nownexts.com' . $link) . '">打开团队视角</a></p>');
+                } catch (\Throwable $e) {}
+            }
+        }
+        $notified[] = $u;
+    }
+    return $notified;
+}
+
 /* ────────────── 项目级成员权限（owner / editor / viewer） ────────────── */
 /**
  * 【为什么】此前只有站点级 tasks 权限：要么全站能改，要么全站不能。
