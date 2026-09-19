@@ -106,11 +106,12 @@ RewriteRule ^articles/?$ articles.php [L,QSA]
 RewriteRule ^tag/([^/]+)/?$ /articles?tag=$1 [R=301,L,NE]
 RewriteRule ^courses/?$ courses.php [L,QSA]
 RewriteRule ^about/?$ about.php [L,QSA]
-RewriteRule ^product/?$ product.php [L,QSA]
-# ── Demo 预览(不取代现有页面): 总产品聚合 / 总能力聚合 / v2 首页 ──
-RewriteRule ^demo/products/?$       hub-products.php       [L,QSA]
-RewriteRule ^demo/capabilities/?$   hub-capabilities.php   [L,QSA]
-RewriteRule ^demo/home-v2/?$        home-v2.php            [L,QSA]
+RewriteRule ^product/?$ hub-products.php [L,QSA]
+RewriteRule ^product/openflow/?$ product.php [L,QSA]
+# ── 2026-09-19 转正：demo 预览地址 301 到正式页面 ──
+RewriteRule ^demo/products/?$       /product     [R=301,L,NE]
+RewriteRule ^demo/capabilities/?$   /capability  [R=301,L,NE]
+RewriteRule ^demo/home-v2/?$        /            [R=301,L,NE]
 # ── 芭乐派产品矩阵：前台产品页统一二级目录 /product/{产品}（后台 page-builder 可继续打磨） ──
 RewriteRule ^product/mflow/?$      front-builder.php?slug=mflow      [L,QSA]
 RewriteRule ^product/webs-flow/?$  front-builder.php?slug=webs-flow  [L,QSA]
@@ -127,9 +128,13 @@ RewriteRule ^inflow(/.*)?$    - [L]
 RewriteRule ^mflow(/.*)?$     - [L]
 # 兼容旧链接：没有独立应用入口的产品，短路径 301 到二级营销页
 RewriteRule ^webs-flow/?$  /product/webs-flow  [R=301,L,NE]
-# 能力二级目录：/capability/{key} 先 301 到总页锚点（融合形态落地后填真页）
-RewriteRule ^capability/([a-z0-9_-]+)/?$ capability.php?cap=$1 [L,QSA]
-RewriteRule ^capability/?$ capability.php [L,QSA]
+# 能力：/capability → 能力全景（新）；/capability/openflow 保留老能力页原文
+RewriteRule ^capability/openflow/?$ capability.php [L,QSA]
+RewriteRule ^capability/([a-z0-9_-]+)/?$ hub-capabilities.php?cap=$1 [L,QSA]
+RewriteRule ^capability/?$ hub-capabilities.php [L,QSA]
+
+# 更新日志（含老首页纪念快照入口）
+RewriteRule ^changelog/?$ changelog.php [L,QSA]
 RewriteRule ^downloads/?$ downloads.php [L,QSA]
 RewriteRule ^podcasts/?$ podcasts.php [L,QSA]
 RewriteRule ^survey/?$ survey.php [L,QSA]

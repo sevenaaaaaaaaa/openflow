@@ -106,8 +106,7 @@ $__capTitle = $__capName !== '' ? ($__capName . ' | 产品能力 · OpenFlow') :
 $__capMeta  = $__capDesc !== '' ? $__capDesc : 'OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、增长引擎与永久开源生态，42 个真实模块全部可在代码与后台中核验。';
 $__capCanon = site_config_get('site_url') . '/capability' . ($__cap !== '' ? '/' . $__cap : '');
 if (function_exists('of_seo_canonical')) of_seo_canonical($__capCanon);
-if (function_exists('seo_head')): seo_head(['title' => '能力全景（预览）· 芭乐派', 'description' => $__capMeta, 'canonical' => $__capCanon]); endif; ?>
-<meta name="robots" content="noindex,follow">
+if (function_exists('seo_head')): seo_head(['title' => '能力全景· 芭乐派', 'description' => $__capMeta, 'canonical' => $__capCanon]); endif; ?>
 <title><?=htmlspecialchars($__capName !== '' ? ('能力 · ' . $__capName . ' | 芭乐派 · OpenFlow') : '能力 · TIPS 四力 | 芭乐派 · OpenFlow')?></title>
 <meta name="description" content="<?=htmlspecialchars($__capMeta)?>">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>

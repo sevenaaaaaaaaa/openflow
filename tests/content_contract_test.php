@@ -20,7 +20,7 @@ declare(strict_types=1);
  */
 
 $ROOT = dirname(__DIR__);
-$PAGES = ['home-v2.php', 'hub-products.php', 'hub-capabilities.php'];
+$PAGES = ['index.php', 'hub-products.php', 'hub-capabilities.php'];
 
 /* 允许跨页复用的节（转化位）：出现多次不算违规 */
 const CROSS_PAGE_ALLOW = ['contact'];
