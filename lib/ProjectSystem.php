@@ -170,8 +170,9 @@ function ps_project_save(array $data): array
         $index[$i]['name'] = $name;
         $index[$i]['desc'] = trim((string) ($data['desc'] ?? ($p['desc'] ?? '')));
         $index[$i]['status'] = (string) ($data['status'] ?? ($p['status'] ?? 'active'));
-        $index[$i]['members'] = array_values(array_unique(array_map('strval', (array) ($data['members'] ?? ($p['members'] ?? [])))));
-        $index[$i]['archived'] = !empty($data['archived']);
+        $index[$i]['members'] = ps_members_normalize($data['members'] ?? ($p['members'] ?? []));
+        // 只有显式传了 archived 才改它：否则「改个成员」会把归档项目顺手解档
+        $index[$i]['archived'] = array_key_exists('archived', $data) ? !empty($data['archived']) : !empty($p['archived']);
         $index[$i]['updated_at'] = $now;
         $found = true;
         break;
@@ -181,12 +182,17 @@ function ps_project_save(array $data): array
             'id' => $id, 'name' => $name,
             'desc' => trim((string) ($data['desc'] ?? '')),
             'status' => (string) ($data['status'] ?? 'active'),
-            'members' => array_values(array_unique(array_map('strval', (array) ($data['members'] ?? [])))),
+            'members' => ps_members_normalize($data['members'] ?? []),
             'archived' => false,
             'created_at' => $now, 'updated_at' => $now,
         ];
         if (!is_dir(ps_dir()) && !@mkdir(ps_dir(), 0775, true) && !is_dir(ps_dir())) {
             return ['ok' => false, 'error' => '无法创建数据目录', 'id' => ''];
+        }
+        // 创建者自动是 owner（有登录态时）；没登录态（CLI/脚本）就留空，留空=公共项目
+        $creator = ps_current_user();
+        if ($creator !== '' && $index[count($index) - 1]['members'] === []) {
+            $index[count($index) - 1]['members'] = [$creator => 'owner'];
         }
         if (!is_file(ps_project_file($id))) json_write(ps_project_file($id), ['tasks' => []]);
     }
@@ -531,6 +537,147 @@ function ps_stats(string $projectId, string $today = ''): array
         if (count($sub) === 1) { $leafTotal++; if ((string) ($t['status'] ?? '') === 'done') $leafDone++; }
     }
     return ['by_status' => $by, 'total' => $total, 'overdue' => $overdue, 'roots' => $roots, 'nodes' => $total, 'leaf_total' => $leafTotal, 'leaf_done' => $leafDone];
+}
+
+/* ────────────── 项目级成员权限（owner / editor / viewer） ────────────── */
+/**
+ * 【为什么】此前只有站点级 tasks 权限：要么全站能改，要么全站不能。
+ * 多个人一起用就会撞——「这个项目谁能改」是项目自己的事。
+ *
+ * 兼容策略：**没设成员的项目视为公共**（凡有 tasks 权限的人都能改）——
+ * 这样老项目不会被权限上线瞬间锁死；一旦设了成员，就按成员角色来。
+ */
+
+function ps_project_roles(): array
+{
+    return ['owner' => '负责人', 'editor' => '可编辑', 'viewer' => '只读'];
+}
+
+/** 成员规范化：兼容旧的字符串列表（旧数据里的成员按「可编辑」理解） */
+function ps_members_normalize(mixed $v): array
+{
+    if (!is_array($v)) return [];
+    $out = [];
+    foreach ($v as $k => $val) {
+        if (is_int($k)) {                       // 旧格式：['Seven', 'marketing']
+            $user = trim((string) $val);
+            $role = 'editor';
+        } else {                                // 新格式：['Seven' => 'owner']
+            $user = trim((string) $k);
+            $role = trim((string) $val);
+        }
+        if ($user === '') continue;
+        if (!isset(ps_project_roles()[$role])) $role = 'viewer';   // 角色不认就按最小权限
+        $out[$user] = $role;
+    }
+    return $out;
+}
+
+function ps_project_members(string $projectId): array
+{
+    $p = ps_project_get($projectId);
+    return $p === null ? [] : ps_members_normalize($p['members'] ?? []);
+}
+
+/** 当前登录用户（后台用登录名，前后台一致口径） */
+function ps_current_user(): string
+{
+    $u = $_SESSION['admin_user'] ?? '';
+    if ($u === '' && function_exists('member_current')) {
+        $u = (string) ((member_current()['name'] ?? '') ?: '');
+    }
+    return trim((string) $u);
+}
+
+function ps_is_site_admin(): bool
+{
+    return (string) ($_SESSION['admin_role'] ?? '') === 'admin';
+}
+
+function ps_project_role(string $projectId, string $user = ''): string
+{
+    if ($user === '') $user = ps_current_user();
+    if ($user === '') return '';
+    $members = ps_project_members($projectId);
+    return (string) ($members[$user] ?? '');
+}
+
+/** 可选成员：登录名 => 显示名（成员用登录名做主键，展示用显示名） */
+function ps_user_options(): array
+{
+    $out = [];
+    foreach ((array) json_read(DATA_DIR . '/users.json') as $uk => $u) {
+        if (!is_array($u)) continue;
+        $out[(string) $uk] = (string) ($u['name'] ?? $uk);
+    }
+    return $out;
+}
+
+function ps_user_display(string $user): string
+{
+    $o = ps_user_options();
+    return (string) ($o[$user] ?? $user);
+}
+
+function ps_member_set(string $projectId, string $user, string $role): array
+{
+    $user = trim($user);
+    if ($user === '') return ['ok' => false, 'error' => '成员不能为空'];
+    if (!isset(ps_project_roles()[$role])) return ['ok' => false, 'error' => '角色不合法'];
+    $p = ps_project_get($projectId);
+    if ($p === null) return ['ok' => false, 'error' => '项目不存在'];
+    $members = ps_project_members($projectId);
+    $members[$user] = $role;
+    $r = ps_project_save(['id' => $projectId, 'name' => (string) ($p['name'] ?? $projectId), 'desc' => (string) ($p['desc'] ?? ''), 'members' => $members]);
+    return $r['ok'] ? ['ok' => true, 'error' => '', 'members' => $members] : ['ok' => false, 'error' => (string) $r['error']];
+}
+
+function ps_member_remove(string $projectId, string $user): bool
+{
+    $members = ps_project_members($projectId);
+    if (!isset($members[$user])) return false;
+    unset($members[$user]);
+    $p = ps_project_get($projectId);
+    if ($p === null) return false;
+    $r = ps_project_save(['id' => $projectId, 'name' => (string) ($p['name'] ?? $projectId), 'desc' => (string) ($p['desc'] ?? ''), 'members' => $members]);
+    return (bool) ($r['ok'] ?? false);
+}
+
+/**
+ * 能不能对这个项目做这件事。
+ * @param string $action view|edit|manage（manage = 改项目信息 / 管成员 / 删项目）
+ * @param string $user 空=当前用户
+ * @param bool $siteAdmin 站点管理员（调用方传，便于测试）
+ */
+function ps_can(string $projectId, string $action, string $user = '', bool $siteAdmin = false): bool
+{
+    $p = ps_project_get($projectId);
+    if ($p === null) return false;
+    if ($siteAdmin) return true;
+    if (($action !== 'view' && $action !== 'edit' && $action !== 'manage')) return false;
+    $members = ps_members_normalize($p['members'] ?? []);
+    $role = ps_project_role($projectId, $user);
+    if ($members === []) {
+        // 公共项目：能看能改（与权限上线前的行为一致），但管成员/删项目还是只有管理员
+        return $action !== 'manage';
+    }
+    return match ($role) {
+        'owner' => true,
+        'editor' => $action === 'view' || $action === 'edit',
+        'viewer' => $action === 'view',
+        default => false,
+    };
+}
+
+/** 我能看的项目（非成员的项目在列表里就不该出现） */
+function ps_visible_projects(string $user = '', bool $siteAdmin = false): array
+{
+    $out = [];
+    foreach (ps_projects() as $p) {
+        $pid = ps_safe_id((string) ($p['id'] ?? ''));
+        if ($pid !== '' && ps_can($pid, 'view', $user, $siteAdmin)) $out[] = $p;
+    }
+    return $out;
 }
 
 /* ────────────── 到期分桶（页内角标 / 待办聚合，不依赖外部渠道） ────────────── */

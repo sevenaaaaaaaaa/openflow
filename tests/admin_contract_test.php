@@ -68,6 +68,18 @@ $cfg = file_get_contents("$root/admin/config.php");
 ok(preg_match('/admin-ui\.css\?v=<\?= OF_ADMIN_UI_VER \?>/', $cfg) === 1, 'admin_header 未挂 admin-ui.css');
 ok(preg_match('/admin-ui\.js\?v=<\?= OF_ADMIN_UI_VER \?>/', $cfg) === 1, 'admin_footer 未挂 admin-ui.js');
 ok(!str_contains($cfg, 'return confirm('), 'config.php 里仍有原生 confirm');
+
+// 24. CSRF 字段名必须是 _csrf_token：csrf_verify() 只认它（写错表现为「按钮点了没反应/CSRF 验证失败」）
+$badCsrf = [];
+foreach (glob(__DIR__ . '/../admin/*.php') ?: [] as $f) {
+    $src = (string) file_get_contents($f);
+    if (preg_match_all('/name="([^"]*csrf[^"]*)"/i', $src, $m)) {
+        foreach ($m[1] as $nm) {
+            if ($nm !== '_csrf_token') $badCsrf[] = basename($f) . ' → name="' . $nm . '"';
+        }
+    }
+}
+ok($badCsrf === [], 'CSRF 字段名写错（csrf_verify 只认 _csrf_token）：' . implode('；', array_slice($badCsrf, 0, 6)));
 ok(is_file("$root/assets/admin-ui.css") && is_file("$root/assets/admin-ui.js"), 'admin-ui 资源缺失');
 
 echo "\n通过 $pass · 失败 $fail\n";
