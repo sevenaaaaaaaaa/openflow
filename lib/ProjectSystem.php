@@ -171,6 +171,7 @@ function ps_project_save(array $data): array
         $index[$i]['desc'] = trim((string) ($data['desc'] ?? ($p['desc'] ?? '')));
         $index[$i]['status'] = (string) ($data['status'] ?? ($p['status'] ?? 'active'));
         $index[$i]['members'] = ps_members_normalize($data['members'] ?? ($p['members'] ?? []));
+        if (array_key_exists('shares', $data)) $index[$i]['shares'] = (array) $data['shares'];
         // 只有显式传了 archived 才改它：否则「改个成员」会把归档项目顺手解档
         $index[$i]['archived'] = array_key_exists('archived', $data) ? !empty($data['archived']) : !empty($p['archived']);
         $index[$i]['updated_at'] = $now;
@@ -183,6 +184,7 @@ function ps_project_save(array $data): array
             'desc' => trim((string) ($data['desc'] ?? '')),
             'status' => (string) ($data['status'] ?? 'active'),
             'members' => ps_members_normalize($data['members'] ?? []),
+            'shares' => (array) ($data['shares'] ?? []),
             'archived' => false,
             'created_at' => $now, 'updated_at' => $now,
         ];
@@ -560,6 +562,221 @@ function ps_stats(string $projectId, string $today = ''): array
         if (count($sub) === 1) { $leafTotal++; if ((string) ($t['status'] ?? '') === 'done') $leafDone++; }
     }
     return ['by_status' => $by, 'total' => $total, 'overdue' => $overdue, 'roots' => $roots, 'nodes' => $total, 'leaf_total' => $leafTotal, 'leaf_done' => $leafDone];
+}
+
+/* ────────────── 视图级公开只读分享 ────────────── */
+/**
+ * 【为什么】客户要看排期、外包要看进度，但不该给他后台账号。
+ * 分享按「项目 + 视图」生成一个不可猜的 token；打开无需登录、只读、可随时吊销。
+ *
+ * 【安全立场】公开数据用**白名单**构造（ps_share_payload），绝不透传原始任务数组：
+ * 标题/状态/负责人名字/截止日/优先级/子任务进度 之外的东西——备注、关联对象（可能指向 CRM、
+ * 文章、订单）、评论、提醒设置、内部 id、负责人邮箱——一律不出现在分享页。
+ */
+
+function ps_share_views(): array
+{
+    return ['board' => '看板', 'grid' => '表格', 'calendar' => '日历', 'gantt' => '甘特', 'tree' => '树'];
+}
+
+/** token：16 字节随机 → 32 位十六进制（不可枚举） */
+function ps_share_token_new(): string
+{
+    return bin2hex(random_bytes(16));
+}
+
+/** 当前项目的分享列表：token => meta */
+function ps_shares(string $projectId): array
+{
+    $p = ps_project_get($projectId);
+    if ($p === null) return [];
+    $raw = (array) ($p['shares'] ?? []);
+    $out = [];
+    foreach ($raw as $tok => $meta) {
+        if (!is_array($meta)) continue;
+        $t = preg_replace('/[^a-f0-9]/', '', (string) $tok) ?? '';
+        if ($t === '') continue;
+        $out[$t] = [
+            'view' => isset(ps_share_views()[(string) ($meta['view'] ?? '')]) ? (string) $meta['view'] : 'board',
+            'expires' => (string) ($meta['expires'] ?? ''),
+            'created_at' => (string) ($meta['created_at'] ?? ''),
+            'created_by' => (string) ($meta['created_by'] ?? ''),
+            'opens' => (int) ($meta['opens'] ?? 0),
+        ];
+    }
+    return $out;
+}
+
+function ps_share_create(string $projectId, string $view, string $expires = '', string $by = '', bool $canManage = false): array
+{
+    if (!$canManage) return ['ok' => false, 'error' => '需要项目负责人权限', 'token' => ''];
+    if (!isset(ps_share_views()[$view])) return ['ok' => false, 'error' => '视图不合法', 'token' => ''];
+    $p = ps_project_get($projectId);
+    if ($p === null) return ['ok' => false, 'error' => '项目不存在', 'token' => ''];
+    $expires = trim($expires);
+    if ($expires !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $expires) !== 1) $expires = '';
+    $tok = ps_share_token_new();
+    $shares = (array) ($p['shares'] ?? []);
+    $shares[$tok] = [
+        'view' => $view, 'expires' => $expires, 'created_at' => date('c'),
+        'created_by' => $by !== '' ? $by : ps_current_user(), 'opens' => 0,
+    ];
+    $r = ps_project_save(['id' => $projectId, 'name' => (string) ($p['name'] ?? $projectId), 'desc' => (string) ($p['desc'] ?? ''), 'shares' => $shares]);
+    if (!($r['ok'] ?? false)) return ['ok' => false, 'error' => (string) ($r['error'] ?? '保存失败'), 'token' => ''];
+    return ['ok' => true, 'error' => '', 'token' => $tok, 'meta' => $shares[$tok]];
+}
+
+function ps_share_revoke(string $projectId, string $token, bool $canManage = false): bool
+{
+    if (!$canManage) return false;
+    $p = ps_project_get($projectId);
+    if ($p === null) return false;
+    $shares = (array) ($p['shares'] ?? []);
+    $tok = preg_replace('/[^a-f0-9]/', '', $token) ?? '';
+    if ($tok === '' || !isset($shares[$tok])) return false;
+    unset($shares[$tok]);
+    $r = ps_project_save(['id' => $projectId, 'name' => (string) ($p['name'] ?? $projectId), 'desc' => (string) ($p['desc'] ?? ''), 'shares' => $shares]);
+    return (bool) ($r['ok'] ?? false);
+}
+
+/**
+ * 用 token 反查分享；不存在 / 已过期 → null。
+ * $countOpen=true 时累加打开次数（分享页调用）。
+ */
+function ps_share_get(string $token, bool $countOpen = false): ?array
+{
+    $tok = preg_replace('/[^a-f0-9]/', '', $token) ?? '';
+    if (strlen($tok) < 16) return null;
+    foreach (ps_projects(true) as $p) {
+        $pid = ps_safe_id((string) ($p['id'] ?? ''));
+        if ($pid === '') continue;
+        $shares = (array) ($p['shares'] ?? []);
+        if (!isset($shares[$tok]) || !is_array($shares[$tok])) continue;
+        $meta = $shares[$tok];
+        $expires = (string) ($meta['expires'] ?? '');
+        if ($expires !== '' && strcmp(date('Y-m-d'), $expires) > 0) return null;   // 过期即失效
+        if ($countOpen) {
+            $shares[$tok]['opens'] = (int) ($shares[$tok]['opens'] ?? 0) + 1;
+            ps_project_save(['id' => $pid, 'name' => (string) ($p['name'] ?? $pid), 'desc' => (string) ($p['desc'] ?? ''), 'shares' => $shares]);
+        }
+        return [
+            'project' => $pid,
+            'project_name' => (string) ($p['name'] ?? $pid),
+            'view' => isset(ps_share_views()[(string) ($meta['view'] ?? '')]) ? (string) $meta['view'] : 'board',
+            'expires' => $expires,
+            'created_at' => (string) ($meta['created_at'] ?? ''),
+            'opens' => (int) ($meta['opens'] ?? 0),
+        ];
+    }
+    return null;
+}
+
+/** 公开视图模型（白名单；页面只渲染这里出现过的字段） */
+function ps_share_payload(string $token): ?array
+{
+    $share = ps_share_get($token, true);
+    if ($share === null) return null;
+    $pid = (string) $share['project'];
+    $view = (string) $share['view'];
+    $tasks = ps_tasks($pid);
+
+    // 白名单字段：标题 / 状态 / 负责人名字 / 截止 / 优先级 / 子任务进度
+    $row = static function (array $t) use ($pid): array {
+        $due = (string) ($t['due'] ?? '');
+        $dueDate = substr($due, 0, 10);
+        $status = (string) ($t['status'] ?? 'todo');
+        $roll = ps_task_rollup($pid, (string) ($t['id'] ?? ''));
+        $prio = (string) ($t['priority'] ?? 'normal');
+        return [
+            'title' => (string) ($t['title'] ?? ''),
+            'status' => $status,
+            'status_label' => (string) (ps_task_statuses()[$status] ?? $status),
+            'assignee' => (string) ($t['assignee'] ?? ''),          // 只有名字，不含邮箱
+            'due' => $dueDate,
+            'due_has_date' => preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate) === 1,
+            'overdue' => $status !== 'done' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate) === 1 && $dueDate < date('Y-m-d'),
+            'priority' => $prio,
+            'priority_label' => $prio === 'normal' ? '' : (string) (ps_priorities()[$prio] ?? $prio),
+            'sub_done' => (int) ($roll['done'] ?? 0),
+            'sub_total' => (int) ($roll['total'] ?? 0),
+            'sub_pct' => (int) ($roll['pct'] ?? 0),
+        ];
+    };
+    $rows = array_map($row, $tasks);
+    $stats = ps_stats($pid);
+    $public = [
+        'project' => (string) $share['project_name'],
+        'view' => $view,
+        'view_label' => (string) (ps_share_views()[$view] ?? $view),
+        'expires' => (string) $share['expires'],
+        'generated_at' => date('Y-m-d H:i'),
+        'stats' => ['total' => (int) $stats['total'], 'done' => (int) ($stats['by_status']['done'] ?? 0), 'overdue' => (int) $stats['overdue']],
+        'columns' => [], 'rows' => [], 'calendar' => [], 'gantt' => [], 'tree' => [],
+    ];
+
+    // 视图各自的布局：只带白名单字段，不掺内部结构
+    if ($view === 'board') {
+        $cols = [];
+        foreach (array_keys(ps_task_statuses()) as $sk) $cols[$sk] = ['key' => $sk, 'label' => (string) ps_task_statuses()[$sk], 'tasks' => []];
+        foreach (ps_tasks($pid) as $t) {
+            $st = (string) ($t['status'] ?? 'todo');
+            if (!isset($cols[$st])) continue;
+            $cols[$st]['tasks'][] = $row($t);
+        }
+        $public['columns'] = array_values($cols);
+    } elseif ($view === 'grid') {
+        $public['rows'] = $rows;
+    } elseif ($view === 'calendar') {
+        $ym = date('Y-m');
+        $cal = [];
+        foreach ($rows as $r) {
+            if (!$r['due_has_date'] || !str_starts_with($r['due'], $ym . '-')) continue;
+            $cal[$r['due']][] = $r;
+        }
+        $lead = (int) date('N', strtotime($ym . '-01') ?: time()) - 1;
+        $days = (int) date('t', strtotime($ym . '-01') ?: time());
+        $cells = [];
+        for ($i = 1; $i <= $days; $i++) {
+            $date = $ym . '-' . str_pad((string) $i, 2, '0', STR_PAD_LEFT);
+            $cells[] = ['date' => $date, 'day' => $i, 'tasks' => $cal[$date] ?? []];
+        }
+        $undated = 0;
+        foreach ($rows as $r) if (!$r['due_has_date']) $undated++;
+        $public['calendar'] = ['ym' => $ym, 'lead' => $lead, 'cells' => $cells, 'undated' => $undated];
+    } elseif ($view === 'gantt') {
+        $bars = [];
+        $min = null; $max = null;
+        foreach (ps_tasks($pid) as $t) {
+            $due = substr((string) ($t['due'] ?? ''), 0, 10);
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $due) !== 1) continue;
+            $start = substr((string) ($t['start'] ?? ''), 0, 10);
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $start) !== 1 || $start > $due) $start = $due;
+            $bars[] = ['title' => (string) ($t['title'] ?? ''), 'start' => $start, 'end' => $due, 'status_label' => (string) (ps_task_statuses()[(string) ($t['status'] ?? 'todo')] ?? '')];
+            if ($min === null || $start < $min) $min = $start;
+            if ($max === null || $due > $max) $max = $due;
+        }
+        if ($bars !== [] && $min !== null && $max !== null) {
+            $span = static function (string $a, string $b): int {
+                return (int) round(((int) strtotime($b . ' 12:00') - (int) strtotime($a . ' 12:00')) / 86400);
+            };
+            $total = max(1, $span($min, $max) + 1);
+            foreach ($bars as $i => $b) {
+                $bars[$i]['offset'] = max(0, $span($min, $b['start']));
+                $bars[$i]['span'] = max(1, $span($b['start'], $b['end']) + 1);
+                $bars[$i]['milestone'] = $b['start'] === $b['end'];
+            }
+            $public['gantt'] = ['start' => $min, 'end' => $max, 'days' => $total, 'bars' => $bars];
+        }
+    } elseif ($view === 'tree') {
+        $flat = [];
+        foreach (ps_task_tree_flat($pid) as $n) {
+            $r = $row((array) $n['task']);
+            $r['depth'] = (int) $n['depth'];
+            $flat[] = $r;
+        }
+        $public['tree'] = $flat;
+    }
+    return $public;
 }
 
 /* ────────────── 任务重复规则 ────────────── */

@@ -143,8 +143,7 @@ admin_header('Teams+');
   <h2 style="font-size:14px;margin:24px 0 10px">接下来要做</h2>
   <div class="panel"><div class="p-body">
     <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.9;color:var(--muted)">
-            <li>视图级公开只读分享（把某个视图给外部看）</li>
-    </ul>
+          </ul>
   </div></div>
 </div>
 <?php admin_footer(); ?>
