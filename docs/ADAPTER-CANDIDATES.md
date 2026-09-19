@@ -12,9 +12,9 @@
 | # | 候选 | 来源 | 许可证 | 星级 | 最近提交 | 分 | 证据 | 状态/风险 |
 |---|------|------|--------|------|----------|----|------|-----------|
 | 1 | [praw-dev/praw](https://github.com/praw-dev/praw) | 种子 | bsd-2-clause | 4257 | 2026-09-18 | 84 | B | 待 intake 核验 |
-| 2 | [Directus](https://github.com/directus/directus) | 策展 | noassertion | 37931 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE）；许可证待核验（intake 读仓库 LICENSE） |
-| 3 | [django-cms/django-cms](https://github.com/django-cms/django-cms) | 种子 | noassertion | 10668 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
-| 4 | [Chocobozzz/PeerTube](https://github.com/Chocobozzz/PeerTube) | 种子 | agpl-3.0 | 15320 | 2026-09-17 | 64 | B | 许可证 agpl-3.0 传染性，需法务确认 |
+| 2 | [Directus](https://github.com/directus/directus) | 策展 | noassertion | 37936 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE）；许可证待核验（intake 读仓库 LICENSE） |
+| 3 | [django-cms/django-cms](https://github.com/django-cms/django-cms) | 种子 | noassertion | 10669 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
+| 4 | [Chocobozzz/PeerTube](https://github.com/Chocobozzz/PeerTube) | 种子 | agpl-3.0 | 15321 | 2026-09-17 | 64 | B | 许可证 agpl-3.0 传染性，需法务确认 |
 
 ## 触达/通知通道（站内信之外的多通道提醒）
 
@@ -22,10 +22,10 @@
 
 | # | 候选 | 来源 | 许可证 | 星级 | 最近提交 | 分 | 证据 | 状态/风险 |
 |---|------|------|--------|------|----------|----|------|-----------|
-| 1 | [binwiederhier/ntfy](https://github.com/binwiederhier/ntfy) | 种子 | apache-2.0 | 34298 | 2026-09-15 | 89 | B | 待 intake 核验 |
-| 2 | [caronc/apprise](https://github.com/caronc/apprise) | 种子 | bsd-2-clause | 17344 | 2026-09-17 | 89 | B | 待 intake 核验 |
-| 3 | [dgtlmoon/changedetection.io](https://github.com/dgtlmoon/changedetection.io) | 种子 | apache-2.0 | 34324 | 2026-09-18 | 84 | B | 待 intake 核验 |
-| 4 | [Finb/Bark](https://github.com/Finb/Bark) | 种子 | mit | 9117 | 2026-09-18 | 84 | B | 待 intake 核验 |
+| 1 | [binwiederhier/ntfy](https://github.com/binwiederhier/ntfy) | 种子 | apache-2.0 | 34300 | 2026-09-15 | 89 | B | 待 intake 核验 |
+| 2 | [caronc/apprise](https://github.com/caronc/apprise) | 种子 | bsd-2-clause | 17346 | 2026-09-17 | 89 | B | 待 intake 核验 |
+| 3 | [dgtlmoon/changedetection.io](https://github.com/dgtlmoon/changedetection.io) | 种子 | apache-2.0 | 34328 | 2026-09-18 | 84 | B | 待 intake 核验 |
+| 4 | [Finb/Bark](https://github.com/Finb/Bark) | 种子 | mit | 9116 | 2026-09-18 | 84 | B | 待 intake 核验 |
 
 ## 数据入湖（事件/行为/订单 → 我们的 CDP）
 
@@ -33,10 +33,10 @@
 
 | # | 候选 | 来源 | 许可证 | 星级 | 最近提交 | 分 | 证据 | 状态/风险 |
 |---|------|------|--------|------|----------|----|------|-----------|
-| 1 | [apache/superset](https://github.com/apache/superset) | 种子 | apache-2.0 | 74827 | 2026-09-18 | 84 | B | 待 intake 核验 |
-| 2 | [umami-software/umami](https://github.com/umami-software/umami) | 种子 | mit | 38897 | 2026-09-18 | 84 | B | 待 intake 核验 |
-| 3 | [PostHog/posthog](https://github.com/PostHog/posthog) | 种子 | noassertion | 39843 | 2026-09-18 | 75 | A | 许可证待核验（intake 读仓库 LICENSE） |
-| 4 | [metabase/metabase](https://github.com/metabase/metabase) | 种子 | noassertion | 49330 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
+| 1 | [apache/superset](https://github.com/apache/superset) | 种子 | apache-2.0 | 74828 | 2026-09-18 | 84 | B | 待 intake 核验 |
+| 2 | [umami-software/umami](https://github.com/umami-software/umami) | 种子 | mit | 38899 | 2026-09-18 | 84 | B | 待 intake 核验 |
+| 3 | [PostHog/posthog](https://github.com/PostHog/posthog) | 种子 | noassertion | 39847 | 2026-09-18 | 75 | A | 许可证待核验（intake 读仓库 LICENSE） |
+| 4 | [metabase/metabase](https://github.com/metabase/metabase) | 种子 | noassertion | 49332 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
 
 ## 情报源（趋势/舆情/竞品 → inFlow 式选题）
 
@@ -45,9 +45,9 @@
 | # | 候选 | 来源 | 许可证 | 星级 | 最近提交 | 分 | 证据 | 状态/风险 |
 |---|------|------|--------|------|----------|----|------|-----------|
 | 1 | [Composio](https://github.com/ComposioHQ/composio) | 策展 | mit | 30228 | 2026-09-18 | 90 | A | 许可证待核验（intake 读仓库 LICENSE） |
-| 2 | [RAGFlow](https://github.com/infiniflow/ragflow) | 策展 | apache-2.0 | 90936 | 2026-09-18 | 84 | B | 许可证待核验（intake 读仓库 LICENSE） |
-| 3 | [unclecode/crawl4ai](https://github.com/unclecode/crawl4ai) | 种子 | apache-2.0 | 83813 | 2026-09-18 | 84 | B | 待 intake 核验 |
-| 4 | [Crawlee](https://github.com/apify/crawlee) | 策展 | apache-2.0 | 25832 | 2026-09-17 | 84 | B | 许可证待核验（intake 读仓库 LICENSE） |
+| 2 | [RAGFlow](https://github.com/infiniflow/ragflow) | 策展 | apache-2.0 | 90947 | 2026-09-18 | 84 | B | 许可证待核验（intake 读仓库 LICENSE） |
+| 3 | [unclecode/crawl4ai](https://github.com/unclecode/crawl4ai) | 种子 | apache-2.0 | 83819 | 2026-09-18 | 84 | B | 待 intake 核验 |
+| 4 | [Crawlee](https://github.com/apify/crawlee) | 策展 | apache-2.0 | 25833 | 2026-09-17 | 84 | B | 许可证待核验（intake 读仓库 LICENSE） |
 
 ## 线索/CRM 双向同步（我们不重复造 CRM）
 
@@ -55,10 +55,10 @@
 
 | # | 候选 | 来源 | 许可证 | 星级 | 最近提交 | 分 | 证据 | 状态/风险 |
 |---|------|------|--------|------|----------|----|------|-----------|
-| 1 | [krayin/laravel-crm](https://github.com/krayin/laravel-crm) | 种子 | mit | 23896 | 2026-09-14 | 84 | B | 待 intake 核验 |
-| 2 | [twentyhq/twenty](https://github.com/twentyhq/twenty) | 种子 | noassertion | 56986 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
-| 3 | [chatwoot/chatwoot](https://github.com/chatwoot/chatwoot) | 种子 | noassertion | 36929 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
-| 4 | [erxes/erxes](https://github.com/erxes/erxes) | 种子 | noassertion | 4081 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
+| 1 | [krayin/laravel-crm](https://github.com/krayin/laravel-crm) | 种子 | mit | 23898 | 2026-09-14 | 84 | B | 待 intake 核验 |
+| 2 | [twentyhq/twenty](https://github.com/twentyhq/twenty) | 种子 | noassertion | 56989 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
+| 3 | [chatwoot/chatwoot](https://github.com/chatwoot/chatwoot) | 种子 | noassertion | 36935 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
+| 4 | [erxes/erxes](https://github.com/erxes/erxes) | 种子 | noassertion | 4082 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
 
 ## 收款/订阅通道（PayFlow 之外的补充渠道）
 
@@ -66,10 +66,10 @@
 
 | # | 候选 | 来源 | 许可证 | 星级 | 最近提交 | 分 | 证据 | 状态/风险 |
 |---|------|------|--------|------|----------|----|------|-----------|
-| 1 | [juspay/hyperswitch](https://github.com/juspay/hyperswitch) | 种子 | apache-2.0 | 43621 | 2026-09-18 | 84 | B | 待 intake 核验 |
+| 1 | [juspay/hyperswitch](https://github.com/juspay/hyperswitch) | 种子 | apache-2.0 | 43619 | 2026-09-18 | 84 | B | 待 intake 核验 |
 | 2 | [killbill/killbill](https://github.com/killbill/killbill) | 种子 | apache-2.0 | 5747 | 2026-09-14 | 84 | B | 待 intake 核验 |
-| 3 | [solidusio/solidus](https://github.com/solidusio/solidus) | 种子 | bsd-3-clause | 5328 | 2026-09-17 | 84 | B | 待 intake 核验 |
-| 4 | [medusajs/medusa](https://github.com/medusajs/medusa) | 种子 | noassertion | 36365 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
+| 3 | [solidusio/solidus](https://github.com/solidusio/solidus) | 种子 | bsd-3-clause | 5328 | 2026-09-18 | 84 | B | 待 intake 核验 |
+| 4 | [medusajs/medusa](https://github.com/medusajs/medusa) | 种子 | noassertion | 36367 | 2026-09-18 | 69 | B | 许可证待核验（intake 读仓库 LICENSE） |
 
 ## 工作流/Agent 能力（补我们的编排，不重复实现）
 
@@ -77,8 +77,8 @@
 
 | # | 候选 | 来源 | 许可证 | 星级 | 最近提交 | 分 | 证据 | 状态/风险 |
 |---|------|------|--------|------|----------|----|------|-----------|
-| 1 | [nanobot](https://github.com/HKUDS/nanobot) | 策展 | mit | 48314 | 2026-09-18 | 95 | A | 许可证待核验（intake 读仓库 LICENSE） |
-| 2 | [langflow-ai/langflow](https://github.com/langflow-ai/langflow) | 种子 | mit | 154966 | 2026-09-18 | 84 | B | 待 intake 核验 |
-| 3 | [browser-use](https://github.com/browser-use/browser-use) | 策展 | mit | 115085 | 2026-09-15 | 84 | B | 许可证待核验（intake 读仓库 LICENSE） |
-| 4 | [MetaGPT](https://github.com/FoundationAgents/MetaGPT) | 策展 | mit | 70484 | 2026-01-21 | 84 | B | 许可证待核验（intake 读仓库 LICENSE） |
+| 1 | [nanobot](https://github.com/HKUDS/nanobot) | 策展 | mit | 48318 | 2026-09-18 | 95 | A | 许可证待核验（intake 读仓库 LICENSE） |
+| 2 | [langflow-ai/langflow](https://github.com/langflow-ai/langflow) | 种子 | mit | 154969 | 2026-09-18 | 84 | B | 待 intake 核验 |
+| 3 | [browser-use](https://github.com/browser-use/browser-use) | 策展 | mit | 115111 | 2026-09-15 | 84 | B | 许可证待核验（intake 读仓库 LICENSE） |
+| 4 | [MetaGPT](https://github.com/FoundationAgents/MetaGPT) | 策展 | mit | 70485 | 2026-01-21 | 84 | B | 许可证待核验（intake 读仓库 LICENSE） |
 
