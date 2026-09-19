@@ -12,6 +12,7 @@ require_once __DIR__ . '/../lib/AiCenter.php';
 require_once __DIR__ . '/../lib/MainlineAi.php';
 require_once __DIR__ . '/../lib/ProjectSystem.php';
 require_once __DIR__ . '/../lib/TableView.php';
+require_once __DIR__ . '/../lib/CptSystem.php';
 require_login();
 
 // 处理回流：完成 / 稍后
@@ -102,9 +103,8 @@ $tvFields = [
     ['key' => 'ref', 'label' => '关联', 'type' => 'text'],
 ];
 $tvRefLabel = static function (array $t): string {
-    $ref = (array) ($t['ref'] ?? []);
-    if ($ref === [] || (string) ($ref['type'] ?? '') === '') return '';
-    return (string) (ps_ref_types()[(string) $ref['type']] ?? $ref['type']) . '：' . (string) ($ref['label'] ?: $ref['id']);
+    $ri = ps_ref_resolve((array) ($t['ref'] ?? []));
+    return $ri['type'] === '' ? '' : $ri['type_label'] . '：' . $ri['label'];
 };
 $tvRows = [];
 foreach ($curTasks as $t) {
@@ -249,8 +249,10 @@ admin_header('今日主线');
         <label class="kb-f">负责人<input class="inp sm" name="assignee" list="kbWho" placeholder="谁做" style="width:110px"><datalist id="kbWho"><?php foreach ($assignees as $u): ?><option value="<?=htmlspecialchars((string) $u['name'])?>"><?php endforeach; ?></datalist></label>
         <label class="kb-f">截止<input class="inp sm" type="date" name="due"></label>
         <label class="kb-f">优先级<select class="inp sm" name="priority"><?php foreach (ps_priorities() as $pk => $pl): ?><option value="<?=$pk?>"><?=htmlspecialchars($pl)?></option><?php endforeach; ?></select></label>
-        <label class="kb-f">关联<select class="inp sm" name="ref_type"><option value="">不关联</option><?php foreach (ps_ref_types() as $rk => $rl): ?><option value="<?=$rk?>"><?=htmlspecialchars($rl)?></option><?php endforeach; ?></select></label>
-        <label class="kb-f">对象 ID<input class="inp sm" name="ref_id" placeholder="如 lead_123" style="width:110px"></label>
+        <?php $builtinTargets = ps_ref_types(); $cptTargets = array_diff_key(ps_ref_targets(), $builtinTargets); ?>
+        <label class="kb-f">关联<select class="inp sm" name="ref_type"><option value="">不关联</option><optgroup label="内置对象"><?php foreach ($builtinTargets as $rk => $rl): ?><option value="<?=htmlspecialchars((string) $rk)?>"><?=htmlspecialchars((string) $rl)?></option><?php endforeach; ?></optgroup><?php if ($cptTargets): ?><optgroup label="内容类型"><?php foreach ($cptTargets as $rk => $rl): ?><option value="<?=htmlspecialchars((string) $rk)?>"><?=htmlspecialchars((string) $rl)?></option><?php endforeach; ?></optgroup><?php endif; ?></select></label>
+        <label class="kb-f">对象 ID<input class="inp sm" name="ref_id" placeholder="如 lead_123 / cpt_…" list="kbRefIds" style="width:120px"></label>
+        <datalist id="kbRefIds"><?php foreach (ps_ref_targets() as $rk => $rl): $rslug = ps_ref_cpt_slug((string) $rk); if ($rslug === '' || !function_exists('cpt_entries')) continue; foreach (cpt_entries($rslug) as $ce): ?><option value="<?=htmlspecialchars((string) ($ce['id'] ?? ''))?>"><?=htmlspecialchars((string) $rl . ' · ' . (string) ($ce['title'] ?? ''))?></option><?php endforeach; endforeach; ?></datalist>
         <button class="btn btn-p btn-sm">+ 加任务</button>
       </form>
     </div>
@@ -346,8 +348,8 @@ admin_header('今日主线');
             <?php if ((string) ($t['assignee'] ?? '') !== ''): ?><span class="note">@<?=htmlspecialchars((string) $t['assignee'])?></span><?php endif; ?>
             <?php if ($due !== ''): ?><span class="note"<?=$overdue ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars(substr($due, 0, 16))?><?=$overdue ? ' · 逾期' : ''?></span><?php endif; ?>
           </div>
-          <?php if ($ref !== [] && (string) ($ref['type'] ?? '') !== ''): ?>
-          <span class="kb-ref"><?=htmlspecialchars(ps_ref_types()[(string) $ref['type']] ?? (string) $ref['type'])?>：<?=htmlspecialchars((string) ($ref['label'] ?: $ref['id']))?></span>
+          <?php if ($ref !== [] && (string) ($ref['type'] ?? '') !== ''): $ri = ps_ref_resolve($ref); ?>
+          <span class="kb-ref"<?=$ri['missing'] ? ' style="color:var(--muted)"' : ''?>><?=htmlspecialchars($ri['type_label'])?>：<?=htmlspecialchars($ri['label'])?></span>
           <?php endif; ?>
           <?php if ((string) ($t['note'] ?? '') !== ''): ?><p class="kb-note"><?=htmlspecialchars(mb_substr((string) $t['note'], 0, 90))?></p><?php endif; ?>
           <form method="post" class="kb-del" data-confirm="删除这条任务？">
