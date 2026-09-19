@@ -144,7 +144,6 @@ admin_header('Teams+');
   <div class="panel"><div class="p-body">
     <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.9;color:var(--muted)">
             <li>视图级公开只读分享（把某个视图给外部看）</li>
-      <li>任务重复规则（每周 / 每月自动生成）</li>
     </ul>
   </div></div>
 </div>

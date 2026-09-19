@@ -263,17 +263,37 @@ function ps_task_save(string $projectId, array $data): array
     if ($p === null) return ['ok' => false, 'error' => '项目不存在', 'task' => []];
     $id = (string) ($data['id'] ?? '');
     $now = date('c');
+
+    // 只覆盖「显式传进来的字段」：更新时没传的键保留原值。
+    // （此前缺字段会被清成默认值——改名顺手把截止日抹掉、把重复规则清空，都踩过。）
+    $defaults = [
+        'title' => '', 'note' => '', 'status' => 'todo', 'priority' => 'normal',
+        'assignee' => '', 'start' => '', 'due' => '', 'ref' => [], 'parent' => '',
+        'remind' => ['before_days' => 0, 'on_due' => true, 'channels' => ['im', 'email']],
+    ];
+    $existing = null;
+    if ($id !== '') {
+        foreach ((array) $p['tasks'] as $t) {
+            if ((string) ($t['id'] ?? '') === $id) { $existing = (array) $t; break; }
+        }
+        if ($existing === null) return ['ok' => false, 'error' => '任务不存在', 'task' => []];
+    }
+    $base = $existing ?? $defaults;
     $incoming = [
-        'title' => trim((string) ($data['title'] ?? '')),
-        'note' => trim((string) ($data['note'] ?? '')),
-        'status' => (string) ($data['status'] ?? 'todo'),
-        'priority' => (string) ($data['priority'] ?? 'normal'),
-        'assignee' => trim((string) ($data['assignee'] ?? '')),
-        'start' => (string) ($data['start'] ?? ''),
-        'due' => (string) ($data['due'] ?? ''),
-        'ref' => array_intersect_key((array) ($data['ref'] ?? []), array_flip(['type', 'id', 'label'])),
-        'parent' => ps_safe_task_id((string) ($data['parent'] ?? '')),
-        'remind' => array_intersect_key((array) ($data['remind'] ?? []), array_flip(['before_days', 'on_due', 'channels'])),
+        'title' => array_key_exists('title', $data) ? trim((string) $data['title']) : (string) ($base['title'] ?? ''),
+        'note' => array_key_exists('note', $data) ? trim((string) $data['note']) : (string) ($base['note'] ?? ''),
+        'status' => array_key_exists('status', $data) ? (string) $data['status'] : (string) ($base['status'] ?? 'todo'),
+        'priority' => array_key_exists('priority', $data) ? (string) $data['priority'] : (string) ($base['priority'] ?? 'normal'),
+        'assignee' => array_key_exists('assignee', $data) ? trim((string) $data['assignee']) : (string) ($base['assignee'] ?? ''),
+        'start' => array_key_exists('start', $data) ? (string) $data['start'] : (string) ($base['start'] ?? ''),
+        'due' => array_key_exists('due', $data) ? (string) $data['due'] : (string) ($base['due'] ?? ''),
+        'ref' => array_key_exists('ref', $data)
+            ? array_intersect_key((array) $data['ref'], array_flip(['type', 'id', 'label']))
+            : (array) ($base['ref'] ?? []),
+        'parent' => array_key_exists('parent', $data) ? ps_safe_task_id((string) $data['parent']) : ps_safe_task_id((string) ($base['parent'] ?? '')),
+        'remind' => array_key_exists('remind', $data)
+            ? array_intersect_key((array) $data['remind'], array_flip(['before_days', 'on_due', 'channels']))
+            : (array) ($base['remind'] ?? $defaults['remind']),
     ];
     $errors = ps_task_errors($incoming + ['id' => $id, 'status' => $incoming['status'], 'priority' => $incoming['priority']]);
     // 层级校验：父任务必须在本项目内、不能挂到自己的子孙下（否则成环）、深度有上限
@@ -312,13 +332,16 @@ function ps_task_save(string $projectId, array $data): array
     if ($id !== '') {
         foreach ($tasks as $i => $t) {
             if ((string) ($t['id'] ?? '') !== $id) continue;
-            $tasks[$i] = array_merge($t, $incoming, ['updated_at' => $now]);
+            $patch = $incoming;
+            if (array_key_exists('repeat', $data)) $patch['repeat'] = ps_repeat_normalize($data['repeat']);
+            $tasks[$i] = array_merge($t, $patch, ['updated_at' => $now]);
             json_write(ps_project_file($projectId), ['tasks' => $tasks]);
             ps_touch_project($projectId);
             return ['ok' => true, 'error' => '', 'task' => $tasks[$i]];
         }
         return ['ok' => false, 'error' => '任务不存在', 'task' => []];
     }
+    $incoming['repeat'] = ps_repeat_normalize($data['repeat'] ?? []);
     $task = $incoming + [
         'id' => 't' . date('ymdHis') . substr((string) random_int(100, 999), 0, 3),
         'created_at' => $now, 'updated_at' => $now,
@@ -537,6 +560,151 @@ function ps_stats(string $projectId, string $today = ''): array
         if (count($sub) === 1) { $leafTotal++; if ((string) ($t['status'] ?? '') === 'done') $leafDone++; }
     }
     return ['by_status' => $by, 'total' => $total, 'overdue' => $overdue, 'roots' => $roots, 'nodes' => $total, 'leaf_total' => $leafTotal, 'leaf_done' => $leafDone];
+}
+
+/* ────────────── 任务重复规则 ────────────── */
+/**
+ * 【为什么】每周一的周报、每月 1 号的账单核对、每两周的内容排期……这些事不该靠人记。
+ * 规则挂在任务上：**完成当前这条时，才生成下一个实例**（Todoist 语义）。
+ * 这样既有历史（已完成的那条还在），又不会因为没做而堆出一串重复任务。
+ */
+
+function ps_repeat_freqs(): array
+{
+    return ['none' => '不重复', 'daily' => '每天', 'weekly' => '每周', 'monthly' => '每月'];
+}
+
+/** 规范化 repeat 配置 */
+function ps_repeat_normalize(mixed $v): array
+{
+    if (!is_array($v)) return ['freq' => 'none'];
+    $freq = (string) ($v['freq'] ?? 'none');
+    if (!isset(ps_repeat_freqs()[$freq])) $freq = 'none';
+    $interval = (int) ($v['interval'] ?? 1);
+    $interval = max(1, min(12, $interval));
+    $until = (string) ($v['until'] ?? '');
+    if ($until !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $until) !== 1) $until = '';
+    $out = ['freq' => $freq, 'interval' => $interval, 'until' => $until];
+    if (isset($v['spawned']) && $v['spawned'] !== '') $out['spawned'] = (string) $v['spawned'];
+    if (!empty($v['ended'])) $out['ended'] = true;
+    return $out;
+}
+
+/** 重复规则的可读描述 */
+function ps_repeat_label(array $repeat): string
+{
+    $freq = (string) ($repeat['freq'] ?? 'none');
+    if ($freq === 'none') return '';
+    $n = max(1, (int) ($repeat['interval'] ?? 1));
+    $base = ['daily' => '天', 'weekly' => '周', 'monthly' => '月'][$freq] ?? '';
+    $s = $n === 1 ? ('每' . $base) : ('每 ' . $n . ' ' . $base);
+    if ((string) ($repeat['until'] ?? '') !== '') $s .= '（至 ' . (string) $repeat['until'] . '）';
+    if (!empty($repeat['ended'])) $s .= '（已结束）';
+    return $s;
+}
+
+/**
+ * 下一次日期（YYYY-MM-DD）；超出 until 或无法推进 → null
+ * @param array $repeat 规则
+ * @param string $from 基准日（通常是当前实例的截止日）
+ */
+function ps_repeat_next_date(array $repeat, string $from): ?string
+{
+    $freq = (string) ($repeat['freq'] ?? 'none');
+    if ($freq === 'none') return null;
+    $n = max(1, (int) ($repeat['interval'] ?? 1));
+    $from = substr($from, 0, 10);
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) !== 1) return null;
+    $ts = strtotime($from . ' 12:00:00');
+    if ($ts === false) return null;
+    if ($freq === 'daily') {
+        $next = strtotime('+' . $n . ' day', $ts);
+    } elseif ($freq === 'weekly') {
+        $next = strtotime('+' . $n . ' week', $ts);
+    } else { // monthly：按「同一个号」，月末不存在的号用当月最后一天（31 号 → 2 月 28/29）
+        $day = (int) date('j', $ts);
+        $y = (int) date('Y', $ts);
+        $m = (int) date('n', $ts) + $n;
+        while ($m > 12) { $m -= 12; $y++; }
+        $last = (int) date('t', mktime(12, 0, 0, $m, 1, $y));
+        $next = mktime(12, 0, 0, $m, min($day, $last), $y);
+    }
+    if ($next === false) return null;
+    $nd = date('Y-m-d', $next);
+    $until = (string) ($repeat['until'] ?? '');
+    if ($until !== '' && strcmp($nd, $until) > 0) return null;
+    return $nd;
+}
+
+/** 把日期按天数平移（用于 start/due 的相对关系） */
+function ps_repeat_shift(string $date, int $days): string
+{
+    $ts = strtotime(substr($date, 0, 10) . ' 12:00:00');
+    return $ts === false ? '' : date('Y-m-d', (int) strtotime(($days >= 0 ? '+' : '') . $days . ' day', $ts));
+}
+
+/**
+ * 生成到期的下一实例（幂等：已完成的实例只会生成一次，用 repeat.spawned 记住）。
+ * 规则：仅 status=done 且带重复规则的任务触发；生成的实例除状态外照抄模板（评论不复制）。
+ * @return list<array{project:string,from:string,new:string,title:string}>
+ */
+function ps_repeat_spawn_due(string $projectId = '', string $today = ''): array
+{
+    $today = $today !== '' ? $today : date('Y-m-d');
+    $out = [];
+    $projects = $projectId !== '' ? [['id' => $projectId]] : ps_projects(true);
+    foreach ($projects as $p) {
+        $pid = ps_safe_id((string) ($p['id'] ?? ''));
+        if ($pid === '') continue;
+        $tasks = ps_tasks($pid);
+        $changed = false;
+        foreach ($tasks as $i => $t) {
+            $rep = ps_repeat_normalize($t['repeat'] ?? []);
+            $freq = (string) $rep['freq'];
+            if ($freq === 'none' || !empty($rep['ended'])) continue;
+            if ((string) ($t['status'] ?? '') !== 'done') continue;   // 只有完成的实例才推进序列
+            $dueFull = (string) ($t['due'] ?? '');
+            $base = substr($dueFull, 0, 10);
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $base) !== 1) $base = $today;
+            $next = ps_repeat_next_date($rep, $base);
+            if ($next === null) {
+                $rep['ended'] = true;            // 已过 until：标记结束，不再生成
+                $tasks[$i]['repeat'] = $rep;
+                $changed = true;
+                continue;
+            }
+            if ((string) ($rep['spawned'] ?? '') === $next) continue;   // 幂等
+            $timePart = substr($dueFull, 10);                            // 保留 HH:MM
+            $start = (string) ($t['start'] ?? '');
+            $offset = 0;
+            if ($start !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', substr($start, 0, 10)) === 1) {
+                $offset = (int) round(((int) strtotime($base . ' 12:00') - (int) strtotime(substr($start, 0, 10) . ' 12:00')) / 86400);
+            }
+            $newId = 't' . date('ymdHis') . substr((string) random_int(100, 999), 0, 3);
+            $copy = $t;
+            unset($copy['comments'], $copy['reminded'], $copy['history']);
+            $copy['id'] = $newId;
+            $copy['title'] = (string) ($t['title'] ?? '');
+            $copy['status'] = 'todo';
+            $copy['due'] = $next . $timePart;
+            $copy['start'] = $start !== '' ? ps_repeat_shift($next, -$offset) : '';
+            $copy['repeat'] = array_diff_key($rep, ['spawned' => 1]);    // 新实例继续沿用规则
+            $copy['repeat_src'] = (string) (($t['repeat_src'] ?? '') !== '' ? $t['repeat_src'] : ($t['id'] ?? ''));
+            $copy['repeat_from'] = (string) ($t['id'] ?? '');
+            $copy['created_at'] = date('c');
+            $copy['updated_at'] = date('c');
+            $tasks[] = $copy;
+            $rep['spawned'] = $next;             // 已完成实例：记住这一次，不会重复生成
+            $tasks[$i]['repeat'] = $rep;
+            $changed = true;
+            $out[] = ['project' => $pid, 'from' => (string) ($t['id'] ?? ''), 'new' => $newId, 'title' => (string) $copy['title'], 'due' => $next];
+        }
+        if ($changed) {
+            json_write(ps_project_file($pid), ['tasks' => $tasks]);
+            ps_touch_project($pid);
+        }
+    }
+    return $out;
 }
 
 /* ────────────── 任务评论与 @提及 ────────────── */
