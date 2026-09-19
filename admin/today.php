@@ -10,6 +10,7 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/Mainline.php';
 require_once __DIR__ . '/../lib/AiCenter.php';
 require_once __DIR__ . '/../lib/MainlineAi.php';
+require_once __DIR__ . '/../lib/ProjectSystem.php';
 require_login();
 
 // 处理回流：完成 / 稍后
@@ -39,12 +40,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ml_action'])) {
     exit;
 }
 
+/* ── 团队视角：写操作（项目 / 任务 / 拖拽改状态）── */
+$viewMode = (($_GET['view'] ?? '') === 'team') ? 'team' : 'mine';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ps_action'])) {
+    csrf_verify();
+    require_perm('tasks');
+    $act = (string) $_POST['ps_action'];
+    $pid = ps_safe_id((string) ($_POST['project'] ?? ''));
+    $back = '/xmp/today?view=team' . ($pid !== '' ? '&project=' . urlencode($pid) : '');
+    $by = function_exists('member_current') ? (string) ((member_current()['name'] ?? '') ?: '') : '';
+    if ($act === 'project_save') {
+        $r = ps_project_save(['name' => (string) ($_POST['name'] ?? ''), 'desc' => (string) ($_POST['desc'] ?? '')]);
+        if ($r['ok'] ?? false) $back = '/xmp/today?view=team&project=' . urlencode((string) $r['id']);
+    } elseif ($act === 'task_save' && $pid !== '') {
+        ps_task_save($pid, [
+            'title' => (string) ($_POST['title'] ?? ''),
+            'note' => (string) ($_POST['note'] ?? ''),
+            'status' => (string) ($_POST['status'] ?? 'todo'),
+            'priority' => (string) ($_POST['priority'] ?? 'normal'),
+            'assignee' => (string) ($_POST['assignee'] ?? ''),
+            'due' => (string) ($_POST['due'] ?? ''),
+            'ref' => ['type' => (string) ($_POST['ref_type'] ?? ''), 'id' => (string) ($_POST['ref_id'] ?? ''), 'label' => (string) ($_POST['ref_label'] ?? '')],
+        ]);
+    } elseif ($act === 'task_move' && $pid !== '') {
+        ps_task_move($pid, (string) ($_POST['id'] ?? ''), (string) ($_POST['status'] ?? 'todo'), $by);
+    } elseif ($act === 'task_delete' && $pid !== '') {
+        ps_task_delete($pid, (string) ($_POST['id'] ?? ''));
+    }
+    header('Location: ' . $back);
+    exit;
+}
+
 $items = mainline_items();
 $summary = mainline_summary($items);
 $lanes = mainline_lanes($items);
 $aiReady = AiCenter::isConfigured();
 $judgeCache = mainline_ai_cache();
 $receipts = mainline_ai_receipts(6);
+
+// 团队视角数据
+$projects = $viewMode === 'team' ? ps_projects() : [];
+$curId = ps_safe_id((string) ($_GET['project'] ?? ''));
+if ($viewMode === 'team') {
+    if ($curId === '' || ps_project_get($curId) === null) $curId = (string) ($projects[0]['id'] ?? '');
+}
+$curProject = ($viewMode === 'team' && $curId !== '') ? ps_project_get($curId) : null;
+$curTasks = $curProject !== null ? ps_tasks($curId) : [];
+$kbStats = $curProject !== null ? ps_stats($curId) : ['by_status' => [], 'total' => 0, 'overdue' => 0];
+$assignees = $viewMode === 'team' ? ps_assignees() : [];
 
 // 目标进度（若有）
 $goal = null; $goalProg = null;
@@ -96,6 +139,26 @@ admin_header('今日主线');
 .ml-item .ml-src{font-size:11px;color:var(--faint,var(--muted));border:1px solid var(--border);border-radius:999px;padding:1px 8px}
 .ml-goal .p-body{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
 @media(max-width:720px){.ml-item .ml-act{width:100%;justify-content:flex-start;padding-left:36px}}
+
+/* ── 团队视角：看板与表单（本页局部样式）── */
+.kb-f{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted);font-weight:600}
+.kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;align-items:flex-start}
+.kanban-col{min-width:238px;max-width:280px;flex:1;background:var(--surface-2);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.kanban-col.kb-over{outline:2px dashed var(--accent);outline-offset:-2px}
+.kb-h{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:2px 4px}
+.kb-h .note{margin-left:auto;background:var(--border);border-radius:99px;padding:1px 8px;font-size:11px}
+.kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 11px;cursor:grab;position:relative}
+.kanban-card:hover{border-color:var(--accent)}
+.kanban-card.kb-dragging{opacity:.45}
+.kb-t{font-size:13px;font-weight:650;line-height:1.45;overflow-wrap:anywhere;padding-right:16px}
+.kb-m{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px;font-size:11.5px}
+.kb-ref{display:inline-block;margin-top:6px;font-size:11.5px;color:var(--accent);text-decoration:none;background:rgba(37,99,235,.09);border-radius:6px;padding:1px 6px}
+.kb-note{margin:6px 0 0;font-size:11.5px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+.kb-del{position:absolute;top:6px;right:6px;margin:0;opacity:0;transition:opacity .15s}
+.kanban-card:hover .kb-del{opacity:1}
+.kb-del .btn{padding:1px 7px;line-height:1.5}
+.kb-road{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:12px}
+.kb-road ul{margin:8px 0 0;padding-left:18px;font-size:12.5px;line-height:1.75;color:var(--muted)}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('today'); ?>
@@ -106,10 +169,105 @@ admin_header('今日主线');
         <p class="v-sub">把全站可行动信号收成一条行动脊柱：先处理钱与时效，再推进今日目标，最后看本周策略。完成会回流，主线会越来越懂你。</p>
       </div>
       <div class="v-actions">
-        <a href="/xmp/today" class="btn btn-s btn-sm">↻ 刷新</a>
+        <a href="/xmp/today" class="btn btn-s btn-sm<?=$viewMode === 'mine' ? ' btn-p' : ''?>">我的主线</a>
+        <a href="/xmp/today?view=team" class="btn btn-s btn-sm<?=$viewMode === 'team' ? ' btn-p' : ''?>">团队视角</a>
+        <a href="/xmp/today<?=$viewMode === 'team' ? '?view=team' : ''?>" class="btn btn-s btn-sm">↻ 刷新</a>
         <a href="/xmp/workspace" class="btn btn-s btn-sm">看旧工作台对比</a>
       </div>
     </div>
+
+    <?php if ($viewMode === 'team'): ?>
+    <!-- ═══ 团队视角：项目 / 看板 / 关联 / 到期提醒（默认仍是「我的主线」）═══ -->
+    <div class="panel" style="margin-bottom:12px">
+      <div class="p-body" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <b style="font-size:13px">项目</b>
+        <?php foreach ($projects as $pj): $pjId = ps_safe_id((string) ($pj['id'] ?? '')); $st = ps_stats($pjId); ?>
+        <a href="/xmp/today?view=team&project=<?=urlencode($pjId)?>" class="btn btn-s btn-sm<?=$pjId === $curId ? ' btn-p' : ''?>">
+          <?=htmlspecialchars((string) ($pj['name'] ?? $pjId))?> <span class="note">· <?=$st['total']?><?=$st['overdue'] > 0 ? ' ⚠' . $st['overdue'] : ''?></span>
+        </a>
+        <?php endforeach; ?>
+        <form method="post" style="margin-left:auto;display:flex;gap:6px">
+          <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+          <input type="hidden" name="ps_action" value="project_save">
+          <input class="inp sm" name="name" placeholder="新项目名" style="min-width:150px" required>
+          <button class="btn btn-s btn-sm">+ 建项目</button>
+        </form>
+      </div>
+      <?php if ($curProject !== null): ?>
+      <div class="p-body" style="border-top:1px solid var(--border-soft,var(--border));display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+        <span class="note">共 <b><?=$kbStats['total']?></b> 条</span>
+        <span class="note">逾期 <b style="color:<?=$kbStats['overdue'] > 0 ? 'var(--danger,#dc2626)' : 'inherit'?>"><?=$kbStats['overdue']?></b></span>
+        <?php foreach (ps_task_statuses() as $sk => $sl): ?>
+        <span class="note"><?=htmlspecialchars($sl)?> <b><?=$kbStats['by_status'][$sk] ?? 0?></b></span>
+        <?php endforeach; ?>
+        <span class="note" style="margin-left:auto">拖拽卡片到别的列即可改状态</span>
+      </div>
+      <?php endif; ?>
+    </div>
+
+    <?php if ($curProject === null): ?>
+      <div class="empty">还没有项目。用上面的「+ 建项目」新建一个；或运行 <code>php scripts/seed-projects.php</code> 种入示例。</div>
+    <?php else: ?>
+    <div class="panel" style="margin-bottom:12px">
+      <form method="post" class="p-body" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+        <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+        <input type="hidden" name="ps_action" value="task_save">
+        <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+        <label class="kb-f">标题<input class="inp sm" name="title" style="min-width:230px" required placeholder="要做什么"></label>
+        <label class="kb-f">负责人<input class="inp sm" name="assignee" list="kbWho" placeholder="谁做" style="width:110px"><datalist id="kbWho"><?php foreach ($assignees as $u): ?><option value="<?=htmlspecialchars((string) $u['name'])?>"><?php endforeach; ?></datalist></label>
+        <label class="kb-f">截止<input class="inp sm" type="date" name="due"></label>
+        <label class="kb-f">优先级<select class="inp sm" name="priority"><?php foreach (ps_priorities() as $pk => $pl): ?><option value="<?=$pk?>"><?=htmlspecialchars($pl)?></option><?php endforeach; ?></select></label>
+        <label class="kb-f">关联<select class="inp sm" name="ref_type"><option value="">不关联</option><?php foreach (ps_ref_types() as $rk => $rl): ?><option value="<?=$rk?>"><?=htmlspecialchars($rl)?></option><?php endforeach; ?></select></label>
+        <label class="kb-f">对象 ID<input class="inp sm" name="ref_id" placeholder="如 lead_123" style="width:110px"></label>
+        <button class="btn btn-p btn-sm">+ 加任务</button>
+      </form>
+    </div>
+
+    <div class="kanban" id="kbBoard">
+      <?php foreach (ps_task_statuses() as $sk => $sl): ?>
+      <div class="kanban-col" data-status="<?=$sk?>">
+        <div class="kb-h"><b><?=htmlspecialchars($sl)?></b><span class="note"><?=$kbStats['by_status'][$sk] ?? 0?></span></div>
+        <?php foreach ($curTasks as $t): if ((string) ($t['status'] ?? 'todo') !== $sk) continue;
+          $due = (string) ($t['due'] ?? ''); $overdue = $due !== '' && substr($due, 0, 10) < date('Y-m-d');
+          $prio = (string) ($t['priority'] ?? 'normal'); $ref = (array) ($t['ref'] ?? []); ?>
+        <div class="kanban-card" draggable="true" data-id="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+          <div class="kb-t"><?=htmlspecialchars((string) ($t['title'] ?? ''))?></div>
+          <div class="kb-m">
+            <?php if ($prio !== 'normal'): ?><span class="pill <?=$prio === 'urgent' ? 'hl' : ''?>"><?=htmlspecialchars(ps_priorities()[$prio] ?? $prio)?></span><?php endif; ?>
+            <?php if ((string) ($t['assignee'] ?? '') !== ''): ?><span class="note">@<?=htmlspecialchars((string) $t['assignee'])?></span><?php endif; ?>
+            <?php if ($due !== ''): ?><span class="note"<?=$overdue ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars(substr($due, 0, 16))?><?=$overdue ? ' · 逾期' : ''?></span><?php endif; ?>
+          </div>
+          <?php if ($ref !== [] && (string) ($ref['type'] ?? '') !== ''): ?>
+          <span class="kb-ref"><?=htmlspecialchars(ps_ref_types()[(string) $ref['type']] ?? (string) $ref['type'])?>：<?=htmlspecialchars((string) ($ref['label'] ?: $ref['id']))?></span>
+          <?php endif; ?>
+          <?php if ((string) ($t['note'] ?? '') !== ''): ?><p class="kb-note"><?=htmlspecialchars(mb_substr((string) $t['note'], 0, 90))?></p><?php endif; ?>
+          <form method="post" class="kb-del" data-confirm="删除这条任务？">
+            <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+            <input type="hidden" name="ps_action" value="task_delete">
+            <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+            <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+            <button class="btn btn-s btn-sm" title="删除">×</button>
+          </form>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <p class="text-xs text-muted" style="margin-top:14px">任务可关联既有对象（线索/订单/发布任务/文章/课程…），所以「发布、分发、CRM 状态」都能挂在同一条任务上；到期与逾期由 cron 扫描后走邮件 / 飞书 / 企微 / Slack 提醒（同一任务同一提醒只发一次）。</p>
+
+    <!-- 能力路线：这个视图还要长成什么样（诚实标注进度） -->
+    <div class="panel" style="margin-top:16px">
+      <div class="p-body">
+        <b style="font-size:13px">这个视图接下来会长成什么</b>
+        <div class="kb-road">
+          <div><span class="pill">已就绪</span><ul><li>项目 / 任务 / 看板（拖拽改状态）</li><li>任务关联既有对象（发布 · 分发 · CRM · 订单）</li><li>多用户登录与角色权限（复用 <code>tasks</code> 权限）</li><li>提醒引擎（邮件 / 飞书 / 企微，幂等）</li></ul></div>
+          <div><span class="pill">进行中</span><ul><li>Slack 通知渠道</li><li>到期/逾期 cron 提醒接进本页</li><li>看板视觉与设计系统对齐</li></ul></div>
+          <div><span class="pill">规划中</span><ul><li>多维表格：relation / rollup / lookup 字段</li><li>多视图切换：表格 / 日历 / 甘特</li><li>记录级层级（父/子任务与树视图）</li><li>项目级成员权限（owner / editor / viewer）</li></ul></div>
+        </div>
+      </div>
+    </div>
+    <?php endif; ?>
+    <?php else: ?>
 
     <!-- 每日晨会:岗位干活 → 小福汇报 的闭环入口 -->
     <div class="panel" style="margin-bottom:12px" id="briefPanel">
@@ -256,6 +414,7 @@ admin_header('今日主线');
     <?php endforeach; ?>
 
     <p class="text-xs text-muted" style="margin-top:22px">主线只做编排：数据全部来自现有模块，不改动它们。完成/稍后写入 <code>data/mainline/events.json</code> 并回流决策轨迹。</p>
+    <?php endif; ?>
   </div>
 </div>
 <script>
@@ -469,6 +628,42 @@ async function mlEvaluate(traceId, verdict, btn) {
     btn.disabled = false;
   }
 }
+
+/* ── 团队视角：拖拽改状态（复用 CRM 看板的 HTML5 DnD 模式）── */
+(function () {
+  const board = document.getElementById('kbBoard');
+  if (!board) return;
+  const uid = <?=json_encode((string) $curId)?>;
+  let dragEl = null;
+  board.querySelectorAll('.kanban-card').forEach(function (card) {
+    card.addEventListener('dragstart', function (e) {
+      dragEl = card; card.classList.add('kb-dragging');
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', function () { card.classList.remove('kb-dragging'); dragEl = null; });
+  });
+  board.querySelectorAll('.kanban-col').forEach(function (col) {
+    col.addEventListener('dragover', function (e) {
+      if (!dragEl) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move'; col.classList.add('kb-over');
+    });
+    col.addEventListener('dragleave', function () { col.classList.remove('kb-over'); });
+    col.addEventListener('drop', function (e) {
+      e.preventDefault(); col.classList.remove('kb-over');
+      if (!dragEl) return;
+      const id = dragEl.dataset.id, status = col.dataset.status;
+      if (!id || !status) return;
+      if (dragEl.closest('.kanban-col') === col) return;
+      const fd = new FormData();
+      fd.append('csrf', ML_CSRF); fd.append('ps_action', 'task_move');
+      fd.append('project', uid); fd.append('id', id); fd.append('status', status);
+      col.appendChild(dragEl);
+      fetch(location.pathname + location.search, { method: 'POST', body: fd, redirect: 'manual' })
+        .then(function () { location.reload(); }).catch(function () { location.reload(); });
+    });
+  });
+})();
 
 document.addEventListener('DOMContentLoaded', function () {
   if (window.__mlJudge) mlRenderJudge(window.__mlJudge, '缓存 · ' + (window.__mlCachedAt || ''));
