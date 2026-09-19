@@ -148,7 +148,7 @@ admin_header('生态适配');
 
       <?php if (!($e['published'] ?? false)): ?>
       <form method="post" class="eco-actions">
-        <input type="hidden" name="csrf" value="<?= htmlspecialchars(csrf_token()) ?>">
+        <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
         <input type="hidden" name="id" value="<?= htmlspecialchars((string) $e['id']) ?>">
         <input class="inp eco-note" type="text" name="note" placeholder="备注（可选，如：法务确认、需补 TODO 等）">
         <button class="btn" name="eco_action" value="approve" type="submit">批准</button>
