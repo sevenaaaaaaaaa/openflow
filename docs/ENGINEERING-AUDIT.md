@@ -304,8 +304,23 @@ z-index 目前**散落硬编码**：`.modal` 92 / `.palette` 91 / `.overlay` 90 
 - 2 处纯文字节结构化：三步闭环 `ol.wf`、三种状态 `ol.tl`（语义正确 + 计入装置）
 - 修 `<ol>` 化时漏改的 4 个闭合标签（标签平衡校验抓出）
 
-### 8.4 后续（未完成，按优先级）
+### 8.4 收尾（本轮已完成）
 
-1. `product-faq` / `capability-index` 等"索引型"节可再补一句价值描述（当前靠动态豁免）
-2. 首页 `insights`（文章列表）建议补"为什么这几篇"的编者按
-3. 把 C3 的"装置"清单纳入 `docs/DESIGN-SYSTEM.md`，新节一律二选一：要么有视觉，要么有结构化列表
+- `product-faq` 补价值句（4 个高频问题各是什么）
+- `capability-index`（42 模块）lead 补"怎么用"（每类点开即见 6 个模块）
+- 首页 `insights` 补**编者按**（每次只放 3 篇：系统 / 杠杆 / Agent 实操，读完能动手）
+  —— 注意：**线上首页是 `index.php`**，`home-v2.php` 只是预览页，两处都要改
+
+### 8.5 顺带修掉的真实渲染 bug：文章行互相遮挡
+
+用户反馈「首页博客标题遮挡前后内容」。定位：
+`.a-row` 栅格为 `minmax(188px,236px) 1fr auto`，而 `.a-meta{white-space:nowrap}`，
+首页文章分类是 `ai-create/design` 这类长值 → meta 列**撑破轨道向右溢出**，
+把中间列的标题/摘要压在同一行（截图可见「2026-08-23 12 分**散**了十几年市场营销…」）。
+
+修复（`assets/modules.css`）：
+- 列改 `minmax(0,236px) minmax(0,1fr) auto`（允许收缩）
+- `.a-meta{flex-wrap:wrap}` + 分类 pill `max-width:100%` + 省略号
+- `.a-body{min-width:0}` + 标题 `overflow-wrap:anywhere`
+
+影响面：所有用 `.a-row` 的文章列表（首页 / 文章页 / 学院）都更稳；已线上验证首行与后续行均不再重叠。

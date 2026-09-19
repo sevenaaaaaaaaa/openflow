@@ -541,9 +541,12 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.7}
 .q-i .who span{font-size:11.5px;color:var(--faint)}
 
 /* ── Archetype: magazine-rows（文章 · 元数据 + 标题行） ── */
-.a-row{display:grid;grid-template-columns:minmax(188px,236px) 1fr auto;gap:24px;align-items:center;padding:24px 6px;border-bottom:1px solid var(--border-soft)}
+.a-row{display:grid;grid-template-columns:minmax(0,236px) minmax(0,1fr) auto;gap:24px;align-items:center;padding:24px 6px;border-bottom:1px solid var(--border-soft)}
 .a-row:first-child{padding-top:4px}
-.a-row .a-meta{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--faint);font-family:var(--font-mono);white-space:nowrap}
+.a-row .a-meta{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;min-width:0;font-size:11.5px;color:var(--faint);font-family:var(--font-mono)}
+.a-row .a-meta .pill{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.a-row .a-body{min-width:0}
+.a-row .a-body h3{overflow-wrap:anywhere}
 .a-row .a-body h3{font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.5;transition:color .2s}
 .a-row .a-body p{font-size:14px;color:var(--muted);line-height:1.85;margin-top:5px}
 .a-row .a-go{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:600;color:var(--accent);white-space:nowrap}
