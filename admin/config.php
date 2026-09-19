@@ -925,7 +925,7 @@ function save_tags(array $data): bool {
 }
 
 // ─── UI ───────────────────────────────────────────
-if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260919d');   // 20260919b: 团队视角看板/树视觉对齐
+if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260919f');   // 20260919b: 团队视角看板/树视觉对齐
 
 function admin_header(string $title): void {
 security_headers();
@@ -1351,6 +1351,9 @@ $roleLabel = $roleLabels[$role] ?? $role;
       <button class="searchbox" onclick="fcFocusSearch()" aria-label="全局搜索（⌘K）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>搜索模块、内容、订单、线索…</span><kbd>⌘K</kbd></button>
     </div>
     <div class="bar-end">
+      <?php if (has_perm('tasks')): ?>
+      <a href="/xmp/teams" class="cbtn teams-entry" aria-label="Teams+" title="Teams+ · 团队协作（项目 / 任务 / 多维表格）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Teams+</span></a>
+      <?php endif; ?>
       <div style="position:relative">
         <button class="cbtn" onclick="fcQuickCreate(event)" aria-label="快速新建" title="快速新建" style="font-size:17px;font-weight:700">＋</button>
         <div id="fcQuickMenu" style="display:none;position:absolute;right:0;top:calc(100% + 8px);min-width:200px;background:var(--surface-strong);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:6px;z-index:9980">
