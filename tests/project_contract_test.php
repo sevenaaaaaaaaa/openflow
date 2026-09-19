@@ -78,15 +78,19 @@ check('扫描覆盖到期任务（≥2 条）', count($rem) >= 2, (string) count
 foreach ($rem as $x) ps_mark_reminded((string) $x['project'], (string) ($x['task']['id'] ?? ''), (string) $x['key']);
 check('标记后不再提醒（幂等）', count(ps_due_reminders()) === 0);
 
-/* 7.5 通知编排与文案 */
-$n1 = ps_task_save($pid, ['title' => '编排测试-逾期', 'due' => date('Y-m-d', time() - 86400), 'assignee' => 'Seven', 'ref' => ['type' => 'order', 'id' => 'o9', 'label' => '订单 #9']]);
-$n2 = ps_task_save($pid, ['title' => '编排测试-即将', 'due' => date('Y-m-d', time() + 3600)]);
+/* 7.5 通知编排与文案 —— 用显式锚点，不依赖运行时刻（曾因此偶发） */
+$anchor = date('Y-m-d 10:00:00');
+$anchorTs = (int) strtotime($anchor);
+$n1 = ps_task_save($pid, ['title' => '编排测试-逾期', 'due' => date('Y-m-d', $anchorTs - 86400), 'assignee' => 'Seven', 'ref' => ['type' => 'order', 'id' => 'o9', 'label' => '订单 #9']]);
+$n2 = ps_task_save($pid, ['title' => '编排测试-即将', 'due' => date('Y-m-d H:i', $anchorTs + 1800)]);
+$n1Id = (string) ($n1['task']['id'] ?? '');
+$n2Id = (string) ($n2['task']['id'] ?? '');
 $seen = [];
 $sentList = ps_notify_due_reminders(function (array $r) use (&$seen): bool {
     $m = ps_reminder_text($r);
     $seen[] = $m;
-    return $m['title'] !== '📵';   // 全部送达
-});
+    return true;   // 全部送达
+}, $anchor);
 $titles = array_column($seen, 'title');
 check('逾期文案标题正确', in_array('⏰ 任务已逾期', $titles, true));
 check('到期文案标题正确', in_array('🔔 任务即将到期', $titles, true));
@@ -94,16 +98,17 @@ $overdueBody = '';
 foreach ($seen as $m) if ($m['title'] === '⏰ 任务已逾期' && str_contains($m['body'], '编排测试-逾期')) $overdueBody = $m['body'];
 check('文案含项目名', str_contains($overdueBody, '产品迭代'), $overdueBody);
 check('文案含截止/负责人/关联', str_contains($overdueBody, '截止：') && str_contains($overdueBody, '负责人：Seven') && str_contains($overdueBody, '关联：订单 #9'), $overdueBody);
-check('送达后落幂等键（扫描转空）', count($sentList) >= 2 && ps_due_reminders() === [], json_encode(['sent' => count($sentList), 'left' => count(ps_due_reminders())]));
-foreach (ps_due_reminders() as $x) ps_mark_reminded((string) $x['project'], (string) ($x['task']['id'] ?? ''), (string) $x['key']);
-check('全部落键后扫描为空', ps_due_reminders() === []);
+$leftIds = array_map(static fn(array $r): string => (string) ($r['task']['id'] ?? ''), ps_due_reminders($anchor));
+check('送达后落幂等键（这两条不再出现）', count($sentList) >= 2 && !in_array($n1Id, $leftIds, true) && !in_array($n2Id, $leftIds, true), json_encode(['sent' => count($sentList), 'left' => $leftIds]));
+foreach (ps_due_reminders($anchor) as $x) ps_mark_reminded((string) $x['project'], (string) ($x['task']['id'] ?? ''), (string) $x['key']);
+check('全部落键后该锚点扫描为空', ps_due_reminders($anchor) === []);
 
 /* 7.6 未送达不落键（下次重试） */
-$n3 = ps_task_save($pid, ['title' => '编排测试-失败重试', 'due' => date('Y-m-d', time() + 3600)]);
+$n3 = ps_task_save($pid, ['title' => '编排测试-失败重试', 'due' => date('Y-m-d H:i', $anchorTs + 1800)]);
 $n3Id = (string) ($n3['task']['id'] ?? '');
-$failOnce = ps_notify_due_reminders(fn(array $r): bool => false);
-check('未送达时不落键', $failOnce === [] && count(array_filter(ps_due_reminders(), fn(array $r): bool => (string) ($r['task']['id'] ?? '') === $n3Id)) === 1);
-$retry = ps_notify_due_reminders(fn(array $r): bool => true);
+$failOnce = ps_notify_due_reminders(fn(array $r): bool => false, $anchor);
+check('未送达时不落键', $failOnce === [] && count(array_filter(ps_due_reminders($anchor), fn(array $r): bool => (string) ($r['task']['id'] ?? '') === $n3Id)) === 1);
+$retry = ps_notify_due_reminders(fn(array $r): bool => true, $anchor);
 check('下次扫描能重试送达', count(array_filter($retry, fn(array $r): bool => $r['id'] === $n3Id)) === 1);
 
 /* 7.7 Slack 渠道（空配置不发送、不报错） */

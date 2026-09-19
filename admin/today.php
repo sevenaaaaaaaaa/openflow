@@ -11,6 +11,7 @@ require_once __DIR__ . '/../lib/Mainline.php';
 require_once __DIR__ . '/../lib/AiCenter.php';
 require_once __DIR__ . '/../lib/MainlineAi.php';
 require_once __DIR__ . '/../lib/ProjectSystem.php';
+require_once __DIR__ . '/../lib/TableView.php';
 require_login();
 
 // 处理回流：完成 / 稍后
@@ -88,6 +89,38 @@ $curProject = ($viewMode === 'team' && $curId !== '') ? ps_project_get($curId) :
 $curTasks = $curProject !== null ? ps_tasks($curId) : [];
 $kbStats = $curProject !== null ? ps_stats($curId) : ['by_status' => [], 'total' => 0, 'overdue' => 0];
 $assignees = $viewMode === 'team' ? ps_assignees() : [];
+$teamView = (string) ($_GET['vt'] ?? 'board');
+if (!isset(tv_views()[$teamView])) $teamView = 'board';
+$tvYm = (string) ($_GET['m'] ?? date('Y-m'));
+if (preg_match('/^\d{4}-\d{2}$/', $tvYm) !== 1) $tvYm = date('Y-m');
+// 任务 → 多视图（与自定义内容类型共用 lib/TableView.php 的布局函数）
+$tvFields = [
+    ['key' => 'assignee', 'label' => '负责人', 'type' => 'text'],
+    ['key' => 'priority', 'label' => '优先级', 'type' => 'select', 'options' => array_values(ps_priorities())],
+    ['key' => 'start', 'label' => '开始', 'type' => 'date'],
+    ['key' => 'due', 'label' => '截止', 'type' => 'date'],
+    ['key' => 'ref', 'label' => '关联', 'type' => 'text'],
+];
+$tvRefLabel = static function (array $t): string {
+    $ref = (array) ($t['ref'] ?? []);
+    if ($ref === [] || (string) ($ref['type'] ?? '') === '') return '';
+    return (string) (ps_ref_types()[(string) $ref['type']] ?? $ref['type']) . '：' . (string) ($ref['label'] ?: $ref['id']);
+};
+$tvRows = [];
+foreach ($curTasks as $t) {
+    $values = [
+        'assignee' => (string) ($t['assignee'] ?? ''),
+        'priority' => (string) (ps_priorities()[(string) ($t['priority'] ?? 'normal')] ?? ''),
+        'start' => (string) ($t['start'] ?? ''),
+        'due' => (string) ($t['due'] ?? ''),
+        'ref' => $tvRefLabel($t),
+        'status' => (string) ($t['status'] ?? 'todo'),
+    ];
+    $cells = [];
+    foreach ($tvFields as $f) $cells[(string) $f['key']] = tv_display($f, $values[(string) $f['key']]);
+    $tvRows[] = ['id' => (string) ($t['id'] ?? ''), 'title' => (string) ($t['title'] ?? ''), 'slug' => '', 'status' => (string) ($t['status'] ?? 'todo'), 'values' => $values, 'resolved' => [], 'cells' => $cells];
+}
+$tvQ = static fn(array $extra = []): string => '/xmp/today?' . http_build_query(array_merge(['view' => 'team', 'project' => $curId, 'vt' => $teamView], $extra));
 
 // 目标进度（若有）
 $goal = null; $goalProg = null;
@@ -200,7 +233,6 @@ admin_header('今日主线');
         <?php foreach (ps_task_statuses() as $sk => $sl): ?>
         <span class="note"><?=htmlspecialchars($sl)?> <b><?=$kbStats['by_status'][$sk] ?? 0?></b></span>
         <?php endforeach; ?>
-        <span class="note" style="margin-left:auto">拖拽卡片到别的列即可改状态</span>
       </div>
       <?php endif; ?>
     </div>
@@ -223,6 +255,83 @@ admin_header('今日主线');
       </form>
     </div>
 
+    <div class="tv-bar" style="margin-bottom:10px">
+      <span class="note" style="font-size:12px;color:var(--muted)">同一批任务：</span>
+      <?php foreach (tv_views() as $vk => $vl): ?>
+      <a href="<?=htmlspecialchars($tvQ(['vt' => $vk]))?>" class="btn btn-s btn-sm<?=$vk === $teamView ? ' btn-p' : ''?>"><?=htmlspecialchars($vl)?></a>
+      <?php endforeach; ?>
+      <?php if ($teamView === 'board'): ?><span class="note" style="font-size:12px;color:var(--muted)">拖拽卡片到别的列即可改状态</span><?php endif; ?>
+      <?php if ($teamView === 'calendar'): ?>
+      <a href="<?=htmlspecialchars($tvQ(['vt' => 'calendar', 'm' => tv_month_shift($tvYm, -1)]))?>" class="btn btn-s btn-sm">←</a>
+      <b style="font-size:12.5px"><?=htmlspecialchars($tvYm)?></b>
+      <a href="<?=htmlspecialchars($tvQ(['vt' => 'calendar', 'm' => tv_month_shift($tvYm, 1)]))?>" class="btn btn-s btn-sm">→</a>
+      <?php endif; ?>
+    </div>
+
+    <?php if ($teamView === 'grid'): ?>
+    <table class="tv-grid">
+      <thead><tr><th>任务</th><th>状态</th><?php foreach ($tvFields as $f): ?><th><?=htmlspecialchars((string) $f['label'])?></th><?php endforeach; ?><th></th></tr></thead>
+      <tbody>
+        <?php foreach ($curTasks as $t): $status = (string) ($t['status'] ?? 'todo'); $due = (string) ($t['due'] ?? ''); ?>
+        <tr>
+          <td><b><?=htmlspecialchars((string) ($t['title'] ?? ''))?></b><?php if ((string) ($t['note'] ?? '') !== ''): ?><div class="text-xs text-muted"><?=htmlspecialchars(mb_substr((string) $t['note'], 0, 70))?></div><?php endif; ?></td>
+          <td><?=htmlspecialchars(ps_task_statuses()[$status] ?? $status)?></td>
+          <td><?=htmlspecialchars((string) ($t['assignee'] ?? ''))?></td>
+          <td><?=htmlspecialchars((string) (ps_priorities()[(string) ($t['priority'] ?? 'normal')] ?? ''))?></td>
+          <td><?=htmlspecialchars((string) ($t['start'] ?? ''))?></td>
+          <td<?=$due !== '' && substr($due, 0, 10) < date('Y-m-d') ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars($due !== '' ? substr($due, 0, 16) : '')?></td>
+          <td><?=htmlspecialchars($tvRefLabel($t))?></td>
+          <td>
+            <form method="post" data-confirm="删除这条任务？" style="margin:0">
+              <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="ps_action" value="task_delete">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+              <input type="hidden" name="id" value="<?=htmlspecialchars((string) ($t['id'] ?? ''))?>">
+              <button class="btn btn-s btn-sm" title="删除">×</button>
+            </form>
+          </td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+
+    <?php elseif ($teamView === 'calendar'): $cal = tv_calendar_of($tvFields, $tvRows, $tvYm, 'due'); ?>
+    <div class="tv-cal">
+      <?php foreach (['一', '二', '三', '四', '五', '六', '日'] as $d): ?><div class="tv-cal-head"><?=$d?></div><?php endforeach; ?>
+      <?php for ($i = 0; $i < $cal['lead']; $i++): ?><div class="tv-cal-cell empty"></div><?php endfor; ?>
+      <?php foreach ($cal['cells'] as $c): ?>
+      <div class="tv-cal-cell<?=$c['date'] === date('Y-m-d') ? ' today' : ''?>">
+        <div class="tv-cal-day"><?=$c['day']?></div>
+        <?php foreach ($c['rows'] as $r): ?>
+        <div class="tv-cal-ev"><b><?=htmlspecialchars($r['title'])?></b><?php if (($r['cells']['assignee'] ?? '') !== ''): ?><div class="text-xs text-muted">@<?=htmlspecialchars((string) $r['cells']['assignee'])?></div><?php endif; ?></div>
+        <?php endforeach; ?>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <?php if ($cal['undated']): ?>
+    <div style="margin-top:12px"><b style="font-size:12.5px">未排期（<?=count($cal['undated'])?>）</b>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><?php foreach ($cal['undated'] as $r): ?><span class="tv-cal-ev"><?=htmlspecialchars($r['title'])?></span><?php endforeach; ?></div>
+    </div>
+    <?php endif; ?>
+
+    <?php elseif ($teamView === 'gantt'): $g = tv_gantt_of($tvFields, $tvRows, ['start', 'due']); $todayPct = tv_gantt_today($g); ?>
+      <?php if ($g['bars'] === []): ?>
+        <div class="empty">还没有带「开始 / 截止」的任务，填上日期后这里会按时间跨度画出来。</div>
+      <?php else: ?>
+      <div class="tv-bar"><span class="note" style="font-size:12px;color:var(--muted)"><?=htmlspecialchars($g['start'])?> → <?=htmlspecialchars($g['end'])?>（共 <?=$g['days']?> 天）· 条=开始→截止，只有一个日期的按里程碑画</span></div>
+      <div class="tv-gantt">
+        <div class="tv-gantt-scale"><div></div><div class="ticks"><span><?=htmlspecialchars($g['start'])?></span><span><?=htmlspecialchars($g['end'])?></span></div></div>
+        <?php foreach ($g['bars'] as $b): ?>
+        <div class="tv-gantt-row">
+          <div class="tv-gantt-label"><?=htmlspecialchars($b['title'])?><div class="text-xs text-muted"><?=htmlspecialchars($b['start'])?><?=$b['milestone'] ? '' : ' → ' . htmlspecialchars($b['end'])?></div></div>
+          <div class="tv-gantt-track"><div class="tv-gantt-bar<?=$b['milestone'] ? ' ms' : ''?>" style="left:<?=round($b['offset'] / max(1, $g['days']) * 100, 3)?>%;width:<?=round($b['span'] / max(1, $g['days']) * 100, 3)?>%"></div></div>
+        </div>
+        <?php endforeach; ?>
+        <?php if ($todayPct !== null): ?><div class="tv-gantt-today" style="left:calc(200px + (100% - 200px) * <?=round($todayPct / 100, 4)?>)"></div><?php endif; ?>
+      </div>
+      <?php endif; ?>
+
+    <?php else: ?>
     <div class="kanban" id="kbBoard">
       <?php foreach (ps_task_statuses() as $sk => $sl): ?>
       <div class="kanban-col" data-status="<?=$sk?>">
@@ -253,6 +362,7 @@ admin_header('今日主线');
       </div>
       <?php endforeach; ?>
     </div>
+    <?php endif; ?>
     <p class="text-xs text-muted" style="margin-top:14px">任务可关联既有对象（线索/订单/发布任务/文章/课程…），所以「发布、分发、CRM 状态」都能挂在同一条任务上；到期与逾期由 cron 每 15 分钟扫描，走飞书 / 企微 / Slack / WhatsApp 外部渠道提醒（同一任务同一到期日只发一次；未配置渠道时不会静默标记，配好后照常提醒）。</p>
 
     <!-- 能力路线：这个视图还要长成什么样（诚实标注进度） -->
@@ -262,7 +372,7 @@ admin_header('今日主线');
         <div class="kb-road">
           <div><span class="pill">已就绪</span><ul><li>项目 / 任务 / 看板（拖拽改状态）</li><li>任务关联既有对象（发布 · 分发 · CRM · 订单）</li><li>多用户登录与角色权限（复用 <code>tasks</code> 权限）</li><li>提醒引擎与 cron 扫描（飞书 / 企微 / Slack / WhatsApp，幂等，未配渠道不误标）</li></ul></div>
           <div><span class="pill">进行中</span><ul><li>本页内到期提醒（角标 / 待办聚合，不只靠外部渠道）</li><li>任务负责人邮件提醒（复用现有邮件链路）</li><li>看板视觉与设计系统对齐</li></ul></div>
-          <div><span class="pill">规划中</span><ul><li>多维表格：relation / rollup / lookup 字段</li><li>多视图切换：表格 / 日历 / 甘特</li><li>记录级层级（父/子任务与树视图）</li><li>项目级成员权限（owner / editor / viewer）</li></ul></div>
+          <div><span class="pill">规划中</span><ul><li>多维表格：relation / rollup / lookup 字段（已可用于自定义内容类型）</li><li>多视图：表格 / 看板 / 日历 / 甘特（任务与内容类型通用）</li><li>记录级层级（父/子任务与树视图）</li><li>项目级成员权限（owner / editor / viewer）</li></ul></div>
         </div>
       </div>
     </div>

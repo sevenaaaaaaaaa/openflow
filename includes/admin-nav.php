@@ -148,6 +148,7 @@ function admin_nav_build(bool $includeSystem): array {
                     ['id' => 'topics', 'label' => '专题', 'perm' => 'topics'],
                     ['id' => 'authors', 'label' => '作者', 'perm' => 'authors'],
                     ['id' => 'cpt', 'label' => '自定义内容类型', 'perm' => 'cpt'],
+                    ['id' => 'table-views', 'label' => '多维表格视图', 'perm' => 'cpt', 'hint' => '表格 · 看板 · 日历 · 甘特'],
                     ['id' => 'content-i18n', 'label' => '内容多语言', 'perm' => 'articles'],
                     ['id' => 'community-config', 'label' => '学院首页配置', 'perm' => ['community-config', 'articles']],
                 ]],
