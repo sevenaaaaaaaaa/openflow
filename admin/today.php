@@ -62,8 +62,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ps_action'])) {
             'priority' => (string) ($_POST['priority'] ?? 'normal'),
             'assignee' => (string) ($_POST['assignee'] ?? ''),
             'due' => (string) ($_POST['due'] ?? ''),
+            'parent' => (string) ($_POST['parent'] ?? ''),
             'ref' => ['type' => (string) ($_POST['ref_type'] ?? ''), 'id' => (string) ($_POST['ref_id'] ?? ''), 'label' => (string) ($_POST['ref_label'] ?? '')],
         ]);
+    } elseif ($act === 'task_reparent' && $pid !== '') {
+        // 只改层级：把原任务整条读出来，换 parent 后存回（其余字段原样）
+        $cur = null;
+        foreach (ps_tasks($pid) as $x) if ((string) ($x['id'] ?? '') === (string) ($_POST['id'] ?? '')) $cur = $x;
+        if ($cur !== null) {
+            ps_task_save($pid, [
+                'id' => (string) $cur['id'], 'title' => (string) ($cur['title'] ?? ''), 'note' => (string) ($cur['note'] ?? ''),
+                'status' => (string) ($cur['status'] ?? 'todo'), 'priority' => (string) ($cur['priority'] ?? 'normal'),
+                'assignee' => (string) ($cur['assignee'] ?? ''), 'start' => (string) ($cur['start'] ?? ''), 'due' => (string) ($cur['due'] ?? ''),
+                'ref' => (array) ($cur['ref'] ?? []), 'parent' => (string) ($_POST['parent'] ?? ''),
+            ]);
+        }
     } elseif ($act === 'task_move' && $pid !== '') {
         ps_task_move($pid, (string) ($_POST['id'] ?? ''), (string) ($_POST['status'] ?? 'todo'), $by);
     } elseif ($act === 'task_delete' && $pid !== '') {
@@ -90,8 +103,10 @@ $curProject = ($viewMode === 'team' && $curId !== '') ? ps_project_get($curId) :
 $curTasks = $curProject !== null ? ps_tasks($curId) : [];
 $kbStats = $curProject !== null ? ps_stats($curId) : ['by_status' => [], 'total' => 0, 'overdue' => 0];
 $assignees = $viewMode === 'team' ? ps_assignees() : [];
+$teamViews = tv_views() + ['tree' => '树视图'];
 $teamView = (string) ($_GET['vt'] ?? 'board');
-if (!isset(tv_views()[$teamView])) $teamView = 'board';
+if (!isset($teamViews[$teamView])) $teamView = 'board';
+$tvParent = ps_safe_id((string) ($_GET['parent'] ?? ''));   // 「+ 子任务」预填的父任务
 $tvYm = (string) ($_GET['m'] ?? date('Y-m'));
 if (preg_match('/^\d{4}-\d{2}$/', $tvYm) !== 1) $tvYm = date('Y-m');
 // 任务 → 多视图（与自定义内容类型共用 lib/TableView.php 的布局函数）
@@ -119,6 +134,13 @@ foreach ($curTasks as $t) {
     $cells = [];
     foreach ($tvFields as $f) $cells[(string) $f['key']] = tv_display($f, $values[(string) $f['key']]);
     $tvRows[] = ['id' => (string) ($t['id'] ?? ''), 'title' => (string) ($t['title'] ?? ''), 'slug' => '', 'status' => (string) ($t['status'] ?? 'todo'), 'values' => $values, 'resolved' => [], 'cells' => $cells];
+}
+$subCounts = [];
+$cardRoll = [];
+foreach ($curTasks as $ct) {
+    $cid = (string) ($ct['id'] ?? '');
+    $subCounts[$cid] = count(ps_task_subtree_ids($curId, $cid)) - 1;
+    $cardRoll[$cid] = ps_task_rollup($curId, $cid);
 }
 $tvQ = static fn(array $extra = []): string => '/xmp/today?' . http_build_query(array_merge(['view' => 'team', 'project' => $curId, 'vt' => $teamView], $extra));
 
@@ -192,6 +214,26 @@ admin_header('今日主线');
 .kb-del .btn{padding:1px 7px;line-height:1.5}
 .kb-road{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:12px}
 .kb-road ul{margin:8px 0 0;padding-left:18px;font-size:12.5px;line-height:1.75;color:var(--muted)}
+
+/* ── 团队视角：树视图（父子任务）── */
+.tw{background:var(--surface-2);border-radius:12px;padding:8px}
+.tw-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);margin-bottom:5px;position:relative}
+.tw-row:hover{border-color:var(--accent)}
+.tw-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px;background:transparent}
+.tw-row[data-depth="1"]::before{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+.tw-row[data-depth="2"]::before{background:color-mix(in srgb,var(--accent) 60%,transparent)}
+.tw-row[data-depth="3"]::before{background:var(--accent)}
+.tw-tog{width:18px;height:18px;line-height:1;border:1px solid var(--border);background:var(--surface);border-radius:5px;cursor:pointer;font-size:11px;padding:0;color:var(--muted)}
+.tw-tog.ph{border:none;background:transparent;cursor:default;text-align:center}
+.tw-t{font-size:13px;font-weight:650;overflow-wrap:anywhere;max-width:46%}
+.tw-prog{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
+.tw-prog .tw-bar{display:block;width:56px;height:6px;min-width:0;border-radius:99px;background:var(--accent);opacity:.75}
+.tw-prog{position:relative}
+.tw-prog .tw-bar{position:absolute;left:0;top:50%;transform:translateY(-50%);max-width:56px}
+.tw-prog .tw-pct{padding-left:64px}
+.tw-acts{margin-left:auto;display:flex;align-items:center;gap:6px}
+.tw-a{font-size:11.5px;color:var(--accent);text-decoration:none;white-space:nowrap}
+.tw-inline{margin:0;display:flex;gap:4px;align-items:center}
 </style>
 <div class="admin-layout">
   <?php admin_sidebar('today'); ?>
@@ -228,7 +270,7 @@ admin_header('今日主线');
       </div>
       <?php if ($curProject !== null): ?>
       <div class="p-body" style="border-top:1px solid var(--border-soft,var(--border));display:flex;gap:16px;flex-wrap:wrap;align-items:center">
-        <span class="note">共 <b><?=$kbStats['total']?></b> 条</span>
+        <span class="note">共 <b><?=$kbStats['total']?></b> 条<?=((int) ($kbStats['roots'] ?? 0)) > 0 && (int) $kbStats['roots'] !== (int) $kbStats['total'] ? '（' . (int) $kbStats['roots'] . ' 条顶层）' : ''?></span>
         <span class="note">逾期 <b style="color:<?=$kbStats['overdue'] > 0 ? 'var(--danger,#dc2626)' : 'inherit'?>"><?=$kbStats['overdue']?></b></span>
         <?php foreach (ps_task_statuses() as $sk => $sl): ?>
         <span class="note"><?=htmlspecialchars($sl)?> <b><?=$kbStats['by_status'][$sk] ?? 0?></b></span>
@@ -240,11 +282,16 @@ admin_header('今日主线');
     <?php if ($curProject === null): ?>
       <div class="empty">还没有项目。用上面的「+ 建项目」新建一个；或运行 <code>php scripts/seed-projects.php</code> 种入示例。</div>
     <?php else: ?>
-    <div class="panel" style="margin-bottom:12px">
+    <div class="panel" style="margin-bottom:12px" id="teamAdd">
       <form method="post" class="p-body" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
         <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
         <input type="hidden" name="ps_action" value="task_save">
         <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+        <?php $preTask = null; foreach ($curTasks as $ct) if ((string) ($ct['id'] ?? '') === $tvParent) $preTask = $ct; ?>
+        <?php if ($preTask !== null): ?>
+        <input type="hidden" name="parent" value="<?=htmlspecialchars($tvParent)?>">
+        <span class="pill" style="align-self:center">父任务：<?=htmlspecialchars((string) ($preTask['title'] ?? ''))?> <a href="<?=htmlspecialchars($tvQ(['vt' => 'tree']))?>" style="text-decoration:none">×</a></span>
+        <?php endif; ?>
         <label class="kb-f">标题<input class="inp sm" name="title" style="min-width:230px" required placeholder="要做什么"></label>
         <label class="kb-f">负责人<input class="inp sm" name="assignee" list="kbWho" placeholder="谁做" style="width:110px"><datalist id="kbWho"><?php foreach ($assignees as $u): ?><option value="<?=htmlspecialchars((string) $u['name'])?>"><?php endforeach; ?></datalist></label>
         <label class="kb-f">截止<input class="inp sm" type="date" name="due"></label>
@@ -259,7 +306,7 @@ admin_header('今日主线');
 
     <div class="tv-bar" style="margin-bottom:10px">
       <span class="note" style="font-size:12px;color:var(--muted)">同一批任务：</span>
-      <?php foreach (tv_views() as $vk => $vl): ?>
+      <?php foreach ($teamViews as $vk => $vl): ?>
       <a href="<?=htmlspecialchars($tvQ(['vt' => $vk]))?>" class="btn btn-s btn-sm<?=$vk === $teamView ? ' btn-p' : ''?>"><?=htmlspecialchars($vl)?></a>
       <?php endforeach; ?>
       <?php if ($teamView === 'board'): ?><span class="note" style="font-size:12px;color:var(--muted)">拖拽卡片到别的列即可改状态</span><?php endif; ?>
@@ -276,7 +323,7 @@ admin_header('今日主线');
       <tbody>
         <?php foreach ($curTasks as $t): $status = (string) ($t['status'] ?? 'todo'); $due = (string) ($t['due'] ?? ''); ?>
         <tr>
-          <td><b><?=htmlspecialchars((string) ($t['title'] ?? ''))?></b><?php if ((string) ($t['note'] ?? '') !== ''): ?><div class="text-xs text-muted"><?=htmlspecialchars(mb_substr((string) $t['note'], 0, 70))?></div><?php endif; ?></td>
+          <td><b><?=htmlspecialchars((string) ($t['title'] ?? ''))?></b><?php $cr = $cardRoll[(string) ($t['id'] ?? '')] ?? []; if ((int) ($cr['total'] ?? 0) > 0): ?><span class="text-xs text-muted"> · 子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?></span><?php endif; ?><?php if ((string) ($t['note'] ?? '') !== ''): ?><div class="text-xs text-muted"><?=htmlspecialchars(mb_substr((string) $t['note'], 0, 70))?></div><?php endif; ?></td>
           <td><?=htmlspecialchars(ps_task_statuses()[$status] ?? $status)?></td>
           <td><?=htmlspecialchars((string) ($t['assignee'] ?? ''))?></td>
           <td><?=htmlspecialchars((string) (ps_priorities()[(string) ($t['priority'] ?? 'normal')] ?? ''))?></td>
@@ -284,7 +331,7 @@ admin_header('今日主线');
           <td<?=$due !== '' && substr($due, 0, 10) < date('Y-m-d') ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars($due !== '' ? substr($due, 0, 16) : '')?></td>
           <td><?=htmlspecialchars($tvRefLabel($t))?></td>
           <td>
-            <form method="post" data-confirm="删除这条任务？" style="margin:0">
+            <form method="post" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=((int) ($subCounts[(string) ($t['id'] ?? '')] ?? 0)) > 0 ? '及其 ' . (int) $subCounts[(string) ($t['id'] ?? '')] . ' 个子任务' : ''?>？" style="margin:0">
               <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
               <input type="hidden" name="ps_action" value="task_delete">
               <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
@@ -333,6 +380,65 @@ admin_header('今日主线');
       </div>
       <?php endif; ?>
 
+    <?php elseif ($teamView === 'tree'): $treeRows = ps_task_tree_flat($curId); ?>
+      <?php if ($treeRows === []): ?>
+        <div class="empty">还没有任务。</div>
+      <?php else: ?>
+      <div class="tv-bar" style="font-size:12px;color:var(--muted)">
+        <span class="note"><?=count($treeRows)?> 条任务 · <?= (int) ($kbStats['roots'] ?? 0) ?> 条顶层 · 有子任务的会显示进度汇总（只看它的后代）</span>
+        <button type="button" class="btn btn-s btn-sm" id="twFoldAll" style="margin-left:auto">全部折叠</button>
+        <button type="button" class="btn btn-s btn-sm" id="twUnfoldAll">全部展开</button>
+      </div>
+      <div class="tw" id="twTree">
+        <?php foreach ($treeRows as $r): $t = (array) $r['task']; $tk = (string) ($t['id'] ?? ''); $pr = (array) $r['progress'];
+          $status = (string) ($t['status'] ?? 'todo'); $prio = (string) ($t['priority'] ?? 'normal');
+          $due = (string) ($t['due'] ?? ''); $overdue = $due !== '' && substr($due, 0, 10) < date('Y-m-d') && $status !== 'done';
+          $kids = (int) $r['children']; $subCount = count((array) $r['subtree_ids']) - 1;
+          $ri = ps_ref_resolve((array) ($t['ref'] ?? [])); ?>
+        <div class="tw-row" data-id="<?=htmlspecialchars($tk)?>" data-depth="<?=(int) $r['depth']?>" style="padding-left:<?=8 + (int) $r['depth'] * 22?>px">
+          <?php if ($kids > 0): ?>
+          <button type="button" class="tw-tog" data-id="<?=htmlspecialchars($tk)?>" data-closed="0" title="折叠/展开">▾</button>
+          <?php else: ?><span class="tw-tog ph">·</span><?php endif; ?>
+          <b class="tw-t"><?=htmlspecialchars((string) ($t['title'] ?? ''))?></b>
+          <span class="pill" style="<?=$status === 'done' ? 'opacity:.6' : ''?>"><?=htmlspecialchars(ps_task_statuses()[$status] ?? $status)?></span>
+          <?php if ($prio !== 'normal'): ?><span class="pill<?=$prio === 'urgent' ? ' hl' : ''?>"><?=htmlspecialchars(ps_priorities()[$prio] ?? $prio)?></span><?php endif; ?>
+          <?php if ((string) ($t['assignee'] ?? '') !== ''): ?><span class="note">@<?=htmlspecialchars((string) $t['assignee'])?></span><?php endif; ?>
+          <?php if ($due !== ''): ?><span class="note"<?=$overdue ? ' style="color:var(--danger,#dc2626);font-weight:700"' : ''?>><?=htmlspecialchars(substr($due, 0, 16))?><?=$overdue ? ' · 逾期' : ''?></span><?php endif; ?>
+          <?php if ($ri['type'] !== ''): ?><span class="kb-ref"><?=htmlspecialchars($ri['type_label'])?>：<?=htmlspecialchars($ri['label'])?></span><?php endif; ?>
+          <?php if ($kids > 0): ?>
+          <span class="tw-prog" title="<?=$pr['done']?>/<?=$pr['total']?> 子任务已完成">
+            <span class="tw-bar" style="width:<?=(int) $pr['pct']?>%"></span>
+            <span class="tw-pct"><?=$pr['done']?>/<?=$pr['total']?> · <?=(int) $pr['pct']?>%<?=((int) $pr['overdue']) > 0 ? ' · 逾期 ' . (int) $pr['overdue'] : ''?></span>
+          </span>
+          <?php endif; ?>
+          <span class="tw-acts">
+            <a class="tw-a" href="<?=htmlspecialchars($tvQ(['vt' => 'tree', 'parent' => $tk]))?>#teamAdd">+ 子任务</a>
+            <form method="post" class="tw-inline">
+              <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="ps_action" value="task_reparent">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+              <input type="hidden" name="id" value="<?=htmlspecialchars($tk)?>">
+              <select name="parent" class="inp sm" style="width:126px">
+                <option value="">→ 顶层</option>
+                <?php foreach ($curTasks as $c2): $cid = (string) ($c2['id'] ?? ''); if (in_array($cid, (array) $r['subtree_ids'], true)) continue; ?>
+                <option value="<?=htmlspecialchars($cid)?>" <?=((string) ($t['parent'] ?? '') === $cid) ? 'selected' : ''?>>→ <?=htmlspecialchars(mb_substr((string) ($c2['title'] ?? ''), 0, 12))?></option>
+                <?php endforeach; ?>
+              </select>
+              <button class="btn btn-s btn-sm">移动</button>
+            </form>
+            <form method="post" class="tw-inline" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=$subCount > 0 ? '及其 ' . $subCount . ' 个子任务' : ''?>？">
+              <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="ps_action" value="task_delete">
+              <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
+              <input type="hidden" name="id" value="<?=htmlspecialchars($tk)?>">
+              <button class="btn btn-s btn-sm" title="删除">×</button>
+            </form>
+          </span>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <?php endif; ?>
+
     <?php else: ?>
     <div class="kanban" id="kbBoard">
       <?php foreach (ps_task_statuses() as $sk => $sl): ?>
@@ -352,7 +458,10 @@ admin_header('今日主线');
           <span class="kb-ref"<?=$ri['missing'] ? ' style="color:var(--muted)"' : ''?>><?=htmlspecialchars($ri['type_label'])?>：<?=htmlspecialchars($ri['label'])?></span>
           <?php endif; ?>
           <?php if ((string) ($t['note'] ?? '') !== ''): ?><p class="kb-note"><?=htmlspecialchars(mb_substr((string) $t['note'], 0, 90))?></p><?php endif; ?>
-          <form method="post" class="kb-del" data-confirm="删除这条任务？">
+          <?php $cr = $cardRoll[(string) ($t['id'] ?? '')] ?? []; if ((int) ($cr['total'] ?? 0) > 0): ?>
+          <div class="text-xs text-muted" style="margin-top:6px">子任务 <?=(int) $cr['done']?>/<?=(int) $cr['total']?> · <?=(int) $cr['pct']?>%<?=((int) ($cr['overdue'] ?? 0)) > 0 ? ' · 逾期 ' . (int) $cr['overdue'] : ''?></div>
+          <?php endif; ?>
+          <form method="post" class="kb-del" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($t['title'] ?? ''), 0, 20))?>」<?=((int) ($subCounts[(string) ($t['id'] ?? '')] ?? 0)) > 0 ? '及其 ' . (int) $subCounts[(string) ($t['id'] ?? '')] . ' 个子任务' : ''?>？">
             <input type="hidden" name="csrf" value="<?=htmlspecialchars(csrf_token())?>">
             <input type="hidden" name="ps_action" value="task_delete">
             <input type="hidden" name="project" value="<?=htmlspecialchars($curId)?>">
@@ -775,6 +884,43 @@ async function mlEvaluate(traceId, verdict, btn) {
         .then(function () { location.reload(); }).catch(function () { location.reload(); });
     });
   });
+})();
+
+/* ── 团队视角：树视图折叠/展开（按深度收起整棵子树）── */
+(function () {
+  const tree = document.getElementById('twTree');
+  if (!tree) return;
+  const rows = Array.from(tree.querySelectorAll('.tw-row'));
+
+  function subtreeOf(row) {
+    const depth = Number(row.dataset.depth);
+    const out = [];
+    let n = row.nextElementSibling;
+    while (n && n.classList.contains('tw-row') && Number(n.dataset.depth) > depth) { out.push(n); n = n.nextElementSibling; }
+    return out;
+  }
+  function apply(row, collapsed) {
+    subtreeOf(row).forEach(function (h) { h.style.display = collapsed ? 'none' : ''; });
+    const btn = row.querySelector('.tw-tog[data-id]');
+    if (btn) { btn.dataset.closed = collapsed ? '1' : '0'; btn.textContent = collapsed ? '▸' : '▾'; }
+  }
+  // 展开后要把「子树里本来就被折叠」的规则重新套一遍，否则会连带漏出更深层
+  function reapply() {
+    rows.forEach(function (row) {
+      const btn = row.querySelector('.tw-tog[data-id]');
+      if (btn) apply(row, btn.dataset.closed === '1');
+    });
+  }
+  tree.addEventListener('click', function (e) {
+    const btn = e.target.closest('.tw-tog[data-id]');
+    if (!btn) return;
+    const row = btn.closest('.tw-row');
+    if (!row) return;
+    apply(row, btn.dataset.closed !== '1');
+    reapply();
+  });
+  document.getElementById('twFoldAll')?.addEventListener('click', function () { rows.forEach(function (r) { if (r.querySelector('.tw-tog[data-id]')) apply(r, true); }); });
+  document.getElementById('twUnfoldAll')?.addEventListener('click', function () { rows.forEach(function (r) { r.style.display = ''; const b = r.querySelector('.tw-tog[data-id]'); if (b) { b.dataset.closed = '0'; b.textContent = '▾'; } }); });
 })();
 
 document.addEventListener('DOMContentLoaded', function () {
