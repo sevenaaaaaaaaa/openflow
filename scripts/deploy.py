@@ -355,6 +355,19 @@ def main() -> int:
     manifest = save_manifest(stamp, plan)
     print(f"✓ 部署完成（manifest: {manifest.relative_to(ROOT)}）")
 
+    # data/ 归属体检：ssh 以 root 跑脚本/种子会把 data 里的文件写成 root 所有，
+    # 而 Web 用户（www）写不进去 → 后台保存悄悄失败（分享统计、任务写入都踩过）。
+    try:
+        chk = ssh(f"cd {REMOTE_ROOT} && find data -user root -maxdepth 3 2>/dev/null | head -3")
+        owners = (chk.stdout or "").strip()
+        if owners:
+            print("⚠ data/ 里有 root 所有的文件（Web 用户写不进去，后台保存会静默失败）：")
+            for line in owners.splitlines():
+                print("    " + line)
+            print("  修正：ssh <host> \"cd <站点目录> && find data -user root -exec chown www:www {} +\"")
+    except Exception:
+        pass
+
     # 版本提醒：改动了 assets/ 但没动版本号
     touched_version = VERSION_FILE in files
     if needs_r2([e.rel for e in plan.uploads]) and not touched_version:
