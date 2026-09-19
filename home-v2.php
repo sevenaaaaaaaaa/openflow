@@ -216,6 +216,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
         <p class="w-q">2026 年开年，全国 26 个城市冒出 39 个 OPC 社区。一人公司、超级个体正在把「一个人就是一支队伍」变成现实。</p>
       </div>
     </div>
+    <div class="proof-strip"><span><b>≤6 个月</b>现金储备警戒线</span><span><b>100–1000 万</b>一人公司营收带</span><span><b>39 个</b>2026 年新出现的 OPC 社区</span></div>
   </section>
 
   <!-- ══ 产品矩阵（预览版新增：七件独立产品，按需组合） ══ -->
@@ -354,11 +355,11 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
       <span class="kicker">从 flow 到 loop</span>
       <h2>三步，把它接进你现在的活法</h2>
     </div>
-    <div class="wf">
-      <div class="wf-step"><span class="wf-n">01</span><h3>告诉它盯什么</h3><p>接入舆情、搜索热点、你自己的客户行为。配一次，之后它自己盯。</p><span class="wf-driver"><span class="pill hl">Webhook · RSS 接入</span></span></div>
-      <div class="wf-step"><span class="wf-n">02</span><h3>划清自动与审批边界</h3><p>用 Flow 配置确定性动作；发布、群发、报价等关键环节继续等待确认。</p><span class="wf-driver"><span class="pill hl">Flow · 审批边界</span></span></div>
-      <div class="wf-step"><span class="wf-n">03</span><h3>让系统按边界推进</h3><p>Flow 按已批准规则稳定执行；Loop 从只读建议和沙盘开始，验证后再逐步接入审批与执行。</p><span class="wf-driver"><span class="pill hl">Policy · 可审计</span></span></div>
-    </div>
+    <ol class="wf">
+      <li class="wf-step"><span class="wf-n">01</span><h3>告诉它盯什么</h3><p>接入舆情、搜索热点、你自己的客户行为。配一次，之后它自己盯。</p><span class="wf-driver"><span class="pill hl">Webhook · RSS 接入</span></span></li>
+      <li class="wf-step"><span class="wf-n">02</span><h3>划清自动与审批边界</h3><p>用 Flow 配置确定性动作；发布、群发、报价等关键环节继续等待确认。</p><span class="wf-driver"><span class="pill hl">Flow · 审批边界</span></span></li>
+      <li class="wf-step"><span class="wf-n">03</span><h3>让系统按边界推进</h3><p>Flow 按已批准规则稳定执行；Loop 从只读建议和沙盘开始，验证后再逐步接入审批与执行。</p><span class="wf-driver"><span class="pill hl">Policy · 可审计</span></span></li>
+    </ol>
   </section>
 
 
