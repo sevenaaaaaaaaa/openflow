@@ -173,8 +173,13 @@ admin_header('自定义内容类型');
               <?php else: ?>
                 <select name="fields[<?=$f['key']?>]<?=($f['multiple'] ?? true) ? '[]' : ''?>" style="width:100%" <?=($f['multiple'] ?? true)?'multiple size=4':''?>>
                   <?php if (($f['multiple'] ?? true)): ?><?php else: ?><option value="">—</option><?php endif; ?>
-                  <?php foreach (cpt_entries((string)$f['target']) as $te): ?>
-                  <option value="<?=htmlspecialchars((string)$te['id'])?>" <?=in_array((string)$te['id'], $selIds, true)?'selected':''?>><?=htmlspecialchars((string)$te['title'])?></option>
+                  <?php
+                  // 自关联时排除自己与自己的下级：避免选出注定被校验拒绝的选项
+                  $selfSlug = (string) ($f['target'] ?? '');
+                  $isSelf = $editEntry !== null && $selfSlug === $curType;
+                  $banned = $isSelf ? array_merge([(string) $editEntry['id']], cpt_hierarchy_descendants($curType, (string) $editEntry['id'], (string) $f['key'])) : [];
+                  foreach (cpt_entries((string)$f['target']) as $te): $teid = (string) $te['id']; if (in_array($teid, $banned, true)) continue; ?>
+                  <option value="<?=htmlspecialchars($teid)?>" <?=in_array($teid, $selIds, true)?'selected':''?>><?=htmlspecialchars((string)$te['title'])?></option>
                   <?php endforeach; ?>
                 </select>
                 <span class="text-xs text-muted">来自「<?=htmlspecialchars((string)$tType['name'])?>」共 <?=count(cpt_entries((string)$f['target']))?> 条</span>

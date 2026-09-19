@@ -103,7 +103,7 @@ $curProject = ($viewMode === 'team' && $curId !== '') ? ps_project_get($curId) :
 $curTasks = $curProject !== null ? ps_tasks($curId) : [];
 $kbStats = $curProject !== null ? ps_stats($curId) : ['by_status' => [], 'total' => 0, 'overdue' => 0];
 $assignees = $viewMode === 'team' ? ps_assignees() : [];
-$teamViews = tv_views() + ['tree' => '树视图'];
+$teamViews = tv_views();   // 表格/看板/日历/甘特/树
 $teamView = (string) ($_GET['vt'] ?? 'board');
 if (!isset($teamViews[$teamView])) $teamView = 'board';
 $tvParent = ps_safe_id((string) ($_GET['parent'] ?? ''));   // 「+ 子任务」预填的父任务
@@ -481,9 +481,9 @@ admin_header('今日主线');
       <div class="p-body">
         <b style="font-size:13px">这个视图接下来会长成什么</b>
         <div class="kb-road">
-          <div><span class="pill">已就绪</span><ul><li>项目 / 任务 / 看板（拖拽改状态）</li><li>任务关联既有对象（发布 · 分发 · CRM · 订单）</li><li>多用户登录与角色权限（复用 <code>tasks</code> 权限）</li><li>提醒引擎与 cron 扫描（飞书 / 企微 / Slack / WhatsApp，幂等，未配渠道不误标）</li><li>多视图：表格 / 看板 / 日历 / 甘特（与自定义内容类型共用布局层）</li><li>多维表格三件套：关联 / 汇总 / 查值（已可用于自定义内容类型）</li><li>父子任务 + 树视图（层级、逐层进度汇总、级联删除）</li><li>任务 ↔ 内容类型记录互相关联（双向可查）</li></ul></div>
+          <div><span class="pill">已就绪</span><ul><li>项目 / 任务 / 看板（拖拽改状态）</li><li>任务关联既有对象（发布 · 分发 · CRM · 订单）</li><li>多用户登录与角色权限（复用 <code>tasks</code> 权限）</li><li>提醒引擎与 cron 扫描（飞书 / 企微 / Slack / WhatsApp，幂等，未配渠道不误标）</li><li>多视图：表格 / 看板 / 日历 / 甘特（与自定义内容类型共用布局层）</li><li>多维表格三件套：关联 / 汇总 / 查值（已可用于自定义内容类型）</li><li>父子任务 + 树视图（层级、逐层进度汇总、级联删除）</li><li>任务 ↔ 内容类型记录互相关联（双向可查）</li><li>内容类型记录也能分层级 / 看树视图（自关联即层级，删除只断链不删子记录）</li></ul></div>
           <div><span class="pill">进行中</span><ul><li>本页内到期提醒（角标 / 待办聚合，不只靠外部渠道）</li><li>任务负责人邮件提醒（复用现有邮件链路）</li><li>看板视觉与设计系统对齐</li></ul></div>
-          <div><span class="pill">规划中</span><ul><li>内容类型的记录也能建层级 / 看树视图（现在只有任务有层级）</li><li>项目级成员权限（owner / editor / viewer）</li></ul></div>
+          <div><span class="pill">规划中</span><ul><li>项目级成员权限（owner / editor / viewer）</li></ul></div>
         </div>
       </div>
     </div>

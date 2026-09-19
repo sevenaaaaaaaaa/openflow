@@ -21,6 +21,9 @@ if (!isset(tv_views()[$view])) $view = 'grid';
 $ym = (string) ($_GET['m'] ?? date('Y-m'));
 if (preg_match('/^\d{4}-\d{2}$/', $ym) !== 1) $ym = date('Y-m');
 $dateKey = preg_replace('/[^a-z0-9_]/', '', (string) ($_GET['d'] ?? ''));
+$hierFields = $type !== null ? cpt_hierarchy_fields($type) : [];   // 指向本类型的单值关联 = 层级
+$parentKey = preg_replace('/[^a-z0-9_]/', '', (string) ($_GET['p'] ?? ''));
+if ($parentKey === '' || !in_array($parentKey, $hierFields, true)) $parentKey = (string) ($hierFields[0] ?? '');
 
 $rows = $type !== null ? tv_rows($curType) : [];
 $q = static fn(array $extra = []): string => '/xmp/table-views?' . http_build_query(array_merge(['type' => $curType, 'view' => $view], $extra));
@@ -126,6 +129,50 @@ admin_header('多维表格视图');
     </div>
     <?php endif; ?>
 
+  <?php elseif ($view === 'tree'): ?>
+    <?php if ($hierFields === []): ?>
+      <div class="empty">
+        这个类型还没有层级。层级不用新建字段类型——<b>加一个「关联记录」字段指向本类型、选「单选」</b>就有树了：
+        <div style="margin-top:8px"><a href="/xmp/cpt?type=<?=urlencode($curType)?>" class="btn btn-s btn-sm">去加字段 →</a></div>
+      </div>
+    <?php else: $tflat = cpt_tree_flat($curType, $parentKey); ?>
+      <div class="tv-bar">
+        <span class="note">按「<?=htmlspecialchars($parentKey)?>」分层</span>
+        <?php if (count($hierFields) > 1): foreach ($hierFields as $hk): ?>
+        <a href="<?=htmlspecialchars($q(['p' => $hk]))?>" class="btn btn-s btn-sm<?=$hk === $parentKey ? ' btn-p' : ''?>"><?=htmlspecialchars($hk)?></a>
+        <?php endforeach; endif; ?>
+        <button type="button" class="btn btn-s btn-sm" id="twFoldAll" style="margin-left:auto">全部折叠</button>
+        <button type="button" class="btn btn-s btn-sm" id="twUnfoldAll">全部展开</button>
+      </div>
+      <?php if ($tflat === []): ?>
+        <div class="empty">这个类型还没有记录。</div>
+      <?php else: ?>
+      <div class="tw" id="twTree">
+        <?php foreach ($tflat as $r): $e = (array) $r['entry']; $eid = (string) ($e['id'] ?? '');
+          $kids = (int) $r['children']; $desc = (int) $r['descendants']; ?>
+        <div class="tw-row" data-id="<?=htmlspecialchars($eid)?>" data-depth="<?=(int) $r['depth']?>" style="padding-left:<?=8 + (int) $r['depth'] * 22?>px">
+          <?php if ($kids > 0): ?>
+          <button type="button" class="tw-tog" data-id="<?=htmlspecialchars($eid)?>" data-closed="0" title="折叠/展开">▾</button>
+          <?php else: ?><span class="tw-tog ph">·</span><?php endif; ?>
+          <b class="tw-t"><?=htmlspecialchars((string) ($e['title'] ?? ''))?></b>
+          <span class="pill" style="<?=($e['status'] ?? '') === 'published' ? '' : 'opacity:.6'?>"><?=($e['status'] ?? '') === 'published' ? '已发布' : '草稿'?></span>
+          <?php if ($desc > 0): ?><span class="note">子记录 <?=$kids?> · 后代 <?=$desc?></span><?php endif; ?>
+          <span class="tw-acts">
+            <a class="tw-a" href="/xmp/cpt?type=<?=urlencode($curType)?>&edit=<?=urlencode($eid)?>">编辑</a>
+            <form method="post" action="/xmp/cpt?type=<?=urlencode($curType)?>" class="tw-inline" data-confirm="删除「<?=htmlspecialchars(mb_substr((string) ($e['title'] ?? ''), 0, 20))?>」？<?=$kids > 0 ? '它的 ' . $kids . ' 条子记录会升为顶层（不会被删）。' : ''?>">
+              <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+              <input type="hidden" name="action" value="delete_entry">
+              <input type="hidden" name="id" value="<?=htmlspecialchars($eid)?>">
+              <button class="btn btn-s btn-sm" title="删除">×</button>
+            </form>
+          </span>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <p class="text-xs text-muted" style="margin-top:10px">缩进=层级。删除父记录不会删子记录，只会让它们升为顶层（内容比任务值钱，所以不级联删）。</p>
+      <?php endif; ?>
+    <?php endif; ?>
+
   <?php else: $g = tv_gantt($curType); $dkeys = tv_date_fields($type); $todayPct = tv_gantt_today($g); ?>
     <?php if ($g['bars'] === []): ?>
       <div class="empty">甘特需要日期字段（第 1 个当开始、第 2 个当结束；只有一个就按里程碑画）。当前类型有 <?=count($dkeys)?> 个日期字段。</div>
@@ -150,4 +197,34 @@ admin_header('多维表格视图');
   <?php endif; ?>
   <?php endif; ?>
 </div>
+<script>
+/* 树视图折叠/展开：按深度收起整棵子树 */
+(function () {
+  const tree = document.getElementById('twTree');
+  if (!tree) return;
+  const rows = Array.from(tree.querySelectorAll('.tw-row'));
+  function subtreeOf(row) {
+    const depth = Number(row.dataset.depth);
+    const out = []; let n = row.nextElementSibling;
+    while (n && n.classList.contains('tw-row') && Number(n.dataset.depth) > depth) { out.push(n); n = n.nextElementSibling; }
+    return out;
+  }
+  function apply(row, collapsed) {
+    subtreeOf(row).forEach(function (h) { h.style.display = collapsed ? 'none' : ''; });
+    const btn = row.querySelector('.tw-tog[data-id]');
+    if (btn) { btn.dataset.closed = collapsed ? '1' : '0'; btn.textContent = collapsed ? '▸' : '▾'; }
+  }
+  function reapply() {
+    rows.forEach(function (row) { const b = row.querySelector('.tw-tog[data-id]'); if (b) apply(row, b.dataset.closed === '1'); });
+  }
+  tree.addEventListener('click', function (e) {
+    const btn = e.target.closest('.tw-tog[data-id]'); if (!btn) return;
+    const row = btn.closest('.tw-row'); if (!row) return;
+    apply(row, btn.dataset.closed !== '1');
+    reapply();
+  });
+  document.getElementById('twFoldAll')?.addEventListener('click', function () { rows.forEach(function (r) { if (r.querySelector('.tw-tog[data-id]')) apply(r, true); }); });
+  document.getElementById('twUnfoldAll')?.addEventListener('click', function () { rows.forEach(function (r) { r.style.display = ''; const b = r.querySelector('.tw-tog[data-id]'); if (b) { b.dataset.closed = '0'; b.textContent = '▾'; } }); });
+})();
+</script>
 <?php admin_footer(); ?>

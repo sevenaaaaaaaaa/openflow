@@ -198,6 +198,20 @@ if (!function_exists('cpt_entries')) {
             $clean[$k] = $v;
         }
         $errs = cpt_validate_entry($type, $clean);
+        // 自关联（层级）额外校验：不能指向自己，也不能指向自己的下级（防环）
+        $vid = (string) ($data['id'] ?? '');   // 此处 $id 还没定义，单独取一次
+        if ($errs === [] && $vid !== '') {
+            foreach (cpt_hierarchy_fields($type) as $hk) {
+                $pv = cpt_normalize_relation($clean[$hk] ?? '');
+                $pv = (string) ($pv[0] ?? '');
+                if ($pv === '') continue;
+                if ($pv === $vid) {
+                    $errs[] = "字段「{$hk}」不能指向记录自己";
+                } elseif (in_array($pv, cpt_hierarchy_descendants($typeSlug, $vid, $hk), true)) {
+                    $errs[] = "字段「{$hk}」不能指向自己的下级记录";
+                }
+            }
+        }
         if ($errs) return ['ok' => false, 'errors' => $errs];
 
         $list = cpt_entries($typeSlug);
@@ -238,6 +252,17 @@ if (!function_exists('cpt_entries')) {
     }
     function cpt_entry_delete(string $typeSlug, string $id): bool {
         $list = cpt_entries($typeSlug);
+        // 删之前先把指向它的「自关联」清空：子记录升为顶层，而不是留下悬空父指针
+        // （内容记录比任务值钱，所以这里不级联删，只断开——与 Airtable 行为一致）
+        $type = cpt_type($typeSlug);
+        if ($type !== null) {
+            foreach (cpt_hierarchy_fields($type) as $hk) {
+                foreach ($list as $i => $e) {
+                    $v = cpt_normalize_relation($e['fields'][$hk] ?? '');
+                    if ((string) ($v[0] ?? '') === $id) $list[$i]['fields'][$hk] = '';
+                }
+            }
+        }
         $n = count($list);
         $list = array_values(array_filter($list, fn($e) => ($e['id'] ?? '') !== $id));
         if (count($list) === $n) return false;
@@ -362,5 +387,106 @@ if (!function_exists('cpt_relation_functions')) {
     /** 列表级解析（表格视图用） */
     function cpt_entries_resolved(string $typeSlug, array $opts = []): array {
         return array_map(fn(array $e): array => cpt_resolve_entry($typeSlug, $e), cpt_entries($typeSlug, $opts));
+    }
+}
+
+/* ─────────── 记录层级（自关联）─────────── */
+/**
+ * 【为什么】层级不该是新字段类型，而是「指向同类型的单选关联」——Airtable 里也是这么做的。
+ * 所以这里不新增字段类型，只是把这种关联识别出来当层级用。
+ */
+
+if (!function_exists('cpt_hierarchy_fields')) {
+    /** 可作为层级的字段：指向本类型的单值关联 */
+    function cpt_hierarchy_fields(array $type): array {
+        $slug = (string) ($type['slug'] ?? '');
+        $out = [];
+        foreach ((array) ($type['fields'] ?? []) as $f) {
+            if ((string) ($f['type'] ?? '') !== 'relation') continue;
+            if ((string) ($f['target'] ?? '') !== $slug) continue;
+            if (($f['multiple'] ?? true) !== false) continue;
+            $out[] = (string) ($f['key'] ?? '');
+        }
+        return $out;
+    }
+
+    /** 某记录在指定层级字段下的全部后代 id（不含自己），带防环 */
+    function cpt_hierarchy_descendants(string $typeSlug, string $entryId, string $parentKey): array {
+        $kids = [];
+        foreach (cpt_entries($typeSlug) as $e) {
+            $v = cpt_normalize_relation($e['fields'][$parentKey] ?? '');
+            $kids[(string) ($v[0] ?? '')][] = (string) ($e['id'] ?? '');
+        }
+        $out = [];
+        $stack = $kids[$entryId] ?? [];
+        while ($stack !== []) {
+            $cur = (string) array_pop($stack);
+            if ($cur === $entryId || in_array($cur, $out, true)) continue;   // 防环兜底
+            $out[] = $cur;
+            foreach ($kids[$cur] ?? [] as $k) $stack[] = $k;
+        }
+        return $out;
+    }
+
+    /**
+     * 树：坏数据（悬空父 / 环 / 自指）一律把节点升为根——不丢记录、不转不出来。
+     * @return list<array{entry:array,depth:int,children:list<array>,descendants:int}>
+     */
+    function cpt_tree(string $typeSlug, string $parentKey): array {
+        $entries = cpt_entries($typeSlug);
+        $byId = [];
+        foreach ($entries as $e) $byId[(string) ($e['id'] ?? '')] = $e;
+        $parentOf = [];
+        foreach ($byId as $id => $e) {
+            $v = cpt_normalize_relation($e['fields'][$parentKey] ?? '');
+            $p = (string) ($v[0] ?? '');
+            $parentOf[$id] = ($p === '' || $p === $id || !isset($byId[$p])) ? '' : $p;
+        }
+        foreach ($parentOf as $id => $pid) {
+            if ($pid === '') continue;
+            $seen = [$id => true];
+            $cur = $pid;
+            while ($cur !== '') {
+                if (isset($seen[$cur])) { $parentOf[$id] = ''; break; }
+                $seen[$cur] = true;
+                $cur = $parentOf[$cur] ?? '';
+            }
+        }
+        $kids = [];
+        $roots = [];
+        foreach ($parentOf as $id => $pid) {
+            if ($pid === '') $roots[] = $id;
+            else $kids[$pid][] = $id;
+        }
+        $build = static function (string $id, int $depth) use (&$build, $kids, $byId): array {
+            $children = [];
+            $desc = 0;
+            foreach ($kids[$id] ?? [] as $k) {
+                $node = $build($k, $depth + 1);
+                $desc += 1 + (int) $node['descendants'];
+                $children[] = $node;
+            }
+            return ['entry' => $byId[$id], 'depth' => $depth, 'children' => $children, 'descendants' => $desc];
+        };
+        return array_map(static fn(string $id): array => $build($id, 0), $roots);
+    }
+
+    /** 树 → 渲染用扁平行（DFS + 深度 + 子记录数 / 后代总数） */
+    function cpt_tree_flat(string $typeSlug, string $parentKey): array {
+        $out = [];
+        $walk = static function (array $nodes) use (&$walk, &$out): void {
+            foreach ($nodes as $n) {
+                $entry = (array) ($n['entry'] ?? []);
+                $out[] = [
+                    'entry' => $entry,
+                    'depth' => (int) ($n['depth'] ?? 0),
+                    'children' => count((array) ($n['children'] ?? [])),
+                    'descendants' => (int) ($n['descendants'] ?? 0),
+                ];
+                $walk((array) ($n['children'] ?? []));
+            }
+        };
+        $walk(cpt_tree($typeSlug, $parentKey));
+        return $out;
     }
 }
