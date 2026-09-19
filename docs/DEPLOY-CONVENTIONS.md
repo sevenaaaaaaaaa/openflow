@@ -166,3 +166,20 @@ scp -P 28766 includes/site-nav.php root@172.96.253.73:/www/wwwroot/nownexts_com/
 ```
 
 根目录的页面文件（`*.php`）用 rsync 目前正常，但同样建议核对关键文件 md5。
+
+## data/ 目录归属：ssh 以 root 跑脚本后必须交还 www（2026-09-19 踩坑）
+
+**症状**：后台保存「看起来成功」但数据没变（分享访问统计一直 0、任务写入丢失）。
+
+**原因**：ssh 以 root 执行种子/校验脚本（`scripts/seed-projects.php`、临时 php -r）时，
+`data/` 下新建的文件是 `root:root 644`；Web 用户 `www` 无法写入 →
+`json_write` 失败、`ps_*` 的写入静默丢弃。线上曾累积 1589 个 root 所有的文件。
+
+**修正**：
+
+```bash
+ssh -p <port> root@<host> 'cd <站点目录> && find data -user root -exec chown www:www {} +'
+```
+
+**预防**：`scripts/deploy.py` 现在会在部署后体检 `find data -user root`，发现即警告并给出上面这条命令。
+跑完任何 ssh 侧写数据的脚本，也应顺手 chown 一次。
