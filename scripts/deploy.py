@@ -45,7 +45,8 @@ SITE = os.environ.get("OF_SITE_URL", "https://nownexts.com")
 SSH_OPTS = ["-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=10", "-o", "BatchMode=yes"]
 
 # 允许部署的顶层路径（相对仓库根）
-ALLOW_PREFIXES = ("admin/", "api/", "lib/", "includes/", "assets/", "plugins/", "scripts/", "deploy/")
+ALLOW_PREFIXES = ("admin/", "api/", "lib/", "includes/", "assets/", "plugins/", "scripts/", "deploy/",
+                   "legacy/")   # legacy/：老页面纪念快照（静态 HTML，noindex）
 ALLOW_ROOT_FILES = {".htaccess", "robots.txt", "sitemap.php"}
 # 永不部署
 DENY_SUBSTRINGS = ("node_modules/", "/src/", "src/", ".git/", ".deploy/", "tests/",
