@@ -157,7 +157,7 @@ OpenFlow 长期积累的不是一次性对话，而是三类可交付资产：
 
 ## 当前已经具备什么
 
-项目已经完成大部分业务器官和第一阶段连接工作，当前代码包含约 221 个后台页面、113 个 API 端点和 216 个核心类库文件。数量会随开发变化，以下以能力边界为准。
+项目已经完成大部分业务器官和第一阶段连接工作，当前代码包含 <!--m:admin_pages-->193<!--/m--> 个后台页面（另有 <!--m:admin_alias_301-->19<!--/m--> 个 301 旧地址别名与 <!--m:admin_fragments-->15<!--/m--> 个片段文件不计入）、<!--m:api_endpoints-->118<!--/m--> 个 API 端点和 <!--m:lib_files-->232<!--/m--> 个核心类库文件。这些数字由 `php scripts/metrics.php` 从代码算出、由契约测试盯住（口径见 [项目口径指标](docs/METRICS.md)），不手写。数量会随开发变化，以下以能力边界为准。
 
 ### 业务底座
 
@@ -400,6 +400,7 @@ AI 是可选能力。未配置模型时，OpenFlow 仍可作为完整的内容�
 - [产品功能地图](docs/PRODUCT-MAP.md)
 - [插件开发指南](docs/PLUGIN-DEV.md)
 - [看板娘衣橱](docs/WAIFU-WARDROBE.md)
+- [项目口径指标](docs/METRICS.md)
 - [跨模块审计](docs/AUDIT-07-SYNTHESIS.md)
 - [技术演进路线](docs/ROADMAP.md)
 - [规模演进](docs/EVOLUTION.md)
