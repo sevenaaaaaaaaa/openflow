@@ -676,6 +676,20 @@ function json_write(string $path, array $data): bool {
     return file_put_contents($path, $json) !== false;
 }
 
+/**
+ * 统一空态：一句话说明「为什么空」+ 下一步 + 一个直达动作。
+ *
+ * 【为什么集中一处】空态是最容易变成"死胡同"的地方——用户第一次进来看到「暂无」
+ * 就退出了。各页手写会越写越不一样，也没法统一审计；这里给一个组件，
+ * 审计脚本按 empty-next 标记即可准确统计"有多少空态给了出路"。
+ */
+function empty_state(string $title, string $hint = '', string $cta = '', string $href = ''): string {
+    $html = '<div class="empty empty-next"><b class="empty-t">' . htmlspecialchars($title) . '</b>';
+    if ($hint !== '') $html .= '<p class="empty-h">' . htmlspecialchars($hint) . '</p>';
+    if ($cta !== '' && $href !== '') $html .= '<a class="btn btn-p btn-sm" href="' . htmlspecialchars($href) . '">' . htmlspecialchars($cta) . '</a>';
+    return $html . '</div>';
+}
+
 function is_installed(): bool {
     $settings = json_read(DATA_DIR . '/settings.json');
     return !empty($settings['installed']);
@@ -932,7 +946,7 @@ function save_tags(array $data): bool {
 }
 
 // ─── UI ───────────────────────────────────────────
-if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260919k');   // 20260919b: 团队视角看板/树视觉对齐
+if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260919l');   // 20260919b: 团队视角看板/树视觉对齐
 
 function admin_header(string $title): void {
 security_headers();

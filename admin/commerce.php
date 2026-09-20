@@ -125,7 +125,7 @@ admin_header('商业中心');
       <table>
         <thead><tr><th>商品</th><th>类型</th><th>定价</th><th>库存</th><th>作者</th><th>分成</th><th>销量</th><th>状态</th><th>促销</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($products)): ?><tr><td colspan="8" class="empty">暂无商品，用下方表单发布 Skill 或创建 API 套餐</td></tr><?php endif; ?>
+          <?php if (empty($products)): ?><tr><td colspan="8"><?=empty_state('还没有上架任何东西', '可以发布自己的 Skill / API 套餐，也可以先从生态市场拿一个现成的再改。', '从生态市场挑一个', '/xmp/marketplace')?></td></tr><?php endif; ?>
           <?php foreach ($products as $p): ?>
           <tr>
             <td>

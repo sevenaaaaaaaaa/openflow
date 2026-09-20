@@ -118,7 +118,7 @@ admin_header('聚合页管理');
       <table>
         <thead><tr><th>标题</th><th>URL</th><th>聚合方式</th><th>匹配文章</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($pages)): ?><tr><td colspan="6" class="empty">暂无聚合页</td></tr><?php endif; ?>
+          <?php if (empty($pages)): ?><tr><td colspan="6"><?=empty_state('还没有聚合页', '聚合页把同一主题的内容、工具、表单收在一页里，适合做导航页与转化页。', '用页面构建器建一个', '/xmp/page-builder')?></td></tr><?php endif; ?>
           <?php foreach ($pages as $p):
             $matchCount = $aggregateCounts[$p['id']] ?? 0;
             $pmode = $p['aggregate_mode'] ?? 'tag';

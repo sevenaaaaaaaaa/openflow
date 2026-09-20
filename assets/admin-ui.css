@@ -361,3 +361,8 @@ body[data-sb="closed"] .of-selbar{left:14px}
 .sh-bars{display:flex;align-items:flex-end;gap:3px;height:26px;margin-top:6px}
 .sh-bars .sh-bar{width:7px;border-radius:2px 2px 0 0;background:var(--accent);opacity:.75}
 .sh-bars-l{font-size:10.5px;color:var(--muted);margin-left:6px;align-self:center}
+/* 统一空态：说明 + 下一步 + 直达动作 */
+.empty-next{display:flex;flex-direction:column;align-items:center;gap:8px;padding:34px 20px;text-align:center}
+.empty-next .empty-t{font-size:14px;font-weight:700}
+.empty-next .empty-h{margin:0;font-size:12.5px;color:var(--muted);line-height:1.7;max-width:52ch}
+.empty-next .btn{margin-top:4px}

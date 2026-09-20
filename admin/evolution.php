@@ -209,7 +209,7 @@ admin_header('系统体检与改进建议');
       <div>
         <h2 style="font-size:16px;font-weight:800;margin-bottom:12px">💡 迭代建议清单</h2>
         <?php if (empty($suggestions)): ?>
-        <div class="evo-card text-center text-muted" style="padding:40px">🎉 暂无建议，一切健康。点击"立即扫描"让平台自我体检。</div>
+        <div class="evo-card"><?=empty_state('暂无待处理建议', '这轮体检没发现需要处理的问题。体检会扫描后端报错、前端报错、404 与空数据模块。', '立即体检一次', '/xmp/evolution?scan=1')?></div>
         <?php else: ?>
         <?php foreach ($suggestions as $s): $isOpen = ($s['status'] ?? 'open') === 'open'; $pw = $s['personal_weight'] ?? 0; ?>
         <div class="evo-card" style="<?=!$isOpen?'opacity:.5':''?>">

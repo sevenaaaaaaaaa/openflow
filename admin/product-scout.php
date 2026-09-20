@@ -69,7 +69,7 @@ admin_header('产品发现');
     <div class="card" style="margin-bottom:24px">
       <h2>待审草稿（<?=count($drafts)?>）</h2>
       <?php if (!$drafts): ?>
-      <p class="hint">暂无。点右上角「立即运行」或等每日 cron 自动跑。</p>
+      <?=empty_state('还没有发现结果', '产品发现会按种子匹配开源项目与新产品；也可以等每日 cron 自动跑一轮。', '立即运行一次', '/xmp/product-scout?run=1')?>
       <?php else: ?>
       <table class="tbl">
         <thead><tr><th>标题</th><th>生成时间</th><th>摘要</th><th>操作</th></tr></thead>

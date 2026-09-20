@@ -38,7 +38,7 @@ if (!is_array($data) || !isset($data['entry'])) {
 $base = [
     'palette_indexed' => 192,       // 下限：⌘K 覆盖全部真实页面（S1 前 41/222=18%，现在 192/192）
     'orphan_suspicious' => 0,       // 上限：可疑孤岛
-    'empty_without_action' => 76,   // 上限：空态只写"暂无"
+    'empty_without_action' => 66,   // 上限：空态只写"暂无"（S2 前 76；已改 10 个核心页）
     'mobile_without_hint' => 88,    // 上限：无窄屏线索
 ];
 

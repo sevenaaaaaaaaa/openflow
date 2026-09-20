@@ -98,7 +98,7 @@ admin_header('创作台');
 
     <div class="card">
       <h2>历史脚本（<?=count($scripts)?>）</h2>
-      <?php if (!$scripts): ?><p class="hint">暂无。</p><?php else: ?>
+      <?php if (!$scripts): ?><?=empty_state('还没有脚本', '口播 / 短视频脚本可以先用 AI 起一版，再在编辑器里改。', '用 AI 生成脚本', '/xmp/create?tab=script')?><?php else: ?>
       <table class="tbl"><thead><tr><th>标题</th><th>时长/风格</th><th>创建时间</th><th></th></tr></thead><tbody>
       <?php foreach (array_slice($scripts, 0, 20) as $s): ?>
         <tr>
@@ -156,7 +156,7 @@ admin_header('创作台');
 
     <div class="card">
       <h2>历史幻灯片（<?=count($decks)?>）</h2>
-      <?php if (!$decks): ?><p class="hint">暂无。</p><?php else: ?>
+      <?php if (!$decks): ?><?=empty_state('还没有幻灯片', '把一篇文章或一份大纲转成幻灯片，比从空白开始快得多。', '从文章生成幻灯片', '/xmp/create?tab=slides')?><?php else: ?>
       <table class="tbl"><thead><tr><th>标题</th><th>风格</th><th>页数</th><th>创建时间</th><th></th></tr></thead><tbody>
       <?php foreach (array_slice($decks, 0, 20) as $d): ?>
         <tr>

@@ -116,7 +116,7 @@ a.od-kpi:hover{border-color:var(--border-strong)}
         </tr></thead>
         <tbody>
         <?php if (empty($orders)): ?>
-          <tr><td colspan="7"><div class="of-empty" style="border:0;margin:0"><?=($q||$status)?'没有匹配的订单，试试清除筛选。':'还没有订单。用户在商城 / 课程 / 会员页付款后会出现在这里。'?></div></td></tr>
+          <tr><td colspan="7"><?php if ($q || $status): ?><div class="of-empty" style="border:0;margin:0">没有匹配的订单，试试清除筛选。</div><?php else: ?><?=empty_state('还没有订单', '用户在商城 / 课程 / 会员页完成付款后，订单会出现在这里；商品与支付方式在「数字商品」里配置。', '去上架商品', '/xmp/commerce')?><?php endif; ?></td></tr>
         <?php endif; ?>
         <?php foreach ($orders as $o):
           $st = $o['status'] ?? '';
