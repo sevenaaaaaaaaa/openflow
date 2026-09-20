@@ -42,7 +42,8 @@ if (!defined('OF_EMBED')) admin_header('审计日志');
 // B3：浅 CRUD 页归并为本页的子 tab
 require_once __DIR__ . '/_subtabs.php';
 $SUBTABS = ['self' => ['审计日志', '', 'users'],
-            'act'  => ['活动记录', 'activity.php', 'activity']];
+            'act'  => ['活动记录', 'activity.php', 'activity'],
+            'usage' => ['使用分析', 'page-usage.php', 'settings']];
 $__sub = of_subtab_begin($SUBTABS);
 if ($__sub === 'self'):
 ?>

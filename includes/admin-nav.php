@@ -31,7 +31,7 @@ const ADMIN_NAV_ALIAS = [
     'abtests-stats' => 'abtests', 'sentiment-report' => 'sentiment', 'survey-agent' => 'survey', 'survey-org' => 'survey',
     'brain' => 'studio', 'decision-trace' => 'studio', 'ai-config' => 'studio', 'ai-usage' => 'studio', 'knowledge' => 'studio', 'driver' => 'deck', 'action-approvals' => 'deck', 'demo-growth' => 'deck', 'flow' => 'deck', 'safefix' => 'deck', 'evolution' => 'deck', 'workspace' => 'deck',
     'media-upload' => 'media', 'export' => 'data-export', 'export-all' => 'data-export', 'onboarding' => 'deck', 'debug' => 'devops',
-    'notion-sync' => 'data-sync', 'languages' => 'settings', 'storage' => 'health-check', 'activity' => 'audit-log', 'footer-links' => 'site-builder',
+    'notion-sync' => 'data-sync', 'languages' => 'settings', 'storage' => 'health-check', 'activity' => 'audit-log', 'page-usage' => 'audit-log', 'footer-links' => 'site-builder',
     'mail-settings' => 'email', 'email-deliverability' => 'email', 'connections' => 'settings', 'payment-settings' => 'shop-settings', 'seo' => 'seo-center', 'seo-tools' => 'seo-center', 'seo-batch' => 'seo-center',
     'seo-console' => 'seo-center', 'redirects' => 'seo-center', 'structured-data' => 'seo-center', 'structured' => 'seo-center', 'bot-insights' => 'seo-center', 'landing' => 'landing-pages',
     'image-seo' => 'seo-center', 'index' => 'deck', 'plugin-page' => 'plugins',
