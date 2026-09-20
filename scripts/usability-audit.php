@@ -54,26 +54,15 @@ foreach (admin_nav_build(true) as $area) {
     }
 }
 
-// 后台页 → 期望路径（admin/foo.php → /xmp/foo；admin/index.php → /xmp/dashboard）
+// 后台页 → 期望路径：口径来自 lib/AdminInventory.php（单一来源）
 // 301 别名（.htaccess）与被 include 的片段都不算"真实页面"——
 // 否则"⌘K 覆盖率"会因为别名而被虚高/虚低，指标就没意义了。
-$aliases = [];
-$htSrc = (string) @file_get_contents($ROOT . '/.htaccess');
-if ($htSrc !== '' && preg_match_all('#^RewriteRule\s+\^xmp/([a-z0-9-]+)/\?\$\s+\S+\s+\[R=301#mi', $htSrc, $am)) {
-    foreach ($am[1] as $a) $aliases[(string) $a] = true;
-}
-$pages = [];
-$excludedAlias = 0;
-$excludedFragment = 0;
-foreach (glob($ROOT . '/admin/*.php') ?: [] as $f) {
-    $base = basename($f, '.php');
-    if (str_starts_with($base, '_')) { $excludedFragment++; continue; }
-    if (in_array($base, ['config', 'login', 'logout'], true)) { $excludedFragment++; continue; }
-    if (isset($aliases[$base])) { $excludedAlias++; continue; }
-    $own = (string) @file_get_contents($f);
-    if (!str_contains($own, 'admin_header(') && !str_contains($own, 'admin_footer(')) { $excludedFragment++; continue; }
-    $pages[$base] = '/xmp/' . ($base === 'index' ? 'dashboard' : $base);
-}
+require_once $ROOT . '/lib/AdminInventory.php';
+$inv = admin_page_inventory($ROOT);
+$pages = $inv['pages'];
+$aliases = $inv['alias_301'];
+$excludedAlias = count($aliases);
+$excludedFragment = count($inv['fragments']);
 
 // ── 2. 入口来源：侧栏 / 命令面板 / 站内被链接 / 默认落地 ──
 require_once $ROOT . '/lib/CommandPalette.php';
