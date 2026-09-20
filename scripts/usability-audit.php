@@ -55,11 +55,23 @@ foreach (admin_nav_build(true) as $area) {
 }
 
 // 后台页 → 期望路径（admin/foo.php → /xmp/foo；admin/index.php → /xmp/dashboard）
+// 301 别名（.htaccess）与被 include 的片段都不算"真实页面"——
+// 否则"⌘K 覆盖率"会因为别名而被虚高/虚低，指标就没意义了。
+$aliases = [];
+$htSrc = (string) @file_get_contents($ROOT . '/.htaccess');
+if ($htSrc !== '' && preg_match_all('#^RewriteRule\s+\^xmp/([a-z0-9-]+)/\?\$\s+\S+\s+\[R=301#mi', $htSrc, $am)) {
+    foreach ($am[1] as $a) $aliases[(string) $a] = true;
+}
 $pages = [];
+$excludedAlias = 0;
+$excludedFragment = 0;
 foreach (glob($ROOT . '/admin/*.php') ?: [] as $f) {
     $base = basename($f, '.php');
-    if (str_starts_with($base, '_')) continue;                       // 片段文件
-    if (in_array($base, ['config', 'login', 'logout'], true)) continue;
+    if (str_starts_with($base, '_')) { $excludedFragment++; continue; }
+    if (in_array($base, ['config', 'login', 'logout'], true)) { $excludedFragment++; continue; }
+    if (isset($aliases[$base])) { $excludedAlias++; continue; }
+    $own = (string) @file_get_contents($f);
+    if (!str_contains($own, 'admin_header(') && !str_contains($own, 'admin_footer(')) { $excludedFragment++; continue; }
     $pages[$base] = '/xmp/' . ($base === 'index' ? 'dashboard' : $base);
 }
 
@@ -71,14 +83,6 @@ if (function_exists('cp_items')) {
         $p2 = (string) parse_url((string) ($it['url'] ?? ''), PHP_URL_PATH);
         if ($p2 !== '') $cpPaths[$p2] = true;
     }
-}
-
-// .htaccess 里的 301 别名：/xmp/old → /xmp/parent?tab=… 这类页面本身"不需要入口"，
-// 但它们是独立文件（等于同一屏有两套地址），要单独统计而不是算成孤岛。
-$aliases = [];
-$ht = (string) @file_get_contents($ROOT . '/.htaccess');
-if ($ht !== '' && preg_match_all('#^RewriteRule\s+\^xmp/([a-z0-9-]+)/\?\$\s+(\S+)\s+\[R=301#mi', $ht, $mm, PREG_SET_ORDER)) {
-    foreach ($mm as $m2) $aliases[(string) $m2[1]] = (string) $m2[2];
 }
 
 // 站内被链接：扫后台与外壳代码里出现的 /xmp/<page>（胶囊导航、快速新建菜单、列表页里的行链接都算）
@@ -107,15 +111,9 @@ $navOnly = array_filter($entry, static fn(array $v): bool => $v === ['nav']);
 $paletteOnly = array_filter($entry, static fn(array $v): bool => $v === ['palette']);
 $orphan = array_keys(array_filter($entry, static fn(array $v): bool => $v === []));
 
-// 先判定"它到底是不是一个页面"：真正的页面会调用 admin_header()/admin_footer()；
-// 被 include 的片段与工具（*-lib / *-functions / page-editor-config 等）不算页面。
-$isPage = [];
-foreach ($pages as $base => $path) {
-    $own = (string) @file_get_contents($ROOT . '/admin/' . $base . '.php');
-    $isPage[$base] = str_contains($own, 'admin_header(') || str_contains($own, 'admin_footer(');
-}
-$fragments = array_values(array_filter($orphan, static fn(string $b): bool => !$isPage[$b]));
-$orphanPages = array_values(array_filter($orphan, static fn(string $b): bool => $isPage[$b]));
+// 清单里已经只剩"真实页面"，这里直接按孤岛分类
+$fragments = [];
+$orphanPages = $orphan;
 $aliasPages = array_values(array_filter($orphanPages, static fn(string $b): bool => isset($aliases[$b])));
 $orphanPages = array_values(array_filter($orphanPages, static fn(string $b): bool => !isset($aliases[$b])));
 
@@ -157,6 +155,7 @@ foreach ($pages as $base => $path) {
 $report = [
     'generated_at' => date('c'),
     'pages_total' => count($pages),
+    'excluded' => ['alias_301' => $excludedAlias, 'fragments' => $excludedFragment],
     'nav' => [
         'areas' => count(admin_nav_build(true)),
         'items_depth1' => count(array_filter($navPaths, static fn(array $v): bool => $v['depth'] === 1)),
@@ -169,6 +168,8 @@ $report = [
         'orphan_tab_like' => count($orphanTabLike),
         'fragments_not_pages' => count($fragments),
         'alias_301' => count($aliasPages),
+        'excluded_alias' => $excludedAlias,
+        'excluded_fragments' => $excludedFragment,
         'nav_only' => count($navOnly),
         'palette_only' => count($paletteOnly),
         'palette_indexed' => count(array_filter($pages, static fn(string $p2): bool => isset($cpPaths[$p2]))),
@@ -195,7 +196,8 @@ if (in_array('--json', $argv ?? [], true)) {
     echo json_encode($report, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), "\n";
 } else {
     $r = $report;
-    printf("可用性审计（%d 个后台页）\n\n", $r['pages_total']);
+    printf("可用性审计（%d 个真实页面；另有 %d 个 301 别名与 %d 个片段文件不计入）\n\n",
+        $r['pages_total'], $r['excluded']['alias_301'], $r['excluded']['fragments']);
     printf("① 侧栏导航：%d 个区 · 直达 %d · 二级 %d\n", $r['nav']['areas'], $r['nav']['items_depth1'], $r['nav']['items_depth2']);
     printf("   有入口 %d · 孤岛 %d（可疑 %d · 疑似 tab 页的独立版 %d · 301 旧地址别名 %d · 片段/工具非页面 %d）\n",
         $r['entry']['with_entry'], $r['entry']['orphan'], $r['entry']['orphan_suspicious'],

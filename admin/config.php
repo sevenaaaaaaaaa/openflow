@@ -2170,16 +2170,27 @@ var FC_PALETTE_ITEMS = <?=json_encode(cp_items(), JSON_UNESCAPED_UNICODE)?>;
   function render(){
     var q = input.value.trim().toLowerCase();
     if (q) {
-      items = allItems.filter(function(it){
-        var hay = (it.label + ' ' + (it.keywords||'') + ' ' + it.section).toLowerCase();
-        if (hay.indexOf(q) >= 0) return true;
-        if (q.length >= 2) {
+      // 相关度打分 + 稳定排序：自动索引页加入后条目变多，不能只靠"命中顺序"
+      var scored = [];
+      allItems.forEach(function(it, idx){
+        var label = (it.label||'').toLowerCase();
+        var kw = (it.keywords||'').toLowerCase();
+        var hay = label + ' ' + kw + ' ' + (it.section||'').toLowerCase();
+        var s = 0;
+        if (label === q) s = 100;
+        else if (label.indexOf(q) === 0) s = 60;          // 标题前缀命中
+        else if (label.indexOf(q) >= 0) s = 40;           // 标题包含
+        else if (kw.indexOf(q) >= 0) s = 25;              // 关键词命中
+        else if (hay.indexOf(q) >= 0) s = 12;             // 分区/其它命中
+        else if (q.length >= 2) {                          // 逐字兜底
           var all = true;
           for (var i=0;i<q.length;i++){ if (hay.indexOf(q[i])<0){ all=false; break; } }
-          return all;
+          if (all) s = 5;
         }
-        return false;
-      }).slice(0, 12);
+        if (s > 0) scored.push({ s: s, w: (it.weight||0), i: idx, it: it });
+      });
+      scored.sort(function(a,b){ return (b.s - a.s) || (a.w - b.w) || (a.i - b.i); });
+      items = scored.slice(0, 12).map(function(r){ return r.it; });
       /* 自然语言兜底：没命中或命中少时，让 AI 助手直接处理这句话 */
       items.push({ label: '让 AI 助手处理「' + input.value.trim() + '」', icon: '✨', section: '🤖 AI', action: 'ask', url: '' });
     } else {
