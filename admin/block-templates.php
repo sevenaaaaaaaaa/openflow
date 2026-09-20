@@ -51,7 +51,7 @@ admin_header('模块组合模板');
 
     <div style="display:flex;gap:16px;flex-wrap:wrap">
       <div style="flex:2;min-width:320px">
-        <?php if (!$templates): ?><div class="card"><div class="empty" style="padding:20px">暂无模板。</div></div><?php endif; ?>
+        <?php if (!$templates): ?><div class="card"><?=empty_state('还没有区块模板', '模板是复用区块组合的最短路径；在页面构建器里把常用组合存成模板后，这里会列出来。', '去页面构建器', '/xmp/page-builder')?></div><?php endif; ?>
         <?php foreach ($templates as $t): $seed = btpl_is_seed((string)$t['id']); ?>
         <div class="card" style="margin-bottom:10px">
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">

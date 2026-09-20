@@ -25,7 +25,7 @@ admin_header('行动审批中心');
     <div class="panel">
       <div class="p-head"><h3>行动审计队列</h3><span class="p-sub mono">READ ONLY · PRODUCTION EXECUTION OFF</span></div>
       <div class="p-body">
-        <?php if(!$view['rows']): ?><div class="of-empty" style="border:0">暂无可验证的行动建议。增长大脑采纳建议或结构化行动进入共享投影后会显示在这里。</div><?php endif; ?>
+        <?php if(!$view['rows']): ?><?=empty_state('暂无可验证的行动建议', '增长大脑采纳建议、或结构化行动进入共享投影后，会出现在这里等待验证。', '去看增长大脑', '/xmp/brain')?><?php endif; ?>
         <?php foreach($view['rows'] as $row): $a=$row['action'];$ap=$row['approval'];$ex=$row['execution'];$ev=$row['evaluation'];
           $approvalText=$ap ? (string)($ap['actor_type']??'').' / '.(string)($ap['actor_id']??'') : '尚无';
           $executionText=$ex ? (string)($ex['executor']??'').' / '.(string)($ex['status']??'') : '尚无';

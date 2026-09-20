@@ -131,6 +131,7 @@ foreach ($orphanPages as $b) {
 
 // ── 3. 空态质量 + 4. 移动端准备度 ──
 $emptyNoAction = [];
+$emptyRefs = [];
 $emptyWithAction = [];
 $noEmptyState = [];
 $noMediaQuery = [];
@@ -139,14 +140,30 @@ foreach ($pages as $base => $path) {
     if ($src === '') continue;
     // 后台页是否处理窄屏
     if (!preg_match('/@media\s*\(/', $src) && !str_contains($src, 'max-width:') && !str_contains($src, 'overflow-x')) $noMediaQuery[] = $base;
-    // 空态：找 "暂无/还没有/没有数据" 附近 ±360 字符内是否有可点击的下一步
-    if (preg_match_all('/(暂无|还没有|没有数据|尚无)[^<]{0,40}/u', $src, $m, PREG_OFFSET_CAPTURE)) {
+    // 空态质量：优先看统一组件 empty_state()（标记 empty-next）——**必须真的带链接**，
+    // 只有标记没有链接不算"给了出路"（防止为了指标好看只贴个标记）。
+    // 三种写法都算：① 统一组件 empty_state() 且带了 CTA 参数（4 个参数）
+    //                ② 手写的 empty-next 标记且块内有链接
+    //                ③ 兜底：旧写法「暂无」附近 ±360 字符有链接/按钮
+    $helperCalls = [];
+    if (preg_match_all('/empty_state\(((?:[^()]|\([^()]*\))*)\)/s', $src, $hc)) $helperCalls = $hc[1];
+    $helperWithCta = false;
+    foreach ($helperCalls as $args) if (substr_count($args, ',') + 1 >= 4) { $helperWithCta = true; break; }
+    $markerBlocks = [];
+    if (preg_match_all('#<div class="empty empty-next">(.*?)</div>#s', $src, $mb)) $markerBlocks = $mb[1];
+    if ($helperWithCta) {
+        $emptyWithAction[] = $base;
+    } elseif ($markerBlocks !== []) {
+        $hasLink = false;
+        foreach ($markerBlocks as $blk) if (preg_match('/<a\s/', $blk)) { $hasLink = true; break; }
+        if ($hasLink) $emptyWithAction[] = $base; else $emptyNoAction[] = $base;
+    } elseif (preg_match_all('/(暂无|还没有|没有数据|尚无)[^<]{0,40}/u', $src, $m, PREG_OFFSET_CAPTURE)) {
         $has = false;
         foreach ($m[1] as [$_, $off]) {
             $win = substr($src, max(0, $off - 360), 720);
             if (preg_match('/<a\s|btn|href="/', $win)) { $has = true; break; }
         }
-        if ($has) $emptyWithAction[] = $base; else $emptyNoAction[] = $base;
+        if ($has) { $emptyWithAction[] = $base; } else { $emptyNoAction[] = $base; }
     } else {
         $noEmptyState[] = $base;
     }
@@ -181,6 +198,18 @@ $report = [
     ],
     'mobile_ready' => ['with_hint' => count($pages) - count($noMediaQuery), 'without_hint' => count($noMediaQuery)],
     'lists' => [
+        'empty_without_action_ranked' => (static function () use ($emptyNoAction, $haystack, $ROOT): array {
+            $rows = [];
+            foreach ($emptyNoAction as $b) {
+                $path = '/xmp/' . $b;
+                $own = (string) @file_get_contents($ROOT . '/admin/' . $b . '.php');
+                $hay = $own !== '' ? str_replace($own, '', $haystack) : $haystack;
+                $n = preg_match_all('#' . preg_quote($path, '#') . '(?![-a-z0-9])#', $hay);
+                $rows[] = ['page' => $b, 'refs' => (int) $n];
+            }
+            usort($rows, static fn(array $a, array $b): int => $b['refs'] <=> $a['refs']);
+            return array_map(static fn(array $r): string => sprintf('%s (被引用 %d 次)', $r['page'], $r['refs']), $rows);
+        })(),
         'orphan' => array_map(static fn(string $b): string => $b . '  (' . $pages[$b] . ')', $orphan),
         'orphan_suspicious' => array_map(static fn(string $b): string => $b . '  (' . $pages[$b] . ')', $orphanSuspicious),
         'orphan_tab_like' => array_map(static fn(string $b): string => $b . '  (' . $pages[$b] . ')', $orphanTabLike),
@@ -219,9 +248,9 @@ if (in_array('--json', $argv ?? [], true)) {
         echo "\n仅命令面板可达前 12：\n";
         foreach (array_slice($r['lists']['palette_only'], 0, 12) as $line) echo "   {$line}\n";
     }
-    if ($r['lists']['empty_without_action']) {
-        echo "\n空态只写「暂无」、没给下一步（前 12）：\n";
-        foreach (array_slice($r['lists']['empty_without_action'], 0, 12) as $line) echo "   {$line}\n";
+    if ($r['lists']['empty_without_action_ranked']) {
+        echo "\n空态没给下一步的页面（按被引用次数排序，前 12）：\n";
+        foreach (array_slice($r['lists']['empty_without_action_ranked'], 0, 12) as $line) echo "   {$line}\n";
     }
 }
 
