@@ -34,11 +34,12 @@ if (!is_array($data) || !isset($data['entry'])) {
 }
 
 // 基线（2026-09-20 实测）；这些是"不许变坏"的下限/上限
+// 口径：只统计"真实页面"（排除 301 别名与被 include 的片段），见 scripts/usability-audit.php
 $base = [
-    'palette_indexed' => 41,        // 下限：命令面板覆盖页数
-    'orphan_suspicious' => 2,       // 上限：可疑孤岛
-    'empty_without_action' => 82,   // 上限：空态只写"暂无"
-    'mobile_without_hint' => 109,   // 上限：无窄屏线索
+    'palette_indexed' => 192,       // 下限：⌘K 覆盖全部真实页面（S1 前 41/222=18%，现在 192/192）
+    'orphan_suspicious' => 0,       // 上限：可疑孤岛
+    'empty_without_action' => 76,   // 上限：空态只写"暂无"
+    'mobile_without_hint' => 88,    // 上限：无窄屏线索
 ];
 
 $e = $data['entry'];
