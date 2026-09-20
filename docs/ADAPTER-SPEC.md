@@ -127,8 +127,10 @@
 |------|------|------|
 | 1. 筛选候选 | `data/ecosystem/candidates.json` + `ADAPTER-CANDIDATES.md` | ✅ 已完成（7 类 × 4） |
 | 2. 源接入与能力画像 | `capability-profile.json` | ✅ `lib/AdapterIntake.php` |
-| 3. 映射与合成 | `plugins/_drafts/<id>/{plugin.json,plugin.php}` + 契约测试 | ⏳ 待建 `lib/AdapterForge.php` |
-| 4. 验证闸门与报告 | `verification-report.json` + 徽章 | ⏳ 待建 `lib/AdapterVerify.php` |
+| 3. 映射与合成 | `plugins/_drafts/<id>/{plugin.json,plugin.php}` + 契约测试 | ✅ `lib/AdapterForge.php` |
+| 4. 验证闸门与报告 | `verification-report.json` + 徽章 | ✅ `lib/AdapterVerify.php` |
+| 0. 入口 | `data/ecosystem/submissions.json`（第三方自助 + 候选池灌入） | ✅ `lib/AdapterSubmission.php`（见 §八） |
+| 3.5 编排 | intake→forge→闸门 的顺序只写一处 | ✅ `lib/AdapterPipeline.php`（CLI 与 worker 共用） |
 | 5. 人审与上架 | 草稿进 `data/ecosystem/review-queue.json` → 市场 | ✅ `admin/ecosystem.php`（`/xmp/ecosystem`）+ `scripts/review-adapters.php` |
 
 ### 7.1 第二轮：AI 补全真实调用（已跑通）
@@ -197,3 +199,80 @@ php scripts/forge-adapter.php binwiederhier/ntfy --complete
 
 **已验证**：`binwiederhier/ntfy`（Apache-2.0，v2.28.0，AI 补全 0 TODO，99 行）上架 →
 市场列表出现「官方适配」徽章、详情页显示"官方主动适配"与上游链接、后台「已上架适配」表格可跳到插件页启用。
+
+---
+
+## 八、自助入驻（2026-09-20 新增）
+
+> 在此之前，整条流水线只有**我们**能触发（`php scripts/forge-adapter.php <repo>`）。
+> 于是生态市场的供给上限 = 我们自己的手速：28 个候选 → 人审队列 4 → 实际上架 1。
+> 「生态」这个词要成立，入口必须对外开放——**他们来入驻**，而不是我们去适配。
+
+### 8.1 两段队列
+
+```
+第三方（/developers#submit）──┐
+                             ├─▶ 提交队列 submissions.json ──cron──▶ 流水线 ──▶ 人审队列 review-queue.json ──▶ 上架
+候选池（seed，运维触发）──────┘        （限流·防重·重试）      （intake→forge→闸门）      （批准/拒绝/上架）
+```
+
+**关键取舍：提交与执行解耦。** 提交是毫秒级的写队列，在 Web 请求里完成；
+跑流水线要联网抓仓库、可能调模型，几十秒起步——绝不能放在 Web 请求里，必然超时。
+
+存量候选池的「批量吞吐」与第三方的「自助入驻」**走同一条队列、同一条流水线、同一个后台**，
+而不是两套平行实现——否则两边会各自漂移。
+
+### 8.2 入口
+
+| 通道 | 地址 | 鉴权 |
+|---|---|---|
+| 前台表单 | `/developers#submit` | 需登录会员 |
+| API 提交 | `POST /api/developer`（`action=submit_adapter`，字段 `source` / `note`） | 需登录会员 |
+| API 查进度 | `GET /api/developer?action=adapter_status&ticket=…` | **无需登录**（上游维护者不必先注册才能看进度） |
+| 后台 | `/xmp/ecosystem` 顶部「自助提交队列」 | `plugins` 权限 |
+| 命令行 | `php scripts/adapter-queue.php list\|add\|seed\|run\|requeue\|reject\|config` | 服务器本机 |
+
+### 8.3 防滥用（入口一开就可能被刷，AI 额度是真金白银）
+
+| 闸门 | 默认值 | 位置 |
+|---|---|---|
+| 总开关 | 开 | `data/ecosystem/intake-config.json` |
+| 每人每日 | 3 | 同上（`per_submitter_daily`） |
+| 全站每日 | 20 | 同上（`global_daily`） |
+| 单轮 cron 处理 | 1 条 | 同上（`per_tick`） |
+| 失败重试上限 | 2 | 同上（`max_attempts`） |
+| 同仓库防重 | 排队中/进行中/已处理的不再受理，返回原受理编号 | `adapter_submit()` |
+| 已有草稿 / 已上架 | 直接拒绝 | `adapter_submit()` |
+| 无许可证短路 | 在 intake 后即 `blocked`，**不进入合成**（不白花额度） | `adapter_pipeline_run()` |
+
+### 8.4 状态机
+
+```
+queued ──claim(原子)──▶ running ──┬─ 闸门跑完（passed 或未过）──▶ done    草稿保留，转人审
+                                  └─ 异常（解析/拉取/合成失败）──▶ 未达上限则回 queued 自动重试
+                                                                 达上限则 failed
+任何状态 ──人工──▶ rejected ／ requeue（**重置重试次数**）
+```
+
+> 注意两个刻意的设计：
+> ① **没过闸门不算失败**——那是结论，不是故障；草稿保留给人审看失败项。
+>   只有连闸门都没跑到才算 `failed`。
+> ② **人工 requeue 会重置 attempts**——否则一条用满重试的记录点「重排」后会立刻又变 failed，
+>   操作者看到的是"点了没反应"。
+
+### 8.5 隐私
+
+公开状态接口（`adapter_sub_public()`）只返回仓库、状态、闸门结论、失败项与展示名，
+**不返回提交者邮箱或会员 ID**——凭受理编号就能查的接口，不能顺带泄露提交人。
+
+### 8.6 相关文件
+
+| 文件 | 职责 |
+|---|---|
+| `lib/AdapterSubmission.php` | 提交队列：校验 / 防重 / 限流 / 状态机 / worker / 候选池灌入 |
+| `lib/AdapterPipeline.php` | **流水线编排的单一来源**（CLI、cron worker、后台「立刻跑一条」共用） |
+| `api/developer.php` | `submit_adapter` / `adapter_status` |
+| `api/cron.php` | worker tick（按配额逐条跑） |
+| `admin/ecosystem.php` | 后台两段队列与配额设置 |
+| `scripts/adapter-queue.php` | 命令行 |
+| `tests/adapter_submission_test.php` | 契约测试（全程离线：网络与 AI 都是注入的假实现） |
