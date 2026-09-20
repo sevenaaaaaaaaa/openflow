@@ -21,15 +21,18 @@ require_once "$root/lib/McpGuard.php";
 
 // ── 1. 服务端声明的工具全部登记在案 ──
 $src = file_get_contents("$root/mcp-server.php");
-preg_match_all("/'name'\s*=>\s*'([a-z0-9_]+)'/", $src, $m);
+// 工具清单的单一来源是 lib/McpTools.php（mcp-server 与开发者页共用），不再从 server 文本里抠
+$toolsSrc = file_get_contents("$root/lib/McpTools.php");
+preg_match_all("/'name'\s*=>\s*'([a-z0-9_]+)'/", $toolsSrc, $m);
 $declared = array_values(array_unique($m[1]));
 $meta = mcp_tool_meta();
-ok(count($declared) > 0, '没能从 mcp-server.php 解析出工具清单（提取正则失效？）');
+ok(count($declared) > 0, '没能从 lib/McpTools.php 解析出工具清单（提取正则失效？）');
+ok(str_contains($src, 'mcp_tools()'), 'mcp-server.php 没有使用共享工具注册表（mcp_tools()）—— 会导致文档与实现漂移');
 foreach ($declared as $t) {
     ok(isset($meta[$t]), "工具 {$t} 没在 mcp_tool_meta() 登记 —— 未登记等于没有权限校验就对外开放");
 }
 foreach (array_keys($meta) as $t) {
-    ok(in_array($t, $declared, true), "注册表里的 {$t} 在 mcp-server.php 已不存在，注册表该同步删除");
+    ok(in_array($t, $declared, true), "注册表里的 {$t} 在 lib/McpTools.php 已不存在，注册表该同步删除");
 }
 
 // ── 2. scope 合法，写操作确实需要 write ──
