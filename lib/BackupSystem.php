@@ -277,11 +277,18 @@ function backup_run_if_due(): array {
     $cfg = backup_schedule_get();
     if (!backup_is_due($cfg)) return ['status' => 'skipped'];
     try {
-        $path = BackupSystem::createFullBackup('auto_' . date('Ymd_His'));
+        $name = 'auto_' . date('Ymd_His');
+        $path = BackupSystem::createFullBackup($name);
         $cfg['last_run'] = date('Y-m-d H:i:s');
         json_write(backup_schedule_file(), $cfg);
         $pruned = backup_prune_auto((int)$cfg['keep']);
-        return ['status' => 'done', 'file' => basename((string)$path), 'pruned' => $pruned];
+        // 备份完成 ≠ 备份安全：本地这份和站点同一块盘。配置了异地就顺手推一份出去。
+        $offsite = ['status' => 'disabled'];
+        try {
+            require_once __DIR__ . '/OffsiteBackup.php';
+            $offsite = offsite_sync($name);
+        } catch (Throwable $e) { $offsite = ['status' => 'error', 'detail' => $e->getMessage()]; }
+        return ['status' => 'done', 'file' => basename((string)$path), 'pruned' => $pruned, 'offsite' => $offsite];
     } catch (Throwable $e) {
         return ['status' => 'error', 'detail' => $e->getMessage()];
     }
