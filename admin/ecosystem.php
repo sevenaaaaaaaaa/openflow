@@ -12,6 +12,7 @@ require_perm('plugins');
 
 require_once __DIR__ . '/../lib/AdapterIntake.php';
 require_once __DIR__ . '/../lib/AdapterReview.php';
+require_once __DIR__ . '/../lib/AdapterSubmission.php';
 
 $drafts = dirname(__DIR__) . '/plugins/_drafts';
 $pluginsRoot = dirname(__DIR__) . '/plugins';
@@ -40,6 +41,56 @@ function eco_refresh(string $drafts, string $pluginsRoot, string $queueFile): ar
 
 $message = '';
 $messageType = 'ok';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sub_action'])) {
+    csrf_verify();
+    $sa = (string) $_POST['sub_action'];
+    $ticket = trim((string) ($_POST['ticket'] ?? ''));
+    if ($sa === 'cfg') {
+        $c = adapter_sub_config_set([
+            'enabled'             => isset($_POST['enabled']),
+            'per_submitter_daily' => (int) ($_POST['per_submitter_daily'] ?? 3),
+            'global_daily'        => (int) ($_POST['global_daily'] ?? 20),
+            'per_tick'            => (int) ($_POST['per_tick'] ?? 1),
+        ]);
+        $message = '✅ 已保存：自助提交' . ($c['enabled'] ? '开启' : '关闭')
+                 . ' · 每人每日 ' . $c['per_submitter_daily'] . ' · 全站每日 ' . $c['global_daily'];
+    } elseif ($sa === 'seed') {
+        $r = adapter_sub_seed(5, DATA_DIR . '/ecosystem/candidates.json');
+        $message = "✅ 从候选池灌入 {$r['added']} 条（跳过 {$r['skipped']} 条：已提交过 / 已上架 / 无法解析）";
+        $messageType = $r['added'] > 0 ? 'ok' : 'err';
+    } elseif ($sa === 'run') {
+        // 同步跑一条：联网抓仓库 + 可能调模型，几十秒起步。正常路径是交给 cron，这里是运维的"立刻试一条"。
+        @set_time_limit(180);
+        $ai = null;
+        if (class_exists('AiCenter')) {
+            $ai = static function (string $system, string $user, array $opts): array {
+                $r = AiCenter::chat($system, $user, ['feature' => 'adapter_intake',
+                                                     'max_tokens' => (int) ($opts['max_tokens'] ?? 2200)]);
+                return ['ok' => (bool) ($r['ok'] ?? false), 'text' => (string) ($r['text'] ?? ''),
+                        'error' => (string) ($r['error'] ?? '')];
+            };
+        }
+        $t = adapter_sub_tick(['limit' => 1, 'ai' => $ai]);
+        if ($t['processed'] === 0) {
+            $message = 'ℹ️ 队列里没有待处理项';
+            $messageType = 'err';
+        } else {
+            $row = $t['rows'][0];
+            $message = "✅ 已处理 {$row['slug']}：闸门 " . ($row['gate'] !== '' ? $row['gate'] : '未跑到')
+                     . ($row['error'] !== '' ? "（{$row['error']}）" : '');
+        }
+    } elseif ($ticket !== '' && ($sa === 'requeue' || $sa === 'reject')) {
+        $r = adapter_sub_act($ticket, $sa);
+        $message = !empty($r['ok'])
+            ? ($sa === 'requeue' ? "✅ {$ticket} 已重新排队" : "✅ {$ticket} 已拒绝")
+            : '❌ ' . (string) ($r['error'] ?? '操作失败');
+        $messageType = !empty($r['ok']) ? 'ok' : 'err';
+    } else {
+        $message = '❌ 缺少受理编号';
+        $messageType = 'err';
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eco_action'])) {
     csrf_verify();
@@ -100,12 +151,98 @@ admin_header('生态适配');
 <div class="admin-layout">
   <?php admin_sidebar('ecosystem'); ?>
   <div class="main eco-wrap">
-    <h1>生态适配 · 人审队列</h1>
-    <p class="sub">AI 生成草稿并自证；这里由人决定是否上架。上架后默认<b>不启用</b>，需到「插件」页开启。</p>
+    <h1>生态适配 · 入驻与人审</h1>
+    <p class="sub">两段队列：上面是<b>自助提交</b>（第三方提交仓库 → 自动跑流水线），下面是<b>人审</b>（AI 自证完的草稿由人决定是否上架）。上架后默认<b>不启用</b>，需到「插件」页开启。</p>
 
     <?php if ($message !== ''): ?>
     <div class="card" style="border-left:3px solid <?= $messageType === 'ok' ? 'var(--ok,#1a7f4b)' : 'var(--danger,#a02525)' ?>"><?= htmlspecialchars($message) ?></div>
     <?php endif; ?>
+
+    <?php
+      $subCfg = adapter_sub_config();
+      $subs = adapter_sub_all();
+      usort($subs, static fn(array $a, array $b): int => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? '')));
+      $subCount = [];
+      foreach ($subs as $s) { $k = (string) ($s['status'] ?? ''); $subCount[$k] = ($subCount[$k] ?? 0) + 1; }
+      $subLabel = ['queued' => '排队中', 'running' => '适配中', 'done' => '已处理', 'failed' => '失败', 'rejected' => '已拒绝'];
+    ?>
+    <h2 style="margin-top:6px">自助提交队列（<?= count($subs) ?>）</h2>
+    <p class="sub">
+      第三方在 <a href="/developers#submit">开发者页</a> 提交 GitHub 仓库后落到这里，由 <code>/api/cron</code> 逐个跑流水线
+      （每轮 <?= (int) $subCfg['per_tick'] ?> 条，失败自动重试至多 <?= (int) $subCfg['max_attempts'] ?> 次）。
+      跑完进入下方人审队列。<b>提交入口当前<?= $subCfg['enabled'] ? '开启' : '关闭' ?></b>。
+    </p>
+
+    <div class="eco-card">
+      <form method="post" id="intake-cfg" class="eco-actions" style="margin-top:0">
+        <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+        <label style="display:flex;gap:6px;align-items:center;font-size:13px">
+          <input type="checkbox" name="enabled" value="1" <?= $subCfg['enabled'] ? 'checked' : '' ?>> 开放自助提交
+        </label>
+        <label style="font-size:13px">每人每日
+          <input class="inp" type="number" name="per_submitter_daily" min="1" max="50" value="<?= (int) $subCfg['per_submitter_daily'] ?>" style="width:80px;min-height:34px;display:inline-block">
+        </label>
+        <label style="font-size:13px">全站每日
+          <input class="inp" type="number" name="global_daily" min="1" max="500" value="<?= (int) $subCfg['global_daily'] ?>" style="width:90px;min-height:34px;display:inline-block">
+        </label>
+        <label style="font-size:13px">每轮处理
+          <input class="inp" type="number" name="per_tick" min="1" max="5" value="<?= (int) $subCfg['per_tick'] ?>" style="width:70px;min-height:34px;display:inline-block">
+        </label>
+        <button class="btn" name="sub_action" value="cfg" type="submit">保存配额</button>
+        <button class="btn" name="sub_action" value="seed" type="submit" title="把 data/ecosystem/candidates.json 里的候选灌进同一条队列">从候选池灌入 5 条</button>
+        <button class="btn primary" name="sub_action" value="run" type="submit" title="同步跑一条，可能需要几十秒（正常情况下交给 cron 即可）">立刻跑一条</button>
+      </form>
+      <div class="eco-meta">
+        提交入口：<code>POST /api/developer</code>（<code>action=submit_adapter</code>）· 进度查询无需登录：<code>GET /api/developer?action=adapter_status&amp;ticket=…</code>
+        · 命令行：<code>php scripts/adapter-queue.php list|add|seed|run</code>
+      </div>
+    </div>
+
+    <?php if ($subs === []): ?>
+    <?= empty_state(
+          '还没有人提交开源工具',
+          '入口已经在开发者页开放（/developers#submit）。在等第一个提交之前，可以先把已筛选出的候选池灌进同一条队列跑起来——用上面的「从候选池灌入」按钮，或命令行 php scripts/adapter-queue.php seed。',
+          '去灌入候选池',
+          '#intake-cfg') ?>
+    <?php else: ?>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:720px">
+        <thead><tr style="background:var(--surface-2);text-align:left">
+          <th style="padding:10px 14px">受理编号</th><th style="padding:10px 14px">仓库</th>
+          <th style="padding:10px 14px">来源</th><th style="padding:10px 14px">状态</th>
+          <th style="padding:10px 14px">闸门</th><th style="padding:10px 14px">说明</th>
+          <th style="padding:10px 14px"></th>
+        </tr></thead>
+        <tbody>
+        <?php foreach (array_slice($subs, 0, 60) as $s): ?>
+          <?php $sr = (array) ($s['result'] ?? []); $st = (string) ($s['status'] ?? ''); ?>
+          <tr style="border-top:1px solid var(--border-soft)">
+            <td style="padding:10px 14px"><span class="eco-id" style="font-size:12px"><?= htmlspecialchars((string) $s['ticket']) ?></span></td>
+            <td style="padding:10px 14px"><a href="<?= htmlspecialchars((string) ($s['url'] ?? '')) ?>" rel="noopener nofollow" target="_blank"><?= htmlspecialchars((string) $s['slug']) ?></a></td>
+            <td style="padding:10px 14px;color:var(--muted)"><?= htmlspecialchars((string) ($s['submitter']['name'] ?? '—')) ?></td>
+            <td style="padding:10px 14px"><span class="eco-badge <?= $st === 'done' ? 'passed' : ($st === 'failed' || $st === 'rejected' ? 'blocked' : 'needs-review') ?>"><?= htmlspecialchars($subLabel[$st] ?? $st) ?></span></td>
+            <td style="padding:10px 14px"><code><?= htmlspecialchars((string) ($sr['gate_status'] ?? '—')) ?></code><?= (array) ($sr['failed'] ?? []) !== [] ? '<br><span style="color:#a02525;font-size:12px">' . htmlspecialchars(implode(', ', (array) $sr['failed'])) . '</span>' : '' ?></td>
+            <td style="padding:10px 14px;color:var(--muted)"><?= htmlspecialchars(mb_substr((string) ($s['message'] ?? ''), 0, 60)) ?></td>
+            <td style="padding:10px 14px;text-align:right;white-space:nowrap">
+              <?php if ($st !== 'rejected'): ?>
+              <form method="post" style="display:inline">
+                <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+                <input type="hidden" name="ticket" value="<?= htmlspecialchars((string) $s['ticket']) ?>">
+                <button class="btn" name="sub_action" value="requeue" type="submit">重排</button>
+                <button class="btn" name="sub_action" value="reject" type="submit">拒绝</button>
+              </form>
+              <?php endif; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <h2 style="margin-top:30px">人审队列（<?= count($entries) ?>）</h2>
 
     <?php if ($entries === []): ?>
     <?=empty_state('还没有适配草稿','适配即服务：用 php scripts/forge-adapter.php &lt;owner/repo&gt; --complete 编译一条候选（模板兜底 + AI 补全），再跑验证闸门；批准后进生态市场。','看生态市场', '/xmp/marketplace')?>

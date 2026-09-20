@@ -7,19 +7,68 @@
 require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/../lib/MemberSystem.php';
 require_once __DIR__ . '/../lib/SkillSystem.php';
+require_once __DIR__ . '/../lib/AdapterSubmission.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
 $action = $_POST['action'] ?? ($_GET['action'] ?? '');
 $member = member_current();
 
-if ($action !== 'public_status' && !$member) {
+if (!in_array($action, ['public_status', 'adapter_status'], true) && !$member) {
     http_response_code(401);
     echo json_encode(['ok' => false, 'error' => '请先登录'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 switch ($action) {
+    // ─── 提交一个开源工具，自动适配成插件（自助入驻） ───
+    // 只入队，不在这里跑流水线：intake 要联网抓仓库、forge 要调模型，几十秒起步，必然超时。
+    case 'submit_adapter': {
+        $source = trim((string) ($_POST['source'] ?? ''));
+        $note   = trim((string) ($_POST['note'] ?? ''));
+        if ($source === '') {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'error' => '请填写 GitHub 仓库地址'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $r = adapter_submit([
+            'source' => $source,
+            'note'   => $note,
+            'submitter' => [
+                'key'     => (string) ($member['id'] ?? ($member['email'] ?? '')),
+                'name'    => (string) ($member['name'] ?? '会员'),
+                'contact' => (string) ($member['email'] ?? ''),
+            ],
+        ]);
+        if (empty($r['ok'])) {
+            http_response_code(($r['duplicate_of'] ?? '') !== '' ? 409 : 422);
+            echo json_encode(['ok' => false, 'error' => $r['error'], 'ticket' => $r['duplicate_of'] ?? ''], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        try {
+            notify('developer', '开源工具自助提交', $source . '（' . ($member['name'] ?? '') . '）', '/xmp/ecosystem');
+        } catch (Throwable $e) {}
+        echo json_encode([
+            'ok' => true,
+            'ticket' => $r['ticket'],
+            'message' => '已受理。自动适配会在后台排队进行，用受理编号可随时查看进度；通过闸门后还需人工审核才会上架。',
+        ], JSON_UNESCAPED_UNICODE);
+        break;
+    }
+
+    // ─── 查提交进度（凭受理编号，无需登录） ───
+    case 'adapter_status': {
+        $ticket = trim((string) ($_GET['ticket'] ?? ($_POST['ticket'] ?? '')));
+        $item = $ticket !== '' ? adapter_sub_find($ticket) : null;
+        if ($item === null) {
+            http_response_code(404);
+            echo json_encode(['ok' => false, 'error' => '找不到这个受理编号'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        echo json_encode(['ok' => true, 'data' => adapter_sub_public($item)], JSON_UNESCAPED_UNICODE);
+        break;
+    }
+
     // ─── 申请成为开发者 ───
     case 'apply_developer':
         $bio = trim($_POST['bio'] ?? '');
