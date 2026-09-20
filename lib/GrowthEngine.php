@@ -342,9 +342,11 @@ class GrowthEngine {
         $s = self::state();
         $sig = $s['signals'] ?? [];
         $dist = [];
-        foreach (['bug','content','perf','routing','interaction'] as $k=>$label) {
+        foreach (['bug','content','perf','routing','interaction'] as $label) {
             $cnt = 0;
-            foreach ($sig as $key=>$v) if (str_contains($key, $k)) $cnt += $v;
+            // 修：原来写的是 `as $k => $label`，$k 是下标(0..4)，str_contains 收到 int 会 TypeError，
+            // 而且逻辑上永远匹配不到 —— 分布恒为空。这里用类别名做 needle。
+            foreach ($sig as $key => $v) if (str_contains((string) $key, $label)) $cnt += (int) $v;
             if ($cnt > 0) $dist[] = ['cat' => $label, 'n' => $cnt];
         }
         usort($dist, fn($a, $b) => $b['n'] <=> $a['n']);
