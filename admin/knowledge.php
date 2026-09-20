@@ -86,7 +86,7 @@ admin_header('知识库');
         <table>
           <thead><tr><th>标题</th><th>分类</th><th>标签</th><th>操作</th></tr></thead>
           <tbody>
-            <?php if (empty($docs)): ?><tr><td colspan="4" class="empty">暂无知识，先添加</td></tr><?php endif; ?>
+            <?php if (empty($docs)): ?><tr><td colspan="4"><?=empty_state('知识库还是空的', 'AI 检索的质量取决于里面有什么。最快的起步是把现有文档、SOP、FAQ 导进来（支持飞书 / Notion / Obsidian），也可以用下方表单手工加。', '导入现有文档', '/xmp/ingest')?></td></tr><?php endif; ?>
             <?php foreach (array_reverse($docs) as $d): ?>
             <tr>
               <td style="max-width:200px"><strong><?=htmlspecialchars($d['title'])?></strong>

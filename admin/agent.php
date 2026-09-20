@@ -44,7 +44,7 @@ admin_header('Agent 运行时');
 
     <div class="card">
       <h2 style="font-size:14px">🕓 运行记录（<?=count($runs)?>）</h2>
-      <?php if (!$runs): ?><div class="empty" style="padding:20px">还没有运行。输入目标点「运行」。</div><?php endif; ?>
+      <?php if (!$runs): ?><?=empty_state('还没有运行记录', 'Agent 需要一个可用的模型供应商；配好之后在上面输入目标就能跑。', '先配 AI 供应商', '/xmp/ai-config')?><?php endif; ?>
       <?php foreach (array_slice($runs, 0, 12) as $run): $st = $run['status'] ?? ''; ?>
       <div style="border:1px solid var(--border-soft,var(--border));border-radius:10px;padding:12px 14px;margin-bottom:10px">
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
