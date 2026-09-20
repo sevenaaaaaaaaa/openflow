@@ -381,6 +381,42 @@ try {
     $backupRun = backup_run_if_due();
 } catch (Throwable $e) { $backupRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
 
+// 自助入驻队列：每轮处理少量提交（预算与并发由 adapter_sub_config() 控制）
+$adapterIntake = ['status' => 'skipped'];
+try {
+    require_once __DIR__ . '/../lib/AdapterSubmission.php';
+    $__icfg = adapter_sub_config();
+    if ($__icfg['enabled']) {
+        $__ai = null;
+        if (class_exists('AiCenter')) {
+            $__ai = static function (string $system, string $user, array $opts): array {
+                $r = AiCenter::chat($system, $user, ['feature' => 'adapter_intake',
+                                                     'max_tokens' => (int) ($opts['max_tokens'] ?? 2200)]);
+                return ['ok' => (bool) ($r['ok'] ?? false), 'text' => (string) ($r['text'] ?? ''),
+                        'error' => (string) ($r['error'] ?? '')];
+            };
+        }
+        $__tick = adapter_sub_tick(['ai' => $__ai]);
+        $adapterIntake = $__tick['processed'] > 0
+            ? ['status' => 'done', 'processed' => $__tick['processed'], 'rows' => $__tick['rows']]
+            : ['status' => 'idle'];
+    } else {
+        $adapterIntake = ['status' => 'disabled'];
+    }
+} catch (Throwable $e) { $adapterIntake = ['status' => 'error', 'detail' => $e->getMessage()]; }
+
+// 页面使用埋点：过期日文件清理（一天一次足够，避免每分钟扫目录）
+$usagePrune = ['status' => 'skipped'];
+try {
+    require_once __DIR__ . '/../lib/PageUsage.php';
+    $stamp = DATA_DIR . '/page-usage/.pruned';
+    if (!is_file($stamp) || date('Y-m-d', (int) @filemtime($stamp)) !== date('Y-m-d')) {
+        $usagePrune = ['status' => 'done', 'removed' => page_usage_prune()];
+        @mkdir(dirname($stamp), 0755, true);
+        @touch($stamp);
+    }
+} catch (Throwable $e) { $usagePrune = ['status' => 'error', 'detail' => $e->getMessage()]; }
+
 // ── 站点巡检告警（每日一次；异常时走已配置的通知渠道）──
 $healthRun = ['status' => 'skipped'];
 try {
@@ -414,5 +450,5 @@ header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['ok' => true, 'published' => $published, 'retention' => $consentPurge,
                   'webhook_retry' => $webhookRetry, 'plugin_cron' => $pluginCron, 'product_scout' => $scout,
                   'geo_run' => $geoRun, 'conv_run' => $convRun, 'trend_run' => $trendRun,
-                  'agent_posts' => $agentPostRun, 'backup' => $backupRun, 'health' => $healthRun,
+                  'agent_posts' => $agentPostRun, 'backup' => $backupRun, 'usage_prune' => $usagePrune, 'adapter_intake' => $adapterIntake, 'health' => $healthRun,
                   'time' => date('Y-m-d H:i:s')]);
