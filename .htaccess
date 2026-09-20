@@ -106,6 +106,7 @@ RewriteRule ^articles/?$ articles.php [L,QSA]
 RewriteRule ^tag/([^/]+)/?$ /articles?tag=$1 [R=301,L,NE]
 RewriteRule ^courses/?$ courses.php [L,QSA]
 RewriteRule ^about/?$ about.php [L,QSA]
+RewriteRule ^developers/?$ developers.php [L,QSA]
 RewriteRule ^product/?$ hub-products.php [L,QSA]
 RewriteRule ^product/openflow/?$ product.php [L,QSA]
 # ── 2026-09-19 转正：demo 预览地址 301 到正式页面 ──

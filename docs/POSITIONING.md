@@ -76,7 +76,7 @@
 ## 4. 更 AI agent / 5. 更 AI native
 
 **证据**
-- **31 个 MCP 工具**：`articles_list` / `articles_create` / `articles_publish` / `members_list` /
+- **23 个 MCP 工具**：`articles_list` / `articles_create` / `articles_publish` / `members_list` /
   `leads_count` / `orders_revenue` / `search` …（`mcp-server.php`）
 - Agent 运行层：`AgentRuntime` / `SiteAgent` / `AgentPost` / `AgentPost` 定时产出
 - `AiCenter`：多模型接入（DeepSeek 已验证可用），会话与预算控制（`AiBudget`）
@@ -164,7 +164,7 @@
 **证据**
 - 生态伙伴：生态市场（上架 / 投稿）、适配流水线、官方适配标识
 - 开发者：116 API + 机器可读文档 + 插件 SDK + 6 个示例插件
-- AI 爱好者：31 MCP 工具 + 看板娘 + 提示词/工作流模板（`WorkflowLibrary`）
+- AI 爱好者：23 MCP 工具 + 看板娘 + 提示词/工作流模板（`WorkflowLibrary`）
 - OPC：既有主线（一人公司 / 个体户）——TIPS 四力 + 受控 Loop + 七件可组合产品
 
 **缺口**
@@ -182,11 +182,27 @@
 
 **做 `/developers` 一个页面 + 三个支撑件**——因为它一次覆盖
 **更开放 · 更面向开发者 · 更 AI agent · 更兼容 · 更可定制化**，而且所需的内部能力**今天已经存在**
-（116 API / 31 MCP / 插件 SDK / 生态市场 / 适配规范），不需要先补后端：
+（116 API / 23 MCP / 插件 SDK / 生态市场 / 适配规范），不需要先补后端：
 
 1. `/developers` 落地页：开放清单（MIT / API / MCP / 插件 / 适配 / 自托管）+ 每条给可点击证据
-2. `/mcp` 或页面内区块：31 个 MCP 工具清单 + 3 个真实调用示例 + 客户端配置片段
+2. `/mcp` 或页面内区块：23 个 MCP 工具清单 + 3 个真实调用示例 + 客户端配置片段
 3. 适配者指南（对外版）+ `CONTRIBUTING.md`
 4. 一键生成 API Key → 首个请求的成功路径（打通现有 `admin/api-keys.php`）
+
+## 进度（2026-09-20）
+
+**已完成**：`/developers` 落地页——开放清单（MIT / API / MCP / 插件 / 适配 / 自托管）+ MCP 23 个工具清单
+（来自 `lib/McpTools.php`，与 `mcp-server.php` 同源）+ 可直接跑的 curl 与 JSON-RPC 示例 + 适配上架流程。
+
+**同一刀里顺带修的**
+- MCP 工具注册表抽成单一来源 `lib/McpTools.php`：此前文档与 server 各写一份，必然漂移
+- 两个 MCP 契约测试改为读单一来源，并新增"server 必须使用 `mcp_tools()`"断言，防止再次分叉
+- 纠正一处会骗到人的数字：MCP 工具是 **23** 个（此前按文本 grep 误算成 31）
+
+**这一刀还差**
+- 适配者指南（对外版，现在只有内部 `ADAPTER-SPEC.md`）
+- `CONTRIBUTING.md`
+- API Key → 首个请求的引导路径（打通 `admin/api-keys.php` 到文档）
+- 站点主导航加入口（现在只在页脚与 sitemap）
 
 第二批（产品侧）：自我进化日志 + 模板库 + 迁移向导。
