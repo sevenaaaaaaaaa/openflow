@@ -44,6 +44,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <url><loc><?=$base?>/product/openflow</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc><?=$base?>/capability/openflow</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc><?=$base?>/changelog</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <url><loc><?=$base?>/developers</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
   <url><loc><?=$base?>/courses</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
   <url><loc><?=$base?>/academy</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
   <url><loc><?=$base?>/community</loc><priority>0.8</priority><changefreq>daily</changefreq></url>

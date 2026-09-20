@@ -7,6 +7,7 @@
  * 每个新工具都能在源码里找到对应实现（防"声明了却没实现"的空壳工具）。
  */
 $src = file_get_contents(__DIR__ . '/../mcp-server.php');
+$toolsSrc = file_get_contents(__DIR__ . '/../lib/McpTools.php');   // 工具清单的单一来源
 
 $pass=0;$fail=0;
 function check(string $n,bool $ok,string $d=''){ global $pass,$fail; if($ok){$pass++;echo "  ✓ {$n}\n";}else{$fail++;echo "  ✗ {$n}".($d?"  → {$d}":'')."\n";} }
@@ -16,7 +17,7 @@ $ecoTools = ['contributions_list','contributions_recommend'];
 
 echo "\n── 1. 增长 OS 工具已注册 ──\n";
 foreach ($newTools as $t) {
-    check("声明 {$t}", strpos($src, "'name' => '{$t}'") !== false);
+    check("声明 {$t}", strpos($toolsSrc, "'name' => '{$t}'") !== false);
 }
 
 echo "\n── 2. 每个工具都有实现分支（不是空壳）──\n";
@@ -25,9 +26,9 @@ foreach (array_merge($newTools, $ecoTools) as $t) {
 }
 
 echo "\n── 3. 契约完整性 ──\n";
-check('ask_data 声明必填 question', strpos($src, "'required'=>['question']") !== false);
+check('ask_data 声明必填 question', strpos($toolsSrc, "'required'=>['question']") !== false);
 check('nba 支持 limit', preg_match("/growth_next_best_action.*?limit/s", $src) === 1);
-check('工具总数 >= 18', substr_count($src, "'name' => '") >= 18, (string)substr_count($src, "'name' => '"));
+check('工具总数 >= 18', substr_count($toolsSrc, "'name' => '") >= 18, (string)substr_count($toolsSrc, "'name' => '"));
 
 echo "\n── 4. 安全：不暴露原始个体数据 ──\n";
 // nba 输出应只含 who/action/module/reason/priority，不含 email 等
