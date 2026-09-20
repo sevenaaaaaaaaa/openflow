@@ -14,7 +14,7 @@
 ## 1. 更易用
 
 **证据（今天就有）**
-- 226 个后台页，统一外壳与设计令牌（`assets/tokens.css` + `admin-ui.css`）
+- <!--m:admin_pages-->193<!--/m--> 个后台真实页面，统一外壳与设计令牌（`assets/tokens.css` + `admin-ui.css`）
 - 首次进入有角色选择（新手 / 运营 / 开发者 / 企业），选择结果会改首页与 CTA 文案
 - 全局命令面板 ⌘K；`setup-wizard.php` 首次配置引导
 - `Teams+` 把团队协作收成一个入口（顶栏右侧图标区）
@@ -22,7 +22,7 @@
 - 一键本地预览：`scripts/preview-admin.sh`（绕开登录验证码看真实渲染）
 
 **缺口**
-- 没有「5 分钟上手」路径：新用户看到 226 个入口不知道该点哪
+- 没有「5 分钟上手」路径：新用户看到 <!--m:admin_pages-->193<!--/m--> 个入口不知道该点哪
 - 列表页空态不统一：部分页面空的时候只有一句"暂无"
 - 后台移动端未审计（`scripts/audit-devices.py` 覆盖 15 个前台页 × 7 宽度，不含后台）
 
@@ -37,7 +37,7 @@
 
 **证据**
 - CI 14 道门禁：typecheck / TS 单测 / PHPStan（基线内 0）/ ruff / strict_types 棘轮 /
-  148 个 PHP 测试 / 故事线审计 / 设计护栏 / 内容契约 / 栅格契约 / design_contract / 设备审计
+  <!--m:php_tests-->158<!--/m--> 个 PHP 测试 / 故事线审计 / 设计护栏 / 内容契约 / 栅格契约 / design_contract / 设备审计
 - `scripts/deploy.py`：逐文件 md5 断言、备份与回滚、`--from-git`、部署后 data 归属体检
 - 契约测试能拦住"改了这里坏了那里"（内容契约 153 项、栅格契约 29 项、设计护栏 0 风险）
 
@@ -76,7 +76,7 @@
 ## 4. 更 AI agent / 5. 更 AI native
 
 **证据**
-- **23 个 MCP 工具**：`articles_list` / `articles_create` / `articles_publish` / `members_list` /
+- **<!--m:mcp_tools-->23<!--/m--> 个 MCP 工具**：`articles_list` / `articles_create` / `articles_publish` / `members_list` /
   `leads_count` / `orders_revenue` / `search` …（`mcp-server.php`）
 - Agent 运行层：`AgentRuntime` / `SiteAgent` / `AgentPost` / `AgentPost` 定时产出
 - `AiCenter`：多模型接入（DeepSeek 已验证可用），会话与预算控制（`AiBudget`）
@@ -101,8 +101,8 @@
 
 **证据**
 - **MIT 许可**（`LICENSE`），核心能力永久开源是既有承诺
-- **116 个 API** 端点，`api/v1/docs.php` + `docs.json.php` 提供机器可读文档
-- 插件体系：`PluginSDK` / `PackageRegistry` / `PluginSystem`；`plugins/` 下已有 9 个插件示例
+- **<!--m:api_endpoints-->118<!--/m--> 个 API** 端点，`api/v1/docs.php` + `docs.json.php` 提供机器可读文档
+- 插件体系：`PluginSDK` / `PackageRegistry` / `PluginSystem`；`plugins/` 下已有 <!--m:plugins-->8<!--/m--> 个插件示例
 - 生态市场：`marketplace.php`（社区投稿 + 官方适配可区分，含"官方适配·免费"标识）
 - 适配即服务：`docs/ADAPTER-SPEC.md` 契约 v2 + 筛选脚本 + AI 合成 + 验证闸门 + 人审页
 - 数据主权：可自托管，数据在自己的服务器
@@ -129,7 +129,7 @@
 - **13 种语言**（`lib/I18n.php`）+ 内容多语言（`ContentI18n`）
 
 **缺口**
-- 能力可发现性差：功能散在 226 个页面里，新人找不到
+- 能力可发现性差：功能散在 <!--m:admin_pages-->193<!--/m--> 个页面里，新人找不到
 - 没有模板：每做一个新场景都要从空开始
 
 **下一步**
@@ -163,8 +163,8 @@
 
 **证据**
 - 生态伙伴：生态市场（上架 / 投稿）、适配流水线、官方适配标识
-- 开发者：116 API + 机器可读文档 + 插件 SDK + 6 个示例插件
-- AI 爱好者：23 MCP 工具 + 看板娘 + 提示词/工作流模板（`WorkflowLibrary`）
+- 开发者：<!--m:api_endpoints-->118<!--/m--> API + 机器可读文档 + 插件 SDK + <!--m:plugins-->8<!--/m--> 个示例插件
+- AI 爱好者：<!--m:mcp_tools-->23<!--/m--> MCP 工具 + 看板娘 + 提示词/工作流模板（`WorkflowLibrary`）
 - OPC：既有主线（一人公司 / 个体户）——TIPS 四力 + 受控 Loop + 七件可组合产品
 
 **缺口**
@@ -198,6 +198,10 @@
 - MCP 工具注册表抽成单一来源 `lib/McpTools.php`：此前文档与 server 各写一份，必然漂移
 - 两个 MCP 契约测试改为读单一来源，并新增"server 必须使用 `mcp_tools()`"断言，防止再次分叉
 - 纠正一处会骗到人的数字：MCP 工具是 **23** 个（此前按文本 grep 误算成 31）
+
+**2026-09-20 追加**：开源工具**自助入驻入口**已上线——`/developers#submit` 提交 GitHub 仓库 →
+自动跑适配流水线（限流/防重/重试）→ 人审上架；存量候选池走同一条队列。
+这把「我们去适配」变成了「他们来入驻」，是 §6 更开放 / §9 更面向生态伙伴的实际证据。详见 `docs/ADAPTER-SPEC.md` §八。
 
 **这一刀还差**
 - 适配者指南（对外版，现在只有内部 `ADAPTER-SPEC.md`）

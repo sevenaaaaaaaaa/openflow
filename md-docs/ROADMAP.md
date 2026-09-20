@@ -44,6 +44,13 @@
 
 ## 合并清单（减少后台噪音）
 
+> **2026-09-20 状态**：下表多数已落地，`tests/hub_merge_test.php` 守住不回退
+> （tags→pages-list、payment-settings→shop-settings、mail-settings→email、
+> footer-links→site-builder、storage→health-check、activity→audit-log）。
+> 继续合并之前先看**真实使用数据**（`审计日志 → 使用分析`）——按猜测重排导航，
+> 正是 `docs/USABILITY-DIAGNOSIS.md` §7 明确说不要做的事。
+
+
 | 合并项 | 合并到 | 减少页面 |
 |---|---|---|
 | 页面标签 + 文章标签 | 父级列表筛选栏 | -2 |
@@ -73,49 +80,62 @@
 
 ## 当前优先级
 
-### P0 · 本月（核心联动 + 生态基础）
+> **校正于 2026-09-20。** 上一版（2026-08-31）的 P0 与实际在做的事已经脱节：那一版列的
+> 「后台合并」「插件生态基础」大部分已经落地，而 9 月中下旬真正在做的是**把主张变成可核验的证据**
+> （定位证据化 / 开发者与生态 / 可用性诊断与整改 / 自我进化台账），路线图没跟上。
+> 本节按「有证据 / 缺口 / 下一步」重写，规则同 `docs/POSITIONING.md`：**没有证据的条目不写成进行中**。
 
-**系统联动**（打通 TIPS 四层数据流）：
-- [ ] CRM 事件接入 FlowSystem（线索阶段变化 → 触发 MA + 写入 CDP 标签）
-- [ ] MA 流程可读 CRM 字段（线索阶段/客户等级/最近跟进时间）
-- [ ] CDP 分群 → CRM 批量操作（转线索/批量发邮件/分配销售）
-- [ ] 营销活动 ROI 归因（MA 触达 → 订单/转化 → 自动计算）
+### 本月在做（有明确证据）
 
-**后台合并**（减少碎片，提升产品逻辑清晰度）：
-- [ ] 统一内容中心（articles + pages + downloads + podcasts → 单页 tabs）
-- [ ] 统一 SEO 中心（8 个 SEO 页面 → 单页 tabs）
-- [ ] 合并标签/分类/设置等浅 CRUD 到父级
-- [ ] 移动功能特定设置到对应功能内（支付→商城、邮件→邮件营销）
+| 方向 | 已落地的证据 | 还差什么 |
+|---|---|---|
+| **可用性（算出来再改）** | `docs/USABILITY-DIAGNOSIS.md` + `scripts/usability-audit.php`；S1 ⌘K 覆盖 18%→100%；S2 页面级空态缺出路 47→0；S4 地址口径统一；`tests/usability_ratchet_test.php` 棘轮门禁 | **S3 后台窄屏**：88 页无窄屏线索，先做 `admin-ui.css` 全局兜底再逐页 |
+| **埋点（把假设变证据）** | `lib/PageUsage.php` 按天聚合页面访问；后台 `审计日志 → 使用分析`；`tests/page_usage_test.php` | 数据要攒 **2–4 周**；之后才谈 H2「按真实使用裁剪导航」 |
+| **开放与开发者** | `/developers` 落地页；MCP 注册表单源化（`lib/McpTools.php`）；插件 hooks 35 个；`lib/PluginSDK.php`；8 个示例插件 | `CONTRIBUTING.md`；适配者指南对外版；API Key → 首个请求的引导路径；主导航入口 |
+| **数据安全** | `lib/OffsiteBackup.php`（S3/R2 异地备份，SigV4 已与 AWS SDK 交叉验证）+ 后台配置与状态 + `scripts/offsite-backup.php` | **线上仍需配置凭据并跑一次 `--test`**；未配置前备份仍与站点同盘 |
+| **口径一致性** | `scripts/metrics.php` 单一来源 + `lib/AdminInventory.php` + `tests/metrics_contract_test.php`；见 [项目口径指标](../docs/METRICS.md) | 把更多对外页面的规模数字纳管 |
+| **自我进化可核验** | 自我进化台账（动作 → 度量 → 结算） | 动作前后的**指标回归对比**；无提升要能标记为"无效" |
 
-**开发者生态基础**：
-- [ ] PluginSystem hooks 扩展到 30+（覆盖 CDP/CRM/MA/内容/SEO/支付/社区）
-- [ ] 插件 SDK（`lib/PluginSDK.php`）
-- [ ] 官方示例插件（3 个完整示例）
-- [ ] Skills marketplace API
-- [ ] 开发者文档（插件/技能/API 参考）
+### 上一版 P0 的实际状态（核对过，不是凭印象）
 
-### P1 · 下季度（深做核心 + 性能）
+| 上一版条目 | 现状 |
+|---|---|
+| 统一内容中心 / 统一 SEO 中心 | ✅ `admin/content-hub.php` · `admin/seo-center.php` |
+| 合并标签/分类/设置等浅 CRUD 到父级 | ✅ 6 组已归并，`tests/hub_merge_test.php` 守住（tags→pages-list、payment-settings→shop-settings、mail-settings→email、footer-links→site-builder、storage→health-check、activity→audit-log） |
+| PluginSystem hooks 扩展到 30+ | ✅ 35 个 |
+| 插件 SDK（`lib/PluginSDK.php`） | ✅ 已有 |
+| 官方示例插件（3 个） | ✅ 8 个（`plugins/` 下带 `plugin.json` 的目录） |
+| 开发者文档 | 🟡 `/developers` 已上线，`CONTRIBUTING.md` 与适配者指南对外版仍缺 |
+| Skills marketplace API | ⬜ 未核实到证据 |
+| CRM 事件接入 FlowSystem | 🟡 `FlowSystem` 与 `crm_stage` 均有代码痕迹，但**端到端链路未验证** |
+| MA 流程可读 CRM 字段 | 🟡 同上 |
+| CDP 分群 → CRM 批量操作 | ⬜ 未找到证据 |
+| 营销活动 ROI 归因 | ⬜ 未找到证据 |
 
-**核心功能深化**：
-- [ ] CDP 性能优化（事件分层缓存 + 画像预计算 + cron 后台任务）
-- [ ] 营销自动化画布升级（A/B 分流 + 多路径测试 + 条件嵌套）
-- [ ] CRM 深化（任务通知 + 评分模型可视化 + AI 线索评分）
-- [ ] 内容引擎深化（版本历史 + 自动保存 + 互动数据回写 + 关键词库）
+> 标 ⬜/🟡 的不代表没做，代表**当前没有可指向的证据**。要么补证据（一条能跑的路径 + 一个测试），
+> 要么就别把它算进"已具备"。
 
-**后台前端组件化**：
-- [ ] admin-ui.css + PHP 组件库（admin_table/form/card/grid/modal）
-- [ ] 统一设置中心（合并 settings/payment/mail 等 5 个浅设置页）
-- [ ] 后台移动端适配
+### 下季度（P1）
+
+- **系统联动收口**：把上表 ⬜/🟡 的四条各补一条端到端路径与契约测试，而不是继续列在路线图里
+- CDP 性能优化（事件分层缓存 + 画像预计算 + cron 后台任务）
+- 营销自动化画布升级（A/B 分流 + 多路径测试 + 条件嵌套）
+- 内容引擎深化（版本历史 + 自动保存 + 互动数据回写 + 关键词库）
+- 后台前端组件化（`admin-ui.css` + PHP 组件库）与后台移动端适配（与 S3 合并做）
+- **测试基础设施**：修掉测试间的状态污染——多个测试直接写仓库 `data/`，导致"跑第二遍才红"
+  （现象：全套跑完后 `design_grid_contract_test` 会失败）
 
 ### P2 · 年度（生态成熟 + 智能化）
 
 **生态成熟**：
+
 - [ ] 插件付费市场（作者 80% / 平台 20%）
 - [ ] 付费 Skill（订阅制）
 - [ ] 插件依赖管理 + 沙箱
 - [ ] 官方认证体系（认证开发者/顾问/Skill）
 
 **智能化深化**：
+
 - [ ] 多 Agent 分工（内容助手/客服助手/数据分析师）
 - [ ] AI 文案生成节点嵌入营销画布
 - [ ] 预测式转化（AI 预测线索成交概率）
@@ -127,8 +147,6 @@
 - [ ] Headless API 层（支持 Next.js/Astro）
 - [ ] 可视化低代码平台（拖拽搭建业务流）
 - [ ] 全自动增长引擎（AI 自主选题→成文→发布→收录→分析→优化）
-
----
 
 ## 已完成里程碑
 
