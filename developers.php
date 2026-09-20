@@ -262,6 +262,98 @@ curl -s -X POST "https://nownexts.com/api/article.php" \
     </div>
   </section>
 
+  <!-- ══ 自助入驻：把开源工具变成插件 ══ -->
+  <section id="submit" class="sec reveal" data-od-anchor data-od-id="dev-submit">
+    <div class="sec-head center">
+      <span class="kicker">自助入驻</span>
+      <h2>把一个开源工具变成 OpenFlow 插件，你只需要提交仓库地址</h2>
+      <p class="lead">剩下的由适配流水线做：读取仓库与 README 形成能力画像、按契约生成插件草稿与契约测试、过五道闸门、人工审核后上架。<b>徽章只由闸门发放——AI 写得出代码，但不能给自己盖章。</b></p>
+    </div>
+
+    <div class="dev-two">
+      <div>
+        <ol class="tl">
+          <li><b>你提交</b>：一个 GitHub 仓库地址（需要有明确的开源许可证）</li>
+          <li><b>自动接入</b>：读仓库元数据与 README，判定能力类别与落点（触达 / 入湖 / 事件 / 支付 / CRM …）</li>
+          <li><b>自动合成</b>：按适配契约 v2 生成 <code>plugin.json</code> + <code>plugin.php</code> + 契约测试</li>
+          <li><b>五道闸门</b>：清单合法性 · 许可证白名单 · 契约测试 · 静态分析 · 沙箱越权检查</li>
+          <li><b>人工审核</b>：通过闸门也要人点头才上架；上架后默认不启用，由站点管理员自己开启</li>
+        </ol>
+        <p class="dev-note">许可证白名单：MIT / Apache-2.0 / BSD / ISC / MPL-2.0 直接通过；GPL 系需人工复核；无许可证不受理。适配层只调上游<b>官方公开 API</b>，不逆向私有接口，不代理用户凭据。</p>
+      </div>
+
+      <div class="form-card">
+        <div class="sec-head" style="gap:6px;margin-bottom:18px">
+          <h3 class="h3" style="font-size:20px">提交一个开源工具</h3>
+          <p class="note">需要登录；每人每天有提交配额</p>
+        </div>
+        <form onsubmit="return ofSubmitAdapter(event)" class="form-grid">
+          <div class="field">
+            <label for="ad-src">GitHub 仓库 *</label>
+            <input class="inp" id="ad-src" type="text" name="source" required placeholder="owner/repo 或 https://github.com/owner/repo">
+          </div>
+          <div class="field">
+            <label for="ad-note">它能做什么 / 你希望怎么用（选填）</label>
+            <textarea class="inp" id="ad-note" name="note" placeholder="例如：它有官方 webhook，希望把事件接进 CDP"></textarea>
+          </div>
+          <button type="submit" class="btn primary" style="width:100%">提交并开始自动适配</button>
+          <div id="adMsg" class="f-note" style="text-align:center"></div>
+        </form>
+
+        <div class="f-row" style="margin-top:18px;border-top:1px solid var(--border);padding-top:18px">
+          <input class="inp" id="ad-ticket" type="text" placeholder="已有受理编号？sub_…" style="flex:1;min-width:180px">
+          <button type="button" class="btn ghost" onclick="ofAdapterStatus()">查进度</button>
+        </div>
+        <div id="adStatus" class="f-note" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  function ofSubmitAdapter(e) {
+    e.preventDefault();
+    var f = e.target, msg = document.getElementById('adMsg');
+    var btn = f.querySelector('button[type=submit]');
+    var body = new URLSearchParams({ action: 'submit_adapter', source: f.source.value.trim(), note: f.note.value.trim() });
+    btn.disabled = true; msg.style.display = 'block'; msg.textContent = '提交中…';
+    fetch('/api/developer', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body })
+      .then(function (r) { return r.json().then(function (d) { return { s: r.status, d: d }; }); })
+      .then(function (res) {
+        btn.disabled = false;
+        if (res.d && res.d.ok) {
+          msg.textContent = '已受理，受理编号 ' + res.d.ticket + '。适配会在后台排队进行，可用这个编号查进度。';
+          document.getElementById('ad-ticket').value = res.d.ticket;
+          f.reset();
+          return;
+        }
+        if (res.s === 401) { msg.textContent = '请先登录后再提交。'; return; }
+        msg.textContent = (res.d && res.d.error ? res.d.error : '提交失败，请稍后再试')
+          + (res.d && res.d.ticket ? '（受理编号 ' + res.d.ticket + '）' : '');
+      })
+      .catch(function () { btn.disabled = false; msg.textContent = '网络错误，请稍后再试'; });
+    return false;
+  }
+
+  function ofAdapterStatus() {
+    var t = (document.getElementById('ad-ticket').value || '').trim();
+    var box = document.getElementById('adStatus');
+    if (!t) { box.textContent = '请先填写受理编号'; return; }
+    box.textContent = '查询中…';
+    fetch('/api/developer?action=adapter_status&ticket=' + encodeURIComponent(t))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) { box.textContent = (d && d.error) || '查询失败'; return; }
+        var x = d.data;
+        var label = { queued: '排队中', running: '适配中', done: '已处理', failed: '失败', rejected: '已拒绝' }[x.status] || x.status;
+        var line = x.source + '：' + label;
+        if (x.gate_status) line += '（闸门 ' + x.gate_status + (x.badge ? ' · 徽章 ' + x.badge : '') + '）';
+        if (x.failed && x.failed.length) line += '　未过：' + x.failed.join('、');
+        box.textContent = line + (x.message ? '　' + x.message : '');
+      })
+      .catch(function () { box.textContent = '网络错误'; });
+  }
+  </script>
+
   <!-- ══ 收口 ══ -->
   <section id="next" class="reveal" data-od-anchor data-od-id="dev-cta">
     <div class="cta-band">
@@ -271,7 +363,7 @@ curl -s -X POST "https://nownexts.com/api/article.php" \
       <ol class="tl">
         <li><b>读一次</b>：复制上面任一条 curl，确认返回 JSON</li>
         <li><b>接客户端</b>：把 MCP 配置粘进 Claude / Cursor，问它「列一下最近的文章」</li>
-        <li><b>再扩一层</b>：照 <code>plugins/example-plugin</code> 抄一个插件，或按适配契约提交一个适配</li>
+        <li><b>再扩一层</b>：照 <code>plugins/example-plugin</code> 抄一个插件，或<a href="#submit">提交一个开源工具</a>让流水线替你适配</li>
       </ol>
       <div class="cta-row">
         <a class="btn primary" href="/docs">看开发文档</a>
