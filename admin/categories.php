@@ -75,7 +75,7 @@ admin_header('分类管理 - ' . $typeLabels[$type]);
       <table>
         <thead><tr><th>Key</th><th>名称</th><th>上级分类</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($cats)): ?><tr><td colspan="4" class="empty">暂无分类</td></tr><?php endif; ?>
+          <?php if (empty($cats)): ?><tr><td colspan="4" class="empty"><?=empty_state('暂无分类','分类决定内容的导航与聚合；建第一个分类后，文章就能归类了。','创建第一个分类','#add')?></td></tr><?php endif; ?>
           <?php foreach ($cats as $c):
             $prefix = empty($c['parent']) ? '' : '— ';
             $pName = '';
@@ -87,7 +87,7 @@ admin_header('分类管理 - ' . $typeLabels[$type]);
             <td class="text-sm text-muted"><?=htmlspecialchars($pName ?: '顶级')?></td>
             <td>
               <button class="btn btn-ghost btn-sm" onclick="editCat('<?=htmlspecialchars($c['key'],ENT_QUOTES)?>','<?=htmlspecialchars($c['name'],ENT_QUOTES)?>','<?=htmlspecialchars($c['parent']??'',ENT_QUOTES)?>')">编辑</button>
-              <form method="post" style="display:inline" data-confirm="删除分类「<?=htmlspecialchars($c['name'],ENT_QUOTES)?>」？该分类下的内容会变成未分类。">
+              <form method="post" id="add" style="display:inline" data-confirm="删除分类「<?=htmlspecialchars($c['name'],ENT_QUOTES)?>」？该分类下的内容会变成未分类。">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete"><input type="hidden" name="key" value="<?=htmlspecialchars($c['key'])?>">
                 <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)">删除</button>

@@ -117,7 +117,7 @@ admin_header('AI 用量与预算');
   <table class="table">
     <tr><th>功能</th><th>调用</th><th>输入 token</th><th>输出 token</th><th>花费</th><th>平均耗时</th><th>失败</th></tr>
     <?php if (!$byFeature): ?>
-      <tr><td colspan="7" style="color:#999">这段时间还没有 AI 调用记录。</td></tr>
+      <tr><td colspan="7"><?=empty_state('这段时间还没有 AI 调用记录','AI 被调用（创作台、助手、Agent）后会自动记账；先确认已配置可用的模型供应商。','去配 AI 供应商','/xmp/ai-config')?></td></tr>
     <?php endif; ?>
     <?php foreach ($byFeature as $r): ?>
       <tr>

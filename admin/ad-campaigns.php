@@ -70,7 +70,7 @@ admin_header('投放管理');
     <?php if ($message): ?><?=msg($message === '投放计划已保存' ? 'success' : 'error', $message)?><?php endif; ?>
 
     <?php if ($edit): ?>
-    <form method="post" class="card">
+    <form method="post" id="add" class="card">
       <?= csrf_field() ?>
       <input type="hidden" name="id" value="<?=htmlspecialchars($edit['id'] ?? 'c_' . date('YmdHis') . substr(bin2hex(random_bytes(4)), 0, 6))?>">
       <h2 style="margin-bottom:16px"><?=($edit['id'] ?? '') ? '编辑投放计划' : '新建投放计划'?></h2>
@@ -107,7 +107,7 @@ admin_header('投放管理');
       <table>
         <thead><tr><th>计划</th><th>平台</th><th>状态</th><th>花费</th><th>转化</th><th>CPC</th><th>CPA</th><th>ROI</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($campaigns)): ?><tr><td colspan="9" style="text-align:center;color:var(--faint)">暂无投放计划，点击右上角新建</td></tr><?php endif; ?>
+          <?php if (empty($campaigns)): ?><tr><td colspan="9" style="text-align:center;color:var(--faint)"><?=empty_state('暂无投放计划','投放计划用来统一管理多个渠道的预算与排期。','新建投放计划','#add')?></td></tr><?php endif; ?>
           <?php foreach ($campaigns as $c): $roi = adc_compute_roi($c); ?>
           <tr>
             <td><b><?=htmlspecialchars($c['name'])?></b><div style="font-size:11px;color:var(--faint)"><?=htmlspecialchars($c['platform'] ?? '')?> · <?=htmlspecialchars(substr($c['start_date'] ?? '', 0, 10))?></div></td>

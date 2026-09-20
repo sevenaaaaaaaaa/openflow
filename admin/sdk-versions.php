@@ -50,14 +50,14 @@ admin_header('SDK 版本管理');
       <p class="text-sm text-muted">权重 (weight) 决定新访客被分到各版本的比例，总和应为 100。例如 v2 权重 10 + v1 权重 90 = 10% 流量使用新版本。确认稳定后把 v2 权重调到 100 完成全量。</p>
     </div>
 
-    <form method="post">
+    <form method="post" id="add">
       <?= csrf_field() ?>
       <input type="hidden" name="save_versions" value="1">
       <div class="card" style="padding:0;overflow:auto;margin-bottom:16px">
         <table>
           <thead><tr><th>版本</th><th>文件</th><th>说明</th><th>启用</th><th>灰度权重%</th></tr></thead>
           <tbody>
-            <?php if (empty($versions)): ?><tr><td colspan="5" class="empty">暂无版本</td></tr><?php endif; ?>
+            <?php if (empty($versions)): ?><tr><td colspan="5" class="empty"><?=empty_state('暂无版本','SDK 版本用来标记客户端能力；发布一个版本后这里会记录。','发布版本','#add')?></td></tr><?php endif; ?>
             <?php foreach ($versions as $i => $v): ?>
             <tr>
               <td><input type="text" name="ver_version[]" value="<?=$v['version']?>" style="width:60px;padding:6px;border:1.5px solid var(--border);border-radius:6px"></td>

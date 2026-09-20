@@ -48,7 +48,7 @@ foreach ($bookmarks as $b) {
         </tr></thead>
         <tbody>
         <?php if (empty($bookmarks)): ?>
-          <tr><td colspan="5" style="padding:40px;text-align:center;color:var(--muted)">暂无收藏数据</td></tr>
+          <tr><td colspan="5" style="padding:40px;text-align:center;color:var(--muted)"><?=empty_state('暂无收藏数据','收藏来自前台用户；有内容与访问后会自动统计。','去看文章','/xmp/content-hub?tab=articles')?></td></tr>
         <?php else: foreach ($bookmarks as $b): ?>
           <tr style="border-top:1px solid var(--border)">
             <td style="padding:12px 16px;font-size:14px"><?=h($b['user_id'] ?? '')?></td>

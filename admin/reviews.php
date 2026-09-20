@@ -103,7 +103,7 @@ admin_header('内容审核');
         <thead><tr><th>类型</th><th>标题</th><th>命中问题</th><th>提交人</th><th>时间</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
           <?php if (empty($display)): ?>
-          <tr><td colspan="7"><div class="empty">暂无记录</div></td></tr>
+          <tr><td colspan="7"><div class="empty"><?=empty_state('暂无记录','点评来自前台用户；有内容与访问后会自动收集。','去看文章','/xmp/content-hub?tab=articles')?></div></td></tr>
           <?php endif; ?>
           <?php foreach ($display as $r):
             $typeLabel = ['article' => '📝 文章', 'page' => '📄 页面', 'email' => '📧 邮件'][$r['type']] ?? $r['type'];

@@ -196,7 +196,7 @@ admin_header('任务分配');
         <thead><tr><th>任务</th><th>负责人</th><th>优先级</th><th>截止</th><th>进度</th><th>操作</th></tr></thead>
         <tbody>
           <?php if (empty($displayTasks)): ?>
-          <tr><td colspan="6" class="empty">暂无任务</td></tr>
+          <tr><td colspan="6" class="empty"><?=empty_state('暂无任务','生产任务把内容排期变成待办；也可以从团队视角统一管理。','去 Teams+ 团队视角','/xmp/today?view=team')?></td></tr>
           <?php endif; ?>
           <?php foreach ($displayTasks as $t): $progress = (int)($t['progress'] ?? 0); $commentCount = count($t['comments'] ?? []); ?>
           <tr onclick="toggleTaskDetail('<?=htmlspecialchars($t['id'])?>')" style="cursor:pointer">

@@ -107,7 +107,7 @@ admin_header('调研系统');
 
     <?php if ($editSurvey): ?>
     <!-- 编辑/创建问卷 -->
-    <form method="post" id="surveyForm">
+    <form method="post" id="add" id="surveyForm">
       <?= csrf_field() ?>
       <input type="hidden" name="id" value="<?=htmlspecialchars($editSurvey['id'] ?? '')?>">
       <div class="card">
@@ -247,7 +247,7 @@ admin_header('调研系统');
         <thead><tr><th>问卷</th><th>类型</th><th>状态</th><th>题目数</th><th>回收数</th><th>创建时间</th><th>操作</th></tr></thead>
         <tbody>
           <?php if (empty($surveys)): ?>
-          <tr><td colspan="7" class="empty">暂无问卷，点击右上角创建</td></tr>
+          <tr><td colspan="7" class="empty"><?=empty_state('暂无问卷','问卷用来收反馈与线索；建一份最短的也行。','创建问卷','#add')?></td></tr>
           <?php endif; ?>
           <?php foreach ($surveys as $s):
             $responses = survey_get_responses($s['id']);

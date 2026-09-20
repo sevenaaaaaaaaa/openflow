@@ -82,7 +82,7 @@ admin_header('作者管理');
               <td><b><?=htmlspecialchars($name)?></b></td>
               <td class="sub" style="font-size:12px">文章 <?=$c['articles']?> · 课程 <?=$c['courses']?> · skills <?=$c['skills']?> · 插件 <?=$c['plugins']?></td>
               <td style="white-space:nowrap;text-align:right">
-                <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="action" value="quick_register"><input type="hidden" name="name" value="<?=htmlspecialchars($name)?>"><button class="btn btn-ghost btn-sm">建档</button></form>
+                <form method="post" id="add" style="display:inline"><?= csrf_field() ?><input type="hidden" name="action" value="quick_register"><input type="hidden" name="name" value="<?=htmlspecialchars($name)?>"><button class="btn btn-ghost btn-sm">建档</button></form>
                 <?php if ($authors): ?>
                 <form method="post" style="display:inline-flex;gap:4px;align-items:center"><?= csrf_field() ?><input type="hidden" name="action" value="merge"><input type="hidden" name="from_name" value="<?=htmlspecialchars($name)?>">
                   <select name="to_id" style="font-size:12px"><option value="">合并到…</option><?php foreach ($authors as $a): ?><option value="<?=htmlspecialchars($a['id'])?>"><?=htmlspecialchars($a['name'])?></option><?php endforeach; ?></select>
@@ -100,7 +100,7 @@ admin_header('作者管理');
       <table class="table">
         <thead><tr><th>作者</th><th>职位</th><th>内容</th><th>绑定账号</th><th style="width:1%">操作</th></tr></thead>
         <tbody>
-          <?php if (!$authors): ?><tr><td colspan="5" class="empty">还没有作者档案（上方"未登记作者"可一键建档）</td></tr><?php endif; ?>
+          <?php if (!$authors): ?><tr><td colspan="5" class="empty"><?=empty_state('还没有作者档案','作者档案决定文章署名与聚合页；上方「未登记作者」可以一键建档。','一键建档','#add')?></td></tr><?php endif; ?>
           <?php foreach ($authors as $a): $c = author_content_counts($a['name']); ?>
             <tr>
               <td>

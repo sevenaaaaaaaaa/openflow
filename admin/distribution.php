@@ -100,7 +100,7 @@ admin_header('分销管理');
 <div class="card">
   <h2>👥 推荐大使列表</h2>
   <?php if (empty($ambassadors)): ?>
-  <div class="empty">暂无大使。前台会员可申请成为推荐大使。</div>
+  <div class="empty"><?=empty_state('还没有大使', '大使来自前台会员申请；也可以主动邀请合适的用户。', '去看会员', '/xmp/membership')?></div>
   <?php else: ?>
   <div style="overflow:auto">
   <table>
@@ -129,7 +129,7 @@ admin_header('分销管理');
   <?php
   $distOrders = array_values(array_filter($orders, fn($o) => !empty($o['referrer_id'])));
   if (empty($distOrders)): ?>
-  <div class="empty">暂无分销订单。当大使推荐注册的用户下单时，此处会显示佣金记录。</div>
+  <div class="empty"><?=empty_state('暂无分销订单', '大使推荐注册的用户下单后，佣金记录会显示在这里。')?></div>
   <?php else: ?>
   <div style="overflow:auto">
   <table>
@@ -160,7 +160,7 @@ admin_header('分销管理');
 <div class="card">
   <h2>🏦 提现申请审核</h2>
   <?php if (empty($withdrawals)): ?>
-  <div class="empty">暂无提现申请</div>
+  <div class="empty"><?=empty_state('暂无提现申请', '大使申请提现后会出现这里等待处理。')?></div>
   <?php else: ?>
   <div style="overflow:auto">
   <table>

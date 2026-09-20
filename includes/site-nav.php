@@ -101,7 +101,7 @@ if (!function_exists('of_shell')) {
         elseif (preg_match('#^/(article|articles)/([^/]+)#', $path, $m)) $edit = '/xmp/article-edit?id=' . urlencode($m[2]);
         elseif (preg_match('#^/c/([^/]+)#', $path, $m)) $edit = '/xmp/cpt?type=' . urlencode($m[1]);
         elseif ($path === '/' || $path === '') $edit = '/xmp/studio';
-        elseif (preg_match('#^/(about|product|capability|courses|docs|academy|community|marketplace)#', $path, $m)) $edit = '/xmp/pages-list';
+        elseif (preg_match('#^/(about|product|capability|courses|docs|academy|community|marketplace)#', $path, $m)) $edit = '/xmp/content-hub?tab=pages';
         if ($edit === '') return '';
         $label = '✏️ 编辑此页';
         return '<a href="' . htmlspecialchars($edit, ENT_QUOTES) . '" style="position:fixed;bottom:16px;left:16px;z-index:99990;background:#1e1e1e;color:#ddff0e;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.22);font-family:system-ui,-apple-system,sans-serif">' . $label . '</a>';

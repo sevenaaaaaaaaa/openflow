@@ -165,7 +165,7 @@ admin_header('退款售后');
       <table>
         <thead><tr><th>订单号</th><th>买家</th><th>商品</th><th>金额</th><th>佣金</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($orders)): ?><tr><td colspan="8" class="empty">暂无订单</td></tr><?php endif; ?>
+          <?php if (empty($orders)): ?><tr><td colspan="8" class="empty"><?=empty_state('暂无订单','退款挂在订单上；有已支付订单后才会出现可退记录。','去看订单','/xmp/orders')?></td></tr><?php endif; ?>
           <?php foreach ($orders as $o): ?>
           <tr>
             <td class="text-sm text-muted"><?=htmlspecialchars(substr($o['id'],-12))?></td>

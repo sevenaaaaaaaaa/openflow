@@ -43,7 +43,7 @@ admin_header('二维码管理');
     <div class="card">
       <h2>📊 扫码统计</h2>
       <?php if (empty($qrStats)): ?>
-      <div class="empty">暂无扫码数据。二维码生成后，用户扫码即开始计数。</div>
+      <div class="empty"><?=empty_state('暂无扫码数据','二维码从内容生成；生成后用户扫码即开始计数。','去文章列表生成','/xmp/content-hub?tab=articles')?></div>
       <?php else: ?>
       <div style="overflow:auto">
       <table>

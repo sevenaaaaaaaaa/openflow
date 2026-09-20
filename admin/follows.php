@@ -47,7 +47,7 @@ foreach ($follows as $f) {
         </tr></thead>
         <tbody>
         <?php if (empty($follows)): ?>
-          <tr><td colspan="4" style="padding:40px;text-align:center;color:var(--muted)">暂无关注数据</td></tr>
+          <tr><td colspan="4" style="padding:40px;text-align:center;color:var(--muted)"><?=empty_state('暂无关注数据','关注来自前台用户行为；有内容与访问后自动统计。','去看会员','/xmp/membership')?></td></tr>
         <?php else: foreach ($follows as $f): ?>
           <tr style="border-top:1px solid var(--border)">
             <td style="padding:12px 16px;font-size:14px"><?=h($f['follower_id'] ?? '')?></td>

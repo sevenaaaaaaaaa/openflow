@@ -108,7 +108,7 @@ admin_header('生态适配');
     <?php endif; ?>
 
     <?php if ($entries === []): ?>
-    <div class="eco-empty">暂无草稿。用 <code>php scripts/forge-adapter.php &lt;owner/repo&gt; --complete</code> 生成一条。</div>
+    <?=empty_state('还没有适配草稿','适配即服务：用 php scripts/forge-adapter.php &lt;owner/repo&gt; --complete 编译一条候选（模板兜底 + AI 补全），再跑验证闸门；批准后进生态市场。','看生态市场', '/xmp/marketplace')?>
     <?php endif; ?>
 
     <?php foreach ($entries as $e): ?>
@@ -147,7 +147,7 @@ admin_header('生态适配');
       <?php endif; ?>
 
       <?php if (!($e['published'] ?? false)): ?>
-      <form method="post" class="eco-actions">
+      <form method="post" id="add" class="eco-actions">
         <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
         <input type="hidden" name="id" value="<?= htmlspecialchars((string) $e['id']) ?>">
         <input class="inp eco-note" type="text" name="note" placeholder="备注（可选，如：法务确认、需补 TODO 等）">
@@ -168,7 +168,7 @@ admin_header('生态适配');
     <h2 style="margin-top:26px">已上架适配（<?=count($published)?>）</h2>
     <p class="sub">这些是已经进入 <code>plugins/</code> 的官方适配插件：默认<b>未启用</b>，需要到「插件」页开启；同时会以「官方适配 · 免费」出现在生态市场。</p>
     <?php if ($published === []): ?>
-    <div class="eco-empty">还没有上架的适配插件。</div>
+    <?=empty_state('还没有上架的适配插件','通过验证闸门并人审批准的适配会出现在这里，同时进入生态市场（带「官方适配·免费」标识）。','看生态市场', '/xmp/marketplace')?>
     <?php else: ?>
     <div class="card" style="padding:0;overflow:hidden">
       <table style="width:100%;border-collapse:collapse;font-size:13.5px">

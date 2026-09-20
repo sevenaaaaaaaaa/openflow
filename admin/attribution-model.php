@@ -137,7 +137,7 @@ $recentTouchpoints = array_slice(array_reverse($allTouchpoints), 0, 50);
         </tr></thead>
         <tbody>
         <?php if (empty($recentTouchpoints)): ?>
-          <tr><td colspan="6" style="padding:40px;text-align:center;color:var(--muted)">暂无触点数据，请先通过 CDP 追踪脚本采集数据</td></tr>
+          <tr><td colspan="6" style="padding:40px;text-align:center;color:var(--muted)"><?=empty_state('暂无触点数据','触点归因需要先采集前端行为（CDP 追踪脚本）。','去 CDP 设置','/xmp/cdp')?></td></tr>
         <?php else: foreach ($recentTouchpoints as $tp): ?>
           <tr style="border-top:1px solid var(--border)">
             <td style="padding:10px 20px;font-size:13px"><?=h($tp['user_id'] ?? '')?></td>

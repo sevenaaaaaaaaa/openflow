@@ -88,7 +88,7 @@ admin_header('A/B 测试');
 
     <?php if ($edit): ?>
     <!-- 编辑表单 -->
-    <form method="post">
+    <form method="post" id="add">
       <?= csrf_field() ?>
       <input type="hidden" name="id" value="<?=htmlspecialchars($edit['id'] ?? '')?>">
       <div class="card">
@@ -139,7 +139,7 @@ admin_header('A/B 测试');
         <thead><tr><th>实验</th><th>页面</th><th>B 流量</th><th>方案</th><th>时间</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
           <?php if (empty($tests)): ?>
-          <tr><td colspan="7" class="empty">暂无 A/B 实验，点击右上角创建</td></tr>
+          <tr><td colspan="7" class="empty"><?=empty_state('暂无 A/B 实验','实验用来验证文案或落地页哪个转化更好；建一个只需要一个对照组。','创建实验','#add')?></td></tr>
           <?php endif; ?>
           <?php foreach ($tests as $t): ?>
           <tr>
