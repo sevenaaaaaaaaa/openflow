@@ -68,7 +68,7 @@ admin_header('运营分析');
       </div>
       <p class="text-sm text-muted mb-4">分层逻辑：累计消费≥¥500且≥2次=高价值 · 有消费=潜力 · 最近30天无互动=沉睡 · 14-30天无互动=流失风险</p>
       <?php if (empty($rfm['members'])): ?>
-      <div class="empty" style="padding:24px">暂无会员数据</div>
+      <div class="empty" style="padding:24px"><?=empty_state('暂无数据','埋点产生事件后这里会自动统计；先确认事件字典里有你要跟的行为。','去看事件字典','/xmp/event-dictionary')?></div>
       <?php else: ?>
       <div style="overflow-x:auto">
         <table class="rfm-table">

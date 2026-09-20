@@ -38,7 +38,7 @@ if (!is_array($data) || !isset($data['entry'])) {
 $base = [
     'palette_indexed' => 192,       // 下限：⌘K 覆盖全部真实页面（S1 前 41/222=18%，现在 192/192）
     'orphan_suspicious' => 0,       // 上限：可疑孤岛
-    'empty_without_action' => 66,   // 上限：空态只写"暂无"（S2 前 76；已改 10 个核心页）
+    'empty_without_action' => 19,   // 上限：缺出路总量（S2 前 76；现在只剩 19 个行内说明）
     'mobile_without_hint' => 88,    // 上限：无窄屏线索
 ];
 
@@ -50,8 +50,10 @@ ok((int) $e['palette_indexed'] >= $base['palette_indexed'],
     "命令面板覆盖 ≥ {$base['palette_indexed']} 页", "现在 {$e['palette_indexed']}（覆盖率下降）");
 ok((int) $e['orphan_suspicious'] <= $base['orphan_suspicious'],
     "可疑孤岛 ≤ {$base['orphan_suspicious']} 个", "现在 {$e['orphan_suspicious']}");
+ok((int) ($es['primary_without_action'] ?? 99) <= 0,
+    '页面级空态缺出路 = 0（列表为空必须给出路）', '现在 ' . ($es['primary_without_action'] ?? '?'));
 ok((int) $es['without_next_action'] <= $base['empty_without_action'],
-    "空态只写「暂无」 ≤ {$base['empty_without_action']} 页", "现在 {$es['without_next_action']}");
+    "空态缺出路总量 ≤ {$base['empty_without_action']}（只剩行内说明）", "现在 {$es['without_next_action']}");
 ok((int) $m['without_hint'] <= $base['mobile_without_hint'],
     "无窄屏线索 ≤ {$base['mobile_without_hint']} 页", "现在 {$m['without_hint']}");
 

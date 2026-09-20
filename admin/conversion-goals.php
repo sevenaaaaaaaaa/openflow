@@ -38,7 +38,7 @@ admin_header('转化目标');
 
     <div style="display:flex;gap:16px;flex-wrap:wrap">
       <div style="flex:2;min-width:320px">
-        <?php if (!$goals): ?><div class="card"><div class="empty" style="padding:20px">还没有转化目标。用右侧表单建一个。</div></div><?php endif; ?>
+        <?php if (!$goals): ?><div class="card"><div class="empty" style="padding:20px"><?=empty_state('还没有转化目标','转化目标定义"什么算成功"，用于归因与漏斗统计。','创建转化目标','#add')?></div></div><?php endif; ?>
         <?php foreach ($goals as $s): $g = $s['goal']; ?>
         <div class="card" style="margin-bottom:10px">
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -54,7 +54,7 @@ admin_header('转化目标');
           </div>
           <div style="margin-top:10px;display:flex;gap:8px">
             <a class="btn btn-ghost btn-sm" href="?edit=<?=urlencode($g['id'])?>">编辑</a>
-            <form method="post" data-no-guard data-confirm="删除该转化目标？">
+            <form method="post" id="add" data-no-guard data-confirm="删除该转化目标？">
               <?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=htmlspecialchars($g['id'])?>">
               <button class="btn btn-ghost btn-sm" style="color:var(--danger)">删除</button>
             </form>

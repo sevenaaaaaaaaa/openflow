@@ -131,6 +131,8 @@ foreach ($orphanPages as $b) {
 
 // ── 3. 空态质量 + 4. 移动端准备度 ──
 $emptyNoAction = [];
+$emptyPrimary = [];   // 页面级空态（列表为空 = 死胡同，该给出路）
+$emptyInline = [];    // 卡片里的一句话说明（解释"为什么暂时没有"，不该强加 CTA）
 $emptyRefs = [];
 $emptyWithAction = [];
 $noEmptyState = [];
@@ -148,11 +150,18 @@ foreach ($pages as $base => $path) {
     $helperCalls = [];
     if (preg_match_all('/empty_state\(((?:[^()]|\([^()]*\))*)\)/s', $src, $hc)) $helperCalls = $hc[1];
     $helperWithCta = false;
-    foreach ($helperCalls as $args) if (substr_count($args, ',') + 1 >= 4) { $helperWithCta = true; break; }
+    $helperInfoOnly = false;
+    foreach ($helperCalls as $args) {
+        $argc = substr_count($args, ',') + 1;
+        if ($argc >= 4) $helperWithCta = true;      // 给了出路
+        elseif ($argc === 2) $helperInfoOnly = true; // 作者明确判定"信息型"（解释为什么暂时没有）
+    }
     $markerBlocks = [];
     if (preg_match_all('#<div class="empty empty-next">(.*?)</div>#s', $src, $mb)) $markerBlocks = $mb[1];
     if ($helperWithCta) {
         $emptyWithAction[] = $base;
+    } elseif ($helperInfoOnly) {
+        $emptyInline[] = $base;      // 信息型：不算缺出路（审计口径写进文档）
     } elseif ($markerBlocks !== []) {
         $hasLink = false;
         foreach ($markerBlocks as $blk) if (preg_match('/<a\s/', $blk)) { $hasLink = true; break; }
@@ -163,7 +172,24 @@ foreach ($pages as $base => $path) {
             $win = substr($src, max(0, $off - 360), 720);
             if (preg_match('/<a\s|btn|href="/', $win)) { $has = true; break; }
         }
-        if ($has) { $emptyWithAction[] = $base; } else { $emptyNoAction[] = $base; }
+        if ($has) {
+            $emptyWithAction[] = $base;
+        } else {
+            $emptyNoAction[] = $base;
+            // 就近判定：220 字符窗口里是否是「表格空行 / .empty 容器」→ 页面级；否则是行内说明
+            $primary = false;
+            foreach ($m[1] as [$_, $off]) {
+                // 看"最近的开始标签"：是 <td（表格空行）或带 empty/of-empty 的容器 → 页面级；
+                // 否则（span / p.hint 等行内说明）→ 不算缺出路，不该强加 CTA
+                $before = substr($src, max(0, $off - 240), 240);
+                if (preg_match_all('/<([a-z]+)([^>]*)>/i', $before, $tags) && ($tags[0] ?? []) !== []) {
+                    $tagName = strtolower((string) end($tags[1]));
+                    $tagAttrs = (string) end($tags[2]);
+                    if ($tagName === 'td' || str_contains($tagAttrs, 'empty')) $primary = true;
+                }
+            }
+            if ($primary) $emptyPrimary[] = $base; else $emptyInline[] = $base;
+        }
     } else {
         $noEmptyState[] = $base;
     }
@@ -194,10 +220,23 @@ $report = [
     'empty_state' => [
         'with_next_action' => count($emptyWithAction),
         'without_next_action' => count($emptyNoAction),
+        'primary_without_action' => count($emptyPrimary),
+        'inline_hint' => count($emptyInline),
         'no_empty_state' => count($noEmptyState),
     ],
     'mobile_ready' => ['with_hint' => count($pages) - count($noMediaQuery), 'without_hint' => count($noMediaQuery)],
     'lists' => [
+        'empty_primary_ranked' => (static function () use ($emptyPrimary, $haystack, $ROOT): array {
+            $rows = [];
+            foreach ($emptyPrimary as $b) {
+                $path = '/xmp/' . $b;
+                $own = (string) @file_get_contents($ROOT . '/admin/' . $b . '.php');
+                $hay = $own !== '' ? str_replace($own, '', $haystack) : $haystack;
+                $rows[] = ['page' => $b, 'refs' => (int) preg_match_all('#' . preg_quote($path, '#') . '(?![-a-z0-9])#', $hay)];
+            }
+            usort($rows, static fn(array $a, array $b): int => $b['refs'] <=> $a['refs']);
+            return array_map(static fn(array $r): string => sprintf('%s (被引用 %d 次)', $r['page'], $r['refs']), $rows);
+        })(),
         'empty_without_action_ranked' => (static function () use ($emptyNoAction, $haystack, $ROOT): array {
             $rows = [];
             foreach ($emptyNoAction as $b) {
@@ -233,8 +272,9 @@ if (in_array('--json', $argv ?? [], true)) {
         $r['entry']['orphan_tab_like'], $r['entry']['alias_301'], $r['entry']['fragments_not_pages']);
     printf("   入口来源：仅侧栏 %d · 仅命令面板 %d · ⌘K 索引覆盖 %d/%d 页\n",
         $r['entry']['nav_only'], $r['entry']['palette_only'], $r['entry']['palette_indexed'], $r['pages_total']);
-    printf("② 空态：有下一步 %d · 只写\"暂无\" %d · 没写空态 %d\n",
-        $r['empty_state']['with_next_action'], $r['empty_state']['without_next_action'], $r['empty_state']['no_empty_state']);
+    printf("② 空态：有下一步 %d · 缺出路 %d（其中页面级 %d · 行内说明 %d）· 没写空态 %d\n",
+        $r['empty_state']['with_next_action'], $r['empty_state']['without_next_action'],
+        $r['empty_state']['primary_without_action'], $r['empty_state']['inline_hint'], $r['empty_state']['no_empty_state']);
     printf("③ 窄屏线索：有 %d · 无 %d\n", $r['mobile_ready']['with_hint'], $r['mobile_ready']['without_hint']);
     if ($r['lists']['orphan_suspicious']) {
         echo "\n可疑孤岛（不像详情/编辑页，却没有任何入口）前 20：\n";
@@ -248,9 +288,9 @@ if (in_array('--json', $argv ?? [], true)) {
         echo "\n仅命令面板可达前 12：\n";
         foreach (array_slice($r['lists']['palette_only'], 0, 12) as $line) echo "   {$line}\n";
     }
-    if ($r['lists']['empty_without_action_ranked']) {
-        echo "\n空态没给下一步的页面（按被引用次数排序，前 12）：\n";
-        foreach (array_slice($r['lists']['empty_without_action_ranked'], 0, 12) as $line) echo "   {$line}\n";
+    if ($r['lists']['empty_primary_ranked']) {
+        echo "\n页面级空态缺出路（按被引用次数排序，前 15）：\n";
+        foreach (array_slice($r['lists']['empty_primary_ranked'], 0, 15) as $line) echo "   {$line}\n";
     }
 }
 

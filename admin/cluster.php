@@ -148,7 +148,7 @@ admin_header('Cluster 聚合管理');
       <table>
         <thead><tr><th>标题</th><th>URL</th><th>聚合方式</th><th>匹配文章</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($pages)): ?><tr><td colspan="6" class="empty">暂无聚合</td></tr><?php endif; ?>
+          <?php if (empty($pages)): ?><tr><td colspan="6" class="empty"><?=empty_state('暂无聚合','聚合把内容按主题串成路径；先确认有已发布文章。','去内容中心','/xmp/content-hub')?></td></tr><?php endif; ?>
           <?php foreach ($pages as $p):
             $mode = $p['aggregate_mode'] ?? 'rule';
             $ml = $modeLabels[$mode] ?? $mode;

@@ -96,7 +96,7 @@ admin_header('营销洞察');
       <div class="card">
         <h2>📈 提交趋势（近 14 天）</h2>
         <?php if (empty($trendDays)): ?>
-        <div class="empty" style="padding:32px">暂无数据</div>
+        <div class="empty" style="padding:32px"><?=empty_state('暂无数据', '数据来自埋点事件与订单，自动统计，无需手工导入。')?></div>
         <?php else: $max = max($trendDays) ?: 1; ?>
         <div style="display:flex;align-items:flex-end;gap:6px;height:120px">
           <?php foreach ($trendDays as $day => $cnt): ?>
@@ -114,7 +114,7 @@ admin_header('营销洞察');
       <div class="card">
         <h2>🧩 提交类型分布</h2>
         <?php $typeTotal = array_sum($byType); if ($typeTotal === 0): ?>
-        <div class="empty" style="padding:32px">暂无数据</div>
+        <div class="empty" style="padding:32px"><?=empty_state('暂无数据', '数据来自埋点事件与订单，自动统计，无需手工导入。')?></div>
         <?php else: ?>
         <?php foreach ($byType as $t => $cnt): if ($cnt === 0) continue; $pct = round($cnt/$typeTotal*100); ?>
         <div class="bar-row">
@@ -130,7 +130,7 @@ admin_header('营销洞察');
     <!-- 各表单提交 -->
     <div class="card">
       <h2>📋 各表单提交量</h2>
-      <?php if (empty($byForm)): ?><div class="empty" style="padding:24px">暂无表单提交</div>
+      <?php if (empty($byForm)): ?><div class="empty" style="padding:24px"><?=empty_state('暂无数据', '数据来自埋点事件与订单，自动统计，无需手工导入。')?></div>
       <?php else: $maxForm = max($byForm) ?: 1; ?>
       <?php foreach ($byForm as $fid => $cnt): ?>
       <div class="bar-row">
@@ -148,7 +148,7 @@ admin_header('营销洞察');
       <table>
         <thead><tr><th>项目</th><th>状态</th><th>回收</th><th>NPS</th><th>推荐者</th><th>被动者</th><th>贬损者</th></tr></thead>
         <tbody>
-          <?php if (empty($npsSummary)): ?><tr><td colspan="7" class="empty">暂无 NPS 项目</td></tr><?php endif; ?>
+          <?php if (empty($npsSummary)): ?><tr><td colspan="7" class="empty"><?=empty_state('暂无数据', '数据来自埋点事件与订单，自动统计，无需手工导入。')?></td></tr><?php endif; ?>
           <?php foreach ($npsSummary as $n): ?>
           <tr>
             <td><strong><?=htmlspecialchars($n['title'])?></strong></td>
@@ -170,7 +170,7 @@ admin_header('营销洞察');
       <table>
         <thead><tr><th>调研</th><th>状态</th><th>回收数</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($surveySummary)): ?><tr><td colspan="4" class="empty">暂无调研项目</td></tr><?php endif; ?>
+          <?php if (empty($surveySummary)): ?><tr><td colspan="4" class="empty"><?=empty_state('暂无数据', '数据来自埋点事件与订单，自动统计，无需手工导入。')?></td></tr><?php endif; ?>
           <?php foreach ($surveySummary as $s): ?>
           <tr>
             <td><strong><?=htmlspecialchars($s['title'])?></strong></td>

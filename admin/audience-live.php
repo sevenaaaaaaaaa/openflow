@@ -45,7 +45,7 @@ function alRender(d) {
     return '<tr><td>' + escH(s.name) + '</td><td class="mono">' + s.count + '</td>' +
       '<td><div style="background:var(--hover);border-radius:99px;height:8px;width:140px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;width:' + pct + '%;background:var(--accent)"></div></div> <span class="text-sm">' + pct + '%</span></td></tr>';
   }).join('');
-  document.getElementById('alSegs').innerHTML = rows || '<tr><td colspan="3" class="text-muted" style="padding:16px">暂无分群</td></tr>';
+  document.getElementById('alSegs').innerHTML = rows || '<tr><td colspan="3" class="text-muted" style="padding:16px"><?=empty_state('暂无分群','分群由行为规则自动生成；先确认 CDP 有数据。','去分群管理','/xmp/segments')?></td></tr>';
 }
 function escH(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 function alLoad() { fetch('/api/cdp.php?action=live_audience').then(function (r) { return r.json(); }).then(alRender).catch(function () {}); }

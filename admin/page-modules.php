@@ -104,7 +104,7 @@ admin_header('落地页模块');
       <table>
         <thead><tr><th>模块</th><th>类型</th><th>描述</th><th>状态</th><th>使用中</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($modules)): ?><tr><td colspan="6" class="empty">暂无模块，先创建一个可复用模块</td></tr><?php endif; ?>
+          <?php if (empty($modules)): ?><tr><td colspan="6" class="empty"><?=empty_state('暂无模块','可复用模块是页面搭建的积木；先建一个再在构建器里引用。','创建模块','#add')?></td></tr><?php endif; ?>
           <?php foreach ($modules as $m):
             $typeLabel = $blockTypes[$m['type']] ?? $m['type'];
             $usageCount = count(array_filter(get_landing_pages(), function($lp) use ($m) {
@@ -150,7 +150,7 @@ admin_header('落地页模块');
 <div id="addModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
   <div style="background:var(--surface);border-radius:16px;padding:28px;width:560px;max-width:92vw;max-height:90vh;overflow-y:auto">
     <h3 style="margin:0 0 20px"><?=$editModule?'编辑模块':'新建模块'?></h3>
-    <form method="post">
+    <form method="post" id="add">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="save">
       <input type="hidden" name="id" value="<?=htmlspecialchars($editModule['id'] ?? '')?>">

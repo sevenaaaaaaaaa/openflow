@@ -108,7 +108,7 @@ if ($__sub === 'self'):
           </tr>
           <?php endforeach; ?>
           <?php if (empty($logs)): ?>
-          <tr><td colspan="6" class="empty">暂无日志</td></tr>
+          <tr><td colspan="6" class="empty"><?=empty_state('暂无操作日志','日志记录谁在什么时候改了什么；有后台操作后自动产生。','去看用户与权限','/xmp/users')?></td></tr>
           <?php endif; ?>
           </tbody>
         </table>

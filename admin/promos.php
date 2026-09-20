@@ -67,7 +67,7 @@ admin_header('站内营销投放');
       <table class="table">
         <thead><tr><th>名称</th><th>类型</th><th>位置</th><th>页面</th><th>人群</th><th>展示/点击</th><th>状态</th><th style="width:1%">操作</th></tr></thead>
         <tbody>
-          <?php if (!$promos): ?><tr><td colspan="8" class="empty">还没有投放，下面新建一个</td></tr><?php endif; ?>
+          <?php if (!$promos): ?><tr><td colspan="8" class="empty"><?=empty_state('还没有投放','投放把内容推到站外；下面新建一个，或用广告活动批量管理。','新建投放','#add')?></td></tr><?php endif; ?>
           <?php foreach ($promos as $p):
             $imp = (int)($p['impressions'] ?? 0); $clk = (int)($p['clicks'] ?? 0);
             $ctr = $imp > 0 ? round($clk / $imp * 100, 1) : 0;
@@ -87,7 +87,7 @@ admin_header('站内营销投放');
               <td class="sub" style="font-size:12px"><?=$audBits ? htmlspecialchars(implode('·', $audBits)) : '不限'?></td>
               <td class="sub" style="font-size:12px"><?=$imp?> / <?=$clk?> <?php if ($ctr): ?><span style="color:var(--ok)">(<?=$ctr?>%)</span><?php endif; ?></td>
               <td>
-                <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?=htmlspecialchars($p['id'])?>">
+                <form method="post" id="add" style="display:inline"><?= csrf_field() ?><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?=htmlspecialchars($p['id'])?>">
                   <button class="badge <?=!empty($p['enabled'])?'ok':''?>" style="border:none;cursor:pointer"><?=!empty($p['enabled'])?'启用中':'已停用'?></button></form>
               </td>
               <td style="white-space:nowrap">

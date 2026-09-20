@@ -96,7 +96,7 @@ admin_header('数据连接器');
       <table style="width:100%">
         <thead><tr><th>Canonical ID</th><th>会员</th><th>邮箱</th><th>标签</th><th>合并数</th><th>最近活跃</th></tr></thead>
         <tbody>
-          <?php if (empty($recentMerged)): ?><tr><td colspan="6" class="empty">暂无画像 · 点击右上角「立即同步」拉取数据</td></tr><?php endif; ?>
+          <?php if (empty($recentMerged)): ?><tr><td colspan="6" class="empty"><?=empty_state('暂无画像','外部数据通过连接器同步进来；配好连接后点同步即可。','去数据同步','/xmp/data-sync')?></td></tr><?php endif; ?>
           <?php foreach ($recentMerged as $cid => $p): ?>
           <tr>
             <td><code style="font-size:11px"><?=htmlspecialchars($cid)?></code></td>

@@ -189,7 +189,7 @@ admin_header('A/B 测试统计');
           $allEvents = [];
           foreach (['A','B'] as $v) foreach (($stats[$current['id']][$v] ?? []) as $ev => $labels) { if (!in_array($ev, $allEvents)) $allEvents[] = $ev; }
           if (empty($allEvents)): ?>
-          <tr><td colspan="3" class="empty">暂无事件数据</td></tr>
+          <tr><td colspan="3" class="empty"><?=empty_state('还没有统计数据','启用实验后访问会自动记录曝光；也可以先看看已建的实验。','去看实验列表','/xmp/abtests')?></td></tr>
           <?php else: ?>
           <?php foreach ($allEvents as $ev):
             $aSum = array_sum($result['A']['all'][$ev] ?? []);

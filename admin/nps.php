@@ -104,7 +104,7 @@ admin_header('NPS 调研系统');
     <!-- 创建框 -->
     <div class="card" id="createBox" style="display:none">
       <h2>➕ 新建 NPS 项目</h2>
-      <form method="post">
+      <form method="post" id="add">
         <?= csrf_field() ?>
         <div class="field-row">
           <div class="field"><label>项目名称 <span class="hint">· 必填</span></label><input type="text" name="title" required placeholder="如：官网用户 NPS / 员工 NPS"></div>
@@ -197,7 +197,7 @@ admin_header('NPS 调研系统');
     <div class="card" style="padding:0;overflow-x:auto">
       <h2 style="padding:20px 20px 0">💬 受访者评论</h2>
       <?php if (empty($responses)): ?>
-      <div class="empty" style="padding:32px">暂无回收数据，分享填写链接开始收集</div>
+      <div class="empty" style="padding:32px"><?=empty_state('暂无回收数据', '把填写链接分享出去就能开始收集；先确认已有启用的 NPS 项目。', '新建 NPS 项目', '#add')?></div>
       <?php else: ?>
       <table>
         <thead><tr><th>时间</th><th>分数</th><th><?=htmlspecialchars($current['collect_name'] ? '受访者' : '类型')?></th><th>评论</th></tr></thead>
@@ -215,7 +215,7 @@ admin_header('NPS 调研系统');
       <?php endif; ?>
     </div>
     <?php elseif (empty($projects)): ?>
-    <div class="card"><div class="empty">还没有 NPS 项目，点击「➕ 新建 NPS 项目」创建</div></div>
+    <div class="card"><div class="empty"><?=empty_state('还没有 NPS 项目', 'NPS 项目定义问什么问题、发给谁；建一个只要一分钟。', '新建 NPS 项目', '#add')?></div></div>
     <?php endif; ?>
   </div>
 </div>

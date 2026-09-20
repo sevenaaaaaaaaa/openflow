@@ -89,7 +89,7 @@ if (isset($_GET['export'])) {
       <!-- 媒体来源 -->
       <div class="card">
         <h2>📡 媒体来源分布</h2>
-        <?php if (empty($sources)): ?><div class="empty" style="padding:16px">暂无数据</div>
+        <?php if (empty($sources)): ?><div class="empty" style="padding:16px"><?=empty_state('暂无数据', '先点「立即采集」，报告就有内容了。')?></div>
         <?php else: $maxS = max($sources) ?: 1; foreach ($sources as $s => $c): ?>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
           <span style="font-size:12px;width:70px"><?=htmlspecialchars($s)?></span>
@@ -116,7 +116,7 @@ if (isset($_GET['export'])) {
       <table>
         <thead><tr><th>情感</th><th>标题</th><th>来源</th><th>摘要</th><th>链接</th></tr></thead>
         <tbody>
-          <?php if (empty($rows)): ?><tr><td colspan="5" class="empty">暂无数据，先点「采集」</td></tr><?php endif; ?>
+          <?php if (empty($rows)): ?><tr><td colspan="5" class="empty"><?=empty_state('暂无数据', '先点「立即采集」，报告就有内容了。')?></td></tr><?php endif; ?>
           <?php foreach ($rows as $r): ?>
           <tr>
             <td><span class="badge <?=['正面'=>'badge-green','负面'=>'badge-red','中性'=>'badge-yellow'][$r['sentiment']]??'badge-gray'?>" style="font-size:11px"><?=htmlspecialchars($r['sentiment'])?></span></td>

@@ -246,7 +246,7 @@ admin_header('数据迁移');
       </div>
       <div style="display:flex;gap:10px;justify-content:center">
         <a href="/xmp/migrate" class="btn btn-s">继续导入</a>
-        <?php if (in_array($report['type'] ?? '', ['文章 / CMS 内容','评论'])): ?><a href="/xmp/articles" class="btn btn-p">查看文章 →</a><?php endif; ?>
+        <?php if (in_array($report['type'] ?? '', ['文章 / CMS 内容','评论'])): ?><a href="/xmp/content-hub?tab=articles" class="btn btn-p">查看文章 →</a><?php endif; ?>
         <?php if (($report['type'] ?? '') === '线索 / 潜在客户'): ?><a href="/xmp/crm" class="btn btn-p">查看线索 →</a><?php endif; ?>
         <?php if (($report['type'] ?? '') === '用户 / 会员'): ?><a href="/xmp/users" class="btn btn-p">查看用户 →</a><?php endif; ?>
       </div>

@@ -44,7 +44,7 @@ admin_header('路径分析');
     </div>
 
     <?php if ($data['sessions'] === 0): ?>
-    <div class="card"><div class="empty" style="padding:40px">暂无路径数据。前端埋点产生访问事件后，这里会自动统计。请确认前端已引入 /assets/inject.js。</div></div>
+    <div class="card"><div class="empty" style="padding:40px"><?=empty_state('暂无路径数据', '路径分析依赖前端埋点事件；先确认追踪脚本已生效。', '去看事件字典', '/xmp/event-dictionary')?></div></div>
     <?php else: ?>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="path-grid">
@@ -54,7 +54,7 @@ admin_header('路径分析');
         <table>
           <thead><tr><th>路径</th><th>次数</th></tr></thead>
           <tbody>
-            <?php if (empty($data['pairs'])): ?><tr><td colspan="2" class="empty">暂无</td></tr><?php endif; ?>
+            <?php if (empty($data['pairs'])): ?><tr><td colspan="2" class="empty"><?=empty_state('暂无路径数据', '路径分析依赖前端埋点事件；先确认追踪脚本已生效。', '去看事件字典', '/xmp/event-dictionary')?></td></tr><?php endif; ?>
             <?php $max = !empty($data['pairs']) ? max(array_values($data['pairs'])) : 1; foreach ($data['pairs'] as $k => $c): list($a, $b) = explode('|', $k); ?>
             <tr>
               <td><code><?=pfmt($a)?></code> <span style="color:var(--text-3)">→</span> <code><?=pfmt($b)?></code></td>
@@ -71,7 +71,7 @@ admin_header('路径分析');
         <table>
           <thead><tr><th>路径</th><th>会话数</th></tr></thead>
           <tbody>
-            <?php if (empty($data['paths'])): ?><tr><td colspan="2" class="empty">暂无</td></tr><?php endif; ?>
+            <?php if (empty($data['paths'])): ?><tr><td colspan="2" class="empty"><?=empty_state('暂无路径数据', '路径分析依赖前端埋点事件；先确认追踪脚本已生效。', '去看事件字典', '/xmp/event-dictionary')?></td></tr><?php endif; ?>
             <?php foreach ($data['paths'] as $k => $c): $parts = explode('|', $k); ?>
             <tr>
               <td style="line-height:1.8"><?php foreach ($parts as $i => $p): ?><?php if ($i>0): ?><span style="color:var(--text-3)"> → </span><?php endif; ?><code style="font-size:11px"><?=pfmt($p)?></code><?php endforeach; ?></td>
@@ -88,7 +88,7 @@ admin_header('路径分析');
         <table>
           <thead><tr><th>页面</th><th>进入</th></tr></thead>
           <tbody>
-            <?php if (empty($data['entries'])): ?><tr><td colspan="2" class="empty">暂无</td></tr><?php endif; ?>
+            <?php if (empty($data['entries'])): ?><tr><td colspan="2" class="empty"><?=empty_state('暂无路径数据', '路径分析依赖前端埋点事件；先确认追踪脚本已生效。', '去看事件字典', '/xmp/event-dictionary')?></td></tr><?php endif; ?>
             <?php $maxE = !empty($data['entries']) ? max(array_values($data['entries'])) : 1; foreach ($data['entries'] as $p => $c): ?>
             <tr>
               <td><code><?=pfmt($p)?></code></td>
@@ -105,7 +105,7 @@ admin_header('路径分析');
         <table>
           <thead><tr><th>页面</th><th>离开</th></tr></thead>
           <tbody>
-            <?php if (empty($data['exits'])): ?><tr><td colspan="2" class="empty">暂无</td></tr><?php endif; ?>
+            <?php if (empty($data['exits'])): ?><tr><td colspan="2" class="empty"><?=empty_state('暂无路径数据', '路径分析依赖前端埋点事件；先确认追踪脚本已生效。', '去看事件字典', '/xmp/event-dictionary')?></td></tr><?php endif; ?>
             <?php $maxX = !empty($data['exits']) ? max(array_values($data['exits'])) : 1; foreach ($data['exits'] as $p => $c): ?>
             <tr>
               <td><code><?=pfmt($p)?></code></td>

@@ -98,7 +98,7 @@ admin_header('审核中心');
       <table>
         <thead><tr><th>申请人</th><th>邮箱</th><th>擅长方向</th><th>简介</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($pendingTeachers)): ?><tr><td colspan="5" class="empty">暂无待审核讲师申请</td></tr><?php endif; ?>
+          <?php if (empty($pendingTeachers)): ?><tr><td colspan="5" class="empty"><?=empty_state('暂无待审核讲师申请', '讲师在前台提交申请后进入审核队列。', '看已上架讲师', '/xmp/authors')?></td></tr><?php endif; ?>
           <?php foreach ($pendingTeachers as $t): ?>
           <tr>
             <td><strong><?=htmlspecialchars($t['name'])?></strong></td>
@@ -127,7 +127,7 @@ admin_header('审核中心');
       <table>
         <thead><tr><th>作者</th><th>标题</th><th>分类</th><th>摘要</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($pendingSubs)): ?><tr><td colspan="5" class="empty">暂无待审核投稿</td></tr><?php endif; ?>
+          <?php if (empty($pendingSubs)): ?><tr><td colspan="5" class="empty"><?=empty_state('暂无待审核投稿', '用户投稿进入审核队列后会出现在这里。', '看文章列表', '/xmp/content-hub?tab=articles')?></td></tr><?php endif; ?>
           <?php foreach ($pendingSubs as $s): ?>
           <tr>
             <td><strong><?=htmlspecialchars($s['author'])?></strong></td>

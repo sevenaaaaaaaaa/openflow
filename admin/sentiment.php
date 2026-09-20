@@ -110,7 +110,7 @@ admin_header('舆情监测');
     <!-- 添加主题 -->
     <div class="card" id="addTopicBox" style="display:none">
       <h2>➕ 添加监控主题</h2>
-      <form method="post" style="display:flex;gap:8px">
+      <form method="post" id="add" style="display:flex;gap:8px">
         <?= csrf_field() ?>
         <input type="text" name="topic_name" placeholder="如：OpenFlow / 网站增长 / GEO / 公司名" required style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px">
         <button type="submit" name="add_topic" class="btn btn-primary">添加</button>
@@ -145,7 +145,7 @@ admin_header('舆情监测');
       <table>
         <thead><tr><th>主题</th><th>已采集</th><th>负面</th><th>最近扫描</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($topics)): ?><tr><td colspan="5" class="empty">暂无监控主题，点击上方添加</td></tr><?php endif; ?>
+          <?php if (empty($topics)): ?><tr><td colspan="5" class="empty"><?=empty_state('暂无监控主题','主题决定采集范围；先加一个你关心的关键词。','添加主题','#add')?></td></tr><?php endif; ?>
           <?php foreach ($topics as $t): $st = $topicStats[$t['id']] ?? ['count'=>0,'negative'=>0]; ?>
           <tr>
             <td><strong><?=htmlspecialchars($t['name'])?></strong>

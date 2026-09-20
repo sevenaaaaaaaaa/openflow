@@ -83,7 +83,7 @@ admin_header('表单管理');
       <table>
         <thead><tr><th>表单名称</th><th>类型</th><th>Slug</th><th>字段数</th><th>状态</th><th>嵌入代码</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($forms)): ?><tr><td colspan="7" class="empty">暂无表单</td></tr><?php endif; ?>
+          <?php if (empty($forms)): ?><tr><td colspan="7" class="empty"><?=empty_state('暂无表单','表单用来收集线索与反馈，提交后自动进 CRM。','创建表单','#add')?></td></tr><?php endif; ?>
           <?php foreach ($forms as $f): ?>
           <tr>
             <td><strong><?=htmlspecialchars($f['title'])?></strong></td>
@@ -93,7 +93,7 @@ admin_header('表单管理');
             <td><span class="badge <?=($f['status']??'draft')==='published'?'badge-green':'badge-yellow'?>"><?=$f['status']??'draft'?></span></td>
             <td><code style="font-size:11px" onclick="copy(this)">[form slug="<?=htmlspecialchars($f['slug'])?>"]</code></td>
             <td><a href="?edit=<?=urlencode($f['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-              <form method="post" style="display:inline" data-confirm="删除表单「<?=htmlspecialchars($f['title'],ENT_QUOTES)?>」？已收集的提交记录会保留。">
+              <form method="post" id="add" style="display:inline" data-confirm="删除表单「<?=htmlspecialchars($f['title'],ENT_QUOTES)?>」？已收集的提交记录会保留。">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=htmlspecialchars($f['id'])?>">
                 <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger)">删除</button>

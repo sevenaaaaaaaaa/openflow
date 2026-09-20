@@ -119,7 +119,7 @@ admin_header('微信标签');
       <table>
         <thead><tr><th>标签 ID</th><th>名称</th><th>用户数</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($tags)): ?><tr><td colspan="4" class="empty">暂无标签（可能未配置公众号或未创建）</td></tr><?php endif; ?>
+          <?php if (empty($tags)): ?><tr><td colspan="4" class="empty"><?=empty_state('暂无标签（可能未配置公众号或未创建）','标签用于公众号用户分层；先确认公众号已配置。','去公众号设置','/xmp/wechat-mp')?></td></tr><?php endif; ?>
           <?php foreach ($tags as $t): ?>
           <tr>
             <td><code><?=$t['id']?></code></td>
