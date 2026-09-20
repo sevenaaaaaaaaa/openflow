@@ -413,6 +413,21 @@ function require_login(): void {
     // 同一个闸口顺带把「谁在什么时候改了什么」记下来——审计从此是结构性覆盖，
     // 而不是指望每个处理器记得手写。具体处理器仍可再补更详细的 audit()。
     audit_auto();
+    // 写操作有了留痕，**读**却一直没有：于是"他们实际在用哪些页"从来无法回答，
+    // 裁剪导航只能靠猜。这里按天聚合计数（不存单条、不记 IP），补上这块空白。
+    page_usage_auto();
+}
+
+/**
+ * 页面访问埋点的安全外壳：懒加载 + 全程吞异常。
+ * 埋点是观测手段，任何情况下都不该让它把页面打挂。
+ */
+function page_usage_auto(): void {
+    if (defined('OF_NO_PAGE_USAGE')) return;
+    try {
+        require_once __DIR__ . '/../lib/PageUsage.php';
+        page_usage_record();
+    } catch (\Throwable $e) { /* 埋点失败静默 */ }
 }
 
 /**
