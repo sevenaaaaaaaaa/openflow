@@ -118,7 +118,7 @@ admin_header('付费订阅');
 
     <div class="card">
       <h2>📋 计划概览</h2>
-      <?php if (empty($plans)): ?><div class="empty">暂无订阅计划，到「计划管理」创建</div>
+      <?php if (empty($plans)): ?><div class="empty"><?=empty_state('还没有订阅计划', '订阅计划决定周期与权益（月付/年付、折扣、赠送时长）。', '去计划管理', '/xmp/subscription?tab=plans')?></div>
       <?php else: ?>
       <div style="overflow:auto"><table>
         <thead><tr><th>计划</th><th>价格</th><th>周期</th><th>权限</th><th>状态</th></tr></thead>
@@ -139,7 +139,7 @@ admin_header('付费订阅');
 
     <div class="card">
       <h2>⏰ 即将到期（7 天内）</h2>
-      <?php if (empty($soon)): ?><div class="empty">暂无即将到期的订阅 ✅</div>
+      <?php if (empty($soon)): ?><div class="empty"><?=empty_state('近 30 天没有要续期的订阅', '这一栏列出 30 天内到期的订阅，用来提前跟进；空着说明很健康。')?></div>
       <?php else: ?>
       <div style="overflow:auto"><table>
         <thead><tr><th>用户</th><th>计划</th><th>到期</th><th>剩余</th></tr></thead>
@@ -189,7 +189,7 @@ admin_header('付费订阅');
       <table>
         <thead><tr><th>用户</th><th>计划</th><th>状态</th><th>到期</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($state)): ?><tr><td colspan="5" class="empty">暂无订阅用户</td></tr><?php endif; ?>
+          <?php if (empty($state)): ?><tr><td colspan="5" class="empty"><?=empty_state('还没有订阅用户', '用户在前台购买订阅后会出现这里。', '去看计划管理', '/xmp/subscription?tab=plans')?></td></tr><?php endif; ?>
           <?php foreach ($state as $mid => $s):
             $days = null;
             if (($s['status'] ?? '') === 'active' && !empty($s['expires_at'])) $days = (int)ceil((strtotime($s['expires_at']) - time()) / 86400);
@@ -226,7 +226,7 @@ admin_header('付费订阅');
     <div class="card" style="padding:0;overflow:auto">
       <h2 style="padding:20px 20px 0">🧾 订阅订单</h2>
       <?php if (empty($subOrders)): ?>
-      <div class="empty">暂无订阅订单。用户购买订阅后，订单会显示在这里。</div>
+      <div class="empty"><?=empty_state('暂无订阅计划','订阅计划决定周期与权益；到计划管理里创建。','去计划管理','/xmp/subscription')?></div>
       <?php else: ?>
       <table>
         <thead><tr><th>订单</th><th>用户</th><th>商品</th><th>金额</th><th>状态</th><th>时间</th></tr></thead>

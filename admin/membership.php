@@ -93,7 +93,7 @@ admin_header('会员体系');
       <table class="lst-table">
         <thead><tr><th class="c-title">会员</th><th style="width:120px">当前等级</th><th style="width:80px">积分</th><th style="width:70px">订阅</th><th style="width:90px">已购课程</th><th style="width:90px">咨询次数</th><th style="width:150px">手动授予 <span class="hint" style="font-weight:400;text-transform:none;letter-spacing:0">· 改了即存</span></th></tr></thead>
         <tbody>
-          <?php if (empty($members)): ?><tr><td colspan="7"><div class="of-empty" style="border:0;margin:0">还没有会员。用户在前台注册后会出现在这里。</div></td></tr><?php endif; ?>
+          <?php if (empty($members)): ?><tr><td colspan="7"><div class="of-empty" style="border:0;margin:0"><?=empty_state('还没有会员','用户在前台注册后会自动出现在这里；等级与权益在上面配置。','去看等级与权益','/xmp/membership')?></div></td></tr><?php endif; ?>
           <?php foreach ($members as $m): $e = $entitlements[$m['id']] ?? member_entitlements($m); ?>
           <tr>
             <td class="c-title"><div class="lst-title"><?=htmlspecialchars($m['name'] ?? '')?></div><div class="lst-sub"><span class="lst-slug"><?=htmlspecialchars($m['email'] ?? '')?></span></div></td>

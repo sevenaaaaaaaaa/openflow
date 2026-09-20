@@ -58,7 +58,7 @@ admin_header('评论管理');
         <thead><tr><th>作者</th><th>类型</th><th>目标</th><th>内容</th><th>评分</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
           <?php if (empty($list)): ?>
-          <tr><td colspan="7"><div class="empty">暂无<?=$type==='all' ? '' : '该类' ?>评论</div></td></tr>
+          <tr><td colspan="7"><?=empty_state('暂无' . ($type==='all' ? '' : '该类') . '评论','评论来自前台文章与社区；有内容与访问后会自动出现。','去看文章','/xmp/content-hub?tab=articles')?></td></tr>
           <?php else: foreach ($list as $c): $isPending = ($c['status'] ?? '') === 'pending'; ?>
           <tr>
             <td><span class="t-main"><?=htmlspecialchars($c['author'] ?? '')?></span><div class="t-sub mono" style="font-size:11px"><?=htmlspecialchars($c['created_at'] ?? '')?></div></td>

@@ -55,7 +55,7 @@ admin_header('站内信');
       <div>
         <div class="card">
           <h2>📤 发送消息</h2>
-          <form method="post">
+          <form method="post" id="add">
             <?= csrf_field() ?>
             <div class="field"><label>收件人</label>
               <select name="to">
@@ -97,7 +97,7 @@ admin_header('站内信');
       <div class="card" style="padding:0;align-self:start">
         <h2 style="padding:20px 20px 0">📨 已发送（<?=count($all)?>）</h2>
         <div style="padding:0 20px 20px;max-height:70vh;overflow-y:auto">
-          <?php if (empty($all)): ?><div class="empty" style="padding:30px">暂无消息</div><?php endif; ?>
+          <?php if (empty($all)): ?><div class="empty" style="padding:30px"><?=empty_state('暂无消息','站内信用于广播与个人通知；发送后会留在这里。','发一条消息','#add')?></div><?php endif; ?>
           <?php foreach (array_reverse($all) as $m): ?>
           <div style="padding:12px 0;border-bottom:1px solid var(--border)">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">

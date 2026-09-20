@@ -151,7 +151,7 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
           <table class="p-table">
             <thead><tr><th>月份</th><th>订单</th><th>付费单</th><th>免费单</th><th>收入</th><th>分销佣金</th></tr></thead>
             <tbody>
-              <?php if (empty($report['monthly'])): ?><tr><td colspan="6" style="color:var(--faint)">暂无收入数据</td></tr><?php endif; ?>
+              <?php if (empty($report['monthly'])): ?><tr><td colspan="6" style="color:var(--faint)"><?=empty_state('暂无数据', '产生访问事件或订单后，这里会自动统计。')?></td></tr><?php endif; ?>
               <?php foreach ($report['monthly'] as $m => $r): ?>
               <tr>
                 <td style="color:var(--fg);font-weight:600"><?=htmlspecialchars($m)?></td>
@@ -173,7 +173,7 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
           <table class="p-table">
             <thead><tr><th>大使</th><th>佣金</th></tr></thead>
             <tbody>
-              <?php if (empty($report['commission'])): ?><tr><td colspan="2" style="color:var(--faint)">暂无分销佣金</td></tr><?php endif; ?>
+              <?php if (empty($report['commission'])): ?><tr><td colspan="2" style="color:var(--faint)"><?=empty_state('暂无数据', '产生访问事件或订单后，这里会自动统计。')?></td></tr><?php endif; ?>
               <?php foreach ($report['commission'] as $c): ?>
               <tr><td style="color:var(--fg);font-weight:600"><?=htmlspecialchars($c['name'])?></td><td class="num" style="color:var(--ok)">¥<?=number_format($c['commission'],2)?></td></tr>
               <?php endforeach; ?>
@@ -215,12 +215,12 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
         <div class="p-head"><h3>行为路径</h3><span class="p-sub mono">落地页 · 来源 · 转化</span></div>
         <div class="p-body">
           <div style="font-size:12px;font-weight:600;color:var(--faint);margin-bottom:8px">Top 落地页</div>
-          <?php if (empty($paths['pages'])): ?><div class="empty" style="padding:10px 0;font-size:12px;color:var(--faint)">暂无访问数据</div>
+          <?php if (empty($paths['pages'])): ?><div class="empty" style="padding:10px 0;font-size:12px;color:var(--faint)"><?=empty_state('暂无数据', '产生访问事件或订单后，这里会自动统计。')?></div>
           <?php else: $maxP = max(array_column($paths['pages'],'views')) ?: 1; foreach (array_slice($paths['pages'],0,6) as $p): ?>
           <div class="channel-row"><span style="font-size:12px;width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($p['page'])?></span><div class="bar"><i style="width:<?=round($p['views']/$maxP*100)?>%"></i></div><span class="num" style="font-size:11px;width:44px;text-align:right"><?=$p['views']?></span></div>
           <?php endforeach; endif; ?>
           <div style="font-size:12px;font-weight:600;color:var(--faint);margin:14px 0 8px">Top 来源</div>
-          <?php if (empty($paths['referrers'])): ?><div class="empty" style="padding:6px 0;font-size:12px;color:var(--faint)">暂无来源数据（需 referrer 埋点）</div>
+          <?php if (empty($paths['referrers'])): ?><div class="empty" style="padding:6px 0;font-size:12px;color:var(--faint)"><?=empty_state('暂无数据', '产生访问事件或订单后，这里会自动统计。')?></div>
           <?php else: foreach ($paths['referrers'] as $r): ?>
           <div class="channel-row"><span style="font-size:12px;width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($r['source'])?></span><div class="bar" style="height:18px"><i style="width:<?=min(100, $r['count']*10)?>%"></i></div><span class="num" style="font-size:11px;width:44px;text-align:right"><?=$r['count']?></span></div>
           <?php endforeach; endif; ?>
@@ -258,12 +258,12 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
         <div class="p-head"><h3>偏好洞察 · 设备</h3><span class="p-sub mono">OS / 语言</span></div>
         <div class="p-body">
           <div style="font-size:12px;font-weight:600;color:var(--faint);margin-bottom:8px">设备系统</div>
-          <?php if (empty($prefs['devices'])): ?><div class="empty" style="padding:8px 0;font-size:12px;color:var(--faint)">暂无设备数据</div>
+          <?php if (empty($prefs['devices'])): ?><div class="empty" style="padding:8px 0;font-size:12px;color:var(--faint)"><?=empty_state('暂无数据', '产生访问事件或订单后，这里会自动统计。')?></div>
           <?php else: $maxD = max(array_column($prefs['devices'],'count')) ?: 1; foreach ($prefs['devices'] as $d): ?>
           <div class="channel-row"><span style="font-size:12px;width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($d['name'])?></span><div class="bar" style="height:18px"><i style="width:<?=round($d['count']/$maxD*100)?>%"></i></div><span class="num" style="font-size:11px;width:36px;text-align:right"><?=$d['count']?></span></div>
           <?php endforeach; endif; ?>
           <div style="font-size:12px;font-weight:600;color:var(--faint);margin:14px 0 8px">语言</div>
-          <?php if (empty($prefs['languages'])): ?><div class="empty" style="padding:8px 0;font-size:12px;color:var(--faint)">暂无语言数据</div>
+          <?php if (empty($prefs['languages'])): ?><div class="empty" style="padding:8px 0;font-size:12px;color:var(--faint)"><?=empty_state('暂无数据', '产生访问事件或订单后，这里会自动统计。')?></div>
           <?php else: foreach ($prefs['languages'] as $l): ?>
           <div class="channel-row"><span style="font-size:12px;width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($l['name'])?></span><div class="bar" style="height:18px"><i style="width:<?=min(100, $l['count']*20)?>%"></i></div><span class="num" style="font-size:11px;width:36px;text-align:right"><?=$l['count']?></span></div>
           <?php endforeach; endif; ?>
@@ -273,7 +273,7 @@ $revProgress = $revTarget > 0 ? min(100, round($kpis['revenue_30d'] / $revTarget
         <div class="p-head"><h3>偏好洞察 · 内容</h3><span class="p-sub mono">用户爱看什么</span></div>
         <div class="p-body">
           <div style="font-size:12px;font-weight:600;color:var(--faint);margin-bottom:10px">内容分类偏好</div>
-          <?php if (empty($prefs['content'])): ?><div class="empty" style="padding:12px 0;font-size:12px;color:var(--faint)">暂无内容浏览数据</div>
+          <?php if (empty($prefs['content'])): ?><div class="empty" style="padding:12px 0;font-size:12px;color:var(--faint)"><?=empty_state('暂无数据', '产生访问事件或订单后，这里会自动统计。')?></div>
           <?php else: $maxC = max(array_column($prefs['content'],'count')) ?: 1; foreach ($prefs['content'] as $c): ?>
           <div class="channel-row"><span style="font-size:12px;width:70px;color:var(--muted)"><?=htmlspecialchars($c['name'])?></span><div class="bar" style="height:20px"><i style="width:<?=round($c['count']/$maxC*100)?>%"></i></div><span class="num" style="font-size:11px;width:36px;text-align:right"><?=$c['count']?></span></div>
           <?php endforeach; endif; ?>

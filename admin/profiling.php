@@ -158,7 +158,7 @@ admin_header('用户画像');
     <!-- 渠道分组 -->
     <div class="card" style="margin-bottom:16px">
       <h2>📡 来源渠道分组</h2>
-      <?php if (empty($audience['channels'])): ?><div class="empty">暂无渠道数据（用户通过带 UTM/推荐参数的链接进入后自动归因）</div>
+      <?php if (empty($audience['channels'])): ?><div class="empty"><?=empty_state('暂无画像数据', '画像来自带 UTM / 推荐参数的访问与订单；先确认追踪脚本已生效。', '去 CDP 设置', '/xmp/cdp')?></div>
       <?php else: $maxC = max($audience['channels']) ?: 1; ?>
       <div style="display:grid;gap:8px">
         <?php foreach ($audience['channels'] as $ch => $cnt): ?>
@@ -178,7 +178,7 @@ admin_header('用户画像');
       <table>
         <thead><tr><th>客户</th><th>身份</th><th>来源</th><th>分层</th><th>价值</th><th>标签</th><th>末次活跃</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($audience['list'])): ?><tr><td colspan="8" class="empty">暂无匹配客户</td></tr><?php endif; ?>
+          <?php if (empty($audience['list'])): ?><tr><td colspan="8" class="empty"><?=empty_state('暂无画像数据', '画像来自带 UTM / 推荐参数的访问与订单；先确认追踪脚本已生效。', '去 CDP 设置', '/xmp/cdp')?></td></tr><?php endif; ?>
           <?php foreach (array_slice($audience['list'], 0, 200) as $c): ?>
           <tr>
             <td><strong><?=htmlspecialchars($c['name'] ?: ($c['email'] ?: substr($c['cdp_id'], 2)))?></strong>
@@ -216,7 +216,7 @@ admin_header('用户画像');
       <table>
         <thead><tr><th>用户</th><th>标签</th><th>积分</th><th>等级</th><th>最近活跃</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($members)): ?><tr><td colspan="6" class="empty">暂无会员</td></tr><?php endif; ?>
+          <?php if (empty($members)): ?><tr><td colspan="6" class="empty"><?=empty_state('暂无画像数据', '画像来自带 UTM / 推荐参数的访问与订单；先确认追踪脚本已生效。', '去 CDP 设置', '/xmp/cdp')?></td></tr><?php endif; ?>
           <?php foreach ($members as $m): $p = $profiles[$m['id']]; if ($f_tag && !isset($p['all'][$f_tag])) continue; ?>
           <tr>
             <td>
@@ -327,7 +327,7 @@ admin_header('用户画像');
       <!-- 行为时间线 -->
       <h3 style="font-size:14px;margin:18px 0 10px">🕐 行为时间线（<?=count($profile['timeline'])?>）</h3>
       <div style="max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:12px">
-        <?php if (empty($profile['timeline'])): ?><div class="empty" style="padding:24px">暂无行为数据</div>
+        <?php if (empty($profile['timeline'])): ?><div class="empty" style="padding:24px"><?=empty_state('暂无画像数据', '画像来自带 UTM / 推荐参数的访问与订单；先确认追踪脚本已生效。', '去 CDP 设置', '/xmp/cdp')?></div>
         <?php else: foreach ($profile['timeline'] as $ev): ?>
         <div style="display:flex;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px;align-items:center">
           <span style="width:16px;text-align:center"><?=prof_event_label($ev['event'])[0]?></span>

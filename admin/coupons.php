@@ -36,7 +36,7 @@ admin_header('优惠券');
     </div>
 
     <?php if ($edit): ?>
-    <form method="post" class="card" style="padding:24px;margin-bottom:20px;max-width:720px">
+    <form method="post" id="add" class="card" style="padding:24px;margin-bottom:20px;max-width:720px">
       <input type="hidden" name="save" value="1">
       <input type="hidden" name="id" value="<?=$edit['id']?>">
       <h3 style="font-size:15px;font-weight:700;margin-bottom:14px">编辑优惠券</h3>
@@ -91,7 +91,7 @@ admin_header('优惠券');
       <table>
         <thead><tr><th>优惠码</th><th>名称</th><th>类型</th><th>面值</th><th>门槛</th><th>用量</th><th>有效期</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($coupons)): ?><tr><td colspan="9" class="empty">暂无优惠券，先创建一张</td></tr><?php endif; ?>
+          <?php if (empty($coupons)): ?><tr><td colspan="9" class="empty"><?=empty_state('暂无优惠券','优惠券用于促销与挽回；先创建一张试试。','创建优惠券','#add')?></td></tr><?php endif; ?>
           <?php foreach ($coupons as $c): $typeLabel = ['fixed'=>'满减','percent'=>'折扣','free'=>'无门槛'][$c['type']]??$c['type']; ?>
           <tr>
             <td><strong><?=htmlspecialchars($c['code'])?></strong></td>

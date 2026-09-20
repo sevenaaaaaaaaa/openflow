@@ -82,7 +82,7 @@ admin_header('社区管理');
       <table>
         <thead><tr><th>标题</th><th>作者</th><th>话题</th><th>投票</th><th>评论</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($posts)): ?><tr><td colspan="7" class="empty">暂无帖子</td></tr><?php endif; ?>
+          <?php if (empty($posts)): ?><tr><td colspan="7" class="empty"><?=empty_state('暂无帖子', '帖子来自社区；也可以先去社区配置里开启发帖。', '去社区配置', '/xmp/community-config')?></td></tr><?php endif; ?>
           <?php foreach ($posts as $p): ?>
           <tr>
             <td style="max-width:220px"><strong><?=htmlspecialchars($p['title'])?></strong></td>
@@ -106,7 +106,7 @@ admin_header('社区管理');
       <table>
         <thead><tr><th>评论</th><th>作者</th><th>时间</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($comments)): ?><tr><td colspan="4" class="empty">暂无评论</td></tr><?php endif; ?>
+          <?php if (empty($comments)): ?><tr><td colspan="4" class="empty"><?=empty_state('暂无评论', '评论来自社区帖子与文章。', '看文章列表', '/xmp/content-hub?tab=articles')?></td></tr><?php endif; ?>
           <?php foreach (array_slice($comments, 0, 50) as $c): ?>
           <tr>
             <td style="max-width:400px"><?=htmlspecialchars($c['content'])?></td>

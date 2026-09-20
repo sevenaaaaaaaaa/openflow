@@ -133,7 +133,7 @@ if ($__sub === 'self'):
       <table>
         <thead><tr><th>大使</th><th>金额</th><th>时间</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($withdrawals)): ?><tr><td colspan="5" class="empty">暂无提现记录</td></tr><?php endif; ?>
+          <?php if (empty($withdrawals)): ?><tr><td colspan="5" class="empty"><?=empty_state('暂无提现记录','提现来自分销佣金；有佣金后才会出现申请记录。','去看分销','/xmp/distribution')?></td></tr><?php endif; ?>
           <?php foreach (array_reverse($withdrawals) as $w): ?>
           <tr>
             <td><?=htmlspecialchars($w['member_name'] ?? '')?></td>

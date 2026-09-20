@@ -149,7 +149,7 @@ if (isset($_GET['edit'])) {
                   </form>
                   <div style="margin-top:20px;padding:14px;border-radius:12px;background:var(--bg);font-size:12.5px;color:var(--muted);line-height:1.7">
                     <b>说明：</b>「<?=htmlspecialchars($basePage['title'] ?? '')?>」是平台的固定模板页（内容由模板定义）。如需完全自定义区块，请创建「模块化页」或「落地页」。
-                    <a href="/xmp/pages-list" style="color:var(--accent)">查看其他页面 →</a>
+                    <a href="/xmp/content-hub?tab=pages" style="color:var(--accent)">查看其他页面 →</a>
                   </div>
                 </div>
               </div>
@@ -185,7 +185,7 @@ admin_header('落地页构建器');
       <table>
         <thead><tr><th>页面标题</th><th>Slug</th><th>区块数</th><th>广告页</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($pages)): ?><tr><td colspan="6" class="empty">暂无落地页</td></tr><?php endif; ?>
+          <?php if (empty($pages)): ?><tr><td colspan="6" class="empty"><?=empty_state('还没有落地页','用构建器拼一页：选区块 → 填内容 → 发布。也可以先看现成的区块模板。','看区块模板','/xmp/block-templates')?></td></tr><?php endif; ?>
           <?php foreach ($pages as $p): ?>
           <tr>
             <td><strong><?=htmlspecialchars($p['title'])?></strong></td>

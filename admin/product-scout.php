@@ -81,7 +81,7 @@ admin_header('产品发现');
             <td class="hint"><?=htmlspecialchars(mb_substr($d['excerpt'] ?? '', 0, 80))?>…</td>
             <td class="nowrap">
               <a href="/xmp/article-edit?id=<?=urlencode($d['id'])?>" class="btn btn-sm btn-primary">编辑 / 发布</a>
-              <a href="/xmp/articles?delete=<?=urlencode($d['id'])?>" class="btn btn-sm btn-ghost" data-confirm="丢弃这篇草稿？">丢弃</a>
+              <a href="/xmp/content-hub?tab=articles?delete=<?=urlencode($d['id'])?>" class="btn btn-sm btn-ghost" data-confirm="丢弃这篇草稿？">丢弃</a>
             </td>
           </tr>
         <?php endforeach; ?>

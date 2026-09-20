@@ -176,7 +176,7 @@ admin_header('风控中心');
       <table>
         <thead><tr><th>时间</th><th>动作</th><th>目标</th><th>原因</th><th>分数</th></tr></thead>
         <tbody>
-          <?php if (empty($scanLog)): ?><tr><td colspan="5" class="empty">暂无日志</td></tr><?php endif; ?>
+          <?php if (empty($scanLog)): ?><tr><td colspan="5" class="empty"><?=empty_state('暂无日志','审核日志记录每次处理动作；处理一次内容后就会出现。','去审核队列','/xmp/community-mod')?></td></tr><?php endif; ?>
           <?php foreach ($scanLog as $l): ?>
           <tr>
             <td class="text-sm text-muted"><?=htmlspecialchars($l['created_at'])?></td>

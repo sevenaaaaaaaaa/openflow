@@ -132,7 +132,7 @@ admin_header('生态市场');
       <table>
         <thead><tr><th>技能</th><th>类型</th><th>作者</th><th>安装</th><th>评分</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
-          <?php if (empty($skills)): ?><tr><td colspan="7" class="empty">暂无技能，点击「发布技能」创建</td></tr><?php endif; ?>
+          <?php if (empty($skills)): ?><tr><td colspan="7" class="empty"><?=empty_state('暂无技能','发布一个技能把能力变成可复用商品，或先从生态市场了解上架规则。','发布技能','#add')?></td></tr><?php endif; ?>
           <?php foreach ($skills as $s): ?>
           <tr>
             <td><div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px"><?=htmlspecialchars($s['icon'] ?? '⚡')?></span><div><strong><?=htmlspecialchars($s['title'] ?? '')?></strong><div class="text-sm text-muted"><?=htmlspecialchars(mb_substr($s['description'] ?? '', 0, 40))?></div></div></div></td>
@@ -176,7 +176,7 @@ admin_header('生态市场');
         <div id="aiMsg" class="text-sm" style="margin-top:6px"></div>
       </div>
 
-      <form method="post">
+      <form method="post" id="add">
         <?= csrf_field() ?>
         <input type="hidden" name="save_skill" value="1">
         <input type="hidden" name="skill_id" value="<?=htmlspecialchars($s['id'] ?? '')?>">

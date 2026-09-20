@@ -88,7 +88,7 @@ admin_header('电商报表');
       <div class="panel">
         <div class="p-head"><h3>商品销量 TOP</h3><span class="p-sub mono">近<?=$days?>天</span></div>
         <div class="p-body">
-          <?php if (empty($productSales)): ?><div class="empty" style="padding:12px 0;font-size:12px;color:var(--faint)">暂无销售数据</div>
+          <?php if (empty($productSales)): ?><div class="empty" style="padding:12px 0;font-size:12px;color:var(--faint)"><?=empty_state('暂无销售数据','销售数据来自订单；产生已支付订单后这里会统计。','去看订单','/xmp/orders')?></div>
           <?php else: $maxS = max($productSales) ?: 1; foreach (array_slice($productSales, 0, 8, true) as $name => $cnt): ?>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
             <span style="font-size:12px;width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)"><?=htmlspecialchars($name)?></span>

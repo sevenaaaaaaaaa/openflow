@@ -103,7 +103,7 @@ admin_header('帮助中心管理');
     <!-- ═══ 指南编辑 ═══ -->
     <div class="card">
       <h2><?=$edit['id'] === '' ? '新建指南' : '编辑：' . htmlspecialchars($edit['title'])?></h2>
-      <form method="post">
+      <form method="post" id="add">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="save_article">
         <input type="hidden" name="id" value="<?=htmlspecialchars($edit['id'])?>">
@@ -139,7 +139,7 @@ admin_header('帮助中心管理');
       <table>
         <thead><tr><th>指南</th><th>分类</th><th>反馈</th><th>状态</th><th>更新</th><th class="actions">操作</th></tr></thead>
         <tbody>
-          <?php if (empty($data['articles'])): ?><tr><td colspan="6" class="empty">还没有指南，点右上角新建。</td></tr><?php endif; ?>
+          <?php if (empty($data['articles'])): ?><tr><td colspan="6" class="empty"><?=empty_state('还没有指南','帮助中心对用户自助解决问题最有效；先写一篇最常见的。','新建指南','#add')?></td></tr><?php endif; ?>
           <?php foreach ($data['articles'] as $a):
             $cat = HelpCenter::category((string)($a['cat'] ?? ''));
             $fb = $fbAll[$a['slug'] ?? ''] ?? ['up' => 0, 'down' => 0]; ?>
