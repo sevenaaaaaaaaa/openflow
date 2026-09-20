@@ -4,6 +4,7 @@
  * 定期扫描前后端数据，发现改进点，供管理员采纳后优化平台
  */
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../lib/EvolutionLedger.php';   // 台账：动作 → 度量 → 结算
 require_login();
 require_perm('settings');
 
@@ -14,16 +15,40 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['scan'])) {
     csrf_verify();
     if (isset($_POST['resolve']) && isset($_POST['id'])) {
-        SelfEvolve::resolve(trim($_POST['id']), trim($_POST['note'] ?? ''));
+        $rid = trim($_POST['id']);
+        $rnote = trim($_POST['note'] ?? '');
+        SelfEvolve::resolve($rid, $rnote);
+        // 台账：这次动作是谁做的、做了什么（可回溯）
+        EvolutionLedger::record_action($rid, ['kind' => 'human', 'summary' => ($rnote !== '' ? $rnote : '标记已解决'), 'by' => (string) ($_SESSION['admin_user'] ?? '')]);
+        // 有度量指标时默认挂 7 天验证（让"改完到底有没有用"能被结算）
+        if (!empty($_POST['measure_metric']) && isset(EvolutionLedger::metric_defs()[(string) $_POST['measure_metric']])) {
+            EvolutionLedger::record_measure($rid, (string) $_POST['measure_metric'], (int) ($_POST['measure_days'] ?? 7));
+        }
         $message = '已标记为已解决，进入迭代历史。';
         header('Location: /xmp/evolution');
         exit;
     }
+    if (isset($_POST['evo_measure']) && isset($_POST['id'])) {
+        $mid = trim($_POST['id']);
+        $metric = (string) ($_POST['metric'] ?? '');
+        if (!isset(EvolutionLedger::metric_defs()[$metric])) {
+            $error = '指标不合法';
+        } else {
+            EvolutionLedger::record_measure($mid, $metric, (int) ($_POST['days'] ?? 7));
+            EvolutionLedger::record_action($mid, ['kind' => 'human', 'summary' => '挂上验证：' . EvolutionLedger::metric_defs()[$metric]['label'] . '（' . (int) ($_POST['days'] ?? 7) . ' 天后结算）', 'by' => (string) ($_SESSION['admin_user'] ?? '')]);
+            $message = '已挂验证，到期后按真实指标结算（不足对比快照时会保持待验证，不会假装改善）';
+        }
+    }
+
     if (isset($_POST['ignore']) && isset($_POST['id'])) {
         // 忽略建议：通知生长引擎降权
         $sugs = SelfEvolve::state()['suggestions'] ?? [];
         foreach ($sugs as $sg) {
-            if ($sg['id'] === $_POST['id']) { GrowthEngine::suggestionIgnored($sg['id'], $sg['category'] ?? 'other'); break; }
+            if ($sg['id'] === $_POST['id']) {
+                GrowthEngine::suggestionIgnored($sg['id'], $sg['category'] ?? 'other');
+                EvolutionLedger::record_action((string) $sg['id'], ['kind' => 'human', 'summary' => '已忽略（降权）', 'by' => (string) ($_SESSION['admin_user'] ?? '')]);
+                break;
+            }
         }
         $message = '已忽略该建议，同类建议会降低优先级。';
         header('Location: /xmp/evolution');
@@ -32,6 +57,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_GET['scan'])) {
     if (isset($_POST['to_task']) && isset($_POST['id'])) {
         // 建议转待办
         $res = SelfEvolve::convertToTask(trim($_POST['id']), trim($_POST['assignee'] ?? ''));
+        if (!empty($res)) {
+            EvolutionLedger::record_action(trim($_POST['id']), ['kind' => 'human', 'summary' => '转成任务，指派给 ' . trim((string) ($_POST['assignee'] ?? '（未指派）')), 'by' => (string) ($_SESSION['admin_user'] ?? '')]);
+        }
         if ($res['ok']) {
             $message = '已转为任务，可在任务管理查看。';
         } else {
@@ -157,6 +185,25 @@ admin_header('系统体检与改进建议');
       <div class="evo-stat"><div class="num" style="color:var(--faint)"><?=count($history)?></div><div class="text-xs text-muted">已迭代</div></div>
     </div>
 
+    <?php
+    // 关键指标：现算 + 与 7 天前对比（没有对比快照就如实写"缺对比"，不假装改善）
+    $ledgerStats = EvolutionLedger::stats();
+    $ledgerMetrics = EvolutionLedger::metrics();
+    ?>
+    <h2 style="font-size:16px;font-weight:800;margin:0 0 12px">📐 关键指标（现算 · 与 7 天前对比）</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-bottom:8px">
+      <?php foreach (EvolutionLedger::metric_defs() as $mk => $md): $tr = EvolutionLedger::trend($mk, 7);
+        $vc = ['improved' => 'var(--ok)', 'worse' => 'var(--danger)', 'flat' => 'var(--faint)', 'unknown' => 'var(--faint)'][$tr['verdict']] ?? 'var(--faint)';
+        $vl = ['improved' => '↓ 改善', 'worse' => '↑ 变差', 'flat' => '≈ 持平', 'unknown' => '— 缺对比'][$tr['verdict']] ?? '—'; ?>
+      <div class="evo-stat" style="text-align:left;padding:14px">
+        <div class="text-xs text-muted"><?=htmlspecialchars($md['label'])?></div>
+        <div style="font-size:22px;font-weight:800;margin-top:2px"><?=htmlspecialchars((string) (int) $ledgerMetrics[$mk])?><span class="text-xs text-muted" style="font-weight:500"> <?=htmlspecialchars($md['unit'])?></span></div>
+        <div style="font-size:11.5px;color:<?=$vc?>;margin-top:2px"><?=$vl?><?php if ($tr['past'] !== null): ?>（7 天前 <?=htmlspecialchars((string) (int) $tr['past'])?>）<?php endif; ?></div>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <p class="text-xs text-muted" style="margin:0 0 18px">台账：已改善 <b><?=(int) $ledgerStats['improved']?></b> · 无变化 <b><?=(int) $ledgerStats['flat']?></b> · 变差 <b><?=(int) $ledgerStats['worse']?></b> · 待验证 <b><?=(int) $ledgerStats['pending']?></b> · 未挂验证 <b><?=(int) $ledgerStats['no_measure']?></b></p>
+
     <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start">
       <!-- 建议清单 -->
       <div>
@@ -178,6 +225,41 @@ admin_header('系统体检与改进建议');
           <div class="text-sm text-muted" style="line-height:1.7;margin-bottom:6px"><?=htmlspecialchars($s['detail'] ?? '')?></div>
           <?php if (!empty($s['hint'])): ?><div class="text-xs" style="color:var(--faint);margin-bottom:6px">💭 <?=htmlspecialchars($s['hint'])?></div><?php endif; ?>
           <?php if (!empty($s['action'])): ?><div class="text-xs" style="color:var(--accent);margin-bottom:8px">→ <?=htmlspecialchars($s['action'])?></div><?php endif; ?>
+          <?php $led = EvolutionLedger::entry((string) $s['id']); $ledAct = (array) ($led['action'] ?? []); $ledMs = (array) ($led['measure'] ?? []); ?>
+          <?php if ($ledAct !== [] || $ledMs !== []): ?>
+          <div style="margin:0 0 10px;padding:9px 11px;background:var(--surface-2,var(--hover));border-radius:10px;font-size:12px;line-height:1.7">
+            <?php if ($ledAct !== []): ?>
+            <div>🧾 动作：<?=htmlspecialchars((string) ($ledAct['summary'] ?? ''))?>
+              <span class="text-xs text-muted">（<?=['auto'=>'系统自动','human'=>'人做的','needs_review'=>'需人审'][(string) ($ledAct['kind'] ?? 'human')] ?? '人做的'?><?=($ledAct['by'] ?? '') !== '' ? ' · ' . htmlspecialchars((string) $ledAct['by']) : ''?> · <?=htmlspecialchars((string) ($ledAct['at'] ?? ''))?>)</span>
+            </div>
+            <?php endif; ?>
+            <?php if ($ledMs !== []): $verdict = (string) ($ledMs['verdict'] ?? 'pending');
+              $vColor = ['improved'=>'var(--ok)','worse'=>'var(--danger)','flat'=>'var(--faint)','pending'=>'var(--accent)'][$verdict] ?? 'var(--faint)';
+              $vText = ['improved'=>'✅ 有改善','worse'=>'❌ 变差了','flat'=>'≈ 没变化（无效）','pending'=>'⏳ 待验证'][$verdict] ?? '⏳ 待验证'; ?>
+            <div>📏 验证：<?=htmlspecialchars((string) (EvolutionLedger::metric_defs()[(string) ($ledMs['metric'] ?? '')]['label'] ?? ($ledMs['metric'] ?? '')))?>
+              <b><?=htmlspecialchars((string) (int) ($ledMs['before'] ?? 0))?></b> →
+              <b><?=$ledMs['after'] === null ? '待结算' : htmlspecialchars((string) (int) $ledMs['after'])?></b>
+              <span style="color:<?=$vColor?>;font-weight:700"><?=$vText?></span>
+              <span class="text-xs text-muted">（<?=htmlspecialchars((string) ($ledMs['started_at'] ?? ''))?> 起，<?=(int) ($ledMs['window_days'] ?? 7)?> 天窗口）</span>
+            </div>
+            <?php if ((string) ($ledMs['note'] ?? '') !== ''): ?><div class="text-xs text-muted">↳ <?=htmlspecialchars((string) $ledMs['note'])?></div><?php endif; ?>
+            <?php endif; ?>
+          </div>
+          <?php endif; ?>
+          <?php if ($isOpen): ?>
+          <form method="post" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+            <?= csrf_field() ?>
+            <input type="hidden" name="id" value="<?=htmlspecialchars($s['id'])?>">
+            <span class="text-xs text-muted">按指标验证这次改动：</span>
+            <select name="metric" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12.5px">
+              <?php foreach (EvolutionLedger::metric_defs() as $mk => $md): ?><option value="<?=$mk?>"><?=htmlspecialchars($md['label'])?></option><?php endforeach; ?>
+            </select>
+            <select name="days" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12.5px">
+              <option value="3">3 天后结算</option><option value="7" selected>7 天后结算</option><option value="14">14 天后结算</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" name="evo_measure" value="1">📏 挂上验证</button>
+          </form>
+          <?php endif; ?>
           <?php if ($isOpen): ?>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <form method="post" style="display:flex;gap:8px;align-items:center;flex:1;min-width:280px">
@@ -232,6 +314,24 @@ admin_header('系统体检与改进建议');
             </div>
           </div>
         </div>
+
+        <h2 style="font-size:16px;font-weight:800;margin:18px 0 12px">🧾 已结算台账</h2>
+        <?php $settled = array_slice(array_reverse((array) (json_read(DATA_DIR . '/evolution-ledger.json')['settled'] ?? [])), 0, 12); ?>
+        <?php if ($settled === []): ?>
+        <div class="evo-card text-xs text-muted" style="padding:16px">还没有结算记录。做一次改动后挂个验证（上面每条建议都能挂），到期会用真实指标判定"改善 / 没变化 / 变差"。</div>
+        <?php else: ?>
+        <?php foreach ($settled as $sd): $v = (string) ($sd['verdict'] ?? 'pending');
+          $vc = ['improved'=>'var(--ok)','worse'=>'var(--danger)','flat'=>'var(--faint)','pending'=>'var(--accent)'][$v] ?? 'var(--faint)';
+          $vt = ['improved'=>'✅ 有改善','worse'=>'❌ 变差','flat'=>'≈ 没变化（无效）','pending'=>'⏳ 待验证'][$v] ?? $v;
+          $mlabel = (string) (EvolutionLedger::metric_defs()[(string) ($sd['metric'] ?? '')]['label'] ?? ($sd['metric'] ?? '')); ?>
+        <div class="evo-history">
+          <span style="color:<?=$vc?>;font-weight:700"><?=$vt?></span>
+          · <?=htmlspecialchars($mlabel)?>
+          <b><?=htmlspecialchars((string) (int) ($sd['before'] ?? 0))?></b> → <b><?=htmlspecialchars((string) (int) ($sd['after'] ?? 0))?></b>
+          <div class="text-xs text-muted" style="margin-top:2px"><?=htmlspecialchars((string) ($sd['id'] ?? ''))?> · <?=htmlspecialchars((string) ($sd['at'] ?? ''))?></div>
+        </div>
+        <?php endforeach; ?>
+        <?php endif; ?>
 
         <div class="evo-card" style="font-size:13px">
           <div class="font-bold mb-2">采集的数据源</div>

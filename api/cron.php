@@ -270,6 +270,15 @@ if (time() - $lastEvolve > 6 * 3600) {
     try {
         $evolveResult = SelfEvolve::runScan();
         json_write(DATA_DIR . '/evolution-scan.json', ['ts' => time()]);
+        // 自我进化台账：落一次指标快照 + 结算到期验证（没有对比快照时保持待验证，不假装改善）
+        try {
+            if (is_file(__DIR__ . '/../lib/EvolutionLedger.php')) {
+                require_once __DIR__ . '/../lib/EvolutionLedger.php';
+                EvolutionLedger::snapshot();
+                $settled = EvolutionLedger::settle();
+                if ($settled !== []) json_write(DATA_DIR . '/evolution-settle.json', ['ts' => time(), 'settled' => $settled]);
+            }
+        } catch (\Throwable $e) {}
         // 建议过期清理（每 24 小时）
         $lastExpire = (int)(json_read(DATA_DIR . '/evolution-expire.json')['ts'] ?? 0);
         if (time() - $lastExpire > 24 * 3600) {
