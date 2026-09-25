@@ -22,6 +22,7 @@ $settings = json_read($settingsFile);
     'beian' => '',
     'site_slogan' => 'AI 时代的网站增长操作系统',
     'waifu_model' => 'rice',
+    'waifu_mode' => '2d',
     'site_desc' => '专注于以 AI 驱动网站增长、营销与运营的解决方案提供商',
     'site_keywords' => '网站增长, 营销自动化, AI Agent, SEO, GEO, 线索管理',
     'site_logo' => '',
@@ -59,8 +60,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $settings['staging_mode'] = isset($_POST['settings']['staging_mode']);
     $settings['multilang_enabled'] = isset($_POST['settings']['multilang_enabled']);
     $settingsBefore = json_read($settingsFile);
-    // 看板娘默认形象变更时提升版本号：各浏览器的个人换装（localStorage）随之失效，全站默认立即生效
-    if (($settingsBefore['waifu_model'] ?? 'rice') !== ($settings['waifu_model'] ?? 'rice')) {
+    // 看板娘默认形象/形态变更时提升版本号：各浏览器的个人换装（localStorage）随之失效，全站默认立即生效
+    if (($settingsBefore['waifu_model'] ?? 'rice') !== ($settings['waifu_model'] ?? 'rice')
+        || ($settingsBefore['waifu_mode'] ?? '2d') !== ($settings['waifu_mode'] ?? '2d')) {
         $settings['waifu_model_ver'] = (string)time();
     } else {
         $settings['waifu_model_ver'] = (string)($settingsBefore['waifu_model_ver'] ?? '0');
@@ -118,13 +120,20 @@ admin_header('系统设置');
               <div class="hint" style="flex:1;min-width:220px;line-height:1.8">流环标识硬编码于：前台站头与页脚（site-shell.js / site-footer.php）、favicon.svg、后台运营台与登录页、OG 分享图。上方「Logo URL」仅替换 SEO/结构化数据里的图片引用；要换主标识需改上述文件。</div>
             </div>
           </div>
-          <div class="field"><label>看板娘默认形象 <span class="hint">· 后台右下角 Live2D 助手</span></label>
+          <div class="field"><label>看板娘默认形态 <span class="hint">· 后台右下角助手 2D/3D</span></label>
+            <select name="settings[waifu_mode]">
+              <?php foreach (['2d' => '2D 看板娘（Live2D · 秒开）', '3d' => '3D 助手（VRM · Seed-san · 首载约 12MB）'] as $__mk => $__ml): ?>
+              <option value="<?=$__mk?>" <?=($settings['waifu_mode'] ?? '2d') === $__mk ? 'selected' : ''?>><?=$__ml?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="field"><label>看板娘默认形象 <span class="hint">· 2D 形态下使用的 Live2D 形象</span></label>
             <select name="settings[waifu_model]">
               <?php foreach (['rice' => '璃丝 · 御姐黑裙（推荐）', 'mao' => '玛奥 · 猫娘少女', 'ren' => '莲 · 中性青年', 'natori' => '名取 · 西装男性', 'mark' => '马克 · 休闲男性', 'hiyori' => '日和 · 经典少女'] as $__wk => $__wl): ?>
               <option value="<?=$__wk?>" <?=($settings['waifu_model'] ?? 'rice') === $__wk ? 'selected' : ''?>><?=$__wl?></option>
               <?php endforeach; ?>
             </select>
-            <div class="hint" style="margin-top:6px">修改保存后全站立即生效（覆盖各浏览器的个人换装）；之后个人仍可通过右键看板娘换装，或选「跟随全站默认」恢复。</div>
+            <div class="hint" style="margin-top:6px">修改保存后全站立即生效（覆盖各浏览器的个人换装）；之后个人仍可通过右键看板娘换装或切 2D/3D，或选「跟随全站默认」恢复。3D 形象为 Seed-san（© VirtualCast, Inc. · VRM Public License 1.0，可商用）。</div>
           </div>
         </div>
         <div class="field"><label>站点描述 <span class="hint">· SEO meta description</span></label><input type="text" name="settings[site_desc]" value="<?=htmlspecialchars($settings['site_desc'] ?? '')?>"></div>

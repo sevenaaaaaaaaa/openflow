@@ -1,21 +1,17 @@
 /* ─────────────────────────────────────────────────────────────────────────
- * OpenFlow · admin-waifu.js v2 — 后台看板娘「衣橱系统」（Live2D）
+ * OpenFlow · admin-waifu.js v3 — 后台看板娘「衣橱系统」（2D Live2D + 3D VRM）
  *
- * 六位可换形象（均为 Live2D 官方免费示例模型，Free Material License）：
- *   rice    璃丝 —— 成熟御姐 · 黑裙（默认。语气：从容撩人、干练自信）
- *   mao     玛奥 —— 猫娘少女（语气：慵懒俏皮）
- *   ren     莲   —— 中性青年（语气：冷静简洁）
- *   natori  名取 —— 西装男性（语气：商务专业）
- *   mark    马克 —— 休闲男性（语气：随和直爽）
- *   hiyori  日和 —— 经典少女（语气：活泼可爱）
+ * 两种形态，右键角色 → 衣橱菜单随时切换（选择记 localStorage，随全站 ver 失效）：
+ *   2D  Live2D 六位形象（官方免费示例，Free Material License）
+ *       rice 璃丝(默认) / mao 玛奥 / ren 莲 / natori 名取 / mark 马克 / hiyori 日和
+ *   3D  VRM 立体助手（three.js + @pixiv/three-vrm，懒加载）
+ *       seed 希德 —— Seed-san © VirtualCast, Inc. · VRM Public License 1.0
  *
- * 换装：右键角色 → 衣橱菜单（换人 / 本次隐藏）；选择记 localStorage，
- *       后台「设置 → waifu_model」可改全站默认（config.php 注入 OF_WAIFU_CONFIG）。
+ * 全站默认（形态 + 2D 形象）在后台「设置」里改；改默认会 bump ver，
+ * 所有浏览器的个人选择随之回到新默认。3D 形象同样支持个人换装。
  *
- * 想换成真正的「黑丝女武神」等定制造型：把任何 Cubism 4.x 模型目录放进
- * assets/vendor/live2d/model/ 并在下方 WARDROBE 注册一行即可（Booth/nizima 有售）。
- *
- * 交互：视线跟随鼠标 / 待机动作 / 点击开聊天 / 气泡按性格出文案 / 聊天联动。
+ * 主壳负责：配置/选择存储、DOM 舞台、气泡、衣橱菜单、聊天联动、降级。
+ * 渲染器（2D/3D）统一接口：react(group) / focus(x,y) / setModel(file) / destroy()。
  * 降级：窄屏 / 减少动态 / 无 WebGL / 会话内隐藏 → 保留旧圆形 FAB。
  * ─────────────────────────────────────────────────────────────────────── */
 (function () {
@@ -23,9 +19,10 @@
   window.__OF_WAIFU__ = true;
 
   var BASE = '/assets/vendor/live2d';
+  var VRMJS = '/assets/waifu-vrm.js';
   var W = 230, H = 330;
 
-  /* ── 衣橱注册表 ── */
+  /* ── 2D 衣橱（Live2D）── */
   var WARDROBE = {
     rice: {
       name: '璃丝', file: 'rice/Rice.model3.json', tag: '御姐 · 黑裙',
@@ -66,26 +63,50 @@
   };
   var ORDER = ['rice', 'mao', 'ren', 'natori', 'mark', 'hiyori'];
 
-  /* 个人换装（localStorage）只在「全站默认版本」未变时生效；
-   * 后台设置改了默认形象 → ver 变化 → 所有浏览器回到新默认，之后可再右键个人换装 */
+  /* ── 3D 衣橱（VRM）── */
+  var VRM_WARDROBE = {
+    seed: {
+      name: '希德', file: 'seed/Seed-san.vrm', tag: '科技 · 少年',
+      credit: 'Seed-san © VirtualCast, Inc. · VRM PL 1.0',
+      hello: '系统就绪。今天从哪开始？', tapChat: '说，我在听。', tapOnly: '嗯？',
+      thinking: '处理中…', done: '完成，同步给你。', fail: '出了点故障，重试一次。',
+      hidden: '需要时，右键唤回。'
+    }
+  };
+  var VORDER = ['seed'];
+
+  /* ── 全站默认（admin/config.php 注入 OF_WAIFU_CONFIG）── */
   function cfgDefault() { var d = (window.OF_WAIFU_CONFIG && window.OF_WAIFU_CONFIG.default) || 'rice'; return WARDROBE[d] ? d : 'rice'; }
+  function cfgMode() { return (window.OF_WAIFU_CONFIG && window.OF_WAIFU_CONFIG.mode) === '3d' ? '3d' : '2d'; }
   function cfgVer() { return String((window.OF_WAIFU_CONFIG && window.OF_WAIFU_CONFIG.ver) || '0'); }
-  function readChoice() {
+
+  /* 个人选择（localStorage，格式 {id, ver}；ver 不匹配 → 视为过期清除） */
+  function readStore(key, valid) {
     try {
-      var raw = localStorage.getItem('of_waifu_model');
+      var raw = localStorage.getItem(key);
       if (!raw) return null;
-      var c = JSON.parse(raw); // 新格式 {id, ver}
-      if (c && WARDROBE[c.id] && String(c.ver) === cfgVer()) return c.id;
-      localStorage.removeItem('of_waifu_model'); // 旧格式或版本已过期的个人选择，清除
-    } catch (e) { try { localStorage.removeItem('of_waifu_model'); } catch (e2) {} }
+      var c = JSON.parse(raw);
+      if (c && valid(c.id) && String(c.ver) === cfgVer()) return c.id;
+      localStorage.removeItem(key);
+    } catch (e) { try { localStorage.removeItem(key); } catch (e2) {} }
     return null;
   }
-  function writeChoice(id) {
-    try { localStorage.setItem('of_waifu_model', JSON.stringify({ id: id, ver: cfgVer() })); } catch (e) {}
+  function writeStore(key, id) {
+    try { localStorage.setItem(key, JSON.stringify({ id: id, ver: cfgVer() })); } catch (e) {}
   }
-  function clearChoice() { try { localStorage.removeItem('of_waifu_model'); } catch (e) {} }
-  function currentId() { return readChoice() || cfgDefault(); }
-  var persona = WARDROBE[currentId()];
+  function clearStore(key) { try { localStorage.removeItem(key); } catch (e) {} }
+
+  function is2dModel(id) { return !!WARDROBE[id]; }
+  function is3dModel(id) { return !!VRM_WARDROBE[id]; }
+  function isMode(m) { return m === '2d' || m === '3d'; }
+
+  var mode = (function () {
+    var m = readStore('of_waifu_mode', isMode);
+    return m || cfgMode();
+  })();
+  var currentId = function () { return readStore('of_waifu_model', is2dModel) || cfgDefault(); };       // 2D 形象
+  var currentVrm = function () { return readStore('of_waifu_vrm', is3dModel) || 'seed'; };              // 3D 形象
+  var persona = mode === '3d' ? VRM_WARDROBE[currentVrm()] : WARDROBE[currentId()];
 
   function reducedMotion() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
   function narrow() { return matchMedia('(max-width:840px)').matches; }
@@ -107,12 +128,9 @@
     if (ms !== 0) bubbleTimer = setTimeout(function () { bubbleEl.classList.remove('show'); }, ms || 4200);
   }
 
-  /* ── 聊天联动钩子 ── */
-  var model = null;
-  function react(group) {
-    if (!model) return;
-    try { model.motion(group); } catch (e) {}
-  }
+  /* ── 聊天联动钩子（两种形态共用）── */
+  var ctrl = null;   // 当前渲染器控制器
+  function react(group) { if (ctrl) { try { ctrl.react(group); } catch (e) {} } }
   window.OFWaifu = {
     say: say,
     onChatToggle: function (open) {
@@ -125,7 +143,7 @@
 
   if (fallback()) return; // 旧 FAB 保持可见，到此为止
 
-  /* ── 懒加载运行库 ── */
+  /* ── 懒加载脚本 ── */
   function loadScript(src) {
     return new Promise(function (res, rej) {
       var s = document.createElement('script');
@@ -133,19 +151,115 @@
       document.head.appendChild(s);
     });
   }
-  function schedule() {
-    setTimeout(function () {
-      loadScript(BASE + '/live2dcubismcore.min.js')
-        .then(function () { return loadScript(BASE + '/pixi.min.js'); })
-        .then(function () { return loadScript(BASE + '/pixi-live2d-display.min.js'); })
-        .then(boot)
-        .catch(function () { /* 加载失败 → 静默退回 FAB */ });
-    }, 900);
+  function schedule() { setTimeout(boot, 900); }
+
+  /* ── 舞台生命周期 ── */
+  var box = null, canvas = null, idleTimer = 0;
+  function teardown() {
+    if (ctrl) { try { ctrl.destroy(); } catch (e) {} ctrl = null; }
+    clearInterval(idleTimer); idleTimer = 0;
+    if (box) { box.remove(); box = null; }
+    bubbleEl = null;
   }
+  function buildBox() {
+    box = document.createElement('div');
+    box.className = 'of-waifu';
+    box.innerHTML =
+      '<div class="of-waifu-bubble" role="status"></div>' +
+      '<canvas class="of-waifu-canvas" width="' + W + '" height="' + H + '" aria-label="OFOR 助手，点击聊天，右键换装"></canvas>';
+    document.body.appendChild(box);
+    bubbleEl = box.querySelector('.of-waifu-bubble');
+    canvas = box.querySelector('canvas');
+
+    canvas.addEventListener('pointerdown', function () {
+      react('TapBody');
+      if (window.fcHelperToggle) window.fcHelperToggle();
+      else say(persona.tapOnly);
+    });
+    box.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      var r = canvas.getBoundingClientRect();
+      openMenu(r.left + r.width / 2, r.top);
+    });
+  }
+
   function boot() {
-    if (!window.PIXI || !window.PIXI.live2d) return;
-    buildStage();
+    teardown();
+    buildBox();
+    (mode === '3d' ? boot3D : boot2D)().then(function (c) {
+      ctrl = c;
+      document.body.classList.add('waifu-on');
+      idleTimer = setInterval(function () { if (!document.hidden) react('Idle'); }, 32000);
+      react('Idle');
+      greet();
+    }).catch(function () { teardown(); });
   }
+
+  /* ── 2D 渲染器（Live2D，行为与 v2 相同）── */
+  function boot2D() {
+    return loadScript(BASE + '/live2dcubismcore.min.js')
+      .then(function () { return loadScript(BASE + '/pixi.min.js'); })
+      .then(function () { return loadScript(BASE + '/pixi-live2d-display.min.js'); })
+      .then(function () {
+        if (!window.PIXI || !window.PIXI.live2d) throw new Error('live2d lib missing');
+        var app = new PIXI.Application({
+          view: canvas, transparent: true, autoStart: true,
+          width: W, height: H, resolution: window.devicePixelRatio || 1, autoDensity: true
+        });
+        var model = null;
+        function place(m) {
+          var ow = m.width, oh = m.height;
+          var s = (H * 0.98) / oh;
+          m.scale.set(s);
+          m.x = (W - ow * s) / 2;
+          m.y = H - oh * s;
+        }
+        function load(file) {
+          return PIXI.live2d.Live2DModel.from(BASE + '/model/' + file, { autoInteract: false }).then(function (m) {
+            if (model) { try { app.stage.removeChild(model); model.destroy(); } catch (e) {} }
+            model = m;
+            place(m);
+            app.stage.addChild(m);
+            try { m.motion('Idle'); } catch (e) {}
+          });
+        }
+        return load(WARDROBE[currentId()].file).then(function () {
+          return {
+            react: function (g) { if (model) { try { model.motion(g); } catch (e) {} } },
+            focus: function (cx, cy) {
+              if (!model) return;
+              var r = canvas.getBoundingClientRect();
+              try { model.focus(cx - r.left, cy - r.top); } catch (e) {}
+            },
+            setModel: function (file) { return load(file); },
+            destroy: function () { try { model && model.destroy(); app.destroy(true); } catch (e) {} }
+          };
+        });
+      });
+  }
+
+  /* ── 3D 渲染器（VRM）── */
+  function boot3D() {
+    return loadScript(VRMJS).then(function () {
+      if (!window.OFWaifuVRM) throw new Error('vrm renderer missing');
+      say('启动 3D 助手…', 0);
+      return OFWaifuVRM.mount(canvas, {
+        width: W, height: H,
+        file: VRM_WARDROBE[currentVrm()].file,
+        onProgress: function (p) { say('加载 3D 助手…' + p + '%', 0); }
+      });
+    });
+  }
+
+  /* ── 视线跟随（全页面，两种形态）── */
+  var rafF = 0;
+  document.addEventListener('pointermove', function (e) {
+    if (rafF) return;
+    rafF = requestAnimationFrame(function () {
+      rafF = 0;
+      if (ctrl) ctrl.focus(e.clientX, e.clientY);
+    });
+  }, { passive: true });
 
   /* ── 衣橱菜单（右键）── */
   var menuEl = null;
@@ -153,22 +267,37 @@
   document.addEventListener('pointerdown', function (e) {
     if (menuEl && !menuEl.contains(e.target)) closeMenu();
   }, true);
-  function openMenu(x, y, box) {
+  function openMenu(x, y) {
     closeMenu();
     menuEl = document.createElement('div');
     menuEl.className = 'of-waifu-menu';
-    var html = '<div class="m-head">换装 · 衣橱</div>';
-    ORDER.forEach(function (id) {
-      var w = WARDROBE[id];
-      html += '<button class="m-item' + (id === currentId() ? ' on' : '') + '" data-id="' + id + '">'
-            + '<b>' + w.name + '</b><small>' + w.tag + '</small></button>';
-    });
-    html += '<button class="m-item" data-act="default">跟随全站默认（' + WARDROBE[cfgDefault()].name + '）</button>';
+    var html = '<div class="m-head">形态</div>';
+    html += '<button class="m-item' + (mode === '2d' ? ' on' : '') + '" data-mode="2d"><b>2D 看板娘</b><small>Live2D · 六形象 · 秒开</small></button>';
+    html += '<button class="m-item' + (mode === '3d' ? ' on' : '') + '" data-mode="3d"><b>3D 助手</b><small>VRM · 立体 · 首载约 12MB</small></button>';
+    if (mode === '3d') {
+      html += '<div class="m-head">3D 形象</div>';
+      VORDER.forEach(function (id) {
+        var w = VRM_WARDROBE[id];
+        html += '<button class="m-item' + (id === currentVrm() ? ' on' : '') + '" data-vrm="' + id + '">'
+              + '<b>' + w.name + '</b><small>' + w.tag + '</small></button>';
+      });
+    } else {
+      html += '<div class="m-head">2D 形象</div>';
+      ORDER.forEach(function (id) {
+        var w = WARDROBE[id];
+        html += '<button class="m-item' + (id === currentId() ? ' on' : '') + '" data-id="' + id + '">'
+              + '<b>' + w.name + '</b><small>' + w.tag + '</small></button>';
+      });
+    }
+    var defLabel = cfgMode() === '3d'
+      ? '跟随全站默认（3D · ' + VRM_WARDROBE['seed'].name + '）'
+      : '跟随全站默认（' + WARDROBE[cfgDefault()].name + '）';
+    html += '<button class="m-item" data-act="default">' + defLabel + '</button>';
     html += '<button class="m-item m-hide" data-act="hide">本次会话隐藏</button>';
+    if (mode === '3d') html += '<div class="m-credit">' + VRM_WARDROBE[currentVrm()].credit + '</div>';
     menuEl.innerHTML = html;
     document.body.appendChild(menuEl);
-    // 定位：优先出现在角色上方，防出屏
-    var mw = 180, mh = menuEl.offsetHeight || 260;
+    var mw = 180, mh = menuEl.offsetHeight || 300;
     menuEl.style.left = Math.max(8, Math.min(x - mw / 2, innerWidth - mw - 8)) + 'px';
     menuEl.style.top = Math.max(8, y - mh - 12) + 'px';
     menuEl.addEventListener('click', function (e) {
@@ -177,102 +306,68 @@
       if (btn.dataset.act === 'hide') {
         try { sessionStorage.setItem('of_waifu_off', '1'); } catch (err) {}
         document.body.classList.remove('waifu-on');
-        closeMenu(); box.remove();
+        closeMenu(); teardown();
         if (window.fcToast) fcToast(persona.hidden + '（新开标签页会回来）');
         return;
       }
       if (btn.dataset.act === 'default') {
-        var cur = currentId();
-        clearChoice();
+        var prevMode = mode, prev2d = currentId(), prev3d = currentVrm();
+        clearStore('of_waifu_mode'); clearStore('of_waifu_model'); clearStore('of_waifu_vrm');
         closeMenu();
-        if (cur !== cfgDefault()) swapModel(cfgDefault(), box);
-        else say('已跟随全站默认：' + WARDROBE[cfgDefault()].name, 2600);
+        if (cfgMode() !== prevMode) { setMode(cfgMode()); return; }
+        if (prevMode === '2d') {
+          if (prev2d !== cfgDefault()) swap2D(cfgDefault());
+          else say('已跟随全站默认：' + WARDROBE[cfgDefault()].name, 2600);
+        } else {
+          if (prev3d !== 'seed') swap3D('seed');
+          else say('已跟随全站默认：' + VRM_WARDROBE['seed'].name, 2600);
+        }
         return;
       }
-      var id = btn.dataset.id;
-      if (id && WARDROBE[id] && id !== currentId()) {
-        writeChoice(id);
+      if (btn.dataset.mode && btn.dataset.mode !== mode) { setMode(btn.dataset.mode); return; }
+      if (btn.dataset.vrm) {
+        var vid = btn.dataset.vrm;
+        if (vid !== currentVrm()) { writeStore('of_waifu_vrm', vid); swap3D(vid); }
         closeMenu();
-        swapModel(id, box);
-      } else closeMenu();
+        return;
+      }
+      if (btn.dataset.id) {
+        var id = btn.dataset.id;
+        if (id !== currentId()) { writeStore('of_waifu_model', id); swap2D(id); }
+        closeMenu();
+        return;
+      }
+      closeMenu();
     });
   }
 
-  /* ── 换装：销毁旧模型，加载新模型（不刷新页面）── */
-  var appRef = null, canvasRef = null, boxRef = null;
-  function swapModel(id, box) {
+  /* ── 切换形态 / 换形象 ── */
+  function setMode(m) {
+    closeMenu();
+    writeStore('of_waifu_mode', m);
+    mode = m;
+    persona = mode === '3d' ? VRM_WARDROBE[currentVrm()] : WARDROBE[currentId()];
+    boot();
+  }
+  function swap2D(id) {
     persona = WARDROBE[id];
-    if (model) { try { appRef.stage.removeChild(model); model.destroy(); } catch (e) {} model = null; }
-    say('换装中…', 0);
-    PIXI.live2d.Live2DModel.from(BASE + '/model/' + persona.file, { autoInteract: false }).then(function (m) {
-      model = m;
-      var ow = m.width, oh = m.height;
-      var s = (H * 0.98) / oh;
-      m.scale.set(s);
-      m.x = (W - ow * s) / 2;
-      m.y = H - oh * s;
-      appRef.stage.addChild(m);
-      react('Idle');
-      say(persona.name + '：' + persona.hello, 3600);
-    }).catch(function () { say('这个形象加载失败了…', 3000); });
+    if (ctrl) {
+      say('换装中…', 0);
+      ctrl.setModel(WARDROBE[id].file).then(function () {
+        react('Idle');
+        say(persona.name + '：' + persona.hello, 3600);
+      }).catch(function () { say('这个形象加载失败了…', 3000); });
+    }
   }
-
-  /* ── 舞台 ── */
-  function buildStage() {
-    var box = document.createElement('div');
-    box.className = 'of-waifu';
-    box.innerHTML =
-      '<div class="of-waifu-bubble" role="status"></div>' +
-      '<canvas class="of-waifu-canvas" width="' + W + '" height="' + H + '" aria-label="OFOR 助手，点击聊天，右键换装"></canvas>';
-    document.body.appendChild(box);
-    bubbleEl = box.querySelector('.of-waifu-bubble');
-
-    var canvas = box.querySelector('canvas');
-    var app = new PIXI.Application({
-      view: canvas, transparent: true, autoStart: true,
-      width: W, height: H, resolution: window.devicePixelRatio || 1, autoDensity: true
-    });
-    appRef = app; canvasRef = canvas; boxRef = box;
-
-    PIXI.live2d.Live2DModel.from(BASE + '/model/' + persona.file, { autoInteract: false }).then(function (m) {
-      model = m;
-      var ow = m.width, oh = m.height;
-      var s = (H * 0.98) / oh;
-      m.scale.set(s);
-      m.x = (W - ow * s) / 2;
-      m.y = H - oh * s;
-      app.stage.addChild(m);
-      document.body.classList.add('waifu-on');
-
-      // 视线跟随（全页面）
-      var raf = 0;
-      document.addEventListener('pointermove', function (e) {
-        if (raf) return;
-        raf = requestAnimationFrame(function () {
-          raf = 0;
-          var r = canvas.getBoundingClientRect();
-          try { m.focus(e.clientX - r.left, e.clientY - r.top); } catch (err) {}
-        });
-      }, { passive: true });
-
-      react('Idle');
-      setInterval(function () { if (!document.hidden) react('Idle'); }, 32000);
-
-      greet();
-    }).catch(function () { box.remove(); });
-
-    // 点击 = 互动动作 + 开关聊天窗
-    canvas.addEventListener('pointerdown', function () {
-      react('TapBody');
-      if (window.fcHelperToggle) window.fcHelperToggle();
-      else say(persona.tapOnly);
-    });
-    // 右键 = 衣橱菜单
-    box.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
-      var r = canvas.getBoundingClientRect();
-      openMenu(r.left + r.width / 2, r.top, box);
-    });
+  function swap3D(vid) {
+    persona = VRM_WARDROBE[vid];
+    if (ctrl) {
+      say('加载 3D 形象…', 0);
+      ctrl.setModel(VRM_WARDROBE[vid].file).then(function () {
+        react('TapBody');
+        say(persona.name + '：' + persona.hello, 3600);
+      }).catch(function () { say('这个形象加载失败了…', 3000); });
+    }
   }
 
   /* ── 问候：时段 + 当前页面建议 ── */

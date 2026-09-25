@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><style>body{margin:0;background:#1a1d2e;display:flex;gap:10px;padding:10px}canvas{border-radius:12px}</style></head>
+<html><head><meta charset="UTF-8"><style>body{margin:0;background:#1a1d2e;display:flex;gap:10px;padding:10px;flex-wrap:wrap}canvas{border-radius:12px}.cap{color:#8899bb;font:12px monospace;margin-top:4px;max-width:360px;word-break:break-all}</style></head>
 <body>
 <script src="/assets/vendor/live2d/live2dcubismcore.min.js"></script>
 <script src="/assets/vendor/live2d/pixi.min.js"></script>
 <script src="/assets/vendor/live2d/pixi-live2d-display.min.js"></script>
 <script>
+// 2D 预览：?m=rice/Rice.model3.json,mao/Mao.model3.json（默认 rice）
 (async () => {
-  const models = (new URLSearchParams(location.search).get('m') || 'rice/Rice.model3.json').split(',');
-  for (const file of models) {
+  const q = new URLSearchParams(location.search).get('m') || 'rice/Rice.model3.json';
+  if (q === 'vrm') return; // 3D 走下方 module
+  for (const file of q.split(',')) {
     const app = new PIXI.Application({ width: 360, height: 560, backgroundAlpha: 0 });
     document.body.appendChild(app.view);
     try {
@@ -18,5 +20,53 @@
     } catch (e) { console.error(file, e); }
   }
 })();
+</script>
+<script type="module">
+// 3D 预览：?m=vrm — 半身构图 + 慢转体（检查骨骼/表情/弹簧骨），标题为表情清单
+const q = new URLSearchParams(location.search).get('m');
+if (q === 'vrm') {
+  const m = await import('/assets/vendor/vrm/three-vrm.bundle.min.mjs');
+  const { THREE, GLTFLoader, VRMLoaderPlugin } = m;
+  for (const f of ['seed/Seed-san.vrm']) {
+    const wrap = document.createElement('div');
+    const canvas = document.createElement('canvas'); canvas.width = 360; canvas.height = 560;
+    const cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = f + ' …';
+    wrap.append(canvas, cap); document.body.appendChild(wrap);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setClearColor(0x000000, 0);
+    renderer.setSize(360, 560, false);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(18, 360 / 560, 0.05, 20);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+    const key = new THREE.DirectionalLight(0xffffff, 1.15); key.position.set(1.5, 2.4, 2.2); scene.add(key);
+    const rim = new THREE.DirectionalLight(0xcfe0ff, 0.5); rim.position.set(-2.2, 1.8, -1); scene.add(rim);
+
+    const loader = new GLTFLoader();
+    loader.register(p => new VRMLoaderPlugin(p));
+    const vrm = await loader.loadAsync('/assets/vendor/vrm/model/' + f).then(g => g.userData.vrm);
+    scene.add(vrm.scene);
+    const em = vrm.expressionManager;
+    cap.textContent = f + ' — 表情: ' + (em ? em.expressions.map(e => e.expressionName).join(',') : '无');
+
+    const head = vrm.humanoid.getNormalizedBoneNode('head');
+    const headY = head.getWorldPosition(new THREE.Vector3()).y;
+    const span = 0.74;
+    const dist = (span / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    camera.position.set(0.03, headY + span * 0.36, dist);
+    camera.lookAt(0, headY + span * 0.36, 0);
+
+    const clock = new THREE.Clock(); let t = 0;
+    (function tick() {
+      requestAnimationFrame(tick);
+      const dt = Math.min(clock.getDelta(), 0.05); t += dt;
+      vrm.scene.rotation.y = Math.sin(t * 0.45) * 0.9; // 转体展示
+      if (em) em.setValue('blink', Math.max(0, Math.sin(t * 0.9)) ** 24); // 慢速眨眼示意
+      vrm.update(dt);
+      renderer.render(scene, camera);
+    })();
+  }
+}
 </script>
 </body></html>
