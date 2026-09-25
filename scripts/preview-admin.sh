@@ -21,8 +21,9 @@ mkdir -p "$DATA"
 cat > "$DATA/router.php" <<'PHPEOF'
 <?php
 $path = (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-// 静态资源交给 php -S 自己处理（css/js/字体/图片）
-if (preg_match('#\.(css|js|mjs|woff2?|png|jpe?g|svg|ico|webp|map)$#i', $path)) return false;
+// 静态资源交给 php -S 自己处理（css/js/字体/图片 + Live2D/VRM 模型文件，
+// 后者曾缺失导致看板娘在预览里报 Network error）
+if (preg_match('#\.(css|js|mjs|woff2?|png|jpe?g|svg|ico|webp|map|moc3|vrm|glb|gltf|bin|model3\.json|physics3\.json|motion3\.json|cdi3\.json|exp3\.json|pose3\.json)$#i', $path)) return false;
 
 putenv('OF_ENV=dev');
 putenv('OF_DATA_DIR=' . getenv('OF_PREVIEW_DATA'));

@@ -961,7 +961,7 @@ function save_tags(array $data): bool {
 }
 
 // ─── UI ───────────────────────────────────────────
-if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260919l');   // 20260919b: 团队视角看板/树视觉对齐
+if (!defined('OF_ADMIN_UI_VER')) define('OF_ADMIN_UI_VER', '20260925a');   // 20260925a: 看板娘 v3（2D/3D 形态切换 + VRM 渲染器）
 
 function admin_header(string $title): void {
 security_headers();
@@ -1843,6 +1843,7 @@ window.fcMarkErrors = function(errors) {
   .of-waifu-menu .m-item b{font-weight:700}
   .of-waifu-menu .m-item small{color:var(--muted);font-size:11px}
   .of-waifu-menu .m-hide{margin-top:4px;border-top:1px dashed var(--border);border-radius:0 0 9px 9px;color:var(--muted)}
+  .of-waifu-menu .m-credit{font-size:10px;line-height:1.5;color:var(--faint,var(--muted));padding:6px 10px 4px;border-top:1px dashed var(--border);margin-top:4px}
   .of-waifu-bubble::after{content:"";position:absolute;right:16px;bottom:-5px;width:10px;height:10px;background:inherit;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg)}
   @media(max-width:840px){.of-waifu{display:none}body.waifu-on .fc-helper-fab{display:grid}body.waifu-on .fc-helper-window{right:22px}body.waifu-on .fc-toast{right:22px}}
   /* Copilot 建议与消息附件（原先散落在 JS 里的内联样式） */
@@ -2262,7 +2263,7 @@ var FC_PALETTE_ITEMS = <?=json_encode(cp_items(), JSON_UNESCAPED_UNICODE)?>;
 </script>
 <script src="/assets/admin-ui.js?v=<?= OF_ADMIN_UI_VER ?>"></script>
 <script src="/assets/admin-ai-kit.js?v=<?= OF_ADMIN_UI_VER ?>"></script>
-<script>window.OF_WAIFU_CONFIG = { default: <?=json_encode(site_config_get('waifu_model', 'rice'))?>, ver: <?=json_encode(site_config_get('waifu_model_ver', '0'))?> };</script>
+<script>window.OF_WAIFU_CONFIG = { default: <?=json_encode(site_config_get('waifu_model', 'rice'))?>, mode: <?=json_encode(site_config_get('waifu_mode', '2d'))?>, ver: <?=json_encode(site_config_get('waifu_model_ver', '0'))?> };</script>
 <script src="/assets/admin-waifu.js?v=<?= OF_ADMIN_UI_VER ?>"></script>
 </body></html>
 <?php }
