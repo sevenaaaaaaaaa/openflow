@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * BusinessContext — 给「小福控制台」用的真实业务快照
+ * BusinessContext — 给控制台用的真实业务快照
  *
  * 把散落各模块的关键经营数字，收成一份紧凑、可读、可喂给模型的结构化上下文。
  * 全部只读、全部 try/catch：任一块失败不影响其余，绝不编造数字（没有就是 0/空）。

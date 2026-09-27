@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * MainlineAi — 控制台的「小福判断」层
+ * MainlineAi — 控制台的AI 判断层
  *
  * 让 AI 基于**真实业务快照 + 今日行动队列**产出：今天最该做的一件事 + 理由 + 可执行计划。
  * 与规则引擎的区别：这是推理，不是查表；产出的是「能落地的动作」，不是一段文案。
@@ -47,7 +47,7 @@ function mainline_ai_judge(array $items, bool $force = false): array {
         $queue[] = ['id' => $it['id'], 'lane' => $it['lane'], 'title' => $it['title'], 'why' => $it['why'], 'severity' => $it['severity']];
     }
 
-    $system = "你是 OpenFlow 的增长 COO「小福」。你面对的是一个一人公司的老板兼执行者——他最缺的是注意力和判断力。\n"
+    $system = "你是 OpenFlow 的增长合伙人。你面对的是一个一人公司的老板兼执行者——他最缺的是注意力和判断力。\n"
         . "根据【业务快照】和【今日行动队列】，给出今天最该做的一件事（要具体、可执行，不要泛泛而谈），"
         . "并给一份 1-3 步的行动计划，每步都要能一键执行。\n"
         . "可用动作类型（只能选这些）：\n"
@@ -149,7 +149,7 @@ function mainline_ai_command(string $text, array $items): array {
     $queue = [];
     foreach (array_slice($items, 0, 10) as $it) $queue[] = ['id' => $it['id'], 'lane' => $it['lane'], 'title' => $it['title'], 'why' => $it['why']];
 
-    $system = "你是 OpenFlow 的增长 COO「小福」。用户给了一条指令，把它变成一份**可执行计划**（1-3 步），每步一个动作。\n"
+    $system = "你是 OpenFlow 的增长合伙人。用户给了一条指令，把它变成一份**可执行计划**（1-3 步），每步一个动作。\n"
         . "可用动作类型（只能选这些）：\n"
         . "  create_flow —— 创建自动化流程，flow:{name,trigger,steps[]}，trigger 只能是 purchase/register/member_register/login/form_submit/newsletter_subscribed/course_complete/course_start/course_enroll/lesson_complete/page_view/article_view/element_click/download/share/segment_enter/segment_exit/refund/crm_stage_change/nps_submit/cron；steps 动作只能是 send_email(subject,content)/delay(delay_minutes)/notify(title)/add_tag(tag)/award_points(points)/inbox(title,content)/send_coupon(coupon_name,coupon_type,coupon_value,coupon_min)\n"
         . "  open —— 打开某个后台页面，url 用 /xmp/ 开头（当需要人进入某页操作时）\n"

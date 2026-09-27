@@ -847,13 +847,13 @@ admin_header('今日主线');
     </div>
     <?php endif; ?>
 
-    <!-- 每日晨会:岗位干活 → 小福汇报 的闭环入口 -->
+    <!-- 每日晨会:岗位干活 → 晨会汇报 的闭环入口 -->
     <div class="panel" style="margin-bottom:12px" id="briefPanel">
       <div class="p-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <span style="font-size:18px">☀️</span>
         <div style="flex:1;min-width:220px">
           <b style="font-size:14px">每日晨会</b>
-          <span class="note" style="margin-left:8px" id="briefSub">小福的 3 分钟汇报 · 结果 → 重点 → 待拍板</span>
+          <span class="note" style="margin-left:8px" id="briefSub">AI 合伙人的 3 分钟汇报 · 结果 → 重点 → 待拍板</span>
         </div>
         <button class="btn btn-p btn-sm" id="briefPlayBtn" onclick="briefToggle()">▶ 听晨会</button>
         <button class="btn btn-s btn-sm" onclick="briefExpand()">文字版</button>
@@ -872,7 +872,7 @@ admin_header('今日主线');
     <div class="panel" style="margin-bottom:16px">
       <div class="p-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <span style="font-size:18px">⌘</span>
-        <input id="mlCmd" class="inp sm" placeholder="告诉小福要做什么，例如：给 7 天没来的会员发一封召回邮件" style="flex:1;min-width:260px" onkeydown="if(event.key==='Enter')mlCommand()">
+        <input id="mlCmd" class="inp sm" placeholder="告诉 AI 合伙人要做什么，例如：给 7 天没来的会员发一封召回邮件" style="flex:1;min-width:260px" onkeydown="if(event.key==='Enter')mlCommand()">
         <button class="btn btn-p btn-sm" id="mlCmdBtn" onclick="mlCommand()">指挥</button>
       </div>
       <div class="p-body" id="mlCmdOut" style="display:none;border-top:1px solid var(--border-soft,var(--border))"></div>
@@ -882,7 +882,7 @@ admin_header('今日主线');
       <div class="p-body" id="mlJudge">
         <div class="ml-hero-ic">🧠</div>
         <div class="ml-hero-body">
-          <div class="ml-hero-k">小福的判断 <span class="ml-src" id="mlJudgeMeta">推理中…</span></div>
+          <div class="ml-hero-k">AI 的判断 <span class="ml-src" id="mlJudgeMeta">推理中…</span></div>
           <div class="ml-hero-t" id="mlJudgeHead">正在读今天的生意…</div>
           <div class="ml-hero-w" id="mlJudgeWhy"></div>
           <div id="mlJudgePlan" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"></div>
@@ -914,7 +914,7 @@ admin_header('今日主线');
 
     <?php if ($receipts): ?>
     <div class="panel" style="margin-bottom:16px">
-      <div class="p-head"><h3>小福最近做的事</h3><span class="p-sub mono">留痕 · 可回溯</span></div>
+      <div class="p-head"><h3>AI 最近做的事</h3><span class="p-sub mono">留痕 · 可回溯</span></div>
       <div class="p-body">
         <?php foreach ($receipts as $rc): ?>
         <div style="display:flex;gap:10px;align-items:center;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border-soft,var(--border))">
@@ -1046,7 +1046,7 @@ async function briefToggle() {
   window.__brief.text = data.text;
   txt.textContent = data.text;
   load.style.display = 'none'; txt.style.display = 'block'; foot.style.display = 'flex';
-  document.getElementById('briefMode').textContent = data.mode === 'ai' ? 'AI 口播稿 · 小福' : '模板简报(AI 未接入或未生效)';
+  document.getElementById('briefMode').textContent = data.mode === 'ai' ? 'AI 口播稿' : '模板简报(AI 未接入或未生效)';
   // 朗读
   if (!('speechSynthesis' in window)) { document.getElementById('briefPlayBtn').textContent = '✓ 已展示'; return; }
   window.__brief.playing = true;
@@ -1065,7 +1065,7 @@ function briefExpand() {
         document.getElementById('briefLoading').style.display = 'none';
         document.getElementById('briefText').style.display = 'block';
         document.getElementById('briefFoot').style.display = 'flex';
-        document.getElementById('briefMode').textContent = d.mode === 'ai' ? 'AI 口播稿 · 小福' : '模板简报(AI 未接入或未生效)';
+        document.getElementById('briefMode').textContent = d.mode === 'ai' ? 'AI 口播稿' : '模板简报(AI 未接入或未生效)';
       }
     }).catch(() => {});
   } else if (!window.__brief.playing) {
@@ -1114,7 +1114,7 @@ function mlRenderJudge(j, meta) {
   if (!j) {
     const box = document.getElementById('mlJudgePlan');
     box.innerHTML = window.__mlAiReady
-      ? '<button class="btn btn-p btn-sm" onclick="mlJudge(true)">让小福看一眼今天的生意</button>'
+      ? '<button class="btn btn-p btn-sm" onclick="mlJudge(true)">让 AI 看一眼今天的生意</button>'
       : '<a class="btn btn-s btn-sm" href="/xmp/ai-config">配置 AI 后开启推理判断</a>';
     return;
   }
@@ -1123,7 +1123,7 @@ function mlRenderJudge(j, meta) {
 
 async function mlJudge(force) {
   const btn = document.getElementById('mlJudgeBtn');
-  if (btn) { btn.disabled = true; btn.textContent = '小福思考中…'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'AI 思考中…'; }
   document.getElementById('mlJudgeMeta').textContent = '正在读今天的生意…';
   try {
     const r = await fetch('/api/mainline-ai.php?action=judge' + (force ? '&force=1' : ''), {headers: {'X-Requested-With': 'fetch'}});
@@ -1153,7 +1153,7 @@ async function mlExecAction(a, btn, step) {
     });
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || '执行失败');
-    if (window.ofAlert) ofAlert('小福已完成：' + (a.label || step), 'success');
+    if (window.ofAlert) ofAlert('已完成：' + (a.label || step), 'success');
     if (j.kind === 'open' && j.url) { location.href = j.url; return; }
     setTimeout(() => location.reload(), 600);
   } catch (e) {
@@ -1169,7 +1169,7 @@ async function mlCommand() {
   const btn = document.getElementById('mlCmdBtn');
   const out = document.getElementById('mlCmdOut');
   out.style.display = '';
-  out.innerHTML = '<span class="text-muted" style="font-size:13px">小福正在拆解你的指令…</span>';
+  out.innerHTML = '<span class="text-muted" style="font-size:13px">正在拆解你的指令…</span>';
   btn.disabled = true;
   try {
     const r = await fetch('/api/mainline-ai.php?action=command', {
