@@ -60,7 +60,7 @@ $conv[] = ['role' => 'user', 'content' => mb_substr($message, 0, 4000)];
 $conv = array_slice($conv, -16); // 最多保留 16 条（8 轮）
 
 $systemPrompt = <<<PROMPT
-你是一个嵌入在 OpenFlow 网站后台的 AI 助手，名字叫「小福」，形象亲切可爱（二次元风格）。
+你是一个嵌入在 OpenFlow 网站后台的 AI 助手，名字叫「小助手」，形象亲切可爱（二次元风格）。
 你的职责是帮助运营人员使用这个后台系统，回答关于后台功能、操作步骤、内容建议等问题。
 
 后台主要功能（供你参考回答）：
@@ -135,7 +135,7 @@ if ($reply !== '') {
     json_write(DATA_DIR . '/assistant-sessions.json', $history);
 }
 
-// 意图识别 → 返回可执行的快捷操作（小福聊天里的「去执行」按钮）
+// 意图识别 → 返回可执行的快捷操作（AI 助手聊天里的「去执行」按钮）
 $actions = [];
 $m = mb_strtolower($message);
 

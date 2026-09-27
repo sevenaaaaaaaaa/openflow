@@ -53,10 +53,10 @@
   - [P1] **权限分级**：部分知识只对特定角色可见。
   - [P2] 知识库「金句/FAQ」抽取，反哺文章与营销内容。
 
-### 6. AI Agent（小福）配置
+### 6. AI 助手配置
 - 现状：多供应商（OpenAI/Claude/DeepSeek 等）、对话 + 快捷操作按钮 + 知识库。
 - 升级点：
-  - [P0] **Agent 工具调用**：小福可直接执行后台操作（改状态/建文章/发通知），需操作确认。
+  - [P0] **Agent 工具调用**：AI 助手可直接执行后台操作（改状态/建文章/发通知），需操作确认。
   - [P1] 预设 Prompt 模板库（SEO 标题、文案、问卷分析）。
   - [P2] 多 Agent 分工（内容助手 / 客服助手 / 数据分析师）。
 
@@ -291,11 +291,11 @@ WordPress 的核心护城河是生态（插件/主题/可视化工具/三方打�
 | 后台 admin/marketplace.php | 技能发布/管理/AI 生成/资产总览 |
 | AI 生成技能 | lib/SkillGenerator.php：一句描述 → AI 生成完整 Skill 骨架 |
 | MCP 集成 | mcp-server 新增 skills_list / skill_execute 工具 |
-| 小福集成 | assistant.php 系统提示注入可用技能清单 |
+| AI 助手集成 | assistant.php 系统提示注入可用技能清单 |
 | 评论打分 | 前台市场页可对 Skill 评分（复用 CommentSystem） |
 
 ### 下一步建议
-- [x] ~~[P0] Skill 一键安装到小助手~~（已安装 tool 技能在小福中自动匹配执行）
+- [x] ~~[P0] Skill 一键安装到小助手~~（已安装 tool 技能在 AI 助手中自动匹配执行）
 - [x] ~~[P1] 插件市场详情页 + 评分~~（marketplace.php?view=plugin + 评分）
 - [x] ~~[P1] 远程市场同步~~（mkt_sync_remote + 后台配置页）
 - [x] ~~[P1] AI 生成插件骨架~~（skill_generate_plugin 生成 plugin.json+plugin.php）

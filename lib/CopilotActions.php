@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * CopilotActions — 小福增长 Copilot 可执行动作
+ * CopilotActions — 增长 Copilot 可执行动作
  * 自然语言 → 创建自动化流程 / 查询数据 / 生成回复建议
  *
  * B7：从「纯模板意图识别」升级为**真 LLM 编排** ——
@@ -208,7 +208,7 @@ function copilot_create_flow(array $flow): array {
     $clean['source'] = 'copilot';
     $flows[] = $clean;
     automation_save($flows);
-    automation_log($clean['id'], '小福 Copilot 创建流程：' . ($clean['name'] ?? ''), 'info');
+    automation_log($clean['id'], 'Copilot 创建流程：' . ($clean['name'] ?? ''), 'info');
     return ['ok' => true, 'flow_id' => $clean['id'], 'flow' => $clean];
 }
 
@@ -289,7 +289,7 @@ function copilot_llm_route_data(string $question): ?string {
 }
 
 /**
- * 快速数据问答（供小福回答运营问题）
+ * 快速数据问答（供 AI 助手回答运营问题）
  * 先关键词命中；未命中且有 AI → LLM 路由到数据键 → 再跑确定性统计。
  */
 function copilot_quick_data(string $question): ?array {

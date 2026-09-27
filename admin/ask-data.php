@@ -107,7 +107,7 @@ async function biAsk(q) {
   inp.value = text;
   const btn = document.getElementById('biBtn');
   btn.disabled = true;
-  document.getElementById('biOut').innerHTML = '<div class="bi-card"><div class="bi-skel"><span class="bi-dot"></span>小福正在读全站数据…</div></div>';
+  document.getElementById('biOut').innerHTML = '<div class="bi-card"><div class="bi-skel"><span class="bi-dot"></span>正在读全站数据…</div></div>';
   try {
     const r = await fetch('/api/ask-data-bi.php', {
       method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': BI_CSRF},

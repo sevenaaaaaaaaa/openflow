@@ -158,7 +158,7 @@
 从 1.3「功能齐全」进阶到「数据可信、触达闭环、体验可测、Agent 可指挥」：**一个 AI 底座 + 四大能力域**。
 
 ### Agent 底座
-- **小福增长 Copilot**：自然语言 → 直接创建自动化流程（欢迎邮件 / 购买发券 / 线索跟进 / 完课奖励 / 会员升级）；快速数据问答（线索 / 收入 / 活跃 / 转化率）
+- **增长 Copilot**：自然语言 → 直接创建自动化流程（欢迎邮件 / 购买发券 / 线索跟进 / 完课奖励 / 会员升级）；快速数据问答（线索 / 收入 / 活跃 / 转化率）
 - **转化漏斗级 AI 巡检**：落地页 / 渠道 7 天转化率环比骤降自动检测 + 根因建议 + 告警（cron 每 6 小时）
 - **AI 一键生成落地页**：需求描述 → AI 生成结构化区块 → 落地页 → 编辑
 - **MCP Server 安全加固**：HTTP 模式 API Key 鉴权（`Authorization: Bearer <key>`）
@@ -269,7 +269,7 @@
 
 **增长引擎（Growth）**：SEO 全家桶（页面 SEO/结构化数据/Sitemap/301）· GEO（热点监控 + AI 成文 + IndexNow）· 舆情监测 · A/B 测试
 
-**AI 引擎**：小福 AI Agent（多供应商 + RAG）· SkillSystem · SkillGenerator · MCP Server（stdio + HTTP）
+**AI 引擎**：AI Agent（多供应商 + RAG）· SkillSystem · SkillGenerator · MCP Server（stdio + HTTP）
 
 **转化引擎**：落地页 + 表单（可视化构建）· CRM 管道（评分/去重/跟进）· 营销自动化画布 · Campaign 管理
 

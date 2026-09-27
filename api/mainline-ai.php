@@ -1,7 +1,7 @@
 <?php
 /**
  * 控制台 AI 判断 API（后台专用）
- *   GET  ?action=judge[&force=1]  → 生成/读取「小福今日判断」
+ *   GET  ?action=judge[&force=1]  → 生成/读取AI 今日判断
  *   POST action=execute           → 执行计划里的一个动作（审批优先）
  *
  * 【鉴权】必须登录后台（会调 AI、会写站点数据）。

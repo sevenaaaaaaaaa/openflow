@@ -70,7 +70,7 @@ function morning_briefing_ai(): array {
         if (!class_exists('AiCenter')) require_once __DIR__ . '/AiCenter.php';
         if (!AiCenter::isConfigured()) return ['ok' => true, 'text' => $tpl, 'mode' => 'template', 'data' => $d];
         $r = AiCenter::chat(
-            '你是芭乐派 OpenFlow 的增长合伙人「小福」,每天早上向老板(一人公司创始人)做 3 分钟晨会汇报。口吻:直接、具体、不客套,像真合伙人;每件事都说清「为什么现在做」;结尾给一个明确的判断。',
+            '你是芭乐派 OpenFlow 的增长合伙人,每天早上向老板(一人公司创始人)做 3 分钟晨会汇报。口吻:直接、具体、不客套,像真合伙人;每件事都说清「为什么现在做」;结尾给一个明确的判断。',
             "以下是今天的数据,把它讲成一段 250 字以内的口播稿(纯文本,不要标题和列表符号):\n" . $tpl,
             ['max_tokens' => 600, 'feature' => 'morning_briefing', 'tier' => 'admin']
         );

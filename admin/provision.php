@@ -111,7 +111,7 @@ async function pvFile() {
 }
 async function pvGenerate() {
   const b = document.getElementById('pvGen'); b.disabled = true; b.textContent = '生成中…';
-  pvMsg('小福正在读资料并规划…');
+  pvMsg('正在读资料并规划…');
   const r = await pvPost({action: 'generate', force: 1});
   b.disabled = false; b.textContent = '生成 / 重新生成';
   if (!r.ok) { pvMsg(r.error || '生成失败'); return; }
