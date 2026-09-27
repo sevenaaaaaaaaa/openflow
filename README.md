@@ -85,7 +85,7 @@ OpenFlow 不是"带了一些营销功能的 CMS"——TIPS 是它的骨架:触�
 
 任何 All-in-one 都有边界,OpenFlow 一样。它做的事情是:**把一个人在 AI 时代之前"以后才需要"的系统能力,提前兑现给他看**——你现在就有了一个 beta 版的未来,然后按自己的节奏自由组合更高阶的产品。
 
-需要更重的内容产能,进阶 [MFlow](https://github.com/sevenaaaaaaaaa/mflow);要全域数据打通,进阶 [UserLoop](https://github.com/sevenaaaaaaaaa/userloop);外部情报进 [inFlow](https://github.com/sevenaaaaaaaaa/inflow),变现进 [PayFlow](https://github.com/sevenaaaaaaaaa/payflow),交付进 [LearnFlow](https://github.com/sevenaaaaaaaaa/learnflow),投放落地页进 [WebsFlow](https://github.com/sevenaaaaaaaaa/websflow);ThirdC、V2HTML、InputFlow 组成偏本地的 Studio 套件。**账号互通已上线**:OpenFlow 登录,全家免注册。完整图谱见[产品矩阵](docs/PRODUCT-MATRIX.md)。
+需要更重的内容产能,进阶 [MFlow](https://github.com/sevenaaaaaaaaa/mflow);要全域数据打通,进阶 [UserLoop](https://github.com/sevenaaaaaaaaa/userloop);外部情报进 [inFlow](https://github.com/sevenaaaaaaaaa/inflow),变现进 [PayFlow](https://github.com/sevenaaaaaaaaa/payflow),交付进 [LearnFlow](https://github.com/sevenaaaaaaaaa/learnflow),投放落地页进 [WebsFlow](https://github.com/sevenaaaaaaaaa/websflow);ThirdC、ConFlow、InputFlow 组成偏本地的 Studio 套件。**账号互通已上线**:OpenFlow 登录,全家免注册。完整图谱见[产品矩阵](docs/PRODUCT-MATRIX.md)。
 
 ## 快速开始
 
