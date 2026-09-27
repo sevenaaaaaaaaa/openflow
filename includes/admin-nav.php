@@ -351,6 +351,7 @@ function admin_nav_build(bool $includeSystem): array {
             ]],
             ['label' => '接口与集成', 'items' => [
                 ['id' => 'connections', 'label' => '连接', 'perm' => 'settings'],
+                ['id' => 'matrix', 'label' => '矩阵互通', 'perm' => 'settings', 'hint' => '兄弟产品账号互通'],
                 ['id' => 'api-keys', 'label' => 'API Key', 'perm' => 'settings'],
                 ['id' => 'webhooks', 'label' => 'Webhook', 'perm' => 'settings'],
                 ['id' => 'api-docs', 'label' => 'API 文档', 'perm' => 'settings'],

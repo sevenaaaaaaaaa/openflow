@@ -23,6 +23,51 @@
 - UserLoop = 全域数据中枢（数据人群）
 - inFlow = 外部情报站（情报人群）
 
+### 1.1 全家福（2026-09 全量盘点 · GitHub 已有仓库）
+
+**三层结构：核心 OS → Flow 家族（增长职能特化）→ 独立工具（日常工作面）**
+
+```
+第 1 层 · 核心 OS
+  └─ OpenFlow ──────── 增长操作系统(PHP · 生产运行中) — 账号真源 / 矩阵互通 Hub
+第 2 层 · Flow 家族（每块都是 OpenFlow 的一个器官,可独立作战）
+  ├─ MFlow ─────────── 内容生产管线(Python) — 情报→生产→门禁→分发→回流,已管 8200+ 文档/10 语言
+  ├─ inFlow ────────── 洞察/策略层(Python) — 外部情报:趋势/舆情/竞品 → 回填选题
+  ├─ UserLoop ──────── CDP+用户旅程(Python) — 独立全域数据中枢,自收数自建档自触达
+  ├─ PayFlow ───────── 商业变现层(PHP) — 收款/订阅/裂变/佣金,一行嵌入任何页面
+  └─ LearnFlow ─────── 课程交付层(PHP) — 讲师/训练营工作台 + Agent
+第 3 层 · 独立工具（面向同一人群的日常面,与增长链路松耦合）
+  ├─ WebsFlow ──────── 魔块落地页工场(JS) — 投放承接页/千人千面/H5,已有线上版
+  ├─ ThirdC Studio ─── AI Native 知识工作台(Rust 单二进制) — 文件即真相/画布/agent
+  ├─ V2HTML ────────── 视频⇄HTML 双向内容引擎(Python) — YouTube→文章/PPT,文章→视频
+  ├─ ZeroZen 零真 ──── 广告弹窗净化扩展(JS) — 7283 规则 + AI 识别(开发者人群入口)
+  └─ InputFlow ─────── 隐私优先输入法(JS) — 纯本地/零遥测/P2P 同步
+```
+
+**职能映射**(把矩阵放到一张「一人公司的组织图」上读)：
+inFlow=市场情报 · UserLoop=数据中台 · MFlow=内容部门 · OpenFlow=官网与运营中枢 ·
+PayFlow=财务 · LearnFlow=培训部 · WebsFlow=投放物料组 · ThirdC=个人工位 ·
+V2HTML=内容转换器 · ZeroZen/InputFlow=工作环境。
+
+**边角说明**：`obdisian-flowershow`、`best-knowledge`、`NotionNext`(fork) 为早期实验/他人维护，
+**不计入本矩阵**，矩阵话术与对外材料一律不提。
+
+### 1.2 账号互通层(v1 已在 OpenFlow 落地)
+
+OpenFlow 是矩阵的**账号真源**:`lib/MatrixTicket.php` + `api/matrix.php`。
+兄弟产品在 OpenFlow 后台「矩阵互通」页签发 client_secret 并登记回跳地址;
+
+```
+用户在 OpenFlow 登录
+  → 点击某产品「进入」 /api/matrix.php?action=enter&app=mflow
+  → OpenFlow 签发 60 秒一次性短票,302 到 {产品}/auth/matrix?ticket=…
+  → 产品后端 POST /api/matrix.php?action=redeem (带 X-Client-Secret)
+  → 拿到 {id,email,name,level,iss:openflow} → 建立本产品会话
+```
+
+安全设计:票一次性 + 60 秒过期 + 用后即焚;落库存哈希;兑换必须后端(secret 不出网);
+错误 client_id/secret 一律拒绝。各产品自持会话,拔掉任何一个其余照常。
+
 ---
 
 ## 二、每个产品的差异化任务书
