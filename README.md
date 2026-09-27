@@ -118,7 +118,7 @@ OpenFlow 的核心能力——包括最重要的 TIPS 范式——**过去、现
 
 ## 文档
 
-[使用指南](docs/USAGE-GUIDE.md) · [产品北极星](docs/VISION.md) · [功能地图](docs/PRODUCT-MAP.md) · [矩阵定位](docs/PRODUCT-MATRIX.md) · [矩阵账号互通](docs/MATRIX-SSO-INTEGRATION.md) · [插件开发](docs/PLUGIN-DEV.md) · [架构规范](md-docs/ARCHITECTURE.md) · [变更日志](md-docs/CHANGELOG.md)
+[使用指南](docs/USAGE-GUIDE.md) · [功能总附录](docs/APPENDIX-FEATURES.md) · [产品北极星](docs/VISION.md) · [功能地图](docs/PRODUCT-MAP.md) · [矩阵定位](docs/PRODUCT-MATRIX.md) · [矩阵账号互通](docs/MATRIX-SSO-INTEGRATION.md) · [插件开发](docs/PLUGIN-DEV.md) · [架构规范](md-docs/ARCHITECTURE.md) · [变更日志](md-docs/CHANGELOG.md)
 
 ## 当前边界(诚实声明)
 
