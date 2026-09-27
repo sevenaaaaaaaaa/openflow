@@ -11,7 +11,7 @@
 ```
 第 1 层 · 入口层   OpenFlow —— TIPS 理念的 all-in-one 平台
 第 2 层 · 进阶层   Flow 家族（MFlow / inFlow / UserLoop / PayFlow / LearnFlow / WebsFlow）
-第 3 层 · 工作台层 Studio 套件（ThirdC / V2HTML / InputFlow）—— 本地工具,未来打通所有 Flow 产品
+第 3 层 · 工作台层 Studio 套件（ThirdC / ConFlow / InputFlow）—— 本地工具,未来打通所有 Flow 产品
 ```
 
 **第 1 层 · OpenFlow**:TIPS 理念的 all-in-one 平台。**它不是要取代所有工具**,而是减轻
@@ -23,7 +23,7 @@
 单独收割人群——它们是「从用到好」的升级路径,不是 OpenFlow 的模块。
 
 **第 3 层 · Studio 套件**:偏**本地工具**,天然吸引开发与效率人群(引流面):
-ThirdC(知识工作台,文件即真相)、V2HTML(视频⇄HTML 内容引擎)、**InputFlow(注意:它不是 Flow,
+ThirdC(知识工作台,文件即真相)、ConFlow(视频⇄HTML 内容引擎,原 V2HTML)、**InputFlow(注意:它不是 Flow,
 归 Studio 层——解决 AI 时代的输入与隐私输入,属周边产品)**。
 长期方向:Studio 演进为**打通所有 Flow 产品的本地工作台**——那是用户与矩阵的第二个入口。
 
@@ -64,7 +64,7 @@ ThirdC(知识工作台,文件即真相)、V2HTML(视频⇄HTML 内容引擎)、*
   └─ WebsFlow ──────── 落地页工场(JS) — 投放承接页/千人千面/H5,已有线上版
 第 3 层 · Studio 套件（本地工具 · 引流 · 未来打通所有 Flow 产品的工作台）
   ├─ ThirdC Studio ─── AI Native 知识工作台(Rust 单二进制) — 文件即真相/画布/agent
-  ├─ V2HTML ────────── 视频⇄HTML 双向内容引擎(Python) — YouTube→文章/PPT,文章→视频
+  ├─ ConFlow ────────── 视频⇄HTML 双向内容引擎(Python) — YouTube→文章/PPT,文章→视频
   └─ InputFlow ─────── 隐私优先输入法(JS) — AI/隐私输入,周边产品(属 Studio,不属 Flow)
 ```
 
@@ -72,7 +72,7 @@ ThirdC(知识工作台,文件即真相)、V2HTML(视频⇄HTML 内容引擎)、*
 
 **升级路径**(替代旧「职能映射」口径,部门隐喻作废):
 用 OpenFlow 起步(门槛最低)→ 长出深度需求时进入对应 Flow 单件(单点更强)→
-用 ThirdC/V2HTML/InputFlow 这组 Studio 本地工具工作(它们未来是打通全部 Flow 的工作台)。
+用 ThirdC/ConFlow/InputFlow 这组 Studio 本地工具工作(它们未来是打通全部 Flow 的工作台)。
 
 **边角说明**：`obdisian-flowershow`、`best-knowledge`、`NotionNext`(fork) 为早期实验/他人维护，
 **不计入本矩阵**，矩阵话术与对外材料一律不提。
