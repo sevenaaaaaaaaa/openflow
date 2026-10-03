@@ -13,7 +13,7 @@ R2_ENDPOINT = "https://00d02a54a3c0f7a3f6c3fc75068e29c5.r2.cloudflarestorage.com
 R2_KEY = os.environ["R2_KEY"]        # 从环境变量读取；禁止硬编码（曾泄露，需轮换）
 R2_SECRET = os.environ["R2_SECRET"]  # 从环境变量读取；禁止硬编码（曾泄露，需轮换）
 BUCKET = "nownexts-static"
-ASSETS_DIR = os.path.dirname(os.path.abspath(__file__)) + "/assets"
+ASSETS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/assets"   # 脚本在 deploy/ 下,assets 在仓库根（v2.5.1 挪动脚本时曾漏改,导致同步空跑）
 EXCLUDE_EXTS = {'.map', '.ts', '.md', '.txt', '.sh'}
 
 CACHE_STATIC = 'public, max-age=604800, immutable'
