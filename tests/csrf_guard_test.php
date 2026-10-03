@@ -42,12 +42,16 @@ if (($argv[1] ?? '') === '--req') {
     $_SERVER['REQUEST_URI'] = "/xmp/{$page}" . ($getExtra ? "?{$getExtra}" : '');
 
     ob_start();
-    register_shutdown_function(function () use ($sessDir) {
+    // settings 页的 POST 会真实写 data/settings.json（且只带表单字段，会冲掉其他运行时键）——
+    // 子进程结束前按请求前快照还原，保证测试对运行时配置零残留。
+    $settingsSnap = is_file($root . '/data/settings.json') ? file_get_contents($root . '/data/settings.json') : null;
+    register_shutdown_function(function () use ($sessDir, $settingsSnap, $root) {
         $out = ob_get_contents();
         // csrf_verify() 失败时 die('CSRF 验证失败...')
         if (strpos((string)$out, 'CSRF 验证失败') !== false) { /* marker in output */ }
         foreach (glob("{$sessDir}/*") ?: [] as $f) @unlink($f);
         @rmdir($sessDir);
+        if ($settingsSnap !== null) @file_put_contents($root . '/data/settings.json', $settingsSnap);
     });
     try { include "{$root}/admin/{$page}.php"; }
     catch (\Throwable $e) { echo "\n__THROW__" . $e->getMessage(); }

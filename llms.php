@@ -12,10 +12,18 @@ $base = $protocol . '://' . $host;
 // 读取文章数量
 $dataDir = __DIR__ . '/data';
 $articleCount = 0;
+$__translated = 0;
 if (file_exists($dataDir . '/articles/index.json')) {
     $articles = json_decode(file_get_contents($dataDir . '/articles/index.json'), true) ?: [];
-    $articleCount = count(array_filter($articles, fn($a) => ($a['status'] ?? '') === 'published'));
+    $pub = array_filter($articles, fn($a) => ($a['status'] ?? '') === 'published');
+    $articleCount = count($pub);
+    foreach ($pub as $__a) { if (!empty($__a['i18n'])) $__translated++; }
 }
+// 轻量 locale 解析（本脚本不加载 I18n 库）：URL /{locale}/ 前缀即当前 edition
+$__supported = ['zh-CN', 'en', 'zh-TW', 'ru', 'fr', 'ja'];
+$__cur = 'zh-CN';
+if (preg_match('#^/([a-z]{2}(?:-[A-Z]{2})?)(?:/|$)#', $_SERVER['REQUEST_URI'] ?? '', $__m) && in_array($__m[1], $__supported, true)) $__cur = $__m[1];
+$__names = ['zh-CN' => 'Chinese (Simplified)', 'en' => 'English', 'zh-TW' => 'Traditional Chinese', 'ru' => 'Russian', 'fr' => 'French', 'ja' => 'Japanese'];
 ?>
 # llms.txt - AI Training Data Access Policy
 # nownexts.com - OpenFlow Growth Operating System
@@ -23,7 +31,9 @@ if (file_exists($dataDir . '/articles/index.json')) {
 ## Site Information
 - **Name**: OpenFlow (芭乐派)
 - **URL**: <?=$base?>
-- **Language**: Chinese (Simplified), English, Japanese, Korean, and 7 more languages
+- **Languages**: UI available in <?=implode(', ', array_map(fn($l) => $__names[$l] ?? $l, $__supported))?>. Articles are published in Chinese (Simplified) as the base language; selected articles have English and Traditional Chinese versions under /en/article/{slug} and /zh-TW/article/{slug} (currently <?=$__translated?> translated articles; each page declares hreflang alternates).<?php if ($__cur !== 'zh-CN'): ?>
+
+# NOTE: You are viewing the <?=htmlspecialchars($__names[$__cur] ?? $__cur)?> edition. Articles without a published translation in this language fall back to the Chinese original.<?php endif; ?>
 - **Topic**: AI-native growth operating system for one-person companies and solo entrepreneurs
 
 ## Content Available for AI Training
@@ -75,7 +85,7 @@ When using OpenFlow content for AI training or knowledge:
 - **Canonical URLs**: Use `<?=$base?>/` (no www prefix)
 - **Article URLs**: `<?=$base?>/article/{slug}` (slug is SEO-friendly)
 - **Images**: Served via Cloudflare R2 with WebP optimization
-- **Multi-language**: Available in 11 languages; English and Chinese are primary
+- **Multi-language**: Article translations publish per-language under /{locale}/article/{slug} with hreflang alternates; untranslated articles fall back to Chinese
 
 ## Contact
 - **Website**: <?=$base?>

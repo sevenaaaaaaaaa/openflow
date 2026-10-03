@@ -242,7 +242,7 @@ if (!$newsletterForm) foreach ($formsData as $f) if (($f['type'] ?? '') === 'lea
 $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 ?>
 <!doctype html>
-<html lang="zh-CN" data-theme="light">
+<html lang="<?=htmlspecialchars(function_exists('i18n_current') ? i18n_current() : 'zh-CN')?>" dir="<?=function_exists('i18n_is_rtl') && i18n_is_rtl() ? 'rtl' : 'ltr'?>" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -291,15 +291,15 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('articles'); ?>
 
-<a class="skip" href="#main">跳到主要内容</a>
+<a class="skip" href="#main"><?=__('art.skip','跳到主要内容')?></a>
 
 <?php if (!$notFound && (count($toc) >= 3 || !empty($tagCloud))): ?>
 <!-- ══ 情境侧栏：本文目录 / 标签云（由 site-shell.js 挂载到全站侧栏） ══ -->
 <template id="of-sidebar-context">
   <?php if (count($toc) >= 3): ?>
   <div class="sb-w">
-    <h3>本文目录</h3>
-    <nav class="sb-toc" aria-label="本文目录">
+    <h3><?=__('art.toc','本文目录')?></h3>
+    <nav class="sb-toc" aria-label="<?=__('art.toc','本文目录')?>">
       <?php foreach ($toc as $t): ?>
       <a href="#<?=$t['id']?>" class="lv<?=$t['level']?>" data-toc="<?=$t['id']?>"><?=htmlspecialchars($t['text'])?></a>
       <?php endforeach; ?>
@@ -308,7 +308,7 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
   <?php endif; ?>
   <?php if (!empty($tagCloud)): ?>
   <div class="sb-w">
-    <h3>标签云</h3>
+    <h3><?=__('art.tagcloud','标签云')?></h3>
     <div class="sb-tags">
       <?php foreach ($tagCloud as $tag => $cnt): ?>
       <a href="/articles?tag=<?=urlencode($tag)?>"><?=htmlspecialchars($tag)?><b><?=$cnt?></b></a>
@@ -324,9 +324,9 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
   <section class="reader reveal in">
     <div class="not-found">
       <span class="kicker">404</span>
-      <h1 class="h3" style="font-size:28px">文章不存在</h1>
-      <p class="lead" style="color:var(--muted)">这篇文章可能已被删除或链接有误。</p>
-      <a href="/articles" class="btn primary">返回文章列表</a>
+      <h1 class="h3" style="font-size:28px"><?=__('art.notfound','文章不存在')?></h1>
+      <p class="lead" style="color:var(--muted)"><?=__('art.notfound_desc','这篇文章可能已被删除或链接有误。')?></p>
+      <a href="/articles" class="btn primary"><?=__('art.back_list','返回文章列表')?></a>
     </div>
   </section>
   <?php else: ?>
@@ -343,9 +343,19 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
         <span class="sep"></span>
         <span><?=htmlspecialchars(substr($article['created_at'] ?? '', 0, 10))?></span>
         <span class="sep"></span>
-        <span><?=$readMins?> 分钟阅读</span>
+        <span><?=$readMins?> <?=__('art.min_read','分钟阅读')?></span>
       </div>
       <h1><?=htmlspecialchars($article['title'] ?? '')?></h1>
+      <?php
+      $__langs = '';
+      foreach (ci18n_translations($article) as $__loc => $__tr) {
+          if (is_array($__tr) && ($__tr['status'] ?? '') === 'published' && trim((string)($__tr['title'] ?? '')) !== '') {
+              $__lbl = ['zh-TW' => '繁體中文', 'en' => 'English', 'ja' => '日本語', 'ru' => 'Русский', 'fr' => 'Français'][$__loc] ?? $__loc;
+              $__langs .= '<a href="/' . rawurlencode($__loc) . '/article/' . htmlspecialchars($article['slug'] ?? '') . '" hreflang="' . htmlspecialchars($__loc) . '" style="color:var(--accent);text-decoration:none;margin-right:12px">' . htmlspecialchars($__lbl) . '</a>';
+          }
+      }
+      if ($__langs && ($article['_locale'] ?? 'zh-CN') === 'zh-CN') echo '<div style="margin-top:10px;font-size:13px;color:var(--muted)"><span style="margin-right:8px">🌐</span>' . $__langs . '</div>';
+      ?>
     </div>
 
     <?=CoverRenderer::renderDetailCover($article)?>
@@ -355,19 +365,19 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
     <div class="prose">
       <?php if ($memberGate): ?>
         <div class="card gate-box">
-          <span class="kicker">会员专享</span>
-          <h2>这是一篇会员专享文章</h2>
-          <p>开通会员即可阅读全文</p>
-          <a href="member.php?view=subscribe" class="btn primary">开通会员 →</a>
+          <span class="kicker"><?=__('art.members_kicker','会员专享')?></span>
+          <h2><?=__('art.members_h','这是一篇会员专享文章')?></h2>
+          <p><?=__('art.members_p','开通会员即可阅读全文')?></p>
+          <a href="member.php?view=subscribe" class="btn primary"><?=__('art.members_cta','开通会员 →')?></a>
         </div>
       <?php elseif ($paidGate): ?>
         <?php $pv = paid_preview($content); ?>
         <?=article_render($pv['preview'])?>
         <div class="gate"><div class="card gate-box">
-          <span class="kicker">付费内容</span>
-          <h2>继续阅读全文</h2>
+          <span class="kicker"><?=__('art.paid_kicker','付费内容')?></span>
+          <h2><?=__('art.paid_h','继续阅读全文')?></h2>
           <p><?=htmlspecialchars($paidHint)?></p>
-          <a href="member.php?view=subscribe" class="btn primary">立即升级 →</a>
+          <a href="member.php?view=subscribe" class="btn primary"><?=__('art.paid_cta','立即升级 →')?></a>
         </div></div>
       <?php else: ?>
         <?php if ($usedShortcode) echo shortcode_style(); ?>
@@ -379,12 +389,12 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
     <?php if (class_exists('PluginSystem')) PluginSystem::render_front_slot('article_after', ['article' => $article]); ?>
 
     <div class="actions">
-      <button class="act" id="likeBtn"><?=htmlspecialchars((int)($artStats['likes'] ?? 0))?> 赞</button>
-      <button class="act" id="favBtn">收藏</button>
-      <button class="act" id="shareBtn">分享</button>
-      <button class="act" id="posterBtn" title="生成分享海报">生成海报</button>
-      <button class="act" id="cmtBtn" onclick="document.querySelector('[data-od-id=article-comments]').scrollIntoView({behavior:'smooth',block:'start'})"><?=(int)$commentCount?> 评论</button>
-      <button class="act" id="viewBtn"><?=number_format((int)($artStats['views'] ?? 0))?> 阅读</button>
+      <button class="act" id="likeBtn"><?=htmlspecialchars((int)($artStats['likes'] ?? 0))?> <?=__('art.like_suffix','赞')?></button>
+      <button class="act" id="favBtn"><?=__('art.fav','收藏')?></button>
+      <button class="act" id="shareBtn"><?=__('art.share','分享')?></button>
+      <button class="act" id="posterBtn" title="<?=__('art.poster','生成海报')?>"><?=__('art.poster','生成海报')?></button>
+      <button class="act" id="cmtBtn" onclick="document.querySelector('[data-od-id=article-comments]').scrollIntoView({behavior:'smooth',block:'start'})"><?=(int)$commentCount?> <?=__('art.comments','评论')?></button>
+      <button class="act" id="viewBtn"><?=number_format((int)($artStats['views'] ?? 0))?> <?=__('art.views_suffix','阅读')?></button>
     </div>
 
     <?php if (!empty($article['tags'])): ?>
@@ -393,12 +403,12 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
   </article>
 
   <section class="reader reveal" data-od-id="article-comments">
-    <?php fc_comment_widget('article', (string)($article['id'] ?? $slug), ['title' => '评论']); ?>
+    <?php fc_comment_widget('article', (string)($article['id'] ?? $slug), ['title' => __('art.comments','评论')]); ?>
   </section>
 
   <?php if (!empty($related)): ?>
   <section class="reader reveal" data-od-id="article-related">
-    <div class="sec-head row"><div><span class="kicker">相关阅读</span><h2>接着看</h2></div></div>
+    <div class="sec-head row"><div><span class="kicker"><?=__('art.related','相关阅读')?></span><h2><?=__('art.related_h','接着看')?></h2></div></div>
     <div class="rel-grid">
       <?php foreach ($related as $r): $ra = $r['a']; ?>
       <a class="a-card" href="/article/<?=htmlspecialchars($ra['slug'])?>">
@@ -416,7 +426,7 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
   <?php if (!empty($top10)): ?>
   <section class="reader reveal" data-od-id="article-discover">
     <div class="disc-box">
-      <h3>最新文章 Top 10</h3>
+      <h3><?=__('art.top10','最新文章 Top 10')?></h3>
       <ol>
         <?php foreach ($top10 as $ti => $ta): if (($ta['id'] ?? '') === ($article['id'] ?? '')) continue; ?>
         <li><a href="/article/<?=htmlspecialchars($ta['slug'])?>"><span class="rn"><?=str_pad((string)($ti+1), 2, '0', STR_PAD_LEFT)?></span><span><?=htmlspecialchars($ta['title'])?></span></a></li>
@@ -428,7 +438,7 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 
   <?php if (!empty($related)): ?>
   <section class="reader reveal" id="personalizedRecs" hidden data-od-id="article-recs">
-    <div class="sec-head row"><div><span class="kicker">猜你喜欢</span><h2>为你挑的</h2></div></div>
+    <div class="sec-head row"><div><span class="kicker"><?=__('art.recs_kicker','猜你喜欢')?></span><h2><?=__('art.recs_h','为你挑的')?></h2></div></div>
     <div class="link-grid" id="personalizedRecsGrid" style="margin-top:18px;grid-template-columns:repeat(2,1fr)"></div>
   </section>
   <script>
@@ -454,12 +464,12 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 
   <section class="reader reveal" data-od-id="article-newsletter">
     <div class="cta-band">
-      <span class="kicker">订阅</span>
-      <h2>订阅内容更新</h2>
-      <p class="lead">每周获取网站增长与 AI 运营最新洞察，绝无打扰。</p>
+      <span class="kicker"><?=__('art.sub_kicker','订阅')?></span>
+      <h2><?=__('art.sub_h','订阅内容更新')?></h2>
+      <p class="lead"><?=__('art.sub_p','每周获取网站增长与 AI 运营最新洞察，绝无打扰。')?></p>
       <form onsubmit="return ofNewsletter(this,event)">
-        <input class="inp" type="email" placeholder="你的邮箱" required aria-label="邮箱">
-        <button class="btn primary" type="submit">订阅</button>
+        <input class="inp" type="email" placeholder="<?=__('art.sub_email','你的邮箱')?>" required aria-label="<?=__('art.sub_email','你的邮箱')?>">
+        <button class="btn primary" type="submit"><?=__('art.sub_btn','订阅')?></button>
       </form>
     </div>
   </section>

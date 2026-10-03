@@ -30,7 +30,7 @@ try {
 $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 ?>
 <!doctype html>
-<html lang="zh-CN" data-theme="light">
+<html lang="<?=htmlspecialchars(function_exists('i18n_current') ? i18n_current() : 'zh-CN')?>" dir="<?=function_exists('i18n_is_rtl') && i18n_is_rtl() ? 'rtl' : 'ltr'?>" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

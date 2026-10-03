@@ -1304,8 +1304,8 @@
         if (document.querySelector(".of-lang")) return;
         var footer = document.querySelector("footer");
         if (!footer) return;
-        var locales = [{ id: "zh-CN", label: "中文" }, { id: "zh-TW", label: "繁體中文" }, { id: "en", label: "EN" }, { id: "ja", label: "日本語" }, { id: "ko", label: "한국어" }, { id: "ru", label: "Русский" }, { id: "es", label: "Español" }, { id: "pt", label: "Português" }, { id: "ar", label: "العربية" }, { id: "fr", label: "Français" }, { id: "de", label: "Deutsch" }];
-        var localePattern = /^\/(zh-CN|zh-TW|en|ja|ko|ru|es|pt|ar|fr|de)(?:\/|$)/;
+        var locales = [{ id: "zh-CN", label: "中文" }, { id: "zh-TW", label: "繁體中文" }, { id: "en", label: "EN" }, { id: "ja", label: "日本語" }, { id: "ru", label: "Русский" }, { id: "fr", label: "Français" }];
+        var localePattern = /^\/(zh-CN|zh-TW|en|ja|ru|fr)(?:\/|$)/;
         var match = location.pathname.match(localePattern);
         var current = match ? match[1] : document.documentElement.lang || "zh-CN";
         if (!locales.some(function(l) {

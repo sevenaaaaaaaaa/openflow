@@ -62,12 +62,21 @@ function card_meta(array $a): string {
 function render_card(array $a, callable $catOf): string {
     [$slug, $cat] = $catOf($a);
     $tags = implode(' ', array_map(fn($t) => mb_strtolower(trim((string)$t)), $a['tags'] ?? []));
+    $langs = '';
+    $lbl = ['zh-TW' => '繁體', 'en' => 'EN', 'ja' => '日本語', 'ru' => 'RU', 'fr' => 'FR'];
+    foreach (($a['i18n'] ?? []) as $loc => $tr) {
+        if (is_array($tr) && ($tr['status'] ?? '') === 'published' && trim((string)($tr['title'] ?? '')) !== '') {
+            $langs .= '<a href="/' . rawurlencode($loc) . '/article/' . htmlspecialchars($a['slug'] ?? '') . '" hreflang="' . htmlspecialchars($loc) . '" style="font-size:11px;padding:2px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted);text-decoration:none">' . htmlspecialchars($lbl[$loc] ?? strtoupper($loc)) . '</a>';
+        }
+    }
     return '<a href="/articles/' . htmlspecialchars($a['slug'] ?? '') . '" class="a-card" data-cat="' . htmlspecialchars($cat) . '" data-tags="' . htmlspecialchars($tags) . '" data-q="' . htmlspecialchars(mb_strtolower(($a['title'] ?? '') . ' ' . strip_tags($a['excerpt'] ?? ''))) . '">'
         . '<div class="cov">' . CoverRenderer::renderCardCover($a) . '</div>'
         . '<div class="bd"><span class="cat">' . htmlspecialchars($cat) . '</span>'
         . '<h3>' . htmlspecialchars(mb_substr($a['title'] ?? '', 0, 60)) . '</h3>'
         . ($a['excerpt'] ?? '' ? '<p>' . htmlspecialchars(mb_substr(strip_tags($a['excerpt']), 0, 84)) . '</p>' : '')
-        . '<div class="meta">' . card_meta($a) . '</div></div></a>';
+        . '<div class="meta">' . card_meta($a) . '</div>'
+        . ($langs ? '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' . $langs . '</div>' : '')
+        . '</div></a>';
 }
 ?>
 <!doctype html>
@@ -127,8 +136,8 @@ function render_card(array $a, callable $catOf): string {
     <div class="hero-center" style="padding-bottom:0;gap:16px">
       <nav class="crumbs" aria-label="位置"><a href="/academy">学院</a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg><span>文章</span></nav>
       <h1><?=$filtering ? htmlspecialchars($fCatName ?: ($fTag !== '' ? '#' . $fTag : '搜索：' . $fQ)) : '文<i class="si">章</i>'?></h1>
-      <p class="lead"><?=$filtering ? '共 ' . count($list) . ' 篇 · <a href="/articles" style="color:var(--accent)">看全部文章</a>' : '增长实践、AI 工具评测、行业洞察。每一篇都从一个真实问题出发，写到能照着做为止。'?></p>
-      <?php if (!$filtering): ?><div class="trust"><span class="dot"></span><?=$total?> 篇 · <?=count($catCounts)?> 个分类 · <?=count($allTags)?> 个标签</div><?php endif; ?>
+      <p class="lead"><?=$filtering ? '共 ' . count($list) . ' ' . __('lst.count_suffix','篇') . ' · <a href="/articles" style="color:var(--accent)">' . __('lst.view_all','看全部文章') . '</a>' : __('lst.lead_desc','增长实践、AI 工具评测、行业洞察。每一篇都从一个真实问题出发，写到能照着做为止。')?></p>
+      <?php if (!$filtering): ?><div class="trust"><span class="dot"></span><?=$total?> <?=__('lst.count_suffix','篇')?> · <?=count($catCounts)?> <?=__('lst.cats_suffix','个分类')?> · <?=count($allTags)?> <?=__('lst.tags_suffix','个标签')?></div><?php endif; ?>
     </div>
   </section>
 
@@ -136,12 +145,12 @@ function render_card(array $a, callable $catOf): string {
     <form class="filter" method="get" action="/articles" id="artFilter" data-no-guard>
       <div class="row">
         <div class="tab-bar" role="tablist" aria-label="分类">
-          <a class="tab-p" href="/articles<?=$fTag !== '' ? '?tag=' . urlencode($fTag) : ''?>" data-cat="" aria-selected="<?=$fCat === '' ? 'true' : 'false'?>">全部 <b><?=$total?></b></a>
+          <a class="tab-p" href="/articles<?=$fTag !== '' ? '?tag=' . urlencode($fTag) : ''?>" data-cat="" aria-selected="<?=$fCat === '' ? 'true' : 'false'?>"><?=__('lst.all','全部')?> <b><?=$total?></b></a>
           <?php foreach ($catCounts as $name => $n): $key = $catKeyByName[$name]; ?>
           <a class="tab-p" href="/articles?cat=<?=urlencode($key)?>" data-cat="<?=htmlspecialchars($name)?>" aria-selected="<?=$fCatName === $name ? 'true' : 'false'?>"><?=htmlspecialchars($name)?> <b><?=$n?></b></a>
           <?php endforeach; ?>
         </div>
-        <label class="q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg><input class="inp" type="search" name="q" value="<?=htmlspecialchars($fQ)?>" placeholder="搜标题、摘要、标签…" aria-label="搜索文章" autocomplete="off"></label>
+        <label class="q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></svg><input class="inp" type="search" name="q" value="<?=htmlspecialchars($fQ)?>" placeholder="<?=__('lst.search_ph','搜标题、摘要、标签…')?>" aria-label="<?=__('lst.search_aria','搜索文章')?>" autocomplete="off"></label>
       </div>
       <?php if ($topTags): ?>
       <div class="row"><div class="tags" aria-label="标签">
@@ -153,7 +162,7 @@ function render_card(array $a, callable $catOf): string {
 
   <?php if ($lead): [$ls, $lc] = $catOf($lead); ?>
   <section id="latest" class="sec reveal" data-od-anchor data-od-id="articles-latest" style="padding-top:8px">
-    <div class="sec-head row"><div><span class="kicker">最新</span><h2>刚写完的一篇</h2></div><span class="sub"><?=card_meta($lead)?></span></div>
+    <div class="sec-head row"><div><span class="kicker"><?=__('lst.latest_kicker','最新')?></span><h2><?=__('lst.latest_h','刚写完的一篇')?></h2></div><span class="sub"><?=card_meta($lead)?></span></div>
     <a class="lead-card" href="/articles/<?=htmlspecialchars($lead['slug'] ?? '')?>" style="margin-top:14px">
       <div class="cov"><?=CoverRenderer::renderCardCover($lead)?></div>
       <div class="bd">
@@ -167,13 +176,13 @@ function render_card(array $a, callable $catOf): string {
   <?php endif; ?>
 
   <section id="all" class="sec reveal" data-od-anchor data-od-id="articles-all" style="padding-top:8px">
-    <div class="sec-head row"><div><span class="kicker"><?=$lead ? '全部' : '结果'?></span><h2><?=$lead ? '按时间倒序' : ($list ? '匹配的文章' : '没有匹配的文章')?></h2></div><span class="res" id="artCount"><?=count($rest)?> 篇</span><a class="more" href="/topics">按专题读 →</a></div>
+    <div class="sec-head row"><div><span class="kicker"><?=$lead ? __('lst.all_kicker','全部') : __('lst.result_kicker','结果')?></span><h2><?=$lead ? __('lst.bytime_h','按时间倒序') : ($list ? __('lst.matched_h','匹配的文章') : __('lst.nomatch_h','没有匹配的文章'))?></h2></div><span class="res" id="artCount"><?=count($rest)?> <?=__('lst.count_suffix','篇')?></span><a class="more" href="/topics"><?=__('lst.by_topic','按专题读 →')?></a></div>
     <?php if (!$rest && !$lead): ?>
-      <div class="empty">没有找到「<?=htmlspecialchars($fCatName ?: ($fTag ?: $fQ))?>」相关的文章。<a href="/articles" style="color:var(--accent)">看全部</a>，或者去<a href="/search?q=<?=urlencode($fQ ?: $fTag ?: $fCatName)?>" style="color:var(--accent)">全站搜索</a>。</div>
+      <div class="empty"><?=__('lst.empty_pre','没有找到「')?><?=htmlspecialchars($fCatName ?: ($fTag ?: $fQ))?><?=__('lst.empty_mid','」相关的文章。')?><a href="/articles" style="color:var(--accent)"><?=__('lst.see_all','看全部')?></a><?=__('lst.or','，或者去')?><a href="/search?q=<?=urlencode($fQ ?: $fTag ?: $fCatName)?>" style="color:var(--accent)"><?=__('lst.site_search','全站搜索')?></a>。</div>
     <?php elseif ($rest): ?>
       <div class="a-grid" id="artGrid" style="margin-top:14px"><?php foreach ($rest as $a) echo render_card($a, $catOf); ?></div>
-      <div class="more-row" id="moreRow" hidden><button type="button" class="btn ghost" id="moreBtn">再看 12 篇</button></div>
-      <div class="empty" id="artEmpty" hidden>没有匹配的文章，换个词试试。</div>
+      <div class="more-row" id="moreRow" hidden><button type="button" class="btn ghost" id="moreBtn"><?=__('lst.more','再看 12 篇')?></button></div>
+      <div class="empty" id="artEmpty" hidden><?=__('lst.empty_alt','没有匹配的文章，换个词试试。')?></div>
     <?php endif; ?>
   </section>
 
@@ -181,7 +190,7 @@ function render_card(array $a, callable $catOf): string {
 </main>
 <script>
 (function(){
-  var grid=document.getElementById('artGrid'); if(!grid) return;
+  var grid=document.getElementById('artGrid'); if(!grid) return; var L={suffix:'<?=__('lst.count_suffix','篇')?>',match:'<?=__('lst.match_prefix','匹配 ')?>'};
   var cards=Array.prototype.slice.call(grid.querySelectorAll('.a-card')), PAGE=12, shown=PAGE, q='';
   var more=document.getElementById('moreRow'), btn=document.getElementById('moreBtn'), cnt=document.getElementById('artCount'), emp=document.getElementById('artEmpty');
   var inp=document.querySelector('#artFilter input[name=q]');
@@ -190,7 +199,7 @@ function render_card(array $a, callable $catOf): string {
     cards.forEach(function(c){c.classList.add('hide')});
     hit.slice(0,shown).forEach(function(c){c.classList.remove('hide')});
     if(more) more.hidden = hit.length<=shown;
-    if(cnt) cnt.textContent = (q?('匹配 '+hit.length):hit.length)+' 篇';
+    if(cnt) cnt.textContent = (q?(L.match+hit.length):hit.length)+' '+L.suffix;
     if(emp) emp.hidden = hit.length>0;
   }
   if(btn) btn.addEventListener('click',function(){shown+=PAGE;apply()});
@@ -198,6 +207,6 @@ function render_card(array $a, callable $catOf): string {
   apply();
 })();
 </script>
-<button id="backtop" data-od-id="back-to-top" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
+<button id="backtop" data-od-id="back-to-top" aria-label="<?=__('lst.backtop','回到顶部')?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
 </body>
 </html>
