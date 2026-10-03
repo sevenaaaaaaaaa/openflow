@@ -466,15 +466,15 @@ function admin_nav_cluster_bar(string $current = '', string $script = ''): strin
     if (!function_exists('has_perm')) return '';
     $loc = admin_nav_locate($current, $script);
     if (count($loc['subs']) < 2) return '';
-    $h = '<nav class="of-ctabs" aria-label="' . htmlspecialchars($loc['clusterLabel']) . ' 内的功能">';
+    $h = '<nav class="of-ctabs" aria-label="' . htmlspecialchars(__a($loc['clusterLabel'])) . ' 内的功能">';
     // 簇名和某个子页同名时（运营分析 › 运营分析）不再重复一遍
     $dup = false;
     foreach ($loc['subs'] as $s) if (($s['label'] ?? '') === $loc['clusterLabel']) $dup = true;
-    if (!$dup) $h .= '<span class="of-ctabs-h">' . htmlspecialchars($loc['clusterLabel']) . '</span>';
+    if (!$dup) $h .= '<span class="of-ctabs-h">' . htmlspecialchars(__a($loc['clusterLabel'])) . '</span>';
     foreach ($loc['subs'] as $s) {
         $on = $s['id'] === $loc['sub'];
         $h .= '<a class="of-ctab' . ($on ? ' on' : '') . '" href="' . htmlspecialchars($s['href']) . '"'
-            . ($on ? ' aria-current="page"' : '') . '>' . htmlspecialchars($s['label']) . '</a>';
+            . ($on ? ' aria-current="page"' : '') . '>' . htmlspecialchars(__a($s['label'])) . '</a>';
     }
     return $h . '</nav>';
 }
@@ -495,24 +495,24 @@ function admin_nav_render(string $current, string $script = ''): void {
 <nav class="sidebar" id="sidebar" aria-label="后台导航" data-area="<?=htmlspecialchars($loc['area'])?>">
   <?php /* 一级导航(触达/洞察/个性化/销售/Studio)在顶栏 main-tabs;侧栏只渲染当前区的功能明细,不再有竖排区切换条 */ ?>
   <div class="sb-panels">
-    <div class="sb-area-title" id="sbAreaTitle"><?=htmlspecialchars(($loc['areaLabel'] ?? '') ?: '触达 Touch')?></div>
+    <div class="sb-area-title" id="sbAreaTitle"><?=htmlspecialchars(__a(($loc['areaLabel'] ?? '') ?: '触达 Touch'))?></div>
     <?php if ($pins): ?>
     <div class="sb-pins">
       <?php foreach ($pins as $p): $act = $loc['sub'] === $p['id'] || in_array($loc['sub'], array_column($p['subs'] ?? [], 'id')); ?>
-      <a href="<?=htmlspecialchars($p['href'])?>" class="sb-pin<?=$act ? ' active' : ''?>"<?=$act ? ' aria-current="page"' : ''?>><?=$svg($p['icon'])?><span><?=htmlspecialchars($p['label'])?></span><span class="tag"><?=htmlspecialchars($p['tag'])?></span></a>
+      <a href="<?=htmlspecialchars($p['href'])?>" class="sb-pin<?=$act ? ' active' : ''?>"<?=$act ? ' aria-current="page"' : ''?>><?=$svg($p['icon'])?><span><?=htmlspecialchars(__a($p['label']))?></span><span class="tag"><?=htmlspecialchars(__a($p['tag']))?></span></a>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
     <?php foreach ($tree as $area): if (($area['id'] ?? '') === 'system') continue; $on = $area['id'] === $loc['area']; ?>
     <div class="sb-panel<?=$on ? ' on' : ''?>" data-area="<?=$area['id']?>" role="tabpanel">
       <?php foreach ($area['groups'] as $g): ?>
-      <?php if ($g['label'] !== ''): ?><div class="sb-group"><?=htmlspecialchars($g['label'])?></div><?php endif; ?>
+      <?php if ($g['label'] !== ''): ?><div class="sb-group"><?=htmlspecialchars(__a($g['label']))?></div><?php endif; ?>
       <?php foreach ($g['items'] as $it): $act = $on && $it['id'] === $loc['item']; ?>
-      <a href="<?=htmlspecialchars($it['href'])?>" class="sb-link<?=$act ? ' active' : ''?>" data-nav="<?=htmlspecialchars($it['id'])?>"<?=$act ? ' aria-current="page"' : ''?>><span><?=htmlspecialchars($it['label'])?><?php if (count($it['subs']) > 1): ?><i class="sb-n"><?=count($it['subs'])?></i><?php endif; ?></span><?php if (!empty($it['hint'])): ?><small><?=htmlspecialchars($it['hint'])?></small><?php endif; ?></a>
+      <a href="<?=htmlspecialchars($it['href'])?>" class="sb-link<?=$act ? ' active' : ''?>" data-nav="<?=htmlspecialchars($it['id'])?>"<?=$act ? ' aria-current="page"' : ''?>><span><?=htmlspecialchars(__a($it['label']))?><?php if (count($it['subs']) > 1): ?><i class="sb-n"><?=count($it['subs'])?></i><?php endif; ?></span><?php if (!empty($it['hint'])): ?><small><?=htmlspecialchars(__a($it['hint']))?></small><?php endif; ?></a>
       <?php endforeach; endforeach; ?>
     </div>
     <?php endforeach; ?>
-    <div class="sb-panel-h" style="margin-top:14px">最近打开</div>
+    <div class="sb-panel-h" style="margin-top:14px"><?=htmlspecialchars(__a('最近打开'))?></div>
     <div id="sbRecent" class="sb-recent" data-current="<?=htmlspecialchars($current)?>" data-current-label="<?=htmlspecialchars($loc['label'])?>"></div>
     <?php
     // 插件菜单：结构化注册（register_admin_menu）优先渲染为原生导航项；旧的 admin_sidebar_menu 原始 HTML 钩子保留兼容
@@ -520,7 +520,7 @@ function admin_nav_render(string $current, string $script = ''): void {
     $__plugRaw = '';
     if (class_exists('PluginSystem')) { ob_start(); PluginSystem::do_action('admin_sidebar_menu', $current); $__plugRaw = trim((string)ob_get_clean()); }
     if ($__plugMenus || $__plugRaw !== ''): ?>
-    <div class="sb-panel-h" style="margin-top:14px">插件</div>
+    <div class="sb-panel-h" style="margin-top:14px"><?=htmlspecialchars(__a('插件'))?></div>
     <?php foreach ($__plugMenus as $__pm): $pmAct = ($current === 'plugin-' . $__pm['id']); ?>
     <a href="<?=htmlspecialchars($__pm['href'])?>" class="sb-link<?=$pmAct ? ' active' : ''?>"<?=$pmAct ? ' aria-current="page"' : ''?>><span><?=htmlspecialchars($__pm['label'])?></span></a>
     <?php endforeach; ?>

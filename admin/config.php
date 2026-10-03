@@ -1377,7 +1377,7 @@ $roleLabel = $roleLabels[$role] ?? $role;
             ['studio',     'Studio'],
         ];
         $__curArea = (string)($_GET['area'] ?? '');
-        foreach ($__tabs as [$tid, $tlabel]):
+        foreach ($__tabs as [$tid, $tlabel]): $tlabel = __a($tlabel);
         ?>
         <a href="/xmp/dashboard?area=<?=htmlspecialchars($tid)?>" class="main-tab<?=$__curArea === $tid ? ' on' : ''?>" data-area-tab="<?=htmlspecialchars($tid)?>" onclick="return fcGotoArea('<?=htmlspecialchars($tid)?>')" title="<?=htmlspecialchars($tlabel)?>"><?=htmlspecialchars($tlabel)?></a>
         <?php endforeach; ?>
@@ -1390,6 +1390,11 @@ $roleLabel = $roleLabels[$role] ?? $role;
       <?php if (has_perm('tasks')): ?>
       <a href="/xmp/teams" class="cbtn teams-entry" aria-label="Teams+" title="Teams+ · 团队协作（项目 / 任务 / 多维表格）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Teams+</span></a>
       <?php endif; ?>
+      <select onchange="document.cookie='of_lang_admin='+encodeURIComponent(this.value)+';path=/;max-age=31536000';location.reload()" aria-label="界面语言" title="界面语言" style="padding:6px 9px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--fg);font-size:12.5px;cursor:pointer">
+        <?php foreach ([['zh-CN','简体'],['zh-TW','繁體'],['en','EN'],['ja','日本語']] as $__al): ?>
+        <option value="<?=htmlspecialchars($__al[0])?>"<?=of_admin_locale()===$__al[0]?' selected':''?>><?=htmlspecialchars($__al[1])?></option>
+        <?php endforeach; ?>
+      </select>
       <div style="position:relative">
         <button class="cbtn" onclick="fcQuickCreate(event)" aria-label="快速新建" title="快速新建" style="font-size:17px;font-weight:700">＋</button>
         <div id="fcQuickMenu" style="display:none;position:absolute;right:0;top:calc(100% + 8px);min-width:200px;background:var(--surface-strong);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:6px;z-index:9980">
@@ -1468,6 +1473,29 @@ function admin_wrap_body(): void {
     echo '<div class="admin-layout">';
     admin_sidebar($cur);
     echo '<div class="main">', admin_nav_cluster_bar('', $cur), $body, '</div></div>';
+}
+
+// ─── 后台界面多语言（zh-CN / zh-TW / en / ja；cookie of_lang_admin） ───
+function of_admin_locale(): string {
+    static $loc = null;
+    if ($loc !== null) return $loc;
+    $supported = ['zh-CN', 'zh-TW', 'en', 'ja'];
+    $loc = 'zh-CN';
+    if (!empty($_COOKIE['of_lang_admin']) && in_array($_COOKIE['of_lang_admin'], $supported, true)) {
+        $loc = $_COOKIE['of_lang_admin'];
+    }
+    return $loc;
+}
+/** 后台标签翻译：读 data/lang/admin-{locale}.json（键=中文原文），缺译文回落原文。 */
+function __a(string $text): string {
+    if (of_admin_locale() === 'zh-CN') return $text;
+    static $dict = null, $dl = null;
+    if ($dict === null || $dl !== of_admin_locale()) {
+        $f = DATA_DIR . '/lang/admin-' . of_admin_locale() . '.json';
+        $dict = is_file($f) ? (json_decode((string)file_get_contents($f), true) ?: []) : [];
+        $dl = of_admin_locale();
+    }
+    return (string)($dict[$text] ?? $text);
 }
 
 function admin_sidebar(string $current): void {

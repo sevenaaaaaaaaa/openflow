@@ -35,7 +35,7 @@ $lastmod = function ($raw): string {
 
 echo '<?xml version="1.0" encoding="UTF-8"?>';
 ?>
-  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <!-- 主要页面 -->
   <url><loc><?=$base?>/</loc><priority>1.0</priority><changefreq>daily</changefreq></url>
   <url><loc><?=$base?>/about</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
@@ -80,11 +80,23 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     if (isset($__seenArticleSlug[$slug])) continue;   // 防御：内容侧 slug 碰撞时不重复输出
     $__seenArticleSlug[$slug] = true;
   ?>
+  <?php
+  $__trLocs = [];
+  foreach (($a['i18n'] ?? []) as $__loc => $__tr) {
+    if (is_array($__tr) && ($__tr['status'] ?? '') === 'published' && trim((string)($__tr['title'] ?? '')) !== '') $__trLocs[] = $__loc;
+  }
+  ?>
   <url>
     <loc><?=$base?>/article/<?=htmlspecialchars($slug)?></loc>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
     <?=$lastmod($a['updated_at'] ?? $a['created_at'] ?? '')?>
+<?php if ($__trLocs): ?>
+<?php foreach ($__trLocs as $__loc): ?>
+    <xhtml:link rel="alternate" hreflang="<?=htmlspecialchars($__loc)?>" href="<?=$base?>/<?=htmlspecialchars($__loc)?>/article/<?=htmlspecialchars($slug)?>"/>
+<?php endforeach; ?>
+    <xhtml:link rel="alternate" hreflang="x-default" href="<?=$base?>/article/<?=htmlspecialchars($slug)?>"/>
+<?php endif; ?>
   </url>
   <?php endforeach; ?>
 
