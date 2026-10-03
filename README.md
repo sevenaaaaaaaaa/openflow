@@ -92,13 +92,20 @@ OpenFlow 不是"带了一些营销功能的 CMS"——TIPS 是它的骨架:触�
 技术栈刻意保持了低门槛:**PHP 8 + JSON/SQLite,无 MySQL / Redis / Node 依赖**,让学习能力强
 的 DRI 与 OPC 能把它部署在任何地方——云服务器、NAS,甚至家里的本地服务器。
 
+**本地预览**(PHP 8.1+,扩展 `pdo_sqlite / gd / mbstring / fileinfo / curl / openssl`):
+
 ```bash
-git clone https://github.com/sevenaaaaaaaaa/openflow.git
-cd openflow
-composer install --no-dev --optimize-autoloader
+git clone https://github.com/sevenaaaaaaaaa/openflow.git && cd openflow
+php -S 127.0.0.1:8080 router.php     # router.php 镜像 .htaccess 路由,美化 URL 与线上一致
 ```
 
-Web 根目录指向项目目录(Apache 用自带 `.htaccess`,Nginx 参考 `nginx.site.conf`),访问站点按安装向导完成初始化。要求:PHP 8.1+,扩展 `pdo_sqlite / gd / mbstring / fileinfo / curl / openssl`。
+**Docker(生产推荐)**——仓库自带 `Dockerfile` + `docker-compose.yml`(Apache + PHP 8.3,数据卷持久化):
+
+```bash
+docker compose up -d                 # http://127.0.0.1:8080
+```
+
+**服务器原生部署**:Web 根目录指向项目目录(Apache 用自带 `.htaccess`,Nginx 参考 `deploy/nginx.site.conf`),访问站点按安装向导完成初始化。三种形态的完整步骤、服务器配置要求、路径与权限、Cloudflare(R2/Workers/Tunnel)与 Vercel 配置,见 **[部署指南](docs/DEPLOYMENT.md)**。
 
 最后给系统装上心跳,定时发布、自动化队列、AI 岗位、热点雷达才会转起来:
 
@@ -106,7 +113,7 @@ Web 根目录指向项目目录(Apache 用自带 `.htaccess`,Nginx 参考 `nginx
 * * * * * curl -fsS --max-time 55 "https://你的域名/api/cron.php?secret=你的密钥" >/dev/null 2>&1
 ```
 
-**原生部署**之外,Docker 镜像在路线图上;我们也会持续适配和探索主流开源项目的部署方式——这不是难事,是诚意。
+**原生部署**之外,Docker 一条命令起(`docker compose up -d`);我们也会持续适配和探索主流开源项目的部署方式——这不是难事,是诚意。
 
 AI 是可选能力:未配置模型时,内容、数据、自动化、商城照常运行,相关 AI 功能明确降级、不假成功。
 
@@ -118,14 +125,14 @@ OpenFlow 的核心能力——包括最重要的 TIPS 范式——**过去、现
 
 ## 文档
 
-[使用指南](docs/USAGE-GUIDE.md) · [功能总附录](docs/APPENDIX-FEATURES.md) · [产品北极星](docs/VISION.md) · [功能地图](docs/PRODUCT-MAP.md) · [矩阵定位](docs/PRODUCT-MATRIX.md) · [矩阵账号互通](docs/MATRIX-SSO-INTEGRATION.md) · [插件开发](docs/PLUGIN-DEV.md) · [架构规范](md-docs/ARCHITECTURE.md) · [变更日志](md-docs/CHANGELOG.md)
+[使用指南](docs/USAGE-GUIDE.md) · [部署指南](docs/DEPLOYMENT.md) · [功能总附录](docs/APPENDIX-FEATURES.md) · [产品北极星](docs/VISION.md) · [功能地图](docs/PRODUCT-MAP.md) · [矩阵定位](docs/PRODUCT-MATRIX.md) · [矩阵账号互通](docs/MATRIX-SSO-INTEGRATION.md) · [插件开发](docs/PLUGIN-DEV.md) · [架构规范](docs/handbook/ARCHITECTURE.md) · [变更日志](docs/handbook/CHANGELOG.md)
 
 ## 当前边界(诚实声明)
 
 - 增长大脑以可解释规则建议为主 + 受控 Agent 执行,不是无约束的自主策略 Agent;
 - AI 岗位与 Agent 的产出均为草稿/建议,发布、群发、价格、支付永远有人工闸门;
 - 「高意向线索→成交」的黄金 Loop 尚在真实数据验证中;自我进化是方向,不是现状;
-- AI 能力取决于你配置的模型与预算;直播媒体层需外部流媒体服务;Docker 镜像在路线图上。
+- AI 能力取决于你配置的模型与预算;直播媒体层需外部流媒体服务;Vercel 等 Serverless 形态仅适合演示(数据不持久),生产请用 Docker 或服务器原生部署。
 
 我们区分**已实现 / 已接入 / 已被使用 / 已验证有效**,不把远景写成现状。
 

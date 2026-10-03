@@ -51,7 +51,7 @@ foreach ($files as $f) {
         $h = preg_replace('~\$\{[^}]*\}|\$[a-zA-Z_]\w*~', 'x', $h);
         $h = str_replace('&amp;', '&', $h);
         if (!str_starts_with($h, '/') || str_starts_with($h, '//')) continue;
-        if (preg_match('~^/(xmp|uploads|assets|md-docs|data|vendor)(/|$)~', $h)) continue;
+        if (preg_match('~^/(xmp|uploads|assets|docs/handbook|data|vendor)(/|$)~', $h)) continue;
         // 模板拼接残留的纯前缀（'/article/' . $slug）→ 补一个通配段
         if (str_ends_with($h, '/')) $h .= 'x';
         // 兼容 JS 里的 + 拼接：'/course/' + id

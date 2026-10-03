@@ -191,7 +191,7 @@ OpenFlow XMP 会随你的使用生长，每个人最终长成不同的形态。
 - 首次登录后**务必修改默认密码**
 - 将 `data/` 目录放在 Web 可访问路径**之外**（或配置 Nginx 拒绝访问）
 - 定期备份 `data/` 目录
-- `.htaccess` 或 `nginx.conf.example` 已包含基本安全规则，部署时启用
+- `.htaccess` 或 `deploy/deploy/nginx.conf.example` 已包含基本安全规则，部署时启用
 
 ---
 

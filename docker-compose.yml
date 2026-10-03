@@ -1,0 +1,33 @@
+# ═══════════════════════════════════════════════════════════════
+# OpenFlow · Docker Compose（单容器，SQLite/JSON 内嵌，无数据库服务）
+#
+#   docker compose up -d            # http://127.0.0.1:8080
+#   OF_PORT=9000 docker compose up -d   # 换端口
+#
+# 数据全部落在宿主机 ./data 与 ./uploads（备份=打包这两个目录）。
+# 完整指南见 docs/DEPLOYMENT.md。
+# ═══════════════════════════════════════════════════════════════
+services:
+  openflow:
+    build: .
+    container_name: openflow
+    ports:
+      - "${OF_PORT:-8080}:80"
+    volumes:
+      - ./data:/var/www/html/data
+      - ./uploads:/var/www/html/uploads
+    environment:
+      OF_ENV: prod
+      # 站点地址建议部署后在后台「设置 → 站点配置」里填写（写入 data/settings.json），
+      # 也可以在这里注入：SITE_URL=https://your-domain.com
+    restart: unless-stopped
+
+  # ── 可选：Cloudflare Tunnel（无公网 IP / 内网穿透，免开端口）──
+  # 1) cloudflared tunnel login && cloudflared tunnel create openflow
+  # 2) 把生成的凭据写到 ./cloudflared/，并在 Cloudflare 后台把
+  #    <域名>.yourdomain.com 指向该隧道（DNS CNAME 由 tunnel route 自动加）
+  # 3) 取消下面注释后 docker compose up -d
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   command: tunnel --no-autoupdate run --token 你的隧道Token
+  #   restart: unless-stopped
