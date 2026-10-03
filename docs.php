@@ -82,9 +82,9 @@ function md_anchor(string $title): string {
     return $a ?: 'section';
 }
 
-// 文档索引：自动扫描 docs/*.md
+// 文档索引：自动扫描 docs/handbook/*.md（公开「文档中心」渲染源）
 function md_docs_index(): array {
-    $dir = __DIR__ . '/md-docs';
+    $dir = __DIR__ . '/docs/handbook';
     $index = [];
     if (!is_dir($dir)) return $index;
     foreach (glob($dir . '/*.md') as $f) {
@@ -105,7 +105,7 @@ $requestedDoc = trim($_GET['doc'] ?? 'FEATURES');
 if (isset($_GET['doc'])) $requestedDoc = basename($requestedDoc, '.md');
 if (!isset($docIndex[$requestedDoc])) $requestedDoc = 'FEATURES';
 $docName = $requestedDoc;
-$docMd = @file_get_contents(__DIR__ . '/md-docs/' . $docName . '.md') ?: '';
+$docMd = @file_get_contents(__DIR__ . '/docs/handbook/' . $docName . '.md') ?: '';
 $docTitle = $docIndex[$docName]['title'] ?? $docName;
 
 // API 端点列表

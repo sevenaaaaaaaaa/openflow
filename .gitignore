@@ -109,3 +109,7 @@ plugins/_drafts/
 # 运行时数据（摆渡/演示卡片等），不入库
 decks/
 data/backups/
+
+# ── 本地 AI 工具会话缓存（不入库）──
+.v2c/
+.video_agent/

@@ -385,7 +385,7 @@ def main() -> int:
             print("⚠ assets 有变更但缺少 R2_* 环境变量，已跳过 sync-r2.py（务必补跑）")
         else:
             print("→ 同步 R2（assets 变更）…")
-            cp = run([sys.executable, str(ROOT / "sync-r2.py")])
+            cp = run([sys.executable, str(ROOT / "deploy" / "sync-r2.py")])
             if cp.returncode == 0:
                 print("✓ R2 同步完成")
             else:

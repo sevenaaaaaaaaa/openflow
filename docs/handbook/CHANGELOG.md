@@ -5,7 +5,25 @@
 
 ---
 
-## v2.4.0（2026-09-10 · 当前版本）
+## v2.5.1（2026-09-28 · 部署体系与仓库结构整理）
+
+### 主题：五种部署形态落地 + 文件集中
+
+**部署能力（v2.5 发布说明见 `docs/releases/RELEASE_NOTES_2.5.md`）**
+- **Docker 生产可用**：仓库自带 `Dockerfile` + `docker-compose.yml`（Apache + PHP 8.3 + gd/opcache，数据卷持久化，entrypoint 自动交还属主）——README 里「Docker 在路线图上」的承诺兑现
+- **本地一条命令**：`php -S 127.0.0.1:8080 router.php`，router.php 按 .htaccess 同序镜像全部路由，美化 URL 与线上一致
+- **Vercel 演示配置**：`vercel.json`（vercel-php 运行时 + 前台核心页重写），文档明确其数据不持久的边界
+- **部署总指南** `docs/DEPLOYMENT.md`：本地/Docker/服务器原生（宝塔·Apache·Nginx）/Vercel/Cloudflare（DNS 代理、R2 资产、Tunnel 内网穿透）五形态，含服务器配置要求、路径与权限、环境变量矩阵、升级回滚与常见问题
+
+**仓库结构集中（目录从散到聚）**
+- `md-docs/`（20 篇）→ `docs/handbook/`：公开文档中心渲染源并入唯一文档树；`deployment.md` 全量重写（旧版含不存在的镜像/环境变量等错误）
+- 根目录 `RELEASE_NOTES_*`、`ACCEPTANCE_REPORT` → `docs/releases/`
+- 根目录 `sync-r2.py`、`nginx.site.conf`、`nginx.conf.example` → `deploy/`（部署资产集中：R2 同步、nginx/宝塔配置、容器 entrypoint）
+- 引用同步更新：docs.php / tests / deploy.py / README / docs 索引
+
+---
+
+## v2.4.0（2026-09-10）
 
 ### 主题：幻灯片美学体系 + 直播竖屏交易闭环
 

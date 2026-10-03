@@ -1,0 +1,59 @@
+# 构建上下文只保留运行时需要的文件（镜像更小、不泄开发资产）
+# 注意：镜像内 Web 根 = 仓库根，docs/handbook 是 docs.php 运行时读取的目录，必须保留
+
+.git
+.github
+.ssh
+.v2c
+.video_agent
+.env
+.env.*
+
+# 运行时数据由卷挂载，不进镜像
+data
+uploads
+leads.csv
+
+# 开发依赖与工具（运行时无需 vendor：lib/ 有 spl_autoload 兜底）
+vendor
+node_modules
+composer.json
+composer.lock
+package.json
+package-lock.json
+tsconfig.json
+ruff.toml
+phpstan*
+phpunit.xml
+.phpunit.result.cache
+
+# 开发-only 目录
+tests
+drafts
+scripts
+bin
+src
+artifacts
+legacy
+coverage
+
+# docs 只保留 handbook（公开文档中心渲染源），其余为仓库内部文档
+# 写法注意：父目录用 docs/* 排除内容而非排除目录本身，!docs/handbook 才能生效
+docs/*
+!docs/handbook
+
+# deploy 只保留 docker-entrypoint.sh（构建期 COPY；nginx/R2 工具属于宿主机侧）
+deploy/*
+!deploy/docker-entrypoint.sh
+
+# 根目录文档与本地杂项
+*.md
+Dockerfile
+docker-compose.yml
+.dockerignore
+vercel.json
+.DS_Store
+*.bak*
+*.log
+*.zip
+*.tar.gz

@@ -46,7 +46,7 @@
 
 ### Nginx 配置要点
 
-参考项目根目录的 `nginx.conf.example`：
+参考项目根目录的 `deploy/deploy/nginx.conf.example`：
 
 ```nginx
 server {
