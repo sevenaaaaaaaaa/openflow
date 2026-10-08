@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
         $ext = strtolower(pathinfo($f['name'], PATHINFO_EXTENSION));
         $name = date('Ymd_His') . '_' . substr(bin2hex(random_bytes(4)), 0, 6) . '.' . $ext;
         move_uploaded_file($f['tmp_name'], $dir . '/' . $name);
+        media_mirror_put($dir . '/' . $name);   // R2 双写（fail-soft，失败不影响上传）
         $dam['assets'][$type][] = [
             'id' => 'da_' . time() . '_' . substr(bin2hex(random_bytes(3)), 0, 4),
             'name' => pathinfo($f['name'], PATHINFO_FILENAME),
