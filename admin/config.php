@@ -222,6 +222,7 @@ require_once __DIR__ . '/../lib/Wecom.php';
 require_once __DIR__ . '/../lib/ArticleExport.php';
 require_once __DIR__ . '/../lib/AiCenter.php';
 require_once __DIR__ . '/../lib/CdpInsight.php';
+require_once __DIR__ . '/../lib/MediaMirror.php';  // uploads → R2 双写（fail-soft）
 require_once __DIR__ . '/../lib/RealtimeData.php';
 require_once __DIR__ . '/../lib/AIBusiness.php';
 require_once __DIR__ . '/../lib/CommerceSystem.php';

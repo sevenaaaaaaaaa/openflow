@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
         if (in_array($ext, ['jpg','jpeg','png','gif','webp','svg','ico','pdf','mp3','wav','ogg','m4a','mp4','webm','mov'])) {
             $name = date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
             move_uploaded_file($f['tmp_name'], $d . '/' . $name);
+            media_mirror_put($d . '/' . $name);   // R2 双写（fail-soft，失败不影响上传）
             $message = '上传成功';
         } else { $message = '不支持的格式'; }
     } else { $message = '上传失败'; }

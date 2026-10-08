@@ -181,5 +181,14 @@ if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
     } catch (Throwable $e) {}
 }
 
-$url = SITE_URL . '/uploads/' . $dir . '/' . $name;
+// R2 双写（fail-soft）：主文件镜像成功才把响应 URL 指向 CDN；变体推送失败的从 srcset 剔除
+$mirrorOk = media_mirror_put($dest);
+foreach ($variants as $w => $b) {
+    if (!media_mirror_put(dirname($dest) . '/' . $b)) unset($variants[$w]);
+}
+if ($mirrorOk || $variants) {
+    $srcset = $variants ? imgvar_srcset($variants, SITE_URL . ($mirrorOk ? '/assets/uploads/' : '/uploads/') . $dir) : '';
+}
+$upBase = $mirrorOk ? '/assets/uploads' : '/uploads';
+$url = SITE_URL . $upBase . '/' . $dir . '/' . $name;
 echo json_encode(['ok' => true, 'url' => $url, 'name' => $name, 'path' => 'uploads/' . $dir . '/' . $name, 'compressed' => $compressed, 'size' => @filesize($dest), 'variants' => $variants, 'srcset' => $srcset]);
