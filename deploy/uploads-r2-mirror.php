@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../lib/MediaMirror.php';
 
+// CLI 下 UPLOAD_DIR 由 admin/config.php 定义；这里给 CLI 独立兜底
+if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR', rtrim(dirname(__DIR__) . '/uploads', '/'));
+
 $root = (defined('UPLOAD_DIR') ? UPLOAD_DIR : dirname(__DIR__) . '/uploads');
 
 if (isset($argv[1]) && str_starts_with($argv[1], '--verify')) {
@@ -27,7 +30,7 @@ if (isset($argv[1]) && str_starts_with($argv[1], '--verify')) {
         $rel = ltrim(substr($f, strlen($root) + 1), '/');
         $key = media_mirror_key($rel);
         if ($key === '') { echo "✗ 键无效: $rel\n"; continue; }
-        $url = $site . '/assets/' . $key;
+        $url = $site . '/' . $key . '?v=' . md5_file($f); // $key 已含 assets/ 前缀；带 bust 绕边缓存
         $ch = curl_init($url);
         curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 60]);
         $body = (string) curl_exec($ch);
@@ -35,7 +38,9 @@ if (isset($argv[1]) && str_starts_with($argv[1], '--verify')) {
         curl_close($ch);
         $same = ($code === 200 && md5($body) === md5_file($f));
         echo ($same ? '✓' : '✗') . " HTTP $code " . ($same ? '内容一致' : '内容不一致') . "  $rel\n";
+        if (!$same) echo '    响应体前 120 字节: ' . substr($body, 0, 120) . "\n";
         if ($same) $ok++;
+        usleep(1500000); // 间隔 1.5s：服务器 IP 高频请求会触发 CF 挑战（表现为 404/挑战页）
     }
     echo $ok === count($files) ? "✓ 抽验 $ok/" . count($files) . " 全部一致\n" : "⚠ 抽验 $ok/" . count($files) . "\n";
     exit($ok === count($files) ? 0 : 1);
