@@ -114,7 +114,12 @@ R2 是对象存储（S3 语义）：
    - 已删服务器旧备份 4 份（删前逐份 HEAD 200 验证在档），本地保留最新一份
    - **data/ 1.2GB → 574MB**；此后每日自动备份会经 `backup_run_if_due()` → `offsite_sync()` 自动上 R2
    - 安全注记：备份与公开资产同桶（nownexts-static），但 CDN 映射 `/assets/<路径>` → 桶内 `assets/` 前缀 key，备份 key `openflow-backups/…` **结构上不可达**（公开 URL 实测 404）。CF token 无 WAF 写权限（10405），未能加显式封禁规则——**建议后续把备份迁到独立桶**（S3 CreateBucket 即可）以获得硬隔离
-2. ⬜ **uploads/ 上 R2**（小改动）：上传双写 → 验证 → 切读 → 清理本地（267 文件 / 9.7MB，4 处 `move_uploaded_file`）
+2. ✅ **uploads/ 上 R2**（2026-10-09 已完成，双写阶段）：
+   - `lib/MediaMirror.php`：零依赖 SigV4 PUT（对齐 r2-put.php），配置 `data/media-mirror.json`（600/www，密钥不入库）
+   - 挂接 3 个上传点：media-upload（主文件+尺寸变体）/ dam / media；data-sync 的 CSV 是临时导入，不镜像
+   - **新上传的响应 URL 直出 CDN**：主文件镜像成功才用 `/assets/uploads/<相对路径>`；失败回退 `/uploads/`（行为与历史一致）
+   - 存量回填：265 文件全部 PUT 成功；抽验两轮（10+15）**md5 全部一致**；对象键 = `assets/uploads/<相对 uploads 路径>`（与站点资源同一映射，探针实测）
+   - 未做：R2-only 切换（删本地）——需等双写观察期；老内容烙的 `/uploads/…` URL 仍源站直出
 3. ✅ **清理 data/backups 旧档**（已并入步骤 1，-640MB）
 4. ⬜ Docker 镜像跑通一次演练（不动生产），作为"脱离单机"的备案
 5. ⬜ 方案 C（Workers+D1 重写）列为远期，等有真实商业驱动
