@@ -55,7 +55,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>增长导航 | 优秀网站增长·SEO·AI 运营工具</title>
+<title>增长导航 · 优秀网站增长 SEO AI 运营工具 | 林下 Understory · OpenFlow</title>
 <meta name="description" content="收录国内外优秀的网站增长、SEO、AI 运营工具与学习资源，一站直达高质量增长资源。">
 <?php if ($region !== 'all' || $cat !== '' || $q !== ''): ?><meta name="robots" content="noindex,follow"><?php endif; ?>
 <link rel="canonical" href="<?=htmlspecialchars(rtrim(site_config_get('site_url', ''), '/') . '/navigation')?>">

@@ -209,7 +209,7 @@ if ($currentTopic) {
     <div class="cta-band">
       <span class="kicker">下一步</span>
       <h2>读完之后，挑一件产品把动作接上</h2>
-      <p class="lead">订阅更新，新内容进这个专题时收到；或者直接看七个产品怎么按场景组合。</p>
+      <p class="lead">订阅更新，新内容进这个专题时收到；或者直接看产品矩阵怎么按场景组合。</p>
       <div class="cta-row"><a href="/newsletter" class="btn primary">订阅更新</a><a class="btn ghost" href="/demo/products">看产品矩阵</a></div>
     </div>
   </section>

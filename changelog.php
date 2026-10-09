@@ -39,7 +39,7 @@ $entries = [
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <?php if (function_exists('seo_head')): seo_head(['title' => '更新日志 | 林下 Understory · OpenFlow', 'description' => '首页、产品矩阵与能力页的改版记录，以及第一代首页的快照存档。', 'canonical' => site_config_get('site_url') . '/changelog']); endif; ?>
-<title>更新日志 · 林下 Understory · OpenFlow</title>
+<title>更新日志 | 林下 Understory · OpenFlow</title>
 <meta name="description" content="首页、产品矩阵与能力页的改版记录，以及第一代首页的快照存档。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。 -->
@@ -70,7 +70,7 @@ $entries = [
       <h1>改了什么，摊开说</h1>
       <p class="lead">只记用户能感知的变化：页面改版、能力上线、老页面的去向。内部重构不占篇幅。</p>
       <div class="proof-strip">
-        <span>当前首页为第二代叙事</span><span>产品页 = 七件产品矩阵</span><span>能力页 = 四力 × 42 模块</span>
+        <span>当前首页为第二代叙事</span><span>产品页 = 三层十二件产品矩阵</span><span>能力页 = 四力 × 42 模块</span>
       </div>
     </div>
   </section>

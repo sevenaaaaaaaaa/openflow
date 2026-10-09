@@ -14,7 +14,7 @@ $CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮�
 $FAQS = [
   ['OpenFlow 需要写代码吗？','不需要。TIPS 框架下可视化配置触达/洞察/个性化/销售四力；需要时可用 Task Graph 编排 Agent，深浅兼顾。'],
   ['适合一人公司吗？','OpenFlow 就是为 OPC 一人公司设计的。装完即用，增长引擎自动爬取、洞察、转化，一个人也能驱动整套增长系统。'],
-  ['和「林下 Understory」是什么关系？','OpenFlow 是林下 Understory 增长操作系统的开源底座。林下 Understory讲方法论（利润公式/四引擎/Agent 系统），OpenFlow 是落地工具——鱼与渔相结合。'],
+  ['和「林下 Understory 」是什么关系？','林下 Understory 是品牌与产品矩阵之名，讲方法论（利润公式/四引擎/Agent 系统）；OpenFlow 是矩阵的入口层，MIT 开源的增长操作系统，是方法论的落地工具——鱼与渔相结合。'],
   ['核心能力真的永久开源吗？','是。Tools 和 Strategy 双向迭代，核心能力永久开源，坚持让用户既用得上工具，也能用最前沿的增长策略。'],
   ['数据安全如何保证？','传输与存储加密、细粒度权限、审计日志；支持私有化部署，数据不出域。'],
 ];
@@ -26,8 +26,8 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '产品矩阵总览· 林下 Understory', 'description' => '三层产品矩阵按需组合：入口层 OpenFlow；进阶层 MFlow · WebsFlow 魔块 · UserLoop · inFlow · PayFlow · LearnFlow；工作台层 Studio：鹿蕊 Litmus · 松萝 Liana · ConFlow · 林可兔 LinkTo · 零真 ZeroZen。零强制绑定，API 互通。', 'canonical' => site_config_get('site_url') . '/product']); endif; ?>
-<title>产品矩阵总览· 林下 Understory</title>
+<?php if (function_exists('seo_head')): seo_head(['title' => '产品矩阵总览 | 林下 Understory', 'description' => '三层产品矩阵按需组合：入口层 OpenFlow；进阶层 MFlow · WebsFlow 魔块 · UserLoop · inFlow · PayFlow · LearnFlow；工作台层 Studio：鹿蕊 Litmus · 松萝 Liana · ConFlow · 林可兔 LinkTo · 零真 ZeroZen。零强制绑定，API 互通。', 'canonical' => site_config_get('site_url') . '/product']); endif; ?>
+<title>产品矩阵总览 | 林下 Understory</title>
 <meta name="description" content="三层产品矩阵按需组合：入口层 OpenFlow；进阶层 MFlow · WebsFlow 魔块 · UserLoop · inFlow · PayFlow · LearnFlow；工作台层 Studio：鹿蕊 Litmus · 松萝 Liana · ConFlow · 林可兔 LinkTo · 零真 ZeroZen。零强制绑定，API 互通。">
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。 -->
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
@@ -70,7 +70,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   <!-- ══ 首屏 ══ -->
   <section id="top" class="reveal in" data-od-anchor data-od-id="product-hero">
     <div class="hero-center" style="padding-bottom:0">
-      <span class="kicker">产品 · 林下 Understory OpenFlow</span>
+      <span class="kicker">产品矩阵 · 林下 Understory</span>
       <h1>三层产品矩阵，<br>按需组合成<i class="si">一套系统</i></h1>
       <p class="lead">不必为一个用不上的大系统付费。入口层起步、进阶层升级、工作台层提效——每件产品都能单独跑、单独见效；组合起来就是一套自转的增长系统。互通走 API——拔掉任何一个，其余照常运行。</p>
       <div class="cta-row">
@@ -103,10 +103,10 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="sec-head center">
       <span class="kicker">框架</span>
       <h2>TIPS 四力：触达 · 洞察 · 个性化 · 销售</h2>
-      <p class="lead">OpenFlow 的一切都围绕这四个力组织。理解 TIPS，你就理解了整个平台——也是林下 Understory 增长操作系统的方法论底座。工作台层 Studio 的五件本地工具（鹿蕊 · 松萝 · ConFlow · 林可兔 · 零真）长在桌面、独立于四力，按需取用。</p>
+      <p class="lead">OpenFlow 的一切都围绕这四个力组织。理解 TIPS，你就理解了整个平台——也是 OpenFlow 增长操作系统的方法论底座。工作台层 Studio 的五件本地工具（鹿蕊 · 松萝 · ConFlow · 林可兔 · 零真）长在桌面、独立于四力，按需取用。</p>
     </div>
     <div class="cols n4">
-      <div><span class="ltr">T</span><h3>触达 Touch</h3><p>内容引擎、分发渠道、触达体系。正确的时间、渠道、内容，把信息递到用户面前。</p><ul class="sp-list"><li><span>内容引擎 · 分发适配器 · Newsletter</span></li><li><span>承载产品：MFlow（轻量）/ OpenFlow（全家桶）/ 林可兔 LinkTo（邮件触达）</span></li></ul></div>
+      <div><span class="ltr">T</span><h3>触达 Touch</h3><p>内容引擎、分发渠道、触达体系。正确的时间、渠道、内容，把信息递到用户面前。</p><ul class="sp-list"><li><span>内容引擎 · 分发适配器 · Newsletter</span></li><li><span>承载产品：MFlow（轻量）/ OpenFlow（入口层）/ 林可兔 LinkTo（邮件触达）</span></li></ul></div>
       <div><span class="ltr">I</span><h3>洞察 Insight</h3><p>数据、CDP、舆情、分析。从几百个指标捞出该看的那 3-5 个，把数据变成判断。</p><ul class="sp-list"><li><span>CDP 画像 · 分群 RFM · 漏斗 · 问数据</span></li><li><span>承载产品：UserLoop（全域）/ inFlow（外部情报）</span></li></ul></div>
       <div><span class="ltr">P</span><h3>个性化 Personality</h3><p>画像、分群、自动化。给对的人，在对的时刻，说对的话。</p><ul class="sp-list"><li><span>人群定向 · 推荐引擎 · 动态内容</span></li><li><span>承载产品：OpenFlow（全站）/ UserLoop（数据底座）</span></li></ul></div>
       <div><span class="ltr">S</span><h3>销售 Sales</h3><p>CRM、转化、商城、订阅。从触达到成交，让支付能力流向你。</p><ul class="sp-list"><li><span>CRM 管道 · 订阅计费 · 佣金结算</span></li><li><span>承载产品：PayFlow（收款）/ LearnFlow（课程交付）</span></li></ul></div>
@@ -121,7 +121,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <p class="lead">入口层起步，进阶层升级，工作台层提效——同一个增长问题，各层都有解法；先看你缺哪一环，再决定要不要整套。</p>
     </div>
     <div class="bento" style="margin-top:26px">
-<div data-w="4" data-r="2" class="bt-hi"><span class="bt-k">全家桶 · 四力合一</span><h3>OpenFlow · 增长操作系统</h3><p>要一整套系统、数据要在一处、团队要一个后台——四力合一，其余各件按需嵌入。</p><ul><li><b>交付</b>：内容引擎 + CDP + 自动化 + CRM + 商城</li><li><b>适合</b>：要一整套系统的团队</li><li><b>依赖</b>：深度（自家 CMS + CDP）</li><li><b>上手</b>：30 分钟上线</li></ul><a href="/product" class="bt-go">进入 OpenFlow →</a></div><div data-w="2"><span class="bt-k">轻量内容</span><h3>MFlow · 内容生产与分发</h3><p>AI 生成 + 多平台分发 + 轻触达，不换 CMS、不锁模型。</p><ul><li><b>交付</b>：生成 + 多平台分发 + 轻触达</li><li><b>适合</b>：创作者 · 电商卖家</li><li><b>依赖</b>：低</li></ul><a href="/product/mflow" class="bt-go">进入 MFlow →</a></div><div data-w="2"><span class="bt-k">落地页</span><h3>WebsFlow 魔块 · 落地页工场</h3><p>面向投放的落地页工场：出页 / 上线 / 看数据 / 放量，当天闭环。</p><ul><li><b>交付</b>：落地页 / 活动页</li><li><b>适合</b>：投手 · 活动运营</li><li><b>依赖</b>：无</li></ul><a href="/product/webs-flow" class="bt-go">进入 WebsFlow 魔块 →</a></div><div data-w="3"><span class="bt-k">全域数据</span><h3>UserLoop · 全域营销数据中枢</h3><p>埋点 + 身份合并 + 分群，对接任何 MA。</p><ul><li><b>适合</b>：多平台团队 · 代理商</li><li><b>依赖</b>：无</li></ul><a href="/product/userloop" class="bt-go">进入 UserLoop →</a></div><div data-w="3"><span class="bt-k">外部情报</span><h3>inFlow · 情报增长站</h3><p>趋势 / 舆情 / 竞品 + 每日情报。</p><ul><li><b>适合</b>：品牌方 · 内容策划</li><li><b>依赖</b>：无</li></ul><a href="/product/inflow" class="bt-go">进入 inFlow →</a></div><div data-w="3"><span class="bt-k">收款变现</span><h3>PayFlow · 商业变现引擎</h3><p>一行嵌入收款 + 订阅 + 裂变佣金。</p><ul><li><b>适合</b>：创作者 · 独立开发者</li><li><b>依赖</b>：无</li></ul><a href="/product/payflow" class="bt-go">进入 PayFlow →</a></div><div data-w="3"><span class="bt-k">课程交付</span><h3>LearnFlow · 课程与训练营</h3><p>上课 → 进度 → 测验 → 证书，交付闭环。</p><ul><li><b>适合</b>：讲师 · 教练 · 训练营主理人</li><li><b>依赖</b>：轻（收款接 PayFlow）</li></ul><a href="/product/learnflow" class="bt-go">进入 LearnFlow →</a></div><div data-w="3"><span class="bt-k">工作台 · Studio</span><h3>鹿蕊 Litmus · 知识 OS</h3><p>人随手记、AI 帮你建，知识是磁盘上的普通 Markdown。</p><ul><li><b>适合</b>：知识工作者 · 开发者</li><li><b>依赖</b>：无（纯本地）</li></ul><a href="/product/litmus" class="bt-go">进入鹿蕊 →</a></div><div data-w="3"><span class="bt-k">工作台 · Studio</span><h3>松萝 Liana · 隐私输入法</h3><p>按键不离开设备：纯本地引擎、零遥测、P2P 端到端同步。</p><ul><li><b>适合</b>：重隐私人群 · 效率用户</li><li><b>依赖</b>：无（纯本地）</li></ul><a href="/product/liana" class="bt-go">进入松萝 →</a></div><div data-w="3"><span class="bt-k">工作台 · Studio</span><h3>ConFlow · 视频⇄HTML</h3><p>看完一条视频，得到可发布的文章 + 可放映的幻灯片。</p><ul><li><b>适合</b>：内容团队 · 知识博主</li><li><b>依赖</b>：无</li></ul><a href="/product/conflow" class="bt-go">进入 ConFlow →</a></div><div data-w="3"><span class="bt-k">工作台 · Studio</span><h3>林可兔 LinkTo · 邮件工作台</h3><p>AI 分类降噪、摘要起草，Agent 记忆随你成长，数据全本地。</p><ul><li><b>适合</b>：邮件重度用户 · 商务人士</li><li><b>依赖</b>：无（数据本地）</li></ul><a href="/product/linkto" class="bt-go">进入林可兔 →</a></div><div data-w="3"><span class="bt-k">工作台 · Studio</span><h3>零真 ZeroZen · 广告净化</h3><p>41 规则包 7283 条规则本地拦截 + AI 识别 + 下载工具箱。</p><ul><li><b>适合</b>：所有浏览器用户</li><li><b>依赖</b>：无（纯本地）</li></ul><a href="/product/zerozen" class="bt-go">进入零真 →</a></div>    </div>
+<div data-w="4" data-r="2" class="bt-hi"><span class="bt-k">入口层 · 四力合一</span><h3>OpenFlow · 增长操作系统</h3><p>要一整套系统、数据要在一处、团队要一个后台——四力合一，其余各件按需嵌入。</p><ul><li><b>交付</b>：内容引擎 + CDP + 自动化 + CRM + 商城</li><li><b>适合</b>：要一整套系统的团队</li><li><b>依赖</b>：深度（自家 CMS + CDP）</li><li><b>上手</b>：30 分钟上线</li></ul><a href="/product" class="bt-go">进入 OpenFlow →</a></div><div data-w="2"><span class="bt-k">轻量内容</span><h3>MFlow · 内容生产与分发</h3><p>AI 生成 + 多平台分发 + 轻触达，不换 CMS、不锁模型。</p><ul><li><b>交付</b>：生成 + 多平台分发 + 轻触达</li><li><b>适合</b>：创作者 · 电商卖家</li><li><b>依赖</b>：低</li></ul><a href="/product/mflow" class="bt-go">进入 MFlow →</a></div><div data-w="2"><span class="bt-k">落地页</span><h3>WebsFlow 魔块 · 落地页工场</h3><p>面向投放的落地页工场：出页 / 上线 / 看数据 / 放量，当天闭环。</p><ul><li><b>交付</b>：落地页 / 活动页</li><li><b>适合</b>：投手 · 活动运营</li><li><b>依赖</b>：无</li></ul><a href="/product/webs-flow" class="bt-go">进入 WebsFlow 魔块 →</a></div><div data-w="3"><span class="bt-k">全域数据</span><h3>UserLoop · 全域营销数据中枢</h3><p>埋点 + 身份合并 + 分群，对接任何 MA。</p><ul><li><b>适合</b>：多平台团队 · 代理商</li><li><b>依赖</b>：无</li></ul><a href="/product/userloop" class="bt-go">进入 UserLoop →</a></div><div data-w="3"><span class="bt-k">外部情报</span><h3>inFlow · 情报增长站</h3><p>趋势 / 舆情 / 竞品 + 每日情报。</p><ul><li><b>适合</b>：品牌方 · 内容策划</li><li><b>依赖</b>：无</li></ul><a href="/product/inflow" class="bt-go">进入 inFlow →</a></div><div data-w="3"><span class="bt-k">收款变现</span><h3>PayFlow · 商业变现引擎</h3><p>一行嵌入收款 + 订阅 + 裂变佣金。</p><ul><li><b>适合</b>：创作者 · 独立开发者</li><li><b>依赖</b>：无</li></ul><a href="/product/payflow" class="bt-go">进入 PayFlow →</a></div><div data-w="3"><span class="bt-k">课程交付</span><h3>LearnFlow · 课程与训练营</h3><p>上课 → 进度 → 测验 → 证书，交付闭环。</p><ul><li><b>适合</b>：讲师 · 教练 · 训练营主理人</li><li><b>依赖</b>：轻（收款接 PayFlow）</li></ul><a href="/product/learnflow" class="bt-go">进入 LearnFlow →</a></div><div data-w="3"><span class="bt-k">工作台 · Studio</span><h3>鹿蕊 Litmus · 知识 OS</h3><p>人随手记、AI 帮你建，知识是磁盘上的普通 Markdown。</p><ul><li><b>适合</b>：知识工作者 · 开发者</li><li><b>依赖</b>：无（纯本地）</li></ul><a href="/product/litmus" class="bt-go">进入鹿蕊 →</a></div><div data-w="3"><span class="bt-k">工作台 · Studio</span><h3>松萝 Liana · 隐私输入法</h3><p>按键不离开设备：纯本地引擎、零遥测、P2P 端到端同步。</p><ul><li><b>适合</b>：重隐私人群 · 效率用户</li><li><b>依赖</b>：无（纯本地）</li></ul><a href="/product/liana" class="bt-go">进入松萝 →</a></div><div data-w="3"><span class="bt-k">工作台 · Studio</span><h3>ConFlow · 视频⇄HTML</h3><p>看完一条视频，得到可发布的文章 + 可放映的幻灯片。</p><ul><li><b>适合</b>：内容团队 · 知识博主</li><li><b>依赖</b>：无</li></ul><a href="/product/conflow" class="bt-go">进入 ConFlow →</a></div><div data-w="3"><span class="bt-k">工作台 · Studio</span><h3>林可兔 LinkTo · 邮件工作台</h3><p>AI 分类降噪、摘要起草，Agent 记忆随你成长，数据全本地。</p><ul><li><b>适合</b>：邮件重度用户 · 商务人士</li><li><b>依赖</b>：无（数据本地）</li></ul><a href="/product/linkto" class="bt-go">进入林可兔 →</a></div><div data-w="3"><span class="bt-k">工作台 · Studio</span><h3>零真 ZeroZen · 广告净化</h3><p>41 规则包 7283 条规则本地拦截 + AI 识别 + 下载工具箱。</p><ul><li><b>适合</b>：所有浏览器用户</li><li><b>依赖</b>：无（纯本地）</li></ul><a href="/product/zerozen" class="bt-go">进入零真 →</a></div>    </div>
   </section>
 
   <!-- ══ 常见组合：按场景拼装（bento 错落） ══ -->
@@ -137,7 +137,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       <div data-w="2"><span class="bt-k">内容营销</span><h3>选题到收录一条线</h3><ul><li>情报：<b>inFlow</b></li><li>生产分发：<b>MFlow</b></li><li>效果回流：<b>UserLoop</b></li></ul><p>一个人当编辑部。</p></div>
       <div data-w="2"><span class="bt-k">知识变现</span><h3>开营到复购</h3><ul><li>交付：<b>LearnFlow</b></li><li>收款：<b>PayFlow</b></li><li>触达：<b>MFlow</b></li></ul><p>学员进度与转化都在一处。</p></div>
       <div data-w="2"><span class="bt-k">工作台 · Studio</span><h3>桌面效率三件</h3><ul><li>知识：<b>鹿蕊 Litmus</b></li><li>输入：<b>松萝 Liana</b></li><li>邮件：<b>林可兔 LinkTo</b></li></ul><p>纯本地工具，装机即用。</p></div>
-      <div data-w="4" class="bt-hi"><span class="bt-k">全家桶</span><h3>一整套自转系统：OpenFlow</h3><ul><li>要一整套系统、数据要在一处、团队要统一后台 → <b>OpenFlow 四力合一</b></li><li>其余各件按需嵌入；所有产品的数据都能平滑并入，不重复建设</li></ul><a href="/capability" class="bt-go">看能力全景 →</a></div>
+      <div data-w="4" class="bt-hi"><span class="bt-k">入口层</span><h3>一整套自转系统：OpenFlow</h3><ul><li>要一整套系统、数据要在一处、团队要统一后台 → <b>OpenFlow 四力合一</b></li><li>其余各件按需嵌入；所有产品的数据都能平滑并入，不重复建设</li></ul><a href="/capability" class="bt-go">看能力全景 →</a></div>
     </div>
   </section>
 
@@ -251,12 +251,12 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   <section id="open" class="sec reveal" data-od-anchor data-od-id="product-open">
     <div class="sec-head center">
       <span class="kicker">开放生态</span>
-      <h2>开放，是默认值（也是林下 Understory的坚持）</h2>
+      <h2>开放，是默认值（也是林下 Understory 的坚持）</h2>
     </div>
     <div class="cols n4">
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v12a4 4 0 0 0 8 0V4M8 8h8"/></svg></span><h3>开放 API</h3><p>完整 REST API，把 OpenFlow 嵌入你的增长系统。</p></div>
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16"/></svg></span><h3>Webhook</h3><p>双向触发与回调，与任意系统实时对接。</p></div>
-      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 9h16M9 4v5"/></svg></span><h3>Skill / 模板</h3><p>社区与林下 Understory模板，一键复用增长打法。</p></div>
+      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 9h16M9 4v5"/></svg></span><h3>Skill / 模板</h3><p>社区与林下 Understory 模板，一键复用增长打法。</p></div>
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4m0 12v4M2 12h4m12 0h4M5 5l3 3m8 8 3 3M19 5l-3 3M8 16l-3 3"/><circle cx="12" cy="12" r="3"/></svg></span><h3>永久开源</h3><p>核心能力开源，鱼与渔相结合，策略随工具迭代。</p></div>
     </div>
   </section>

@@ -11,7 +11,7 @@
 | 代号 | 全称 | 含义 |
 |------|------|------|
 | **PSPI** | 林下 Understory | 主品牌（帮一人公司设计 Agent 能跑的增长系统）|
-| **OpenFlow / NowX** | OpenFlow XMP | 旗下平台（林下 Understory 增长操作系统的技术底座）|
+| **OpenFlow / NowX** | OpenFlow XMP | 旗下平台（OpenFlow 增长操作系统的技术底座）|
 | **OPC** | One Person Company | 一人公司（目标受众，非"个体户"）|
 | **RBE** | R.B.E Agent 系统设计营 | 核心产品（8 周训练营，¥9,999）|
 | **O.L.B** | 创业主板诊断评分卡 | 7 维度增长诊断工具 |

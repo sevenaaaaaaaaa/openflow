@@ -9,7 +9,7 @@
 ## 通用协议(所有项目一致,先读这段)
 
 ```
-接入「林下 Understory矩阵账号互通」v1 协议,OpenFlow 是账号真源:
+接入「林下 Understory 矩阵账号互通」v1 协议,OpenFlow 是账号真源:
 
 1. 用户从 OpenFlow 点击进入本产品时,会跳转到:
    {本产品地址}/auth/matrix?ticket={一次性短票}&next={目标路径}

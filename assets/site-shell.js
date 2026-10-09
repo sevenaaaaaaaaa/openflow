@@ -202,7 +202,7 @@
         icon: "box",
         mega: {
           title: "产品",
-          blurb: "林下 Understory 增长操作系统 · 帮一人公司设计 Agent 能跑的增长系统",
+          blurb: "OpenFlow 增长操作系统 · 帮一人公司设计 Agent 能跑的增长系统",
           cols: [
             { head: "它是怎么工作的", items: [
               { t: "可视化编排画布", d: "拖拽触发器、条件、动作，连线即流程", href: "/product#feat-canvas" },

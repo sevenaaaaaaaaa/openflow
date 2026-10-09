@@ -16,7 +16,7 @@ function site_config(): array {
         'company_year' => '2026',
         'company_address' => '上海市',
         'site_slogan' => '帮一人公司设计 Agent 能跑的增长系统',
-        'site_desc' => '林下 Understory 增长操作系统的开源底座：TIPS 框架（触达/洞察/个性化/销售）四力合一，增长引擎主动驱动增长，行动脊柱让建议落地',
+        'site_desc' => 'OpenFlow 增长操作系统（林下 Understory 产品矩阵入口层）：TIPS 框架（触达/洞察/个性化/销售）四力合一，增长引擎主动驱动增长，行动脊柱让建议落地',
         'site_keywords' => '增长系统, 一人公司, Agent, 利润公式, R.B.E 训练营, TIPS 框架, 林下 Understory, OpenFlow',
         'site_logo' => '',                      // logo URL（空则用默认 SVG）
         'footer_about' => '帮一人公司设计 Agent 能跑的增长系统',

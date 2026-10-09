@@ -22,7 +22,7 @@ $siteName = site_config_get('site_name');
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>商业发行版 | 林下 Understory · OpenFlow</title>
-<meta name="description" content="OpenFlow 商业发行版：SaaS 订阅、私有化部署、定制开发。一个 all-in-one 平台，缺什么用插件和技能自己改造。">
+<meta name="description" content="OpenFlow 商业发行版：SaaS 订阅、私有化部署、定制开发。入口层 all-in-one，缺什么用插件和技能自己改造。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 企业页独有：可选方案卡。其余全部来自 modules.css。 */
