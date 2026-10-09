@@ -177,7 +177,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
   <section id="nav" class="sec reveal" data-od-anchor data-od-id="academy-nav">
     <div class="strip">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span>
-      <div class="tx"><b>想看系统的？先走林下 Understory学习路径</b><span>New-1~4 基石课免费开放 → R.B.E 训练营带你 8 周设计出增长系统</span></div>
+      <div class="tx"><b>想看系统的？先走林下 Understory 学习路径</b><span>New-1~4 基石课免费开放 → R.B.E 训练营带你 8 周设计出增长系统</span></div>
       <a class="btn primary" href="/courses">前往课程 →</a>
     </div>
     <div class="tab-bar" role="navigation" aria-label="内容分类">

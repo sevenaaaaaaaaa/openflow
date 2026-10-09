@@ -35,8 +35,8 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '课程 | OpenFlow', 'description' => '林下 Understory R.B.E 训练营：New-1~4 基石课 + 八周系统设计营，用 OpenFlow 设计 Agent 能跑的增长系统，让方法论边学边用。', 'canonical' => site_config_get('site_url') . '/courses']); endif; ?>
-<title>课程 · New-1~4 + R.B.E 训练营 | 林下 Understory</title>
+<?php if (function_exists('seo_head')): seo_head(['title' => '课程 | 林下 Understory · OpenFlow', 'description' => '林下 Understory R.B.E 训练营：New-1~4 基石课 + 八周系统设计营，用 OpenFlow 设计 Agent 能跑的增长系统，让方法论边学边用。', 'canonical' => site_config_get('site_url') . '/courses']); endif; ?>
+<title>课程 · New-1~4 + R.B.E 训练营 | 林下 Understory · OpenFlow</title>
 <meta name="description" content="林下 Understory R.B.E 训练营：New-1~4 基石课 + 八周系统设计营，用 OpenFlow 设计 Agent 能跑的增长系统，让方法论边学边用。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>

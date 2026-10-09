@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Open Flow · 产品后台</title>
-<meta name="description" content="Open Flow 产品后台 — 编排、监控、连接器与团队管理。演示原型，数据保存在本地。">
+<title>OpenFlow · 产品后台</title>
+<meta name="description" content="OpenFlow 产品后台 — 编排、监控、连接器与团队管理。演示原型，数据保存在本地。">
 <script>try{var s=JSON.parse(localStorage.getItem('openflow-console-v1')||'{}');var t=s.theme||'light';if(t==='system'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t;if(s.rm||matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <style>
 :root{
@@ -557,7 +557,7 @@ select.inp{appearance:none; background-image:linear-gradient(45deg,transparent 5
     <div class="lights" aria-hidden="true"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span></div>
     <button class="ws" id="btn-ws" data-od-id="workspace-switcher" aria-haspopup="true" aria-expanded="false">
       <span class="ws-ic" id="ws-ic"></span>
-      <span class="ws-name" id="ws-name">林下 Understory工作室</span>
+      <span class="ws-name" id="ws-name">林下 Understory 工作室</span>
       <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
     </button>
     <div class="search" id="btn-search" data-od-id="global-search" role="button" tabindex="0" aria-label="打开命令面板">
@@ -572,7 +572,7 @@ select.inp{appearance:none; background-image:linear-gradient(45deg,transparent 5
       <button class="cbtn" id="btn-drawer" data-od-id="nav-drawer" aria-label="打开导航"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </div>
     <div class="drop" id="drop-ws" role="menu" aria-label="工作区">
-      <div class="drop-head"><span class="drop-av" id="drop-ws-av"></span><div style="min-width:0"><div class="drop-name" id="drop-ws-n">林下 Understory工作室</div><div class="drop-mail">openflow.dev · 免费版</div></div></div>
+      <div class="drop-head"><span class="drop-av" id="drop-ws-av"></span><div style="min-width:0"><div class="drop-name" id="drop-ws-n">林下 Understory 工作室</div><div class="drop-mail">openflow.dev · 免费版</div></div></div>
       <div id="drop-ws-list"></div>
       <button class="drop-item" data-ws-add><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>创建工作区</button>
     </div>
@@ -729,7 +729,7 @@ select.inp{appearance:none; background-image:linear-gradient(45deg,transparent 5
     <div>
       <div class="kick">集成</div>
       <h1>连接器<em class="sf">中心</em></h1>
-      <p class="pg-sub">把业务系统接进 Open Flow。已连接 5 个，全部为演示数据，连接操作不会发起真实请求。</p>
+      <p class="pg-sub">把业务系统接进 OpenFlow。已连接 5 个，全部为演示数据，连接操作不会发起真实请求。</p>
     </div>
   </div>
   <div class="conn-head">
@@ -770,7 +770,7 @@ select.inp{appearance:none; background-image:linear-gradient(45deg,transparent 5
       <div class="set-card card" data-st-panel="workspace" style="display:none" data-od-id="settings-workspace">
         <h3>工作区信息</h3>
         <p class="sc-sub">这些信息会显示在工作流的运行记录与邀请邮件中。</p>
-        <div class="fld"><label for="ws-name-in">工作区名称</label><input class="inp" id="ws-name-in" value="林下 Understory工作室"></div>
+        <div class="fld"><label for="ws-name-in">工作区名称</label><input class="inp" id="ws-name-in" value="林下 Understory 工作室"></div>
         <div style="height:12px"></div>
         <div class="fld"><label for="ws-slug">Slug（URL 标识）</label><input class="inp tnum" id="ws-slug" value="bala-studio" style="font-family:var(--font-mono)"></div>
         <div style="height:12px"></div>
@@ -801,7 +801,7 @@ select.inp{appearance:none; background-image:linear-gradient(45deg,transparent 5
       </div>
       <div class="set-card card" data-st-panel="keys" style="display:none" data-od-id="settings-keys">
         <h3>API 密钥</h3>
-        <p class="sc-sub">用于 Open Flow API 与 CLI。密钥仅在创建时显示一次，请妥善保存。</p>
+        <p class="sc-sub">用于 OpenFlow API 与 CLI。密钥仅在创建时显示一次，请妥善保存。</p>
         <div id="keys-list"></div>
         <div style="margin-top:14px"><button class="btn primary sm" data-od-id="create-key" data-create-key>＋ 创建密钥</button></div>
       </div>
@@ -819,7 +819,7 @@ select.inp{appearance:none; background-image:linear-gradient(45deg,transparent 5
   </div>
 </section>
 
-<div class="demo-note">Open Flow 产品后台 · <b>演示原型</b> · 数据保存在浏览器本地 · 不产生真实请求</div>
+<div class="demo-note">OpenFlow 产品后台 · <b>演示原型</b> · 数据保存在浏览器本地 · 不产生真实请求</div>
 </main>
 
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="对话框">
@@ -849,7 +849,7 @@ select.inp{appearance:none; background-image:linear-gradient(45deg,transparent 5
 var LS='openflow-console-v1';
 function load(){try{return JSON.parse(localStorage.getItem(LS)||'{}')}catch(e){return{}}}
 function save(){try{localStorage.setItem(LS,JSON.stringify(st.persist))}catch(e){}}
-var st={persist:load(),theme:null,sb:null,page:'overview',ws:'林下 Understory工作室',settingsTab:'members'};
+var st={persist:load(),theme:null,sb:null,page:'overview',ws:'林下 Understory 工作室',settingsTab:'members'};
 if(st.persist.theme)st.theme=st.persist.theme; else st.theme='light';
 if(st.persist.sb)st.sb=st.persist.sb; else st.sb='full';
 if(st.persist.page)st.page=st.persist.page;
@@ -947,7 +947,7 @@ function closeDropdowns(){document.querySelectorAll('.drop.open').forEach(functi
 function toggleDrop(id,btn){var d=document.getElementById(id);var open=d.classList.contains('open');closeDropdowns();if(!open){d.classList.add('open');btn.setAttribute('aria-expanded','true');}}
 document.getElementById('btn-ws').addEventListener('click',function(){toggleDrop('drop-ws',this);});
 document.getElementById('btn-user').addEventListener('click',function(){toggleDrop('drop-user',this);});
-var WS_LIST=[{n:'林下 Understory工作室',p:'当前'},{n:'Open Flow 团队',p:'2 个连接器'},{n:'个人沙盒',p:'实验'}];
+var WS_LIST=[{n:'林下 Understory 工作室',p:'当前'},{n:'OpenFlow 团队',p:'2 个连接器'},{n:'个人沙盒',p:'实验'}];
 function renderWsList(){var el=document.getElementById('drop-ws-list');el.innerHTML=WS_LIST.map(function(w,i){return '<button class="drop-item'+(w.n===st.ws?' sel':'')+'" data-ws-i="'+i+'"><span class="ws-ic" style="width:24px;height:24px;border-radius:8px;background:var(--grad);color:var(--on-accent);display:grid;place-items:center;flex:0 0 auto">'+IC.flow+'</span><span style="min-width:0"><div style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+w.n+'</div><div style="font-size:11px;color:var(--faint);font-weight:500">'+w.p+'</div></span><span class="chk">'+IC.check+'</span></button>';}).join('');}
 document.getElementById('drop-ws-list').addEventListener('click',function(e){var b=e.target.closest('[data-ws-i]');if(!b)return;var i=+b.dataset.ws-i;st.ws=WS_LIST[i].n;document.getElementById('ws-name').textContent=st.ws;closeDropdowns();toast('ok','已切换到「'+st.ws+'」');renderWsList();});
 document.querySelector('[data-ws-add]').addEventListener('click',function(){closeDropdowns();toast('info','演示：工作区创建流程待接入');});

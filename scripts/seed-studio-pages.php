@@ -440,4 +440,66 @@ foreach (builder_pages_all() as $p) {
     echo "♻  A1 刷新 · $slug\n";
 }
 
-echo "完成：林下 Studio 全量 5 页（linkto / litmus / liana / conflow / zerozen）+ A1 全站口径刷新\n";
+/* ═══════════════════ 任务 A3（2026-10-09）：小标题统一 + 旧 Flow 六页主按钮改 GitHub + 去「全家桶」 ═══════════════════
+ * 拍板：OpenFlow = 产品/品牌本体；旧 Flow 产品主按钮 = 「在 GitHub 上开始」（docs/BRAND-VOICE.md CTA 词表）
+ * 原主按钮降为次按钮（button_text2/url2）。幂等：主按钮已是 GitHub 则跳过。 */
+$A3_KICKERS = [
+    'mflow'     => 'MFlow · 林下 Understory · 进阶层',
+    'webs-flow' => 'WebsFlow 魔块 · 林下 Understory · 进阶层',
+    'userloop'  => 'UserLoop · 林下 Understory · 进阶层',
+    'inflow'    => 'inFlow · 林下 Understory · 进阶层',
+    'payflow'   => 'PayFlow · 林下 Understory · 进阶层',
+    'learnflow' => 'LearnFlow · 林下 Understory · 进阶层',
+    'linkto'    => '林可兔 LinkTo · 林下 Understory · 工作台层',
+    'litmus'    => '鹿蕊 Litmus · 林下 Understory · 工作台层',
+    'liana'     => '松萝 Liana · 林下 Understory · 工作台层',
+    'conflow'   => 'ConFlow · 林下 Understory · 工作台层',
+    'zerozen'   => '零真 ZeroZen · 林下 Understory · 工作台层',
+];
+$A3_REPOS = [
+    'mflow' => 'mflow', 'webs-flow' => 'websflow', 'userloop' => 'userloop',
+    'inflow' => 'inflow', 'payflow' => 'payflow', 'learnflow' => 'learnflow',
+];
+$A3_WORDS = [
+    '不想上全家桶' => '不想上整套系统',
+    '想升级全家桶时' => '想升级到整套 OpenFlow 时',
+    'OpenFlow 全家桶用户' => '整套 OpenFlow 用户',
+    '全家桶用户' => '整套 OpenFlow 用户',
+    '全家桶组合' => '整套组合',
+    '（全家桶）' => '（入口层）',
+    '全家桶 OpenFlow' => '整套 OpenFlow',
+    '买全家桶' => '买整套',
+];
+foreach (builder_pages_all() as $p) {
+    $slug = $p['slug'] ?? '';
+    $blocks = $p['blocks'] ?? [];
+    $dirty = false;
+    foreach ($blocks as $i => $b) {
+        if (!is_array($b)) continue;
+        $t = $b['_type'] ?? '';
+        if ($t === 'hero' && isset($A3_KICKERS[$slug]) && ($b['subtitle'] ?? '') !== $A3_KICKERS[$slug]) {
+            $b['subtitle'] = $A3_KICKERS[$slug]; $dirty = true;
+        }
+        if (($t === 'hero' || $t === 'cta') && isset($A3_REPOS[$slug]) && ($b['button_text'] ?? '') !== '在 GitHub 上开始') {
+            $b['button_text2'] = $b['button_text'] ?? '';
+            $b['button_url2']  = $b['button_url'] ?? '';
+            $b['button_text']  = '在 GitHub 上开始';
+            $b['button_url']   = 'https://github.com/sevenaaaaaaaaa/' . $A3_REPOS[$slug];
+            $dirty = true;
+        }
+        if ($slug === 'learnflow' && $t === 'cta' && ($b['button_url2'] ?? '') === '/learnflow') { // 次按钮不指向本页自身
+            $b['button_text2'] = '看交付流程'; $b['button_url2'] = '#flow'; $dirty = true;
+        }
+        foreach ($b as $f => $v) {
+            if (!is_string($v)) continue;
+            $nv = strtr($v, $A3_WORDS);
+            if ($nv !== $v) { $b[$f] = $nv; $dirty = true; }
+        }
+        $blocks[$i] = $b;
+    }
+    if (!$dirty) continue;
+    save_builder_page($p['id'], ['blocks' => $blocks]);
+    echo "♻  A3 刷新 · $slug\n";
+}
+
+echo "完成：林下 Studio 全量 5 页（linkto / litmus / liana / conflow / zerozen）+ A1 全站口径刷新 + A3 小标题/CTA 统一\n";
