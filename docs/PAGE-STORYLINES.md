@@ -80,7 +80,7 @@
 
 见 `product-矩阵聚合`。
 
-### 3.5 落地页（Webs Flow 场景，`/landing*`）
+### 3.5 落地页（WebsFlow 场景，`/landing*`）
 
 | ID | 序列 | 用途 |
 |----|------|------|

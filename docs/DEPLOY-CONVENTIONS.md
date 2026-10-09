@@ -1,6 +1,6 @@
 # 部署与多会话协作约定
 
-> 背景：产品矩阵多个项目（OpenFlow / UserLoop / LearnFlow / PayFlow / MFlow / Webs Flow / inFlow）
+> 背景：产品矩阵多个项目（OpenFlow / UserLoop / LearnFlow / PayFlow / MFlow / WebsFlow / inFlow）
 > 在各自仓库、各自会话中开发，但**部署层汇聚在主域 nownexts.com 与 OpenFlow 目录**。
 > 已发生过一次交叉：一个会话改了 OpenFlow 的 `plugins/` 与 `.htaccess`，另一个会话部署时把
 > 这些未提交改动一起带上了线——没有丢数据，但两边都不知情。本文档把规矩写下来，避免重复。

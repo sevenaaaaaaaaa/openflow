@@ -353,8 +353,8 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   <section id="matrix" class="sec reveal" data-od-anchor data-od-id="product-matrix">
     <div class="sec-head center">
       <span class="kicker">产品矩阵</span>
-      <h2>七个独立产品，API 互相增益</h2>
-      <p class="note">OpenFlow 是全家桶；MFlow / Webs Flow / UserLoop / inFlow 是独立产品，按人群各收割一域</p>
+      <h2>林下 Understory · 三层产品矩阵</h2>
+      <p class="note">入口层 OpenFlow；进阶层 MFlow / WebsFlow 魔块 / UserLoop / inFlow / PayFlow / LearnFlow；工作台层 Studio：鹿蕊 Litmus / 松萝 Liana / ConFlow / 林可兔 LinkTo / 零真 ZeroZen</p>
     </div>
     <div class="cols n4" style="text-align:left;grid-template-columns:repeat(4,1fr)">
       <a href="/product" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--accent);border-radius:var(--r-md);background:var(--accent-soft)">
@@ -364,7 +364,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
         <b style="font-size:15px">MFlow</b><span class="note" style="margin:0">营销流程引擎 · 触达 / 工作流 / 实验</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
       </a>
       <a href="/product/webs-flow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
-        <b style="font-size:15px">Webs Flow</b><span class="note" style="margin:0">建站与页面流 · 35 区块 / 组件工厂 / 无头 CMS</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
+        <b style="font-size:15px">WebsFlow 魔块</b><span class="note" style="margin:0">落地页工场 · 44 种区块 / 组件工厂 / 面向投放</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
       </a>
       <a href="/product/userloop" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
         <b style="font-size:15px">UserLoop</b><span class="note" style="margin:0">用户行为循环 · 埋点 / 画像 / 分群 / 旅程</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
@@ -377,6 +377,21 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
       </a>
       <a href="/product/learnflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
         <b style="font-size:15px">LearnFlow</b><span class="note" style="margin:0">课程与训练营交付 · 进度 / 测验 / 证书</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
+      </a>
+      <a href="/product/litmus" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+        <b style="font-size:15px">鹿蕊 Litmus</b><span class="note" style="margin:0">知识 OS · 文件即真相 / MCP 双向 / AGPL 开源</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
+      </a>
+      <a href="/product/liana" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+        <b style="font-size:15px">松萝 Liana</b><span class="note" style="margin:0">隐私输入法 · 纯本地 / 零遥测 / P2P 同步</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
+      </a>
+      <a href="/product/conflow" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+        <b style="font-size:15px">ConFlow</b><span class="note" style="margin:0">视频⇄HTML · 文章 + 幻灯片 / 防幻觉规则</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
+      </a>
+      <a href="/product/linkto" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+        <b style="font-size:15px">林可兔 LinkTo</b><span class="note" style="margin:0">AI 邮件工作台 · 分类降噪 / 记忆成长 / 全本地</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
+      </a>
+      <a href="/product/zerozen" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)">
+        <b style="font-size:15px">零真 ZeroZen</b><span class="note" style="margin:0">广告净化 · 41 规则包 / AI 识别 / 纯本地</span><span style="color:var(--accent);font-size:13px;font-weight:700">了解 →</span>
       </a>
     </div>
   </section>

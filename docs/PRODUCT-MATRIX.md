@@ -1,8 +1,11 @@
-# 芭乐派产品矩阵 · 差异化定位 brief（v2 · 2026-09-27 三层定位校准）
+# 芭乐派产品矩阵 · 差异化定位 brief（v3 · 2026-10-09 命名体系贯穿）
 
 > 本文档是发给各产品项目的定位共识。每个产品是**独立产品**，靠差异化收割各自的人群；
 > 产品之间是 **API 互通的协作关系**，不是母子依赖关系。任何一页宣传语都不得把其他产品
 > 写成「本产品的某个模块」。
+>
+> **品牌体系：林下 Understory**（2026-10-09 拍板）——各产品命名取自林下生态
+> （鹿蕊 / 松萝 / 林可兔 / 零真），官方名与一句话定位见 `BRAND-ROLLOUT-PLAN.md` §一命名基线表。
 
 ---
 
@@ -11,7 +14,7 @@
 ```
 第 1 层 · 入口层   OpenFlow —— TIPS 理念的 all-in-one 平台
 第 2 层 · 进阶层   Flow 家族（MFlow / inFlow / UserLoop / PayFlow / LearnFlow / WebsFlow）
-第 3 层 · 工作台层 Studio 套件（ThirdC / ConFlow / InputFlow）—— 本地工具,未来打通所有 Flow 产品
+第 3 层 · 工作台层 Studio 套件（鹿蕊 Litmus / 松萝 Liana / ConFlow / 林可兔 LinkTo / 零真 ZeroZen）—— 本地工具,未来打通所有 Flow 产品
 ```
 
 **第 1 层 · OpenFlow**:TIPS 理念的 all-in-one 平台。**它不是要取代所有工具**,而是减轻
@@ -23,8 +26,9 @@
 单独收割人群——它们是「从用到好」的升级路径,不是 OpenFlow 的模块。
 
 **第 3 层 · Studio 套件**:偏**本地工具**,天然吸引开发与效率人群(引流面):
-ThirdC(知识工作台,文件即真相)、ConFlow(视频⇄HTML 内容引擎,原 V2HTML)、**InputFlow(注意:它不是 Flow,
-归 Studio 层——解决 AI 时代的输入与隐私输入,属周边产品)**。
+鹿蕊 Litmus(知识 OS,文件即真相,代号 thirdc)、ConFlow(视频⇄HTML 内容引擎,原 V2HTML)、
+**松萝 Liana(注意:它不是 Flow,归 Studio 层——隐私优先跨平台输入法,代号 InputFlow)**、
+林可兔 LinkTo(AI 原生邮件工作台,数据全本地)、零真 ZeroZen(跨浏览器广告净化扩展,独立引流品)。
 长期方向:Studio 演进为**打通所有 Flow 产品的本地工作台**——那是用户与矩阵的第二个入口。
 
 **升级叙事**(替代任何「全家桶/部门」说法):
@@ -39,14 +43,14 @@ ThirdC(知识工作台,文件即真相)、ConFlow(视频⇄HTML 内容引擎,原
 |---|---|---|---|---|
 | **OpenFlow** | 全站增长操作系统（内容·数据·触达·销售四力合一） | 深度依赖（自家 CMS + CDP） | 一人公司/企业要一整套增长系统 | 要 all-in-one、愿意整套采用的用户 |
 | **MFlow** | 轻量版 OpenFlow：内容生产 → 分发 → 触达 | **低**（不要求 CDP，CMS 兼容现成的） | 内容生产、多平台分发、轻触达 | 内容营销者、创作者、电商卖家——已有网站/CMS/公众号，缺「生成与分发」 |
-| **Webs Flow** | 落地页专精工具 | **无**（不需要 CMS） | 投放承接页、活动页、广告落地页 | Meta/TikTok/Google 投手、独立站卖家、活动运营 |
+| **WebsFlow** | 落地页专精工具 | **无**（不需要 CMS） | 投放承接页、活动页、广告落地页 | Meta/TikTok/Google 投手、独立站卖家、活动运营 |
 | **UserLoop** | 独立的全域营销数据中枢 | **无**（不依赖 OpenFlow CDP，向外打通更多数据源与 MA） | 全域用户数据打通、跨平台 MA 对接 | 多平台/多品牌运营团队、代理商 |
 | **inFlow** | 情报增长站（外部数据驱动） | **无**（依赖的是外部平台数据：媒体/社媒/搜索/舆情） | 趋势、竞品、舆情、选题情报 | 品牌方、市场研究、内容策划、投研型增长 |
 
 **记忆锚点**（v2 口径）：
 - OpenFlow = 入口:门槛最低的 all-in-one,把未来的能力兑换到现在
 - Flow 家族 = 进阶:用上之后,按需求单点变深
-- Studio 套件 = 工作台:本地工具引流,未来打通全部 Flow 产品(InputFlow 属此层,不属 Flow)
+- Studio 套件 = 工作台:本地工具引流,未来打通全部 Flow 产品(松萝 Liana 等 5 件属此层,不属 Flow)
 
 ### 1.1 全家福（2026-09 全量盘点 · GitHub 已有仓库）
 
@@ -63,16 +67,19 @@ ThirdC(知识工作台,文件即真相)、ConFlow(视频⇄HTML 内容引擎,原
   ├─ LearnFlow ─────── 课程交付层(PHP) — 讲师/训练营工作台 + Agent
   └─ WebsFlow ──────── 落地页工场(JS) — 投放承接页/千人千面/H5,已有线上版
 第 3 层 · Studio 套件（本地工具 · 引流 · 未来打通所有 Flow 产品的工作台）
-  ├─ ThirdC Studio ─── AI Native 知识工作台(Rust 单二进制) — 文件即真相/画布/agent
+  ├─ 鹿蕊 Litmus ────── AI Native 知识 OS(Rust 单二进制,代号 thirdc) — 文件即真相/画布/agent
+  ├─ 松萝 Liana ─────── 隐私优先输入法(JS,代号 InputFlow) — 属 Studio,不属 Flow
   ├─ ConFlow ────────── 视频⇄HTML 双向内容引擎(Python) — YouTube→文章/PPT,文章→视频
-  └─ InputFlow ─────── 隐私优先输入法(JS) — AI/隐私输入,周边产品(属 Studio,不属 Flow)
+  ├─ 林可兔 LinkTo ──── AI 原生邮件工作台 — 分类降噪/摘要起草/Agent 记忆,数据全本地
+  └─ 零真 ZeroZen ──── 跨浏览器广告净化扩展(JS) — 规则引擎+AI 识别+下载工具箱,独立引流品
 ```
 
-**注意**:ZeroZen(广告净化扩展)当前不在三层内——它是独立引流品,待定位裁决后再归层。
+**拍板(2026-10-09)**:ZeroZen(零真,广告净化扩展)归工作台层 Studio——独立引流品,纯本地运行;
+LinkTo(林可兔)与 ZeroZen 同归 Studio 层,与鹿蕊 / 松萝 / ConFlow 并列。
 
 **升级路径**(替代旧「职能映射」口径,部门隐喻作废):
 用 OpenFlow 起步(门槛最低)→ 长出深度需求时进入对应 Flow 单件(单点更强)→
-用 ThirdC/ConFlow/InputFlow 这组 Studio 本地工具工作(它们未来是打通全部 Flow 的工作台)。
+用鹿蕊/松萝/ConFlow 这组 Studio 本地工具工作(它们未来是打通全部 Flow 的工作台)。
 
 **边角说明**：`obdisian-flowershow`、`best-knowledge`、`NotionNext`(fork) 为早期实验/他人维护，
 **不计入本矩阵**，矩阵话术与对外材料一律不提。
@@ -127,9 +134,9 @@ inFlow 替你盯外部世界：媒体、社媒、搜索趋势、舆情、竞品�
 
 **收割人群**：内容创作者、独立电商卖家、公众号矩阵运营——他们要的不是操作系统，是「帮我写完并分发出去」。
 
-### 2.3 Webs Flow — 落地页专精
+### 2.3 WebsFlow 魔块 — 落地页工场
 
-**独立价值主张**：专精落地页制作（与 OpenFlow 面向全站的建站有本质区别）。
+**独立价值主张**：面向投放的落地页工场——出页 / 上线 / 看数据 / 放量当天闭环（与 OpenFlow 面向全站的建站有本质区别）。
 
 **必须做出来的成绩**：
 - 投放承接页速度战：从素材到上线以小时计
@@ -166,8 +173,8 @@ inFlow 替你盯外部世界：媒体、社媒、搜索趋势、舆情、竞品�
 inFlow（外部情报）──情报回填选题──▶ OpenFlow / MFlow
 OpenFlow / MFlow（内容表现）──效果校准──▶ inFlow
 UserLoop（全域数据）──人群/事件──▶ 任何 MA（含 MFlow、OpenFlow、第三方）
-Webs Flow（落地页表单/转化）──事件──▶ UserLoop / 任何 MA
-OpenFlow（底座）──想引入情报/落地页/全域数据──▶ inFlow / Webs Flow / UserLoop
+WebsFlow（落地页表单/转化）──事件──▶ UserLoop / 任何 MA
+OpenFlow（底座）──想引入情报/落地页/全域数据──▶ inFlow / WebsFlow / UserLoop
 ```
 
 **互通原则**：
@@ -181,7 +188,7 @@ OpenFlow（底座）──想引入情报/落地页/全域数据──▶ inFlow
 
 - ❌ 「MFlow 是 OpenFlow 的营销模块」→ ✅ 「MFlow 是轻量的内容生产与分发引擎」
 - ❌ 「UserLoop 需要 OpenFlow CDP」→ ✅ 「UserLoop 独立运行，能对接你现有的任何 MA」
-- ❌ 「Webs Flow 是 OpenFlow 的建站功能」→ ✅ 「Webs Flow 专精落地页，从素材到上线以小时计」
+- ❌ 「WebsFlow 是 OpenFlow 的建站功能」→ ✅ 「WebsFlow 专精落地页，从素材到上线以小时计」
 - ❌ 「inFlow 是 OpenFlow 的洞察功能」→ ✅ 「inFlow 盯外部世界：趋势、舆情、竞品」
 
 ---
@@ -191,10 +198,19 @@ OpenFlow（底座）──想引入情报/落地页/全域数据──▶ inFlow
 | 页面 | 路由 | 状态 |
 |---|---|---|
 | OpenFlow | `/product` | 已上线（PHP 模板页）+ 矩阵区 |
-| MFlow | `/mflow` | 已上线（区块页，后台可改） |
-| Webs Flow | `/webs-flow` | 已上线（区块页，后台可改） |
-| UserLoop | `/userloop` | 已上线（区块页，后台可改） |
-| inFlow | `/inflow` | 已上线（区块页，后台可改） |
+| MFlow | `/product/mflow` | 已上线（区块页，后台可改） |
+| WebsFlow 魔块 | `/product/webs-flow` | 已上线（区块页，后台可改；slug 保持不变） |
+| UserLoop | `/product/userloop` | 已上线（区块页，后台可改） |
+| inFlow | `/product/inflow` | 已上线（区块页，后台可改） |
+| PayFlow | `/product/payflow` | 已上线（区块页，后台可改） |
+| LearnFlow | `/product/learnflow` | 已上线（区块页，后台可改） |
+| 鹿蕊 Litmus | `/product/litmus` | 已上线（2026-10-09，`scripts/seed-studio-pages.php`） |
+| 松萝 Liana | `/product/liana` | 已上线（2026-10-09，`scripts/seed-studio-pages.php`） |
+| ConFlow | `/product/conflow` | 已上线（2026-10-09，`scripts/seed-studio-pages.php`） |
+| 林可兔 LinkTo | `/product/linkto` | 已上线（2026-10-09，`scripts/seed-studio-pages.php`） |
+| 零真 ZeroZen | `/product/zerozen` | 已上线（2026-10-09，`scripts/seed-studio-pages.php`） |
+
+各产品页「产品矩阵」块已统一为「林下 Understory · 三层定位」标准块（`understory_matrix_block()`）。
 
 示例页（区块系统展示）：`/b/growth-os-tour`
 
@@ -217,12 +233,12 @@ OpenFlow（底座）──想引入情报/落地页/全域数据──▶ inFlow
 
 | 能力 | 归属 | 理由 |
 |---|---|---|
-| 表单/调研/NPS/测验 | 插件生态 | 商品化能力，单独无壁垒；嵌入 Webs Flow/任何站即可 |
+| 表单/调研/NPS/测验 | 插件生态 | 商品化能力，单独无壁垒；嵌入 WebsFlow/任何站即可 |
 | SEO 技术工具（sitemap/JSON-LD/收录推送） | OpenFlow / MFlow 分发适配 | 情报已独立为 inFlow，技术 SEO 是分发的一部分 |
 | 直播/播客/视频托管 | OpenFlow 内容类型 | 重基础设施，独立无差异化；媒体底座共用 |
 | 连接器/OAuth/画布/工作流编排 | OpenFlow（插件 + skills + MCP） | **生态本身就是产品**——这正是插件/技能存在的意义 |
 | 积分/等级/忠诚度 | UserLoop | 用户数据域的一部分 |
-| A/B 实验/归因 | MFlow / Webs Flow | 各自场景内的实验能力 |
+| A/B 实验/归因 | MFlow / WebsFlow | 各自场景内的实验能力 |
 | 评价口碑管理 | 插件生态 | 体量小，插件钩子足够 |
 
 ### 6.3 候补产品（按优先级）
@@ -231,11 +247,11 @@ OpenFlow（底座）──想引入情报/落地页/全域数据──▶ inFlow
 
 - **定位**：收款 + 订阅 + 推荐裂变 + 佣金结算，一行嵌入任何页面
 - **人群**：知识付费创作者、独立开发者、课程讲师——只要有「能收钱」，不要增长系统
-- **依赖假设**：零依赖。不要求 OpenFlow CMS/CDP——买按钮嵌进 Webs Flow 落地页、
+- **依赖假设**：零依赖。不要求 OpenFlow CMS/CDP——买按钮嵌进 WebsFlow 落地页、
   MFlow 分发的内容页、任何第三方网站都能跑
 - **OpenFlow 现成底子**：CartSystem / SubscriptionSystem / ReferralSystem /
   CommissionPolicy / MarketplaceSystem / PaymentChannel / MembershipSystem（7 个模块）
-- **互通**：Webs Flow 落地页挂 PayFlow 结账；订单事件回传 UserLoop；MFlow 内容挂购买链接
+- **互通**：WebsFlow 落地页挂 PayFlow 结账；订单事件回传 UserLoop；MFlow 内容挂购买链接
 - **对标**：Gumroad / LemonSqueezy / Paddle
 - **收割理由**：「卖数字产品的创作者」是巨大且独立的受众，他们要的不是增长系统
 
