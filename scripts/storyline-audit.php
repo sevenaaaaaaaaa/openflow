@@ -91,8 +91,8 @@ function role_of_id(string $id): string {
 
 function classify(string $name): string {
     $n = strtolower($name);
-    // 七个产品 + 独立产品页 slug（builder 页用 slug 命名）
-    if (preg_match('/^(mflow|webs-flow|userloop|inflow|payflow|learnflow|openflow|in-flow|webs-flow)$/', $n)) return 'product';
+    // 产品矩阵 + 独立产品页 slug（builder 页用 slug 命名；含林下 Studio 套件 2026-10-09）
+    if (preg_match('/^(mflow|webs-flow|userloop|inflow|payflow|learnflow|openflow|in-flow|litmus|liana|conflow|linkto|zerozen)$/', $n)) return 'product';
     if ($n === 'growth-os-tour' || str_contains($n, 'tour')) return 'landing';
     if ($n === 'landing') return 'directory';
     if (preg_match('/^navigation-(compare|site)$/', $n)) return 'unknown';
