@@ -1,0 +1,510 @@
+en|331|Slides
+en|332|Slide themes · re-skin live while presenting
+en|333|Slides are a collage of screenshots
+en|334|Developers
+en|335|Developers & ecosystem
+en|336|Developer docs
+en|337|Open-source repos
+en|338|Ready-to-use growth capabilities
+en|339|Engine, dictionary and learning all run on your machine — the cloud never gets a single byte. Full Pinyin with 200K entries + Viterbi whole-sentence conversion, three double-pinyin schemes, mixed Chinese-English input, correction-as-teaching, feed-it-text learning, and end-to-end encrypted LAN P2P sync.
+en|340|Engine, dictionary and learning all run locally; the installer works offline.
+en|341|Pop-ups, overlays, feeds
+en|342|Pop-ups and feeds
+en|343|Pop-up guard
+en|344|Attribution · A/B · insights
+en|345|get a pile of ready-to-publish content
+en|346|Do I need to set up an AI key?
+en|347|How do I install it?
+en|348|How does it run?
+en|349|Want to download a video? You have to find the real link among layers of decoy buttons.
+en|350|Draft output
+en|351|Where is my data?
+en|352|Where is my data stored?
+en|353|Is my browsing data safe?
+en|354|A screenshot collage is fragments of time; slides that can be presented are an argument made spatial — headlines state the claim, one point per slide.
+en|355|Screenshots (on-device OCR, zero network) / documents / pasted text → proper nouns go into the "nutrient library": teach it your client's name once, type it everywhere.
+en|356|Fill in server settings by hand
+en|357|Three hours of manual cleanup
+en|358|Typing doesn't need to be handed to the cloud
+en|359|When you open a web page, what do you see first
+en|360|Open a news site and the first things you see are pop-ups, overlays and "content" in the feed — the article itself is pushed down to the third screen.
+en|361|Works right out of the box · build a library with one sentence
+en|362|Works right out of the box — build a library with one sentence
+en|363|Works right out of the box; enter a topic and it automatically collects a library from Wikipedia / Hacker News / arXiv.
+en|364|Extend system features
+en|365|Turning an hour-long video into an article and slides often takes three hours — and then you give up.
+en|366|The blocker itself is opaque
+en|367|Toggle each group independently, covering sites in Chinese / Japanese / Korean / Russian / European / Southeast Asian / Indian / Latin American / Hong Kong-Macau-Taiwan markets; custom rules win on conflict.
+en|368|Remembers Chinese/English per app: the terminal switches to English, WeChat to Chinese — a local statistical model that learns the moment you press Shift.
+en|369|Written by genre-specific method
+en|370|Piled up linearly by timeline
+en|371|Rewritten by argument structure: headlines state the claim, one point per slide
+en|372|Keystrokes, word frequency and habits go to the cloud
+en|373|Combine as needed · routing guide
+en|374|Switching tools means starting over: exported folders lose structure and links, and attachments end up scattered.
+en|375|Start from scratch on a new device
+en|376|Questions & discussion
+en|377|Plugins
+en|378|Plugin = data pack
+en|379|Plugin marketplace as a roundabout way in
+en|380|Search & AI optimization
+en|381|Podcasts
+en|382|Podcasts & video
+en|383|Which mailboxes are supported?
+en|384|The inbox is a noise disaster zone
+en|385|Taught but never remembered
+en|386|Tutorials, explainers, spoken commentary, and review interviews each have their own method distilled in prompts/ — it is not "summarize the video".
+en|387|Numbers and commands must be checked word-for-word against the transcript and video frames — not "roughly like this".
+en|388|Numbers may be made up
+en|389|Numbers checked word-for-word
+en|390|Numbers checked word-for-word + per-slide timestamp jump-back + gaps explicitly flagged
+en|391|Data · profiles · intelligence
+en|392|Analytics
+en|393|Data ownership
+en|394|Files are the truth · two-way MCP
+en|395|Folders are structure, the canvas is the view — Flow canvas nodes you can drag, depth of field, links, timeline, kanban.
+en|396|Genre writing methods (tutorial / explainer / commentary / review)
+en|397|Docs & tools
+en|398|Documentation
+en|399|Articles
+en|400|Article + slides + short-video script, one pipeline
+en|401|Articles · pages · publishing
+en|402|Article pushed straight to the OpenFlow content library drafts (with links to the source video and slides)
+en|403|Articles go automatically into the OpenFlow content library drafts; publish with one click after review. Slides play right in the browser, and P exports a PDF.
+en|404|On a new computer you have to reconfigure accounts, retype passwords and resync all your old mail.
+en|405|New-trick ads
+en|406|New mail is sorted automatically into Personal / Notifications / Newsletter / Noise, so what matters no longer gets buried.
+en|407|A defense hard-wired into the method
+en|408|None
+en|409|Works without a key
+en|410|No backend · no browsing data collected
+en|411|No backend; no browsing data is collected or uploaded. Network blocking is done by the browser's declarativeNetRequest engine, so the extension itself can't see request contents. AI detection sends only a structured description of the element plus the page's URL and title — no body text, no screenshots, no cookies — and it's off by default.
+en|412|Local IME with no learning
+en|413|No self-evolution
+en|414|No memory — starts from zero every time
+en|415|Smart triage & noise reduction · thread summaries · AI-drafted replies · to-do extraction; bring your own model (Zhipu GLM / OpenAI / DeepSeek / Ollama all work, with streaming output).
+en|416|Smart in exchange for your data
+en|417|Four insight tabs: Today's business briefing / To-dos / Reading list / Company insights
+en|418|Changelog
+en|419|A living desktop pet
+en|420|Local
+en|421|Local AI boost (optional)
+en|422|Local SQLite (FTS5) + system keychain encryption
+en|423|Local-first, AI-native, memory that grows with you — "Link" is read as "Lín kě" and "to" as "tù" (rabbit): quick as a startled hare.
+en|424|Local tool
+en|425|Local voice dictation and simultaneous interpretation (optional, downloaded explicitly · runs on your machine)
+en|426|Calls your own model locally; body text never touches the cloud
+en|427|Runs locally, but barely learns
+en|428|Permission center
+en|429|Minimal permissions
+en|430|Vague permissions
+en|431|Liana
+en|432|LIANA · by Understory
+en|433|Liana · Understory · Studio layer
+en|434|Liana · Privacy-first IME
+en|435|Liana — a privacy-first cross-platform input method | Understory
+en|436|Where Liana stands
+en|437|Liana is named for the lichen that clings to pines and grows along their branches — it never disturbs you, yet keeps evolving with you.
+en|438|Understory
+en|439|Understory · OpenFlow
+en|440|Understory · three-layer positioning
+en|441|Understory · learning path
+en|442|The entry layer of the Understory product matrix: OpenFlow, a growth operating system (MIT-licensed open-source foundation). The TIPS framework (Touch / Insight / Personality / Sales) unites four forces, the growth engine drives growth proactively, and the action spine turns suggestions into action.
+en|443|An Understory family member; the OpenFlow connector architecture (Manifest declarative framework) is already integrated via the unified Intake protocol.
+en|444|LinkTo
+en|445|LINKTO · by Understory
+en|446|LinkTo · Understory · Studio layer
+en|447|LinkTo · Mail workbench
+en|448|LinkTo — an AI-native mail workbench | Understory
+en|449|Architecture & extension points
+en|450|Core permanently open source · no lock-in
+en|451|Core capabilities
+en|452|Core capabilities permanently open source · teach to fish and give the fish
+en|453|Desktop-pet VRM renderer (built-in avatar needs no download; import your own VRoid Studio characters)
+en|454|Modes are different interface configurations of the same core — switching costs nothing
+en|455|Templates arranged by hand
+en|456|Body text and index both live in the cloud
+en|457|Daily business briefing
+en|458|Permanently open source
+en|459|Immersive study + documents-as-slides, so what you learn goes straight on stage; 50 classic design-history styles re-skin live.
+en|460|No "anonymous reporting" · online correction
+en|461|No "anonymous reporting" and no "online correction"; local AI models are downloaded explicitly by you and can be deleted anytime.
+en|462|Can't search it, can't quote it, can't paste it into a document — sharing with a colleague means a link and "this part was pretty good".
+en|463|Insight
+en|464|Events
+en|465|Pipeline: video → article → slides → short video
+en|466|Browse all courses
+en|467|Browser extension source is in the repo (Chrome / Firefox / Safari)
+en|468|Browse tools
+en|469|In-depth topic columns
+en|470|Review rankings
+en|471|Point-and-click rules
+en|472|Signature capabilities
+en|473|A standalone product and an Understory family member. OpenFlow family products already plug into the connector architecture via the unified Intake protocol; you can use LinkTo on its own without OpenFlow.
+en|474|A standalone product and a member of Understory's Studio layer. It is not a Flow product and depends on nothing in the matrix — install it alone and it works.
+en|475|A standalone product and a member of Understory's Studio layer. Articles can be pushed automatically into the OpenFlow content library drafts (with links to the source video and slides, draft state by default) — you can use it on its own without OpenFlow.
+en|476|A standalone product and a member of Understory's Studio layer. Matrix products (OpenFlow / ConFlow / WebsFlow / PayFlow / inFlow) connect through MCP connectors — independent of one another, combined as needed.
+en|477|Independent, but not isolated
+en|478|Works on its own
+en|479|Boundaries of a standalone acquisition product
+en|480|A standalone acquisition product and a member of Understory's Studio layer. It depends on nothing in the matrix, requires no sign-up, and never steers you toward conversion — it embodies the matrix's "local-first, honest boundaries" product philosophy.
+en|481|Ecosystem
+en|482|Ecosystem categories
+en|483|Ecosystem marketplace
+en|484|User words and clipboard history are encrypted at rest with ChaCha20-Poly1305, with the key in the system keychain
+en|485|What people who've used it say
+en|486|Profiles · segments · insights
+en|487|Whitepapers · templates
+en|488|Whitepapers · templates · reports
+en|489|Skins / desktop pets / dictionaries are declarative and run zero code, under a permission whitelist — no online marketplace, no auto-update, no executable code.
+en|490|Go live right away
+en|491|Pushed straight to OpenFlow drafts, publish with one click after review
+en|492|Live
+en|493|Live classes
+en|494|Related resources
+en|495|Watch a video once,
+en|496|See the family map →
+en|497|Videos you've watched leave nothing behind
+en|498|Real feedback
+en|499|Self-evolution that knows you: correction-as-teaching + nutrient library + counterfactual evaluation (L0, on by default)
+en|500|Knowledge storage
+ja|331|スライド
+ja|332|スライドテーマ · 上映中にリアルタイムで着せ替え
+ja|333|スライドはスクリーンショットのコラージュ
+ja|334|開発者
+ja|335|開発者とエコシステム
+ja|336|開発者ドキュメント
+ja|337|オープンソースリポジトリ
+ja|338|すぐ使えるグロース機能
+ja|339|エンジン・辞書・学習はすべて端末内で動作し、クラウドには 1 バイトも渡りません。フルピンイン（20 万語＋ Viterbi による文全体変換）、ダブルピンイン 3 方式、中英混在入力、修正がそのまま学習になる仕組み、テキストを与えて覚えさせる学習、LAN P2P のエンドツーエンド暗号化同期。
+ja|340|エンジン・辞書・学習はすべてローカルで動作し、インストーラーはオフラインでも使えます。
+ja|341|ポップアップ・オーバーレイ・フィード
+ja|342|ポップアップとフィード
+ja|343|ポップアップガード
+ja|344|アトリビューション · A/B · インサイト
+ja|345|公開できるコンテンツが手に入る
+ja|346|AI キーの設定は必須ですか？
+ja|347|どうやってインストールしますか？
+ja|348|どうやって動かしますか？
+ja|349|動画をダウンロードしたいだけなのに、何重もの誘導ボタンの中から本物のリンクを探さなければならない。
+ja|350|原稿の出力
+ja|351|データはどこにありますか？
+ja|352|データはどこに保存されますか？
+ja|353|閲覧データは安全ですか？
+ja|354|スクリーンショットのコラージュは時間の断片、上映できるスライドは論証を空間に置いたもの——見出しは主張の一文、1 ページに 1 つの論点。
+ja|355|スクリーンショット（端末内 OCR、通信なし）／ドキュメント／貼り付けテキスト → 固有名詞が「栄養ライブラリ」へ：取引先の名前は一度教えれば、どこでも入力できます。
+ja|356|サーバー設定を手入力
+ja|357|手作業で整理して 3 時間
+ja|358|文字入力をクラウドに預ける必要はありません
+ja|359|ウェブページを開いて、最初に目に入るのは
+ja|360|ニュースサイトを開いて最初に目に入るのは、ポップアップ・オーバーレイ・フィードの中の「コンテンツ」——本文は 3 画面目に押し出されます。
+ja|361|開けばすぐ使える · 一言でライブラリ作成
+ja|362|開けばすぐ使えて、一言でライブラリを作成
+ja|363|開けばすぐ使えます。テーマを入力すると、Wikipedia / Hacker News / arXiv から自動収集してライブラリ化します。
+ja|364|システム機能を拡張
+ja|365|1 時間の動画を記事と PPT にまとめるには、たいてい 3 時間かかります——そして諦めてしまう。
+ja|366|ブロッカー自身が不透明
+ja|367|グループごとに個別オン・オフ。中／日／韓／ロシア／欧州／東南アジア／インド／中南米／香港・マカオ・台湾のサイトをカバー。競合時はカスタムルールが優先されます。
+ja|368|アプリごとに中国語／英語を記憶：ターミナルは自動で英語、WeChat は自動で中国語——ローカル統計モデルで、Shift を押した瞬間に学習します。
+ja|369|文体ごとの文章術で執筆
+ja|370|時系列に積み上げただけ
+ja|371|論証構造に沿って書き直し：見出しは主張の一文、1 ページに 1 論点
+ja|372|キー入力・単語頻度・習慣がクラウドへ
+ja|373|必要に応じて組み合わせ · 振り分けガイド
+ja|374|ツールを替えるとやり直し：書き出したフォルダは構造とリンクを失い、添付ファイルも散らばります。
+ja|375|端末を替えるとゼロからやり直し
+ja|376|質問とディスカッション
+ja|377|プラグイン
+ja|378|プラグイン＝データパック
+ja|379|プラグインマーケット経由の間接的な連携
+ja|380|検索と AI 最適化
+ja|381|ポッドキャスト
+ja|382|ポッドキャスト・動画
+ja|383|どのメールボックスに対応していますか？
+ja|384|受信トレイはノイズの巣窟
+ja|385|教えても覚えない
+ja|386|チュートリアル、解説、語り形式の論評、レビュー・インタビューには、それぞれ prompts/ に蓄積された方法論があります——「動画の要約」ではありません。
+ja|387|数字とコマンドは、文字起こしと動画フレームに照らして 1 文字ずつ照合します。「たぶんこんな感じ」ではありません。
+ja|388|数字が作り話になりうる
+ja|389|数字を 1 文字ずつ照合
+ja|390|数字を 1 文字ずつ照合＋各ページのタイムスタンプで元動画へ戻って確認＋補完部分を明示
+ja|391|データ · プロファイル · インテリジェンス
+ja|392|データ分析
+ja|393|データの帰属
+ja|394|ファイルこそが真実 · MCP 双方向
+ja|395|フォルダが構造、キャンバスがビュー——Flow キャンバスはノードのドラッグ配置、被写界深度、リンク、タイムライン、カンバンに対応。
+ja|396|文体別の文章術（チュートリアル／解説／論評／レビュー）
+ja|397|ドキュメントとツール
+ja|398|ドキュメントセンター
+ja|399|記事
+ja|400|記事＋スライド＋ショート動画台本を 1 本のパイプラインで
+ja|401|記事 · ページ · 公開
+ja|402|記事を OpenFlow コンテンツライブラリの下書きへ直接送信（元動画とスライドへのリンク付き）
+ja|403|記事は OpenFlow コンテンツライブラリの下書きに自動で入り、確認後にワンクリックで公開できます。スライドはブラウザでそのまま上映でき、P キーで PDF 書き出し。
+ja|404|新しい PC ではアカウントを設定し直し、パスワードを入れ直し、過去のメールも再同期しなければなりません。
+ja|405|新手の広告
+ja|406|新着メールは「個人／通知／ニュースレター／ノイズ」に自動で振り分けられ、大事な用件が埋もれません。
+ja|407|方法論に組み込まれた防御ライン
+ja|408|なし
+ja|409|キーなしでも使える
+ja|410|バックエンドなし · 閲覧データは収集しない
+ja|411|バックエンドはなく、閲覧データは一切収集・アップロードしません。ネットワーク遮断はブラウザの declarativeNetRequest エンジンが行い、拡張機能自体はリクエスト内容を見られません。AI 判定が送るのは要素の構造化された説明とページの URL・タイトルだけで、本文・スクリーンショット・Cookie は送らず、既定ではオフです。
+ja|412|学習しないローカル IME
+ja|413|自己進化なし
+ja|414|記憶なし、毎回ゼロから
+ja|415|スマート分類でノイズ低減 · スレッド要約 · AI による返信下書き · ToDo 抽出。モデルは自分で設定（Zhipu GLM / OpenAI / DeepSeek / Ollama いずれも可、ストリーミング出力）。
+ja|416|「賢さ」と引き換えにデータを渡す
+ja|417|スマートインサイト 4 タブ：本日のビジネス概況／ToDo／読書リスト／企業インサイト
+ja|418|更新履歴
+ja|419|生きているデスクトップペット
+ja|420|ローカル
+ja|421|ローカル AI 強化（任意）
+ja|422|ローカル SQLite（FTS5）＋システムキーチェーン暗号化
+ja|423|ローカルファースト、AI ネイティブ、記憶はあなたとともに成長——Link は「林可」、to は「兔」と音訳。脱兎のごとく素早く。
+ja|424|ローカルツール
+ja|425|ローカル音声ディクテーションと同時通訳（任意、明示的にダウンロード · 端末内で実行）
+ja|426|自分で設定したモデルをローカルから呼び出し、本文はクラウドに残しません
+ja|427|ローカルで動くが、ほとんど学習しない
+ja|428|権限センター
+ja|429|最小限の権限
+ja|430|あいまいな権限
+ja|431|Liana
+ja|432|LIANA · 林下 Understory 制作
+ja|433|Liana · 林下 Understory · Studio層
+ja|434|Liana · プライバシー重視 IME
+ja|435|Liana — プライバシー最優先のクロスプラットフォーム入力メソッド | 林下 Understory
+ja|436|Liana のスタンス
+ja|437|Liana は、松に寄り添って生え、枝に沿って伸びる地衣類（サルオガセ）にちなんだ名前です——邪魔をせず、それでもずっとあなたとともに進化し続けます。
+ja|438|林下 Understory
+ja|439|林下 Understory · OpenFlow
+ja|440|林下 Understory · 3 層の位置づけ
+ja|441|林下 Understory · 学習パス
+ja|442|林下 Understory プロダクトマトリクスのエントリー層：OpenFlow グロース OS（MIT ライセンスのオープンソース基盤）。TIPS フレームワーク（Touch／Insight／Personality／Sales）の 4 力を一つにし、グロースエンジンが能動的に成長を推進、アクションスパインが提案を実行へ落とし込みます。
+ja|443|林下 Understory ファミリーの一員。OpenFlow コネクタアーキテクチャ（Manifest 宣言型フレームワーク）は、統一 Intake プロトコルで接続済みです。
+ja|444|LinkTo
+ja|445|LINKTO · 林下 Understory 制作
+ja|446|LinkTo · 林下 Understory · Studio層
+ja|447|LinkTo · メールワークベンチ
+ja|448|LinkTo — AI ネイティブなメールワークベンチ | 林下 Understory
+ja|449|アーキテクチャと拡張ポイント
+ja|450|コアは永久オープンソース · ロックインなし
+ja|451|コア機能
+ja|452|コア機能は永久オープンソース · 魚と釣り方を両方
+ja|453|デスクトップペット VRM レンダラー（内蔵キャラはダウンロード不要、VRoid Studio で作った自作キャラも読み込み可）
+ja|454|モードは同じコアのインターフェース設定違い——切り替えコストはゼロ
+ja|455|テンプレートを手作業で配置
+ja|456|本文もインデックスもクラウドにある
+ja|457|毎日のビジネス概況
+ja|458|永久オープンソース
+ja|459|没入型の学習＋ドキュメントがそのままスライドに。学んだ成果をそのまま発表の場へ。デザイン史の名作スタイル 50 種をリアルタイムで着せ替え。
+ja|460|「匿名レポート」なし · オンライン修正
+ja|461|「匿名レポート」も「オンライン修正」もなし。ローカル AI モデルは自分で明示的にダウンロードし、いつでも削除できます。
+ja|462|検索できず、引用できず、ドキュメントに貼れない——同僚に共有できるのは、リンクと「ここ良かったよ」の一言だけ。
+ja|463|インサイト Insight
+ja|464|イベント
+ja|465|パイプライン：動画 → 記事 → スライド → ショート動画
+ja|466|すべてのコースを見る
+ja|467|ブラウザ拡張のソースはリポジトリに収録（Chrome / Firefox / Safari）
+ja|468|ツールを見る
+ja|469|深掘りテーマの連載コラム
+ja|470|レビューランキング
+ja|471|ポイントしてルール化
+ja|472|主な機能
+ja|473|独立した製品であり、林下 Understory ファミリーの一員です。OpenFlow ファミリーの製品は統一 Intake プロトコルでコネクタアーキテクチャに接続済みで、OpenFlow なしで LinkTo 単体でも使えます。
+ja|474|独立した製品であり、林下 Understory の Studio 層のメンバーです。Flow ではなく、マトリクス内のどの製品にも依存せず、単体でインストールして使えます。
+ja|475|独立した製品であり、林下 Understory の Studio 層のメンバーです。記事は OpenFlow コンテンツライブラリの下書きに自動で送れます（元動画とスライドへのリンク付き、既定は下書き状態）。OpenFlow なしでも単体で使えます。
+ja|476|独立した製品であり、林下 Understory の Studio 層のメンバーです。マトリクスの製品（OpenFlow / ConFlow / WebsFlow / PayFlow / inFlow）は MCP コネクタでつながり、互いに独立し、必要に応じて組み合わせられます。
+ja|477|独立しているが、孤立はしていない
+ja|478|単体で使える
+ja|479|独立した集客プロダクトの境界
+ja|480|独立した集客プロダクトであり、林下 Understory の Studio 層のメンバーです。マトリクスのどの製品にも依存せず、登録も求めず、コンバージョンへ誘導もしません——マトリクスの「ローカルファースト、誠実な境界」というプロダクト観を体現しています。
+ja|481|エコシステム
+ja|482|エコシステムカテゴリ
+ja|483|エコシステムマーケット
+ja|484|ユーザー辞書とクリップボード履歴は ChaCha20-Poly1305 で暗号化して保存し、鍵はシステムキーチェーンに保管
+ja|485|使った人の声
+ja|486|プロファイル · セグメント · インサイト
+ja|487|ホワイトペーパー · テンプレート
+ja|488|ホワイトペーパー · テンプレート · レポート
+ja|489|スキン／デスクトップペット／辞書は宣言型でコードを一切実行せず、権限はホワイトリスト制——オンラインマーケットなし、自動更新なし、実行可能コードなし。
+ja|490|そのまま公開
+ja|491|OpenFlow の下書きへ直接送信、確認後ワンクリックで公開
+ja|492|ライブ
+ja|493|ライブ授業
+ja|494|関連リソース
+ja|495|動画を 1 本見るだけで、
+ja|496|ファミリーマップを見る →
+ja|497|見た動画は、結局何も残らない
+ja|498|リアルな声
+ja|499|あなたを知る自己進化：修正がそのまま学習＋栄養ライブラリ＋反事実評価（L0、既定でオン）
+ja|500|知識ストレージ
+ko|331|슬라이드
+ko|332|슬라이드 테마 · 발표 중 실시간 스킨 변경
+ko|333|슬라이드가 스크린샷 콜라주
+ko|334|개발자
+ko|335|개발자와 생태계
+ko|336|개발자 문서
+ko|337|오픈소스 저장소
+ko|338|바로 쓸 수 있는 그로스 역량
+ko|339|엔진, 사전, 학습이 모두 기기 안에서 실행되어 클라우드는 단 1바이트도 받지 못합니다. 20만 항목 전체 병음 + Viterbi 문장 단위 변환, 쌍병음 3종, 중·영 혼합 입력, 교정이 곧 학습, 먹이 주듯 학습, LAN P2P 종단간 암호화 동기화.
+ko|340|엔진, 사전, 학습이 모두 로컬에서 실행되며, 설치 파일은 오프라인에서도 쓸 수 있습니다.
+ko|341|팝업, 오버레이, 피드
+ko|342|팝업과 피드
+ko|343|팝업 가드
+ko|344|기여도 분석 · A/B · 인사이트
+ko|345|바로 게시할 수 있는 콘텐츠가 생깁니다
+ko|346|AI 키를 꼭 설정해야 하나요?
+ko|347|어떻게 설치하나요?
+ko|348|어떻게 실행하나요?
+ko|349|영상 하나 내려받으려는데, 겹겹의 유도 버튼 속에서 진짜 링크를 찾아야 합니다.
+ko|350|결과물 출력
+ko|351|내 데이터는 어디에 있나요?
+ko|352|내 데이터는 어디에 저장되나요?
+ko|353|내 브라우징 데이터는 안전한가요?
+ko|354|스크린샷 콜라주는 시간의 파편이고, 발표할 수 있는 슬라이드는 논증을 공간화한 것입니다. 제목은 주장 문장으로, 한 페이지에 한 논점.
+ko|355|스크린샷(기기 내 OCR, 네트워크 없음) / 문서 / 붙여넣은 텍스트 → 고유명사가 「영양 라이브러리」로: 고객사 이름을 한 번만 알려 주면 어디서나 입력됩니다.
+ko|356|서버 설정을 직접 입력
+ko|357|수작업 정리 세 시간
+ko|358|타이핑을 클라우드에 맡길 필요는 없습니다
+ko|359|웹 페이지를 열면 가장 먼저 보이는 것은
+ko|360|뉴스 사이트를 열면 가장 먼저 보이는 것은 팝업, 오버레이, 피드 속의 「콘텐츠」입니다. 본문은 세 번째 화면으로 밀려납니다.
+ko|361|열면 바로 사용 · 한 문장으로 보관함 생성
+ko|362|열면 바로 사용, 한 문장으로 보관함 생성
+ko|363|열면 바로 사용할 수 있습니다. 주제를 입력하면 Wikipedia / Hacker News / arXiv에서 자동으로 수집해 보관함을 만듭니다.
+ko|364|시스템 기능 확장
+ko|365|한 시간짜리 영상을 글과 PPT로 정리하려면 흔히 세 시간이 걸립니다. 그러다 결국 포기하게 되죠.
+ko|366|차단기 자체가 불투명함
+ko|367|그룹별로 독립 켜기·끄기, 중 / 일 / 한 / 러 / 유럽 / 동남아 / 인도 / 중남미 / 홍콩·마카오·대만 사이트를 포괄합니다. 충돌 시 사용자 규칙이 우선입니다.
+ko|368|앱별로 중/영 기억: 터미널은 자동으로 영어, WeChat은 자동으로 중국어 — 로컬 통계 모델이 Shift를 누르는 순간 학습합니다.
+ko|369|문체별 글쓰기 방식으로 작성
+ko|370|시간순으로 그대로 쌓아 놓음
+ko|371|논증 구조로 다시 쓰기: 제목은 주장 문장, 한 페이지에 한 논점
+ko|372|키 입력, 단어 빈도, 습관이 클라우드로
+ko|373|필요에 따라 조합 · 분기 안내
+ko|374|도구를 바꾸면 처음부터 다시: 내보낸 폴더는 구조와 링크를 잃고 첨부 파일은 흩어집니다.
+ko|375|기기를 바꾸면 처음부터 다시
+ko|376|질문과 토론
+ko|377|플러그인
+ko|378|플러그인 = 데이터 팩
+ko|379|플러그인 마켓을 거치는 간접 연동
+ko|380|검색 및 AI 최적화
+ko|381|팟캐스트
+ko|382|팟캐스트·영상
+ko|383|어떤 메일함을 지원하나요?
+ko|384|받은편지함은 노이즈 재난 지역
+ko|385|알려 줘도 기억 못 함
+ko|386|튜토리얼, 해설, 구술 칼럼, 리뷰·인터뷰에는 각각 prompts/에 쌓인 방법론이 있습니다. 「영상 요약」이 아닙니다.
+ko|387|숫자와 명령어는 전사본과 영상 프레임에 대조해 한 글자씩 확인합니다. 「대충 이럴 것」이 아닙니다.
+ko|388|숫자를 지어낼 수 있음
+ko|389|숫자를 한 글자씩 대조
+ko|390|숫자 한 글자씩 대조 + 페이지별 타임스탬프로 원본 확인 + 보완 부분 명시 표시
+ko|391|데이터 · 프로필 · 인텔리전스
+ko|392|데이터 분석
+ko|393|데이터 소유권
+ko|394|파일이 곧 진실 · MCP 양방향
+ko|395|폴더가 곧 구조, 캔버스가 곧 뷰 — Flow 캔버스는 노드 드래그 배치, 심도, 연결선, 타임라인, 칸반을 지원합니다.
+ko|396|문체별 글쓰기 방식(튜토리얼/해설/칼럼/리뷰)
+ko|397|문서와 도구
+ko|398|문서 센터
+ko|399|글
+ko|400|글 + 슬라이드 + 숏폼 대본, 하나의 파이프라인
+ko|401|글 · 페이지 · 게시
+ko|402|글을 OpenFlow 콘텐츠 라이브러리 초안함으로 바로 전송(원본 영상과 슬라이드 링크 포함)
+ko|403|글이 OpenFlow 콘텐츠 라이브러리 초안함으로 자동 전달되고, 검토 후 원클릭으로 게시합니다. 슬라이드는 브라우저에서 바로 발표하고 P 키로 PDF를 내보냅니다.
+ko|404|새 컴퓨터에서는 계정을 다시 설정하고 비밀번호를 다시 입력하고 지난 메일도 다시 동기화해야 합니다.
+ko|405|새로운 수법의 광고
+ko|406|새 메일이 개인 / 알림 / 뉴스레터 / 노이즈로 자동 분류되어 중요한 일이 더는 묻히지 않습니다.
+ko|407|방법론에 박아 넣은 방어선
+ko|408|없음
+ko|409|키 없이도 사용 가능
+ko|410|백엔드 없음 · 브라우징 데이터 미수집
+ko|411|백엔드가 없고 브라우징 데이터를 수집하거나 업로드하지 않습니다. 네트워크 차단은 브라우저의 declarativeNetRequest 엔진이 처리하므로 확장 프로그램 자체는 요청 내용을 볼 수 없습니다. AI 식별은 요소의 구조화된 설명과 페이지 주소·제목만 전송하며, 본문·스크린샷·쿠키는 전송하지 않고 기본값은 꺼짐입니다.
+ko|412|학습하지 않는 로컬 입력기
+ko|413|자기 진화 없음
+ko|414|기억 없이 매번 처음부터
+ko|415|스마트 분류·노이즈 감소 · 대화 요약 · AI 답장 초안 · 할 일 추출. 모델은 직접 설정(Zhipu GLM / OpenAI / DeepSeek / Ollama 모두 가능, 스트리밍 출력).
+ko|416|「똑똑함」을 위해 데이터를 내어줌
+ko|417|스마트 인사이트 4개 탭: 오늘의 비즈니스 브리핑 / 할 일 / 읽기 목록 / 회사 인사이트
+ko|418|업데이트 로그
+ko|419|살아 있는 데스크톱 펫
+ko|420|로컬
+ko|421|로컬 AI 강화(선택)
+ko|422|로컬 SQLite(FTS5) + 시스템 키체인 암호화
+ko|423|로컬 우선, AI 네이티브, 기억이 사용자와 함께 성장 — Link는 「린커(林可)」, to는 「투(兔)」로 음역, 달아나는 토끼처럼 재빠르게.
+ko|424|로컬 도구
+ko|425|로컬 음성 받아쓰기와 동시통역(선택, 직접 다운로드 · 기기에서 실행)
+ko|426|직접 설정한 모델을 로컬에서 호출하고, 본문은 클라우드에 남기지 않습니다
+ko|427|로컬에서 실행되지만 거의 학습하지 않음
+ko|428|권한 센터
+ko|429|최소 권한
+ko|430|모호한 권한
+ko|431|Liana
+ko|432|LIANA · Understory 제작
+ko|433|Liana · Understory · Studio층
+ko|434|Liana · 프라이버시 입력기
+ko|435|Liana — 프라이버시를 우선하는 크로스 플랫폼 입력기 | Understory
+ko|436|Liana의 입장
+ko|437|Liana는 소나무에 붙어 자라고 가지를 따라 뻗는 지의류에서 이름을 따왔습니다. 방해하지 않으면서도 늘 사용자와 함께 진화합니다.
+ko|438|Understory
+ko|439|Understory · OpenFlow
+ko|440|Understory · 3층 포지셔닝
+ko|441|Understory · 학습 경로
+ko|442|Understory 제품 매트릭스의 입구층: OpenFlow 그로스 운영체제(MIT 라이선스 오픈소스 기반). TIPS 프레임워크(Touch / Insight / Personality / Sales)가 4가지 힘을 하나로 묶고, 그로스 엔진이 능동적으로 성장을 이끌며, 액션 스파인이 제안을 실행으로 옮깁니다.
+ko|443|Understory 패밀리의 일원이며, OpenFlow 커넥터 아키텍처(Manifest 선언형 프레임워크)는 통합 Intake 프로토콜로 이미 연동되어 있습니다.
+ko|444|LinkTo
+ko|445|LINKTO · Understory 제작
+ko|446|LinkTo · Understory · Studio층
+ko|447|LinkTo · 메일 워크벤치
+ko|448|LinkTo — AI 네이티브 메일 워크벤치 | Understory
+ko|449|아키텍처와 확장 지점
+ko|450|코어는 영구 오픈소스 · 락인 없음
+ko|451|핵심 역량
+ko|452|핵심 기능은 영구 오픈소스 · 물고기와 낚시법을 함께
+ko|453|데스크톱 펫 VRM 렌더러(내장 캐릭터는 다운로드 불필요, VRoid Studio로 만든 캐릭터도 가져오기 가능)
+ko|454|모드는 같은 코어의 서로 다른 화면 구성일 뿐이며, 전환 비용은 0입니다
+ko|455|템플릿을 수동으로 배치
+ko|456|본문과 색인이 모두 클라우드에 있음
+ko|457|일일 비즈니스 브리핑
+ko|458|영구 오픈소스
+ko|459|몰입형 학습 + 문서가 곧 슬라이드, 학습 결과를 바로 무대에. 디자인사 명작 스타일 50종을 실시간으로 바꿔 입힙니다.
+ko|460|「익명 보고」 없음 · 온라인 교정
+ko|461|「익명 보고」도 「온라인 교정」도 없습니다. 로컬 AI 모델은 직접 명시적으로 내려받고 언제든 삭제할 수 있습니다.
+ko|462|검색도, 인용도, 문서에 붙여 넣기도 안 됩니다. 동료에게 공유하려면 링크 하나와 「이 부분 괜찮더라」 한마디가 전부입니다.
+ko|463|인사이트 Insight
+ko|464|이벤트
+ko|465|파이프라인: 영상 → 글 → 슬라이드 → 숏폼
+ko|466|전체 강의 보기
+ko|467|브라우저 확장 소스는 저장소에 포함(Chrome / Firefox / Safari)
+ko|468|도구 둘러보기
+ko|469|심층 주제 칼럼
+ko|470|리뷰 랭킹
+ko|471|요소 지정 후 규칙 생성
+ko|472|대표 기능
+ko|473|독립 제품이며 Understory 패밀리의 일원입니다. OpenFlow 패밀리 제품은 통합 Intake 프로토콜로 커넥터 아키텍처에 이미 연동되어 있으며, OpenFlow 없이도 LinkTo를 단독으로 쓸 수 있습니다.
+ko|474|독립 제품이며 Understory Studio층의 일원입니다. Flow 제품이 아니고 매트릭스의 어떤 제품에도 의존하지 않으며, 단독으로 설치해 바로 쓸 수 있습니다.
+ko|475|독립 제품이며 Understory Studio층의 일원입니다. 글은 OpenFlow 콘텐츠 라이브러리 초안함으로 자동 전달할 수 있으며(원본 영상과 슬라이드 링크 포함, 기본은 초안 상태), OpenFlow 없이도 단독으로 쓸 수 있습니다.
+ko|476|독립 제품이며 Understory Studio층의 일원입니다. 매트릭스 제품(OpenFlow / ConFlow / WebsFlow / PayFlow / inFlow)은 MCP 커넥터로 연결되며, 서로 독립적이고 필요에 따라 조합합니다.
+ko|477|독립적이지만 고립되지 않음
+ko|478|단독 사용 가능
+ko|479|독립 유입 제품의 경계
+ko|480|독립 유입 제품이며 Understory Studio층의 일원입니다. 매트릭스의 어떤 제품에도 의존하지 않고, 가입을 요구하지 않으며, 전환을 유도하지 않습니다. 매트릭스의 「로컬 우선, 정직한 경계」라는 제품관을 보여 줍니다.
+ko|481|생태계
+ko|482|생태계 카테고리
+ko|483|생태계 마켓
+ko|484|사용자 단어와 클립보드 기록은 ChaCha20-Poly1305로 암호화해 저장하며, 키는 시스템 키체인에 보관
+ko|485|써 본 사람들의 이야기
+ko|486|프로필 · 세그먼트 · 인사이트
+ko|487|백서 · 템플릿
+ko|488|백서 · 템플릿 · 리포트
+ko|489|스킨 / 데스크톱 펫 / 사전은 선언형으로 코드를 전혀 실행하지 않으며 권한은 화이트리스트 방식입니다. 온라인 마켓도, 자동 업데이트도, 실행 가능한 코드도 없습니다.
+ko|490|바로 게시
+ko|491|OpenFlow 초안함으로 바로 전송, 검토 후 원클릭 게시
+ko|492|라이브
+ko|493|라이브 강의
+ko|494|관련 자료
+ko|495|영상 하나만 보면,
+ko|496|패밀리 맵 보기 →
+ko|497|본 영상은 결국 아무것도 남지 않는다
+ko|498|생생한 후기
+ko|499|나를 아는 자기 진화: 교정이 곧 학습 + 영양 라이브러리 + 반사실 평가(L0, 기본 켜짐)
+ko|500|지식 저장

@@ -8,7 +8,15 @@
  * logo 与站头一致：流环（开放的 O 缺口溢出成箭，Flow / 增长飞轮）。
  */
 if (!function_exists('of_footer')) {
+    /** 输出页脚；非默认语言时按分段字典翻译链接文案并补语言前缀 */
     function of_footer(): void {
+        $loc = (function_exists('i18n_enabled') && i18n_enabled() && function_exists('i18n_tr_html')) ? i18n_current() : null;
+        if ($loc === null || $loc === i18n_default_locale()) { of_footer_render(); return; }
+        ob_start();
+        of_footer_render();
+        echo i18n_tr_html((string)ob_get_clean(), $loc);
+    }
+    function of_footer_render(): void {
         $slogan = function_exists('site_config_get') ? site_config_get('site_slogan', '帮一人公司设计 Agent 能跑的增长系统') : '帮一人公司设计 Agent 能跑的增长系统';
         $copy   = function_exists('site_copyright') ? site_copyright() : '© 2026 林下 Understory · OpenFlow 增长操作系统';
         // 插件前台插槽：页脚上方（横幅/订阅框等）

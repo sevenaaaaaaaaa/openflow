@@ -502,4 +502,18 @@ foreach (builder_pages_all() as $p) {
     echo "♻  A3 刷新 · $slug\n";
 }
 
+/* ═══════════════════ 任务 A4（2026-10-09）：5 张 Studio 页声明多语言 ═══════════════════
+ * i18n_locales = 该页「有译文」的语言（译文在分段字典 scripts/i18n/content.{locale}.json → data/lang/content-{locale}.json）。
+ * 声明了才会被前台翻译、才会输出 hreflang；未声明的语言前缀 → 中文内容 + canonical 指回默认语言。
+ * 上线前先跑 php scripts/i18n-content.php check 确认零漏译。 */
+foreach (['linkto', 'litmus', 'liana', 'conflow', 'zerozen'] as $__s) {
+    foreach (builder_pages_all() as $p) {
+        if (($p['slug'] ?? '') !== $__s) continue;
+        if (($p['i18n_locales'] ?? []) !== ['zh-TW', 'en', 'ja', 'ko']) {
+            save_builder_page($p['id'], ['i18n_locales' => ['zh-TW', 'en', 'ja', 'ko']]);
+            echo "🌐 A4 多语言声明 · $__s\n";
+        }
+    }
+}
+
 echo "完成：林下 Studio 全量 5 页（linkto / litmus / liana / conflow / zerozen）+ A1 全站口径刷新 + A3 小标题/CTA 统一\n";

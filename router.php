@@ -23,7 +23,7 @@ if (preg_match('~^/data(/|$)~', $path)) {
 // ── 语言前缀 /growth 前缀剥离 ──
 // 剥离后若直接命中真实文件（如 /en/feed.php → /feed.php），必须在这里就地 require：
 // 走到末尾的 return false 会让 php -S 按原始 URI（带前缀）找文件而回落 404/首页。
-if (preg_match('~^/(en|ja|zh-CN|zh-TW|ru|fr)/(.*)$~', $path, $m)) {   // 白名单与 .htaccess / settings.json multilang 保持一致
+if (preg_match('~^/(en|ja|ko|zh-CN|zh-TW|ru|fr)/(.*)$~', $path, $m)) {   // 白名单与 .htaccess / settings.json multilang 保持一致
     $stripped = '/' . $m[2];
     if (is_file($root . urldecode($stripped))) {
         chdir($root);
