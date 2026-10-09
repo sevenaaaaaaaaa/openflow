@@ -164,7 +164,8 @@ function builder_render_block_inner(array $b): string {
     require_once __DIR__ . '/BlockContract.php';
     $t = block_type_of($b);
     if ($t === '') $t = 'text';
-    $title = htmlspecialchars($b['title'] ?? '');
+    // 标题整体转义；仅放行 <br>（hero 标题需要手动断行），其余标签仍按文本输出
+    $title = str_replace(['&lt;br&gt;', '&lt;br/&gt;', '&lt;br /&gt;'], '<br>', htmlspecialchars($b['title'] ?? ''));
     $sub = htmlspecialchars($b['subtitle'] ?? '');
     $content = $b['content'] ?? '';
     $img = htmlspecialchars($b['image'] ?? '');
@@ -224,7 +225,7 @@ function builder_render_block_inner(array $b): string {
                     . '<div class="hero-copy">' . ($sub ? '<span class="kicker">' . $sub . '</span>' : '') . '<h1>' . $title . '</h1>'
                     . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div>'
                     . '<div class="hero-win"><div class="win-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">' . $winTitle . '</div></div>'
-                    . '<img src="' . $img . '" alt="' . $title . '" loading="eager"></div>'
+                    . '<img src="' . $img . '" alt="' . strip_tags($title) . '" loading="eager"></div>'
                     . '</div></section>';
             }
             return '<section class="reveal in"' . $bgStyle . '><div class="hero-center">' . ($sub ? '<span class="kicker">' . $sub . '</span>' : '') . '<h1>' . $title . '</h1>' . ($content ? '<p class="lead">' . $content . '</p>' : '') . $btn . '</div></section>';
