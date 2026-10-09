@@ -103,7 +103,10 @@
 
 ```
 第 1 步  ✅ 命名基线表已拍板 → 同步写进 PRODUCT-MATRIX.md（Linkto/ZeroZen 入 Studio 层）
-第 2 步  任务 B 新产品页 5 件先行（每批 1-2 页；顺序：林可兔 LinkTo → 鹿蕊 Litmus → 松萝 Liana → ConFlow → 零真 ZeroZen）
+第 2 步  ✅ 任务 B 新产品页 5 件全部上线（2026-10-09，commit 21dcc2c + 5c087ad：
+         /product/linkto 林可兔 · /product/litmus 鹿蕊 · /product/liana 松萝 · /product/conflow · /product/zerozen 零真；
+         路由/sitemap/审计归型齐备，storyline-audit 5 页全 [产品页] ✓ ERROR 0；
+         数据真源 = scripts/seed-studio-pages.php，data/builder-pages.json 走数据通道）
 第 3 步  任务 A1 全站品牌名统一（此时新旧 12 页齐全，一次替换收口）
 第 4 步  任务 A2 所有页面文案优化（含新产品页，统一三层叙事与新口径，每批过 A3 护栏）
 第 5 步  收口：sitemap/llms/词典/矩阵互链全量复查 → 交回 SITE-UPGRADE-PLAN 阶段 2
