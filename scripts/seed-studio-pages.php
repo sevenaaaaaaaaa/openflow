@@ -2,11 +2,11 @@
 /**
  * 林下 Understory · 工作台层（Studio 套件）产品页
  * 第一批（2026-10-09）：林可兔 LinkTo / 鹿蕊 Litmus
- * 后续批次：松萝 Liana / ConFlow / 零真 ZeroZen（追加到本脚本重跑即可，upsert 幂等）
+ * 第二批（2026-10-09）：松萝 Liana / ConFlow / 零真 ZeroZen
  *
  * 素材源：各产品 GitHub 仓库 README（2026-10-09 版），全部表述可核验——GTM §2「可以说/不能说」约束。
  * 新口径：产品矩阵块改用「林下三层」（入口层 / 进阶层 / 工作台层），任务 A 铺开时其余产品页统一换成此块。
- * 用法: php scripts/seed-studio-pages.php
+ * 用法: php scripts/seed-studio-pages.php（幂等，upsert 可反复重跑）
  */
 $_SERVER['REQUEST_METHOD'] = 'CLI';
 require __DIR__ . '/../admin/config.php';
@@ -190,4 +190,208 @@ HTML],
     ],
 ]);
 
-echo "完成：林下 Studio 第一批（linkto / litmus）\n";
+/* ═══════════════════ 松萝 Liana · 隐私优先的跨平台输入法 ═══════════════════ */
+upsert_page('liana', [
+    'slug' => 'liana', 'title' => '松萝 Liana · 隐私优先的跨平台输入法', 'status' => 'published',
+    'seo_title' => '松萝 Liana — 隐私优先的跨平台输入法 | 芭乐派',
+    'seo_desc' => '引擎、词典、学习全部本机运行，云端一个字节都拿不到。全拼 20 万词条 + Viterbi 整句、双拼×3、中英混输，纠错即教学、喂食式学习，局域网 P2P 端到端加密同步。',
+    'blocks' => [
+        ['_type' => 'hero', '_key' => $k(), 'title' => '你的每一个按键，<br>都只留在你的设备上', 'subtitle' => '松萝 LIANA · 林下 Understory 出品', 'content' => '市面上绝大多数输入法把按键、词频、习惯送上云端换「智能」；松萝把方向反过来——所有智能都在本地产生，云端一个字节都拿不到。Rust 内核 13 个纯逻辑 crate，214 项单元测试全绿，安装包断网可用。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/InputFlow'],
+        ['_type' => 'proof', '_key' => $k(), 'content' => <<<HTML
+<div><b>零遥测</b><span>没有「匿名上报」· 联网纠错</span></div>
+<div><b>20 万</b><span>词条 + Viterbi 整句转换</span></div>
+<div><b>214 项</b><span>内核单元测试全绿</span></div>
+<div><b>&lt;1MB</b><span>学习模型 · 只存本机</span></div>
+HTML],
+        ['_type' => 'feature-detail', '_key' => $k(), 'title' => '三个承诺', 'subtitle' => '松萝的立场', 'content' => <<<HTML
+<div><b>🔒 按键不离开设备</b><span>引擎、词典、学习全部本机运行，安装包可断网使用。</span></div>
+<div><b>🙈 零遥测、零云 API</b><span>没有「匿名上报」，没有「联网纠错」；本地 AI 模型由你显式下载、可随时删除。</span></div>
+<div><b>🔍 一切可审计</b><span>AGPL-3.0 开源，Rust 内核零第三方依赖，插件是数据不是代码。</span></div>
+HTML],
+        ['_type' => 'cluster', '_key' => $k(), 'title' => '输入法的「智能」，代价是什么', 'subtitle' => 'WHY', 'content' => <<<HTML
+<div><h4>智能换数据</h4><p>你打的每一个字都经过输入法——多数输入法把按键、词频、习惯送上云端换「智能」。</p></div>
+<div><h4>群体词频不对你</h4><p>在这个应用、这个话题、这个时段，xian 是先、县还是西安——答案不在人群里，在你和此刻的上下文里。</p></div>
+<div><h4>教了记不住</h4><p>专有名词教了又忘；你的删除被云输入法当噪声丢掉，而不是当教材。</p></div>
+<div><h4>装输入法像装监控</h4><p>遥测埋在「联网纠错」与「用户体验计划」里，关都关不干净。</p></div>
+HTML],
+        ['_type' => 'journey', '_key' => $k(), 'title' => '一个打字的人，怎么被它懂得', 'subtitle' => 'TYPE FLOW', 'content' => <<<HTML
+<div><h3>专业引擎起步</h3><p>全拼（20 万词条 + Viterbi 整句 + 前缀补全）· 双拼×3（小鹤 / 微软 / 自然码）· 英文 · 日语罗马字；中英混输，大写即英文意图。</p></div>
+<div><h3>学你的切换</h3><p>按应用记忆中/英：终端自动英文、微信自动中文——本地统计模型，Shift 一按即学。</p></div>
+<div><h3>纠错即教学</h3><p>选词 +1 · 删除后重选 +1.5 · 选了又删 −2（最强负反馈）——云输入法把删除当噪声，松萝当教材。</p></div>
+<div><h3>喂它一段</h3><p>截图（本机 OCR，零网络）/ 文档 / 粘贴文本 → 专有名词进「营养库」：你的甲方名字教一次，处处可打。</p></div>
+<div><h3>傍晚小结</h3><p>对比「学习开 vs 关」的反事实首选命中率——学习有没有用，数字说话，不掀桌：重排只微调排序，词频与整句概率仍是基本盘。</p></div>
+HTML],
+        ['_type' => 'features', '_key' => $k(), 'title' => '为什么选松萝', 'subtitle' => 'FEATURES', 'content' => <<<HTML
+<div><h3>本地 AI 增强（可选）</h3><p>L0 知你自进化（默认开启）· L1 端上语音边说边落字 · L2 小模型一键下载（sha256 校验，本机运行）· 同声传译（仅 127.0.0.1 回环）——不支持端上就禁用，绝不回退云端。</p></div>
+<div><h3>有生命的桌宠</h3><p>VRM 3D 渲染器（跟随鼠标注视 / 眨眼 / 弹簧骨物理），内置形象离线零下载；点击即中英切换，跨屏跟随。</p></div>
+<div><h3>插件 = 数据包</h3><p>皮肤 / 桌宠 / 词典声明式零代码执行，权限白名单制——无在线市场、无自动更新、无可执行代码。</p></div>
+<div><h3>权限中心</h3><p>全部敏感能力集中展示：碰什么数据、存在哪、怎么删——关闭即清空。</p></div>
+<div><h3>零内容统计</h3><p>速度、纠错、节省击键——只计次与秒，绝不记录任何按键内容。</p></div>
+<div><h3>局域网 P2P 同步</h3><p>设备间扫码配对（Ed25519 + 一次性配对码 + 6 位校验码防中间人），端到端加密，没有服务器没有账号，默认关闭。</p></div>
+HTML],
+        ['_type' => 'checklist', '_key' => $k(), 'title' => '松萝开箱就带', 'subtitle' => 'READY', 'content' => <<<HTML
+<li>全拼（20 万词条 + Viterbi + 前缀补全）· 双拼×3 · 英文（2 万词 + 词频）· 日语罗马字</li>
+<li>中英混输 · 表情模式（连按 aa）· 符号输入（u 前缀）· 简繁转换（OpenCC 词表）</li>
+<li>知你自进化：纠错即教学 + 营养库 + 反事实评估（L0，默认开启）</li>
+<li>本地语音听写与同声传译（可选，显式下载 · 本机运行）</li>
+<li>桌宠 VRM 渲染器（内置形象零下载，可导入 VRoid Studio 自捏角色）</li>
+<li>用户词与剪贴板历史 ChaCha20-Poly1305 加密落盘，密钥在系统钥匙串</li>
+HTML],
+        ['_type' => 'cmp', '_key' => $k(), 'title' => '云输入法 vs 无学习本地输入法 vs 松萝', 'subtitle' => '对比', 'content' => <<<HTML
+<table class="cmp"><thead><tr><th scope="col">维度</th><th scope="col">云输入法</th><th scope="col">无学习本地输入法</th><th scope="col" class="ol">松萝</th></tr></thead><tbody>
+<tr><th scope="row">数据归属</th><td data-l="云输入法">按键、词频、习惯上云</td><td data-l="无学习本地输入法">本机运行，但基本不学习</td><td class="ol y" data-l="松萝">全本机 + 加密落盘，密钥在系统钥匙串</td></tr>
+<tr><th scope="row">学习</th><td data-l="云输入法">云端群体模型，优化「平均人」</td><td data-l="无学习本地输入法">无自进化</td><td class="ol y" data-l="松萝">纠错即教学 + 营养库，反事实命中率可验证</td></tr>
+<tr><th scope="row">AI 能力</th><td data-l="云输入法">云端 AI 推荐，离不开网</td><td data-l="无学习本地输入法">无</td><td class="ol y" data-l="松萝">端上模型显式下载、本机运行、可随时删除</td></tr>
+<tr><th scope="row">隐私透明</th><td data-l="云输入法">隐私政策要读三遍</td><td data-l="无学习本地输入法">权限模糊</td><td class="ol y" data-l="松萝">AGPL 开源 + 权限中心 + 零内容统计</td></tr>
+<tr><th scope="row">跨设备</th><td data-l="云输入法">账号云同步</td><td data-l="无学习本地输入法">逐台手工配置</td><td class="ol y" data-l="松萝">局域网 P2P 端到端加密，无服务器无账号</td></tr>
+</tbody></table><p class="cmp-note">对比口径：「云输入法」指词频与纠错依赖云端服务的输入法产品；「无学习本地输入法」指系统自带类输入法，能力以其官方说明为准。松萝的立场：所有智能都在本地产生。</p>
+HTML],
+        standard_quote_wall($k),
+        ['_type' => 'faq', '_key' => $k(), 'title' => '常见问题', 'subtitle' => 'FAQ', 'content' => <<<HTML
+<details><summary>和 OpenFlow 是什么关系？</summary><p>独立产品，林下 Understory 工作台层（Studio）成员。它不是 Flow，也不依赖矩阵任何产品——单独安装即可用。</p></details>
+<details><summary>我的数据在哪？</summary><p>全部本机：学习模型不到 1MB、加密落盘（ChaCha20-Poly1305，密钥在系统钥匙串），用户词随备份搬走、一键清空；安装包断网可用。</p></details>
+<details><summary>AI 功能要联网吗？</summary><p>不要。本地模型由你显式下载、本机运行、可随时删除；设备不支持端上模型就禁用该能力，绝不回退云端。</p></details>
+<details><summary>怎么装？</summary><p>macOS 13+：双击松萝安装器 → 一键安装到 ~/Library/Input Methods → 键盘设置添加「松萝」即可；开发者可从源码构建（cargo test 214 项全绿是合并底线）。</p></details>
+HTML],
+        understory_matrix_block('liana', $k),
+        ['_type' => 'cta', '_key' => $k(), 'title' => '打字这件事，不需要交给云', 'subtitle' => '松萝 LIANA · 林下 Understory 出品', 'content' => '松萝，附松而生、随枝而长的地衣——不打扰你，但一直在随你进化。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/InputFlow'],
+    ],
+]);
+
+/* ═══════════════════ ConFlow · 视频⇄HTML 双向内容引擎 ═══════════════════ */
+upsert_page('conflow', [
+    'slug' => 'conflow', 'title' => 'ConFlow · 视频⇄HTML 双向内容引擎', 'status' => 'published',
+    'seo_title' => 'ConFlow — 看完一条视频，得到一堆可上线的内容 | 芭乐派',
+    'seo_desc' => '贴一条 YouTube 链接，拿回一篇按论证结构重写的文章 + 一套重新设计的幻灯片。脚本管确定性，LLM 按写作法管语义，防幻觉是规则不是愿望。可直推 OpenFlow 草稿箱一键发布。',
+    'blocks' => [
+        ['_type' => 'hero', '_key' => $k(), 'title' => '看完一条视频，<br>得到一堆可上线的内容', 'subtitle' => 'ConFlow · 视频⇄HTML 双向内容引擎', 'content' => '你不用再「回头整理一下视频」。贴一条链接，拿回一篇能直接发布的文章，和一套能当众放映的幻灯片：脚本管确定性，LLM 按写作法管语义——数字逐字核对、补全显式标注、观点归属分离。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/V2HTML'],
+        ['_type' => 'proof', '_key' => $k(), 'content' => <<<HTML
+<div><b>4 种</b><span>文体写作法（教程/科普/评论/评测）</span></div>
+<div><b>30 种</b><span>幻灯片主题 · 放映中实时换肤</span></div>
+<div><b>10 种</b><span>产出语言 · 防幻觉规则不降级</span></div>
+<div><b>一条</b><span>流水线：视频→文章→幻灯片→短视频</span></div>
+HTML],
+        ['_type' => 'cluster', '_key' => $k(), 'title' => '看过的视频，最后什么都没留下', 'subtitle' => 'WHY', 'content' => <<<HTML
+<div><h4>视频没法用</h4><p>没法搜索、没法引用、没法贴进文档——分享给同事只能甩个链接加一句「这段讲得挺好」。</p></div>
+<div><h4>手工整理三小时</h4><p>把一小时视频整理成文章和 PPT，往往要三个小时——然后你就放弃了。</p></div>
+<div><h4>字幕流水账</h4><p>转写稿按时间线性堆砌，论证结构全丢——那不是内容，是原料。</p></div>
+<div><h4>幻灯片是截图拼贴</h4><p>截图拼贴是时间的碎片；能放映的幻灯片是论证的空间化——标题写论断句，一页一个论点。</p></div>
+HTML],
+        ['_type' => 'journey', '_key' => $k(), 'title' => '贴一条链接之后', 'subtitle' => 'CONTENT FLOW', 'content' => <<<HTML
+<div><h3>贴链接</h3><p>前台表单贴视频链接选文体，或 CLI 一条命令，或在 ZCode 里说「用 v2html 把这条视频转成教程」。</p></div>
+<div><h3>脚本抓素材</h3><p>视频、字幕、关键帧——确定性工作交给脚本，可复现；每步执行日志可查。</p></div>
+<div><h3>按文体写作法成文</h3><p>系统先判定文体再执行对应方法论：教程带逐字核对过的命令和避坑清单；科普直觉→机制→边界分层递进；评论把论点与论据可信度摆开。</p></div>
+<div><h3>重新设计幻灯片</h3><p>论断句标题、只嵌入含独有信息的原视频帧、每页标注时间戳——30 种主题放映中按 T 实时切换。</p></div>
+<div><h3>直接上线</h3><p>文章自动推进 OpenFlow 内容库草稿箱，审完一键发布；幻灯片浏览器直接放映，按 P 导出 PDF。</p></div>
+HTML],
+        ['_type' => 'features', '_key' => $k(), 'title' => '特色能力', 'subtitle' => 'FEATURES', 'content' => <<<HTML
+<div><h3>四种文体四种写作法</h3><p>教程、科普、口播评论、评测访谈各有一套沉淀在 prompts/ 里的方法论——不是「总结视频」。</p></div>
+<div><h3>短视频脚本版</h3><p>同任务可追加产出 45–90 秒口播脚本：节拍表逐拍给秒数、口播词、画面提示——视频→文章→幻灯片→短视频物料，一条流水线。</p></div>
+<div><h3>十种产出语言</h3><p>中 / 英 / 日 / 韩 / 西 / 法 / 德 / 葡 / 俄 / 阿版本文章与幻灯片；语言是硬性要求，防幻觉规则不因语言改变。</p></div>
+<div><h3>反方向也成立</h3><p>v2video 把旧文章逆向成分镜提示词包（Sora / Veo / 可灵直接可用），或输出 HTML 动画演示——视频变内容，内容再变回视频。</p></div>
+<div><h3>三形态运行</h3><p>CLI 直转（一条命令 + 一个 OpenAI 兼容 key）/ 客户端 ZCode 技能 / 服务端 FastAPI + 管理后台——同一份 prompts 与 engine，形态只是壳。</p></div>
+<div><h3>产物原样可查</h3><p>仓库 output/ 目录里的文章与幻灯片无任何手工排版——看到了就是真实产出水平。</p></div>
+HTML],
+        ['_type' => 'feature-detail', '_key' => $k(), 'title' => '防幻觉是规则，不是愿望', 'subtitle' => '方法论写死的防线', 'content' => <<<HTML
+<div><b>数字逐字核对</b><span>数字与命令必须对照转写稿和视频帧逐字核对，不是「大概是这样」。</span></div>
+<div><b>补全显式标注</b><span>视频没讲清但流程必需的内容，用「💡 补全」显式标注——补的署名补全作者，不冒充视频作者。</span></div>
+<div><b>观点归属分离</b><span>视频作者的归作者，补全的署名写作者；每页幻灯片带原视频时间戳，讲错了随时回跳核对。</span></div>
+HTML],
+        ['_type' => 'checklist', '_key' => $k(), 'title' => '一个任务的产物清单', 'subtitle' => 'OUTPUT', 'content' => <<<HTML
+<li>doc.md — 按论证结构重写的文章（教程/科普/评论/评测四写作法）</li>
+<li>slides — 30 主题幻灯片，浏览器直接放映、按 P 导出 PDF</li>
+<li>script.md — 可选：45–90 秒口播短视频脚本（节拍表逐拍秒数）</li>
+<li>storyboard.json — 分镜提示词包（Sora / Veo / 可灵直接可用）</li>
+<li>十种产出语言任选（防幻觉规则不降级）</li>
+<li>文章直推 OpenFlow 内容库草稿箱（带来源视频与幻灯片链接）</li>
+HTML],
+        ['_type' => 'cmp', '_key' => $k(), 'title' => '字幕转写 vs AI 摘要 vs ConFlow', 'subtitle' => '对比', 'content' => <<<HTML
+<table class="cmp"><thead><tr><th scope="col">维度</th><th scope="col">字幕转写工具</th><th scope="col">AI 一段摘要</th><th scope="col" class="ol">ConFlow</th></tr></thead><tbody>
+<tr><th scope="row">产出</th><td data-l="字幕转写工具">转写稿 + 时间轴</td><td data-l="AI 一段摘要">一段要点摘要</td><td class="ol y" data-l="ConFlow">文章 + 幻灯片 + 短视频脚本，一条流水线</td></tr>
+<tr><th scope="row">结构</th><td data-l="字幕转写工具">按时间线性堆砌</td><td data-l="AI 一段摘要">要点列表</td><td class="ol y" data-l="ConFlow">按论证结构重写：论断句标题、一页一论点</td></tr>
+<tr><th scope="row">可信度</th><td data-l="字幕转写工具">原话但无结构</td><td data-l="AI 一段摘要">数字可能编</td><td class="ol y" data-l="ConFlow">数字逐字核对 + 每页时间戳回跳核对 + 补全显式标注</td></tr>
+<tr><th scope="row">幻灯片</th><td data-l="字幕转写工具">无</td><td data-l="AI 一段摘要">无</td><td class="ol y" data-l="ConFlow">30 主题重构，可放映可导出可分享</td></tr>
+<tr><th scope="row">分发</th><td data-l="字幕转写工具">转写稿还要再加工</td><td data-l="AI 一段摘要">停在对话框</td><td class="ol y" data-l="ConFlow">直推 OpenFlow 草稿箱，审完一键发布</td></tr>
+</tbody></table><p class="cmp-note">对比口径：「字幕转写工具」指语音转文字类产品；「AI 一段摘要」指通用大模型直接总结，能力以其官方说明为准。ConFlow 的差异不在转写，在写作法与防幻觉规则。</p>
+HTML],
+        standard_quote_wall($k),
+        ['_type' => 'faq', '_key' => $k(), 'title' => '常见问题', 'subtitle' => 'FAQ', 'content' => <<<HTML
+<details><summary>和 OpenFlow 是什么关系？</summary><p>独立产品，林下 Understory 工作台层（Studio）成员。文章可自动推进 OpenFlow 内容库草稿箱（带来源视频与幻灯片链接，默认草稿态）——不装 OpenFlow 也能单独用。</p></details>
+<details><summary>LLM 会不会一本正经胡说八道？</summary><p>防幻觉写死在方法论里：数字与命令逐字核对、视频没讲清的内容用「💡 补全」显式标注、观点归属严格分离、每页幻灯片带原视频时间戳可回溯核对。</p></details>
+<details><summary>怎么跑？</summary><p>三选一：CLI 一条命令（只需一个 OpenAI 兼容 key，适合脚本化批量）；客户端 ZCode 技能（一句话驱动，质量上限最高）；服务端 FastAPI + 管理后台（浏览器提交、任务队列全自动）。</p></details>
+<details><summary>能产出哪些语言？</summary><p>中 / English / 日本語 / 한국어 / Español / Français / Deutsch / Português / Русский / العربية 十种——标题、正文、要点、图表标注、页脚全部切换，代码与专名保留原文。</p></details>
+HTML],
+        understory_matrix_block('conflow', $k),
+        ['_type' => 'cta', '_key' => $k(), 'title' => '别再「回头整理一下视频」了', 'subtitle' => 'ConFlow · 林下 Understory 出品', 'content' => '贴一条链接，20 分钟后拿回能发布的文章和能放映的幻灯片。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/V2HTML'],
+    ],
+]);
+
+/* ═══════════════════ 零真 ZeroZen · 跨浏览器广告与弹窗净化扩展 ═══════════════════ */
+upsert_page('zerozen', [
+    'slug' => 'zerozen', 'title' => '零真 ZeroZen · 广告与弹窗净化扩展', 'status' => 'published',
+    'seo_title' => '零真 ZeroZen — 跨浏览器广告与弹窗净化扩展 | 芭乐派',
+    'seo_desc' => '规则引擎 + AI 识别 + 下载工具箱。41 规则包 7283 条规则本地拦截，覆盖不到的交给 AI 识别，顺手把视频断点续传存下来。纯本地运行，无后端不收集浏览数据，Chrome/Firefox/Safari。',
+    'blocks' => [
+        ['_type' => 'hero', '_key' => $k(), 'title' => '装上即净，顺手把视频也存下来', 'subtitle' => '零真 ZEROZEN · 林下 Understory 出品', 'content' => '规则引擎负责把广告和弹窗清干净，AI 识别补规则覆盖不到的新花样，下载工具箱负责把视频完整存下来。纯本地运行：没有服务器、没有账号，拦截由浏览器 declarativeNetRequest 引擎完成，扩展本身看不到任何请求内容。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/zerozen'],
+        ['_type' => 'proof', '_key' => $k(), 'content' => <<<HTML
+<div><b>41 包</b><span>7283 条规则 · 本地拦截</span></div>
+<div><b>四层</b><span>协同净化 · 不留空洞</span></div>
+<div><b>三浏览器</b><span>Chrome · Firefox · Safari</span></div>
+<div><b>0 上传</b><span>无后端 · 不收集浏览数据</span></div>
+HTML],
+        ['_type' => 'cluster', '_key' => $k(), 'title' => '打开一个网页，你先看到什么', 'subtitle' => 'WHY', 'content' => <<<HTML
+<div><h4>弹窗、浮层、信息流</h4><p>打开一个资讯站，先看到的是弹窗、浮层、信息流里的「内容」——正文被挤到第三屏。</p></div>
+<div><h4>假下载按钮</h4><p>想下载个视频，要在层层诱导按钮里找出真链接。</p></div>
+<div><h4>规则覆盖不到</h4><p>EasyList 系订阅挡不住原生广告的新花样——按条更新永远慢一拍。</p></div>
+<div><h4>拦截器自己不透明</h4><p>装了拦截器，你不知道它拦了什么、上报了什么。</p></div>
+HTML],
+        ['_type' => 'journey', '_key' => $k(), 'title' => '四层协同，页面回到内容', 'subtitle' => 'CLEAN FLOW', 'content' => <<<HTML
+<div><h3>网络层拦截</h3><p>declarativeNetRequest 按规则拦截请求——浏览器引擎执行，扩展本身看不到任何请求内容。</p></div>
+<div><h3>外观层清理</h3><p>CSS 隐藏 / 移除广告位与浮层；选择器做词边界处理，不误伤正常类名。</p></div>
+<div><h3>弹窗守护</h3><p>劫持无手势 window.open；信息流广告清掉后空位自动回填，不留空洞。</p></div>
+<div><h3>AI 补位</h3><p>规则没见过的原生广告与假下载按钮，Alt+A 让你自配的模型识别——只发元素的结构化描述，不传正文、不截图、不传 Cookie，默认关闭。</p></div>
+<div><h3>点选即规则</h3><p>Alt+Z 选中元素直接生成隐藏 / 移除 / 放行规则；多站点复现自动通用化，学习成果跟着你走。</p></div>
+HTML],
+        ['_type' => 'features', '_key' => $k(), 'title' => '为什么选零真', 'subtitle' => 'FEATURES', 'content' => <<<HTML
+<div><h3>41 规则包 · 7283 条规则</h3><p>按分组独立开关，覆盖中 / 日 / 韩 / 俄 / 欧 / 东南亚 / 印度 / 拉美 / 港澳台站点；冲突时自定义规则优先。</p></div>
+<div><h3>规则订阅</h3><p>EasyList / EasyPrivacy / anti-AD / AdGuard / uBlock / CJX 等 10 个预设源自动更新、备用地址自动切换；Adblock / hosts / 纯域名 / JSON 四种格式通吃。</p></div>
+<div><h3>AI 自主识别</h3><p>你填的任意 OpenAI 兼容接口（OpenAI / DeepSeek / 智谱 / 通义 / 硅基流动 / 本地 Ollama）；带缓存与限额，结果先进「待审」再生效。</p></div>
+<div><h3>下载工具箱</h3><p>视频嗅探（不点播放也能发现）→ m3u8 解密合并（AES-128）→ 分片级断点续传（IndexedDB 持久化）→ 按类型自动归档；后台执行，关掉弹窗不中断。</p></div>
+<div><h3>阅读模式</h3><p>一键提取正文，收束动画进入无干扰阅读；一键隐藏导航 / 侧栏 / 评论。</p></div>
+<div><h3>内网友好</h3><p>私网 / NAS / 路由器后台 / 在线文档（飞书、腾讯文档、Notion……）默认不启用——管理后台与文档编辑零干扰。</p></div>
+HTML],
+        ['_type' => 'feature-detail', '_key' => $k(), 'title' => '独立引流品的边界', 'subtitle' => '诚实，是产品观', 'content' => <<<HTML
+<div><b>不依赖矩阵</b><span>不依赖任何林下产品、不要求注册、不引导转化——给所有人立即可用的浏览器刚需工具。</span></div>
+<div><b>功能免费</b><span>觉得好用可以在控制台配置的支持链接付费（诚实付费），没有弹窗催付。</span></div>
+<div><b>权限最小化</b><span>bookmarks / history / downloads / webRequest 安装时不申请，第一次用到才询问、随时收回；AI 识别只发元素描述与页面地址标题。</span></div>
+HTML],
+        ['_type' => 'checklist', '_key' => $k(), 'title' => '零真开箱就带', 'subtitle' => 'READY', 'content' => <<<HTML
+<li>41 规则包 · 7283 条规则，按分组独立开关（通用/搜索社交/视频直播/资讯电商/区域站点/垂直站点）</li>
+<li>Alt+Z 点选即规则 · Alt+A AI 识别本页</li>
+<li>10 个订阅源：自动更新 + 备用地址切换</li>
+<li>下载工具箱：嗅探 → 解密合并 → 断点续传 → 自动归档 ZeroZen/</li>
+<li>阅读模式：一键提取正文，无干扰阅读</li>
+<li>双语界面（中 / English），纯本地运行</li>
+HTML],
+        ['_type' => 'cmp', '_key' => $k(), 'title' => '传统拦截扩展 vs 纯订阅包 vs 零真', 'subtitle' => '对比', 'content' => <<<HTML
+<table class="cmp"><thead><tr><th scope="col">维度</th><th scope="col">传统拦截扩展</th><th scope="col">纯订阅规则包</th><th scope="col" class="ol">零真</th></tr></thead><tbody>
+<tr><th scope="row">规则覆盖</th><td data-l="传统拦截扩展">内置规则 + 订阅</td><td data-l="纯订阅规则包">只靠订阅更新</td><td class="ol y" data-l="零真">41 内置包 + 10 订阅源 + 点选即规则 + AI 补位</td></tr>
+<tr><th scope="row">新花样广告</th><td data-l="传统拦截扩展">等官方更新</td><td data-l="纯订阅规则包">等维护者更新</td><td class="ol y" data-l="零真">AI 识别补位（自配接口，结果先待审）</td></tr>
+<tr><th scope="row">弹窗与信息流</th><td data-l="传统拦截扩展">部分处理</td><td data-l="纯订阅规则包">只管网络层</td><td class="ol y" data-l="零真">四层协同：网络 + 外观 + 弹窗守护 + 空位回填</td></tr>
+<tr><th scope="row">下载需求</th><td data-l="传统拦截扩展">要另装下载工具</td><td data-l="纯订阅规则包">无</td><td class="ol y" data-l="零真">内置嗅探 / 解密合并 / 分片断点续传</td></tr>
+<tr><th scope="row">隐私透明</th><td data-l="传统拦截扩展">隐私政策要读</td><td data-l="纯订阅规则包">规则来源要审</td><td class="ol y" data-l="零真">declarativeNetRequest 引擎执行，扩展看不到请求内容；权限用到才申请</td></tr>
+</tbody></table><p class="cmp-note">对比口径：「传统拦截扩展」指主流广告拦截类扩展；「纯订阅规则包」指只提供规则订阅的方案，能力以其官方说明为准。零真额外把「下载」这一刚需一并收进工具箱。</p>
+HTML],
+        standard_quote_wall($k),
+        ['_type' => 'faq', '_key' => $k(), 'title' => '常见问题', 'subtitle' => 'FAQ', 'content' => <<<HTML
+<details><summary>和 OpenFlow 是什么关系？</summary><p>独立引流品，林下 Understory 工作台层（Studio）成员。不依赖矩阵任何产品、不要求注册、不引导转化——代表矩阵「本地优先、诚实边界」的产品观。</p></details>
+<details><summary>我的浏览数据安全吗？</summary><p>无后端，不收集不上传任何浏览数据：网络拦截由浏览器 declarativeNetRequest 引擎完成，扩展本身看不到请求内容；AI 识别只发元素的结构化描述与页面地址标题，不传正文、不截图、不传 Cookie，且默认关闭。</p></details>
+<details><summary>内网站点会被误拦吗？</summary><p>不会。私网 / NAS / 路由器后台 / 在线文档（飞书、腾讯文档、Notion 等）默认不启用——管理后台与文档编辑零干扰。</p></details>
+<details><summary>怎么装？</summary><p>Chrome / Edge / Arc：chrome://extensions 开发者模式加载 dist/chrome；Firefox 128+ 安装 xpi；Safari（macOS 13+ / iOS 16.4+）Xcode 构建后在设置勾选。装完先记住 Alt+Z（点选屏蔽）与 Alt+A（AI 识别本页）。</p></details>
+HTML],
+        understory_matrix_block('zerozen', $k),
+        ['_type' => 'cta', '_key' => $k(), 'title' => '装上即净，浏览还给内容', 'subtitle' => '零真 ZEROZEN · 林下 Understory 出品', 'content' => '功能免费，觉得好用再付费（诚实付费）——规则开源可审计，权限用到才申请。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/zerozen'],
+    ],
+]);
+
+echo "完成：林下 Studio 全量 5 页（linkto / litmus / liana / conflow / zerozen）\n";

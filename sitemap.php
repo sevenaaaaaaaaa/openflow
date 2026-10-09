@@ -65,7 +65,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <?php endforeach; ?>
 
   <!-- 产品矩阵二级页（产品营销页；后台 page-builder 维护） -->
-  <?php foreach (['mflow', 'webs-flow', 'userloop', 'inflow', 'payflow', 'learnflow', 'linkto', 'litmus'] as $pslug): ?>
+  <?php foreach (['mflow', 'webs-flow', 'userloop', 'inflow', 'payflow', 'learnflow', 'linkto', 'litmus', 'liana', 'conflow', 'zerozen'] as $pslug): ?>
   <url><loc><?=$base?>/product/<?=htmlspecialchars($pslug)?></loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
   <?php endforeach; ?>
 
