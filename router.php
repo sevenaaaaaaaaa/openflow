@@ -60,6 +60,7 @@ $rules = [
     '~^/developers/?$~'                  => 'developers.php',
     '~^/product/openflow/?$~'            => 'product.php',
     '~^/product/(mflow|webs-flow|userloop|inflow|payflow|learnflow)/?$~' => 'front-builder.php?slug=$1',
+    '~^/product/(litmus|liana|conflow|linkto|zerozen)/?$~' => 'front-builder.php?slug=$1',
     '~^/product/?$~'                     => 'hub-products.php',
     '~^/capability/openflow/?$~'         => 'capability.php',
     '~^/capability/([a-z0-9_-]+)/?$~'    => 'hub-capabilities.php?cap=$1',
