@@ -40,7 +40,7 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>活动 · 线上直播 / 线下聚会 | <?=htmlspecialchars($siteName)?></title>
-<meta name="description" content="芭乐派活动：线上直播、线下聚会。和同类人碰个面，报名即获增长打法。">
+<meta name="description" content="林下 Understory 活动：线上直播、线下聚会。和同类人碰个面，报名即获增长打法。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 活动页独有：活动行（日期块 + 标题 + 元信息）。其余全部来自 modules.css。 */
@@ -82,7 +82,7 @@ $siteSlogan = site_config_get('site_slogan', '帮一人公司设计 Agent 能跑
   <!-- ══ 首屏 ══ -->
   <section id="top" class="reveal in" data-od-anchor data-od-id="events-hero">
     <div class="hero-center" style="padding-bottom:0">
-      <span class="kicker">芭乐派 · 活动</span>
+      <span class="kicker">林下 Understory · 活动</span>
       <h1>和<i class="si">同类人</i>碰个面</h1>
       <p class="lead">线上直播 / 线下聚会 · 报名即获增长打法</p>
       <div class="tab-bar" role="navigation" aria-label="活动筛选">

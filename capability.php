@@ -1,6 +1,6 @@
 <?php
 /**
- * 能力 | 芭乐派 · OpenFlow（动态版）
+ * 能力 | 林下 Understory · OpenFlow（动态版）
  *
  * v7（2026-09-01）：换骨架不换文案。模块全部来自 assets/modules.css 的共享 archetype；
  * 六项能力原为 JS 渲染的可展开卡片 → 服务端直出的 tab（tab-bar + tab-panel），爬虫可见、键盘可达。
@@ -106,7 +106,7 @@ $__capMeta  = $__capDesc !== '' ? $__capDesc : 'OpenFlow 七大能力域：内�
 $__capCanon = site_config_get('site_url') . '/capability' . ($__cap !== '' ? '/' . $__cap : '');
 if (function_exists('of_seo_canonical')) of_seo_canonical($__capCanon);
 if (function_exists('seo_head')): seo_head(['title' => $__capTitle, 'description' => $__capMeta, 'canonical' => $__capCanon]); endif; ?>
-<title><?=htmlspecialchars($__capName !== '' ? ('能力 · ' . $__capName . ' | 芭乐派 · OpenFlow') : '能力 · TIPS 四力 | 芭乐派 · OpenFlow')?></title>
+<title><?=htmlspecialchars($__capName !== '' ? ('能力 · ' . $__capName . ' | 林下 Understory · OpenFlow') : '能力 · TIPS 四力 | 林下 Understory · OpenFlow')?></title>
 <meta name="description" content="<?=htmlspecialchars($__capMeta)?>">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
@@ -276,12 +276,12 @@ if (function_exists('seo_head')): seo_head(['title' => $__capTitle, 'description
   <section id="open" class="sec reveal" data-od-anchor data-od-id="capability-open">
     <div class="sec-head center">
       <span class="kicker">开放生态</span>
-      <h2>开放，是默认值（也是芭乐派的坚持）</h2>
+      <h2>开放，是默认值（也是林下 Understory的坚持）</h2>
     </div>
     <div class="cols n4">
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v12a4 4 0 0 0 8 0V4M8 8h8"/></svg></span><h3>开放 API</h3><p>完整 REST API，把 OpenFlow 嵌入你的增长系统。</p></div>
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16"/></svg></span><h3>Webhook</h3><p>双向触发与回调，与任意系统实时对接。</p></div>
-      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 9h16M9 4v5"/></svg></span><h3>Skill / 模板</h3><p>社区与芭乐派模板，一键复用增长打法。</p></div>
+      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 9h16M9 4v5"/></svg></span><h3>Skill / 模板</h3><p>社区与林下 Understory模板，一键复用增长打法。</p></div>
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4m0 12v4M2 12h4m12 0h4M5 5l3 3m8 8 3 3M19 5l-3 3M8 16l-3 3"/><circle cx="12" cy="12" r="3"/></svg></span><h3>永久开源</h3><p>核心能力开源，鱼与渔相结合，策略随工具迭代。</p></div>
     </div>
   </section>

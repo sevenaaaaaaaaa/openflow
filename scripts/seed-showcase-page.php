@@ -18,7 +18,7 @@ $page = [
     'slug'      => 'growth-os-tour',
     'title'     => '增长操作系统 · 完整能力巡礼',
     'status'    => 'published',
-    'seo_title' => '增长操作系统 · 完整能力巡礼 | 芭乐派',
+    'seo_title' => '增长操作系统 · 完整能力巡礼 | 林下 Understory',
     'seo_desc'  => '从一份产品简介到一条完整转化漏斗：触达、洞察、个性化、转化、复购，一个系统跑通。',
     'blocks'    => [
         // 1) Hero

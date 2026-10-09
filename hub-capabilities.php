@@ -1,6 +1,6 @@
 <?php
 /**
- * 能力 | 芭乐派 · OpenFlow（动态版）
+ * 能力 | 林下 Understory · OpenFlow（动态版）
  *
  * v7（2026-09-01）：换骨架不换文案。模块全部来自 assets/modules.css 的共享 archetype；
  * 六项能力原为 JS 渲染的可展开卡片 → 服务端直出的 tab（tab-bar + tab-panel），爬虫可见、键盘可达。
@@ -106,8 +106,8 @@ $__capTitle = $__capName !== '' ? ($__capName . ' | 产品能力 · OpenFlow') :
 $__capMeta  = $__capDesc !== '' ? $__capDesc : 'OpenFlow 七大能力域：内容触达、数据洞察、个性化运营、销售增强、行动脊柱、增长引擎与永久开源生态，42 个真实模块全部可在代码与后台中核验。';
 $__capCanon = site_config_get('site_url') . '/capability' . ($__cap !== '' ? '/' . $__cap : '');
 if (function_exists('of_seo_canonical')) of_seo_canonical($__capCanon);
-if (function_exists('seo_head')): seo_head(['title' => '能力全景· 芭乐派', 'description' => $__capMeta, 'canonical' => $__capCanon]); endif; ?>
-<title><?=htmlspecialchars($__capName !== '' ? ('能力 · ' . $__capName . ' | 芭乐派 · OpenFlow') : '能力 · TIPS 四力 | 芭乐派 · OpenFlow')?></title>
+if (function_exists('seo_head')): seo_head(['title' => '能力全景· 林下 Understory', 'description' => $__capMeta, 'canonical' => $__capCanon]); endif; ?>
+<title><?=htmlspecialchars($__capName !== '' ? ('能力 · ' . $__capName . ' | 林下 Understory · OpenFlow') : '能力 · TIPS 四力 | 林下 Understory · OpenFlow')?></title>
 <meta name="description" content="<?=htmlspecialchars($__capMeta)?>">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>

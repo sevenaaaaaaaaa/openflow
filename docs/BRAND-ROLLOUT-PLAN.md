@@ -49,7 +49,7 @@
 | # | 改动 | 落点 |
 |---|---|---|
 | A1.1 | 「Webs Flow」→「WebsFlow」 | 全站字符串替换（PHP 模板 + `builder-pages.json` 数据）；**URL slug 不变**（已拍板） |
-| A1.2 | 「七个独立产品」口径更新 | 现网此说法出现在每个产品页的「产品矩阵」tool-grid（×7）、首页 bento、demo-products 等；新口径按命名基线表重写（如「按三层定位展示」或「芭乐派产品家族 N 件」，见 A2） |
+| A1.2 | 「七个独立产品」口径更新 | 现网此说法出现在每个产品页的「产品矩阵」tool-grid（×7）、首页 bento、demo-products 等；新口径按命名基线表重写（如「按三层定位展示」或「林下 Understory 产品家族 N 件」，见 A2） |
 | A1.3 | 新成员名字进矩阵文案 | ThirdC / InputFlow / ConFlow / Linkto（/ ZeroZen）在「产品矩阵」「与谁互通」区块获得一行介绍 |
 | A1.4 | 三层叙事入文案 | 「入口层→进阶层→工作台层」升级叙事（`PRODUCT-MATRIX.md` v2 的口径）体现在首页三条路、矩阵聚合页的引导语，**但不得重排版面** |
 
@@ -117,6 +117,12 @@
          （understory-up 主品牌化第一步）；核查 pricing / docs / hub-capabilities 无矩阵提及无需改；
          剩余：P2 长尾 + footer 词典串（连六语词典一起）在收口批）
 第 5 步  收口：sitemap/llms/词典/矩阵互链全量复查 → 交回 SITE-UPGRADE-PLAN 阶段 2
+第 6 步  ✅ 主品牌切换（2026-10-09 晚 · 七o 拍板 understory-up）：
+         「芭乐派」→「林下 Understory」全站切换——前台 24 页 PHP + assets/src JS + SiteConfig
+         （site_name/site_desc/site_keywords；company_name 注册名暂留待确认）+ llms/seo-head +
+         builder-pages 15 个 seo_title + nav.json + index.json 文章 + gtm-onepager 一页纸 +
+         gtm-deck 幻灯片 + 四课 PPT（Obsidian 源→sync-decks.sh 上线）+ docs 护栏文档；
+         保留不动：LICENSE 版权行 / legacy 历史快照 / tests mock / seed 历史脚本 / 匹配词表留双名
 ```
 
 > **为什么 B 先 A 后（2026-10-09 拍板）**：品牌名统一与「七个产品」口径重写要覆盖全部页面，

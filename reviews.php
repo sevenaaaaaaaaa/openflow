@@ -54,7 +54,7 @@ $typeIcons = ['site' => '🌐', 'product' => '🎓', 'book' => '📚', 'event' =
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>点评榜单 | 芭乐派 · OpenFlow</title>
+<title>点评榜单 | 林下 Understory · OpenFlow</title>
 <meta name="description" content="真实用户对增长工具与站点的评分与点评榜单，帮你快速选出值得用的产品。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>

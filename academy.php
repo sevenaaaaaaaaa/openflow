@@ -93,7 +93,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>学院 · 社区知识库 | <?=htmlspecialchars($siteName)?></title>
-<meta name="description" content="芭乐派增长方法论内容库：文章 · 资料下载 · 播客 · 视频教程，从利润公式到 Agent 系统，把增长讲清楚、用起来">
+<meta name="description" content="林下 Understory 增长方法论内容库：文章 · 资料下载 · 播客 · 视频教程，从利润公式到 Agent 系统，把增长讲清楚、用起来">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 学院页独有：首屏搜索框与统计行。其余全部来自 modules.css。 */
@@ -147,7 +147,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
       <div class="hero-copy">
         <span class="kicker">CONTENT · ACADEMY</span>
         <h1>一人公司的增长打法，<br><i class="si">都在这里</i></h1>
-        <p class="lead">文章 · 资料 · 播客 · 视频，芭乐派增长方法论的完整内容库。从利润公式到 Agent 系统，把增长讲清楚、用起来。</p>
+        <p class="lead">文章 · 资料 · 播客 · 视频，林下 Understory 增长方法论的完整内容库。从利润公式到 Agent 系统，把增长讲清楚、用起来。</p>
         <form class="search" action="/search" method="get" role="search">
           <input class="inp" type="search" name="q" placeholder="搜索文章、课程、资料…" aria-label="搜索">
           <button class="btn primary" type="submit">搜索</button>
@@ -177,7 +177,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
   <section id="nav" class="sec reveal" data-od-anchor data-od-id="academy-nav">
     <div class="strip">
       <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-4"/></svg></span>
-      <div class="tx"><b>想看系统的？先走芭乐派学习路径</b><span>New-1~4 基石课免费开放 → R.B.E 训练营带你 8 周设计出增长系统</span></div>
+      <div class="tx"><b>想看系统的？先走林下 Understory学习路径</b><span>New-1~4 基石课免费开放 → R.B.E 训练营带你 8 周设计出增长系统</span></div>
       <a class="btn primary" href="/courses">前往课程 →</a>
     </div>
     <div class="tab-bar" role="navigation" aria-label="内容分类">
@@ -389,7 +389,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
   <!-- ══ 收尾 CTA ══ -->
   <section id="next" class="reveal" data-od-anchor data-od-id="academy-cta">
     <div class="cta-band">
-      <span class="kicker">芭乐派 · 学院</span>
+      <span class="kicker">林下 Understory · 学院</span>
       <h2>读到这儿了，不如直接装一个试试</h2>
       <p class="lead">方法论在学院，工具在 OpenFlow，落地在 R.B.E 训练营——三条路，最后都通向同一个地方。</p>
       <div class="cta-row">

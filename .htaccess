@@ -113,7 +113,7 @@ RewriteRule ^product/openflow/?$ product.php [L,QSA]
 RewriteRule ^demo/products/?$       /product     [R=301,L,NE]
 RewriteRule ^demo/capabilities/?$   /capability  [R=301,L,NE]
 RewriteRule ^demo/home-v2/?$        /            [R=301,L,NE]
-# ── 芭乐派产品矩阵：前台产品页统一二级目录 /product/{产品}（后台 page-builder 可继续打磨） ──
+# ── 林下 Understory 产品矩阵：前台产品页统一二级目录 /product/{产品}（后台 page-builder 可继续打磨） ──
 RewriteRule ^product/mflow/?$      front-builder.php?slug=mflow      [L,QSA]
 RewriteRule ^product/webs-flow/?$  front-builder.php?slug=webs-flow  [L,QSA]
 RewriteRule ^product/userloop/?$   front-builder.php?slug=userloop   [L,QSA]

@@ -1,6 +1,6 @@
 <?php
 /**
- * 课程 | 芭乐派 · OpenFlow（动态版）
+ * 课程 | 林下 Understory · OpenFlow（动态版）
  *
  * v7（2026-09-01）：换骨架不换文案。模块全部来自 assets/modules.css 的共享 archetype；
  * 本页 <style> 只保留课程卡（可展开大纲 + 加入学习）这一件独有部件。
@@ -16,7 +16,7 @@ header('Cache-Control: no-cache, max-age=0');
 
 $PATH = [
   ['基石','New-1~4 入门课','免费 · 4 节','用 OpenFlow 理解一人公司增长：冷启动 / 增长模型 / 精算体系 / Agent 知识管理。',['一人公司冷启动诀窍','核心增长模型','AI 精算体系','Agent 知识管理']],
-  ['方法','芭乐派方法论','R.B.E 前四模块','利润公式、四引擎、DIKW 洞察、触达体系——理解增长系统的底层逻辑。',['Agent-Native 利润公式','四引擎模型','DIKW 数据洞察','触达体系']],
+  ['方法','林下 Understory 方法论','R.B.E 前四模块','利润公式、四引擎、DIKW 洞察、触达体系——理解增长系统的底层逻辑。',['Agent-Native 利润公式','四引擎模型','DIKW 数据洞察','触达体系']],
   ['训练营','R.B.E 系统设计营','8 周 · ¥9,999','M0-M8 九模块，用 OpenFlow 画出你的 Task Graph，产出专属增长模型白皮书。',['O.L.B 诊断','Task Graph 设计','增长模型白皮书','毕业后进社区']],
 ];
 $COURSES = [
@@ -35,9 +35,9 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '课程 | OpenFlow', 'description' => '芭乐派 R.B.E 训练营：New-1~4 基石课 + 八周系统设计营，用 OpenFlow 设计 Agent 能跑的增长系统，让方法论边学边用。', 'canonical' => site_config_get('site_url') . '/courses']); endif; ?>
-<title>课程 · New-1~4 + R.B.E 训练营 | 芭乐派</title>
-<meta name="description" content="芭乐派 R.B.E 训练营：New-1~4 基石课 + 八周系统设计营，用 OpenFlow 设计 Agent 能跑的增长系统，让方法论边学边用。">
+<?php if (function_exists('seo_head')): seo_head(['title' => '课程 | OpenFlow', 'description' => '林下 Understory R.B.E 训练营：New-1~4 基石课 + 八周系统设计营，用 OpenFlow 设计 Agent 能跑的增长系统，让方法论边学边用。', 'canonical' => site_config_get('site_url') . '/courses']); endif; ?>
+<title>课程 · New-1~4 + R.B.E 训练营 | 林下 Understory</title>
+<meta name="description" content="林下 Understory R.B.E 训练营：New-1~4 基石课 + 八周系统设计营，用 OpenFlow 设计 Agent 能跑的增长系统，让方法论边学边用。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 课程页独有：课程卡（大纲可展开 · 加入学习）。其余全部来自 modules.css。 */
@@ -75,9 +75,9 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   <!-- ══ 首屏 ══ -->
   <section id="top" class="reveal in" data-od-anchor data-od-id="courses-hero">
     <div class="hero-center" style="padding-bottom:0">
-      <span class="kicker">芭乐派 · R.B.E 训练营</span>
+      <span class="kicker">林下 Understory · R.B.E 训练营</span>
       <h1>学完，你手上会有<br><i class="si">一套在跑的增长系统</i></h1>
-      <p class="lead">学完 New-1~4，你会知道业务里哪里该让 Agent 做；走完 R.B.E 训练营，你会画出自己专属的 Task Graph。理论（芭乐派方法论）→ 工具（OpenFlow）→ 落地（Agent 增长引擎），边学边用。</p>
+      <p class="lead">学完 New-1~4，你会知道业务里哪里该让 Agent 做；走完 R.B.E 训练营，你会画出自己专属的 Task Graph。理论（林下 Understory 方法论）→ 工具（OpenFlow）→ 落地（Agent 增长引擎），边学边用。</p>
       <div class="cta-row">
         <button class="btn primary" data-act="start" data-od-id="courses-cta-start">免费开始学习</button>
         <a class="btn ghost" href="/community" data-od-id="courses-cta-community">进入社区</a>
@@ -200,7 +200,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   <section id="next" class="reveal" data-od-anchor data-od-id="courses-cta">
     <div class="cta-band">
       <span class="kicker">开始学习</span>
-      <h2>今天加入芭乐派，明天设计你的增长系统</h2>
+      <h2>今天加入林下 Understory，明天设计你的增长系统</h2>
       <p class="lead">New-1~4 免费开放，R.B.E 训练营带你 8 周设计出专属的 Agent-Native 增长模型。</p>
       <div class="cta-row">
         <button class="btn primary" data-act="start">免费开始学习</button>

@@ -85,7 +85,7 @@ function render_card(array $a, callable $catOf): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?=htmlspecialchars($pageTitle)?> · 学院 | <?=$siteName?></title>
-<meta name="description" content="芭乐派学院 · 文章：增长实践、AI 工具评测、行业洞察，共 <?=$total?> 篇。">
+<meta name="description" content="林下 Understory 学院 · 文章：增长实践、AI 工具评测、行业洞察，共 <?=$total?> 篇。">
 <?php if ($filtering): ?><meta name="robots" content="noindex,follow"><?php endif; ?>
 <link rel="canonical" href="<?=htmlspecialchars(rtrim(site_config_get('site_url', ''), '/') . '/articles')?>">
 <meta property="og:title" content="<?=htmlspecialchars($pageTitle . ' · 学院 | ' . $siteName)?>">

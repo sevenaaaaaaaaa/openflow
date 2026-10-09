@@ -18,7 +18,7 @@ admin_header('矩阵互通');
   <?php admin_sidebar('matrix'); ?>
   <div class="main">
     <div class="v-head">
-      <div><h1>矩阵互通</h1><p class="v-sub">OpenFlow 是芭乐派产品矩阵的账号真源:兄弟产品(MFlow / inFlow / UserLoop / PayFlow / LearnFlow…)用「一次性短票 + client_secret」兑换用户身份,实现免二次登录。票据 60 秒有效、用后即焚,泄露窗口最小。</p></div>
+      <div><h1>矩阵互通</h1><p class="v-sub">OpenFlow 是林下 Understory 产品矩阵的账号真源:兄弟产品(MFlow / inFlow / UserLoop / PayFlow / LearnFlow…)用「一次性短票 + client_secret」兑换用户身份,实现免二次登录。票据 60 秒有效、用后即焚,泄露窗口最小。</p></div>
     </div>
 
     <?php if ($msg): ?><div class="card" style="border-color:<?=$kind === 'error' ? 'var(--danger)' : 'var(--ok)'?>"><?=htmlspecialchars($msg)?></div><?php endif; ?>

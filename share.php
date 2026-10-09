@@ -39,7 +39,7 @@ if ($data === null) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>分享链接无效 · 芭乐派</title>
+<title>分享链接无效 · 林下 Understory</title>
 <link rel="stylesheet" href="/assets/fonts/fonts.css">
 <link rel="stylesheet" href="/assets/tokens.css?v=<?=defined('OF_SHELL_VER') ? OF_SHELL_VER : '1'?>">
 <style>body{font-family:var(--font-sans,system-ui);background:var(--bg,#f7f6f3);color:var(--text,#1b1b1b);margin:0}
@@ -52,7 +52,7 @@ if ($data === null) {
 <div class="sh-fail">
   <h1>这个分享链接已经不可用</h1>
   <p>链接可能被创建者撤销，或者已过有效期。如果你确实需要查看，请向对方要一个新的链接。</p>
-  <p><a href="/">前往芭乐派首页</a></p>
+  <p><a href="/">前往林下 Understory 首页</a></p>
 </div>
 </body>
 </html>
@@ -68,7 +68,7 @@ $prioCls = ['urgent' => 'p-urgent', 'high' => 'p-high', 'low' => 'p-low'];
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title><?=htmlspecialchars($data['project'])?> · <?=htmlspecialchars($data['view_label'])?>（只读分享）· 芭乐派</title>
+<title><?=htmlspecialchars($data['project'])?> · <?=htmlspecialchars($data['view_label'])?>（只读分享）· 林下 Understory</title>
 <meta name="description" content="<?=htmlspecialchars($data['project'])?> 的<?=htmlspecialchars($data['view_label'])?>视图（只读分享）。">
 <link rel="stylesheet" href="/assets/fonts/fonts.css">
 <link rel="stylesheet" href="/assets/tokens.css?v=<?=defined('OF_SHELL_VER') ? OF_SHELL_VER : '1'?>">
@@ -225,7 +225,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans
 
   <div class="sh-foot">
     <span>这是只读分享页：内容由项目负责人分享，随时可能被撤销；如需修改请找对方。</span>
-    <span style="margin-left:auto">由 <a href="/" rel="noopener">芭乐派 · OpenFlow</a> 生成</span>
+    <span style="margin-left:auto">由 <a href="/" rel="noopener">林下 Understory · OpenFlow</a> 生成</span>
   </div>
 </div>
 </body>

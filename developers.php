@@ -1,6 +1,6 @@
 <?php
 /**
- * 开发者与生态 | 芭乐派 · OpenFlow
+ * 开发者与生态 | 林下 Understory · OpenFlow
  *
  * 2026-09-20：新增。定位方向（开放 / 面向开发者 / AI agent / 兼容 / 可定制）的对外落点。
  *
@@ -65,8 +65,8 @@ foreach ($apiFiles as $f) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '开发者与生态 | 芭乐派 · OpenFlow', 'description' => '开源（MIT）、可自托管：116 个 API 端点 + OpenAPI 规范、23 个 MCP 工具、插件 SDK 与适配规范。数据在你自己的服务器。', 'canonical' => site_config_get('site_url') . '/developers']); endif; ?>
-<title>开发者与生态 · 芭乐派 · OpenFlow</title>
+<?php if (function_exists('seo_head')): seo_head(['title' => '开发者与生态 | 林下 Understory · OpenFlow', 'description' => '开源（MIT）、可自托管：116 个 API 端点 + OpenAPI 规范、23 个 MCP 工具、插件 SDK 与适配规范。数据在你自己的服务器。', 'canonical' => site_config_get('site_url') . '/developers']); endif; ?>
+<title>开发者与生态 · 林下 Understory · OpenFlow</title>
 <meta name="description" content="开源（MIT）、可自托管：116 个 API 端点 + OpenAPI 规范、23 个 MCP 工具、插件 SDK 与适配规范。数据在你自己的服务器。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}</script>
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>

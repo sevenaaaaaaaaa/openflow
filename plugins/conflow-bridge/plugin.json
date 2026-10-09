@@ -2,7 +2,7 @@
   "id": "conflow-bridge",
   "name": "ConFlow 桥接",
   "version": "0.1.0",
-  "author": "芭乐派",
+  "author": "林下 Understory",
   "description": "把 ConFlow（视频→内容引擎）接入 OpenFlow：后台菜单提交视频任务、查看进度，成品经 ConFlow 推送直达内容库。附 AI 岗位工具节点 API。",
   "enabled_by_default": false,
   "permissions": ["hooks", "config", "log", "data.write", "http", "menu", "page", "api"]

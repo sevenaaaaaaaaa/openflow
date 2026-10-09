@@ -270,7 +270,7 @@ fetch('/api/form-submit', {
 
   <section class="reveal" data-od-anchor data-od-id="docs-cta">
     <div class="cta-band">
-      <span class="kicker">芭乐派 · OpenFlow</span>
+      <span class="kicker">林下 Understory · OpenFlow</span>
       <h2>文档看懂了，系统该动手设计了</h2>
       <p class="lead">工具在文档，方法论在课程，落地在你的增长系统。装完 OpenFlow，先从 New-1 开始。</p>
       <div class="cta-row"><a href="/courses" class="btn primary">开始学习 New-1</a><a href="/community" class="btn ghost">进增长社区</a></div>

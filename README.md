@@ -138,4 +138,4 @@ OpenFlow 的核心能力——包括最重要的 TIPS 范式——**过去、现
 
 ## License
 
-[MIT](LICENSE) · 由 [芭乐派](https://nownexts.com) 维护 —— 增长方法论与增长社区。
+[MIT](LICENSE) · 由 [林下 Understory](https://nownexts.com) 维护 —— 增长方法论与增长社区。

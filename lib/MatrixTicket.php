@@ -1,6 +1,6 @@
 <?php
 /**
- * MatrixTicket — 芭乐派产品矩阵账号互通 v1
+ * MatrixTicket — 林下 Understory 产品矩阵账号互通 v1
  *
  * 模型:OpenFlow 是矩阵的**账号真源(SSO Hub)**,兄弟产品(MFlow/inFlow/UserLoop/PayFlow/LearnFlow)
  * 各自在后台登记一个 client_secret;用户在 OpenFlow 登录后,点「进入 XX」时本站签发一张

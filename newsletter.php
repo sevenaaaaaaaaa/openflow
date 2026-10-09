@@ -22,7 +22,7 @@ if (is_array($subs)) $subsCount = count($subs);
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>订阅内容更新 | <?=htmlspecialchars($siteName)?></title>
-<meta name="description" content="订阅芭乐派增长系统的最新洞察与每周更新，了解内容增长、AI 运营与客户转化的一线实践。绝无打扰，随时可退订。">
+<meta name="description" content="订阅林下 Understory增长系统的最新洞察与每周更新，了解内容增长、AI 运营与客户转化的一线实践。绝无打扰，随时可退订。">
 <link rel="canonical" href="/newsletter">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>

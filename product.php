@@ -1,6 +1,6 @@
 <?php
 /**
- * 产品 | 芭乐派 · OpenFlow（动态版）
+ * 产品 | 林下 Understory · OpenFlow（动态版）
  *
  * v7（2026-09-01）：换骨架不换文案。模块全部来自 assets/modules.css 的共享 archetype；
  * 本页 <style> 只保留产品页独有的四个演示部件（编排画布 / 对话 / 连接器 / 闭环演示与日志）。
@@ -14,7 +14,7 @@ $CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮�
 $FAQS = [
   ['OpenFlow 需要写代码吗？','不需要。TIPS 框架下可视化配置触达/洞察/个性化/销售四力；需要时可用 Task Graph 编排 Agent，深浅兼顾。'],
   ['适合一人公司吗？','OpenFlow 就是为 OPC 一人公司设计的。装完即用，增长引擎自动爬取、洞察、转化，一个人也能驱动整套增长系统。'],
-  ['和「芭乐派」是什么关系？','OpenFlow 是芭乐派增长操作系统的开源底座。芭乐派讲方法论（利润公式/四引擎/Agent 系统），OpenFlow 是落地工具——鱼与渔相结合。'],
+  ['和「林下 Understory」是什么关系？','OpenFlow 是林下 Understory 增长操作系统的开源底座。林下 Understory讲方法论（利润公式/四引擎/Agent 系统），OpenFlow 是落地工具——鱼与渔相结合。'],
   ['核心能力真的永久开源吗？','是。Tools 和 Strategy 双向迭代，核心能力永久开源，坚持让用户既用得上工具，也能用最前沿的增长策略。'],
   ['数据安全如何保证？','传输与存储加密、细粒度权限、审计日志；支持私有化部署，数据不出域。'],
 ];
@@ -27,7 +27,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <?php if (function_exists('seo_head')): seo_head(['title' => '产品 | OpenFlow', 'description' => 'Open Flow 产品介绍：连接、编排、执行三步原理，可视化画布、AI 步骤、开放连接器与可运行演示。', 'canonical' => site_config_get('site_url') . '/product']); endif; ?>
-<title>产品 · 芭乐派 · OpenFlow 增长操作系统</title>
+<title>产品 · 林下 Understory · OpenFlow 增长操作系统</title>
 <meta name="description" content="Open Flow 产品介绍：连接、编排、执行三步原理，可视化画布、AI 步骤、开放连接器与可运行演示。">
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。 -->
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
@@ -89,7 +89,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   <!-- ══ 首屏 ══ -->
   <section id="top" class="reveal in" data-od-anchor data-od-id="product-hero">
     <div class="hero-center" style="padding-bottom:0">
-      <span class="kicker">产品 · 芭乐派 OpenFlow</span>
+      <span class="kicker">产品 · 林下 Understory OpenFlow</span>
       <h1>一个平台，<br>跑通你的<i class="si">整条增长链路</i></h1>
       <p class="lead">一人公司最缺的，不是一个工具，而是一套系统。OpenFlow 把内容、数据、自动化、触达连成一套增长引擎——让 Agent 跑流程，你只做判断。不是 All in one，而是 Everything。</p>
       <div class="cta-row">
@@ -122,7 +122,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="sec-head center">
       <span class="kicker">框架</span>
       <h2>TIPS 四力：触达 · 洞察 · 个性化 · 销售</h2>
-      <p class="lead">OpenFlow 的一切都围绕这四个力组织。理解 TIPS，你就理解了整个平台——也是芭乐派增长操作系统的方法论底座。</p>
+      <p class="lead">OpenFlow 的一切都围绕这四个力组织。理解 TIPS，你就理解了整个平台——也是林下 Understory 增长操作系统的方法论底座。</p>
     </div>
     <div class="cols n4">
       <div><span class="ltr">T</span><h3>触达 Touch</h3><p>内容引擎、分发渠道、触达体系。正确的时间、渠道、内容，把信息递到用户面前。</p></div>
