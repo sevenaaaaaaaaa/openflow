@@ -1,0 +1,24 @@
+{
+    "zh-TW": {
+        "foot.about": "林下 Understory 產品矩陣的入口層：OpenFlow 成長作業系統（MIT 開源底座）。TIPS 框架（觸達/洞察/個人化/銷售）四力合一，成長引擎主動驅動成長，行動脊柱讓建議落地。"
+    },
+    "en": {
+        "foot.about": "The entry layer of the Understory product matrix: OpenFlow, a growth operating system (MIT-licensed open-source foundation). The TIPS framework (Touch / Insight / Personality / Sales) unites four forces, the growth engine drives growth proactively, and the action spine puts suggestions to work."
+    },
+    "ja": {
+        "foot.about": "林下 Understory プロダクトマトリクスのエントリー層：OpenFlow グロース OS（MIT ライセンスのオープンソース基盤）。TIPS フレームワーク（Touch / Insight / Personality / Sales）の 4 力を一つにし、グロースエンジンが能動的に成長を推進、アクションスパインが提案を実行へ落とし込みます。"
+    },
+    "ko": {
+        "foot.about": "Understory 제품 매트릭스의 입구층: OpenFlow 그로스 운영체제(MIT 라이선스 오픈소스 기반). TIPS 프레임워크(Touch / Insight / Personality / Sales)가 4가지 힘을 하나로 묶고, 그로스 엔진이 능동적으로 성장을 이끌며, 액션 스파인이 제안을 실행으로 옮깁니다.",
+        "foot.note": "핵심 기능은 영구 오픈소스 · 물고기와 낚시법을 함께",
+        "foot.nav": "사이트 탐색",
+        "foot.res": "리소스",
+        "foot.contact": "문의",
+        "foot.soc_github": "GitHub 오픈소스 저장소",
+        "foot.soc_x": "X 공식 계정",
+        "foot.soc_youtube": "YouTube 채널",
+        "foot.soc_wechat": "WeChat 공식 계정",
+        "foot.soc_bilibili": "Bilibili 채널",
+        "foot.soc_zhihu": "Zhihu 기관 계정"
+    }
+}

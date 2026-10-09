@@ -58,6 +58,14 @@ if (!function_exists('of_nav_boot')) {
     {
         $nav = of_nav_data();
         if ($nav === null) return; // 静默回落到 site-shell.js 内置 NAV
+        // 多语言：非默认语言时，按分段字典翻译菜单文案并给站内链接补语言前缀（无字典则原样输出）
+        if (function_exists('i18n_enabled') && i18n_enabled() && function_exists('i18n_tr_deep')) {
+            $loc = i18n_current();
+            if ($loc !== i18n_default_locale()) {
+                $map = i18n_content_map($loc);
+                if ($map !== []) $nav = i18n_tr_deep($nav, $map, null, $loc);
+            }
+        }
         $json = json_encode($nav, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($json === false) return;
         // </script> 与 HTML 注释序列转义，避免提前闭合脚本块

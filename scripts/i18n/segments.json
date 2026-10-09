@@ -1,0 +1,2298 @@
+{
+    "0 上传": [
+        "/product/zerozen"
+    ],
+    "0 门槛": [
+        "/product/litmus"
+    ],
+    "10 个订阅源：自动更新 + 备用地址切换": [
+        "/product/zerozen"
+    ],
+    "10 种": [
+        "/product/conflow"
+    ],
+    "20 万": [
+        "/product/liana"
+    ],
+    "214 项": [
+        "/product/liana"
+    ],
+    "30 主题重构，可放映可导出可分享": [
+        "/product/conflow"
+    ],
+    "30 种": [
+        "/product/conflow"
+    ],
+    "4 种": [
+        "/product/conflow"
+    ],
+    "41 内置包 + 10 订阅源 + 点选即规则 + AI 补位": [
+        "/product/zerozen"
+    ],
+    "41 包": [
+        "/product/zerozen"
+    ],
+    "41 规则包 · 7283 条规则": [
+        "/product/zerozen"
+    ],
+    "41 规则包 · 7283 条规则，按分组独立开关（通用/搜索社交/视频直播/资讯电商/区域站点/垂直站点）": [
+        "/product/zerozen"
+    ],
+    "41 规则包 · AI 识别 · 纯本地": [
+        "nav.json"
+    ],
+    "44 区块 · 组件工厂 · 面向投放": [
+        "nav.json"
+    ],
+    "7283 条规则 · 本地拦截": [
+        "/product/zerozen"
+    ],
+    "AGPL 开源 + 权限中心 + 零内容统计": [
+        "/product/liana"
+    ],
+    "AGPL-3.0 开源，Rust 内核零第三方依赖，插件是数据不是代码。": [
+        "/product/liana"
+    ],
+    "AI 一段摘要": [
+        "/product/conflow"
+    ],
+    "AI 分类降噪": [
+        "/product/linkto"
+    ],
+    "AI 功能要联网吗？": [
+        "/product/liana"
+    ],
+    "AI 原生": [
+        "/product/linkto"
+    ],
+    "AI 四类降噪": [
+        "/product/linkto"
+    ],
+    "AI 在云端处理，正文离开本机": [
+        "/product/linkto"
+    ],
+    "AI 帮你长": [
+        "/product/litmus"
+    ],
+    "AI 用谁的模型？": [
+        "/product/linkto"
+    ],
+    "AI 能力": [
+        "/product/linkto",
+        "/product/liana"
+    ],
+    "AI 自主识别": [
+        "/product/zerozen"
+    ],
+    "AI 补位": [
+        "/product/zerozen"
+    ],
+    "AI 识别补位（自配接口，结果先待审）": [
+        "/product/zerozen"
+    ],
+    "AI 降噪 · 记忆成长 · 全本地": [
+        "nav.json"
+    ],
+    "API 互通": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "API 文档": [
+        "nav.json"
+    ],
+    "Agent 接入": [
+        "/product/litmus"
+    ],
+    "Agent 框架锁知识": [
+        "/product/litmus"
+    ],
+    "Agent 记忆成长": [
+        "/product/linkto"
+    ],
+    "Agent 记忆持续成长": [
+        "/product/linkto"
+    ],
+    "Alt+Z 点选即规则 · Alt+A AI 识别本页": [
+        "/product/zerozen"
+    ],
+    "Alt+Z 选中元素直接生成隐藏 / 移除 / 放行规则；多站点复现自动通用化，学习成果跟着你走。": [
+        "/product/zerozen"
+    ],
+    "CLI 直转（一条命令 + 一个 OpenAI 兼容 key）/ 客户端 ZCode 技能 / 服务端 FastAPI + 管理后台——同一份 prompts 与 engine，形态只是壳。": [
+        "/product/conflow"
+    ],
+    "CRM 与线索": [
+        "nav.json"
+    ],
+    "CRM·商业·会员": [
+        "nav.json"
+    ],
+    "CSS 隐藏 / 移除广告位与浮层；选择器做词边界处理，不误伤正常类名。": [
+        "/product/zerozen"
+    ],
+    "Chrome / Edge / Arc：chrome://extensions 开发者模式加载 dist/chrome；Firefox 128+ 安装 xpi；Safari（macOS 13+ / iOS 16.4+）Xcode 构建后在设置勾选。装完先记住 Alt+Z（点选屏蔽）与 Alt+A（AI 识别本页）。": [
+        "/product/zerozen"
+    ],
+    "ConFlow · 林下 Understory · 工作台层": [
+        "/product/conflow"
+    ],
+    "ConFlow · 林下 Understory 出品": [
+        "/product/conflow"
+    ],
+    "ConFlow · 视频⇄HTML": [
+        "nav.json"
+    ],
+    "ConFlow — 看完一条视频，得到一堆可上线的内容 | 林下 Understory": [
+        "/product/conflow"
+    ],
+    "EasyList / EasyPrivacy / anti-AD / AdGuard / uBlock / CJX 等 10 个预设源自动更新、备用地址自动切换；Adblock / hosts / 纯域名 / JSON 四种格式通吃。": [
+        "/product/zerozen"
+    ],
+    "EasyList 系订阅挡不住原生广告的新花样——按条更新永远慢一拍。": [
+        "/product/zerozen"
+    ],
+    "Feynman 50 款风格 + 整库 PPT + AI-HTML 静态站": [
+        "/product/litmus"
+    ],
+    "Feynman 展示文档即幻灯片（50 款设计史风格）· 整库 PPT · AI-HTML 静态站 · llms.txt。": [
+        "/product/litmus"
+    ],
+    "Feynman 阅读 / 展示 · 50 款设计史风格实时换肤": [
+        "/product/litmus"
+    ],
+    "Flow 画布": [
+        "/product/litmus"
+    ],
+    "Flow 画布 · 时间线 · 看板 · Memo 热力图": [
+        "/product/litmus"
+    ],
+    "GitHub 开源仓库": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "Gmail / Outlook / iCloud / QQ / 163 / 126 / 139 / 新浪 / 腾讯企业邮 / 阿里云邮 / Yahoo / Zoho 官方推荐参数全部预填。": [
+        "/product/linkto"
+    ],
+    "Gmail / Outlook · Hotmail · Microsoft 365 点卡片即授权自动完成，token 临期自动刷新。": [
+        "/product/linkto"
+    ],
+    "Gmail 浏览器弹窗授权 / Outlook 系设备码授权，token 临期自动刷新；未配置凭据时自动降级为应用密码引导。": [
+        "/product/linkto"
+    ],
+    "L0 知你自进化（默认开启）· L1 端上语音边说边落字 · L2 小模型一键下载（sha256 校验，本机运行）· 同声传译（仅 127.0.0.1 回环）——不支持端上就禁用，绝不回退云端。": [
+        "/product/liana"
+    ],
+    "LLM 会不会一本正经胡说八道？": [
+        "/product/conflow"
+    ],
+    "LearnFlow · 课程与训练营": [
+        "nav.json"
+    ],
+    "Liquid Glass 界面：环境光斑 · 玻璃拟态 · 指针跟随高光": [
+        "/product/linkto"
+    ],
+    "MCP 双向，人机同一套本地 API": [
+        "/product/litmus"
+    ],
+    "MCP 双向：thirdc mcp 可作为 server 被其他 agent 调用": [
+        "/product/litmus"
+    ],
+    "MFlow · 营销流程引擎": [
+        "nav.json"
+    ],
+    "MFlow 内容营销 · WebsFlow 落地页工场 · UserLoop 全域数据 · inFlow 外部情报 · PayFlow 收款变现 · LearnFlow 课程交付": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "Memo 随手记（语音转文字）· 浏览器插件整页 / 选区采集 · PDF / DOCX 解析 · Obsidian 库直接导入。": [
+        "/product/litmus"
+    ],
+    "New-1~4 课程 + R.B.E 训练营 · 以 OpenFlow 为工具": [
+        "nav.json"
+    ],
+    "Newsletter 自动识别、订阅发件人管理、List-Unsubscribe 一键退订。": [
+        "/product/linkto"
+    ],
+    "Open Knowledge Format：Markdown 语义 + YAML 元数据 + 块锚点 + JSON-LD": [
+        "/product/litmus"
+    ],
+    "OpenFlow · 增长操作系统": [
+        "nav.json"
+    ],
+    "OpenFlow 产品页": [
+        "nav.json"
+    ],
+    "OpenFlow 增长操作系统 · 帮一人公司设计 Agent 能跑的增长系统": [
+        "nav.json"
+    ],
+    "PPT 与发布要另做": [
+        "/product/litmus"
+    ],
+    "PayFlow · 商业变现引擎": [
+        "nav.json"
+    ],
+    "RAG 框架": [
+        "/product/litmus"
+    ],
+    "REST API 参考": [
+        "nav.json"
+    ],
+    "Releases 下载桌面客户端（macOS dmg / Windows msi / Linux deb · AppImage）；也可 CLI + Web：thirdc serve 守护进程 + HTTP API，五模式 UI 是它的桌面。": [
+        "/product/litmus"
+    ],
+    "SEO / GEO 引擎": [
+        "nav.json"
+    ],
+    "SEO 检查 · Meta · LTV": [
+        "nav.json"
+    ],
+    "SQLite · 零上传": [
+        "/product/linkto"
+    ],
+    "Skill · 插件 · 主题 · 一人公司增长社区": [
+        "nav.json"
+    ],
+    "Skill 技能": [
+        "nav.json"
+    ],
+    "TIPS 四力": [
+        "nav.json"
+    ],
+    "TIPS 四力 + 三层支撑：能力是框架，产品是交付": [
+        "nav.json"
+    ],
+    "UserLoop · 用户行为循环": [
+        "nav.json"
+    ],
+    "VRM 3D 渲染器（跟随鼠标注视 / 眨眼 / 弹簧骨物理），内置形象离线零下载；点击即中英切换，跨屏跟随。": [
+        "/product/liana"
+    ],
+    "WebsFlow 魔块 · 落地页工场": [
+        "nav.json"
+    ],
+    "bookmarks / history / downloads / webRequest 安装时不申请，第一次用到才询问、随时收回；AI 识别只发元素描述与页面地址标题。": [
+        "/product/zerozen"
+    ],
+    "declarativeNetRequest 引擎执行，扩展看不到请求内容；权限用到才申请": [
+        "/product/zerozen"
+    ],
+    "declarativeNetRequest 按规则拦截请求——浏览器引擎执行，扩展本身看不到任何请求内容。": [
+        "/product/zerozen"
+    ],
+    "doc.md — 按论证结构重写的文章（教程/科普/评论/评测四写作法）": [
+        "/product/conflow"
+    ],
+    "inFlow · 情报增长站": [
+        "nav.json"
+    ],
+    "macOS 13+：双击松萝安装器 → 一键安装到 ~/Library/Input Methods → 键盘设置添加「松萝」即可；开发者可从源码构建（cargo test 214 项全绿是合并底线）。": [
+        "/product/liana"
+    ],
+    "script.md — 可选：45–90 秒口播短视频脚本（节拍表逐拍秒数）": [
+        "/product/conflow"
+    ],
+    "slides — 30 主题幻灯片，浏览器直接放映、按 P 导出 PDF": [
+        "/product/conflow"
+    ],
+    "storyboard.json — 分镜提示词包（Sora / Veo / 可灵直接可用）": [
+        "/product/conflow"
+    ],
+    "v2video 把旧文章逆向成分镜提示词包（Sora / Veo / 可灵直接可用），或输出 HTML 动画演示——视频变内容，内容再变回视频。": [
+        "/product/conflow"
+    ],
+    "© 2026 林下 Understory（OpenFlow）科技有限公司": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "— DTC 卖家": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "— 前端工程师": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "— 增长负责人": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "— 独立开发者": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "— 训练营主理人": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "— 陈默 · 内容工作室": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "⌘K 命令面板：导航 / 动作 / 邮件直达": [
+        "/product/linkto"
+    ],
+    "★ 矩阵总览（预览版）": [
+        "nav.json"
+    ],
+    "★ 能力全景（预览版）": [
+        "nav.json"
+    ],
+    "「不用换我的商城，接上就收款。」": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "「以前每天 3 小时找选题改文章，现在爬完信号直接给草稿，我只管把关。」": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "「漏斗终于看得见了：哪个环节漏单，面板直接告诉你。」": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "「第一次一个人跑完整条内容流水线，从采集到收录没换过工具。」": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "「组件工厂太顺了——贴一段 HTML 就变成可复用模块。」": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "「课程播放器拖进度条很流畅，学员完课率肉眼可见在涨。」": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "一个打字的人，怎么被它懂得": [
+        "/product/liana"
+    ],
+    "一人公司增长手册（H5）": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "一切是磁盘上的普通文件": [
+        "/product/litmus"
+    ],
+    "一封邮件进来之后": [
+        "/product/linkto"
+    ],
+    "一条": [
+        "/product/conflow"
+    ],
+    "一段要点摘要": [
+        "/product/conflow"
+    ],
+    "一行嵌入收款 · 订阅/裂变/佣金": [
+        "nav.json"
+    ],
+    "一键建库 / 零星积累 / 网页本地化 / MCP 连接器拉取外部系统。": [
+        "/product/litmus"
+    ],
+    "一键授权": [
+        "/product/linkto"
+    ],
+    "一键授权 + 国内外主流邮箱参数全预填": [
+        "/product/linkto"
+    ],
+    "一键授权接入": [
+        "/product/linkto"
+    ],
+    "一键提取正文，收束动画进入无干扰阅读；一键隐藏导航 / 侧栏 / 评论。": [
+        "/product/zerozen"
+    ],
+    "一键整理（圈选批量 / 语义聚类）/ 划选即指令 / 整库 PPT / AI-HTML 静态站。": [
+        "/product/litmus"
+    ],
+    "一页纸介绍": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "三个承诺": [
+        "/product/liana"
+    ],
+    "三层换肤：明暗 · 9 款主题 · 24 款阅读信纸": [
+        "/product/linkto"
+    ],
+    "三层支撑": [
+        "nav.json"
+    ],
+    "三形态运行": [
+        "/product/conflow"
+    ],
+    "三浏览器": [
+        "/product/zerozen"
+    ],
+    "三选一：CLI 一条命令（只需一个 OpenAI 兼容 key，适合脚本化批量）；客户端 ZCode 技能（一句话驱动，质量上限最高）；服务端 FastAPI + 管理后台（浏览器提交、任务队列全自动）。": [
+        "/product/conflow"
+    ],
+    "上手门槛": [
+        "/product/litmus"
+    ],
+    "下载工具箱": [
+        "/product/zerozen"
+    ],
+    "下载工具箱：嗅探 → 解密合并 → 断点续传 → 自动归档 ZeroZen/": [
+        "/product/zerozen"
+    ],
+    "下载需求": [
+        "/product/zerozen"
+    ],
+    "不会。私网 / NAS / 路由器后台 / 在线文档（飞书、腾讯文档、Notion 等）默认不启用——管理后台与文档编辑零干扰。": [
+        "/product/zerozen"
+    ],
+    "不依赖任何林下产品、不要求注册、不引导转化——给所有人立即可用的浏览器刚需工具。": [
+        "/product/zerozen"
+    ],
+    "不依赖矩阵": [
+        "/product/zerozen"
+    ],
+    "不必。内置命令模式离线可用（规则引擎，工具调用照常可见）；在 thirdc.toml 配置任意 OpenAI 兼容模型后，解锁改写 / 扩写 / 翻译等 AI 动词。": [
+        "/product/litmus"
+    ],
+    "不是又一个笔记软件：知识库是磁盘上一堆普通 Markdown，人用画布和阅读器看它，agent 用同一套本地 API 读写它。五模式一体、MCP 双向、核心永久开源（AGPL-3.0）、无锁定。": [
+        "/product/litmus"
+    ],
+    "不要。本地模型由你显式下载、本机运行、可随时删除；设备不支持端上模型就禁用该能力，绝不回退云端。": [
+        "/product/liana"
+    ],
+    "与林下家族的边界": [
+        "/product/linkto"
+    ],
+    "与鹿蕊（知识）/ 松萝（输入）/ ConFlow（内容）/ 零真（净化）同为工作台层本地工具，独立可用、按需组合。": [
+        "/product/linkto"
+    ],
+    "专业引擎起步": [
+        "/product/liana"
+    ],
+    "专有名词教了又忘；你的删除被云输入法当噪声丢掉，而不是当教材。": [
+        "/product/liana"
+    ],
+    "专栏": [
+        "nav.json"
+    ],
+    "专题": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "专题合集": [
+        "nav.json"
+    ],
+    "个人信件、系统通知、订阅更新、营销邮件挤在同一个列表里，找一封正事要翻三屏。": [
+        "/product/linkto"
+    ],
+    "个性化 Personality": [
+        "nav.json"
+    ],
+    "中 / English / 日本語 / 한국어 / Español / Français / Deutsch / Português / Русский / العربية 十种——标题、正文、要点、图表标注、页脚全部切换，代码与专名保留原文。": [
+        "/product/conflow"
+    ],
+    "中 / 英 / 日 / 韩 / 西 / 法 / 德 / 葡 / 俄 / 阿版本文章与幻灯片；语言是硬性要求，防幻觉规则不因语言改变。": [
+        "/product/conflow"
+    ],
+    "中英混输 · 表情模式（连按 aa）· 符号输入（u 前缀）· 简繁转换（OpenCC 词表）": [
+        "/product/liana"
+    ],
+    "为什么选松萝": [
+        "/product/liana"
+    ],
+    "为什么选林可兔": [
+        "/product/linkto"
+    ],
+    "为什么选零真": [
+        "/product/zerozen"
+    ],
+    "主题": [
+        "nav.json"
+    ],
+    "主题系列文章": [
+        "nav.json"
+    ],
+    "主题系列课程": [
+        "nav.json"
+    ],
+    "事实 / 偏好 / 人物关系 / 承诺 / 惯例自动入库；起草与问答都会参考「你是谁、你答应过什么」。": [
+        "/product/linkto"
+    ],
+    "云端 AI 推荐，离不开网": [
+        "/product/liana"
+    ],
+    "云端 AI 邮箱": [
+        "/product/linkto"
+    ],
+    "云端群体模型，优化「平均人」": [
+        "/product/liana"
+    ],
+    "云输入法": [
+        "/product/liana"
+    ],
+    "云输入法 vs 无学习本地输入法 vs 松萝": [
+        "/product/liana"
+    ],
+    "五模式，同一套数据": [
+        "/product/litmus"
+    ],
+    "五维": [
+        "/product/linkto"
+    ],
+    "五维长期记忆，重复出现自动提升置信度": [
+        "/product/linkto"
+    ],
+    "交付闭环 · 证书/进度": [
+        "nav.json"
+    ],
+    "产出": [
+        "/product/conflow"
+    ],
+    "产出语言 · 防幻觉规则不降级": [
+        "/product/conflow"
+    ],
+    "产品": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen",
+        "nav.json"
+    ],
+    "产品与平台": [
+        "nav.json"
+    ],
+    "产品介绍幻灯片": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "产品文档 · 使用指南": [
+        "nav.json"
+    ],
+    "产品矩阵": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen",
+        "nav.json"
+    ],
+    "产品矩阵总览（预览）": [
+        "nav.json"
+    ],
+    "产物原样可查": [
+        "/product/conflow"
+    ],
+    "人随手记，AI 帮你建，": [
+        "/product/litmus"
+    ],
+    "今天开始，让收件箱自己整理自己": [
+        "/product/linkto"
+    ],
+    "从用到好的升级路径": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "从笔记到 PPT、到发布，要再手工做一遍——积累与表达是两套活。": [
+        "/product/litmus"
+    ],
+    "从邮件沉淀长期记忆并注入所有 AI 能力；发件人画像（关系总结 · 高频主题 · 回复率）随往来更新；本地存储可查看 / 编辑 / 归档。": [
+        "/product/linkto"
+    ],
+    "仓库 output/ 目录里的文章与幻灯片无任何手工排版——看到了就是真实产出水平。": [
+        "/product/conflow"
+    ],
+    "任何编辑器都能打开，任何 agent 都能读写": [
+        "/product/litmus"
+    ],
+    "会话级上下文": [
+        "/product/linkto"
+    ],
+    "传统拦截扩展": [
+        "/product/zerozen"
+    ],
+    "传统拦截扩展 vs 纯订阅包 vs 零真": [
+        "/product/zerozen"
+    ],
+    "体系化完整课程": [
+        "nav.json"
+    ],
+    "你不用再「回头整理一下视频」。贴一条链接，拿回一篇能直接发布的文章，和一套能当众放映的幻灯片：脚本管确定性，LLM 按写作法管语义——数字逐字核对、补全显式标注、观点归属分离。": [
+        "/product/conflow"
+    ],
+    "你填的任意 OpenAI 兼容接口（OpenAI / DeepSeek / 智谱 / 通义 / 硅基流动 / 本地 Ollama）；带缓存与限额，结果先进「待审」再生效。": [
+        "/product/zerozen"
+    ],
+    "你打的每一个字都经过输入法——多数输入法把按键、词频、习惯送上云端换「智能」。": [
+        "/product/liana"
+    ],
+    "你的每一个按键，": [
+        "/product/liana"
+    ],
+    "你自己配：OpenAI 兼容接口全接（智谱 GLM / OpenAI / DeepSeek / Ollama），流式输出，成本你控制。": [
+        "/product/linkto"
+    ],
+    "信号→规则→动作": [
+        "nav.json"
+    ],
+    "假下载按钮": [
+        "/product/zerozen"
+    ],
+    "停在对话框": [
+        "/product/conflow"
+    ],
+    "傍晚小结": [
+        "/product/liana"
+    ],
+    "先学方法论再搭体系": [
+        "/product/litmus"
+    ],
+    "免费资源": [
+        "nav.json"
+    ],
+    "入口层": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "入门免费内容": [
+        "nav.json"
+    ],
+    "全拼（20 万词条 + Viterbi + 前缀补全）· 双拼×3 · 英文（2 万词 + 词频）· 日语罗马字": [
+        "/product/liana"
+    ],
+    "全拼（20 万词条 + Viterbi 整句 + 前缀补全）· 双拼×3（小鹤 / 微软 / 自然码）· 英文 · 日语罗马字；中英混输，大写即英文意图。": [
+        "/product/liana"
+    ],
+    "全本地": [
+        "/product/linkto"
+    ],
+    "全本机 + 加密落盘，密钥在系统钥匙串": [
+        "/product/liana"
+    ],
+    "全站增长操作系统 · 四力合一（内容 · 数据 · 触达 · 销售），不部署也能活，部署了今天就有大团队的能力": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "全部敏感能力集中展示：碰什么数据、存在哪、怎么删——关闭即清空。": [
+        "/product/liana"
+    ],
+    "全部本地：邮件存 SQLite（FTS5 中文全文检索），密码经系统钥匙串（safeStorage）加密，Agent 记忆本地存储、可查看 / 编辑 / 归档，不上传任何服务器。": [
+        "/product/linkto"
+    ],
+    "全部本机：学习模型不到 1MB、加密落盘（ChaCha20-Poly1305，密钥在系统钥匙串），用户词随备份搬走、一键清空；安装包断网可用。": [
+        "/product/liana"
+    ],
+    "全部能力": [
+        "nav.json"
+    ],
+    "关于": [
+        "nav.json"
+    ],
+    "关于我们": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "内容·渠道·分发": [
+        "nav.json"
+    ],
+    "内容专区": [
+        "nav.json"
+    ],
+    "内容学院": [
+        "nav.json"
+    ],
+    "内容引擎 CMS": [
+        "nav.json"
+    ],
+    "内核单元测试全绿": [
+        "/product/liana"
+    ],
+    "内网友好": [
+        "/product/zerozen"
+    ],
+    "内网站点会被误拦吗？": [
+        "/product/zerozen"
+    ],
+    "内置命令模式（离线规则引擎，工具调用照常可见）；配置任意 OpenAI 兼容模型后解锁 AI 动词与 token 计量。": [
+        "/product/litmus"
+    ],
+    "内置嗅探 / 解密合并 / 分片断点续传": [
+        "/product/zerozen"
+    ],
+    "内置规则 + 订阅": [
+        "/product/zerozen"
+    ],
+    "写作热力图 · 标签快查 · 语音速记——碎片记录的第一入口。": [
+        "/product/litmus"
+    ],
+    "分发": [
+        "/product/conflow"
+    ],
+    "分群·推荐·动态内容": [
+        "nav.json"
+    ],
+    "别再「回头整理一下视频」了": [
+        "/product/conflow"
+    ],
+    "前台表单贴视频链接选文体，或 CLI 一条命令，或在 ZCode 里说「用 v2html 把这条视频转成教程」。": [
+        "/product/conflow"
+    ],
+    "功能免费": [
+        "/product/zerozen"
+    ],
+    "功能免费，觉得好用再付费（诚实付费）——规则开源可审计，权限用到才申请。": [
+        "/product/zerozen"
+    ],
+    "功能强大，但你得先学会它的方法论，再花几百个小时手工搭建。": [
+        "/product/litmus"
+    ],
+    "劫持无手势 window.open；信息流广告清掉后空位自动回填，不留空洞。": [
+        "/product/zerozen"
+    ],
+    "十种产出语言": [
+        "/product/conflow"
+    ],
+    "十种产出语言任选（防幻觉规则不降级）": [
+        "/product/conflow"
+    ],
+    "协同净化 · 不留空洞": [
+        "/product/zerozen"
+    ],
+    "原话但无结构": [
+        "/product/conflow"
+    ],
+    "双向 AI": [
+        "/product/litmus"
+    ],
+    "双向 · 人机同一套 ABI": [
+        "/product/litmus"
+    ],
+    "双语界面（中 / English），纯本地运行": [
+        "/product/zerozen"
+    ],
+    "反方向也成立": [
+        "/product/conflow"
+    ],
+    "发布 · 分享 · 分发，面向内外部生态与商业场景。": [
+        "/product/litmus"
+    ],
+    "发送增强：延迟发送（可撤销）与定时发送（逐条撤销 · 失败自动重试）": [
+        "/product/linkto"
+    ],
+    "口令加密备份投递网盘，新设备导入即恢复": [
+        "/product/linkto"
+    ],
+    "口令加密（AES-256-GCM + scrypt）备份文件投递 iCloud Drive / Dropbox / OneDrive / 坚果云同步目录，新设备导入即恢复。": [
+        "/product/linkto"
+    ],
+    "只管网络层": [
+        "/product/zerozen"
+    ],
+    "只靠订阅更新": [
+        "/product/zerozen"
+    ],
+    "可信度": [
+        "/product/conflow"
+    ],
+    "可视化工作流引擎": [
+        "nav.json"
+    ],
+    "各家支持不一": [
+        "/product/linkto"
+    ],
+    "各类 RAG 方案把知识锁进向量库和私有格式，人反而看不见、改不了自己的知识。": [
+        "/product/litmus"
+    ],
+    "同任务可追加产出 45–90 秒口播脚本：节拍表逐拍给秒数、口播词、画面提示——视频→文章→幻灯片→短视频物料，一条流水线。": [
+        "/product/conflow"
+    ],
+    "向量库黑盒，人看不见改不了": [
+        "/product/litmus"
+    ],
+    "和 OpenFlow 是什么关系？": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "品牌": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "品牌与产品矩阵之名——产品间 API 互通、零强制绑定、按需组合": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "商业与订阅": [
+        "nav.json"
+    ],
+    "商务合作": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "商城 · 会员 · 付费": [
+        "nav.json"
+    ],
+    "喂它一段": [
+        "/product/liana"
+    ],
+    "四像混流": [
+        "/product/linkto"
+    ],
+    "四力合一的底座": [
+        "nav.json"
+    ],
+    "四层": [
+        "/product/zerozen"
+    ],
+    "四层协同，页面回到内容": [
+        "/product/zerozen"
+    ],
+    "四层协同：网络 + 外观 + 弹窗守护 + 空位回填": [
+        "/product/zerozen"
+    ],
+    "四种文体四种写作法": [
+        "/product/conflow"
+    ],
+    "四类": [
+        "/product/linkto"
+    ],
+    "回信永远写不完": [
+        "/product/linkto"
+    ],
+    "回到顶部": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "国内外主流全部预填：Gmail / Outlook / iCloud / QQ / 163 / 126 / 139 / 新浪 / 腾讯企业邮 / 阿里云邮 / Yahoo / Zoho。Gmail 与 Outlook 系支持 OAuth 一键授权，未配置凭据时自动降级为应用专用密码引导。": [
+        "/product/linkto"
+    ],
+    "圈选批量整理 · 语义聚类搬移 · 划选即指令（总结 / 精简 / 改写 / 扩写 / 翻译）。": [
+        "/product/litmus"
+    ],
+    "在 GitHub 上开始": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "在这个应用、这个话题、这个时段，xian 是先、县还是西安——答案不在人群里，在你和此刻的上下文里。": [
+        "/product/liana"
+    ],
+    "埋点 · 画像 · 分群 · 旅程": [
+        "nav.json"
+    ],
+    "基础体验对齐 Canary Mail（多账户、统一收件箱、通知、签名、模板、规则），在此之上叠加 AI 原生：智能分类降噪、会话摘要、起草回复，还有随你成长的 Agent 记忆——全部数据留在你自己的电脑上。": [
+        "/product/linkto"
+    ],
+    "基础过滤与规则": [
+        "/product/linkto"
+    ],
+    "增长与商业": [
+        "nav.json"
+    ],
+    "增长实践文章": [
+        "nav.json"
+    ],
+    "增长导航": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "增长引擎": [
+        "nav.json"
+    ],
+    "增长社区": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "增长系统 · Agent · 一人公司方法论": [
+        "nav.json"
+    ],
+    "备份即迁移": [
+        "/product/linkto"
+    ],
+    "外观层清理": [
+        "/product/zerozen"
+    ],
+    "多平台客户端：macOS dmg · Windows msi/nsis · Linux deb/AppImage · 移动端可源码构建": [
+        "/product/litmus"
+    ],
+    "多账户": [
+        "/product/linkto"
+    ],
+    "多账户统一收件箱 + AI 分类降噪 / 摘要 / 起草 + Agent 记忆成长系统。国内外主流邮箱一键接入，数据全本地（SQLite + 系统钥匙串加密），备份口令加密跨设备迁移。": [
+        "/product/linkto"
+    ],
+    "多账户统一收件箱 · 通知 · 签名 · 模板 · 规则 · 集成": [
+        "/product/linkto"
+    ],
+    "大课程": [
+        "nav.json"
+    ],
+    "字幕流水账": [
+        "/product/conflow"
+    ],
+    "字幕转写 vs AI 摘要 vs ConFlow": [
+        "/product/conflow"
+    ],
+    "字幕转写工具": [
+        "/product/conflow"
+    ],
+    "学习": [
+        "/product/liana"
+    ],
+    "学习-展示": [
+        "/product/litmus"
+    ],
+    "学习模型 · 只存本机": [
+        "/product/liana"
+    ],
+    "学你的切换": [
+        "/product/liana"
+    ],
+    "学院": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen",
+        "nav.json"
+    ],
+    "定价": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen",
+        "nav.json"
+    ],
+    "实时互动课程": [
+        "nav.json"
+    ],
+    "客户数据 CDP": [
+        "nav.json"
+    ],
+    "家族图谱": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "对 OpenFlow": [
+        "/product/linkto"
+    ],
+    "对 Studio 同层": [
+        "/product/linkto"
+    ],
+    "对比": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "对比「学习开 vs 关」的反事实首选命中率——学习有没有用，数字说话，不掀桌：重排只微调排序，词频与整句概率仍是基本盘。": [
+        "/product/liana"
+    ],
+    "对比口径：「云输入法」指词频与纠错依赖云端服务的输入法产品；「无学习本地输入法」指系统自带类输入法，能力以其官方说明为准。松萝的立场：所有智能都在本地产生。": [
+        "/product/liana"
+    ],
+    "对比口径：「传统拦截扩展」指主流广告拦截类扩展；「纯订阅规则包」指只提供规则订阅的方案，能力以其官方说明为准。零真额外把「下载」这一刚需一并收进工具箱。": [
+        "/product/zerozen"
+    ],
+    "对比口径：「字幕转写工具」指语音转文字类产品；「AI 一段摘要」指通用大模型直接总结，能力以其官方说明为准。ConFlow 的差异不在转写，在写作法与防幻觉规则。": [
+        "/product/conflow"
+    ],
+    "对比口径：「笔记软件」指以方法论与双链为卖点的知识管理工具；「RAG 框架」指把文档灌入向量库供 LLM 检索的通用方案，能力以其官方说明为准。鹿蕊的立场：知识不锁进任何私有格式。": [
+        "/product/litmus"
+    ],
+    "对比口径：「通用邮件客户端」指传统桌面/移动邮件 App；「云端 AI 邮箱」指 AI 处理发生在服务端的邮箱产品，能力以其官方说明为准。林可兔的 AI 走你自己配置的 OpenAI 兼容接口，数据与记忆全部本地。": [
+        "/product/linkto"
+    ],
+    "对话优先 · 工具调用全程可见 · Agent 记忆——你和你的 agents 共享一个真相。": [
+        "/product/litmus"
+    ],
+    "对鹿蕊 Litmus": [
+        "/product/linkto"
+    ],
+    "导出即失序": [
+        "/product/litmus"
+    ],
+    "导航": [
+        "nav.json"
+    ],
+    "就地提炼": [
+        "/product/linkto"
+    ],
+    "局域网 P2P 同步": [
+        "/product/liana"
+    ],
+    "局域网 P2P 端到端加密，无服务器无账号": [
+        "/product/liana"
+    ],
+    "工作台 · Studio": [
+        "nav.json"
+    ],
+    "工作台层 · Studio": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "工作室": [
+        "/product/litmus"
+    ],
+    "工具箱": [
+        "nav.json"
+    ],
+    "市面上绝大多数输入法把按键、词频、习惯送上云端换「智能」；松萝把方向反过来——所有智能都在本地产生，云端一个字节都拿不到。Rust 内核 13 个纯逻辑 crate，214 项单元测试全绿，安装包断网可用。": [
+        "/product/liana"
+    ],
+    "帮一人公司设计 Agent 能跑的增长系统": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "帮助": [
+        "nav.json"
+    ],
+    "常见问题": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "干货音视频": [
+        "nav.json"
+    ],
+    "平台锁定": [
+        "/product/litmus"
+    ],
+    "幻灯片": [
+        "/product/conflow"
+    ],
+    "幻灯片主题 · 放映中实时换肤": [
+        "/product/conflow"
+    ],
+    "幻灯片是截图拼贴": [
+        "/product/conflow"
+    ],
+    "开发者": [
+        "nav.json"
+    ],
+    "开发者与生态": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "开发者文档": [
+        "nav.json"
+    ],
+    "开源仓库": [
+        "nav.json"
+    ],
+    "开箱即用的增长能力": [
+        "nav.json"
+    ],
+    "引擎、词典、学习全部本机运行，云端一个字节都拿不到。全拼 20 万词条 + Viterbi 整句、双拼×3、中英混输，纠错即教学、喂食式学习，局域网 P2P 端到端加密同步。": [
+        "/product/liana"
+    ],
+    "引擎、词典、学习全部本机运行，安装包可断网使用。": [
+        "/product/liana"
+    ],
+    "弹窗、浮层、信息流": [
+        "/product/zerozen"
+    ],
+    "弹窗与信息流": [
+        "/product/zerozen"
+    ],
+    "弹窗守护": [
+        "/product/zerozen"
+    ],
+    "归因 · A/B · 洞察": [
+        "nav.json"
+    ],
+    "得到一堆可上线的内容": [
+        "/product/conflow"
+    ],
+    "必须配 AI Key 吗？": [
+        "/product/litmus"
+    ],
+    "怎么装？": [
+        "/product/litmus",
+        "/product/liana",
+        "/product/zerozen"
+    ],
+    "怎么跑？": [
+        "/product/conflow"
+    ],
+    "想下载个视频，要在层层诱导按钮里找出真链接。": [
+        "/product/zerozen"
+    ],
+    "成稿输出": [
+        "/product/litmus"
+    ],
+    "我的数据在哪？": [
+        "/product/litmus",
+        "/product/liana"
+    ],
+    "我的数据放在哪？": [
+        "/product/linkto"
+    ],
+    "我的浏览数据安全吗？": [
+        "/product/zerozen"
+    ],
+    "截图拼贴是时间的碎片；能放映的幻灯片是论证的空间化——标题写论断句，一页一个论点。": [
+        "/product/conflow"
+    ],
+    "截图（本机 OCR，零网络）/ 文档 / 粘贴文本 → 专有名词进「营养库」：你的甲方名字教一次，处处可打。": [
+        "/product/liana"
+    ],
+    "手动填服务器参数": [
+        "/product/linkto"
+    ],
+    "手工整理三小时": [
+        "/product/conflow"
+    ],
+    "打字这件事，不需要交给云": [
+        "/product/liana"
+    ],
+    "打开一个网页，你先看到什么": [
+        "/product/zerozen"
+    ],
+    "打开一个资讯站，先看到的是弹窗、浮层、信息流里的「内容」——正文被挤到第三屏。": [
+        "/product/zerozen"
+    ],
+    "打开就能用 · 一句话建库": [
+        "/product/litmus"
+    ],
+    "打开就能用，一句话建库": [
+        "/product/litmus"
+    ],
+    "打开就能用；输入一个主题，自动从 Wikipedia / Hacker News / arXiv 采集成库。": [
+        "/product/litmus"
+    ],
+    "扩展系统功能": [
+        "nav.json"
+    ],
+    "把一小时视频整理成文章和 PPT，往往要三个小时——然后你就放弃了。": [
+        "/product/conflow"
+    ],
+    "拦截器自己不透明": [
+        "/product/zerozen"
+    ],
+    "按分组独立开关，覆盖中 / 日 / 韩 / 俄 / 欧 / 东南亚 / 印度 / 拉美 / 港澳台站点；冲突时自定义规则优先。": [
+        "/product/zerozen"
+    ],
+    "按应用记忆中/英：终端自动英文、微信自动中文——本地统计模型，Shift 一按即学。": [
+        "/product/liana"
+    ],
+    "按文体写作法成文": [
+        "/product/conflow"
+    ],
+    "按时间线性堆砌": [
+        "/product/conflow"
+    ],
+    "按论证结构重写：论断句标题、一页一论点": [
+        "/product/conflow"
+    ],
+    "按键、词频、习惯上云": [
+        "/product/liana"
+    ],
+    "按需组合 · 分流指引": [
+        "nav.json"
+    ],
+    "换工具等于重来：导出的文件夹失去结构与链接，附件散落各处。": [
+        "/product/litmus"
+    ],
+    "换设备从头再来": [
+        "/product/linkto"
+    ],
+    "提问与讨论": [
+        "nav.json"
+    ],
+    "插件": [
+        "nav.json"
+    ],
+    "插件 = 数据包": [
+        "/product/liana"
+    ],
+    "插件市场间接接入": [
+        "/product/litmus"
+    ],
+    "搜索与 AI 优化": [
+        "nav.json"
+    ],
+    "播客": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "播客视频": [
+        "nav.json"
+    ],
+    "支持哪些邮箱？": [
+        "/product/linkto"
+    ],
+    "收件箱是噪声重灾区": [
+        "/product/linkto"
+    ],
+    "教了记不住": [
+        "/product/liana"
+    ],
+    "教程、科普、口播评论、评测访谈各有一套沉淀在 prompts/ 里的方法论——不是「总结视频」。": [
+        "/product/conflow"
+    ],
+    "数字与命令必须对照转写稿和视频帧逐字核对，不是「大概是这样」。": [
+        "/product/conflow"
+    ],
+    "数字可能编": [
+        "/product/conflow"
+    ],
+    "数字逐字核对": [
+        "/product/conflow"
+    ],
+    "数字逐字核对 + 每页时间戳回跳核对 + 补全显式标注": [
+        "/product/conflow"
+    ],
+    "数据·画像·情报": [
+        "nav.json"
+    ],
+    "数据分析": [
+        "nav.json"
+    ],
+    "数据归属": [
+        "/product/linkto",
+        "/product/liana"
+    ],
+    "文件即真相 · MCP 双向": [
+        "nav.json"
+    ],
+    "文件夹即结构、画布即视图——Flow 画布节点拖排、景深、连线、时间线、看板。": [
+        "/product/litmus"
+    ],
+    "文体写作法（教程/科普/评论/评测）": [
+        "/product/conflow"
+    ],
+    "文档与工具": [
+        "nav.json"
+    ],
+    "文档中心": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen",
+        "nav.json"
+    ],
+    "文章": [
+        "nav.json"
+    ],
+    "文章 + 幻灯片 + 短视频脚本，一条流水线": [
+        "/product/conflow"
+    ],
+    "文章 · 页面 · 发布": [
+        "nav.json"
+    ],
+    "文章直推 OpenFlow 内容库草稿箱（带来源视频与幻灯片链接）": [
+        "/product/conflow"
+    ],
+    "文章自动推进 OpenFlow 内容库草稿箱，审完一键发布；幻灯片浏览器直接放映，按 P 导出 PDF。": [
+        "/product/conflow"
+    ],
+    "新电脑上账户要重配、密码要重填，历史邮件还要重新同步一遍。": [
+        "/product/linkto"
+    ],
+    "新花样广告": [
+        "/product/zerozen"
+    ],
+    "新邮件自动分入 个人 / 通知 / Newsletter / 噪声，正事不再被淹没。": [
+        "/product/linkto"
+    ],
+    "方法论写死的防线": [
+        "/product/conflow"
+    ],
+    "无": [
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "无 Key 也能用": [
+        "/product/litmus"
+    ],
+    "无后端 · 不收集浏览数据": [
+        "/product/zerozen"
+    ],
+    "无后端，不收集不上传任何浏览数据：网络拦截由浏览器 declarativeNetRequest 引擎完成，扩展本身看不到请求内容；AI 识别只发元素的结构化描述与页面地址标题，不传正文、不截图、不传 Cookie，且默认关闭。": [
+        "/product/zerozen"
+    ],
+    "无学习本地输入法": [
+        "/product/liana"
+    ],
+    "无自进化": [
+        "/product/liana"
+    ],
+    "无记忆，每次从零开始": [
+        "/product/linkto"
+    ],
+    "智能分类降噪 · 会话摘要 · AI 起草回复 · 提取待办；模型自己配（智谱 GLM / OpenAI / DeepSeek / Ollama 均可，流式输出）。": [
+        "/product/linkto"
+    ],
+    "智能换数据": [
+        "/product/liana"
+    ],
+    "智能洞察四 Tab：今日商情 / 待办 / 阅读清单 / 公司洞察": [
+        "/product/linkto"
+    ],
+    "更新日志": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "有生命的桌宠": [
+        "/product/liana"
+    ],
+    "本地": [
+        "/product/litmus"
+    ],
+    "本地 AI 增强（可选）": [
+        "/product/liana"
+    ],
+    "本地 SQLite（FTS5）+ 系统钥匙串加密": [
+        "/product/linkto"
+    ],
+    "本地优先，AI 原生，记忆随你成长——Link 音译「林可」，to 音译「兔」，动若脱兔。": [
+        "/product/linkto"
+    ],
+    "本地工具": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "本地语音听写与同声传译（可选，显式下载 · 本机运行）": [
+        "/product/liana"
+    ],
+    "本地调用你自配的模型，正文不落云": [
+        "/product/linkto"
+    ],
+    "本机运行，但基本不学习": [
+        "/product/liana"
+    ],
+    "权限中心": [
+        "/product/liana"
+    ],
+    "权限最小化": [
+        "/product/zerozen"
+    ],
+    "权限模糊": [
+        "/product/liana"
+    ],
+    "松萝": [
+        "/product/liana"
+    ],
+    "松萝 LIANA · 林下 Understory 出品": [
+        "/product/liana"
+    ],
+    "松萝 Liana · 林下 Understory · 工作台层": [
+        "/product/liana"
+    ],
+    "松萝 Liana · 隐私输入法": [
+        "nav.json"
+    ],
+    "松萝 Liana — 隐私优先的跨平台输入法 | 林下 Understory": [
+        "/product/liana"
+    ],
+    "松萝的立场": [
+        "/product/liana"
+    ],
+    "松萝，附松而生、随枝而长的地衣——不打扰你，但一直在随你进化。": [
+        "/product/liana"
+    ],
+    "林下 Understory": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "林下 Understory · OpenFlow": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "林下 Understory · 三层定位": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "林下 Understory · 学习路径": [
+        "nav.json"
+    ],
+    "林下 Understory 产品矩阵的入口层：OpenFlow 增长操作系统（MIT 开源底座）。TIPS 框架（触达/洞察/个性化/销售）四力合一，增长引擎主动驱动增长，行动脊柱让建议落地。": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "林下 Understory 家族成员；OpenFlow 连接器架构（Manifest 声明式框架）已按统一 Intake 协议接入。": [
+        "/product/linkto"
+    ],
+    "林可兔": [
+        "/product/linkto"
+    ],
+    "林可兔 LINKTO · 林下 Understory 出品": [
+        "/product/linkto"
+    ],
+    "林可兔 LinkTo · 林下 Understory · 工作台层": [
+        "/product/linkto"
+    ],
+    "林可兔 LinkTo · 邮件工作台": [
+        "nav.json"
+    ],
+    "林可兔 LinkTo — AI 原生邮件工作台 | 林下 Understory": [
+        "/product/linkto"
+    ],
+    "架构与扩展点": [
+        "nav.json"
+    ],
+    "核心永久开源 · 无锁定": [
+        "/product/litmus"
+    ],
+    "核心能力": [
+        "nav.json"
+    ],
+    "核心能力永久开源 · 鱼与渔相结合": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "桌宠 VRM 渲染器（内置形象零下载，可导入 VRoid Studio 自捏角色）": [
+        "/product/liana"
+    ],
+    "模式是同一内核的不同界面配置，切换零成本": [
+        "/product/litmus"
+    ],
+    "模板手动排": [
+        "/product/litmus"
+    ],
+    "正文与索引都在云端": [
+        "/product/linkto"
+    ],
+    "每日商情": [
+        "/product/linkto"
+    ],
+    "永久开源": [
+        "nav.json"
+    ],
+    "沉浸研读 + 文档即幻灯片，学习成果直接上台；50 款设计史经典风格实时换肤。": [
+        "/product/litmus"
+    ],
+    "没有「匿名上报」· 联网纠错": [
+        "/product/liana"
+    ],
+    "没有「匿名上报」，没有「联网纠错」；本地 AI 模型由你显式下载、可随时删除。": [
+        "/product/liana"
+    ],
+    "没法搜索、没法引用、没法贴进文档——分享给同事只能甩个链接加一句「这段讲得挺好」。": [
+        "/product/conflow"
+    ],
+    "洞察 Insight": [
+        "nav.json"
+    ],
+    "活动": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen",
+        "nav.json"
+    ],
+    "流水线：视频→文章→幻灯片→短视频": [
+        "/product/conflow"
+    ],
+    "浏览全部课程": [
+        "nav.json"
+    ],
+    "浏览器扩展源码在库（Chrome / Firefox / Safari）": [
+        "/product/litmus"
+    ],
+    "浏览工具": [
+        "nav.json"
+    ],
+    "深度专题专栏": [
+        "nav.json"
+    ],
+    "点评榜单": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "点选即规则": [
+        "/product/zerozen"
+    ],
+    "特色能力": [
+        "/product/conflow"
+    ],
+    "独立产品，林下 Understory 家族成员。OpenFlow 家族产品已按统一 Intake 协议接入连接器架构；不装 OpenFlow 也能单独用林可兔。": [
+        "/product/linkto"
+    ],
+    "独立产品，林下 Understory 工作台层（Studio）成员。它不是 Flow，也不依赖矩阵任何产品——单独安装即可用。": [
+        "/product/liana"
+    ],
+    "独立产品，林下 Understory 工作台层（Studio）成员。文章可自动推进 OpenFlow 内容库草稿箱（带来源视频与幻灯片链接，默认草稿态）——不装 OpenFlow 也能单独用。": [
+        "/product/conflow"
+    ],
+    "独立产品，林下 Understory 工作台层（Studio）成员。矩阵产品（OpenFlow / ConFlow / WebsFlow / PayFlow / inFlow）经 MCP 连接器接入，互相独立、按需组合。": [
+        "/product/litmus"
+    ],
+    "独立但不孤立": [
+        "/product/linkto"
+    ],
+    "独立可用": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "独立引流品的边界": [
+        "/product/zerozen"
+    ],
+    "独立引流品，林下 Understory 工作台层（Studio）成员。不依赖矩阵任何产品、不要求注册、不引导转化——代表矩阵「本地优先、诚实边界」的产品观。": [
+        "/product/zerozen"
+    ],
+    "生态": [
+        "nav.json"
+    ],
+    "生态分类": [
+        "nav.json"
+    ],
+    "生态市场": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen",
+        "nav.json"
+    ],
+    "用户词与剪贴板历史 ChaCha20-Poly1305 加密落盘，密钥在系统钥匙串": [
+        "/product/liana"
+    ],
+    "用过的人怎么说": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "画像 · 分群 · 洞察": [
+        "nav.json"
+    ],
+    "白皮书 · 模板": [
+        "nav.json"
+    ],
+    "白皮书 · 模板 · 报告": [
+        "nav.json"
+    ],
+    "皮肤 / 桌宠 / 词典声明式零代码执行，权限白名单制——无在线市场、无自动更新、无可执行代码。": [
+        "/product/liana"
+    ],
+    "直接上线": [
+        "/product/conflow"
+    ],
+    "直推 OpenFlow 草稿箱，审完一键发布": [
+        "/product/conflow"
+    ],
+    "直播": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "直播课": [
+        "nav.json"
+    ],
+    "相关资源": [
+        "nav.json"
+    ],
+    "看完一条视频，": [
+        "/product/conflow"
+    ],
+    "看家族图谱 →": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "看过的视频，最后什么都没留下": [
+        "/product/conflow"
+    ],
+    "真实反馈": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "知你自进化：纠错即教学 + 营养库 + 反事实评估（L0，默认开启）": [
+        "/product/liana"
+    ],
+    "知识存储": [
+        "/product/litmus"
+    ],
+    "知识库的两个失灵旧答案": [
+        "/product/litmus"
+    ],
+    "知识的一生": [
+        "/product/litmus"
+    ],
+    "短视频脚本版": [
+        "/product/conflow"
+    ],
+    "磁盘上的普通 Markdown": [
+        "/product/litmus"
+    ],
+    "磁盘普通 Markdown，人机共享一个真相": [
+        "/product/litmus"
+    ],
+    "社交媒体": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "社区": [
+        "nav.json"
+    ],
+    "社区与内容": [
+        "nav.json"
+    ],
+    "社区问答": [
+        "nav.json"
+    ],
+    "社区问答与讨论": [
+        "nav.json"
+    ],
+    "私有格式 + 方法论门槛": [
+        "/product/litmus"
+    ],
+    "私网 / NAS / 路由器后台 / 在线文档（飞书、腾讯文档、Notion……）默认不启用——管理后台与文档编辑零干扰。": [
+        "/product/zerozen"
+    ],
+    "站点导航": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "端上模型显式下载、本机运行、可随时删除": [
+        "/product/liana"
+    ],
+    "笔记上不了台面": [
+        "/product/litmus"
+    ],
+    "笔记软件": [
+        "/product/litmus"
+    ],
+    "笔记软件 vs RAG 框架 vs 鹿蕊": [
+        "/product/litmus"
+    ],
+    "笔记软件要你先学方法论、再花几百小时搭体系；Agent 框架把知识锁进向量库。鹿蕊反过来：知识库就是一堆普通 Markdown——人用画布与阅读器看它，agent 用同一套本地 API 读写它，双方共享一个真相，谁也不锁定谁。": [
+        "/product/litmus"
+    ],
+    "笔记软件门槛高": [
+        "/product/litmus"
+    ],
+    "等官方更新": [
+        "/product/zerozen"
+    ],
+    "等维护者更新": [
+        "/product/zerozen"
+    ],
+    "管道要自己维护": [
+        "/product/litmus"
+    ],
+    "系列课": [
+        "nav.json"
+    ],
+    "系统先判定文体再执行对应方法论：教程带逐字核对过的命令和避坑清单；科普直觉→机制→边界分层递进；评论把论点与论据可信度摆开。": [
+        "/product/conflow"
+    ],
+    "纠错即教学": [
+        "/product/liana"
+    ],
+    "纠错即教学 + 营养库，反事实命中率可验证": [
+        "/product/liana"
+    ],
+    "纯本地 · 零遥测 · P2P 同步": [
+        "nav.json"
+    ],
+    "纯订阅规则包": [
+        "/product/zerozen"
+    ],
+    "线索池与转化": [
+        "nav.json"
+    ],
+    "结构": [
+        "/product/conflow"
+    ],
+    "统一收件箱 · 一键授权": [
+        "/product/linkto"
+    ],
+    "维度": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "编排·工作流·自动化": [
+        "nav.json"
+    ],
+    "网络层拦截": [
+        "/product/zerozen"
+    ],
+    "群体词频不对你": [
+        "/product/liana"
+    ],
+    "联系": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "能产出哪些语言？": [
+        "/product/conflow"
+    ],
+    "能力": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen",
+        "nav.json"
+    ],
+    "能力全景": [
+        "nav.json"
+    ],
+    "能力全景（预览）": [
+        "nav.json"
+    ],
+    "脚本抓素材": [
+        "/product/conflow"
+    ],
+    "自托管·数据主权": [
+        "nav.json"
+    ],
+    "自然组织": [
+        "/product/litmus"
+    ],
+    "自由画布": [
+        "/product/litmus"
+    ],
+    "节点拖排 · 景深 · 连线 · 多画布 · 时间线 · 看板——纯手动、无 AI 也完整。": [
+        "/product/litmus"
+    ],
+    "营销自动化 MA": [
+        "nav.json"
+    ],
+    "行动脊柱 Agentic": [
+        "nav.json"
+    ],
+    "补全显式标注": [
+        "/product/conflow"
+    ],
+    "装上即净，浏览还给内容": [
+        "/product/zerozen"
+    ],
+    "装上即净，顺手把视频也存下来": [
+        "/product/zerozen"
+    ],
+    "装了拦截器，你不知道它拦了什么、上报了什么。": [
+        "/product/zerozen"
+    ],
+    "装输入法像装监控": [
+        "/product/liana"
+    ],
+    "要另装下载工具": [
+        "/product/zerozen"
+    ],
+    "要点列表": [
+        "/product/conflow"
+    ],
+    "观点归属分离": [
+        "/product/conflow"
+    ],
+    "规则引擎 + AI 识别 + 下载工具箱。41 规则包 7283 条规则本地拦截，覆盖不到的交给 AI 识别，顺手把视频断点续传存下来。纯本地运行，无后端不收集浏览数据，Chrome/Firefox/Safari。": [
+        "/product/zerozen"
+    ],
+    "规则引擎负责把广告和弹窗清干净，AI 识别补规则覆盖不到的新花样，下载工具箱负责把视频完整存下来。纯本地运行：没有服务器、没有账号，拦截由浏览器 declarativeNetRequest 引擎完成，扩展本身看不到任何请求内容。": [
+        "/product/zerozen"
+    ],
+    "规则来源要审": [
+        "/product/zerozen"
+    ],
+    "规则没见过的原生广告与假下载按钮，Alt+A 让你自配的模型识别——只发元素的结构化描述，不传正文、不截图、不传 Cookie，默认关闭。": [
+        "/product/zerozen"
+    ],
+    "规则覆盖": [
+        "/product/zerozen"
+    ],
+    "规则覆盖不到": [
+        "/product/zerozen"
+    ],
+    "规则订阅": [
+        "/product/zerozen"
+    ],
+    "视觉与布局": [
+        "nav.json"
+    ],
+    "视频、字幕、关键帧——确定性工作交给脚本，可复现；每步执行日志可查。": [
+        "/product/conflow"
+    ],
+    "视频作者的归作者，补全的署名写作者；每页幻灯片带原视频时间戳，讲错了随时回跳核对。": [
+        "/product/conflow"
+    ],
+    "视频变文章 + 幻灯片": [
+        "nav.json"
+    ],
+    "视频嗅探（不点播放也能发现）→ m3u8 解密合并（AES-128）→ 分片级断点续传（IndexedDB 持久化）→ 按类型自动归档；后台执行，关掉弹窗不中断。": [
+        "/product/zerozen"
+    ],
+    "视频没法用": [
+        "/product/conflow"
+    ],
+    "视频没讲清但流程必需的内容，用「💡 补全」显式标注——补的署名补全作者，不冒充视频作者。": [
+        "/product/conflow"
+    ],
+    "觉得好用可以在控制台配置的支持链接付费（诚实付费），没有弹窗催付。": [
+        "/product/zerozen"
+    ],
+    "触达 Touch": [
+        "nav.json"
+    ],
+    "触达 · 工作流 · 实验": [
+        "nav.json"
+    ],
+    "订阅更新": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "订阅治理": [
+        "/product/linkto"
+    ],
+    "让知识自己长成样子": [
+        "/product/litmus"
+    ],
+    "记忆": [
+        "/product/linkto"
+    ],
+    "记忆沉淀": [
+        "/product/linkto"
+    ],
+    "论坛": [
+        "nav.json"
+    ],
+    "论坛 · 评论 · 积分": [
+        "nav.json"
+    ],
+    "论断句标题、只嵌入含独有信息的原视频帧、每页标注时间戳——30 种主题放映中按 T 实时切换。": [
+        "/product/conflow"
+    ],
+    "设备间扫码配对（Ed25519 + 一次性配对码 + 6 位校验码防中间人），端到端加密，没有服务器没有账号，默认关闭。": [
+        "/product/liana"
+    ],
+    "词条 + Viterbi 整句转换": [
+        "/product/liana"
+    ],
+    "诚实，是产品观": [
+        "/product/zerozen"
+    ],
+    "该回的信越攒越多，每一封都要重新交代一遍上下文。": [
+        "/product/linkto"
+    ],
+    "课程": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen",
+        "nav.json"
+    ],
+    "课程类型": [
+        "nav.json"
+    ],
+    "账号云同步": [
+        "/product/liana"
+    ],
+    "账户接入": [
+        "/product/linkto"
+    ],
+    "贴一条 YouTube 链接，拿回一篇按论证结构重写的文章 + 一套重新设计的幻灯片。脚本管确定性，LLM 按写作法管语义，防幻觉是规则不是愿望。可直推 OpenFlow 草稿箱一键发布。": [
+        "/product/conflow"
+    ],
+    "贴一条链接之后": [
+        "/product/conflow"
+    ],
+    "贴一条链接，20 分钟后拿回能发布的文章和能放映的幻灯片。": [
+        "/product/conflow"
+    ],
+    "贴链接": [
+        "/product/conflow"
+    ],
+    "资料": [
+        "nav.json"
+    ],
+    "资料下载": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen",
+        "nav.json"
+    ],
+    "资源": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "趋势 · 舆情 · 竞品": [
+        "nav.json"
+    ],
+    "跨设备": [
+        "/product/linkto",
+        "/product/liana"
+    ],
+    "跳到主要内容": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "转写稿 + 时间轴": [
+        "/product/conflow"
+    ],
+    "转写稿按时间线性堆砌，论证结构全丢——那不是内容，是原料。": [
+        "/product/conflow"
+    ],
+    "转写稿还要再加工": [
+        "/product/conflow"
+    ],
+    "输入侧 · 万物入袋": [
+        "/product/litmus"
+    ],
+    "输入法的「智能」，代价是什么": [
+        "/product/liana"
+    ],
+    "输入零门槛，输出随时上台": [
+        "/product/litmus"
+    ],
+    "输出侧 · 随时成稿": [
+        "/product/litmus"
+    ],
+    "进入学院": [
+        "nav.json"
+    ],
+    "进入生态市场": [
+        "nav.json"
+    ],
+    "进阶层 · Flow 家族": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "选词 +1 · 删除后重选 +1.5 · 选了又删 −2（最强负反馈）——云输入法把删除当噪声，松萝当教材。": [
+        "/product/liana"
+    ],
+    "逐台手工配置": [
+        "/product/liana"
+    ],
+    "通用客户端 vs 云端 AI 邮箱 vs 林可兔": [
+        "/product/linkto"
+    ],
+    "通用邮件客户端": [
+        "/product/linkto"
+    ],
+    "通读近 36 小时邮件，输出主题 digest + 当日重点 + 备忘录 + 清理建议。": [
+        "/product/linkto"
+    ],
+    "速度、纠错、节省击键——只计次与秒，绝不记录任何按键内容。": [
+        "/product/liana"
+    ],
+    "遥测埋在「联网纠错」与「用户体验计划」里，关都关不干净。": [
+        "/product/liana"
+    ],
+    "邮件一键收藏为知识条目——通信归林可兔，知识归鹿蕊，各归其位。": [
+        "/product/linkto"
+    ],
+    "邮件托管在服务器": [
+        "/product/linkto"
+    ],
+    "邮件自己会分类，回复自己会起草": [
+        "/product/linkto"
+    ],
+    "部分处理": [
+        "/product/zerozen"
+    ],
+    "都只留在你的设备上": [
+        "/product/liana"
+    ],
+    "重新登录": [
+        "/product/linkto"
+    ],
+    "重新设计幻灯片": [
+        "/product/conflow"
+    ],
+    "重新配置账户": [
+        "/product/linkto"
+    ],
+    "重要信息转瞬即逝": [
+        "/product/linkto"
+    ],
+    "销售 Sales": [
+        "nav.json"
+    ],
+    "锁定风险": [
+        "/product/litmus"
+    ],
+    "长在桌面上的工作台": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "阅读模式": [
+        "/product/zerozen"
+    ],
+    "阅读模式：一键提取正文，无干扰阅读": [
+        "/product/zerozen"
+    ],
+    "防幻觉写死在方法论里：数字与命令逐字核对、视频没讲清的内容用「💡 补全」显式标注、观点归属严格分离、每页幻灯片带原视频时间戳可回溯核对。": [
+        "/product/conflow"
+    ],
+    "防幻觉是规则，不是愿望": [
+        "/product/conflow"
+    ],
+    "随手积累": [
+        "/product/litmus"
+    ],
+    "随手记一笔": [
+        "/product/litmus"
+    ],
+    "随时上台": [
+        "/product/litmus"
+    ],
+    "隐私政策要读": [
+        "/product/zerozen"
+    ],
+    "隐私政策要读三遍": [
+        "/product/liana"
+    ],
+    "隐私透明": [
+        "/product/liana",
+        "/product/zerozen"
+    ],
+    "零内容统计": [
+        "/product/liana"
+    ],
+    "零真": [
+        "/product/zerozen"
+    ],
+    "零真 ZEROZEN · 林下 Understory 出品": [
+        "/product/zerozen"
+    ],
+    "零真 ZeroZen · 广告净化": [
+        "nav.json"
+    ],
+    "零真 ZeroZen · 林下 Understory · 工作台层": [
+        "/product/zerozen"
+    ],
+    "零真 ZeroZen — 跨浏览器广告与弹窗净化扩展 | 林下 Understory": [
+        "/product/zerozen"
+    ],
+    "零遥测": [
+        "/product/liana"
+    ],
+    "零门槛入手": [
+        "/product/litmus"
+    ],
+    "需自建管道": [
+        "/product/litmus"
+    ],
+    "需要开发能力": [
+        "/product/litmus"
+    ],
+    "面向 AI 的 SAG 知识库": [
+        "/product/litmus"
+    ],
+    "预设齐全": [
+        "/product/linkto"
+    ],
+    "首页": [
+        "nav.json"
+    ],
+    "验证码埋在正文里、账单还款日要自己记、会议邀请散落在各处。": [
+        "/product/linkto"
+    ],
+    "验证码气泡一键复制、账单与会议自动转待办、订阅文章自动进阅读清单。": [
+        "/product/linkto"
+    ],
+    "鹿蕊": [
+        "/product/litmus"
+    ],
+    "鹿蕊 LITMUS · 林下 Understory 出品": [
+        "/product/litmus"
+    ],
+    "鹿蕊 Litmus · 林下 Understory · 工作台层": [
+        "/product/litmus"
+    ],
+    "鹿蕊 Litmus · 知识 OS": [
+        "nav.json"
+    ],
+    "鹿蕊 Litmus — AI 时代的知识操作系统 | 林下 Understory": [
+        "/product/litmus"
+    ],
+    "鹿蕊 Litmus 知识 OS · 松萝 Liana 输入法 · ConFlow 视频⇄HTML · 林可兔 LinkTo 邮件工作台 · 零真 ZeroZen 浏览净化": [
+        "/product/linkto",
+        "/product/litmus",
+        "/product/liana",
+        "/product/conflow",
+        "/product/zerozen"
+    ],
+    "鹿蕊是共生地衣——人类最早的「真相指示剂」（石蕊试纸）提取自它。人与 AI 共生，显色见真。": [
+        "/product/litmus"
+    ],
+    "默认库在 ~/Documents/ThirdC（应用内可切换）：磁盘上的普通 Markdown / HTML / 附件，任何编辑器都能打开，任何 agent 都能读写——这就是「文件即真相」。": [
+        "/product/litmus"
+    ],
+    "🔍 一切可审计": [
+        "/product/liana"
+    ],
+    "🔒 按键不离开设备": [
+        "/product/liana"
+    ],
+    "🙈 零遥测、零云 API": [
+        "/product/liana"
+    ]
+}

@@ -106,6 +106,8 @@ function of_seo_bootstrap(): void {
         }
         if (stripos($html, 'property="og:site_name"') === false && stripos($html, "property='og:site_name'") === false) {
             $sn = function_exists('site_config_get') ? site_config_get('site_name', '') : '';
+            // 多语言：站点名按当前语言的分段字典翻译（默认语言无字典 → 原样）
+            if ($sn !== '' && function_exists('i18n_tr_segment') && function_exists('i18n_current')) $sn = i18n_tr_segment($sn, i18n_content_map(i18n_current()));
             if ($sn !== '') $inject .= '<meta property="og:site_name" content="' . htmlspecialchars($sn, ENT_QUOTES) . '">' . "\n";
         }
         // Twitter Card：有 og:image 就用大卡，标题/描述复用 og 值（Twitter 会自己回退读 og:*，这里只补 card 类型）

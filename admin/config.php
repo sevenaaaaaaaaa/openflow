@@ -245,6 +245,7 @@ require_once __DIR__ . '/../lib/SiteConfig.php';
 require_once __DIR__ . '/../lib/CdpSync.php';
 require_once __DIR__ . '/../lib/CdpSystem.php';
 require_once __DIR__ . '/../lib/I18n.php';
+require_once __DIR__ . '/../lib/I18nContent.php';
 require_once __DIR__ . '/../lib/SeoHead.php';
 require_once __DIR__ . '/../lib/SkillSystem.php';
 require_once __DIR__ . '/../lib/SkillGenerator.php';

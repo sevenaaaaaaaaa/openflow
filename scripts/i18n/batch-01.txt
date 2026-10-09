@@ -1,0 +1,390 @@
+en|001|0 uploads
+en|002|0 barrier
+en|003|10 subscription sources: auto-update + fallback address switching
+en|004|10 languages
+en|005|200K
+en|006|214 tests
+en|007|30 themes — present, export and share
+en|008|30 themes
+en|009|4 kinds
+en|010|41 built-in packs + 10 subscription sources + point-and-click rules + AI fill-in
+en|011|41 packs
+en|012|41 rule packs · 7,283 rules
+en|013|41 rule packs · 7,283 rules, each group toggled independently (general / search & social / video & live / news & e-commerce / regional / vertical)
+en|014|41 rule packs · AI detection · fully local
+en|015|44 blocks · component factory · built for ad traffic
+en|016|7,283 rules · blocked locally
+en|017|AGPL open source + permission center + zero content analytics
+en|018|AGPL-3.0 open source, Rust core with zero third-party dependencies — plugins are data, not code.
+en|019|AI one-paragraph summary
+en|020|AI triage & noise reduction
+en|021|Do AI features need an internet connection?
+en|022|AI-native
+en|023|AI four-way noise reduction
+en|024|AI runs in the cloud, so your text leaves the device
+en|025|AI helps it grow
+en|026|Whose model does the AI use?
+en|027|AI capabilities
+en|028|AI auto-detection
+en|029|AI fill-in
+en|030|AI fill-in (bring your own endpoint; results go to review first)
+en|031|AI noise reduction · growing memory · fully local
+en|032|API interoperability
+en|033|API docs
+en|034|Agent access
+en|035|Agent frameworks lock knowledge away
+en|036|Agent memory that grows
+en|037|Agent memory keeps growing
+en|038|Alt+Z point-and-click rule · Alt+A AI-detect this page
+en|039|Alt+Z turns a selected element straight into a hide / remove / allow rule; rules that recur across sites are generalized automatically, and what it learns follows you.
+en|040|CLI one-liner (one command + one OpenAI-compatible key) / desktop ZCode skill / server-side FastAPI + admin console — same prompts and engine, only the shell differs.
+en|041|CRM & leads
+en|042|CRM · commerce · membership
+en|043|Hides / removes ad slots and overlays with CSS; selectors match on word boundaries so normal class names are never hit by mistake.
+en|044|Chrome / Edge / Arc: load dist/chrome in developer mode at chrome://extensions; Firefox 128+: install the xpi; Safari (macOS 13+ / iOS 16.4+): build with Xcode, then enable it in Settings. Remember Alt+Z (point-and-click block) and Alt+A (AI-detect this page) right after installing.
+en|045|ConFlow · Understory · Studio layer
+en|046|ConFlow · by Understory
+en|047|ConFlow · Video ⇄ HTML
+en|048|ConFlow — watch a video once, get content ready to publish | Understory
+en|049|10 preset sources — EasyList / EasyPrivacy / anti-AD / AdGuard / uBlock / CJX and more — update automatically and switch to fallback addresses; Adblock, hosts, plain-domain and JSON formats all supported.
+en|050|EasyList-style subscriptions can't stop new native-ad tricks — rule-by-rule updates are always one step behind.
+en|051|Feynman's 50 styles + whole-library PPT + AI-HTML static site
+en|052|Feynman turns a document into slides (50 design-history styles) · whole-library PPT · AI-HTML static site · llms.txt.
+en|053|Feynman reading / presenting · 50 design-history styles with live re-skinning
+en|054|Flow canvas
+en|055|Flow canvas · timeline · kanban · Memo heatmap
+en|056|GitHub repository
+en|057|Gmail / Outlook / iCloud / QQ / 163 / 126 / 139 / Sina / Tencent Exmail / Alibaba Mail / Yahoo / Zoho — the officially recommended settings are all pre-filled.
+en|058|Gmail / Outlook · Hotmail · Microsoft 365: authorize with one click on the card; tokens refresh automatically before they expire.
+en|059|Gmail authorizes in a browser pop-up, Outlook-family accounts via device code; tokens refresh automatically before they expire. If credentials aren't configured, it falls back to guided app-password setup.
+en|060|L0 learns you and evolves (on by default) · L1 on-device speech types as you speak · L2 small model, one-click download (sha256-verified, runs locally) · simultaneous interpretation (127.0.0.1 loopback only) — if the device can't run on-device models the feature is disabled, never falling back to the cloud.
+en|061|Won't an LLM confidently make things up?
+en|062|LearnFlow · Courses & bootcamps
+en|063|Liquid Glass UI: ambient light spots · glassmorphism · pointer-following highlights
+en|064|Two-way MCP — people and agents share one local API
+en|065|Two-way MCP: thirdc mcp can run as a server for other agents to call
+en|066|MFlow · Marketing flow engine
+en|067|MFlow content marketing · WebsFlow landing-page factory · UserLoop unified data · inFlow external intelligence · PayFlow payments · LearnFlow course delivery
+en|068|Memo quick notes (voice to text) · browser extension captures whole pages / selections · PDF / DOCX parsing · direct Obsidian vault import.
+en|069|New-1~4 courses + R.B.E bootcamp · with OpenFlow as the toolkit
+en|070|Automatic newsletter detection, subscribed-sender management, one-click List-Unsubscribe.
+en|071|Open Knowledge Format: Markdown semantics + YAML metadata + block anchors + JSON-LD
+en|072|OpenFlow · Growth operating system
+en|073|OpenFlow product page
+en|074|OpenFlow growth operating system · designing growth systems that agents can run, for one-person companies
+en|075|PPT and publishing have to be done separately
+en|076|PayFlow · Monetization engine
+en|077|RAG frameworks
+en|078|REST API reference
+en|079|Download the desktop client from Releases (macOS dmg / Windows msi / Linux deb · AppImage); or use CLI + Web: the thirdc serve daemon + HTTP API, with the five-mode UI as its desktop.
+en|080|SEO / GEO engine
+en|081|SEO check · Meta · LTV
+en|082|SQLite · zero uploads
+en|083|Skills · plugins · themes · one-person-company growth community
+en|084|Skills
+en|085|TIPS four forces
+en|086|TIPS four forces + three supporting layers: capabilities are the framework, products are the delivery
+en|087|UserLoop · User behavior loop
+en|088|VRM 3D renderer (gaze follows the pointer / blinking / spring-bone physics), built-in avatar works offline with zero downloads; click to switch between Chinese and English, follows you across screens.
+en|089|WebsFlow · Landing-page factory
+en|090|bookmarks / history / downloads / webRequest are not requested at install — it asks the first time they're needed and you can revoke at any time; AI detection sends only an element description and the page's URL and title.
+en|091|Enforced by declarativeNetRequest; the extension can't see request contents; permissions are requested only when needed
+en|092|Blocks requests by rule via declarativeNetRequest — executed by the browser engine, so the extension itself never sees any request content.
+en|093|doc.md — the article rewritten around its argument structure (four writing methods: tutorial / explainer / commentary / review)
+en|094|inFlow · Intelligence growth hub
+en|095|macOS 13+: double-click the Liana installer → one-click install to ~/Library/Input Methods → add "Liana" in Keyboard settings. Developers can build from source (all 214 tests in cargo test passing is the merge bar).
+en|096|script.md — optional: a 45–90 second voice-over short-video script (beat sheet with seconds per beat)
+en|097|slides — 30-theme deck, presented right in the browser; press P to export PDF
+en|098|storyboard.json — storyboard prompt pack (ready to use with Sora / Veo / Kling)
+en|099|v2video reverse-engineers an old article into a storyboard prompt pack (ready to use with Sora / Veo / Kling), or outputs an HTML animated presentation — video becomes content, and content becomes video again.
+en|100|© 2026 Understory (OpenFlow) Technology Co., Ltd.
+en|101|— DTC seller
+en|102|— Front-end engineer
+en|103|— Growth lead
+en|104|— Indie developer
+en|105|— Bootcamp host
+en|106|— Chen Mo · Content studio
+en|107|⌘K command palette: navigate / act / jump straight to mail
+en|108|★ Matrix overview (preview)
+en|109|★ Capability overview (preview)
+en|110|"No need to replace my store — plug it in and it takes payments."
+en|111|"I used to spend 3 hours a day finding topics and revising articles. Now it crawls signals and hands me a draft — I just review."
+en|112|"The funnel is finally visible: the dashboard tells you exactly which step is losing orders."
+en|113|"For the first time, one person ran the whole content pipeline, from collection to indexing, without switching tools."
+en|114|"The component factory is so smooth — paste a snippet of HTML and it becomes a reusable module."
+en|115|"Dragging the course player's progress bar is silky smooth, and learner completion rates are visibly going up."
+en|116|How it comes to understand one typist
+en|117|One-Person-Company Growth Handbook (H5)
+en|118|everything is a plain file on disk
+en|119|After an email arrives
+en|120|One
+en|121|A key-points summary
+en|122|One-line embedded checkout · subscriptions / referrals / commissions
+en|123|One-click library creation / piecemeal collection / local page capture / external systems pulled in via MCP connectors.
+en|124|One-click authorization
+en|125|One-click authorization + settings for major mailboxes at home and abroad pre-filled
+en|126|One-click authorization setup
+en|127|Extracts the main text in one click and eases into distraction-free reading; hides navigation / sidebars / comments in one click.
+en|128|One-click tidy (lasso batch / semantic clustering) / select-to-command / whole-library PPT / AI-HTML static site.
+en|129|One-page overview
+en|130|Three promises
+ja|001|アップロード 0
+ja|002|ハードル 0
+ja|003|購読ソース 10 件：自動更新＋予備アドレスへの切り替え
+ja|004|10 言語
+ja|005|20 万
+ja|006|214 項目
+ja|007|30 テーマで再構成。上映・書き出し・共有に対応
+ja|008|30 テーマ
+ja|009|4 種
+ja|010|内蔵パック 41 ＋ 購読ソース 10 ＋ ポイント指定ルール ＋ AI による補完
+ja|011|41 パック
+ja|012|41 ルールパック · 7,283 ルール
+ja|013|41 ルールパック · 7,283 ルール。グループ別（汎用／検索・SNS／動画・ライブ／ニュース・EC／地域サイト／専門サイト）に個別オン・オフ
+ja|014|41 ルールパック · AI 判定 · 完全ローカル
+ja|015|44 ブロック · コンポーネント工場 · 広告出稿向け
+ja|016|7,283 ルール · ローカルでブロック
+ja|017|AGPL オープンソース＋権限センター＋コンテンツ統計ゼロ
+ja|018|AGPL-3.0 オープンソース。Rust コアはサードパーティ依存ゼロ、プラグインはコードではなくデータです。
+ja|019|AI による一段落要約
+ja|020|AI 分類でノイズ低減
+ja|021|AI 機能にはネット接続が必要ですか？
+ja|022|AI ネイティブ
+ja|023|AI 4 分類ノイズ低減
+ja|024|AI はクラウドで処理され、本文が端末の外に出る
+ja|025|AI が育ててくれる
+ja|026|AI はどのモデルを使いますか？
+ja|027|AI 機能
+ja|028|AI が自動判定
+ja|029|AI 補完
+ja|030|AI 判定による補完（自分で用意したエンドポイント、結果は先に承認待ちへ）
+ja|031|AI でノイズ低減 · 記憶が育つ · 完全ローカル
+ja|032|API 連携
+ja|033|API ドキュメント
+ja|034|エージェント連携
+ja|035|エージェントフレームワークは知識を閉じ込める
+ja|036|成長するエージェント記憶
+ja|037|エージェント記憶が育ち続ける
+ja|038|Alt+Z ポイントしてルール化 · Alt+A このページを AI 判定
+ja|039|Alt+Z で選んだ要素から、非表示／削除／許可ルールをそのまま生成。複数サイトで再現したルールは自動で汎用化され、学習結果はあなたについて回ります。
+ja|040|CLI ワンライナー（コマンド 1 つ＋ OpenAI 互換キー 1 つ）／クライアント版 ZCode スキル／サーバー版 FastAPI＋管理画面——プロンプトもエンジンも同じで、違うのは外側の形だけです。
+ja|041|CRM とリード
+ja|042|CRM · 商取引 · 会員
+ja|043|CSS で広告枠やオーバーレイを非表示／削除。セレクタは単語境界で照合するので、通常のクラス名を巻き込みません。
+ja|044|Chrome / Edge / Arc：chrome://extensions のデベロッパーモードで dist/chrome を読み込み。Firefox 128 以降：xpi をインストール。Safari（macOS 13+ / iOS 16.4+）：Xcode でビルドし、設定で有効化。インストール後は Alt+Z（ポイントしてブロック）と Alt+A（このページを AI 判定）を覚えておきましょう。
+ja|045|ConFlow · 林下 Understory · Studio層
+ja|046|ConFlow · 林下 Understory 制作
+ja|047|ConFlow · 動画⇄HTML
+ja|048|ConFlow — 動画を 1 本見るだけで、公開できるコンテンツが手に入る | 林下 Understory
+ja|049|EasyList / EasyPrivacy / anti-AD / AdGuard / uBlock / CJX など 10 のプリセットソースが自動更新・予備アドレスへ自動切り替え。Adblock / hosts / ドメインのみ / JSON の 4 形式に対応します。
+ja|050|EasyList 系の購読では、ネイティブ広告の新しい手口は防げません——ルールを 1 件ずつ更新する方式では常に一歩遅れます。
+ja|051|Feynman 50 スタイル＋ライブラリ全体の PPT ＋ AI-HTML 静的サイト
+ja|052|Feynman はドキュメントがそのままスライドに（デザイン史 50 スタイル）· ライブラリ全体の PPT · AI-HTML 静的サイト · llms.txt。
+ja|053|Feynman 閲覧／プレゼン · デザイン史 50 スタイルをリアルタイムで着せ替え
+ja|054|Flow キャンバス
+ja|055|Flow キャンバス · タイムライン · カンバン · Memo ヒートマップ
+ja|056|GitHub リポジトリ
+ja|057|Gmail / Outlook / iCloud / QQ / 163 / 126 / 139 / Sina / Tencent Exmail / Alibaba Mail / Yahoo / Zoho の公式推奨設定をすべて入力済み。
+ja|058|Gmail / Outlook · Hotmail · Microsoft 365：カードをクリックするだけで認可が完了し、トークンは期限前に自動更新されます。
+ja|059|Gmail はブラウザのポップアップ、Outlook 系はデバイスコードで認可。トークンは期限前に自動更新されます。認証情報が未設定の場合は、アプリパスワードの案内に自動で切り替わります。
+ja|060|L0 あなたを学習して自己進化（既定でオン）· L1 端末内音声認識で話しながら文字入力 · L2 小型モデルをワンクリックでダウンロード（sha256 検証、ローカル実行）· 同時通訳（127.0.0.1 ループバックのみ）——端末内で動かせない場合は機能を無効にし、クラウドには絶対に切り替えません。
+ja|061|LLM はもっともらしく嘘をつきませんか？
+ja|062|LearnFlow · コースとブートキャンプ
+ja|063|Liquid Glass UI：環境光のにじみ · ガラスモーフィズム · ポインタ追従ハイライト
+ja|064|MCP 双方向。人もエージェントも同じローカル API
+ja|065|MCP 双方向：thirdc mcp は他のエージェントから呼び出せるサーバーとして動作します
+ja|066|MFlow · マーケティングフローエンジン
+ja|067|MFlow コンテンツマーケ · WebsFlow ランディングページ工房 · UserLoop 全チャネルデータ · inFlow 外部インテリジェンス · PayFlow 決済 · LearnFlow コース配信
+ja|068|Memo でさっとメモ（音声文字起こし）· ブラウザ拡張でページ全体／選択範囲を取り込み · PDF / DOCX 解析 · Obsidian ライブラリを直接インポート。
+ja|069|New-1〜4 コース＋ R.B.E ブートキャンプ · OpenFlow をツールとして
+ja|070|ニュースレターを自動認識、購読中の送信者を管理、List-Unsubscribe でワンクリック配信停止。
+ja|071|Open Knowledge Format：Markdown のセマンティクス＋ YAML メタデータ＋ブロックアンカー＋ JSON-LD
+ja|072|OpenFlow · グロース OS
+ja|073|OpenFlow 製品ページ
+ja|074|OpenFlow グロース OS · 一人会社のために、エージェントが回せるグロースシステムを設計する
+ja|075|PPT と公開は別途作る必要がある
+ja|076|PayFlow · マネタイズエンジン
+ja|077|RAG フレームワーク
+ja|078|REST API リファレンス
+ja|079|Releases からデスクトップクライアントをダウンロード（macOS dmg / Windows msi / Linux deb · AppImage）。CLI＋Web でも利用可能：thirdc serve デーモン＋ HTTP API で、5 モードの UI がそのデスクトップです。
+ja|080|SEO / GEO エンジン
+ja|081|SEO チェック · Meta · LTV
+ja|082|SQLite · アップロードゼロ
+ja|083|スキル · プラグイン · テーマ · 一人会社のグロースコミュニティ
+ja|084|スキル
+ja|085|TIPS 4 力
+ja|086|TIPS 4 力＋ 3 層のサポート：ケイパビリティはフレームワーク、プロダクトはデリバリー
+ja|087|UserLoop · ユーザー行動ループ
+ja|088|VRM 3D レンダラー（ポインタへの視線追従／まばたき／スプリングボーン物理）。内蔵アバターはオフラインでダウンロード不要。クリックで中英切り替え、画面をまたいで追従します。
+ja|089|WebsFlow · ランディングページ工房
+ja|090|bookmarks / history / downloads / webRequest はインストール時に要求せず、初めて使うときに確認し、いつでも取り消せます。AI 判定が送るのは要素の説明とページの URL・タイトルだけです。
+ja|091|declarativeNetRequest エンジンで実行。拡張機能はリクエスト内容を見られず、権限は必要になったときだけ要求
+ja|092|declarativeNetRequest でルールに従ってリクエストを遮断——ブラウザエンジンが実行するため、拡張機能自体はリクエスト内容を一切見られません。
+ja|093|doc.md — 論証構造に沿って書き直した記事（チュートリアル／解説／論評／レビューの 4 つの文章術）
+ja|094|inFlow · インテリジェンスグロース拠点
+ja|095|macOS 13+：Liana インストーラーをダブルクリック → ~/Library/Input Methods にワンクリックでインストール → キーボード設定に「Liana」を追加。開発者はソースからビルド可能（cargo test の 214 項目すべて成功がマージの下限）。
+ja|096|script.md — 任意：45〜90 秒のナレーション付きショート動画台本（ビートごとの秒数入り）
+ja|097|slides — 30 テーマのスライド。ブラウザでそのまま上映でき、P キーで PDF 書き出し
+ja|098|storyboard.json — 絵コンテ用プロンプトパック（Sora / Veo / Kling でそのまま使えます）
+ja|099|v2video は古い記事を絵コンテ用プロンプトパック（Sora / Veo / Kling でそのまま使えます）へ逆変換し、HTML アニメーションのプレゼンも出力します——動画がコンテンツになり、コンテンツがまた動画になります。
+ja|100|© 2026 林下 Understory（OpenFlow）科技有限公司
+ja|101|— DTC セラー
+ja|102|— フロントエンドエンジニア
+ja|103|— グロース責任者
+ja|104|— 個人開発者
+ja|105|— ブートキャンプ主宰者
+ja|106|— 陳默 · コンテンツスタジオ
+ja|107|⌘K コマンドパレット：ナビゲーション／アクション／メールへ直接ジャンプ
+ja|108|★ マトリクス総覧（プレビュー版）
+ja|109|★ ケイパビリティ総覧（プレビュー版）
+ja|110|「ストアを乗り換える必要はありません。つなぐだけで決済できます。」
+ja|111|「以前は毎日 3 時間かけてテーマ探しと記事の手直しをしていました。今はシグナルを集めた時点で下書きが届き、私はチェックするだけです。」
+ja|112|「ファネルがようやく見えるようになりました。どの段階で受注が漏れているか、ダッシュボードが教えてくれます。」
+ja|113|「たった一人でコンテンツのパイプライン全体を回せました。収集から掲載まで、ツールを一度も替えていません。」
+ja|114|「コンポーネント工場が快適すぎます。HTML を貼るだけで再利用できるモジュールになります。」
+ja|115|「コースプレーヤーのシークバーが滑らかで、受講者の修了率が目に見えて上がっています。」
+ja|116|入力する人を、どう理解するか
+ja|117|一人会社グロースハンドブック（H5）
+ja|118|すべてはディスク上の普通のファイル
+ja|119|メールが届いたあとで
+ja|120|1 本
+ja|121|要点を一段落に
+ja|122|1 行で決済を埋め込み · サブスク／シェア拡散／コミッション
+ja|123|ワンクリックでライブラリ作成／少しずつ蓄積／Web ページのローカル化／MCP コネクタで外部システムから取り込み。
+ja|124|ワンクリック認可
+ja|125|ワンクリック認可＋国内外の主要メール設定を入力済み
+ja|126|ワンクリック認可で接続
+ja|127|ワンクリックで本文を抽出し、アニメーションとともに邪魔のない閲覧へ。ナビゲーション／サイドバー／コメントもワンクリックで非表示。
+ja|128|ワンクリック整理（範囲選択で一括／意味クラスタリング）／選択して即コマンド／ライブラリ全体の PPT ／ AI-HTML 静的サイト。
+ja|129|1 枚で分かる紹介
+ja|130|3 つの約束
+ko|001|업로드 0
+ko|002|진입 장벽 0
+ko|003|구독 소스 10개: 자동 업데이트 + 예비 주소 전환
+ko|004|10개 언어
+ko|005|20만
+ko|006|214개 항목
+ko|007|30개 테마로 재구성, 발표·내보내기·공유 지원
+ko|008|30개 테마
+ko|009|4종
+ko|010|내장 팩 41개 + 구독 소스 10개 + 포인트 지정 규칙 + AI 보완
+ko|011|41개 팩
+ko|012|41개 규칙 팩 · 7,283개 규칙
+ko|013|41개 규칙 팩 · 7,283개 규칙, 그룹별(일반/검색·소셜/영상·라이브/뉴스·이커머스/지역 사이트/전문 사이트)로 독립 켜기·끄기
+ko|014|41개 규칙 팩 · AI 식별 · 완전 로컬
+ko|015|블록 44개 · 컴포넌트 팩토리 · 광고 집행용
+ko|016|규칙 7,283개 · 로컬 차단
+ko|017|AGPL 오픈소스 + 권한 센터 + 콘텐츠 통계 제로
+ko|018|AGPL-3.0 오픈소스, Rust 코어는 서드파티 의존성 제로, 플러그인은 코드가 아니라 데이터입니다.
+ko|019|AI 한 단락 요약
+ko|020|AI 분류로 노이즈 줄이기
+ko|021|AI 기능은 인터넷 연결이 필요한가요?
+ko|022|AI 네이티브
+ko|023|AI 4종 노이즈 감소
+ko|024|AI가 클라우드에서 처리되어 본문이 기기를 떠남
+ko|025|AI가 함께 키워 줍니다
+ko|026|AI는 누구의 모델을 쓰나요?
+ko|027|AI 기능
+ko|028|AI 자동 식별
+ko|029|AI 보완
+ko|030|AI 식별 보완(직접 연결한 엔드포인트, 결과는 먼저 검토 대기로)
+ko|031|AI 노이즈 감소 · 성장하는 기억 · 완전 로컬
+ko|032|API 연동
+ko|033|API 문서
+ko|034|에이전트 연동
+ko|035|에이전트 프레임워크는 지식을 가둔다
+ko|036|성장하는 에이전트 기억
+ko|037|에이전트 기억이 계속 성장
+ko|038|Alt+Z 요소 지정 후 규칙 생성 · Alt+A 이 페이지 AI 식별
+ko|039|Alt+Z로 선택한 요소에서 숨김 / 제거 / 허용 규칙을 바로 생성합니다. 여러 사이트에서 반복되면 규칙이 자동으로 일반화되고, 학습 결과는 사용자를 따라갑니다.
+ko|040|CLI 한 줄(명령 하나 + OpenAI 호환 키 하나) / 클라이언트 ZCode 스킬 / 서버 FastAPI + 관리 콘솔 — 프롬프트와 엔진은 같고, 형태만 다른 껍데기입니다.
+ko|041|CRM 및 리드
+ko|042|CRM · 커머스 · 멤버십
+ko|043|CSS로 광고 영역과 오버레이를 숨김 / 제거합니다. 선택자는 단어 경계로 처리해 정상 클래스명을 건드리지 않습니다.
+ko|044|Chrome / Edge / Arc: chrome://extensions 개발자 모드에서 dist/chrome을 로드합니다. Firefox 128+: xpi를 설치합니다. Safari(macOS 13+ / iOS 16.4+): Xcode로 빌드한 뒤 설정에서 활성화합니다. 설치 후 Alt+Z(요소 지정 차단)와 Alt+A(이 페이지 AI 식별)를 꼭 기억해 두세요.
+ko|045|ConFlow · Understory · Studio층
+ko|046|ConFlow · Understory 제작
+ko|047|ConFlow · 영상⇄HTML
+ko|048|ConFlow — 영상 하나만 보면, 바로 게시할 수 있는 콘텐츠가 생깁니다 | Understory
+ko|049|EasyList / EasyPrivacy / anti-AD / AdGuard / uBlock / CJX 등 프리셋 소스 10개가 자동 업데이트되고 예비 주소로 자동 전환됩니다. Adblock / hosts / 도메인 목록 / JSON 4가지 형식을 모두 지원합니다.
+ko|050|EasyList 계열 구독으로는 네이티브 광고의 새로운 수법을 막지 못합니다. 규칙을 하나씩 업데이트하는 방식은 늘 한발 늦습니다.
+ko|051|Feynman 50종 스타일 + 라이브러리 전체 PPT + AI-HTML 정적 사이트
+ko|052|Feynman은 문서가 곧 슬라이드(디자인사 50종 스타일) · 라이브러리 전체 PPT · AI-HTML 정적 사이트 · llms.txt.
+ko|053|Feynman 읽기 / 발표 · 디자인사 50종 스타일 실시간 스킨 변경
+ko|054|Flow 캔버스
+ko|055|Flow 캔버스 · 타임라인 · 칸반 · Memo 히트맵
+ko|056|GitHub 저장소
+ko|057|Gmail / Outlook / iCloud / QQ / 163 / 126 / 139 / Sina / Tencent Exmail / Alibaba Mail / Yahoo / Zoho의 공식 권장 설정이 모두 미리 채워져 있습니다.
+ko|058|Gmail / Outlook · Hotmail · Microsoft 365: 카드를 클릭하면 인증이 자동으로 완료되고, 토큰은 만료 전에 자동으로 갱신됩니다.
+ko|059|Gmail은 브라우저 팝업, Outlook 계열은 기기 코드로 인증하며, 토큰은 만료 전에 자동 갱신됩니다. 인증 정보가 설정되지 않은 경우 앱 비밀번호 안내로 자동 전환됩니다.
+ko|060|L0 사용자를 학습해 스스로 진화(기본 켜짐) · L1 기기 내 음성으로 말하는 대로 입력 · L2 소형 모델 원클릭 다운로드(sha256 검증, 로컬 실행) · 동시통역(127.0.0.1 루프백 전용) — 기기에서 온디바이스 모델을 지원하지 않으면 기능을 비활성화하며, 절대 클라우드로 대체하지 않습니다.
+ko|061|LLM이 그럴듯하게 거짓말을 하지 않나요?
+ko|062|LearnFlow · 강의와 부트캠프
+ko|063|Liquid Glass UI: 주변광 효과 · 글래스모피즘 · 포인터 추적 하이라이트
+ko|064|MCP 양방향, 사람과 에이전트가 같은 로컬 API 사용
+ko|065|MCP 양방향: thirdc mcp를 서버로 실행해 다른 에이전트가 호출할 수 있습니다
+ko|066|MFlow · 마케팅 플로 엔진
+ko|067|MFlow 콘텐츠 마케팅 · WebsFlow 랜딩페이지 공방 · UserLoop 전 채널 데이터 · inFlow 외부 인텔리전스 · PayFlow 결제 · LearnFlow 강의 전달
+ko|068|Memo 간편 메모(음성→텍스트) · 브라우저 확장으로 페이지 전체 / 선택 영역 수집 · PDF / DOCX 파싱 · Obsidian 보관함 바로 가져오기.
+ko|069|New-1~4 강의 + R.B.E 부트캠프 · OpenFlow를 도구로
+ko|070|뉴스레터 자동 인식, 구독 발신자 관리, List-Unsubscribe로 원클릭 수신 거부.
+ko|071|Open Knowledge Format: Markdown 시맨틱 + YAML 메타데이터 + 블록 앵커 + JSON-LD
+ko|072|OpenFlow · 그로스 운영체제
+ko|073|OpenFlow 제품 페이지
+ko|074|OpenFlow 그로스 운영체제 · 1인 기업을 위해 에이전트가 돌릴 수 있는 그로스 시스템을 설계합니다
+ko|075|PPT와 게시는 따로 작업해야 함
+ko|076|PayFlow · 수익화 엔진
+ko|077|RAG 프레임워크
+ko|078|REST API 레퍼런스
+ko|079|Releases에서 데스크톱 클라이언트를 내려받으세요(macOS dmg / Windows msi / Linux deb · AppImage). CLI + Web도 가능합니다: thirdc serve 데몬 + HTTP API이며, 5가지 모드 UI가 그 데스크톱입니다.
+ko|080|SEO / GEO 엔진
+ko|081|SEO 점검 · Meta · LTV
+ko|082|SQLite · 업로드 제로
+ko|083|스킬 · 플러그인 · 테마 · 1인 기업 그로스 커뮤니티
+ko|084|스킬
+ko|085|TIPS 4력
+ko|086|TIPS 4력 + 3층 지원: 역량은 프레임워크, 제품은 전달
+ko|087|UserLoop · 사용자 행동 루프
+ko|088|VRM 3D 렌더러(포인터 응시 / 눈 깜빡임 / 스프링 본 물리), 내장 캐릭터는 오프라인으로 다운로드 없이 사용 가능, 클릭하면 중·영 전환, 화면을 넘나들며 따라옵니다.
+ko|089|WebsFlow · 랜딩페이지 공방
+ko|090|bookmarks / history / downloads / webRequest는 설치 시 요청하지 않고, 처음 쓸 때 묻고 언제든 회수할 수 있습니다. AI 식별은 요소 설명과 페이지 주소·제목만 전송합니다.
+ko|091|declarativeNetRequest 엔진이 실행하며, 확장 프로그램은 요청 내용을 볼 수 없고, 권한은 필요할 때만 요청
+ko|092|declarativeNetRequest가 규칙에 따라 요청을 차단합니다. 브라우저 엔진이 실행하므로 확장 프로그램 자체는 어떤 요청 내용도 볼 수 없습니다.
+ko|093|doc.md — 논증 구조에 맞춰 다시 쓴 글(튜토리얼 / 해설 / 칼럼 / 리뷰의 네 가지 글쓰기 방식)
+ko|094|inFlow · 인텔리전스 그로스 허브
+ko|095|macOS 13+: Liana 설치 프로그램을 더블클릭 → ~/Library/Input Methods에 원클릭 설치 → 키보드 설정에서 「Liana」 추가. 개발자는 소스에서 빌드할 수 있습니다(cargo test 214개 항목 전부 통과가 병합 기준).
+ko|096|script.md — 선택: 45–90초 내레이션 숏폼 영상 대본(비트별 초 단위 비트 시트)
+ko|097|slides — 30개 테마 슬라이드, 브라우저에서 바로 발표하고 P 키로 PDF 내보내기
+ko|098|storyboard.json — 스토리보드 프롬프트 팩(Sora / Veo / Kling에서 바로 사용 가능)
+ko|099|v2video는 기존 글을 스토리보드 프롬프트 팩(Sora / Veo / Kling에서 바로 사용 가능)으로 역변환하거나 HTML 애니메이션 프레젠테이션을 출력합니다. 영상이 콘텐츠가 되고, 콘텐츠가 다시 영상이 됩니다.
+ko|100|© 2026 Understory (OpenFlow) Technology Co., Ltd.
+ko|101|— DTC 셀러
+ko|102|— 프런트엔드 엔지니어
+ko|103|— 그로스 리드
+ko|104|— 인디 개발자
+ko|105|— 부트캠프 운영자
+ko|106|— 천모(陳默) · 콘텐츠 스튜디오
+ko|107|⌘K 명령 팔레트: 탐색 / 동작 / 메일 바로가기
+ko|108|★ 매트릭스 개요(프리뷰)
+ko|109|★ 역량 전체 보기(프리뷰)
+ko|110|"쇼핑몰을 바꿀 필요 없이, 연결만 하면 바로 결제됩니다."
+ko|111|"예전엔 매일 3시간씩 주제를 찾고 글을 고쳤는데, 이제는 신호를 수집하면 초안이 바로 나와요. 저는 검수만 합니다."
+ko|112|"드디어 퍼널이 눈에 보여요. 어느 단계에서 주문이 새는지 대시보드가 바로 알려 줍니다."
+ko|113|"처음으로 혼자서 콘텐츠 파이프라인 전체를 돌렸어요. 수집부터 색인까지 도구를 바꾼 적이 없습니다."
+ko|114|"컴포넌트 팩토리가 정말 편해요. HTML 한 조각을 붙이면 재사용 가능한 모듈이 됩니다."
+ko|115|"강의 플레이어의 진행 바가 아주 부드럽고, 수강생 수료율이 눈에 띄게 오르고 있어요."
+ko|116|타자를 치는 사람을 어떻게 이해하는가
+ko|117|1인 기업 그로스 핸드북(H5)
+ko|118|모든 것은 디스크 위의 평범한 파일
+ko|119|메일이 도착한 뒤
+ko|120|한 줄
+ko|121|핵심 요약 한 단락
+ko|122|한 줄로 결제 임베드 · 구독 / 바이럴 / 수수료
+ko|123|원클릭 보관함 생성 / 틈틈이 수집 / 웹 페이지 로컬화 / MCP 커넥터로 외부 시스템에서 가져오기.
+ko|124|원클릭 인증
+ko|125|원클릭 인증 + 국내외 주요 메일 설정 미리 입력
+ko|126|원클릭 인증으로 연결
+ko|127|원클릭으로 본문을 추출하고 방해 없는 읽기 화면으로 부드럽게 전환하며, 탐색 / 사이드바 / 댓글을 원클릭으로 숨깁니다.
+ko|128|원클릭 정리(영역 선택 일괄 / 의미 클러스터링) / 선택 즉시 명령 / 라이브러리 전체 PPT / AI-HTML 정적 사이트.
+ko|129|한 장짜리 소개
+ko|130|세 가지 약속
