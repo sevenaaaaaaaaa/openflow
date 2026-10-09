@@ -12,7 +12,7 @@
 | **OpenFlow** | 主站（表现层 + CMS + 后台） | PHP 8.3 | `/www/wwwroot/nownexts_com` | `nownexts.com` |
 | **PayFlow** | 独立应用 | PHP | `/www/wwwroot/payflow`（Alias `/payflow`） | `nownexts.com/payflow`、`payflow.nownexts.com` |
 | **LearnFlow** | 独立应用 | （开发中） | `/www/wwwroot/learnflow`（Alias `/learnflow`） | `nownexts.com/learnflow` |
-| **Webs Flow** | 产品站 | JS/TS | `/www/wwwroot/websflow`（Alias `/webflow`） | `nownexts.com/webflow` |
+| **WebsFlow** | 产品站 | JS/TS | `/www/wwwroot/websflow`（Alias `/webflow`） | `nownexts.com/webflow` |
 | **UserLoop** | 独立服务 | Python | `/www/wwwroot/userloop`（systemd `userloop`） | `nownexts.com/userloop` |
 | **MFlow** | 独立服务 | Python | systemd `mflow-console` | `nownexts.com/mflow` |
 | **inFlow** | 独立服务 | Python | （对外/自部署） | 情报 API |
@@ -94,7 +94,7 @@ Content-Type: application/json
 | 全域用户行为/分群 | UserLoop | `segments?key=` / API |
 | 外部情报（趋势/舆情） | inFlow | inFlow API（回读） |
 | 学习进度/证书 | LearnFlow | LearnFlow API |
-| 落地页内容 | Webs Flow / OpenFlow 页面 | 各自 API |
+| 落地页内容 | WebsFlow / OpenFlow 页面 | 各自 API |
 
 **禁止**：跨服务直接读对方数据库或 `data/*.json`。
 

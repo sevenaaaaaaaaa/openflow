@@ -107,7 +107,11 @@
          /product/linkto 林可兔 · /product/litmus 鹿蕊 · /product/liana 松萝 · /product/conflow · /product/zerozen 零真；
          路由/sitemap/审计归型齐备，storyline-audit 5 页全 [产品页] ✓ ERROR 0；
          数据真源 = scripts/seed-studio-pages.php，data/builder-pages.json 走数据通道）
-第 3 步  任务 A1 全站品牌名统一（此时新旧 12 页齐全，一次替换收口）
+第 3 步  ✅ 任务 A1 全站品牌名统一（2026-10-09：
+         「Webs Flow」→「WebsFlow」全站清零（前台 index / hub-products / product / topics、
+         data/nav.json 导航 + 新增「工作台 · Studio」导航列、builder-pages 全量、docs 六文档）；
+         「七个独立产品」口径全站改「林下三层」；旧产品页矩阵块统一为 understory_matrix_block；
+         PRODUCT-MATRIX.md v3 命名贯穿；storyline-audit ERROR 0）
 第 4 步  任务 A2 所有页面文案优化（含新产品页，统一三层叙事与新口径，每批过 A3 护栏）
 第 5 步  收口：sitemap/llms/词典/矩阵互链全量复查 → 交回 SITE-UPGRADE-PLAN 阶段 2
 ```

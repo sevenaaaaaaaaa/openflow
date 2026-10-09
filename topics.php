@@ -27,11 +27,11 @@ $plus     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 $TOPIC_MAP = [
     'ai-create'    => ['nav' => 'content', 'products' => [
         ['/product/mflow', 'MFlow · 内容生产与分发', '生成 + 多平台分发，不换 CMS'],
-        ['/product/webs-flow', 'Webs Flow · 落地页专精', '承接页以小时计上线'],
+        ['/product/webs-flow', 'WebsFlow 魔块 · 落地页工场', '承接页以小时计上线'],
         ['/product', 'OpenFlow · 增长操作系统', '四力合一，内容/数据/触达一处'],
     ]],
     'ai-marketing' => ['nav' => 'growth', 'products' => [
-        ['/product/webs-flow', 'Webs Flow · 落地页专精', '投放承接页与 A/B'],
+        ['/product/webs-flow', 'WebsFlow 魔块 · 落地页工场', '投放承接页与 A/B'],
         ['/product/userloop', 'UserLoop · 全域营销数据中枢', '接上任何 MA，数据一处清'],
         ['/product', 'OpenFlow · 增长操作系统', '内容 + 数据 + 销售一条链路'],
     ]],
@@ -51,7 +51,7 @@ $TOPIC_MAP = [
         ['/product', 'OpenFlow · 增长操作系统', 'CRM + 商城 + 会员'],
     ]],
     'ai-build'     => ['nav' => 'open', 'products' => [
-        ['/product/webs-flow', 'Webs Flow · 落地页专精', '44 种区块 + 组件工厂'],
+        ['/product/webs-flow', 'WebsFlow 魔块 · 落地页工场', '44 种区块 + 组件工厂'],
         ['/product', 'OpenFlow · 增长操作系统', '全站底座与开源'],
         ['/product/payflow', 'PayFlow · 商业变现引擎', '上线即能收钱'],
     ]],
@@ -68,7 +68,7 @@ $TOPIC_MAP = [
     'product'      => ['nav' => 'open', 'products' => [
         ['/product', 'OpenFlow · 增长操作系统', '全站底座'],
         ['/product/payflow', 'PayFlow · 商业变现引擎', '一行嵌入收款'],
-        ['/product/webs-flow', 'Webs Flow · 落地页专精', '承接页以小时计上线'],
+        ['/product/webs-flow', 'WebsFlow 魔块 · 落地页工场', '承接页以小时计上线'],
     ]],
 ];
 $PICON = [

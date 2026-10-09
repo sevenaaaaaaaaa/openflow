@@ -394,4 +394,49 @@ HTML],
     ],
 ]);
 
-echo "完成：林下 Studio 全量 5 页（linkto / litmus / liana / conflow / zerozen）\n";
+/* ═══════════════════ 任务 A1（2026-10-09）：全站品牌名统一 + 矩阵块换「林下三层」 ═══════════════════
+ * 1. 数据通道全量「Webs Flow」→「WebsFlow」（含 demo 演示页与 title/seo 字段）
+ * 2. 旧「七个独立产品」tool-grid 矩阵块 → understory_matrix_block（林下三层标准块）
+ * 3. webs-flow 页 title/seo 对齐官方 tagline「WebsFlow 魔块 · 落地页工场」（URL slug 不变，已拍板）
+ * 幂等：重跑无副作用（匹配不到即跳过） */
+$A1_SUBS = [
+    '七个独立产品，按需组合成一套系统' => '三层产品矩阵，按需组合成一套系统',
+    '七件产品，按需组合' => '三层产品矩阵，按需组合',
+    '七个独立产品' => '林下产品矩阵',
+    'Webs Flow' => 'WebsFlow',
+];
+foreach (builder_pages_all() as $p) {
+    $slug = $p['slug'] ?? '';
+    $dirty = false;
+    $blocks = $p['blocks'] ?? [];
+    foreach ($blocks as $i => $b) {
+        if (!is_array($b)) continue;
+        if (($b['_type'] ?? '') === 'tool-grid' && strpos($b['title'] ?? '', '七个独立产品') !== false) {
+            $blocks[$i] = understory_matrix_block($slug, $k);
+            $dirty = true;
+            continue;
+        }
+        foreach ($b as $f => $v) {
+            if (!is_string($v)) continue;
+            $nv = strtr($v, $A1_SUBS);
+            if ($nv !== $v) { $b[$f] = $nv; $dirty = true; }
+        }
+        $blocks[$i] = $b;
+    }
+    $upd = [];
+    foreach (['title', 'seo_title', 'seo_desc'] as $f) {
+        if (!isset($p[$f]) || !is_string($p[$f])) continue;
+        $nv = strtr($p[$f], $A1_SUBS);
+        if ($nv !== $p[$f]) { $upd[$f] = $nv; $dirty = true; }
+    }
+    if (!$dirty) continue;
+    if ($slug === 'webs-flow') {
+        $upd['title'] = 'WebsFlow 魔块 · 落地页工场';
+        $upd['seo_title'] = 'WebsFlow 魔块 — 面向投放的落地页工场 | 芭乐派';
+    }
+    $upd['blocks'] = $blocks;
+    save_builder_page($p['id'], $upd);
+    echo "♻  A1 刷新 · $slug\n";
+}
+
+echo "完成：林下 Studio 全量 5 页（linkto / litmus / liana / conflow / zerozen）+ A1 全站口径刷新\n";

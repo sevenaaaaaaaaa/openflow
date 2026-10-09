@@ -21,7 +21,7 @@
 | 主站 | `/www/wwwroot/nownexts_com` | `nownexts.com`（`ServerAlias` 含 `www`） |
 | PayFlow | `/www/wwwroot/payflow` | `Alias /payflow`；vhost `payflow.nownexts.com` |
 | LearnFlow | `/www/wwwroot/learnflow` | `Alias /learnflow` |
-| Webs Flow | `/www/wwwroot/websflow` | `Alias /webflow` |
+| WebsFlow | `/www/wwwroot/websflow` | `Alias /webflow` |
 
 配置文件位置：`/www/server/panel/vhost/apache/*.conf` 与 `…/extension/nownexts.com/*.conf`
 （**改动需对齐**：影响所有站点）
