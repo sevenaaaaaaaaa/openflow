@@ -49,7 +49,7 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
     <div class="hero-center" style="padding-bottom:0">
       <span class="kicker">关于芭乐派</span>
       <h1>我们只服务一种人：<br><i class="si">一个人扛着一家公司的人</i></h1>
-      <p class="lead">芭乐派是主品牌，OpenFlow 是它的开源平台。我们的信念很朴素：你不缺"怎么做"的工具，你缺的是"该做什么"的系统——设计你的系统，而不是操作你的系统。</p>
+      <p class="lead">芭乐派是主品牌，OpenFlow 是它的开源平台，产品矩阵以「林下 Understory」为名——鹿蕊、松萝、林可兔、零真，各取自林下生态。我们的信念很朴素：你不缺"怎么做"的工具，你缺的是"该做什么"的系统——设计你的系统，而不是操作你的系统。</p>
       <div class="cta-row">
         <a class="btn primary" href="/community" data-od-id="about-cta-join">加入社区</a>
         <a class="btn ghost" href="/product" data-od-id="about-cta-product">看看平台</a>

@@ -103,10 +103,10 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="sec-head center">
       <span class="kicker">框架</span>
       <h2>TIPS 四力：触达 · 洞察 · 个性化 · 销售</h2>
-      <p class="lead">OpenFlow 的一切都围绕这四个力组织。理解 TIPS，你就理解了整个平台——也是芭乐派增长操作系统的方法论底座。</p>
+      <p class="lead">OpenFlow 的一切都围绕这四个力组织。理解 TIPS，你就理解了整个平台——也是芭乐派增长操作系统的方法论底座。工作台层 Studio 的五件本地工具（鹿蕊 · 松萝 · ConFlow · 林可兔 · 零真）长在桌面、独立于四力，按需取用。</p>
     </div>
     <div class="cols n4">
-      <div><span class="ltr">T</span><h3>触达 Touch</h3><p>内容引擎、分发渠道、触达体系。正确的时间、渠道、内容，把信息递到用户面前。</p><ul class="sp-list"><li><span>内容引擎 · 分发适配器 · Newsletter</span></li><li><span>承载产品：MFlow（轻量）/ OpenFlow（全家桶）</span></li></ul></div>
+      <div><span class="ltr">T</span><h3>触达 Touch</h3><p>内容引擎、分发渠道、触达体系。正确的时间、渠道、内容，把信息递到用户面前。</p><ul class="sp-list"><li><span>内容引擎 · 分发适配器 · Newsletter</span></li><li><span>承载产品：MFlow（轻量）/ OpenFlow（全家桶）/ 林可兔 LinkTo（邮件触达）</span></li></ul></div>
       <div><span class="ltr">I</span><h3>洞察 Insight</h3><p>数据、CDP、舆情、分析。从几百个指标捞出该看的那 3-5 个，把数据变成判断。</p><ul class="sp-list"><li><span>CDP 画像 · 分群 RFM · 漏斗 · 问数据</span></li><li><span>承载产品：UserLoop（全域）/ inFlow（外部情报）</span></li></ul></div>
       <div><span class="ltr">P</span><h3>个性化 Personality</h3><p>画像、分群、自动化。给对的人，在对的时刻，说对的话。</p><ul class="sp-list"><li><span>人群定向 · 推荐引擎 · 动态内容</span></li><li><span>承载产品：OpenFlow（全站）/ UserLoop（数据底座）</span></li></ul></div>
       <div><span class="ltr">S</span><h3>销售 Sales</h3><p>CRM、转化、商城、订阅。从触达到成交，让支付能力流向你。</p><ul class="sp-list"><li><span>CRM 管道 · 订阅计费 · 佣金结算</span></li><li><span>承载产品：PayFlow（收款）/ LearnFlow（课程交付）</span></li></ul></div>

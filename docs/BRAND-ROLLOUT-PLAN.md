@@ -112,7 +112,10 @@
          data/nav.json 导航 + 新增「工作台 · Studio」导航列、builder-pages 全量、docs 六文档）；
          「七个独立产品」口径全站改「林下三层」；旧产品页矩阵块统一为 understory_matrix_block；
          PRODUCT-MATRIX.md v3 命名贯穿；storyline-audit ERROR 0）
-第 4 步  任务 A2 所有页面文案优化（含新产品页，统一三层叙事与新口径，每批过 A3 护栏）
+第 4 步  ◐ 任务 A2 逐页文案优化（2026-10-09：P0 三页 ✅ + P1 ✅——TIPS 承载产品行补林可兔映射、
+         about 品牌叙事带出林下 Understory 体系、footer 品牌行升级「林下 Understory · OpenFlow」
+         （understory-up 主品牌化第一步）；核查 pricing / docs / hub-capabilities 无矩阵提及无需改；
+         剩余：P2 长尾 + footer 词典串（连六语词典一起）在收口批）
 第 5 步  收口：sitemap/llms/词典/矩阵互链全量复查 → 交回 SITE-UPGRADE-PLAN 阶段 2
 ```
 
