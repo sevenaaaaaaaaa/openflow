@@ -133,7 +133,9 @@
 
 ## 五、i18n 与 SEO 连带项（不在本计划展开，但改动时同步）
 
-- 新产品名与新增文案：进前台词典（当前 82 键 × 6 语）→ 词典扩容
+- 新产品名与新增文案：进前台词典（`data/lang/{locale}.json`）→ 键级补丁见 `scripts/i18n/lang-patch.json`
+- **页面内容多语言（2026-10-09 已上线）**：支持 zh-CN / zh-TW / en / ja / ko；机制与流程见 `scripts/i18n/README.md`。
+  已覆盖：5 张 Studio 产品页 + 全站导航菜单 + 页脚（663 段，零漏译）；其余营销页在非中文前缀下仍是中文正文（导航/页脚已本地化），后续逐页纳入
 - 新页面：`SeoHead` 元数据、`sitemap.php` 收录、llms.txt 可引用段落
 - 「WebsFlow」URL 保持 `/product/webs-flow/` 不变（已拍板），文案层统一即可
 
