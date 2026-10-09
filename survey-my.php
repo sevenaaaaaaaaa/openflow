@@ -40,7 +40,7 @@ if ($profile) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>我的调研结果 | 芭乐派 · OpenFlow</title>
+<title>我的调研结果 | 林下 Understory · OpenFlow</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="/assets/standalone.css?v=20260813ad">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
@@ -58,7 +58,7 @@ body{display:flex;flex-direction:column;align-items:center;padding:clamp(24px,6v
 </head>
 <body>
 <main class="wrap">
-  <div class="brand"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>芭乐派 · OpenFlow</div>
+  <div class="brand"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/></svg></span>林下 Understory · OpenFlow</div>
   <div class="hero-center" style="padding:6px 0 0;gap:12px">
     <span class="kicker">调研</span>
     <h1 style="font-size:clamp(24px,4vw,34px)">我的调研结果</h1>

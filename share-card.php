@@ -38,12 +38,12 @@ if ($type === 'article') {
     $pages = ['index'=>'首页','about'=>'关于我们','product'=>'产品','courses'=>'课程','capability'=>'能力','academy'=>'学院','community'=>'增长社区','docs'=>'文档'];
     if (isset($pages[$id])) {
         $title = $pages[$id] . ' - ' . $siteName;
-        $description = '芭乐派 · 帮一人公司设计 Agent 能跑的增长系统';
+        $description = '林下 Understory · 帮一人公司设计 Agent 能跑的增长系统';
         $url = $protocol . '://' . $host . ($id === 'index' ? '/' : '/' . $id);
     }
 }
 
-if (empty($title)) { $title = '芭乐派 · OpenFlow'; $description = '帮一人公司设计 Agent 能跑的增长系统'; $url = $protocol . '://' . $host . '/'; }
+if (empty($title)) { $title = '林下 Understory · OpenFlow'; $description = '帮一人公司设计 Agent 能跑的增长系统'; $url = $protocol . '://' . $host . '/'; }
 
 $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' . urlencode($url);
 ?><!DOCTYPE html>

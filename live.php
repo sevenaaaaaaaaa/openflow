@@ -27,7 +27,7 @@ $shopSettings = shop_settings();
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><?=$room ? htmlspecialchars($room['title']) : htmlspecialchars($settings['page_title'])?> | <?=site_config_get("site_name")?></title>
-<meta name="description" content="<?=htmlspecialchars(mb_substr(trim(preg_replace('/\s+/u', ' ', strip_tags((string)($room['description'] ?? $settings['page_desc'] ?? '')))), 0, 120) ?: '芭乐派直播：增长实战分享与课程答疑')?>">
+<meta name="description" content="<?=htmlspecialchars(mb_substr(trim(preg_replace('/\s+/u', ' ', strip_tags((string)($room['description'] ?? $settings['page_desc'] ?? '')))), 0, 120) ?: '林下 Understory 直播：增长实战分享与课程答疑')?>">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 直播独有：播放器画布、弹幕盒、直播红点。其余全部来自 modules.css。 */

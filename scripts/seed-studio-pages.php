@@ -58,7 +58,7 @@ HTML];
 /* ═══════════════════ 林可兔 LinkTo · AI 原生邮件工作台 ═══════════════════ */
 upsert_page('linkto', [
     'slug' => 'linkto', 'title' => '林可兔 LinkTo · AI 原生邮件工作台', 'status' => 'published',
-    'seo_title' => '林可兔 LinkTo — AI 原生邮件工作台 | 芭乐派',
+    'seo_title' => '林可兔 LinkTo — AI 原生邮件工作台 | 林下 Understory',
     'seo_desc' => '多账户统一收件箱 + AI 分类降噪 / 摘要 / 起草 + Agent 记忆成长系统。国内外主流邮箱一键接入，数据全本地（SQLite + 系统钥匙串加密），备份口令加密跨设备迁移。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '邮件自己会分类，回复自己会起草', 'subtitle' => '林可兔 LINKTO · AI 原生邮件工作台', 'content' => '基础体验对齐 Canary Mail（多账户、统一收件箱、通知、签名、模板、规则），在此之上叠加 AI 原生：智能分类降噪、会话摘要、起草回复，还有随你成长的 Agent 记忆——全部数据留在你自己的电脑上。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/linkto'],
@@ -126,7 +126,7 @@ HTML],
 /* ═══════════════════ 鹿蕊 Litmus · AI 时代的知识操作系统 ═══════════════════ */
 upsert_page('litmus', [
     'slug' => 'litmus', 'title' => '鹿蕊 Litmus · AI 时代的知识操作系统', 'status' => 'published',
-    'seo_title' => '鹿蕊 Litmus — AI 时代的知识操作系统 | 芭乐派',
+    'seo_title' => '鹿蕊 Litmus — AI 时代的知识操作系统 | 林下 Understory',
     'seo_desc' => '不是又一个笔记软件：知识库是磁盘上一堆普通 Markdown，人用画布和阅读器看它，agent 用同一套本地 API 读写它。五模式一体、MCP 双向、核心永久开源（AGPL-3.0）、无锁定。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '人随手记，AI 帮你建，<br>一切是磁盘上的普通文件', 'subtitle' => '鹿蕊 LITMUS · 林下 Understory 出品', 'content' => '笔记软件要你先学方法论、再花几百小时搭体系；Agent 框架把知识锁进向量库。鹿蕊反过来：知识库就是一堆普通 Markdown——人用画布与阅读器看它，agent 用同一套本地 API 读写它，双方共享一个真相，谁也不锁定谁。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/thirdc'],
@@ -193,7 +193,7 @@ HTML],
 /* ═══════════════════ 松萝 Liana · 隐私优先的跨平台输入法 ═══════════════════ */
 upsert_page('liana', [
     'slug' => 'liana', 'title' => '松萝 Liana · 隐私优先的跨平台输入法', 'status' => 'published',
-    'seo_title' => '松萝 Liana — 隐私优先的跨平台输入法 | 芭乐派',
+    'seo_title' => '松萝 Liana — 隐私优先的跨平台输入法 | 林下 Understory',
     'seo_desc' => '引擎、词典、学习全部本机运行，云端一个字节都拿不到。全拼 20 万词条 + Viterbi 整句、双拼×3、中英混输，纠错即教学、喂食式学习，局域网 P2P 端到端加密同步。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '你的每一个按键，<br>都只留在你的设备上', 'subtitle' => '松萝 LIANA · 林下 Understory 出品', 'content' => '市面上绝大多数输入法把按键、词频、习惯送上云端换「智能」；松萝把方向反过来——所有智能都在本地产生，云端一个字节都拿不到。Rust 内核 13 个纯逻辑 crate，214 项单元测试全绿，安装包断网可用。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/InputFlow'],
@@ -261,7 +261,7 @@ HTML],
 /* ═══════════════════ ConFlow · 视频⇄HTML 双向内容引擎 ═══════════════════ */
 upsert_page('conflow', [
     'slug' => 'conflow', 'title' => 'ConFlow · 视频⇄HTML 双向内容引擎', 'status' => 'published',
-    'seo_title' => 'ConFlow — 看完一条视频，得到一堆可上线的内容 | 芭乐派',
+    'seo_title' => 'ConFlow — 看完一条视频，得到一堆可上线的内容 | 林下 Understory',
     'seo_desc' => '贴一条 YouTube 链接，拿回一篇按论证结构重写的文章 + 一套重新设计的幻灯片。脚本管确定性，LLM 按写作法管语义，防幻觉是规则不是愿望。可直推 OpenFlow 草稿箱一键发布。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '看完一条视频，<br>得到一堆可上线的内容', 'subtitle' => 'ConFlow · 视频⇄HTML 双向内容引擎', 'content' => '你不用再「回头整理一下视频」。贴一条链接，拿回一篇能直接发布的文章，和一套能当众放映的幻灯片：脚本管确定性，LLM 按写作法管语义——数字逐字核对、补全显式标注、观点归属分离。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/V2HTML'],
@@ -329,7 +329,7 @@ HTML],
 /* ═══════════════════ 零真 ZeroZen · 跨浏览器广告与弹窗净化扩展 ═══════════════════ */
 upsert_page('zerozen', [
     'slug' => 'zerozen', 'title' => '零真 ZeroZen · 广告与弹窗净化扩展', 'status' => 'published',
-    'seo_title' => '零真 ZeroZen — 跨浏览器广告与弹窗净化扩展 | 芭乐派',
+    'seo_title' => '零真 ZeroZen — 跨浏览器广告与弹窗净化扩展 | 林下 Understory',
     'seo_desc' => '规则引擎 + AI 识别 + 下载工具箱。41 规则包 7283 条规则本地拦截，覆盖不到的交给 AI 识别，顺手把视频断点续传存下来。纯本地运行，无后端不收集浏览数据，Chrome/Firefox/Safari。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '装上即净，顺手把视频也存下来', 'subtitle' => '零真 ZEROZEN · 林下 Understory 出品', 'content' => '规则引擎负责把广告和弹窗清干净，AI 识别补规则覆盖不到的新花样，下载工具箱负责把视频完整存下来。纯本地运行：没有服务器、没有账号，拦截由浏览器 declarativeNetRequest 引擎完成，扩展本身看不到任何请求内容。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/zerozen'],
@@ -404,6 +404,7 @@ $A1_SUBS = [
     '七件产品，按需组合' => '三层产品矩阵，按需组合',
     '七个独立产品' => '林下产品矩阵',
     'Webs Flow' => 'WebsFlow',
+    '芭乐派' => '林下 Understory',
 ];
 foreach (builder_pages_all() as $p) {
     $slug = $p['slug'] ?? '';
@@ -432,7 +433,7 @@ foreach (builder_pages_all() as $p) {
     if (!$dirty) continue;
     if ($slug === 'webs-flow') {
         $upd['title'] = 'WebsFlow 魔块 · 落地页工场';
-        $upd['seo_title'] = 'WebsFlow 魔块 — 面向投放的落地页工场 | 芭乐派';
+        $upd['seo_title'] = 'WebsFlow 魔块 — 面向投放的落地页工场 | 林下 Understory';
     }
     $upd['blocks'] = $blocks;
     save_builder_page($p['id'], $upd);

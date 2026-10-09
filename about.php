@@ -1,6 +1,6 @@
 <?php
 /**
- * 关于我们 | 芭乐派 · OpenFlow（动态版）
+ * 关于我们 | 林下 Understory · OpenFlow（动态版）
  *
  * v7（2026-09-01）：换骨架不换文案。
  *   - 全部模块来自 assets/modules.css 的共享 archetype（hero-center / worlds / sp-* /
@@ -25,7 +25,7 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <?php if (function_exists('seo_head')): seo_head(['title' => '关于我们 | OpenFlow', 'description' => 'Open Flow 的使命、原则与时间线，以及加入我们的方式。', 'canonical' => site_config_get('site_url') . '/about']); endif; ?>
-<title>关于我们 · 芭乐派社区 | OpenFlow</title>
+<title>关于我们 · 林下 Understory 社区 | OpenFlow</title>
 <meta name="description" content="Open Flow 的使命、原则与时间线，以及加入我们的方式。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。
@@ -47,9 +47,9 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
   <!-- ══ 首屏 ══ -->
   <section id="top" class="reveal in" data-od-anchor data-od-id="about-hero">
     <div class="hero-center" style="padding-bottom:0">
-      <span class="kicker">关于芭乐派</span>
+      <span class="kicker">关于林下 Understory</span>
       <h1>我们只服务一种人：<br><i class="si">一个人扛着一家公司的人</i></h1>
-      <p class="lead">芭乐派是主品牌，OpenFlow 是它的开源平台，产品矩阵以「林下 Understory」为名——鹿蕊、松萝、林可兔、零真，各取自林下生态。我们的信念很朴素：你不缺"怎么做"的工具，你缺的是"该做什么"的系统——设计你的系统，而不是操作你的系统。</p>
+      <p class="lead">林下 Understory 是品牌与产品矩阵之名，OpenFlow 是它的入口层增长操作系统——鹿蕊、松萝、林可兔、零真，各取自林下生态。我们的信念很朴素：你不缺"怎么做"的工具，你缺的是"该做什么"的系统——设计你的系统，而不是操作你的系统。</p>
       <div class="cta-row">
         <a class="btn primary" href="/community" data-od-id="about-cta-join">加入社区</a>
         <a class="btn ghost" href="/product" data-od-id="about-cta-product">看看平台</a>
@@ -98,7 +98,7 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
     </div>
     <div class="split">
       <div class="sp-txt">
-        <p class="lead">我不是教增长理论的讲师，是操盘过增长的人。芭乐派的内容不是从书里摘的——是从十年、七个行业的操盘经历里提炼的。</p>
+        <p class="lead">我不是教增长理论的讲师，是操盘过增长的人。林下 Understory的内容不是从书里摘的——是从十年、七个行业的操盘经历里提炼的。</p>
         <ul class="sp-list">
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><span><b>内容增长：</b>把搜索流量占比做到七成，靠内容持续获客</span></li>
           <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><span><b>组织效率：</b>把大团队重构为精干小队，人效不降反升</span></li>
@@ -187,8 +187,8 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
     </div>
     <div class="tl n4">
       <div class="tl-step"><span class="tl-n">01</span><span class="tl-y">2015-2025</span><h3>十年增长操盘</h3><p>横跨快消/SaaS/教育/3C/跨境/金融科技/AI 产品 7 行业，从 400 人团队到 AI 产品操盘。</p></div>
-      <div class="tl-step"><span class="tl-n">02</span><span class="tl-y">2026</span><h3>芭乐派成立</h3><p>帮一人公司设计 Agent 能跑的增长系统，把十年操盘提炼成方法论。</p></div>
-      <div class="tl-step"><span class="tl-n">03</span><span class="tl-y">2026</span><h3>OpenFlow 开源</h3><p>芭乐派增长操作系统的开源底座，TIPS 框架四力合一。</p></div>
+      <div class="tl-step"><span class="tl-n">02</span><span class="tl-y">2026</span><h3>林下 Understory成立</h3><p>帮一人公司设计 Agent 能跑的增长系统，把十年操盘提炼成方法论。</p></div>
+      <div class="tl-step"><span class="tl-n">03</span><span class="tl-y">2026</span><h3>OpenFlow 开源</h3><p>林下 Understory 增长操作系统的开源底座，TIPS 框架四力合一。</p></div>
       <div class="tl-step"><span class="tl-n">04</span><span class="tl-y">现在</span><h3>行动脊柱与 Agent 运行时</h3><p>统一人对象、今日主线、Agent 白名单工具链式执行——系统自己干活，人只做判断；增长引擎按周期主动爬取、洞察、转化。</p></div>
     </div>
   </section>

@@ -21,7 +21,7 @@ foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>商城 | <?=site_config_get('site_name')?></title>
-<meta name="description" content="芭乐派商城：课程、服务与数字商品，一站式配齐你的增长系统。">
+<meta name="description" content="林下 Understory 商城：课程、服务与数字商品，一站式配齐你的增长系统。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 商城独有：价格行。其余全部来自 modules.css。 */

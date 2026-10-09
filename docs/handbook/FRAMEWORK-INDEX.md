@@ -1,4 +1,4 @@
-# 芭乐派 × OpenFlow · 框架体系总览
+# 林下 Understory × OpenFlow · 框架体系总览
 
 > 生成日期：2026-08-14
 > 信息源：PSPI 1-1 Harness（RULES / WORKFLOWS / content-rbe）+ Product Marketing（RBE 课程模块）+ 公开发布
@@ -10,8 +10,8 @@
 
 | 代号 | 全称 | 含义 |
 |------|------|------|
-| **PSPI** | 芭乐派 | 主品牌（帮一人公司设计 Agent 能跑的增长系统）|
-| **OpenFlow / NowX** | OpenFlow XMP | 旗下平台（芭乐派增长操作系统的技术底座）|
+| **PSPI** | 林下 Understory | 主品牌（帮一人公司设计 Agent 能跑的增长系统）|
+| **OpenFlow / NowX** | OpenFlow XMP | 旗下平台（林下 Understory 增长操作系统的技术底座）|
 | **OPC** | One Person Company | 一人公司（目标受众，非"个体户"）|
 | **RBE** | R.B.E Agent 系统设计营 | 核心产品（8 周训练营，¥9,999）|
 | **O.L.B** | 创业主板诊断评分卡 | 7 维度增长诊断工具 |
@@ -37,7 +37,7 @@ OpenFlow 平台围绕 TIPS 组织，**框架即界面**：
 
 ## 二、核心方法论：RBE 体系（M0-M8）
 
-R.B.E Agent 系统设计营的九模块，是芭乐派增长方法论的完整骨架。
+R.B.E Agent 系统设计营的九模块，是林下 Understory 增长方法论的完整骨架。
 
 ### M0 · 诊断（O.L.B 评分卡）
 - **7 个维度**，每题 1-5 分：商业模式清晰度 / 转化引擎健康度 / 数据成熟度 / 触达能力 / 组织效率 / 内容资产 / Agent 就绪度
@@ -160,7 +160,7 @@ R.B.E Agent 系统设计营的九模块，是芭乐派增长方法论的完整�
 
 **New-1/2/3/4 + 最新课程 = 使用 OpenFlow 的最佳实践教程。**
 
-- 理论（芭乐派方法论）→ 工具（OpenFlow TIPS 平台）→ 落地（Agent 增长引擎）
+- 理论（林下 Understory 方法论）→ 工具（OpenFlow TIPS 平台）→ 落地（Agent 增长引擎）
 - 课程以 OpenFlow 为案例和主要工具串联，让用户边学理论边用工具
 - 课程内容 = 站内高价值原创内容（品类 5 课程章节）
 

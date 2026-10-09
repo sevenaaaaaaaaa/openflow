@@ -1,6 +1,6 @@
 <?php
 /**
- * 首页 —— 芭乐派 · OpenFlow：七件可组合产品 + 增长链路（SSR SEO + 缓存控制）
+ * 首页 —— 林下 Understory · OpenFlow：三层可组合产品 + 增长链路（SSR SEO + 缓存控制）
  *
  * 2026-09-19 转正：内容来自 demo/home-v2（原第一代首页归档在 /legacy/home-gen1-2026-09-01.html）
  */
@@ -34,9 +34,9 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>芭乐派 · OpenFlow 增长操作系统</title>
-<meta name="description" content="一个人做不了所有事。芭乐派把增长拆成七件可组合的产品：整套系统、内容分发、落地页、全域数据、外部情报、收款变现、课程交付。开源、可自托管、数据主权在你。">
-<?php if (function_exists('seo_head')): seo_head(['title' => '芭乐派 · OpenFlow 增长操作系统', 'description' => '一个人做不了所有事。芭乐派把增长拆成七件可组合的产品：整套系统、内容分发、落地页、全域数据、外部情报、收款变现、课程交付。开源、可自托管、数据主权在你。', 'canonical' => site_config_get('site_url') . '/']); endif; ?>
+<title>林下 Understory · OpenFlow 增长操作系统</title>
+<meta name="description" content="一个人做不了所有事。林下 Understory 把增长拆成三层十二件可组合的产品：入口层 OpenFlow 整套系统、进阶层 Flow 家族单点变深、工作台层 Studio 本地提效。开源、可自托管、数据主权在你。">
+<?php if (function_exists('seo_head')): seo_head(['title' => '林下 Understory · OpenFlow 增长操作系统', 'description' => '一个人做不了所有事。林下 Understory 把增长拆成三层十二件可组合的产品：入口层 OpenFlow 整套系统、进阶层 Flow 家族单点变深、工作台层 Studio 本地提效。开源、可自托管、数据主权在你。', 'canonical' => site_config_get('site_url') . '/']); endif; ?>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='2' y1='16' x2='30' y2='16' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='oklch(52%25 .17 258)'/%3E%3Cstop offset='1' stop-color='oklch(58%25 .16 285)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='16' fill='oklch(16%25 0 0)'/%3E%3Cpath d='M16 6.5a9.5 9.5 0 1 1-9.5 9.5' stroke='url(%23g)' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M11.5 10.5v12M11.5 14h7.6M11.5 18.5h7.6' stroke='oklch(96%25 0 0)' stroke-width='2.2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。
@@ -115,9 +115,9 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
   <!-- ══ Hero ══ -->
   <section id="top" class="reveal in" data-od-anchor data-od-id="hero">
     <div class="hero-center">
-      <span class="kicker">芭乐派 · 给一人公司的增长系统</span>
+      <span class="kicker">林下 Understory · 给一人公司的增长系统</span>
       <h1>你不缺<i class="si">怎么做</i>，<br>你缺 <span class="hr-word" id="hr-word" role="button" tabindex="0" aria-label="点击切换关键词">该做什么</span></h1>
-      <p class="lead">市面上的增长工具都默认你有一支团队。芭乐派把内容、数据、自动化和销售接进同一套 TIPS 系统：已知方法交给 Flow 稳定执行，未知路径由受控 Loop 辅助判断。</p>
+      <p class="lead">市面上的增长工具都默认你有一支团队。林下 Understory把内容、数据、自动化和销售接进同一套 TIPS 系统：已知方法交给 Flow 稳定执行，未知路径由受控 Loop 辅助判断。</p>
       <div class="cta-row">
         <a class="btn primary" href="/register" data-od-id="home-cta-start">免费开始（开源）</a>
         <a class="btn ghost" href="/product" data-od-id="home-cta-demo">先看它一天干什么</a>
@@ -447,7 +447,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
     <div class="sec-head center">
       <span class="kicker">为什么不是一个「五合一」按钮</span>
       <h2>OpenFlow 底座 vs 单点工具</h2>
-      <p class="lead">分开买 = 五个账号、五套数据、五次打通，还有五份等着人来喂的活。芭乐派把这五块放在同一套数据上——不是集成，是本来就是一个。</p>
+      <p class="lead">分开买 = 五个账号、五套数据、五次打通，还有五份等着人来喂的活。林下 Understory把这五块放在同一套数据上——不是集成，是本来就是一个。</p>
     </div>
     <div class="cmp-wrap">
       <table class="cmp">
@@ -494,7 +494,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
       // 现在服务端直出；没有已发布文章时用与旧版 JS 相同的三篇占位。
       $arts = $homeArticles ?: [
         ['cat'=>'方法论','t'=>'为什么你缺的不是工具，而是一套增长系统','meta'=>'8 分钟','date'=>'2026-08-10','d'=>'工具解决「怎么做」，系统解决「该做什么」。一人公司增长失速，往往是从 0 到 1 的系统没跑通。','link'=>'/academy'],
-        ['cat'=>'芭乐派','t'=>'利润公式拆解：销转率才是你的杠杆支点','meta'=>'6 分钟','date'=>'2026-08-02','d'=>'同样的线索，为什么别人转化率是你的两倍？用 Agent-Native 利润公式，算出你该先优化哪个环节。','link'=>'/courses'],
+        ['cat'=>'林下 Understory','t'=>'利润公式拆解：销转率才是你的杠杆支点','meta'=>'6 分钟','date'=>'2026-08-02','d'=>'同样的线索，为什么别人转化率是你的两倍？用 Agent-Native 利润公式，算出你该先优化哪个环节。','link'=>'/courses'],
         ['cat'=>'Agent 实践','t'=>'把增长漏斗画成 Task Graph：Agent 可执行的增长地图','meta'=>'10 分钟','date'=>'2026-07-26','d'=>'漏斗不是给人看的流程图，而是给 Agent 跑的任务图。五个判据，标出每一环该人做还是 Agent 做。','link'=>'/academy'],
       ];
       foreach (array_slice($arts, 0, 3) as $a): ?>

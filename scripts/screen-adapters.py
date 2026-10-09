@@ -63,7 +63,7 @@ PERMISSIVE = {"mit", "apache-2.0", "bsd-2-clause", "bsd-3-clause", "isc", "mpl-2
 COPYLEFT = {"gpl-2.0", "gpl-3.0", "agpl-3.0", "lgpl-2.1", "lgpl-3.0", "sspl-1.0", "bsl-1.1"}
 
 # 与自家 7 个产品重叠 → 不作为适配对象（避免自家生态打架）
-OUR_OVERLAP = ["openflow", "mflow", "webs flow", "webs-flow", "userloop", "inflow", "payflow", "learnflow", "芭乐派"]
+OUR_OVERLAP = ["openflow", "mflow", "webs flow", "webs-flow", "userloop", "inflow", "payflow", "learnflow", "芭乐派", "林下 Understory"]
 
 
 @dataclass

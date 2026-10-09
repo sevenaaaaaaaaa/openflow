@@ -95,7 +95,7 @@ import { filterCommands, moveIndex, shouldScrollIntoView } from '../lib/palette.
     {
       id: 'product', label: '产品', href: '/product', icon: 'box',
       mega: {
-        title: '产品', blurb: '芭乐派增长操作系统 · 帮一人公司设计 Agent 能跑的增长系统',
+        title: '产品', blurb: '林下 Understory 增长操作系统 · 帮一人公司设计 Agent 能跑的增长系统',
         cols: [
           { head: '它是怎么工作的', items: [
             { t: '可视化编排画布', d: '拖拽触发器、条件、动作，连线即流程', href: '/product#feat-canvas' },
@@ -704,7 +704,7 @@ import { filterCommands, moveIndex, shouldScrollIntoView } from '../lib/palette.
           var d = res.d || {};
           if (res.http === 200 && d.ok) {
             setUser({ email: mail, nick: reg ? nick : mail.split('@')[0] });
-            closeAuth(); toast(reg ? '注册成功，欢迎加入芭乐派' : '已登录，欢迎回来');
+            closeAuth(); toast(reg ? '注册成功，欢迎加入林下 Understory' : '已登录，欢迎回来');
             openProfile();
           } else {
             /* 注册需要邮箱验证码：显示验证码栏（第一次提交时自动把码发出去） */

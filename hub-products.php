@@ -1,6 +1,6 @@
 <?php
 /**
- * 产品 | 芭乐派 · OpenFlow（动态版）
+ * 产品 | 林下 Understory · OpenFlow（动态版）
  *
  * v7（2026-09-01）：换骨架不换文案。模块全部来自 assets/modules.css 的共享 archetype；
  * 本页 <style> 只保留产品页独有的四个演示部件（编排画布 / 对话 / 连接器 / 闭环演示与日志）。
@@ -14,7 +14,7 @@ $CONN = ['飞书','企业微信','WhatsApp','Notion','GitHub 导入','SMTP 邮�
 $FAQS = [
   ['OpenFlow 需要写代码吗？','不需要。TIPS 框架下可视化配置触达/洞察/个性化/销售四力；需要时可用 Task Graph 编排 Agent，深浅兼顾。'],
   ['适合一人公司吗？','OpenFlow 就是为 OPC 一人公司设计的。装完即用，增长引擎自动爬取、洞察、转化，一个人也能驱动整套增长系统。'],
-  ['和「芭乐派」是什么关系？','OpenFlow 是芭乐派增长操作系统的开源底座。芭乐派讲方法论（利润公式/四引擎/Agent 系统），OpenFlow 是落地工具——鱼与渔相结合。'],
+  ['和「林下 Understory」是什么关系？','OpenFlow 是林下 Understory 增长操作系统的开源底座。林下 Understory讲方法论（利润公式/四引擎/Agent 系统），OpenFlow 是落地工具——鱼与渔相结合。'],
   ['核心能力真的永久开源吗？','是。Tools 和 Strategy 双向迭代，核心能力永久开源，坚持让用户既用得上工具，也能用最前沿的增长策略。'],
   ['数据安全如何保证？','传输与存储加密、细粒度权限、审计日志；支持私有化部署，数据不出域。'],
 ];
@@ -26,8 +26,8 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '产品矩阵总览· 芭乐派', 'description' => '三层产品矩阵按需组合：入口层 OpenFlow；进阶层 MFlow · WebsFlow 魔块 · UserLoop · inFlow · PayFlow · LearnFlow；工作台层 Studio：鹿蕊 Litmus · 松萝 Liana · ConFlow · 林可兔 LinkTo · 零真 ZeroZen。零强制绑定，API 互通。', 'canonical' => site_config_get('site_url') . '/product']); endif; ?>
-<title>产品矩阵总览· 芭乐派</title>
+<?php if (function_exists('seo_head')): seo_head(['title' => '产品矩阵总览· 林下 Understory', 'description' => '三层产品矩阵按需组合：入口层 OpenFlow；进阶层 MFlow · WebsFlow 魔块 · UserLoop · inFlow · PayFlow · LearnFlow；工作台层 Studio：鹿蕊 Litmus · 松萝 Liana · ConFlow · 林可兔 LinkTo · 零真 ZeroZen。零强制绑定，API 互通。', 'canonical' => site_config_get('site_url') . '/product']); endif; ?>
+<title>产品矩阵总览· 林下 Understory</title>
 <meta name="description" content="三层产品矩阵按需组合：入口层 OpenFlow；进阶层 MFlow · WebsFlow 魔块 · UserLoop · inFlow · PayFlow · LearnFlow；工作台层 Studio：鹿蕊 Litmus · 松萝 Liana · ConFlow · 林可兔 LinkTo · 零真 ZeroZen。零强制绑定，API 互通。">
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。 -->
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
@@ -70,7 +70,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   <!-- ══ 首屏 ══ -->
   <section id="top" class="reveal in" data-od-anchor data-od-id="product-hero">
     <div class="hero-center" style="padding-bottom:0">
-      <span class="kicker">产品 · 芭乐派 OpenFlow</span>
+      <span class="kicker">产品 · 林下 Understory OpenFlow</span>
       <h1>三层产品矩阵，<br>按需组合成<i class="si">一套系统</i></h1>
       <p class="lead">不必为一个用不上的大系统付费。入口层起步、进阶层升级、工作台层提效——每件产品都能单独跑、单独见效；组合起来就是一套自转的增长系统。互通走 API——拔掉任何一个，其余照常运行。</p>
       <div class="cta-row">
@@ -103,7 +103,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
     <div class="sec-head center">
       <span class="kicker">框架</span>
       <h2>TIPS 四力：触达 · 洞察 · 个性化 · 销售</h2>
-      <p class="lead">OpenFlow 的一切都围绕这四个力组织。理解 TIPS，你就理解了整个平台——也是芭乐派增长操作系统的方法论底座。工作台层 Studio 的五件本地工具（鹿蕊 · 松萝 · ConFlow · 林可兔 · 零真）长在桌面、独立于四力，按需取用。</p>
+      <p class="lead">OpenFlow 的一切都围绕这四个力组织。理解 TIPS，你就理解了整个平台——也是林下 Understory 增长操作系统的方法论底座。工作台层 Studio 的五件本地工具（鹿蕊 · 松萝 · ConFlow · 林可兔 · 零真）长在桌面、独立于四力，按需取用。</p>
     </div>
     <div class="cols n4">
       <div><span class="ltr">T</span><h3>触达 Touch</h3><p>内容引擎、分发渠道、触达体系。正确的时间、渠道、内容，把信息递到用户面前。</p><ul class="sp-list"><li><span>内容引擎 · 分发适配器 · Newsletter</span></li><li><span>承载产品：MFlow（轻量）/ OpenFlow（全家桶）/ 林可兔 LinkTo（邮件触达）</span></li></ul></div>
@@ -251,12 +251,12 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
   <section id="open" class="sec reveal" data-od-anchor data-od-id="product-open">
     <div class="sec-head center">
       <span class="kicker">开放生态</span>
-      <h2>开放，是默认值（也是芭乐派的坚持）</h2>
+      <h2>开放，是默认值（也是林下 Understory的坚持）</h2>
     </div>
     <div class="cols n4">
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v12a4 4 0 0 0 8 0V4M8 8h8"/></svg></span><h3>开放 API</h3><p>完整 REST API，把 OpenFlow 嵌入你的增长系统。</p></div>
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16"/></svg></span><h3>Webhook</h3><p>双向触发与回调，与任意系统实时对接。</p></div>
-      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 9h16M9 4v5"/></svg></span><h3>Skill / 模板</h3><p>社区与芭乐派模板，一键复用增长打法。</p></div>
+      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 9h16M9 4v5"/></svg></span><h3>Skill / 模板</h3><p>社区与林下 Understory模板，一键复用增长打法。</p></div>
       <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4m0 12v4M2 12h4m12 0h4M5 5l3 3m8 8 3 3M19 5l-3 3M8 16l-3 3"/><circle cx="12" cy="12" r="3"/></svg></span><h3>永久开源</h3><p>核心能力开源，鱼与渔相结合，策略随工具迭代。</p></div>
     </div>
   </section>

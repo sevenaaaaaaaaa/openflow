@@ -58,7 +58,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>增长社区 | <?=site_config_get('site_name')?> · 讨论</title>
-<meta name="description" content="芭乐派增长社区：一人公司与增长从业者的实战讨论区，分享 OpenFlow 玩法、增长案例与工具经验。">
+<meta name="description" content="林下 Understory 增长社区：一人公司与增长从业者的实战讨论区，分享 OpenFlow 玩法、增长案例与工具经验。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 社区页独有：帖子卡与投票列、发帖框。话题/热议/公约已迁入全站侧栏（modules.css 的 .sb-w）。 */
@@ -186,7 +186,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
   <!-- ══ 收尾 CTA ══ -->
   <section id="next" class="reveal" data-od-anchor data-od-id="community-cta">
     <div class="cta-band">
-      <span class="kicker">芭乐派 · 社区</span>
+      <span class="kicker">林下 Understory · 社区</span>
       <h2>还没加入社区？从 New-1 开始打基础</h2>
       <p class="lead">地基在 New-1~4 基石课，实战在 R.B.E 训练营，交流在这里。先学再用，再回来交作业。</p>
       <div class="cta-row"><a class="btn primary" href="/courses">浏览课程</a><a class="btn ghost" href="/academy">去学院读文章</a></div>

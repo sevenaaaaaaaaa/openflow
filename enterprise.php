@@ -21,7 +21,7 @@ $siteName = site_config_get('site_name');
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>商业发行版 | 芭乐派 · OpenFlow</title>
+<title>商业发行版 | 林下 Understory · OpenFlow</title>
 <meta name="description" content="OpenFlow 商业发行版：SaaS 订阅、私有化部署、定制开发。一个 all-in-one 平台，缺什么用插件和技能自己改造。">
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>

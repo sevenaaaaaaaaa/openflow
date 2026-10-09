@@ -157,7 +157,7 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
 <a class="au-return" href="/">← 返回官网首页</a>
 <div class="au-wrap">
   <aside class="au-brand" aria-hidden="true">
-    <div class="au-logo"><img src="/favicon.svg" alt="">芭乐派 · OpenFlow<span class="bn">GROWTH OS</span></div>
+    <div class="au-logo"><img src="/favicon.svg" alt="">林下 Understory · OpenFlow<span class="bn">GROWTH OS</span></div>
     <div>
       <h1 class="au-headline">别人的增长工具<br>默认你有一支团队。<br><em>这套是给没有团队的你。</em></h1>
       <p class="au-sub">内容、数据、自动化、成交,在同一个系统里自己转起来。你只做判断,不做事。</p>
@@ -168,7 +168,7 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg><span><b>数据在你手里</b>&nbsp;· 存自己的服务器,随时可迁走</span></li>
     </ul>
     <div class="au-foot">
-      <span>© <?=date('Y')?> 芭乐派 · 增长方法论与增长社区</span>
+      <span>© <?=date('Y')?> 林下 Understory · 增长方法论与增长社区</span>
       <a href="/pricing">定价</a>
     </div>
     <svg class="au-ring" viewBox="0 0 64 64" fill="none"><path d="M46.7 48.3 A22 22 0 1 1 46.7 15.7" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M40.5 13.4 L52.7 9.0 L49.6 21.6" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>

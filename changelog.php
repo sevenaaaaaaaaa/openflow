@@ -1,6 +1,6 @@
 <?php
 /**
- * 更新日志 | 芭乐派 · OpenFlow
+ * 更新日志 | 林下 Understory · OpenFlow
  *
  * 2026-09-19：页面改版转正，顺带把老首页（第一代）收进这里作纪念。
  * 只列「用户能感知的变化」，不写内部重构流水账。
@@ -38,8 +38,8 @@ $entries = [
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '更新日志 | 芭乐派 · OpenFlow', 'description' => '首页、产品矩阵与能力页的改版记录，以及第一代首页的快照存档。', 'canonical' => site_config_get('site_url') . '/changelog']); endif; ?>
-<title>更新日志 · 芭乐派 · OpenFlow</title>
+<?php if (function_exists('seo_head')): seo_head(['title' => '更新日志 | 林下 Understory · OpenFlow', 'description' => '首页、产品矩阵与能力页的改版记录，以及第一代首页的快照存档。', 'canonical' => site_config_get('site_url') . '/changelog']); endif; ?>
+<title>更新日志 · 林下 Understory · OpenFlow</title>
 <meta name="description" content="首页、产品矩阵与能力页的改版记录，以及第一代首页的快照存档。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}</script>
 <!-- 共享外壳样式契约：必须在页面级 <style> 之前，页面样式才能覆盖模块层。 -->

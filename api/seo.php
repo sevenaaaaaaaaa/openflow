@@ -17,7 +17,7 @@ $id = $_GET['id'] ?? '';
 // 页面 → SEO 配置映射（含 canonical URL）
 $siteUrl = site_config_get('site_url', '');
 $pageSeoMap = [
-    'index' => ['title' => '芭乐派 · OpenFlow 增长操作系统', 'desc' => '帮一人公司设计 Agent 能跑的增长系统：TIPS 框架（触达/洞察/个性化/销售）+ 自生长 AI Engine，主动爬取、洞察、优化、转化', 'keywords' => '一人公司, Agent 增长, 增长系统, 触达, 洞察, 销售自动化, 自生长', 'canonical' => $siteUrl . '/'],
+    'index' => ['title' => '林下 Understory · OpenFlow 增长操作系统', 'desc' => '帮一人公司设计 Agent 能跑的增长系统：TIPS 框架（触达/洞察/个性化/销售）+ 自生长 AI Engine，主动爬取、洞察、优化、转化', 'keywords' => '一人公司, Agent 增长, 增长系统, 触达, 洞察, 销售自动化, 自生长', 'canonical' => $siteUrl . '/'],
     'about' => ['title' => '关于我们 | OpenFlow', 'desc' => 'OpenFlow 的使命、原则与团队', 'keywords' => 'OpenFlow, 关于我们, 增长团队', 'canonical' => $siteUrl . '/about'],
     'capability' => ['title' => '产品能力 | OpenFlow', 'desc' => 'CMS/CDP/MA/SEO 六大核心能力', 'keywords' => 'CMS, CDP, 营销自动化, SEO', 'canonical' => $siteUrl . '/capability'],
     'courses' => ['title' => '课程 | OpenFlow', 'desc' => '网站增长与自动化学习路径', 'keywords' => '课程, 增长, 自动化, 学习', 'canonical' => $siteUrl . '/courses'],

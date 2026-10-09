@@ -10,7 +10,7 @@
       emoji: "🌱",
       desc: "刚开始做一人公司/内容，想快速上手",
       hero: {
-        kicker: "芭乐派 · 帮一人公司设计 Agent 能跑的增长系统",
+        kicker: "林下 Understory · 帮一人公司设计 Agent 能跑的增长系统",
         title1: "不操作你的系统，",
         title2: "设计你的系统",
         lead: "你不缺「怎么做」的工具，你缺「该做什么」的系统。OpenFlow 自动爬取行业信号、生成内容草稿、主动触达转化——让 Agent 跑流程，你只做判断。",
@@ -46,7 +46,7 @@
       emoji: "💻",
       desc: "懂技术，要 API、可扩展、可部署",
       hero: {
-        kicker: "芭乐派 · OpenFlow 开放平台",
+        kicker: "林下 Understory · OpenFlow 开放平台",
         title1: "为开发者打造的",
         title2: "Agent 增长基础设施",
         lead: "开放 API、Webhook、Task Graph 编排、数据连接器——把增长系统嵌进你的技术栈。自托管、私有化、完全可控，核心能力永久开源。",
@@ -82,7 +82,7 @@
       emoji: "🚀",
       desc: "要效率、要自动化、要数据驱动",
       hero: {
-        kicker: "芭乐派 · 帮一人公司设计 Agent 能跑的增长系统",
+        kicker: "林下 Understory · 帮一人公司设计 Agent 能跑的增长系统",
         title1: "让增长动作",
         title2: "主动发生",
         lead: "自生长 AI Engine 按你设的周期推一轮：爬取信号 → AI 洞察 → 生成草稿 → 主动触达。从 Marketing 到 Sales 全闭环，把增长交给系统，你专注策略判断。",
@@ -118,7 +118,7 @@
       emoji: "🏢",
       desc: "要方案、要安全、要落地服务",
       hero: {
-        kicker: "芭乐派 · 企业级增长系统",
+        kicker: "林下 Understory · 企业级增长系统",
         title1: "企业的增长",
         title2: "由引擎驱动",
         lead: "从内容到客户数据再到转化变现，一套打通的 Agent 原生增长系统。私有化部署、数据自主可控、专业顾问陪跑落地。",

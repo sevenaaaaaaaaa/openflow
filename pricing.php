@@ -1,6 +1,6 @@
 <?php
 /**
- * 定价 | 芭乐派 · OpenFlow
+ * 定价 | 林下 Understory · OpenFlow
  *
  * 定价策略（docs/GTM.md 既定）：开源优先 · SaaS 标价 + 私有化议价。
  * 所有价格与权益集中在下面的数组里，改数组即可，页面自动渲染。
@@ -81,8 +81,8 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>定价 | 芭乐派 · OpenFlow</title>
-<?php if (function_exists('seo_head')): seo_head(['title' => '定价 | 芭乐派 · OpenFlow', 'description' => 'OpenFlow 定价：开源自部署永久免费；云托管个人版 ¥99/月起、增长版 ¥299/月；私有化与定制按需报价。核心能力无功能锁，商业版卖的是托管与服务。', 'canonical' => site_config_get('site_url') . '/pricing']); endif; ?>
+<title>定价 | 林下 Understory · OpenFlow</title>
+<?php if (function_exists('seo_head')): seo_head(['title' => '定价 | 林下 Understory · OpenFlow', 'description' => 'OpenFlow 定价：开源自部署永久免费；云托管个人版 ¥99/月起、增长版 ¥299/月；私有化与定制按需报价。核心能力无功能锁，商业版卖的是托管与服务。', 'canonical' => site_config_get('site_url') . '/pricing']); endif; ?>
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
 /* 定价页局部：方案卡 / 对比表 */
@@ -122,7 +122,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
   <!-- ══ 首屏 ══ -->
   <section id="top" class="reveal in" data-od-anchor data-od-id="pricing-hero">
     <div class="hero-center" style="padding-bottom:0">
-      <span class="kicker">定价 · 芭乐派 OpenFlow</span>
+      <span class="kicker">定价 · 林下 Understory OpenFlow</span>
       <h1>核心能力<b class="si">永久免费</b>，<br>只为省下的时间付费</h1>
       <p class="lead">功能没有锁：全部核心能力都在开源版里。云托管卖的是「不用管服务器」，私有化卖的是「长在你的合规环境里」。选错了随时迁，数据双向可搬。</p>
       <div class="cta-row">
