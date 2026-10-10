@@ -29,6 +29,16 @@ if (!hash_equals($cronSecret, $requestSecret)) {
     exit;
 }
 
+// ── AI 后台任务的执行时段（lib/AiSchedule.php）──
+// 只在工作日凌晨窗口（默认 00:00–06:00）放行；周末/法定节假日不跑。
+// 标记之后，本次 cron 里任何 AiCenter 调用都会被时段闸二次把关，且超时压到窗口结束前。
+// 定时发布、邮件、Webhook、收款等「重要任务」不调 AI，不受影响。
+require_once __DIR__ . '/../lib/AiSchedule.php';
+$GLOBALS['OF_AI_BACKGROUND'] = true;
+$__aiWin = AiSchedule::decision();
+$__aiOk  = $__aiWin['allowed'];
+$__aiSkip = ['status' => 'skipped', 'detail' => $__aiWin['reason']];
+
 $published = 0;
 foreach (get_articles() as $a) {
     $publishAt = $a['publish_at'] ?? '';
@@ -195,6 +205,13 @@ try {
     }
 } catch (Exception $e) {}
 
+// 自动化运行与 Token 消耗简报（每天清晨 / 傍晚各一封，发给管理员；当天发过不重发）
+$opsDigest = ['status' => 'skipped'];
+try {
+    require_once __DIR__ . '/../lib/OpsDigest.php';
+    $opsDigest = ops_digest_maybe_send();
+} catch (Throwable $e) { $opsDigest = ['status' => 'error', 'detail' => $e->getMessage()]; }
+
 // 多平台内容定时发布
 try { SocialPublisher::processQueue(); } catch (Exception $e) {}
 
@@ -295,7 +312,7 @@ if (time() - $lastEvolve > 6 * 3600) {
 
 // 增长驱动引擎（每 6 小时自动推一轮，主动驱动网站前进）
 $lastDriver = (int)(json_read(DATA_DIR . '/driver-scan.json')['ts'] ?? 0);
-if (time() - $lastDriver > 6 * 3600) {
+if ($__aiOk && time() - $lastDriver > 6 * 3600) {
     try {
         GrowthFlywheel::runCycle();
         json_write(DATA_DIR . '/driver-scan.json', ['ts' => time()]);
@@ -311,7 +328,7 @@ try {
         $c = json_decode(file_get_contents($insightCache), true);
         if (is_array($c) && ($c['_t'] ?? 0) > time() - 3600) $stale = false;
     }
-    if ($stale) { CdpInsight::generate(30); }
+    if ($stale && $__aiOk) { CdpInsight::generate(30); }
 } catch (Throwable $e) {}
 
 // 事件数据保留策略（每 24 小时清理 90 天前的埋点事件，防止数据库无限增长）
@@ -353,17 +370,17 @@ try { $pluginCron = PluginSystem::run_schedules(); } catch (Throwable $e) { $plu
 
 // ── 产品发现 Loop：每天跑一次（内部自判当天是否已跑）──
 $scout = ['status' => 'skipped'];
-try { $scout = ProductScout::dailyRun(); } catch (Throwable $e) { $scout = ['status' => 'error', 'detail' => $e->getMessage()]; }
+try { $scout = $__aiOk ? ProductScout::dailyRun() : $__aiSkip; } catch (Throwable $e) { $scout = ['status' => 'error', 'detail' => $e->getMessage()]; }
 
 // ── GEO 内容引擎：每天抓取→AI提炼→选题库（内部自判当天是否已跑）──
 $geoRun = ['status' => 'skipped'];
-try { require_once __DIR__ . '/../lib/GeoSystem.php'; $geoRun = geo_daily_run(); } catch (Throwable $e) { $geoRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
+try { require_once __DIR__ . '/../lib/GeoSystem.php'; $geoRun = $__aiOk ? geo_daily_run() : $__aiSkip; } catch (Throwable $e) { $geoRun = ['status' => 'error', 'detail' => $e->getMessage()]; }
 
 // ── 热点雷达：每天一次多源抓取+聚类 ──
 $trendRun = ['status' => 'skipped'];
 try {
     $trLast = (string)(json_read(DATA_DIR . '/trends/last.json')['date'] ?? '');
-    if ($trLast !== date('Y-m-d')) {
+    if ($__aiOk && $trLast !== date('Y-m-d')) {
         require_once __DIR__ . '/../lib/TrendRadar.php';
         $trendRun = trend_run(true);
         json_write(DATA_DIR . '/trends/last.json', ['date' => date('Y-m-d'), 'result' => $trendRun]);
@@ -372,7 +389,7 @@ try {
 
 // ── AI 岗位:每个在岗岗位每天交班一次(内部按日期防重) ──
 $agentPostRun = [];
-try { require_once __DIR__ . '/../lib/AgentPost.php'; $agentPostRun = agent_posts_cron(); } catch (Throwable $e) { $agentPostRun = ['error' => $e->getMessage()]; }
+try { require_once __DIR__ . '/../lib/AgentPost.php'; $agentPostRun = $__aiOk ? agent_posts_cron() : $__aiSkip; } catch (Throwable $e) { $agentPostRun = ['error' => $e->getMessage()]; }
 
 // ── 定时备份（后台「⏰ 定时备份」设置的执行者；此前该设置无处理器、无执行者）──
 $backupRun = ['status' => 'skipped'];
@@ -386,7 +403,9 @@ $adapterIntake = ['status' => 'skipped'];
 try {
     require_once __DIR__ . '/../lib/AdapterSubmission.php';
     $__icfg = adapter_sub_config();
-    if ($__icfg['enabled']) {
+    if ($__icfg['enabled'] && !$__aiOk) {
+        $adapterIntake = $__aiSkip;
+    } elseif ($__icfg['enabled']) {
         $__ai = null;
         if (class_exists('AiCenter')) {
             $__ai = static function (string $system, string $user, array $opts): array {
@@ -451,4 +470,5 @@ echo json_encode(['ok' => true, 'published' => $published, 'retention' => $conse
                   'webhook_retry' => $webhookRetry, 'plugin_cron' => $pluginCron, 'product_scout' => $scout,
                   'geo_run' => $geoRun, 'conv_run' => $convRun, 'trend_run' => $trendRun,
                   'agent_posts' => $agentPostRun, 'backup' => $backupRun, 'usage_prune' => $usagePrune, 'adapter_intake' => $adapterIntake, 'health' => $healthRun,
+                  'ops_digest' => $opsDigest, 'ai_window' => $__aiWin,
                   'time' => date('Y-m-d H:i:s')]);

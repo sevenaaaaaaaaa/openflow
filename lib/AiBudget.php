@@ -73,7 +73,35 @@ if (!function_exists('ai_usage_ensure')) {
             'public_token_cap' => 0,
             'public_call_cap'  => 500,
             'currency'         => '¥',
+            'boost_day'        => '',     // 单日加额生效的日期（YYYY-MM-DD）；日期一过自动失效 = 第二天自动回调
+            'boost_amount'     => 0.0,    // 当日在基础上限之上追加的额度
+            'alert_email'      => '',     // 触顶提醒收件人；空则回落到站点 admin_email / 管理员账号邮箱
         ], $b);
+    }
+
+    /** 今天生效的日成本上限 = 基础上限 + 今日加额（加额按日期记，过了零点自然作废，无需定时任务去「回调」）。0 = 不限。 */
+    function ai_budget_effective_cap(?array $b = null, string $day = ''): float {
+        $b = $b ?? ai_budget_settings();
+        $base = (float)$b['daily_cost_cap'];
+        if ($base <= 0) return 0.0;
+        $day = $day ?: date('Y-m-d');
+        $boost = (($b['boost_day'] ?? '') === $day) ? max(0.0, (float)$b['boost_amount']) : 0.0;
+        return round($base + $boost, 4);
+    }
+
+    /** 管理员单日加预算（同一天可累加；传 0 或负数 = 取消今日加额）。返回生效后的上限。 */
+    function ai_budget_boost(float $amount): array {
+        $s = function_exists('json_read') ? json_read(DATA_DIR . '/settings.json') : [];
+        if (!is_array($s)) $s = [];
+        $cur = ai_budget_settings();
+        $today = date('Y-m-d');
+        $already = ($cur['boost_day'] === $today) ? (float)$cur['boost_amount'] : 0.0;
+        $new = $amount > 0 ? min($already + $amount, 10000.0) : 0.0;
+        $cur['boost_day'] = $new > 0 ? $today : '';
+        $cur['boost_amount'] = round($new, 4);
+        $s['ai_budget'] = $cur;
+        if (function_exists('json_write')) json_write(DATA_DIR . '/settings.json', $s);
+        return ['boost' => $cur['boost_amount'], 'effective_cap' => ai_budget_effective_cap($cur)];
     }
 
     function ai_budget_save(array $patch): array {
@@ -82,6 +110,10 @@ if (!function_exists('ai_usage_ensure')) {
         foreach (['daily_cost_cap', 'public_cost_cap'] as $k) if (isset($patch[$k])) $cur[$k] = max(0.0, (float)$patch[$k]);
         foreach (['daily_token_cap', 'public_token_cap', 'public_call_cap'] as $k) if (isset($patch[$k])) $cur[$k] = max(0, (int)$patch[$k]);
         if (isset($patch['currency'])) $cur['currency'] = mb_substr((string)$patch['currency'], 0, 4);
+        if (isset($patch['alert_email'])) {
+            $em = trim((string)$patch['alert_email']);
+            $cur['alert_email'] = ($em === '' || filter_var($em, FILTER_VALIDATE_EMAIL)) ? $em : $cur['alert_email'];
+        }
         $s['ai_budget'] = $cur;
         if (function_exists('json_write')) json_write(DATA_DIR . '/settings.json', $s);
         return $cur;
@@ -153,6 +185,72 @@ if (!function_exists('ai_usage_ensure')) {
                     mb_substr((string)($row['error'] ?? ''), 0, 200),
                 ]
             );
+        } catch (\Throwable $e) { return; }
+        // 刚好越线的这一次就提醒（不用等下一次被拦下才知道）
+        try {
+            $eff = ai_budget_effective_cap();
+            if ($eff > 0 && ai_spend()['cost'] >= $eff) ai_budget_alert(ai_spend()['cost'], $eff);
+        } catch (\Throwable $e) {}
+    }
+
+    // ─── 触顶邮件提醒 ────────────────────────────────────
+
+    /** 收件人：预算页配置 > 站点 admin_email > 第一个有邮箱的 admin 账号 */
+    function ai_budget_alert_recipient(): string {
+        $b = ai_budget_settings();
+        $em = trim((string)$b['alert_email']);
+        if ($em !== '') return $em;
+        $s = function_exists('json_read') ? json_read(DATA_DIR . '/settings.json') : [];
+        $em = trim((string)($s['admin_email'] ?? ''));
+        if ($em !== '') return $em;
+        $u = function_exists('json_read') ? json_read(DATA_DIR . '/users.json') : [];
+        foreach ((array)($u['users'] ?? $u) as $x) {
+            if (($x['role'] ?? '') === 'admin' && filter_var($x['email'] ?? '', FILTER_VALIDATE_EMAIL)) return (string)$x['email'];
+        }
+        return '';
+    }
+
+    /**
+     * 触顶提醒：同一天、同一个生效上限只发一次（管理员加额后再触顶，上限变了，会再提醒一次）。
+     * 发送失败 30 分钟后重试；没有收件人时只发后台站内通知，并把原因写进标记文件。
+     * 绝不抛异常——提醒失败不能影响 AI 调用本身。
+     */
+    function ai_budget_alert(float $spent, float $cap): void {
+        try {
+            $file = DATA_DIR . '/ai-budget-alert.json';
+            $mark = function_exists('json_read') ? json_read($file) : [];
+            if (!is_array($mark)) $mark = [];
+            $today = date('Y-m-d');
+            $sameCap = ($mark['day'] ?? '') === $today && abs((float)($mark['cap'] ?? -1) - $cap) < 0.0001;
+            if ($sameCap && !empty($mark['sent'])) return;
+            if ($sameCap && time() - (int)($mark['last_try'] ?? 0) < 1800) return;
+
+            $b = ai_budget_settings();
+            $cur = (string)$b['currency'];
+            $to = ai_budget_alert_recipient();
+            $mark = ['day' => $today, 'cap' => $cap, 'last_try' => time(), 'sent' => false, 'to' => $to === '' ? '' : preg_replace('/(.).*(@.*)/', '$1***$2', $to)];
+            if (function_exists('json_write')) json_write($file, $mark);   // 先落标记再发信，避免并发请求重复发
+
+            $site = function_exists('site_config_get') ? rtrim(site_config_get('site_url', ''), '/') : '';
+            $subject = sprintf('【AI 预算】今日已用 %s%.2f，达到上限 %s%.2f，AI 调用已暂停', $cur, $spent, $cur, $cap);
+            $page = $site !== '' ? $site . '/xmp/ai-usage' : '/xmp/ai-usage';
+            $html = '<p>今日 AI 花费已达上限，<strong>后续 AI 调用已暂停</strong>（后台任务停止；访客侧客服降级为仅检索站内知识）。</p>'
+                  . '<ul><li>今日已用：' . $cur . number_format($spent, 4) . '</li>'
+                  . '<li>今日生效上限：' . $cur . number_format($cap, 2) . '（基础 ' . $cur . number_format((float)$b['daily_cost_cap'], 2) . '）</li>'
+                  . '<li>时间：' . date('Y-m-d H:i:s') . '</li></ul>'
+                  . '<p>如需继续使用，可在后台临时加预算（仅当天有效，<strong>第二天自动恢复为基础上限</strong>）：<br>'
+                  . '<a href="' . htmlspecialchars($page, ENT_QUOTES) . '">' . htmlspecialchars($page) . '</a></p>'
+                  . '<p style="color:#888;font-size:12px">同一上限每天只提醒一次。</p>';
+
+            if (function_exists('notify')) {
+                try { notify('ai', 'AI 今日预算已用尽', sprintf('已用 %s%.2f / 上限 %s%.2f', $cur, $spent, $cur, $cap), 'xmp/ai-usage'); } catch (\Throwable $e) {}
+            }
+            if ($to === '') { $mark['error'] = '未配置收件人（预算页「提醒邮箱」或站点 admin_email）'; json_write($file, $mark); return; }
+            if (!function_exists('mail_send')) require_once __DIR__ . '/MailChannel.php';
+            $ok = mail_send($to, $subject, $html);
+            $mark['sent'] = (bool)$ok;
+            if (!$ok) $mark['error'] = '邮件发送失败（检查邮件渠道），30 分钟后重试';
+            json_write($file, $mark);
         } catch (\Throwable $e) {}
     }
 
@@ -220,9 +318,11 @@ if (!function_exists('ai_usage_ensure')) {
         $b = ai_budget_settings();
         $cur = ai_spend();                       // 今日全站
 
-        if ($b['daily_cost_cap'] > 0 && $cur['cost'] >= $b['daily_cost_cap']) {
+        $effCap = ai_budget_effective_cap($b);
+        if ($effCap > 0 && $cur['cost'] >= $effCap) {
+            ai_budget_alert($cur['cost'], $effCap);   // 每个上限每天只发一次邮件
             return ['allowed' => false, 'reason' => 'daily_cost_cap',
-                    'hint' => "今日 AI 花费已达上限（{$b['currency']}{$b['daily_cost_cap']}），已暂停调用。"];
+                    'hint' => "今日 AI 花费已达上限（{$b['currency']}{$effCap}），已暂停调用。管理员可在「AI 用量与预算」页单日加预算。"];
         }
         if ($b['daily_token_cap'] > 0 && $cur['tokens'] >= $b['daily_token_cap']) {
             return ['allowed' => false, 'reason' => 'daily_token_cap',

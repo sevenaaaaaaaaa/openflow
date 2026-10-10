@@ -77,6 +77,20 @@ class AiCenter {
             }
         } catch (\Throwable $e) {}
 
+        // ── 执行时段闸：cron 驱动的后台 AI 任务只在工作日凌晨窗口内跑（lib/AiSchedule.php）──
+        // 人在后台/访客触发的调用、以及 manual=true 的手动脚本不受时段限制（仍受上面的预算保险丝限制）。
+        $bgLeft = null;
+        if (!empty($GLOBALS['OF_AI_BACKGROUND']) && empty($opts['manual'])) {
+            try {
+                require_once __DIR__ . '/AiSchedule.php';
+                $sched = AiSchedule::decision();
+                if (!$sched['allowed']) {
+                    return ['ok' => false, 'error' => '后台 AI 任务未到执行时段：' . $sched['reason'], 'text' => '', 'scheduled_off' => true];
+                }
+                $bgLeft = $sched['seconds_left'];   // 距窗口结束的秒数（限制关闭时为 null）
+            } catch (\Throwable $e) {}
+        }
+
         // 允许指定供应商（连通性自检要测"选中的那一个"，不能测默认的那个——
         // 否则默认供应商是好的时候，坏的供应商也会报"连接成功"）。
         $provider = [];
@@ -178,6 +192,8 @@ class AiCenter {
         }
 
         $timeout = (int)($opts['timeout'] ?? self::TIER_TIMEOUTS[$tier]);
+        // 06:00 前必须结束：后台调用的超时压到「距窗口结束的剩余秒数」，最后一次调用最迟窗口结束时断开
+        if ($bgLeft !== null) $timeout = max(1, min($timeout, (int)$bgLeft));
         $started = microtime(true);
 
         $ch = curl_init($endpoint);

@@ -56,7 +56,7 @@ TXT;
 function ai_batch(string $sys, array $items, array $langs, array $LANG_NAME): ?array {
     $langDesc = implode('、', array_map(fn($l) => "$l = {$LANG_NAME[$l]}", $langs));
     $user = "目标语言：$langDesc\n请翻译下面这些中文片段：\n" . json_encode($items, JSON_UNESCAPED_UNICODE);
-    $r = AiCenter::json($sys, $user, ['feature' => 'i18n-translate', 'tier' => 'batch', 'temperature' => 0.2, 'timeout' => 170]);
+    $r = AiCenter::json($sys, $user, ['feature' => 'i18n-translate', 'tier' => 'batch', 'manual' => true, 'temperature' => 0.2, 'timeout' => 170]);
     if (empty($r['ok'])) {
         $err = (string)($r['error'] ?? '');
         if (strpos($err, '上限') !== false) { fwrite(STDERR, "budget stop: {$err}\n"); exit(3); }

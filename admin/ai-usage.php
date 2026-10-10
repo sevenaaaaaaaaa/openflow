@@ -7,6 +7,7 @@
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/AiBudget.php';
+require_once __DIR__ . '/../lib/AiSchedule.php';
 require_login();
 require_perm('ai-config');
 
@@ -21,9 +22,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'public_token_cap' => $_POST['public_token_cap'] ?? 0,
             'public_call_cap'  => $_POST['public_call_cap'] ?? 0,
             'currency'         => $_POST['currency'] ?? '¥',
+            'alert_email'      => $_POST['alert_email'] ?? '',
         ]);
         audit('更新 AI 预算', 'ai-config');
         $msg = '预算已保存。超过上限后 AI 调用会被拦下，访客侧自动降级为仅检索站内知识。';
+    }
+    if (isset($_POST['boost_today'])) {
+        $amt = (float)($_POST['boost_amount'] ?? 0);
+        if ($amt > 0 && ai_budget_settings()['daily_cost_cap'] > 0) {
+            $r = ai_budget_boost($amt);
+            audit('AI 预算单日加额 +' . $amt, 'ai-config');
+            $msg = '已为今天追加 ' . $amt . '，今日生效上限 ' . $r['effective_cap'] . '。仅当天有效，明天零点起自动恢复为基础上限。';
+        } else {
+            $msg = '请先设置「全站每日花费」基础上限，再追加单日预算。';
+        }
+    }
+    if (isset($_POST['clear_boost'])) {
+        ai_budget_boost(0);
+        audit('取消 AI 预算单日加额', 'ai-config');
+        $msg = '已取消今日加额，恢复为基础上限。';
+    }
+    if (isset($_POST['save_schedule'])) {
+        AiSchedule::save([
+            'enabled'        => !empty($_POST['sched_enabled']),
+            'run_on_makeup'  => !empty($_POST['sched_makeup']),
+            'window_start'   => (int)($_POST['window_start'] ?? 0),
+            'window_end'     => (int)($_POST['window_end'] ?? 6),
+            'extra_holidays' => (string)($_POST['extra_holidays'] ?? ''),
+            'extra_workdays' => (string)($_POST['extra_workdays'] ?? ''),
+        ]);
+        audit('更新 AI 后台任务执行时段', 'ai-config');
+        $msg = '执行时段已保存。';
     }
     if (isset($_POST['save_price'])) {
         ai_price_save((string)($_POST['price_model'] ?? ''),
@@ -35,6 +64,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $b        = ai_budget_settings();
 $cur      = $b['currency'];
+$effCap   = ai_budget_effective_cap($b);
+$boostNow = (($b['boost_day'] ?? '') === date('Y-m-d')) ? (float)$b['boost_amount'] : 0.0;
+$sched    = AiSchedule::settings();
+$decision = AiSchedule::decision();
+$nextWin  = AiSchedule::nextWindowStart();
 $today    = ai_spend();
 $pubToday = ai_spend('', 'public');
 $days     = max(1, min(90, (int)($_GET['days'] ?? 7)));
@@ -84,7 +118,7 @@ admin_header('AI 用量与预算');
       <td><?= ai_n($today['tokens']) ?></td>
       <td><?= $cur . number_format($today['cost'], 4) ?></td>
       <td><?= $today['failed'] > 0 ? '<span style="color:#c0392b">' . ai_n($today['failed']) . '</span>' : '0' ?></td>
-      <td><?= ai_bar(ai_pct($today['cost'], $b['daily_cost_cap']) ?? ai_pct($today['tokens'], $b['daily_token_cap'])) ?></td>
+      <td><?= ai_bar(ai_pct($today['cost'], $effCap) ?? ai_pct($today['tokens'], $b['daily_token_cap'])) ?></td>
     </tr>
     <tr>
       <td>访客侧<br><span style="font-size:11px;color:#999">公开接口</span></td>
@@ -156,6 +190,61 @@ admin_header('AI 用量与预算');
     </table>
   </details>
 
+  <!-- 今日预算与单日加额 -->
+  <h2 style="font-size:16px;margin:26px 0 8px">今日预算 · 单日加额</h2>
+  <?php if ($b['daily_cost_cap'] > 0): ?>
+    <p style="color:#666;margin:0 0 10px">
+      基础上限 <strong><?= $cur . number_format((float)$b['daily_cost_cap'], 2) ?></strong>
+      <?php if ($boostNow > 0): ?> + 今日加额 <strong style="color:#c87f0a"><?= $cur . number_format($boostNow, 2) ?></strong><?php endif; ?>
+      = 今日生效 <strong><?= $cur . number_format($effCap, 2) ?></strong>，已用 <strong><?= $cur . number_format($today['cost'], 4) ?></strong>。
+      <?php if ($today['cost'] >= $effCap): ?><span style="color:#c0392b">额度已用尽，AI 调用已暂停。</span><?php endif; ?>
+      <br><span style="font-size:12px;color:#888">加额<strong>只在当天有效</strong>，明天零点起自动恢复为基础上限，无需手动改回。触顶时会给提醒邮箱发邮件。</span>
+    </p>
+    <form method="post" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+      <?= csrf_field() ?>
+      <input name="boost_amount" type="number" step="0.01" min="0.01" value="5" style="width:100px"> <?= htmlspecialchars($cur) ?>
+      <button class="btn btn-s" name="boost_today" value="1">今天追加预算</button>
+      <?php if ($boostNow > 0): ?><button class="btn btn-s" name="clear_boost" value="1" data-confirm="取消今日加额，恢复为基础上限？">取消今日加额</button><?php endif; ?>
+    </form>
+  <?php else: ?>
+    <p style="color:#c87f0a">还没设置「全站每日花费」基础上限，请先在下方「每日上限」里设置。</p>
+  <?php endif; ?>
+
+  <!-- 后台任务执行时段 -->
+  <h2 style="font-size:16px;margin:26px 0 8px">后台 AI 任务的执行时段</h2>
+  <p style="color:#666;margin:0 0 10px">
+    定时跑的后台 AI 任务（运营洞察预热、GEO、热点雷达、选题飞轮、产品发现、入驻队列、岗位交班）
+    <strong>只在工作日的凌晨窗口执行</strong>，周末与法定节假日不跑；每次调用的超时会被压到窗口结束前，保证按时收工。
+    定时发布、邮件、Webhook、收款等重要任务不受影响；人在后台/访客触发的 AI 也不受时段限制（只受预算限制）。
+  </p>
+  <p style="margin:0 0 10px;font-size:13px">
+    现在：<?= $decision['allowed'] ? '<span style="color:#2c6a4c">● 在执行窗口内</span>' : '<span style="color:#888">○ ' . htmlspecialchars($decision['reason']) . '</span>' ?>
+    <?php if ($sched['enabled'] && $nextWin): ?> · 下一个窗口开始：<?= date('Y-m-d H:i（D）', $nextWin) ?><?php endif; ?>
+    <?php if (!AiSchedule::yearCovered((int)date('Y'))): ?>
+      <br><span style="color:#c0392b">⚠ 内置放假表没有 <?= date('Y') ?> 年，当前只按周末判断，请在下方补录节假日。</span>
+    <?php elseif (!AiSchedule::yearCovered((int)date('Y') + 1) && (int)date('n') >= 11): ?>
+      <br><span style="color:#c87f0a">提示：内置放假表没有 <?= date('Y') + 1 ?> 年，请在国务院公布放假安排后补录。</span>
+    <?php endif; ?>
+  </p>
+  <form method="post">
+    <?= csrf_field() ?>
+    <table class="table" style="max-width:720px">
+      <tr><td style="width:220px">启用时段限制</td>
+          <td><label><input type="checkbox" name="sched_enabled" value="1" <?= $sched['enabled'] ? 'checked' : '' ?>> 开启</label></td></tr>
+      <tr><td>执行窗口</td>
+          <td><input name="window_start" type="number" min="0" max="23" value="<?= (int)$sched['window_start'] ?>" style="width:60px"> 点 至
+              <input name="window_end" type="number" min="1" max="24" value="<?= (int)$sched['window_end'] ?>" style="width:60px"> 点（结束点前必须收工）</td></tr>
+      <tr><td>调休上班日</td>
+          <td><label><input type="checkbox" name="sched_makeup" value="1" <?= $sched['run_on_makeup'] ? 'checked' : '' ?>> 调休上班的周末也执行</label>
+              <span style="font-size:12px;color:#888"> 默认不执行</span></td></tr>
+      <tr><td>补录节假日<br><span style="font-size:11px;color:#999">每行/逗号一个 YYYY-MM-DD</span></td>
+          <td><textarea name="extra_holidays" rows="2" style="width:100%"><?= htmlspecialchars(implode("\n", $sched['extra_holidays'])) ?></textarea></td></tr>
+      <tr><td>补录工作日<br><span style="font-size:11px;color:#999">用于修正内置表（如临时调休）</span></td>
+          <td><textarea name="extra_workdays" rows="2" style="width:100%"><?= htmlspecialchars(implode("\n", $sched['extra_workdays'])) ?></textarea></td></tr>
+    </table>
+    <button class="btn btn-s" name="save_schedule" value="1" style="margin-top:10px">保存执行时段</button>
+  </form>
+
   <!-- 单价 -->
   <h2 style="font-size:16px;margin:26px 0 8px">模型单价</h2>
   <p style="color:#666;margin:0 0 10px">
@@ -210,7 +299,7 @@ admin_header('AI 用量与预算');
       <tr><th style="width:220px">项目</th><th>上限</th><th>说明</th></tr>
       <tr><td>全站每日花费</td>
           <td><input name="daily_cost_cap" type="number" step="0.01" min="0" value="<?= htmlspecialchars((string)$b['daily_cost_cap']) ?>" style="width:120px"> <?= htmlspecialchars($cur) ?></td>
-          <td style="font-size:12px;color:#888">需要先配单价才有意义</td></tr>
+          <td style="font-size:12px;color:#888">基础上限，需要先配单价才有意义；今天临时加额见上方「单日加额」</td></tr>
       <tr><td>全站每日 token</td>
           <td><input name="daily_token_cap" type="number" min="0" value="<?= (int)$b['daily_token_cap'] ?>" style="width:120px"></td>
           <td style="font-size:12px;color:#888">不依赖单价，配不配价都能用</td></tr>
@@ -223,6 +312,9 @@ admin_header('AI 用量与预算');
       <tr><td>访客侧每日 token</td>
           <td><input name="public_token_cap" type="number" min="0" value="<?= (int)$b['public_token_cap'] ?>" style="width:120px"></td>
           <td style="font-size:12px;color:#888">0 = 跟随全站上限</td></tr>
+      <tr><td>触顶提醒邮箱</td>
+          <td><input name="alert_email" type="email" value="<?= htmlspecialchars((string)$b['alert_email']) ?>" style="width:260px" placeholder="留空则用站点 admin_email"></td>
+          <td style="font-size:12px;color:#888">每天触顶只发一次；经「邮件渠道」发送</td></tr>
       <tr><td>币种符号</td>
           <td><input name="currency" value="<?= htmlspecialchars($cur) ?>" style="width:60px" maxlength="4"></td>
           <td style="font-size:12px;color:#888">只影响显示</td></tr>
