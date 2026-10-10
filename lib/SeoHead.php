@@ -57,12 +57,14 @@ if (!function_exists('seo_head')) {
             try {
                 $default = i18n_default_locale();
                 $path = preg_replace('#^/([a-z]{2}(?:-[A-Z]{2})?)(/|$)#', '/', $_SERVER['REQUEST_URI'] ?? '/') ?: '/';
-                foreach (i18n_supported() as $loc) {
+                // 只声明「真有译文」的语言（站点级翻译页：默认 + 有字典的语言；无译文的页面不声明，避免 hreflang 虚报）
+                $__hl = function_exists('i18n_hreflang_locales') ? i18n_hreflang_locales() : i18n_supported();
+                foreach ($__hl as $loc) {
                     $altUrl = $siteUrl . ($loc === $default ? $path : '/' . $loc . $path);
                     echo '<link rel="alternate" hreflang="' . htmlspecialchars($loc) . '" href="' . htmlspecialchars($altUrl, ENT_QUOTES) . '">' . "\n";
                 }
                 // x-default：未匹配任何语言时指向默认语言版本
-                echo '<link rel="alternate" hreflang="x-default" href="' . htmlspecialchars($siteUrl . $path, ENT_QUOTES) . '">' . "\n";
+                if ($__hl) echo '<link rel="alternate" hreflang="x-default" href="' . htmlspecialchars($siteUrl . $path, ENT_QUOTES) . '">' . "\n";
             } catch (Throwable $e) {}
         }
         // A3 可用化：seo-settings.json 站点级 meta 注入（后台可配、前台真正生效）

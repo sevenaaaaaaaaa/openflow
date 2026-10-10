@@ -17,9 +17,9 @@ require_once __DIR__ . '/../lib/I18nContent.php';
 
 $ROOT = dirname(__DIR__);
 $DIR = $ROOT . '/scripts/i18n';
-$LOCALES = ['zh-TW', 'en', 'ja', 'ko'];
-/** 参与抽取的页面（5 张 Studio 页 + 自带页脚/外壳文案） */
-$PAGES = ['/product/linkto', '/product/litmus', '/product/liana', '/product/conflow', '/product/zerozen'];
+$LOCALES = ['zh-TW', 'en', 'ja', 'ko', 'ru', 'fr'];
+/** 参与抽取的页面：scripts/i18n/pages.txt 每行一个路径（含页脚/外壳文案；与运行时白名单 lib/I18nContent.php 的 i18n_page_translatable 同口径） */
+$PAGES = array_values(array_filter(array_map('trim', is_file($DIR . '/pages.txt') ? file($DIR . '/pages.txt') : [])));
 
 function seg_file(string $dir): string { return $dir . '/segments.json'; }
 function load_json(string $f): array { return is_file($f) ? (json_decode((string)file_get_contents($f), true) ?: []) : []; }
@@ -34,8 +34,10 @@ if ($cmd === 'extract') {
     if ($base === '') { fwrite(STDERR, "需要 --base http://host:port\n"); exit(2); }
     $seg = [];
     foreach ($PAGES as $p) {
-        $html = @file_get_contents($base . $p);
-        if ($html === false || $html === '') { fwrite(STDERR, "取页面失败：$p\n"); exit(2); }
+        // Cloudflare 会拦无 UA 请求；失败的页面跳过并提示，不中断整批
+        $ctx = stream_context_create(['http' => ['header' => "User-Agent: Mozilla/5.0 (Macintosh) AppleWebKit/537.36 Chrome/120 Safari/537.36\r\n", 'timeout' => 30]]);
+        $html = @file_get_contents($base . $p . (strpos($p, '?') === false ? '?' : '&') . 'nocache=' . mt_rand(), false, $ctx);
+        if ($html === false || $html === '') { fwrite(STDERR, "取页面失败（跳过）：$p\n"); continue; }
         foreach (i18n_segments($html) as $s) $seg[$s][] = $p;
     }
     $nav = json_decode((string)file_get_contents($ROOT . '/data/nav.json'), true);
@@ -59,7 +61,7 @@ if ($cmd === 'check') {
         $miss = array_values(array_filter($segments, fn($s) => !isset($tr[$s]) || trim((string)$tr[$s]) === ''));
         // 译文里不应残留汉字（zh-TW 除外；品牌名/专名统一用拉丁写法；ja 允许汉字）
         $leak = [];
-        if (in_array($loc, ['en', 'ko'], true)) foreach ($tr as $k => $v) if (i18n_has_cjk((string)$v)) $leak[] = $k;
+        if (in_array($loc, ['en', 'ko', 'ru', 'fr'], true)) foreach ($tr as $k => $v) if (i18n_has_cjk((string)$v)) $leak[] = $k;
         $stale = array_values(array_diff(array_keys($tr), $segments));
         printf("%-6s 覆盖 %d/%d  漏译 %d  汉字残留(人工确认) %d  过期 %d\n", $loc, count($segments) - count($miss), count($segments), count($miss), count($leak), count($stale));
         foreach (array_slice($miss, 0, 8) as $m) echo "   · 漏译：$m\n";
@@ -94,7 +96,7 @@ if ($cmd === 'import') {
     foreach (preg_split('/\R/u', (string)file_get_contents($file)) as $line) {
         if (trim($line) === '') continue;
         $L = $loc;
-        if ($loc === 'multi' && preg_match('/^(zh-TW|en|ja|ko)\|(.*)$/u', $line, $lm)) { $L = $lm[1]; $line = $lm[2]; }
+        if ($loc === 'multi' && preg_match('/^(zh-TW|en|ja|ko|ru|fr)\|(.*)$/u', $line, $lm)) { $L = $lm[1]; $line = $lm[2]; }
         if (!in_array($L, $LOCALES, true) || !preg_match('/^(\d{3})\|(.*)$/u', $line, $m) || !isset($segments[(int)$m[1] - 1])) { echo "  ✗ 无法解析：" . mb_substr($line, 0, 40) . "\n"; $bad++; continue; }
         $store[$L] ??= load_json("$DIR/content.$L.json");
         $store[$L][$segments[(int)$m[1] - 1]] = str_replace('\\n', "\n", trim($m[2]));

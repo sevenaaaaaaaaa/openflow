@@ -51,6 +51,11 @@ function of_seo_bootstrap(): void {
         // canonical：两种引号形式都没有才补，用当前请求 URL + 站点域名（修 example.com bug）
         $hasCanonical = (stripos($html, 'rel="canonical"') !== false || stripos($html, "rel='canonical'") !== false);
         // 页面显式指定的 canonical 优先（软404/筛选页归并到聚合页）
+        // 多语言：没有对应译文的语言前缀页 → canonical 指回默认语言地址
+        if (empty($GLOBALS['OF_SEO_CANONICAL']) && function_exists('i18n_canonical_override')) {
+            $__i18nCanon = i18n_canonical_override($siteUrl);
+            if ($__i18nCanon) $GLOBALS['OF_SEO_CANONICAL'] = $__i18nCanon;
+        }
         if (!empty($GLOBALS['OF_SEO_CANONICAL'])) {
             $__canon = (string)$GLOBALS['OF_SEO_CANONICAL'];
             if ($hasCanonical) {
@@ -133,6 +138,8 @@ function of_seo_bootstrap(): void {
             $inject .= '<meta name="robots" content="noindex,follow">' . "\n";
         }
         if ($inject !== '') $html = str_ireplace('</head>', $inject . '</head>', $html);
+        // 多语言：营销与功能页整页过一遍分段字典（lib/I18nContent.php；front-builder 页自行处理会置 OF_I18N_HANDLED）
+        if (function_exists('i18n_site_finalize')) $html = i18n_site_finalize($html);
         return $html;
     });
 }

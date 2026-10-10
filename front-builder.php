@@ -20,9 +20,12 @@ $blocks = $page['blocks'] ?? [];
 // $__loc = 实际要翻译成的语言（null = 保持中文）；当前语言不在声明里 → 仍出中文，canonical 指回默认语言页，避免重复内容。
 $__default = function_exists('i18n_default_locale') ? i18n_default_locale() : 'zh-CN';
 $__cur     = function_exists('i18n_current') ? i18n_current() : $__default;
-$__avail   = array_values(array_filter((array)($page['i18n_locales'] ?? []), fn($l) => in_array($l, i18n_supported(), true)));
-$__loc     = function_exists('i18n_content_locale') ? i18n_content_locale($__avail) : null;
 $__path    = preg_replace('#^/(?:en|ja|ko|zh-CN|zh-TW|ru|fr)(?=/|$)#', '', (string)parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH)) ?: '/';
+// 可用语言 = 页面显式声明 ∪（属于营销与功能页类型时）所有有字典的语言
+$__avail   = (array)($page['i18n_locales'] ?? []);
+if (function_exists('i18n_page_translatable') && i18n_page_translatable($__path)) $__avail = array_merge($__avail, i18n_site_locales());
+$__avail   = array_values(array_unique(array_filter($__avail, fn($l) => in_array($l, i18n_supported(), true))));
+$__loc     = function_exists('i18n_content_locale') ? i18n_content_locale($__avail) : null;
 $__siteUrl = rtrim((string)site_config_get('site_url', ''), '/');
 if (!$__loc && $__siteUrl !== '') $GLOBALS['OF_SEO_CANONICAL'] = $__siteUrl . $__path;   // 没有对应译文（含不受支持的语言前缀）→ canonical 指回默认语言地址
 // ①b/③ 性能：无区块级人群定向的落地页走整页 PageCache（300s）；有 audience 的页面跳过缓存，
@@ -39,7 +42,7 @@ try {
 } catch (Throwable $e) {}
 $siteName = site_config_get('site_name');
 // 译文：整页输出过一遍分段字典（正文/页脚/meta/title/属性一并覆盖，未命中的段保持中文）
-if ($__loc) ob_start(fn($h) => i18n_tr_html($h, $__loc));
+if ($__loc) { $GLOBALS['OF_I18N_HANDLED'] = true; ob_start(fn($h) => i18n_tr_html($h, $__loc)); }
 
 // 区块渲染器与类型表已下沉到 lib/BlockRegistry.php（三处抄了三份，其中四种类型前台根本不认）
 require_once __DIR__ . '/lib/BlockRegistry.php';

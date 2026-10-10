@@ -148,3 +148,81 @@ function i18n_content_locale(array $supportedByPage = []): ?string {
     if ($cur === i18n_default_locale()) return null;
     return in_array($cur, $supportedByPage, true) ? $cur : null;
 }
+
+// ───────────────────────── 站点级翻译（营销与功能页，无需逐页声明）─────────────────────────
+
+/**
+ * 参与翻译的页面类型（路径第一段；'' = 首页）。文章/导航站点条目等「内容库」不在内：
+ * 它们是海量用户内容，没有译文时输出中文 + canonical 指回默认语言页（避免重复内容）。
+ * 与 scripts/i18n/pages.txt（抽取清单）同口径。
+ */
+const I18N_PAGE_ROOTS = ['', 'about', 'product', 'capability', 'changelog', 'developers', 'courses', 'course', 'academy',
+    'community', 'marketplace', 'events', 'event', 'enterprise', 'consultation', 'pricing', 'downloads', 'podcasts',
+    'skill', 'topics', 'topic', 'help'];
+
+/** 请求路径（去语言前缀、去 query；首页 = '/'） */
+function i18n_request_path(): string {
+    $p = (string)parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+    $p = preg_replace('#^/(?:en|ja|ko|zh-CN|zh-TW|ru|fr)(?=/|$)#', '', $p);
+    return $p === '' ? '/' : $p;
+}
+
+function i18n_page_translatable(?string $path = null): bool {
+    $path = $path ?? i18n_request_path();
+    $root = explode('/', trim($path, '/'))[0] ?? '';
+    $root = preg_replace('/\.php$/', '', $root);
+    return in_array($root, I18N_PAGE_ROOTS, true);
+}
+
+/** 有可用译文字典的非默认语言（字典文件存在且非空才算「可用」，没译好的语言不会对外声明） */
+function i18n_site_locales(): array {
+    static $cache = null;
+    if ($cache !== null) return $cache;
+    $def = function_exists('i18n_default_locale') ? i18n_default_locale() : 'zh-CN';
+    $out = [];
+    foreach (function_exists('i18n_supported') ? i18n_supported() : [] as $l) {
+        if ($l !== $def && i18n_content_map($l) !== []) $out[] = $l;
+    }
+    return $cache = $out;
+}
+
+/** hreflang 应声明的语言：站点级翻译页 = 默认 + 有字典的语言；文章保持原行为；其余页 = 不声明 */
+function i18n_hreflang_locales(): array {
+    $def = i18n_default_locale();
+    $root = explode('/', trim(i18n_request_path(), '/'))[0] ?? '';
+    if (i18n_page_translatable()) return array_merge([$def], i18n_site_locales());
+    if ($root === 'article' || $root === 'articles') return i18n_supported();
+    return [];
+}
+
+/** 无对应译文的语言前缀页：canonical 指回默认语言地址（返回 null = 不干预） */
+function i18n_canonical_override(string $siteUrl): ?string {
+    if ($siteUrl === '' || !function_exists('i18n_current') || i18n_current() === i18n_default_locale()) return null;
+    if (!preg_match('#^/(?:en|ja|ko|zh-CN|zh-TW|ru|fr)(?=/|$)#', (string)parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH))) return null;
+    $root = explode('/', trim(i18n_request_path(), '/'))[0] ?? '';
+    if ($root === 'article' || $root === 'articles') return null;
+    if (i18n_page_translatable() && in_array(i18n_current(), i18n_site_locales(), true)) return null;
+    return $siteUrl . i18n_request_path();
+}
+
+/** 整页最终处理（由 of_seo_bootstrap 的最外层输出缓冲调用）：翻译 + <html lang> */
+function i18n_site_finalize(string $html): string {
+    if (!function_exists('i18n_current') || !function_exists('i18n_enabled') || !i18n_enabled()) return $html;
+    if (!empty($GLOBALS['OF_I18N_HANDLED'])) return $html;     // front-builder 等已自行翻译
+    $loc = i18n_current();
+    if ($loc === i18n_default_locale()) return $html;
+    if (!i18n_page_translatable() || !in_array($loc, i18n_site_locales(), true)) return $html;
+    $html = i18n_tr_html($html, $loc);
+    // 已翻译页的 canonical / og:url 指向自身语言版本（页面自己写的往往是默认语言地址，会让译文页被判重复）
+    $site = function_exists('site_config_get') ? rtrim((string)site_config_get('site_url', ''), '/') : '';
+    if ($site !== '') {
+        $html = preg_replace_callback('/<(?:link\b[^>]*rel=["\']canonical["\']|meta\b[^>]*property=["\']og:url["\'])[^>]*>/i', function ($m) use ($site, $loc) {
+            return preg_replace_callback('/\b(href|content)=(["\'])' . preg_quote($site, '/') . '([^"\']*)\2/i', function ($x) use ($site, $loc) {
+                $path = $x[3];
+                if (preg_match('#^/(?:en|ja|ko|zh-CN|zh-TW|ru|fr)(?=/|$|\?)#', $path)) return $x[0];
+                return $x[1] . '=' . $x[2] . $site . '/' . $loc . ($path === '' ? '/' : $path) . $x[2];
+            }, $m[0]);
+        }, $html) ?? $html;
+    }
+    return preg_replace('/(<html\b[^>]*?\blang=")[^"]*(")/i', '${1}' . $loc . '${2}', $html, 1) ?? $html;
+}
