@@ -113,7 +113,7 @@ $SHOT_ITEMS2 = [
 /* ═══════════════ A · 总产品聚合页 v2 ═══════════════ */
 upsert_page('demo-products', [
     'slug' => 'demo-products', 'title' => '产品矩阵总览（预览）', 'status' => 'published',
-    'seo_title' => '产品矩阵 — 七个独立产品，按需组合 | 芭乐派',
+    'seo_title' => '产品矩阵 — 七个独立产品，按需组合 | 林下 Understory',
     'seo_desc' => '不必为不需要的能力付费：OpenFlow 全家桶、MFlow 内容分发、Webs Flow 落地页、UserLoop 全域数据、inFlow 情报、PayFlow 收款、LearnFlow 课程交付。零强制绑定，API 互通。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '七个独立产品，按需组合成一套系统', 'subtitle' => '产品矩阵 · 总览', 'content' => '不必为一个用不上的大系统付费。每件产品都能单独跑、单独见效；组合起来，就是一套自转的增长系统。互通走 API——拔掉任何一个，其余照常运行。', 'button_text' => '看七个产品', 'button_url' => '#products', 'button_text2' => '预约增长诊断', 'button_url2' => '#diagnose'],
@@ -185,7 +185,7 @@ HTML],
 /* ═══════════════ B · 总能力聚合页 v2 ═══════════════ */
 upsert_page('demo-capabilities', [
     'slug' => 'demo-capabilities', 'title' => '能力全景（预览）', 'status' => 'published',
-    'seo_title' => '能力全景 — TIPS 四力 + 三层支撑（42 个真实模块） | 芭乐派',
+    'seo_title' => '能力全景 — TIPS 四力 + 三层支撑（42 个真实模块） | 林下 Understory',
     'seo_desc' => 'TIPS 四力（触达/洞察/个性化/销售）+ 行动脊柱、增长引擎、永久开源。42 个模块全部可在代码与后台核验，每项能力标注承载产品。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '四力加三层支撑，能力全部可核验', 'subtitle' => '能力 · 全景', 'content' => 'TIPS 四力回答「增长靠什么」：触达、洞察、个性化、销售。行动脊柱、增长引擎与开源底座保证它们真的跑起来。每一项能力都标注了由哪个产品承载、多少个真实模块。', 'button_text' => '看 42 个模块', 'button_url' => '#modules', 'button_text2' => '去产品矩阵', 'button_url2' => '/demo/products'],
@@ -246,10 +246,10 @@ HTML],
 /* ═══════════════ C · v2 首页 ═══════════════ */
 upsert_page('demo-home-v2', [
     'slug' => 'demo-home-v2', 'title' => '首页 v2（预览）', 'status' => 'published',
-    'seo_title' => '芭乐派 — 一人公司的增长系统矩阵',
-    'seo_desc' => '一个人做不了所有事。芭乐派把增长拆成七件可组合的产品：整套系统、内容分发、落地页、全域数据、外部情报、收款变现、课程交付。开源、可自托管、数据主权在你。',
+    'seo_title' => '林下 Understory — 一人公司的增长系统矩阵',
+    'seo_desc' => '一个人做不了所有事。林下 Understory 把增长拆成七件可组合的产品：整套系统、内容分发、落地页、全域数据、外部情报、收款变现、课程交付。开源、可自托管、数据主权在你。',
     'blocks' => [
-        ['_type' => 'hero', '_key' => $k(), 'title' => '你不缺怎么做，你缺该做什么', 'subtitle' => '芭乐派 · 给一人公司的增长系统', 'content' => '市面上的增长工具都默认你有一支团队。芭乐派做的是另一套：它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。核心开源，数据在你自己的服务器。', 'button_text' => '免费开始（开源）', 'button_url' => '/courses', 'button_text2' => '先看它一天干什么', 'button_url2' => '/demo/home-v2#dayrun'],
+        ['_type' => 'hero', '_key' => $k(), 'title' => '你不缺怎么做，你缺该做什么', 'subtitle' => '林下 Understory · 给一人公司的增长系统', 'content' => '市面上的增长工具都默认你有一支团队。林下 Understory 做的是另一套：它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。核心开源，数据在你自己的服务器。', 'button_text' => '免费开始（开源）', 'button_url' => '/courses', 'button_text2' => '先看它一天干什么', 'button_url2' => '/demo/home-v2#dayrun'],
         ['_type' => 'ticker', '_key' => $k(), 'title' => '现在就在跑的数字', 'subtitle' => '可核验', 'content' => <<<HTML
 <div data-n="502"><b>0</b><span>已发布文章</span></div>
 <div data-n="43"><b>0</b><span>展示区块</span></div>
@@ -287,9 +287,9 @@ HTML],
 HTML],
         block_day($k),
         block_runlog($k),
-        ['_type' => 'comparison', '_key' => $k(), 'title' => '自己做 vs 用芭乐派', 'subtitle' => '对比', 'content' => <<<HTML
+        ['_type' => 'comparison', '_key' => $k(), 'title' => '自己做 vs 用林下 Understory', 'subtitle' => '对比', 'content' => <<<HTML
 <table style="width:100%;border-collapse:collapse;min-width:720px">
-<thead><tr style="text-align:left;border-bottom:1px solid var(--border)"><th style="padding:10px">环节</th><th style="padding:10px">自己拼工具</th><th style="padding:10px">用芭乐派</th></tr></thead>
+<thead><tr style="text-align:left;border-bottom:1px solid var(--border)"><th style="padding:10px">环节</th><th style="padding:10px">自己拼工具</th><th style="padding:10px">用林下 Understory</th></tr></thead>
 <tbody>
 <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:12px 10px">选题</td><td style="padding:12px 10px">刷平台靠感觉，慢半拍</td><td style="padding:12px 10px">inFlow 全网采集 + 每日情报</td></tr>
 <tr style="border-bottom:1px solid var(--border-soft)"><td style="padding:12px 10px">内容</td><td style="padding:12px 10px">写完再逐个平台发</td><td style="padding:12px 10px">MFlow 生成 + 多平台分发</td></tr>
@@ -315,12 +315,12 @@ HTML],
 <details><summary>要开源自托管</summary><div class="hacc-body"><p>核心能力开源，数据留在自己服务器，生态可扩展。</p><a href="/docs">看文档 →</a></div></details>
 HTML],
         ['_type' => 'faq', '_key' => $k(), 'title' => '常见问题', 'subtitle' => 'FAQ', 'content' => <<<HTML
-<details><summary>芭乐派卖的是软件还是方法？</summary><p>两者都卖：软件是增长系统（产品矩阵），方法是学院里的课程与文档。软件核心开源可自托管，方法论随时可学。</p></details>
+<details><summary>林下 Understory 卖的是软件还是方法？</summary><p>两者都卖：软件是增长系统（产品矩阵），方法是学院里的课程与文档。软件核心开源可自托管，方法论随时可学。</p></details>
 <details><summary>一定要买全家桶吗？</summary><p>不必。七件产品独立可用，按需组合。从最缺的那一环开始就好。</p></details>
 <details><summary>数据会不会被绑死？</summary><p>不会。互通走公开 API，数据主权在你；想换平台，档案可迁移。</p></details>
 HTML],
         block_form($k),
-        ['_type' => 'cta', '_key' => $k(), 'title' => '让系统替你跑，你只做判断', 'subtitle' => '芭乐派', 'content' => '看产品矩阵，从最缺的那一环开始；或者直接上整套 OpenFlow。', 'button_text' => '看产品矩阵', 'button_url' => '/demo/products'],
+        ['_type' => 'cta', '_key' => $k(), 'title' => '让系统替你跑，你只做判断', 'subtitle' => '林下 Understory', 'content' => '看产品矩阵，从最缺的那一环开始；或者直接上整套 OpenFlow。', 'button_text' => '看产品矩阵', 'button_url' => '/demo/products'],
     ],
 ]);
 

@@ -9,6 +9,7 @@
  *   - 文案与 v6 逐字相同；「创始人Seven · 十年增长操盘」原本出现两次，现只在首屏 trust 行保留一次。
  */
 require_once __DIR__ . '/admin/config.php';
+require_once __DIR__ . '/lib/PublicMetrics.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
@@ -58,26 +59,26 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
     </div>
   </section>
 
-  <!-- ══ 品牌故事：芭乐，与派 ══ -->
+  <!-- ══ 品牌故事：林下 Understory ══ -->
   <section id="story" class="sec reveal" data-od-anchor data-od-id="about-story">
     <div class="sec-head center">
       <span class="kicker">品牌故事</span>
-      <h2>芭乐，与派</h2>
-      <p class="lead">芭乐，番石榴。长得不起眼，不像草莓好看，不像芒果浓郁。但切开之后香气独特，维生素 C 是橙子的 4 倍。一人公司也是这样——看起来小，但内核密度极高。</p>
+      <h2>林下，Understory</h2>
+      <p class="lead">林下，是森林里大树冠层之下的那一层：不起眼，却撑着整片林子的生长与循环。一人公司也是这样——看起来小，但内核密度极高。</p>
     </div>
     <div class="worlds">
       <div class="w-col">
-        <span class="w-tag">派 · 第一层</span>
-        <h3>致敬树莓派</h3>
-        <p class="w-q">一张信用卡大小的开发板，插上外设就是一个完整系统，一人公司不需要大团队。</p>
+        <span class="w-tag">林下 · 第一层</span>
+        <h3>是品牌与产品矩阵之名</h3>
+        <p class="w-q">OpenFlow 是它的入口层增长操作系统，一人公司不需要大团队。</p>
       </div>
       <div class="w-col w-gap">
-        <span class="w-tag">派 · 第二层</span>
-        <h3>是 π</h3>
-        <p class="w-q">3.14159… 无限不循环，没有两个创业者走出过完全一样的路。</p>
+        <span class="w-tag">林下 · 第二层</span>
+        <h3>是一片生态</h3>
+        <p class="w-q">鹿蕊、松萝、林可兔、零真，各取自林下生态；每件产品独立可用，按需组合成一套系统。</p>
       </div>
       <div class="w-col">
-        <span class="w-tag">派 · 第三层</span>
+        <span class="w-tag">林下 · 第三层</span>
         <h3>是社区</h3>
         <p class="w-q">一个人走得快，一群人走得远。</p>
       </div>
@@ -169,10 +170,10 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
       <div class="st"><div class="st-n"><?=$articleCount?></div><span class="st-en">Articles</span><span class="st-t">方法论文库持续更新</span></div>
       <div class="st"><div class="st-n"><?=$navCount?></div><span class="st-en">Tools curated</span><span class="st-t">导航站工具收录</span></div>
       <div class="st"><div class="st-n"><?=$postCount?></div><span class="st-en">Discussions</span><span class="st-t">增长社区讨论</span></div>
-      <div class="st"><div class="st-n"><?=count(glob(__DIR__.'/api/*.php'))?></div><span class="st-en">Open APIs</span><span class="st-t">全部代码在 GitHub</span></div>
+      <div class="st"><div class="st-n"><?=of_count_api_endpoints()?></div><span class="st-en">Open APIs</span><span class="st-t">全部代码在 GitHub</span></div>
     </div>
     <div class="link-grid" style="margin-top:22px">
-      <a class="link-it top" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener"><span class="lt"><b>GitHub 仓库</b><span>18 个 MCP 工具、插件平台 v2、<?=count(glob(__DIR__.'/api/*.php'))?> 个 API——代码即证据。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
+      <a class="link-it top" href="https://github.com/sevenaaaaaaaaa/openflow" target="_blank" rel="noopener"><span class="lt"><b>GitHub 仓库</b><span><?=of_count_mcp_tools()?> 个 MCP 工具、插件平台 v2、<?=of_count_api_endpoints()?> 个 API——代码即证据。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <a class="link-it top" href="/academy"><span class="lt"><b>学院内容库</b><span>每一篇方法论都公开可读，十年操盘提炼其中。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <a class="link-it top" href="/navigation"><span class="lt"><b>增长导航站</b><span><?=$navCount?> 个工具逐个收录点评，含 GitHub 数据与同类对比。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
       <a class="link-it top" href="/community"><span class="lt"><b>增长社区</b><span>学员作业、增长数据、互相诊断——真实讨论不删帖。</span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>

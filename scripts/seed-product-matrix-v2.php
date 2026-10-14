@@ -47,7 +47,7 @@ $interopNote = '五个产品独立运行，互通走公开 API，拔掉任何一
 /* ═══════════════ inFlow · 情报增长站（新建） ═════════ */
 upsert_page('inflow', [
     'slug' => 'inflow', 'title' => 'inFlow · 情报增长站', 'status' => 'published',
-    'seo_title' => 'inFlow — 外部数据驱动的增长情报站 | 芭乐派',
+    'seo_title' => 'inFlow — 外部数据驱动的增长情报站 | 林下 Understory',
     'seo_desc' => 'Insight Flow：不需要 CMS/CDP，输入关键词与竞品，替你盯外部世界——趋势、舆情、竞品动态、选题情报。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '替你盯着外部世界，<br>情报变成每天的动作', 'subtitle' => 'INSIGHT FLOW', 'content' => 'inFlow 不需要你部署 CMS 或 CDP：输入关键词、竞品和行业，它替你采集媒体、社媒、搜索趋势与舆情，变成晨报、周报和可执行的选题。', 'button_text' => '进入情报后台', 'button_url' => '/xmp/geo'],
@@ -100,7 +100,7 @@ HTML],
 /* ═════════ MFlow v2 · 轻量内容生产与分发机 ═════════ */
 upsert_page('mflow', [
     'slug' => 'mflow', 'title' => 'MFlow · 内容生产与分发引擎', 'status' => 'published',
-    'seo_title' => 'MFlow — 轻量内容生产、分发与触达引擎 | 芭乐派',
+    'seo_title' => 'MFlow — 轻量内容生产、分发与触达引擎 | 林下 Understory',
     'seo_desc' => '轻量版增长引擎：专门解决内容生产、多平台分发与轻触达。不强依赖 CDP/CMS，兼容现成的网站、公众号与商城。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '内容写完，分发出去，触达回来', 'subtitle' => 'MARKETING FLOW · 轻量版', 'content' => 'MFlow 专门解决内容生产、分发与触达——不强依赖 CDP，不要求换 CMS。你现有的网站、公众号、商城照常用，它补上生成与分发这块最重的活。', 'button_text' => '进入 MFlow 后台', 'button_url' => '/xmp/automation'],
@@ -155,7 +155,7 @@ HTML],
 /* ═════════ Webs Flow v2 · 落地页专精 ═════════ */
 upsert_page('webs-flow', [
     'slug' => 'webs-flow', 'title' => 'Webs Flow · 落地页引擎', 'status' => 'published',
-    'seo_title' => 'Webs Flow — 落地页专精工具 | 芭乐派',
+    'seo_title' => 'Webs Flow — 落地页专精工具 | 林下 Understory',
     'seo_desc' => '专精投放承接页、活动页、广告落地页：35 种展示区块 + AI 组件工厂 + 投放原生能力，从素材到上线以小时计。无需 CMS。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '为投放而生：落地页从素材到上线，以小时计', 'subtitle' => 'WEBSITE & PAGE FLOW · 落地页专精', 'content' => 'Webs Flow 不做全站 CMS——它只做一件事：让你的广告点进来的人，看到一张对得上承诺的承接页。35 种区块、AI 造模块、投放原生能力。', 'button_text' => '看示例页', 'button_url' => '/b/growth-os-tour'],
@@ -206,7 +206,7 @@ HTML],
 /* ═════════ UserLoop v2 · 独立全域营销数据中枢 ═════════ */
 upsert_page('userloop', [
     'slug' => 'userloop', 'title' => 'UserLoop · 全域营销数据中枢', 'status' => 'published',
-    'seo_title' => 'UserLoop — 独立的全域营销数据中枢 | 芭乐派',
+    'seo_title' => 'UserLoop — 独立的全域营销数据中枢 | 林下 Understory',
     'seo_desc' => '独立运行的全域营销工具：一行 JS 埋点 + 外部数据打通（广告/电商/社媒）+ 对接你现有的任何 MA。不依赖任何特定 CMS/CDP。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '全域数据一处清，<br>MA 随便接', 'subtitle' => 'USER LOOP · 独立全域', 'content' => 'UserLoop 是独立的全域营销数据中枢，不依赖任何特定 CMS/CDP：打通广告、电商、社媒等外部数据，对接你现有的任何 MA 平台。', 'button_text' => '开始接入', 'button_url' => '/xmp/cdp'],

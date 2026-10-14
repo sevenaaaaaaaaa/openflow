@@ -46,10 +46,10 @@ HTML;
 
 upsert_page('demo-products', [
     'slug' => 'demo-products', 'title' => '产品矩阵总览（预览）', 'status' => 'published',
-    'seo_title' => '产品矩阵 — 按需组合的增长系统 | 芭乐派',
+    'seo_title' => '产品矩阵 — 按需组合的增长系统 | 林下 Understory',
     'seo_desc' => '七个独立产品按需组合：OpenFlow 全家桶、MFlow 轻量内容、Webs Flow 落地页、UserLoop 全域数据、inFlow 情报、PayFlow 收款、LearnFlow 课程交付。',
     'blocks' => [
-        ['_type' => 'hero', '_key' => $k(), 'title' => '不必一次买全家桶，按需组合成你的增长系统', 'subtitle' => '产品矩阵 · 总览', 'content' => '芭乐派把增长拆成七件独立产品：每件都能单独跑，组合起来又是一整套系统。你要什么，就从哪里开始——互通走 API，没有人被绑死。', 'button_text' => '看七个产品', 'button_url' => '#products'],
+        ['_type' => 'hero', '_key' => $k(), 'title' => '不必一次买全家桶，按需组合成你的增长系统', 'subtitle' => '产品矩阵 · 总览', 'content' => '林下 Understory 把增长拆成七件独立产品：每件都能单独跑，组合起来又是一整套系统。你要什么，就从哪里开始——互通走 API，没有人被绑死。', 'button_text' => '看七个产品', 'button_url' => '#products'],
         ['_type' => 'proof', '_key' => $k(), 'content' => <<<HTML
 <div><b>7</b><span>独立产品</span></div>
 <div><b>35</b><span>展示区块</span></div>
@@ -98,7 +98,7 @@ HTML],
 /* ═══════════════ B · 总能力聚合页 ═══════════════ */
 upsert_page('demo-capabilities', [
     'slug' => 'demo-capabilities', 'title' => '能力全景（预览）', 'status' => 'published',
-    'seo_title' => '能力全景 — 四力合一与支撑体系 | 芭乐派',
+    'seo_title' => '能力全景 — 四力合一与支撑体系 | 林下 Understory',
     'seo_desc' => 'TIPS 四力（触达/洞察/个性化/销售）+ 行动脊柱、增长引擎、开源底座，每项能力对应哪些产品、解决什么问题。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '一套能力框架，四个力加三层支撑', 'subtitle' => '能力 · 全景', 'content' => 'TIPS 四力回答「增长靠什么」：触达、洞察、个性化、销售。行动脊柱、增长引擎与开源底座，保证这些能力真的跑起来、越跑越准。', 'button_text' => '看能力地图', 'button_url' => '#map'],
@@ -147,10 +147,10 @@ HTML],
 /* ═══════════════ C · v2 首页 ═══════════════ */
 upsert_page('demo-home-v2', [
     'slug' => 'demo-home-v2', 'title' => '首页 v2（预览）', 'status' => 'published',
-    'seo_title' => '芭乐派 — 一人公司的增长系统矩阵',
-    'seo_desc' => '一个人做不了所有事。芭乐派把增长拆成七件可组合的产品：整套系统、内容分发、落地页、全域数据、外部情报、收款变现、课程交付。',
+    'seo_title' => '林下 Understory — 一人公司的增长系统矩阵',
+    'seo_desc' => '一个人做不了所有事。林下 Understory 把增长拆成七件可组合的产品：整套系统、内容分发、落地页、全域数据、外部情报、收款变现、课程交付。',
     'blocks' => [
-        ['_type' => 'hero', '_key' => $k(), 'title' => '一个人做不了所有事，但可以让系统替你跑', 'subtitle' => '芭乐派 · 增长系统矩阵', 'content' => '我们不卖一个万能工具，而是一套按需组合的增长系统：从整套操作系统到单点能力，七件产品，各自独立，API 互通。你专注判断，其余交给系统。', 'button_text' => '看产品矩阵', 'button_url' => '/demo/products'],
+        ['_type' => 'hero', '_key' => $k(), 'title' => '一个人做不了所有事，但可以让系统替你跑', 'subtitle' => '林下 Understory · 增长系统矩阵', 'content' => '我们不卖一个万能工具，而是一套按需组合的增长系统：从整套操作系统到单点能力，七件产品，各自独立，API 互通。你专注判断，其余交给系统。', 'button_text' => '看产品矩阵', 'button_url' => '/demo/products'],
         ['_type' => 'proof', '_key' => $k(), 'content' => <<<HTML
 <div><b>7</b><span>独立产品</span></div>
 <div><b>4</b><span>核心能力力</span></div>
@@ -206,11 +206,11 @@ HTML],
 <details><summary>要开源自托管</summary><div class="hacc-body"><p>核心能力开源，数据留在自己服务器，生态可扩展。</p><a href="/docs">看文档 →</a></div></details>
 HTML],
         ['_type' => 'faq', '_key' => $k(), 'title' => '常见问题', 'subtitle' => 'FAQ', 'content' => <<<HTML
-<details><summary>芭乐派卖的是软件还是方法？</summary><p>两者都卖：软件是增长系统（产品矩阵），方法是学院里的课程与文档。软件开源可自托管，方法论随时可学。</p></details>
+<details><summary>林下 Understory 卖的是软件还是方法？</summary><p>两者都卖：软件是增长系统（产品矩阵），方法是学院里的课程与文档。软件开源可自托管，方法论随时可学。</p></details>
 <details><summary>一定要买全家桶吗？</summary><p>不必。七件产品独立可用，按需组合。从最缺的那一环开始就好。</p></details>
 <details><summary>数据会不会被绑死？</summary><p>不会。互通走公开 API，数据主权在你；想换平台，档案可迁移。</p></details>
 HTML],
-        ['_type' => 'cta', '_key' => $k(), 'title' => '让系统替你跑，你只做判断', 'subtitle' => '芭乐派', 'content' => '看产品矩阵，从最缺的那一环开始；或者直接上整套 OpenFlow。', 'button_text' => '看产品矩阵', 'button_url' => '/demo/products'],
+        ['_type' => 'cta', '_key' => $k(), 'title' => '让系统替你跑，你只做判断', 'subtitle' => '林下 Understory', 'content' => '看产品矩阵，从最缺的那一环开始；或者直接上整套 OpenFlow。', 'button_text' => '看产品矩阵', 'button_url' => '/demo/products'],
     ],
 ]);
 

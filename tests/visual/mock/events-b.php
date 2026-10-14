@@ -8,7 +8,7 @@ of_shell('events'); ?>
 <main id="main">
   <section id="top" class="reveal in">
     <div class="hero-center" style="padding-bottom:0">
-      <span class="kicker">芭乐派 · 活动</span>
+      <span class="kicker">林下 Understory · 活动</span>
       <h1>和<i class="si">同类人</i>碰个面</h1>
       <p class="lead">线上直播 / 线下聚会 · 报名即获增长打法</p>
     </div>

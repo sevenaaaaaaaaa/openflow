@@ -129,7 +129,7 @@ upsert_page('litmus', [
     'seo_title' => '鹿蕊 Litmus — AI 时代的知识操作系统 | 林下 Understory',
     'seo_desc' => '不是又一个笔记软件：知识库是磁盘上一堆普通 Markdown，人用画布和阅读器看它，agent 用同一套本地 API 读写它。五模式一体、MCP 双向、核心永久开源（AGPL-3.0）、无锁定。',
     'blocks' => [
-        ['_type' => 'hero', '_key' => $k(), 'title' => '人随手记，AI 帮你建，<br>一切是磁盘上的普通文件', 'subtitle' => '鹿蕊 LITMUS · 林下 Understory 出品', 'content' => '笔记软件要你先学方法论、再花几百小时搭体系；Agent 框架把知识锁进向量库。鹿蕊反过来：知识库就是一堆普通 Markdown——人用画布与阅读器看它，agent 用同一套本地 API 读写它，双方共享一个真相，谁也不锁定谁。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/thirdc'],
+        ['_type' => 'hero', '_key' => $k(), 'title' => '人随手记，AI 帮你建，<br>一切是磁盘上的普通文件', 'subtitle' => '鹿蕊 LITMUS · 林下 Understory 出品', 'content' => '笔记软件要你先学方法论、再花几百小时搭体系；Agent 框架把知识锁进向量库。鹿蕊反过来：知识库就是一堆普通 Markdown——人用画布与阅读器看它，agent 用同一套本地 API 读写它，双方共享一个真相，谁也不锁定谁。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/litmus'],
         ['_type' => 'proof', '_key' => $k(), 'content' => <<<HTML
 <div><b>0 门槛</b><span>打开就能用 · 一句话建库</span></div>
 <div><b>本地</b><span>磁盘上的普通 Markdown</span></div>
@@ -186,7 +186,7 @@ HTML],
 <details><summary>怎么装？</summary><p>Releases 下载桌面客户端（macOS dmg / Windows msi / Linux deb · AppImage）；也可 CLI + Web：thirdc serve 守护进程 + HTTP API，五模式 UI 是它的桌面。</p></details>
 HTML],
         understory_matrix_block('litmus', $k),
-        ['_type' => 'cta', '_key' => $k(), 'title' => '让知识自己长成样子', 'subtitle' => '鹿蕊 LITMUS · 林下 Understory 出品', 'content' => '鹿蕊是共生地衣——人类最早的「真相指示剂」（石蕊试纸）提取自它。人与 AI 共生，显色见真。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/thirdc'],
+        ['_type' => 'cta', '_key' => $k(), 'title' => '让知识自己长成样子', 'subtitle' => '鹿蕊 LITMUS · 林下 Understory 出品', 'content' => '鹿蕊是共生地衣——人类最早的「真相指示剂」（石蕊试纸）提取自它。人与 AI 共生，显色见真。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/litmus'],
     ],
 ]);
 
@@ -196,7 +196,7 @@ upsert_page('liana', [
     'seo_title' => '松萝 Liana — 隐私优先的跨平台输入法 | 林下 Understory',
     'seo_desc' => '引擎、词典、学习全部本机运行，云端一个字节都拿不到。全拼 20 万词条 + Viterbi 整句、双拼×3、中英混输，纠错即教学、喂食式学习，局域网 P2P 端到端加密同步。',
     'blocks' => [
-        ['_type' => 'hero', '_key' => $k(), 'title' => '你的每一个按键，<br>都只留在你的设备上', 'subtitle' => '松萝 LIANA · 林下 Understory 出品', 'content' => '市面上绝大多数输入法把按键、词频、习惯送上云端换「智能」；松萝把方向反过来——所有智能都在本地产生，云端一个字节都拿不到。Rust 内核 13 个纯逻辑 crate，214 项单元测试全绿，安装包断网可用。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/InputFlow'],
+        ['_type' => 'hero', '_key' => $k(), 'title' => '你的每一个按键，<br>都只留在你的设备上', 'subtitle' => '松萝 LIANA · 林下 Understory 出品', 'content' => '市面上绝大多数输入法把按键、词频、习惯送上云端换「智能」；松萝把方向反过来——所有智能都在本地产生，云端一个字节都拿不到。Rust 内核 13 个纯逻辑 crate，214 项单元测试全绿，安装包断网可用。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/liana'],
         ['_type' => 'proof', '_key' => $k(), 'content' => <<<HTML
 <div><b>零遥测</b><span>没有「匿名上报」· 联网纠错</span></div>
 <div><b>20 万</b><span>词条 + Viterbi 整句转换</span></div>
@@ -254,7 +254,7 @@ HTML],
 <details><summary>怎么装？</summary><p>macOS 13+：双击松萝安装器 → 一键安装到 ~/Library/Input Methods → 键盘设置添加「松萝」即可；开发者可从源码构建（cargo test 214 项全绿是合并底线）。</p></details>
 HTML],
         understory_matrix_block('liana', $k),
-        ['_type' => 'cta', '_key' => $k(), 'title' => '打字这件事，不需要交给云', 'subtitle' => '松萝 LIANA · 林下 Understory 出品', 'content' => '松萝，附松而生、随枝而长的地衣——不打扰你，但一直在随你进化。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/InputFlow'],
+        ['_type' => 'cta', '_key' => $k(), 'title' => '打字这件事，不需要交给云', 'subtitle' => '松萝 LIANA · 林下 Understory 出品', 'content' => '松萝，附松而生、随枝而长的地衣——不打扰你，但一直在随你进化。', 'button_text' => '在 GitHub 上开始', 'button_url' => 'https://github.com/sevenaaaaaaaaa/liana'],
     ],
 ]);
 
@@ -404,7 +404,6 @@ $A1_SUBS = [
     '七件产品，按需组合' => '三层产品矩阵，按需组合',
     '七个独立产品' => '林下产品矩阵',
     'Webs Flow' => 'WebsFlow',
-    '芭乐派' => '林下 Understory',
 ];
 foreach (builder_pages_all() as $p) {
     $slug = $p['slug'] ?? '';

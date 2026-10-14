@@ -1,6 +1,6 @@
 <?php
 /**
- * 芭乐派产品矩阵 —— 三个新产品页
+ * 林下 Understory 产品矩阵 —— 三个新产品页
  *   MFlow（Marketing Flow）营销流程引擎
  *   Webs Flow（Website & Page Flow）建站与页面流
  *   UserLoop 用户行为循环
@@ -28,14 +28,14 @@ function matrix_block(string $self, callable $k): array {
         if ($it[0] === $self) continue;
         $html .= "<div><span class=\"tc-n\">{$it[5]}</span><h3>{$it[1]}</h3><p>{$it[2]} · {$it[3]}</p><a href=\"{$it[4]}\">了解 {$it[1]} →</a></div>";
     }
-    return ['_type' => 'tool-grid', '_key' => $k(), 'title' => '芭乐派产品矩阵：它们这样衔接', 'subtitle' => 'MATRIX', 'content' => $html];
+    return ['_type' => 'tool-grid', '_key' => $k(), 'title' => '林下 Understory 产品矩阵：它们这样衔接', 'subtitle' => 'MATRIX', 'content' => $html];
 }
 
 /* ─────────────── MFlow · 营销流程引擎 ─────────────── */
 if (!isset($have['mflow'])) {
     $mflow = [
         'slug' => 'mflow', 'title' => 'MFlow · 营销流程引擎', 'status' => 'published',
-        'seo_title' => 'MFlow — 营销自动化流程引擎 | 芭乐派',
+        'seo_title' => 'MFlow — 营销自动化流程引擎 | 林下 Understory',
         'seo_desc' => 'Marketing Flow：把邮件、短信、公众号、站内通知接进同一画布，工作流自动跑，转化不再靠手动催。',
         'blocks' => [
             ['_type' => 'hero', '_key' => $k(), 'title' => '营销不再是一张张工单，<br>而是一条自动跑的<i class="si">流程</i>', 'subtitle' => 'MARKETING FLOW', 'content' => 'MFlow 把渠道、内容、优惠、测试接进同一条营销流：画布上编排，工作流执行，效果回流到数据。你定策略，它管执行。', 'button_text' => '进入 MFlow 后台', 'button_url' => '/xmp/automation'],
@@ -79,7 +79,7 @@ HTML],
 HTML],
             ['_type' => 'faq', '_key' => $k(), 'title' => '常见问题', 'subtitle' => 'FAQ', 'content' => <<<HTML
 <details><summary>MFlow 和 OpenFlow 是什么关系？</summary><p>MFlow 是 OpenFlow 平台里的营销能力域产品化：营销自动化、画布、触达渠道、A/B 测试打包成一个聚焦「营销流程」的产品，与 OpenFlow 共用同一套数据和后台。</p></details>
-<details><summary>必须先装 OpenFlow 吗？</summary><p>是的。MFlow 是芭乐派矩阵的一员，依托 OpenFlow 的数据底座（UserLoop）与内容底座（Webs Flow）运行。</p></details>
+<details><summary>必须先装 OpenFlow 吗？</summary><p>是的。MFlow 是林下 Understory 矩阵的一员，依托 OpenFlow 的数据底座（UserLoop）与内容底座（Webs Flow）运行。</p></details>
 <details><summary>支持哪些触达渠道？</summary><p>邮件（SMTP/SES/Resend）、微信公众号模板消息与群发、短信、站内信、Webhook。微信生态与企业微信在路线图上。</p></details>
 HTML],
             ['_type' => 'cta', '_key' => $k(), 'title' => '把营销交给流程，把判断留给自己', 'subtitle' => 'MFlow', 'content' => '后台打开自动化模块，选一条预制工作流，今天就能跑起来。', 'button_text' => '开始编排', 'button_url' => '/xmp/automation'],
@@ -94,7 +94,7 @@ HTML],
 if (!isset($have['webs-flow'])) {
     $webs = [
         'slug' => 'webs-flow', 'title' => 'Webs Flow · 建站与页面流', 'status' => 'published',
-        'seo_title' => 'Webs Flow — 建站与页面流引擎 | 芭乐派',
+        'seo_title' => 'Webs Flow — 建站与页面流引擎 | 林下 Understory',
         'seo_desc' => 'Website & Page Flow：35 种展示区块 + AI 组件工厂 + 无头 CMS。搭页面像搭积木，数据在后台，展示随你换。',
         'blocks' => [
             ['_type' => 'hero', '_key' => $k(), 'title' => '搭页面像搭积木，<br>数据与展示<i class="si">彻底分开</i>', 'subtitle' => 'WEBSITE & PAGE FLOW', 'content' => 'Webs Flow 把建站变成流程：35 种展示区块拼页面，AI 组件工厂随时造新模块，内容后台统一管理——前端想换成 React/Vue？API 直接给数据。', 'button_text' => '试试区块系统', 'button_url' => '/b/growth-os-tour'],
@@ -156,7 +156,7 @@ HTML],
 if (!isset($have['userloop'])) {
     $ul = [
         'slug' => 'userloop', 'title' => 'UserLoop · 用户行为循环', 'status' => 'published',
-        'seo_title' => 'UserLoop — 用户行为循环引擎 | 芭乐派',
+        'seo_title' => 'UserLoop — 用户行为循环引擎 | 林下 Understory',
         'seo_desc' => '埋点、身份合并、画像、分群、旅程、复购——把散落的用户行为接成一个可运营的循环。',
         'blocks' => [
             ['_type' => 'hero', '_key' => $k(), 'title' => '用户的每一步，<br>都该变成<i class="si">下一步的理由</i>', 'subtitle' => 'USER LOOP', 'content' => 'UserLoop 把行为埋点、身份合并、画像分群、旅程分析与复购循环装进一个引擎：数据自己会说话，行为自己会变钱。', 'button_text' => '进入 CDP 后台', 'button_url' => '/xmp/cdp'],

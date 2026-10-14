@@ -44,7 +44,7 @@ function matrix_block(string $self, callable $k): array {
 /* ═════════ PayFlow · 商业变现引擎 ═════════ */
 upsert_page('payflow', [
     'slug' => 'payflow', 'title' => 'PayFlow · 商业变现引擎', 'status' => 'published',
-    'seo_title' => 'PayFlow — 一行嵌入的商业变现引擎 | 芭乐派',
+    'seo_title' => 'PayFlow — 一行嵌入的商业变现引擎 | 林下 Understory',
     'seo_desc' => '收款 + 订阅 + 推荐裂变 + 佣金结算。买按钮嵌进任何落地页、内容页或第三方网站即可收款，零 CMS/CDP 依赖。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '一行嵌入，开始收钱', 'subtitle' => 'PAY FLOW', 'content' => 'PayFlow 只做一件事并做到极致：让你的数字产品、课程、订阅能收钱。买按钮嵌进任何页面——落地页、内容站、现成的商城——三分钟上线。', 'button_text' => '看嵌入示例', 'button_url' => '/payflow#embed'],
@@ -105,7 +105,7 @@ HTML],
 /* ═════════ LearnFlow · 课程与训练营交付 ═════════ */
 upsert_page('learnflow', [
     'slug' => 'learnflow', 'title' => 'LearnFlow · 课程与训练营交付', 'status' => 'published',
-    'seo_title' => 'LearnFlow — 课程与训练营交付引擎 | 芭乐派',
+    'seo_title' => 'LearnFlow — 课程与训练营交付引擎 | 林下 Understory',
     'seo_desc' => '上课→进度→测验→证书→复购。讲师、教练、训练营主理人的交付闭环工具，收款接 PayFlow，不强依赖任何 CMS/CDP。',
     'blocks' => [
         ['_type' => 'hero', '_key' => $k(), 'title' => '从开营到结业，一个后台管完', 'subtitle' => 'LEARN FLOW', 'content' => 'LearnFlow 给讲师的交付闭环：课程结构、学员名单、学习进度、章节测验、结业证书。不给你增长系统——只把课讲完、教好、发证这件事做好。', 'button_text' => '看交付流程', 'button_url' => '#flow'],

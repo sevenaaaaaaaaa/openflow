@@ -11,7 +11,6 @@
  *   - 每个片段必须返回所有被请求的语言
  *   - en/ko/ru/fr 译文不得残留汉字（品牌名统一拉丁写法）
  *   - 原文里的拉丁词（产品名/缩写）必须出现在译文里（防 AI 丢信息）
- *   - 译文里不得出现旧品牌「芭乐派」
  * 额度熔断沿用 AiBudget（用尽即停，不烧钱）。
  */
 if (PHP_SAPI !== 'cli') exit(1);
@@ -70,7 +69,6 @@ function check_one(string $src, string $loc, string $tr, array $NO_CJK): ?string
     $tr = trim($tr);
     if ($tr === '') return '空';
     if (in_array($loc, $NO_CJK, true) && i18n_has_cjk($tr)) return '残留汉字';
-    if (mb_strpos($tr, '芭乐派') !== false) return '旧品牌';
     // 原文里的拉丁词（产品名/缩写）必须保留；纯数字不强制（可能被本地化格式化）
     if (preg_match_all('/[A-Za-z][A-Za-z0-9.\-]{2,}/u', $src, $m)) {
         foreach (array_unique($m[0]) as $tok) {
