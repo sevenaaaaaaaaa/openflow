@@ -250,6 +250,7 @@ function ops_digest_build_html(array $d, string $slot = ''): string {
     }
 
     // ⑤ token 消耗（当日逐小时 + 近 7 天逐日）
+    $tokens = is_array($d['tokens'] ?? null) ? $d['tokens'] : [];
     $cur = function_exists('ai_budget_settings') ? ai_budget_settings()['currency'] : '¥';
     $h .= '<h3 style="font-size:14px;margin:18px 0 8px">五、Token 消耗</h3>';
     $h .= '<p style="font-size:13px;margin:0 0 8px">今日调用 <b>' . $kn($tokens['calls'] ?? 0) . '</b> 次 · '

@@ -9,6 +9,7 @@ import sys
 
 import boto3
 
+
 def _env(*names: str) -> str:
     """按顺序读取环境变量（兼容旧名/新名）；全部缺失时给出明确提示并退出。"""
     for n in names:

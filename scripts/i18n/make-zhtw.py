@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """由 segments.json（简体原文）生成 content.zh-TW.json（繁體，台灣用語，zhconv）。
 译文源改了简体原文后重跑即可；人工校订可直接改 content.zh-TW.json 中对应条目（重跑不会覆盖已存在的条目，加 --force 才全量重生）。"""
-import json, sys, os
+import json
+import os
+import sys
+
 from zhconv import convert
+
 D = os.path.dirname(os.path.abspath(__file__))
 seg = json.load(open(f'{D}/segments.json', encoding='utf8'))
 out_path = f'{D}/content.zh-TW.json'
