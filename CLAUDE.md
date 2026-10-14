@@ -80,6 +80,18 @@ python3 scripts/deploy.py --rollback <时间戳>
 - 无 CI 自动部署：GitHub Actions `ci.yml` 只在 push/PR 到 `main` 时跑 lint + PHPUnit + 契约测试；部署均为手动。
 - `vercel.json` / Dockerfile 存在，但 Vercel 仅适合演示（数据不持久）。
 
+## 开发工具 vs 使用工具（硬性规则）
+
+OpenFlow 既是在开发的产品，也是每天在用的工具。两类产物必须分开：
+
+| 类别 | 例子 | 放哪 | GitHub | 服务器 |
+|---|---|---|---|---|
+| 开发工具（产品代码） | `admin/`、`api/`、`lib/`、`includes/`、`scripts/` 等 | 原目录 | ✅ | ✅（Web 根 `/www/wwwroot/nownexts_com`） |
+| 使用工具的产物 | 运营/SEO 批处理脚本、批次文件、一次性修复脚本、导出数据 | **`ops/`** | ❌ | ✅ 仅 `/www/ops/openflow/`（Web 根之外，只增不删） |
+
+- `/ops/` 已 gitignore；`deploy/sync.sh` 单独用 `rsync --update` 把它送到 `/www/ops/openflow/`（不走 deploy.py 白名单，绝不进 Web 根，`--dry-run` 只预览）。
+- 拿不准时按第二类处理（放 `ops/`，不进 GitHub），再问用户。
+
 ## 注意事项
 
 - 环境变量（仅名称）：`OF_ENV`、`SITE_URL`、`OF_DATA_DIR`、`OF_UPLOAD_DIR`、`OF_ROOT`、`OF_MULTI_TENANT`、`OF_TENANT_ROOT`、`OF_TENANT_UPLOAD_ROOT`、`OF_OFFSITE_KEY`、`OF_OFFSITE_SECRET`、`GITHUB_TOKEN`、`API_KEY`；部署脚本用 `OF_DEPLOY_HOST`、`OF_DEPLOY_PORT`、`OF_DEPLOY_ROOT`、`CF_TOKEN`、`OF_CF_ZONE`、`R2_KEY`、`R2_SECRET`、`R2_ENDPOINT`、`R2_BUCKET`。示例见 `.env.example`。

@@ -9,6 +9,7 @@
 #   bash deploy/sync.sh --dry-run [文件...]                  # 只看计划：不提交、不推送、deploy.py --dry-run（不上传/不清缓存）
 #   bash deploy/sync.sh --server-only [文件或目录...]        # 跳过 git，只同步服务器（不给文件则用相对 origin/main 的改动）
 #   bash deploy/sync.sh --ci ...                             # 先跑 scripts/ci.sh --fast 质量门禁
+#   ops/（gitignored）若非空，另行 rsync --update 到服务器 /www/ops/openflow/（Web 根之外，不删远端）
 #   透传给 deploy.py：--with-data <data/文件>  --no-r2  --no-purge  --no-cache  --from-git <REF>
 #
 # 旧命令照常可用：python3 scripts/deploy.py <文件...> / --rollback <时间戳>
@@ -101,7 +102,11 @@ while IFS= read -r f; do [ -n "$f" ] && FILES+=("$f"); done < <({ explicit_files
 if [ "$SERVER_ONLY" = 0 ]; then
   [ -x "$GITLEAKS" ] || die "找不到 gitleaks：$GITLEAKS"
   cur="$(git rev-parse --abbrev-ref HEAD)"
-  [ "$cur" = "$BRANCH" ] || die "当前分支是 ${cur}，GitHub 轨只推 ${BRANCH}（或用 --server-only）"
+  if [ "$cur" != "$BRANCH" ]; then
+    # Deploys only from main; --dry-run is allowed anywhere (warn only)
+    [ "$DRY" = 1 ] || die "当前分支 ${cur}，部署只允许从 ${BRANCH} 进行；功能分支请先合并"
+    printf '\033[1;33m⚠ 当前分支 %s，非 %s（dry-run 仅预览）\033[0m\n' "${cur}" "${BRANCH}"
+  fi
 
   # ─── 2. gitleaks ───
   step "2/4 gitleaks 扫描未提交改动"
@@ -135,6 +140,22 @@ if [ "$SERVER_ONLY" = 0 ]; then
 else
   step "跳过 GitHub 轨（--server-only）"
 fi
+
+# ─── ops/ 工作区：使用工具的产物，只进服务器（Web 根之外），不进 GitHub ───
+# Separate from deploy.py on purpose: its whitelist targets the web root, ops/ must never be web-reachable.
+OPS_HOST="${OF_DEPLOY_HOST:-172.96.253.73}"
+OPS_PORT="${OF_DEPLOY_PORT:-28766}"
+OPS_REMOTE="/www/ops/openflow"
+sync_ops() {
+  [ -d ops ] && [ -n "$(find ops -mindepth 1 ! -name .DS_Store -print -quit)" ] || return 0
+  step "ops/ → ${OPS_REMOTE}/（--update，只增不删）"
+  local dry=(); [ "$DRY" = 1 ] && dry=(-n -v)
+  rsync -az --update ${dry[@]+"${dry[@]}"} --exclude=.DS_Store \
+    --rsync-path="mkdir -p ${OPS_REMOTE} && rsync" \
+    -e "ssh -p ${OPS_PORT} -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o BatchMode=yes" \
+    ops/ "root@${OPS_HOST}:${OPS_REMOTE}/" || die "ops/ 同步失败：${OPS_REMOTE}/"
+}
+sync_ops
 
 # ─── 4. 服务器同步（deploy.py：备份 → scp → md5 核验 → 清缓存 → R2 → CF purge）───
 step "4/4 服务器同步（scripts/deploy.py）"

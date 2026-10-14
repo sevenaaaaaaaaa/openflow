@@ -117,3 +117,7 @@ data/backups/
 # ── 本地文章草稿 / 线索原始数据：只留本地（双轨同步：GitHub 只放干净代码）──
 /drafts/
 /leads.csv
+
+# Tool-usage workspace (scripts/batches/data made while *using* OpenFlow).
+# Never on GitHub; deploy/sync.sh pushes it to the server at /www/ops/openflow/ (outside the web root).
+/ops/
