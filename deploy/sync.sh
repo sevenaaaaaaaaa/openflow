@@ -99,14 +99,16 @@ fi
 FILES=()
 while IFS= read -r f; do [ -n "$f" ] && FILES+=("$f"); done < <({ explicit_files; auto_files; } | awk '!seen[$0]++')
 
+# Deploys (including --server-only, which also ships code to production) only from main;
+# --dry-run is allowed anywhere (warn only)
+cur="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$cur" != "$BRANCH" ]; then
+  [ "$DRY" = 1 ] || die "当前分支 ${cur}，部署只允许从 ${BRANCH} 进行；功能分支请先合并"
+  printf '\033[1;33m⚠ 当前分支 %s，非 %s（dry-run 仅预览）\033[0m\n' "${cur}" "${BRANCH}"
+fi
+
 if [ "$SERVER_ONLY" = 0 ]; then
   [ -x "$GITLEAKS" ] || die "找不到 gitleaks：$GITLEAKS"
-  cur="$(git rev-parse --abbrev-ref HEAD)"
-  if [ "$cur" != "$BRANCH" ]; then
-    # Deploys only from main; --dry-run is allowed anywhere (warn only)
-    [ "$DRY" = 1 ] || die "当前分支 ${cur}，部署只允许从 ${BRANCH} 进行；功能分支请先合并"
-    printf '\033[1;33m⚠ 当前分支 %s，非 %s（dry-run 仅预览）\033[0m\n' "${cur}" "${BRANCH}"
-  fi
 
   # ─── 2. gitleaks ───
   step "2/4 gitleaks 扫描未提交改动"
