@@ -124,7 +124,7 @@ $homeArticlesJson = json_encode($homeArticles, JSON_UNESCAPED_UNICODE);
       </div>
       <div class="trust"><span class="dot"></span>Seven · 十年增长操盘 · 核心能力永久开源 · 数据在你自己的服务器</div>
       <div class="arena">
-        <div class="arena-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">openflow.pspi.run/growth-loop</div></div>
+        <div class="arena-bar"><span class="light light-r"></span><span class="light light-y"></span><span class="light light-g"></span><div class="url">nownexts.com/growth-loop</div></div>
         <div class="arena-canvas" id="arena-stage">
           <svg class="arc" viewBox="0 0 1100 400" preserveAspectRatio="none" aria-hidden="true">
             <!-- 入口（左缘开放，虚线流入画布） -->

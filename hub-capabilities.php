@@ -7,6 +7,7 @@
  * 文案与 v6 逐字相同。
  */
 require_once __DIR__ . '/admin/config.php';
+require_once __DIR__ . '/lib/PublicMetrics.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
@@ -84,7 +85,7 @@ $CAPS = [
   ['doc','永久开源','核心能力永久开源，Tools 和 Strategy 双向迭代，鱼与渔相结合。',[
     ['MIT 开源','核心能力全部公开，代码即证据'],
     ['插件平台 v2','钩子 / API 路由 / 后台菜单页面 / 前端插槽 / 定时任务'],
-    ['MCP Server','18 个工具，外部 Agent 在权限与审计约束下调用'],
+    ['MCP Server',of_count_mcp_tools() . ' 个工具，外部 Agent 在权限与审计约束下调用'],
     ['Skills 生态','prompt / tool / workflow 三类能力包，可分享可安装'],
     ['连接器','飞书 / 企微 / Notion / Search Console 等开箱即用'],
     ['数据自主','JSON + SQLite 起步零依赖，可平滑演进 MySQL'],
@@ -273,9 +274,9 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景· 林下 Un
       <p class="lead">后台能点的，基本都有对应接口。以下是三类最常用的入口；完整清单见 <a href="/api/v1/docs" style="color:var(--accent)">/api/v1/docs</a>。</p>
     </div>
     <div class="cols n4">
-      <div><span class="ic"><?=$I['bolt']?></span><h3>REST API · 116 端点</h3><p>公开内容、事件上报、分群服务、表单回传；鉴权走 API Key 或会话。</p></div>
+      <div><span class="ic"><?=$I['bolt']?></span><h3>REST API · <?=of_count_api_endpoints()?> 端点</h3><p>公开内容、事件上报、分群服务、表单回传；鉴权走 API Key 或会话。</p></div>
       <div><span class="ic"><?=$I['refresh']?></span><h3>Webhook · 双向</h3><p>事件出站（成交、订阅、表单）与入站触发（外部系统唤起流程）。</p></div>
-      <div><span class="ic"><?=$I['box']?></span><h3>MCP · 23 个工具</h3><p>把能力暴露给 Agent：读写内容、查分群、跑工作流，受权限与审计约束。</p></div>
+      <div><span class="ic"><?=$I['box']?></span><h3>MCP · <?=of_count_mcp_tools()?> 个工具</h3><p>把能力暴露给 Agent：读写内容、查分群、跑工作流，受权限与审计约束。</p></div>
       <div><span class="ic"><?=$I['doc']?></span><h3>插件 · 六类扩展点</h3><p>钩子 / API 路由 / 后台页 / 前端插槽 / 区块 / 定时，写一个目录即可扩展。</p></div>
     </div>
     <div class="code-show" style="max-width:900px">
@@ -374,7 +375,7 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景· 林下 Un
       <span class="kicker">能力在手</span>
       <h2>现在，让增长引擎替你跑起来</h2>
       <p class="lead">TIPS 四力不是宣传页上的名词——它们都能在你今天的业务里主动运行：内容出稿、漏斗归因、分群触达、成交回流，每一步都有后台页面可核验。</p>
-      <ul class="sp-list" style="max-width:820px;margin:14px auto 0;text-align:left"><li><span>42 个模块全部可在后台或代码里找到对应实现，不写「规划中」</span></li><li><span>开放 API 116 个端点 + 23 个 MCP 工具，能力可被 Agent 调用</span></li><li><span>核心开源（MIT）：可自托管、可审计、可迁走</span></li></ul>
+      <ul class="sp-list" style="max-width:820px;margin:14px auto 0;text-align:left"><li><span>42 个模块全部可在后台或代码里找到对应实现，不写「规划中」</span></li><li><span>开放 API <?=of_count_api_endpoints()?> 个端点 + <?=of_count_mcp_tools()?> 个 MCP 工具，能力可被 Agent 调用</span></li><li><span>核心开源（MIT）：可自托管、可审计、可迁走</span></li></ul>
       <div class="cta-row">
         <button class="btn ghost" data-act="start">免费开始</button>
         <a class="btn ghost" href="/courses">报名课程</a>

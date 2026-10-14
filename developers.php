@@ -10,6 +10,7 @@
  *   3) 不写「最强/唯一/提升 X%」这类无法自证的比较级（GTM.md §2）
  */
 require_once __DIR__ . '/admin/config.php';
+require_once __DIR__ . '/lib/PublicMetrics.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 require_once __DIR__ . '/lib/McpTools.php';
 require_once __DIR__ . '/lib/I18n.php';
@@ -65,9 +66,9 @@ foreach ($apiFiles as $f) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?php if (function_exists('seo_head')): seo_head(['title' => '开发者与生态 | 林下 Understory · OpenFlow', 'description' => '开源（MIT）、可自托管：116 个 API 端点 + OpenAPI 规范、23 个 MCP 工具、插件 SDK 与适配规范。数据在你自己的服务器。', 'canonical' => site_config_get('site_url') . '/developers']); endif; ?>
+<?php if (function_exists('seo_head')): seo_head(['title' => '开发者与生态 | 林下 Understory · OpenFlow', 'description' => '开源（MIT）、可自托管：' . of_count_api_endpoints() . ' 个 API 端点 + OpenAPI 规范、' . of_count_mcp_tools() . ' 个 MCP 工具、插件 SDK 与适配规范。数据在你自己的服务器。', 'canonical' => site_config_get('site_url') . '/developers']); endif; ?>
 <title>开发者与生态 | 林下 Understory · OpenFlow</title>
-<meta name="description" content="开源（MIT）、可自托管：116 个 API 端点 + OpenAPI 规范、23 个 MCP 工具、插件 SDK 与适配规范。数据在你自己的服务器。">
+<meta name="description" content="开源（MIT）、可自托管：<?=of_count_api_endpoints()?> 个 API 端点 + OpenAPI 规范、<?=of_count_mcp_tools()?> 个 MCP 工具、插件 SDK 与适配规范。数据在你自己的服务器。">
 <script>try{var t=JSON.parse(localStorage.getItem('openflow-site-v3')||'{}');if(t.theme)document.documentElement.dataset.theme=t.theme;}catch(e){}</script>
 <?php require_once __DIR__ . '/includes/site-head.php'; of_head_assets(); ?>
 <style>
@@ -182,7 +183,7 @@ curl -s "https://nownexts.com/api/public-content.php?type=articles&limit=2"
 # 读：全站搜索
 curl -s "https://nownexts.com/api/search-public.php?q=增长"
 
-# 取 OpenAPI 规范（116 个端点的机器可读清单）
+# 取 OpenAPI 规范（全部端点的机器可读清单）
 curl -s "https://nownexts.com/api/v1/docs.json.php"</code></pre>
         <pre class="dev-pre"><code># 写：需要 API Key（后台「API 密钥」里生成）
 curl -s -X POST "https://nownexts.com/api/article.php" \

@@ -29,7 +29,7 @@
 | 片段/工具文件 | <!--m:admin_fragments-->15<!--/m--> | `_` 开头、`config/login/logout`、以及被 include 的非页面文件 |
 | API 端点 | <!--m:api_endpoints-->120<!--/m--> | `api/` 下全部 `*.php`（含 `api/v1/`） |
 | MCP 工具 | <!--m:mcp_tools-->23<!--/m--> | `lib/McpTools.php` 注册表长度（`mcp-server.php` 与对外页面同源引用） |
-| 核心类库文件 | <!--m:lib_files-->237<!--/m--> | `lib/*.php` |
+| 核心类库文件 | <!--m:lib_files-->238<!--/m--> | `lib/*.php` |
 | PHP 测试 | <!--m:php_tests-->162<!--/m--> | `tests/*_test.php` |
 | 插件 | <!--m:plugins-->9<!--/m--> | `plugins/` 下的目录 |
 | 前台页面 | <!--m:frontend_pages-->78<!--/m--> | 仓库根目录的 `*.php` |
@@ -47,7 +47,7 @@ php tests/metrics_contract_test.php  # 契约测试（同时校验"同一个数�
 ```
 
 **纳管的文档**（在 `scripts/metrics.php` 的 `of_metric_docs()` 里维护）：
-`README.md` · `docs/POSITIONING.md` · `docs/USABILITY-DIAGNOSIS.md` · 本页。
+`README.md` · `docs/POSITIONING.md` · `docs/USABILITY-DIAGNOSIS.md` · `docs/BRAND-VOICE.md` · `docs/GTM.md` · `docs/TECH-STRATEGY.md` · `docs/USAGE-GUIDE.md` · `docs/README.md` · 本页。
 新文档要引用这些数字，加到那个列表里即可。
 
 ---
@@ -67,5 +67,5 @@ php tests/metrics_contract_test.php  # 契约测试（同时校验"同一个数�
 | 数字 | 为什么不纳管 |
 |---|---|
 | 支持语言数 | `i18n_supported()` 是**站点配置**（`languages` 设置项），不同部署不一样，不是代码常量 |
-| 代码行数 | 随时波动、对读者无信息量；需要时看 `docs/ENGINEERING-AUDIT.md` 的体检快照 |
+| 代码行数 | 随时波动、对读者无信息量；需要时用 `cloc` 等工具现场统计 |
 | CI 门禁道数 | 在 `scripts/ci.sh` 里是人读的分节标题，没有结构化来源；改动频率低，暂不纳管 |

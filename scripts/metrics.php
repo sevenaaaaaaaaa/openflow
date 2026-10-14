@@ -19,29 +19,21 @@ declare(strict_types=1);
 
 $ROOT = dirname(__DIR__);
 require_once $ROOT . '/lib/AdminInventory.php';
+require_once $ROOT . '/lib/PublicMetrics.php';   // API / MCP counts shared with public pages
 
 /** 每个指标：值 + 口径说明（说明本身也是产物——数字不写清口径就是下一次漂移的起点） */
 function of_metrics(string $ROOT): array
 {
     $inv = admin_page_inventory($ROOT);
 
-    $mcp = 0;
-    if (is_file($ROOT . '/lib/McpTools.php')) {
-        require_once $ROOT . '/lib/McpTools.php';
-        if (function_exists('mcp_tools')) $mcp = count(mcp_tools());
-    }
-
-    $apiFiles = [];
-    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($ROOT . '/api', FilesystemIterator::SKIP_DOTS));
-    foreach ($it as $f) {
-        if ($f->isFile() && $f->getExtension() === 'php') $apiFiles[] = $f->getPathname();
-    }
+    $mcp = of_count_mcp_tools();
+    $apiCount = of_count_api_endpoints($ROOT);
 
     return [
         'admin_pages'     => [count($inv['pages']),      '后台真实页面（admin/*.php 中调用了 admin_header/footer、且不是 301 别名或片段）'],
         'admin_alias_301' => [count($inv['alias_301']),  '.htaccess 里指向新地址的 301 旧地址'],
         'admin_fragments' => [count($inv['fragments']),  '被 include 的片段与工具文件（不渲染页面）'],
-        'api_endpoints'   => [count($apiFiles),          'api/ 下的 *.php（含 api/v1/）'],
+        'api_endpoints'   => [$apiCount,          'api/ 下的 *.php（含 api/v1/）'],
         'mcp_tools'       => [$mcp,                      'lib/McpTools.php 注册表长度（与 mcp-server.php 同源）'],
         'lib_files'       => [count(glob($ROOT . '/lib/*.php') ?: []), 'lib/ 下的核心类库文件'],
         'php_tests'       => [count(glob($ROOT . '/tests/*_test.php') ?: []), 'tests/*_test.php 测试文件数'],
@@ -55,7 +47,8 @@ function of_metrics(string $ROOT): array
 /** 文档里所有带标记的位置。新文档加进来即可被纳管。 */
 function of_metric_docs(): array
 {
-    return ['README.md', 'docs/POSITIONING.md', 'docs/USABILITY-DIAGNOSIS.md', 'docs/METRICS.md'];
+    return ['README.md', 'docs/POSITIONING.md', 'docs/USABILITY-DIAGNOSIS.md', 'docs/METRICS.md',
+            'docs/BRAND-VOICE.md', 'docs/GTM.md', 'docs/TECH-STRATEGY.md', 'docs/USAGE-GUIDE.md', 'docs/README.md'];
 }
 
 /**

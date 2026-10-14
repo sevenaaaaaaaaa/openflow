@@ -1,6 +1,6 @@
 # API 端点与 MCP 能力清单
 
-> 由 `api/*.php`（116 个）与 `mcp-server.php`（MCP 协议）自动盘点整理。
+> 由 `api/` 下的端点文件与 `mcp-server.php`（MCP 协议）自动盘点整理。
 > 鉴权档位见 `docs/SECURITY-API.md`（`public` / `member` / `admin`，实现于 `lib/ApiPolicy.php`）。
 
 ---
@@ -157,7 +157,7 @@
 **传输**：stdio（视同管理员）· HTTP SSE（`/mcp`，`Authorization: Bearer <key>` 或 `X-Api-Key`）
 **鉴权**：`lib/McpGuard.php` 逐工具鉴权 + 审计留痕
 
-### 23 个工具
+### MCP 工具
 
 | 工具 | 作用 |
 |---|---|

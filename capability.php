@@ -7,6 +7,7 @@
  * 文案与 v6 逐字相同。
  */
 require_once __DIR__ . '/admin/config.php';
+require_once __DIR__ . '/lib/PublicMetrics.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
@@ -84,7 +85,7 @@ $CAPS = [
   ['doc','永久开源','核心能力永久开源，Tools 和 Strategy 双向迭代，鱼与渔相结合。',[
     ['MIT 开源','核心能力全部公开，代码即证据'],
     ['插件平台 v2','钩子 / API 路由 / 后台菜单页面 / 前端插槽 / 定时任务'],
-    ['MCP Server','18 个工具，外部 Agent 在权限与审计约束下调用'],
+    ['MCP Server',of_count_mcp_tools() . ' 个工具，外部 Agent 在权限与审计约束下调用'],
     ['Skills 生态','prompt / tool / workflow 三类能力包，可分享可安装'],
     ['连接器','飞书 / 企微 / Notion / Search Console 等开箱即用'],
     ['数据自主','JSON + SQLite 起步零依赖，可平滑演进 MySQL'],

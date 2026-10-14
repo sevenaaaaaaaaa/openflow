@@ -22,7 +22,7 @@ OpenFlow（开务，林下 Understory 出品）：面向 OPC / DRI 的「增长�
 - `data/` — 运行时数据与配置（服务器为源）；`uploads/` — 上传文件
 - `plugins/`、`bin/`（CLI/种子/旧部署脚本）、`scripts/`（构建、CI、部署、i18n、种子脚本）
 - `deploy/` — nginx/宝塔伪静态、R2 Worker、docker-entrypoint；`.deploy/` — deploy.py 的备份与清单（gitignored）
-- `tests/` — ~180 个契约测试 + PHPUnit；`docs/` — 产品/架构/部署文档（`docs/DEPLOY-CONVENTIONS.md` 必读）
+- `tests/` — ~160 个契约测试 + PHPUnit；`docs/` — 产品/架构/部署文档（`docs/DEPLOY-CONVENTIONS.md` 必读）
 
 ## 常用命令
 

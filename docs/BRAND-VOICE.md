@@ -11,7 +11,7 @@
 1. **说他处境，不说我们功能。**
    ✅「市面上的增长工具都默认你有一支团队」　❌「一体化 All-in-one 平台」
 2. **可验证 > 最高级。**
-   可写：具体数字（116 API / 44 区块 / 128 契约测试）、可翻代码的机制（`SelfEvolve` / `McpGuard`）。
+   可写：具体数字（<!--m:api_endpoints-->120<!--/m--> API / 48 区块 / <!--m:php_tests-->162<!--/m--> 个测试文件）、可翻代码的机制（`SelfEvolve` / `McpGuard`）。
    禁用：「唯一」「首个」「最强」「提升 X%」「自动帮你修」。
 3. **每句都要能补完"点了之后我会……"。**
    ❌「了解更多」是最差 CTA；每个按钮都要预告下一步。
@@ -94,16 +94,16 @@
 
 | 说法 | 依据 | 复核方式 |
 |---|---|---|
-| 223 个后台页面 | `admin/*.php` | `ls admin/*.php \| wc -l` |
-| 116 个 API 端点 | `api/*.php` | `ls api/*.php \| wc -l` |
-| 44 种展示区块 | `block_types()` | PHP 一行 |
-| 23 个 MCP 工具 | `mcp-server.php` | 见 `API-INVENTORY.md` |
-| 128 个契约测试 | `tests/*_test.php` | `ls tests \| wc -l` |
+| <!--m:admin_pages-->195<!--/m--> 个后台页面 | `lib/AdminInventory.php`（不含 301 别名与片段） | `php scripts/metrics.php` |
+| <!--m:api_endpoints-->120<!--/m--> 个 API 端点 | `api/` 下全部 `*.php`（含 `api/v1/`） | `php scripts/metrics.php` |
+| 48 种展示区块 | `block_types()` | PHP 一行（2026-10-14 复核） |
+| <!--m:mcp_tools-->23<!--/m--> 个 MCP 工具 | `lib/McpTools.php` | `php scripts/metrics.php` |
+| <!--m:php_tests-->162<!--/m--> 个测试文件 | `tests/*_test.php` | `php scripts/metrics.php` |
 | 11 种界面语言 | `data/lang/*.json` | `ls` |
 | 42 个能力模块 | `capability.php` 能力索引 | 页面自身 |
 | 502 篇已发布内容 | 线上数据 | `articles/index.json` |
 
-> 引用时**带口径**（例："本仓 116 个 API 端点"），不写"业界最多"。
+> 引用时**带口径**（例："本仓 120 个 API 端点"；数字以 `php scripts/metrics.php` 为准），不写"业界最多"。
 
 ---
 

@@ -52,7 +52,7 @@ curl -s https://nownexts.com/mcp \
 
 ## 二、能力速览
 
-**23 个工具**（完整清单见 `API-INVENTORY.md` 第三节）：
+**全部工具**（数量以 `php scripts/metrics.php` 为准，完整清单见 `API-INVENTORY.md` 第三节）：
 
 | 类别 | 工具 |
 |---|---|

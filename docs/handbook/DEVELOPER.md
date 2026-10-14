@@ -161,7 +161,7 @@ PluginSystem::add_action('admin_sidebar_menu', function($current) {
 
 ## HTTP API 概览
 
-34 个 API 在 `api/` 目录，主要分组：
+API 端点都在 `api/` 目录（完整清单见 `/api/v1/docs`），主要分组：
 - 内容：`articles.php`、`pages.php`、`import-article.php`
 - 用户：`member.php`、`mp-login.php`
 - 商城：`shop.php`、`ambassador.php`
