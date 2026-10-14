@@ -20,7 +20,7 @@ if (preg_match('~^/data(/|$)~', $path)) {
     exit('Forbidden');
 }
 // ── 内部工具与文档不对外：404（与 .htaccess 一致）──
-if (preg_match('~^/(deploy|scripts|docs|bin|tests)(/|$)~', $path)
+if (preg_match('~^/(deploy|scripts|bin|tests)(/|$)~', $path) || preg_match('~^/docs/.~', $path)
     || preg_match('~^/(composer\.(json|lock)|package(-lock)?\.json|[^/]+\.md)$~', $path)) {
     http_response_code(404);
     require $root . '/404.php';

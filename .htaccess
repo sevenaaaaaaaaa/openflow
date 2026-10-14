@@ -9,7 +9,8 @@ CGIPassAuth On
 RewriteRule ^data(/|$) - [F,L]
 
 # ── 内部工具与文档不对外（文件仍在服务器上供 cron/CLI 使用，只是 HTTP 访问返回 404）──
-RewriteRule ^(deploy|scripts|docs|bin|tests)(/|$) - [R=404,L]
+RewriteRule ^(deploy|scripts|bin|tests)(/|$) - [R=404,L]
+RewriteRule ^docs/. - [R=404,L]
 RewriteRule ^(composer\.(json|lock)|package(-lock)?\.json|[^/]+\.md)$ - [R=404,L]
 
 # 首页：优先动态版 index.php（避免浏览器缓存旧 index.html）
