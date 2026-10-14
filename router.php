@@ -19,6 +19,13 @@ if (preg_match('~^/data(/|$)~', $path)) {
     http_response_code(403);
     exit('Forbidden');
 }
+// ── 内部工具与文档不对外：404（与 .htaccess 一致）──
+if (preg_match('~^/(deploy|scripts|docs|bin|tests)(/|$)~', $path)
+    || preg_match('~^/(composer\.(json|lock)|package(-lock)?\.json|[^/]+\.md)$~', $path)) {
+    http_response_code(404);
+    require $root . '/404.php';
+    exit;
+}
 
 // ── 语言前缀 /growth 前缀剥离 ──
 // 剥离后若直接命中真实文件（如 /en/feed.php → /feed.php），必须在这里就地 require：

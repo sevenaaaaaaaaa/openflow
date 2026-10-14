@@ -80,6 +80,18 @@ $hour = (int)date('H');
 $greet = $hour < 6 ? '夜深了' : ($hour < 12 ? '早上好' : ($hour < 18 ? '下午好' : '晚上好'));
 $name = $_SESSION['admin_user'] ?? '';
 
+// 自动化观测：正在跑/排队的任务数 + 今日 token（供首页速览卡片）
+$opsQueueCount = 0; $opsTokensToday = null;
+if (has_perm('automation')) {
+    foreach ((array)json_read(DATA_DIR . '/automation-queue.json') as $q) {
+        if (is_array($q) && strtotime((string)($q['run_at'] ?? '')) > time()) $opsQueueCount++;
+    }
+    if (is_file(__DIR__ . '/../lib/AiBudget.php')) {
+        require_once __DIR__ . '/../lib/AiBudget.php';
+        $opsTokensToday = ai_spend()['tokens'] ?? 0;
+    }
+}
+
 admin_header('工作台');
 ?>
 <style>
@@ -124,6 +136,7 @@ admin_header('工作台');
         <a class="wb-tool" href="crm.php">👥 线索</a>
         <a class="wb-tool" href="health-check.php">🩺 健康检测</a>
         <a class="wb-tool" href="dashboard.php">📊 经营驾驶舱</a>
+        <?php if (has_perm('automation')): ?><a class="wb-tool" href="ops-stats.php">🤖 自动化观测</a><?php endif; ?>
       </div>
     </div>
 
@@ -147,6 +160,13 @@ admin_header('工作台');
       <div class="wb-stat"><span class="ic">🎓</span><div class="l">课程</div><div class="n"><?=$courseCount?></div></div>
       <?php if (has_perm('knowledge')): ?>
       <div class="wb-stat"><span class="ic">🧠</span><div class="l">知识库</div><div class="n"><?=$kbCount?></div></div>
+      <?php endif; ?>
+      <?php if (has_perm('automation')): ?>
+      <a href="ops-stats.php" style="text-decoration:none;color:inherit" title="自动化运行与 Token 统计">
+        <div class="wb-stat"><span class="ic">🤖</span><div class="l">自动化任务</div><div class="n"><?=$opsQueueCount?><span style="font-size:12px;font-weight:400;color:var(--text-3)"> 排队中</span></div>
+          <?php if ($opsTokensToday !== null): ?><div class="l" style="margin-top:2px">今日 token <?=number_format((float)$opsTokensToday)?></div><?php endif; ?>
+        </div>
+      </a>
       <?php endif; ?>
     </div>
 

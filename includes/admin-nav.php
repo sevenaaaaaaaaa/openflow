@@ -258,6 +258,7 @@ function admin_nav_build(bool $includeSystem): array {
             ['label' => '自动化', 'items' => [
                 ['label' => '营销自动化', 'hint' => '旅程 · 画布 · MA同步', 'subs' => [
                     ['id' => 'automation', 'label' => '营销自动化', 'perm' => 'automation'],
+                    ['id' => 'ops-stats', 'label' => '运行与 Token 统计', 'perm' => 'automation', 'hint' => '正在跑的任务 · 每日/每小时 token · 管理员简报'],
                     ['id' => 'canvas', 'label' => '画布流程', 'perm' => 'canvas'],
                     ['id' => 'ma-sync', 'label' => 'MA 融合同步', 'perm' => 'ma-sync'],
                 ]],

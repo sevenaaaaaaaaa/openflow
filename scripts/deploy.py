@@ -49,7 +49,7 @@ ALLOW_PREFIXES = ("admin/", "api/", "lib/", "includes/", "assets/", "plugins/", 
                    "legacy/")   # legacy/：老页面纪念快照（静态 HTML，noindex）
 ALLOW_ROOT_FILES = {".htaccess", "robots.txt", "sitemap.php"}
 # 永不部署
-DENY_SUBSTRINGS = ("node_modules/", "/src/", "src/", ".git/", ".deploy/", "tests/",
+DENY_SUBSTRINGS = ("node_modules/", "/src/", "src/", ".git/", ".deploy/", "tests/", "deploy/sync.sh",
                    ".bak", ".old-", ".tmp", "~", ".DS_Store", ".env")
 ASSET_TRIGGERS = ("assets/",)          # 触发 R2 同步
 VERSION_FILE = "includes/site-nav.php"  # 触发「版本号是否 bump」提醒

@@ -93,6 +93,8 @@ function mail_available(): bool {
 }
 
 /** 统一发送入口：用默认渠道（或指定渠道）发送邮件 */
+// 允许宿主/测试先行定义（如测试桩）：已存在则不覆盖，尊重现有实现
+if (!function_exists('mail_send')) {
 function mail_send(string $to, string $subject, string $body, string $channel = ''): bool {
     $channels = mail_channels();
     $key = $channel ?: ($channels['_default'] ?? 'smtp');
@@ -110,6 +112,7 @@ function mail_send(string $to, string $subject, string $body, string $channel = 
         case 'custom': return mail_custom_send($p, $to, $subject, $body);
     }
     return false;
+}
 }
 
 /* ═══════════════ SMTP（完整实现，无外部依赖） ═══════════════ */

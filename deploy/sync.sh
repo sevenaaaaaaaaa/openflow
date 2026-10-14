@@ -101,7 +101,7 @@ while IFS= read -r f; do [ -n "$f" ] && FILES+=("$f"); done < <({ explicit_files
 if [ "$SERVER_ONLY" = 0 ]; then
   [ -x "$GITLEAKS" ] || die "找不到 gitleaks：$GITLEAKS"
   cur="$(git rev-parse --abbrev-ref HEAD)"
-  [ "$cur" = "$BRANCH" ] || die "当前分支是 $cur，GitHub 轨只推 $BRANCH（或用 --server-only）"
+  [ "$cur" = "$BRANCH" ] || die "当前分支是 ${cur}，GitHub 轨只推 ${BRANCH}（或用 --server-only）"
 
   # ─── 2. gitleaks ───
   step "2/4 gitleaks 扫描未提交改动"
