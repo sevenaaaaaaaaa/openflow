@@ -1,6 +1,6 @@
 <?php
 /**
- * 增长大脑 —— 中枢 NBA 提议器（只读驾驶舱，AUDIT-07 P0-3）
+ * 增长大脑 —— 中枢 NBA 提议器（只读驾驶舱）
  *
  * 读 CDP 画像（含成交反哺信号）+ 成交真相账本，跨模块产出"现在最该动的人 +
  * 下一最佳动作 + 理由"。先只读建议：这里只提议，采纳按钮是去对应模块的快捷入口，
@@ -173,7 +173,7 @@ admin_header('增长大脑');
     <?php endif; ?>
   </div>
 
-  <!-- 渐进自治护栏（BACKLOG T2-4）：分级放权，高风险永远留人 -->
+  <!-- 渐进自治护栏：分级放权，高风险永远留人 -->
   <?php $au = autonomy_settings(); $auUsage = autonomy_usage(); $loop = autonomy_loop_report($progress, $auUsage); ?>
   <div class="card" style="padding:16px;margin:16px 0">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
@@ -286,7 +286,7 @@ admin_header('增长大脑');
   <p style="font-size:12px;color:var(--faint);margin-top:18px">
     "增长大脑"胚胎：规则驱动、可解释。判断→行动的闭环已接上——采纳一条提议即进上方
     采纳箱，并带这个人的上下文去对应模块（报价单自动预填）；本页不代执行客户侧动作，
-    发出由模块自己的确认步把关。下一步给它接上跨模块的共享记忆（AUDIT-07 P1）。
+    发出由模块自己的确认步把关。下一步给它接上跨模块的共享记忆。
   </p>
   </div>
 </div>

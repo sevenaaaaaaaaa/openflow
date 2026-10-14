@@ -1,6 +1,6 @@
 <?php
 /**
- * 大脑体检（docs/ROADMAP.md 阶段一第 4 件）
+ * 大脑体检
  *   php tests/brain_eval_test.php
  *
  * 【和 growth_brain_test.php 的分工】那份测的是"规则算得对不对"（给定输入出什么提议）。

@@ -1,6 +1,6 @@
 <?php
 /**
- * 决策轨道 —— Agent 为什么这么建议，可看可纠可审计（BACKLOG T2-5）
+ * 决策轨道 —— Agent 为什么这么建议，可看可纠可审计
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/DecisionTrace.php';

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * ImageVariants —— 图片自动 WebP + 多尺寸（AUDIT-01 / BACKLOG T1-7）
+ * ImageVariants —— 图片自动 WebP + 多尺寸
  *
  * 【为什么】上传的图原样发出去，手机也在下 1920px 的 JPG——LCP 和 SEO 实打实吃亏。
  * 原上传只在 >300KB 或 png 时转一次 webp，且**只有一个尺寸**，没有 srcset。

@@ -11,7 +11,7 @@ declare(strict_types=1);
  *       以 reminded 键做**幂等**，同一任务同一提醒只发一次。
  *
  * 数据：data/projects/index.json（项目清单）+ data/projects/<id>.json（任务）
- * 规范：docs/ENGINEERING-AUDIT.md §8（内容契约）、docs/DEPLOY-CONVENTIONS.md（数据不入库）
+ * 规范：项目/任务数据属于运行时数据，不入库（见 docs/DEPLOY-CONVENTIONS.md）
  */
 
 /** 任务状态（顺序即看板列顺序） */

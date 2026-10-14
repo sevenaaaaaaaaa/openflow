@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * SegmentEstimate —— 建群人数预估 + 群规模趋势（AUDIT-02 / BACKLOG T2-3）
+ * SegmentEstimate —— 建群人数预估 + 群规模趋势
  *
  * 【为什么】建分群时看不到"这条规则能圈到多少人"，只能存了再看——运营决策要看
  * 的恰恰是这个数。存储修好(T0-1 画像迁 SQLite)之后，实时预估才跑得动。

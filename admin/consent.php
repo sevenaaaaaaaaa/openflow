@@ -1,6 +1,6 @@
 <?php
 /**
- * 同意与数据保留 —— 合规设置（BACKLOG T1-5）
+ * 同意与数据保留 —— 合规设置
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/ConsentSystem.php';

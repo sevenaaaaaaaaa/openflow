@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * InstallmentSystem —— 订金/尾款结构化 + 简单合同电子签（AUDIT-04 / BACKLOG T2-6）
+ * InstallmentSystem —— 订金/尾款结构化 + 简单合同电子签
  *
  * 【为什么】项目制生意的刚需：先收订金、交付后收尾款。此前只能靠"待办"凑，
  * 金额、进度、该催谁都在人脑里。本模块把分期做成结构化数据，并给一份轻量

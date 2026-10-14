@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: /xmp/dynamic-content');
         exit;
     } elseif ($action === 'ai_cta_toggle') {
-        // AI 个性化文案开关（BACKLOG T1-1）
+        // AI 个性化文案开关
         $s = json_read(DATA_DIR . '/settings.json');
         $s['personalize']['ai_cta'] = isset($_POST['ai_cta']);
         json_write(DATA_DIR . '/settings.json', $s);
@@ -129,7 +129,7 @@ admin_header('Dynamic Content 动态内容');
     </div>
     <p class="sub">根据 URL 参数（UTM、自定义参数）动态显示不同内容 · 支持卡片显隐与文字替换</p>
 
-    <!-- AI 个性化文案（BACKLOG T1-1）：把 CTA 文案从规则升级为 AI 按画像现写 -->
+    <!-- AI 个性化文案：把 CTA 文案从规则升级为 AI 按画像现写 -->
     <div class="card" style="padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
         <strong>✨ AI 个性化文案</strong>

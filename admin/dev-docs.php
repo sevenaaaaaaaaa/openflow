@@ -1,6 +1,6 @@
 <?php
 /**
- * 开发者文档门户 —— 钩子 / SDK / 沙箱能力 / 版本约束 一处可查（BACKLOG T2-11）
+ * 开发者文档门户 —— 钩子 / SDK / 沙箱能力 / 版本约束 一处可查
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/ArtifactSandbox.php';

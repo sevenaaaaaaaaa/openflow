@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * SearchIndex —— 站内搜索 FTS5 索引（AUDIT-01 P0 / BACKLOG T0-4）
+ * SearchIndex —— 站内搜索 FTS5 索引
  *
  * 【为什么】原 SearchEngine 每次搜索都线性 mb_stripos 扫全部文章——数据一多就废。
  * 本层用 SQLite FTS5（trigram 分词，支持中文子串）建索引，搜索走索引 + bm25 排序 +

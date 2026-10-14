@@ -63,7 +63,7 @@ function skill_publish(array $s): void {
     ], $s);
     skills_save($list);
 
-    // 贡献三通（BACKLOG T1-16）：已发布的技能自动 进知识库 / 可被 Agent 调用 / 纳入平台分发。
+    // 贡献三通：已发布的技能自动 进知识库 / 可被 Agent 调用 / 纳入平台分发。
     // 旁路：失败不影响发布本身；草稿不进池。
     try {
         if (($s['status'] ?? 'published') === 'published') {
@@ -117,7 +117,7 @@ function skill_execute(string $id, array $params = []): array {
     if (!$s) return ['ok' => false, 'error' => 'Skill 不存在'];
     if (($s['status'] ?? '') !== 'published') return ['ok' => false, 'error' => 'Skill 未发布'];
 
-    // 贡献复利飞轮（BACKLOG T2-10）：每次被调用记一笔复用，功劳算给贡献者。旁路。
+    // 贡献复利飞轮：每次被调用记一笔复用，功劳算给贡献者。旁路。
     try {
         require_once __DIR__ . '/ContributionFlywheel.php';
         flywheel_record('skill:' . $id, (string)($params['_caller'] ?? 'agent'), 'call');

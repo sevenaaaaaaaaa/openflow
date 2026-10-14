@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * ContentI18n —— 内容多语言（AUDIT-01 P0 / BACKLOG T0-3）
+ * ContentI18n —— 内容多语言
  *
  * 【为什么】站点已有 I18n（界面语言包 + /en//zh-CN/ 前缀 locale 检测），但**内容**
  * 仍是单语：一篇文章只有一份 title/content。对宣称出海/GEO 的定位是硬伤。

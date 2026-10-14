@@ -1,6 +1,6 @@
 <?php
 /**
- * 分成与结算政策 —— 平台经济学的唯一设置处（BACKLOG T0-5）
+ * 分成与结算政策 —— 平台经济学的唯一设置处
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/CommissionPolicy.php';

@@ -5,7 +5,7 @@
 > 写成「本产品的某个模块」。
 >
 > **品牌体系：林下 Understory**（2026-10-09 拍板）——各产品命名取自林下生态
-> （鹿蕊 / 松萝 / 林可兔 / 零真），官方名与一句话定位见 `BRAND-ROLLOUT-PLAN.md` §一命名基线表。
+> （鹿蕊 / 松萝 / 林可兔 / 零真），官方名与一句话定位见下文各层说明。
 
 ---
 
@@ -68,7 +68,7 @@
   └─ WebsFlow ──────── 落地页工场(JS) — 投放承接页/千人千面/H5,已有线上版
 第 3 层 · Studio 套件（本地工具 · 引流 · 未来打通所有 Flow 产品的工作台）
   ├─ 鹿蕊 Litmus ────── AI Native 知识 OS(Rust 单二进制,代号 thirdc) — 文件即真相/画布/agent
-  ├─ 松萝 Liana ─────── 隐私优先输入法(JS,代号 InputFlow) — 属 Studio,不属 Flow
+  ├─ 松萝 Liana ─────── 隐私优先输入法(Rust,代号 InputFlow) — 属 Studio,不属 Flow
   ├─ ConFlow ────────── 视频⇄HTML 双向内容引擎(Python) — YouTube→文章/PPT,文章→视频
   ├─ 林可兔 LinkTo ──── AI 原生邮件工作台 — 分类降噪/摘要起草/Agent 记忆,数据全本地
   └─ 零真 ZeroZen ──── 跨浏览器广告净化扩展(JS) — 规则引擎+AI 识别+下载工具箱,独立引流品

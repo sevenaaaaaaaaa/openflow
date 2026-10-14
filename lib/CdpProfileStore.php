@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * CdpProfileStore —— CDP 画像的 SQLite 存储层（AUDIT-02 P0 / BACKLOG T0-1）
+ * CdpProfileStore —— CDP 画像的 SQLite 存储层
  *
  * 【为什么】画像原先存 data/cdp/profiles.json，一个大字典整存整取：每来一个事件，
  * updateProfile 都要「读全量 → 改一条 → 写全量」，写放大随用户数平方级恶化，

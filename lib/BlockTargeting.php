@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * BlockTargeting —— 落地页/建站区块级人群定向（AUDIT-01 / BACKLOG T1-8）
+ * BlockTargeting —— 落地页/建站区块级人群定向
  *
  * 【为什么】PromoSystem 已有一套成熟的人群定向（登录态/新老访客/CDP 分群/UTM），
  * 但只能用在"通知条/弹窗"这类投放位上；建站页面的区块还是所有人看到同一份。

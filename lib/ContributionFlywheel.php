@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * ContributionFlywheel —— 贡献即复利（AUDIT-06 创新四 / BACKLOG T2-10）
+ * ContributionFlywheel —— 贡献即复利
  *
  * 【为什么】在位生态是"货架越长，单个创作者越淹没"（负外部性）；
  * OIA 生态该是"参与者越多，公共能力池越厚，每个人的 Agent 越强"（正外部性）。

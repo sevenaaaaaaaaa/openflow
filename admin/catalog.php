@@ -1,6 +1,6 @@
 <?php
 /**
- * 统一商品目录 —— 一处看全平台在卖什么（BACKLOG T1-13）
+ * 统一商品目录 —— 一处看全平台在卖什么
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/UnifiedCatalog.php';

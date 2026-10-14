@@ -35,7 +35,7 @@ foreach ($blocks as $b) if (!empty($b['audience'])) { $hasAudience = true; break
 if (!$hasAudience && empty($_SESSION['admin_user']) && class_exists('PageCache')) {
     PageCache::begin('b:' . $slug . ':' . $__cur, 300);   // key 带语言，避免多语言串缓存   // 命中则直接输出并 exit
 }
-// 区块级人群定向（BACKLOG T1-8）：按访客画像过滤区块；无定向的区块照常显示。
+// 区块级人群定向：按访客画像过滤区块；无定向的区块照常显示。
 try {
     require_once __DIR__ . '/lib/BlockTargeting.php';
     $blocks = blocktarget_filter($blocks);

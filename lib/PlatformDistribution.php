@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * PlatformDistribution —— 平台级 AI 分发（AUDIT-05 创新三 / BACKLOG T2-7）
+ * PlatformDistribution —— 平台级 AI 分发
  *
  * 【为什么】有赞的营销中心是"给商户一堆工具自己配"，App Store 是"编辑人肉推荐"——
  * 都不是"平台的 AI 逐人决策把每个商品分发出去"。我们的 CDP+MA 本就在做逐人决策，

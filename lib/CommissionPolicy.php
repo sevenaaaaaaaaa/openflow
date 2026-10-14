@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * CommissionPolicy —— 统一分成/结算政策层（AUDIT-05 / BACKLOG T0-5）
+ * CommissionPolicy —— 统一分成/结算政策层
  *
  * 【为什么】平台抽成散在三套系统里各写各的、还不一致：
  *   平台费 0.1 在 Commerce×2 / Shop×1 硬编码；分销佣金 Mall/Shop 20% vs Commerce 30%；

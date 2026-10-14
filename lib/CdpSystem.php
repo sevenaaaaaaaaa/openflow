@@ -33,7 +33,7 @@ class CdpSystem {
         }
         if (class_exists('EventDictionary') && !EventDictionary::isEnabled($event)) return false;
 
-        // 同意门（BACKLOG T1-5）：未同意则不采集、不建画像。默认 mode=off 行为不变。
+        // 同意门：未同意则不采集、不建画像。默认 mode=off 行为不变。
         try {
             require_once __DIR__ . '/ConsentSystem.php';
             if (!consent_granted()) return false;
@@ -175,7 +175,7 @@ class CdpSystem {
      * 【为什么长这样】这里是全系统最热的一条路径（每个访客的每次行为都走一遍），
      * 所以它只能做一件事：**往表里加行**。
      * 旧实现是「先把最近一万条读进内存 → 追加一条 → 再把末尾 200 条重写一遍」，
-     * 实测单条 134 ms / 26 MB，其中 99.4% 是无用功（见 docs/ROADMAP.md、
+     * 实测单条 134 ms / 26 MB，其中 99.4% 是无用功（见
      * tests/events_writepath_bench.php）。换存储治不了这个，只能换写法。
      *
      * SQLite 不可用时才回退到 JSON——回退路径不得不整批读写，但那是异常分支。
@@ -777,7 +777,7 @@ class CdpSystem {
                     if (function_exists('flow_handle')) flow_handle('segment_enter', ['profile_id'=>$profile['visitor_id'] ?? '', 'segment_id'=>$segId, 'props'=>['segment_name'=>$seg['name'] ?? $segId]]);
                 } catch (Throwable $e) {}
                 if (class_exists('PluginSystem')) PluginSystem::do_action('cdp_segment_enter', $segId, $profile, $seg);
-                // 人群激活（BACKLOG T0-6）：进群实时推给该人群的 realtime 目的地。旁路。
+                // 人群激活：进群实时推给该人群的 realtime 目的地。旁路。
                 try { require_once __DIR__ . '/DestinationSystem.php'; dest_on_segment_enter($segId, $profile); } catch (Throwable $e) {}
             } elseif (!$in && $wasIn) {
                 unset($memberships[$segId]);

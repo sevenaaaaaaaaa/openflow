@@ -1,6 +1,6 @@
 <?php
 /**
- * 圈选埋点 —— 点一下页面元素就完成埋点（BACKLOG T1-4）
+ * 圈选埋点 —— 点一下页面元素就完成埋点
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/ClickTracker.php';

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * GrowthMemory —— 大脑的共享记忆层（AUDIT-07 P1-6 / BACKLOG T1-17）
+ * GrowthMemory —— 大脑的共享记忆层
  *
  * 【为什么】大脑现在每次判断都从零开始：它知道"这个人此刻的画像"，却不记得
  * "上次对他做过什么、结果如何、他说过什么"。这些事实散在各模块各自的 JSON 里

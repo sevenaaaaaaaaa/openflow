@@ -82,7 +82,7 @@ if (!defined('OF_DATA_DIR')) {
     $dataDir = getenv('OF_DATA_DIR') ?: __DIR__ . '/../data';
     $uploadDir = getenv('OF_UPLOAD_DIR') ?: __DIR__ . '/../uploads';
 
-    // ─── 多租户地基（docs/ROADMAP.md 阶段二）───────────────────────
+    // ─── 多租户地基───────────────────────
     //
     // 【为什么这一行值钱】全仓有 861 处在用 DATA_DIR，但它们全都读这一个常量，
     // 而常量只在这里定义一次。所以"一个客户一个独立数据目录"这件通常要翻遍
@@ -2438,9 +2438,9 @@ function log_activity(string $action, string $target_type, string $target_id, st
     json_write($logFile, $log);
 }
 
-// ─── API 权限矩阵：统一入口执行（docs/ROADMAP.md 阶段三）───────────────
+// ─── API 权限矩阵：统一入口执行───────────────
 //
-// 【为什么放在这里】92 个 api/*.php 的第一行都是 require_once 本文件，
+// 【为什么放在这里】所有 api/*.php 的第一行都是 require_once 本文件，
 // 这是一道现成的统一关卡。在关卡里按脚本名查表，**92 个文件一个都不用动**，
 // 也就不会有"漏改了一个"这种事——和当初 CSRF 收口到 require_login 是同一个套路。
 //

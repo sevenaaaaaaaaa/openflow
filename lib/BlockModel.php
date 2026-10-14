@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * BlockModel —— 正文块模型 + 可复用区块（AUDIT-01 / BACKLOG T2-1）
+ * BlockModel —— 正文块模型 + 可复用区块
  *
  * 【为什么】正文现在是一坨 HTML：想"把这篇的要点重排成短视频脚本/邮件/社媒"
  * 就得整篇重写；想复用一段固定的 CTA/免责声明，只能到处复制粘贴。

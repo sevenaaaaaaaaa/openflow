@@ -170,7 +170,7 @@ if ($ext === 'svg') {
     file_put_contents($dest, $svgContent);
 }
 
-// 响应式多尺寸 WebP（BACKLOG T1-7）：一次上传产出 480/960/1920 三档，供前台 srcset。
+// 响应式多尺寸 WebP：一次上传产出 480/960/1920 三档，供前台 srcset。
 // 旁路：失败不影响上传结果。
 $variants = []; $srcset = '';
 if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {

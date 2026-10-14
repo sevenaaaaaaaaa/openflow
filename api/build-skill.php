@@ -25,7 +25,7 @@ if (!builder_can_contribute($member)) {
 $desc = trim((string)($_POST['description'] ?? ''));
 $r = skillguard_build($desc, (string)($member['id'] ?? ''));
 
-// 判为"需人工确认"的，进审核队列（BACKLOG T2-9），由管理员批准后再发布
+// 判为"需人工确认"的，进审核队列，由管理员批准后再发布
 if (!empty($r['ok']) && ($r['verdict'] ?? '') === 'review') {
     try {
         require_once __DIR__ . '/../lib/ArtifactSandbox.php';

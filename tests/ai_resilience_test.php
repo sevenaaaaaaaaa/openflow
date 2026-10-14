@@ -1,6 +1,6 @@
 <?php
 /**
- * AI 挂了站点不能跟着挂（docs/ROADMAP.md 阶段一第 3 件）
+ * AI 挂了站点不能跟着挂
  *   php tests/ai_resilience_test.php
  *
  * 这份测试守两条规矩，两条都是"结构性"的——不是修某个 bug，是让这类 bug 回不来：

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * PaidContent —— 付费 Newsletter / 会员专享内容（AUDIT-01 / BACKLOG T1-6）
+ * PaidContent —— 付费 Newsletter / 会员专享内容
  *
  * 【为什么】站点已有会员/订阅/支付体系，内容却只有"公开 / 仅会员"二值：
  * 做不了"年度会员才能看""这期通讯只发给付费订阅者"。这是内容 × 已有商业化的

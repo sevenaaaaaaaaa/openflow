@@ -1,6 +1,6 @@
 <?php
 /**
- * 平台运营驾驶舱 —— Agent 出选品建议 + 新品质量初判（BACKLOG T1-12）
+ * 平台运营驾驶舱 —— Agent 出选品建议 + 新品质量初判
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/PlatformOps.php';

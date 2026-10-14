@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * SiteAgent —— 会卖的站点 Agent（AUDIT-04 创新三 / BACKLOG T1-10）
+ * SiteAgent —— 会卖的站点 Agent
  *
  * 【为什么】传统客服（工单/在线聊天）是成本中心；AI 时代的客服该是收入触点。
  * 本模块用站内知识库（T1-4 回流进去的文章）现答访客问题，答完顺势给行动（留资/

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * UnifiedCatalog —— 统一商品目录（AUDIT-05 / BACKLOG T1-13）
+ * UnifiedCatalog —— 统一商品目录
  *
  * 【为什么】同样是"一件在卖的东西"，数字商品在 CommerceSystem、实物/积分在
  * MallSystem、生态资产在 MarketplaceSystem，三套各有各的存储与后台——

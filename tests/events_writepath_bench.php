@@ -1,6 +1,6 @@
 <?php
 /**
- * 写放大实测：CdpSystem::track() 的热路径到底花多少（AUDIT-08 L0-4）
+ * 写放大实测：CdpSystem::track() 的热路径到底花多少
  *
  *   php tests/events_writepath_bench.php [行数]      默认 520000（生产量级）
  *

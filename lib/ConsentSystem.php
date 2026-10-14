@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * ConsentSystem —— 同意管理 + 数据保留（AUDIT-02 / BACKLOG T1-5）
+ * ConsentSystem —— 同意管理 + 数据保留
  *
  * 【为什么】出海与个保法/GDPR 刚需：没拿到同意就建画像是合规风险；采集了也不能永久留。
  * 本模块把「同意状态」接进采集链路（未同意→只留匿名/不建画像），并给「保留期」策略

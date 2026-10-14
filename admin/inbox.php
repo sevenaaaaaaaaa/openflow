@@ -1,6 +1,6 @@
 <?php
 /**
- * 统一会话收件箱 —— 表单/评论/站内信/咨询汇一处（BACKLOG T1-10）
+ * 统一会话收件箱 —— 表单/评论/站内信/咨询汇一处
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/UnifiedInbox.php';

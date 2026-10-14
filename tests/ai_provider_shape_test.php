@@ -1,6 +1,6 @@
 <?php
 /**
- * 供应商请求/响应形状验收（docs/ROADMAP.md 阶段一）
+ * 供应商请求/响应形状验收
  *   php tests/ai_provider_shape_test.php
  *
  * 这里钉的是两个"一直是坏的、但没人发现"的地方：

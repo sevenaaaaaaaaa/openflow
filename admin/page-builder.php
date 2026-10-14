@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
                 if (isset($_POST['block_' . $fk][$bi])) $block[$fk] = $_POST['block_' . $fk][$bi];
             }
         }
-        // 区块级人群定向（BACKLOG T1-8）：全为不限/空则不写 audience，保持默认全员可见
+        // 区块级人群定向：全为不限/空则不写 audience，保持默认全员可见
         $aud = [
             'login'   => (string)($_POST['block_aud_login'][$bi] ?? 'any'),
             'visitor' => (string)($_POST['block_aud_visitor'][$bi] ?? 'any'),

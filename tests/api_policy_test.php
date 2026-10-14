@@ -1,6 +1,6 @@
 <?php
 /**
- * API 权限矩阵验收（docs/ROADMAP.md 阶段三）
+ * API 权限矩阵验收
  *   php tests/api_policy_test.php
  *
  * 这一层最大的风险不是"拦不住"，是**误伤自己的前台**——

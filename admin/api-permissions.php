@@ -1,9 +1,9 @@
 <?php
 /**
- * API 权限矩阵 —— 92 个接口谁能调（docs/ROADMAP.md 阶段三）
+ * API 权限矩阵 —— 每个接口谁能调
  *
  * 后台页面的权限一直做得不差（169/191 页有 require_perm），但 API 层几乎是空的。
- * 这一页把 92 个端点摆在一张表里，逐个可调；执行发生在统一入口（admin/config.php
+ * 这一页把全部端点摆在一张表里，逐个可调；执行发生在统一入口（admin/config.php
  * 末尾），端点文件一个都不用改。
  */
 require_once __DIR__ . '/config.php';

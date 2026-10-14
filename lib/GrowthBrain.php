@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 /**
- * GrowthBrain —— 中枢 NBA 提议器（大脑胚胎，AUDIT-07 P0-3）
+ * GrowthBrain —— 中枢 NBA 提议器（大脑胚胎）
  *
- * 【它是什么】前六个模块是器官，事件总线是传入神经，P0-2 接上了第一根传出神经。
- * 本类是那颗一直缺席的"大脑"的第一形态：读一个人的 CDP 画像（含 P0-2 写回的成交
+ * 【它是什么】前六个模块是器官，事件总线是传入神经，成交反哺（GrowthSignal）接上了第一根传出神经。
+ * 本类是那颗一直缺席的"大脑"的第一形态：读一个人的 CDP 画像（含成交反哺写回的成交
  * 信号）+ 成交真相账本，跨模块产出"对这个人此刻的下一最佳动作 + 为什么"。
  *
  * 【边界/原则】
@@ -119,7 +119,7 @@ if (!function_exists('growth_brain_propose')) {
             ];
         }
 
-        // ── 目标加权：让离当前增长目标最近的动作浮上来（AUDIT-07 P1-5）──
+        // ── 目标加权：让离当前增长目标最近的动作浮上来──
         if ($goal && function_exists('growth_goal_boost_modules')) {
             $boost = growth_goal_boost_modules((string)($goal['metric'] ?? ''));
             if ($boost) foreach ($props as &$pr) {

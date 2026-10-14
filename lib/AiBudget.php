@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * AiBudget —— AI 的电表与保险丝（docs/ROADMAP.md 阶段一第 2 件）
+ * AiBudget —— AI 的电表与保险丝
  *
  * 【为什么】这是一个按 AI 调用花钱的产品，但在此之前：
  * 每次调用只记了「哪个供应商、成没成功」，**没有 token、没有成本、没有是哪个功能花的**。

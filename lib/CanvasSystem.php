@@ -82,7 +82,7 @@ function canvas_walk(string $nodeId, array $byId, array $edges, array $context, 
 }
 
 /**
- * 画布动作类型清单（UI 下拉/按钮的单一出处）。BACKLOG T1-2。
+ * 画布动作类型清单（UI 下拉/按钮的单一出处）。
  * 这也是"大脑可调用的动作库"：每个 key 是 Agent 将来能直接调的一个动作。
  */
 function canvas_action_types(): array {

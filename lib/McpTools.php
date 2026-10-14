@@ -79,7 +79,7 @@ function mcp_tools(): array
         'description' => '按兴趣标签推荐社区贡献物（平台分发：把对的东西送到对的人面前）',
         'inputSchema' => ['type'=>'object','properties'=>['interests'=>['type'=>'array','items'=>['type'=>'string']],'limit'=>['type'=>'integer']]],
     ],
-    // ── 增长 OS 对外（BACKLOG T2-13）：整台增长引擎成为可被外部 Agent 调用的工具 ──
+    // ── 增长 OS 对外：整台增长引擎成为可被外部 Agent 调用的工具 ──
     [
         'name' => 'growth_next_best_action',
         'description' => '增长大脑：给出"现在最该动的人 + 下一最佳动作 + 理由"（读画像与成交真相，只提议不执行）',

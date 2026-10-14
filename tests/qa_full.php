@@ -251,9 +251,7 @@ t('退款有状态前置校验', strpos($shop, "!== 'paid'") !== false);
 t('退款防重复', strpos($shop, "=== 'refunded'") !== false);
 
 // ─────────────────────────────────────────────
-echo "[8/8] 与任务清单对表\n";
-$tasks = @file_get_contents("{$root}/docs/TASKS.md") ?: '';
-t('TASKS.md 存在', $tasks !== '');
+echo "[8/8] 关键能力落地对表\n";
 $done = [
     'A1 CRM→FlowSystem'   => strpos(file_get_contents("{$root}/lib/CrmSystem.php"), 'flow_crm_stage_change') !== false,
     'A2 画布读 CRM 字段'  => strpos(file_get_contents("{$root}/lib/CanvasSystem.php"), 'canvas_resolve_field') !== false,

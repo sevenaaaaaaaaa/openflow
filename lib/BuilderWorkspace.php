@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * BuilderWorkspace —— 参与者工作台 / OIA（AUDIT-06 创新一 / BACKLOG T1-14）
+ * BuilderWorkspace —— 参与者工作台 / OIA
  *
  * 【为什么】现状是三道独立的闸：普通会员 → 申请 developer_status 走审核 →
  * 作者是另一套身份 → 上架商品又一层。一个人想「既写点东西、又做个小工具、

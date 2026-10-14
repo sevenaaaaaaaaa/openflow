@@ -1,6 +1,6 @@
 <?php
 /**
- * 邮件打开/点击统计回归（docs/ROADMAP.md 阶段一）
+ * 邮件打开/点击统计回归
  *   php tests/mail_stats_test.php
  *
  * mailc_track() 挂在公开的追踪像素端点上，群发后会被集中调用。

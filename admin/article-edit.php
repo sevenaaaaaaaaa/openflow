@@ -161,20 +161,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Throwable $e) {}
         }
 
-        // 内部知识回流（AUDIT-07 P1-4）：发布 → 站内知识库（喂站点 Agent / MCP）；
+        // 内部知识回流：发布 → 站内知识库（喂站点 Agent / MCP）；
         // 草稿/下架 → 从知识库撤下。幂等、旁路，失败不影响文章保存。
         try {
             require_once __DIR__ . '/../lib/KnowledgeSystem.php';
             knowledge_ingest_article($article);
         } catch (Throwable $e) {}
 
-        // 搜索索引重建（BACKLOG T0-4）：写入侧重建 FTS5 索引，成本离开搜索热路径。旁路。
+        // 搜索索引重建：写入侧重建 FTS5 索引，成本离开搜索热路径。旁路。
         try {
             require_once __DIR__ . '/../lib/SearchIndex.php';
             search_index_rebuild();
         } catch (Throwable $e) {}
 
-        // 保存完成即释放编辑锁（BACKLOG T2-2）
+        // 保存完成即释放编辑锁
         try {
             require_once __DIR__ . '/../lib/EditLock.php';
             editlock_release('article:' . $article['id'], (string)($_SESSION['admin_user'] ?? 'admin'));
@@ -219,7 +219,7 @@ $files = glob(UPLOAD_DIR . '/articles/*');
 $files = array_filter($files, 'is_file');
 usort($files, fn($a, $b) => filemtime($b) - filemtime($a));
 
-// 轻量编辑锁（BACKLOG T2-2）：防两处同时编辑互相覆盖。仅提示，不阻断保存。
+// 轻量编辑锁：防两处同时编辑互相覆盖。仅提示，不阻断保存。
 $lockWarn = null;
 if (!$isNew && !empty($article['id'])) {
     try {

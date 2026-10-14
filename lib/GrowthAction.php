@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * GrowthAction —— 一键采纳：大脑提议 → 行动闭环（AUDIT-07 P1-7）
+ * GrowthAction —— 一键采纳：大脑提议 → 行动闭环
  *
  * 【它解决什么】P0-3 的大脑只会"提议"，判断到行动之间是断的。本模块让人对一条
  * 提议"一键采纳"：不自动执行客户侧动作（护栏——发消息/收款仍由对应模块的确认步
@@ -102,7 +102,7 @@ if (!function_exists('growth_action_adopt')) {
             'created_at'    => date('Y-m-d H:i:s'),
         ];
 
-        // 可解释轨道（BACKLOG T2-5）：先记录、拿到 trace id 存到 row 上，完成/忽略时回写结果
+        // 可解释轨道：先记录、拿到 trace id 存到 row 上，完成/忽略时回写结果
         try {
             require_once __DIR__ . '/DecisionTrace.php';
             $tid = dtrace_record([
@@ -119,7 +119,7 @@ if (!function_exists('growth_action_adopt')) {
         $list[] = $row;
         growth_action_save_all($list);
 
-        // 共享记忆（BACKLOG T1-17）：记住"对这个人做过什么"，下次判断不再从零开始
+        // 共享记忆：记住"对这个人做过什么"，下次判断不再从零开始
         try {
             require_once __DIR__ . '/GrowthMemory.php';
             $subj = $row['profile_email'] ?: ($row['profile_id'] ?: $row['profile_name']);

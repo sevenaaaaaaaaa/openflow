@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 /**
- * DecisionTrace —— Agent 决策的可解释轨道（AUDIT-03 创新 / BACKLOG T2-5）
+ * DecisionTrace —— Agent 决策的可解释轨道
  *
- * 【为什么】Agent 决策不能是黑箱。AUDIT-03 的收束是：画布不废，降级为
+ * 【为什么】Agent 决策不能是黑箱。收束是：画布不废，降级为
  * **可解释、可审计、可干预**的一层——把"为什么对这个人做了这件事"渲染成
  * 一条可视轨迹，人能看、能纠、能加护栏。
  *

@@ -1,6 +1,6 @@
 <?php
 /**
- * 人群激活 · Destinations —— 把 CDP 人群推到外部（BACKLOG T0-6）
+ * 人群激活 · Destinations —— 把 CDP 人群推到外部
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/DestinationSystem.php';

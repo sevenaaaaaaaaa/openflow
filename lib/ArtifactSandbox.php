@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * ArtifactSandbox —— 生成物安全体系（AUDIT-06 / BACKLOG T2-9）
+ * ArtifactSandbox —— 生成物安全体系
  *
  * 【为什么】T1-15 给了「描述即造」的三道护栏（权限声明/静态审查/AI 预审），
  * 但那是**单件**把关。OIA 一旦规模化——人人都在造——还需要三样：

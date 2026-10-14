@@ -872,7 +872,7 @@ function include_member_developer($member): void {
     $devStatus = $member['developer_status'] ?? 'none';
     $types = skill_types();
     $mine = skill_by_author($member['id']);
-    // 参与者工作台（BACKLOG T1-14 · OIA）：一次加入即拥有三种能力
+    // 参与者工作台（OIA）：一次加入即拥有三种能力
     $bw = ['profile' => null, 'caps' => []];
     try {
         require_once __DIR__ . '/lib/BuilderWorkspace.php';
@@ -898,7 +898,7 @@ function include_member_developer($member): void {
         </div>
         <?php endforeach; ?>
       </div>
-      <!-- 描述即造（BACKLOG T1-15）：把开发降到"描述"，三道护栏后存草稿 -->
+      <!-- 描述即造：把开发降到"描述"，三道护栏后存草稿 -->
       <div class="box">
         <h3>描述即造 <small>不用会写代码</small></h3>
         <p class="d" style="font-size:12.5px">用一句话说你想要什么工具，AI 帮你生成。生成物会先过安全审查，通过后存为草稿，由你确认再发布。</p>
@@ -934,7 +934,7 @@ function include_member_developer($member): void {
         <?=acct_tile(round(($member['distributor_rate'] ?? 0)) . '%', '默认佣金比例', 'wn')?>
       </div>
       <?php
-        // 我的买家画像 + 本周增长动作（BACKLOG T1-11）：把"收银台"升级为"增长伙伴"
+        // 我的买家画像 + 本周增长动作：把"收银台"升级为"增长伙伴"
         $cg = ['stats' => [], 'actions' => []];
         try { require_once __DIR__ . '/lib/CreatorGrowth.php'; $cg = creator_dashboard($member['id'], $devOrders ?: []); } catch (Throwable $e) {}
         $cs = $cg['stats'];

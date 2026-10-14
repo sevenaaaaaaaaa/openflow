@@ -1,6 +1,6 @@
 <?php
 /**
- * 自定义内容类型 —— 定义类型（字段集）+ 管理各类型条目（BACKLOG T0-2）
+ * 自定义内容类型 —— 定义类型（字段集）+ 管理各类型条目
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/CptSystem.php';

@@ -574,7 +574,7 @@
     loadConsentBanner();
   }
 
-  // 同意横幅（BACKLOG T1-5）：仅在后台启用同意门且访客未表态时出现。
+  // 同意横幅：仅在后台启用同意门且访客未表态时出现。
   function loadConsentBanner() {
     try {
       if (document.cookie.indexOf('of_consent=') !== -1) return;
@@ -610,7 +610,7 @@
     } catch (e) {}
   }
 
-  // 圈选埋点（BACKLOG T1-4）：拉取本页启用的定义，用事件委托绑 click，命中即上报。
+  // 圈选埋点：拉取本页启用的定义，用事件委托绑 click，命中即上报。
   function loadClickTracks() {
     try {
       fetch('/api/click-tracks.php?path=' + encodeURIComponent(location.pathname), { credentials: 'omit' })

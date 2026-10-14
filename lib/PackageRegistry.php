@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * PackageRegistry —— 版本 / 依赖 / 兼容管理（AUDIT-06 / BACKLOG T2-11）
+ * PackageRegistry —— 版本 / 依赖 / 兼容管理
  *
  * 【为什么】生态一旦有量，"这个插件要求什么版本、和另一个冲不冲、升级会不会炸"
  * 就成了硬需求。没有它，用户装一个坏一个，生态口碑就没了。

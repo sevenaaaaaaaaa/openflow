@@ -51,7 +51,7 @@ $member = member_current();
 if (!$notFound && !empty($article['member_only']) && !member_can($member, 'articles_member')) {
     $memberGate = true;
 }
-// 分层付费门禁（BACKLOG T1-6）：required_tier 指定"某套餐及以上"才能看全文
+// 分层付费门禁：required_tier 指定"某套餐及以上"才能看全文
 $paidTier = trim((string)($article['required_tier'] ?? ''));
 $paidGate = false; $paidHint = '';
 if (!$notFound && $paidTier !== '') {

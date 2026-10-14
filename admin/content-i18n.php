@@ -1,6 +1,6 @@
 <?php
 /**
- * 内容多语言 —— 给文章挂语言版本、AI 一键初译、复核发布（BACKLOG T0-3）
+ * 内容多语言 —— 给文章挂语言版本、AI 一键初译、复核发布
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/../lib/ContentI18n.php';

@@ -159,7 +159,7 @@ function flow_handle(string $event, array $ctx = []): array {
         } catch (Exception $e) {}
     }
 
-    // ── D. 传出神经：成交反哺 CDP（旁路订阅，AUDIT-07 P0-2）──
+    // ── D. 传出神经：成交反哺 CDP（旁路订阅）──
     // 成交发生时把"来源/分群/金额"写回 CDP + 成交真相账本，让总线从"只进"变"有出"。
     // 全程 try/catch：失败绝不影响本次事件的其它处理与返回。
     try {

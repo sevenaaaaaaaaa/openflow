@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * PlatformOps —— 平台运营 Agent · 选品驾驶舱（AUDIT-05 创新二 / BACKLOG T1-12）
+ * PlatformOps —— 平台运营 Agent · 选品驾驶舱
  *
  * 【为什么】平台方常常就一个人，请不起运营团队："这周推谁上首页、哪个在掉要换位、
  * 这个新品能不能上架"——一件都没有工具支撑。App Store 靠成百上千审核员，中小平台

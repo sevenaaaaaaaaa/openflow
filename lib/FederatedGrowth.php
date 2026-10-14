@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * FederatedGrowth —— 联邦增长智能的隐私骨架（AUDIT-07 P2 / BACKLOG T2-12）
+ * FederatedGrowth —— 联邦增长智能的隐私骨架
  *
  * 【为什么】这是全系列最深的护城河：多租户 + 零门槛让跨站点的匿名信号构成
  * **共享学习基质**——在 A 站有效的成交话术/选题/时机，脱敏后让 B 站的大脑更聪明。

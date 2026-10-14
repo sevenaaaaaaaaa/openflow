@@ -59,7 +59,7 @@ function mailc_pixel_id(string $email): string {
     return substr(hash('sha256', strtolower(trim($email))), 0, 16);
 }
 /**
- * 打开/点击统计的存储层（docs/ROADMAP.md 阶段一）
+ * 打开/点击统计的存储层
  *
  * 【为什么从 JSON 改成 SQLite】mailc_track() 挂在 api/mail-track.php 这个公开的
  * 追踪像素端点上：**每一次邮件打开、每一次链接点击都会调它一次**，而且是在群发之后

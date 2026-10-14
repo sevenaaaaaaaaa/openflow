@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * AiPersonalize —— 规则个性化 → AI 个性化（AUDIT-03 / BACKLOG T1-1）
+ * AiPersonalize —— 规则个性化 → AI 个性化
  *
  * 【为什么】原 personalizedCta/DynamicContent 是"规则/相似度"驱动：能对不同分群显示
  * 不同东西，但文案是人预先写死的。升级为"AI 按这个人的画像现写文案"，是把个性化

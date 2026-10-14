@@ -5,7 +5,7 @@ declare(strict_types=1);
  *
  * 【它解决什么】事件总线(flow_handle)长期"只进不出"：purchase / crm_stage_change(won)
  * 发上总线，却没人把"这单真成交、来自哪个来源/分群、值多少钱"写回 CDP。
- * 于是 CDP 只知道"谁访问多"，不知道"谁真值钱"——AUDIT-04 创新一点破的偏差。
+ * 于是 CDP 只知道"谁访问多"，不知道"谁真值钱"——这是要纠正的偏差。
  *
  * 【它做什么】成交发生时（旁路订阅，全程 try/catch，绝不影响成交本身）：
  *   1. 给 CDP 客户累加 LTV（cdp_add_ltv）——这条画像"真金白银"值多少；
@@ -144,7 +144,7 @@ if (!function_exists('growth_signal_conversion')) {
             @mkdir(dirname($f), 0777, true);
             @file_put_contents($f, json_encode($ledger, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
-            // 6) 写入共享记忆（BACKLOG T1-17）：成交是最该被记住的事实
+            // 6) 写入共享记忆：成交是最该被记住的事实
             try {
                 require_once __DIR__ . '/GrowthMemory.php';
                 $subj = (string)($ctx['email'] ?? '') ?: (string)($ctx['member_id'] ?? '') ?: (string)($ctx['uid'] ?? '');

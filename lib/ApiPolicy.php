@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * ApiPolicy —— API 端点的权限矩阵（docs/ROADMAP.md 阶段三）
+ * ApiPolicy —— API 端点的权限矩阵
  *
  * 【为什么需要】后台页面的权限做得不差（169/191 页有 require_perm），
  * 但 **92 个 API 端点里只有 1 个做权限判断**。这一轮已经从里面挖出三个

@@ -130,7 +130,7 @@ function mcp_call(string $name, array $args): array {
             $r = skill_execute($args['id'] ?? '', $args['params'] ?? []);
             return ['content'=>[['type'=>'text','text'=>json_encode($r, JSON_UNESCAPED_UNICODE)]]];
 
-        // 贡献三通第②腿：社区贡献物对外可被 Agent 调用（BACKLOG T1-16）
+        // 贡献三通第②腿：社区贡献物对外可被 Agent 调用
         case 'contributions_list':
             require_once __DIR__ . '/lib/ContributionPipeline.php';
             $out = contrib_mcp_list((int)($args['limit'] ?? 50));
@@ -141,7 +141,7 @@ function mcp_call(string $name, array $args): array {
             $out = contrib_recommend((array)($args['interests'] ?? []), (int)($args['limit'] ?? 5));
             return ['content'=>[['type'=>'text','text'=>json_encode($out, JSON_UNESCAPED_UNICODE)]]];
 
-        // ── 增长 OS 对外（BACKLOG T2-13）──
+        // ── 增长 OS 对外──
         case 'growth_next_best_action': {
             require_once __DIR__ . '/lib/CdpSync.php';
             require_once __DIR__ . '/lib/GrowthSignal.php';

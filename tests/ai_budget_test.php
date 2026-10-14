@@ -1,6 +1,6 @@
 <?php
 /**
- * AI 电表与保险丝验收（docs/ROADMAP.md 阶段一第 2 件）
+ * AI 电表与保险丝验收
  *   php tests/ai_budget_test.php
  *
  * 钉住的性质：

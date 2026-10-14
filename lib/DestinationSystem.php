@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * DestinationSystem —— 人群激活 / 反向 ETL（AUDIT-02 P0战略 / BACKLOG T0-6）
+ * DestinationSystem —— 人群激活 / 反向 ETL
  *
  * 【为什么】CDP 能圈人群，却"圈了推不出去"——没有把人群送到外部(广告/邮件/webhook)
  * 的最后一公里。本层给一个轻量 destinations：人群 → 字段映射 → 推到目的地，

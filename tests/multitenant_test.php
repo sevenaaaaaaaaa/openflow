@@ -1,6 +1,6 @@
 <?php
 /**
- * 多租户地基验收（docs/ROADMAP.md 阶段二）
+ * 多租户地基验收
  *   php tests/multitenant_test.php
  *
  * 这一条改的是 admin/config.php 里解析数据目录的那几行。它值钱是因为：

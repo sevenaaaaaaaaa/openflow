@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * ContributionPipeline —— 贡献自动三通（AUDIT-06 创新三 / BACKLOG T1-16）
+ * ContributionPipeline —— 贡献自动三通
  *
  * 【为什么】OIA 的第三拆是"一次贡献，全平台赋能"：你做的任何东西发布后，
  * 应当自动 ① 进知识库（喂站点 Agent）② 暴露为 MCP 可调用能力 ③ 纳入平台分发。

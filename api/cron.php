@@ -345,7 +345,7 @@ if (time() - $lastEventsCleanup > 24 * 3600) {
     } catch (Throwable $e) {}
 }
 
-// 数据保留策略（BACKLOG T1-5）：按后台配置的合规保留期清理过期事件与画像。
+// 数据保留策略：按后台配置的合规保留期清理过期事件与画像。
 // 与上面 90 天兜底并存；retention_days=0 时跳过（默认不启用，行为不变）。
 $consentPurge = ['skipped' => true];
 try {
