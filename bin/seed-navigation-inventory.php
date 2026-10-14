@@ -1,12 +1,17 @@
 <?php
 /**
  * 补充种子：AI_TOOL_INVENTORY 清单（198+ 创作工具）→ 导航站
- * 运行：php bin/seed-navigation-inventory.php
- * 读取用户本地 AI Tool List 目录的 3 份 inventory，提取工具+URL，按内容创作子分类收录
+ * 运行：php bin/seed-navigation-inventory.php <inventory-dir>
+ * 读取指定目录下的 3 份 inventory，提取工具+URL，按内容创作子分类收录
  */
 require_once __DIR__ . '/../admin/config.php';
 
-$dir = '/Users/seveno/Knowledge/Obsidian/MindRe/1-Project/GenFlow/1-3 Content Distribution/Drafts/00-选题规划/AI Tool List';
+// Inventory directory: first CLI argument or $OF_TOOL_INVENTORY_DIR. No default.
+$dir = $argv[1] ?? (getenv('OF_TOOL_INVENTORY_DIR') ?: '');
+if ($dir === '' || !is_dir($dir)) {
+    fwrite(STDERR, "usage: php bin/seed-navigation-inventory.php <inventory-dir>   (or set OF_TOOL_INVENTORY_DIR)\n");
+    exit(2);
+}
 $files = ['AI_TOOL_INVENTORY_V2.md', 'AI_TOOL_INVENTORY_COMPLETE.md', 'AI_TOOL_INVENTORY_FULL.md'];
 
 // 原始分类 → 导航站子分类 + 大分类 映射

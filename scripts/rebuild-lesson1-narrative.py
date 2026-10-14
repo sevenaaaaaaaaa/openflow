@@ -2,10 +2,15 @@
 """第一课直播叙述逻辑重构：五幕剥洋葱结构
 幕一·身边现象(3新页) → 幕二·时代信号 → 幕三·新活法亮相 → 幕四·系统道理 → 幕五·收口预告
 """
-import re, pathlib, sys
+import os
+import pathlib
+import re
+import sys
 
-DECKS = pathlib.Path('/Users/seveno/OpenFlow Dev/decks')
-V2 = pathlib.Path('/Users/seveno/Knowledge/Obsidian/MindRe/1-Project/PSPI/1-2 Insight/Knowledge Base/基石内容/v2')
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+DECKS = ROOT / 'decks'
+# Course deck sources (local, gitignored): $OF_DECKS_SRC, default ops/decks/
+V2 = pathlib.Path(os.environ.get('OF_DECKS_SRC') or ROOT / 'ops' / 'decks')
 src = (DECKS / 'lesson-1.html').read_text()
 
 HEAD = src.split('<div id="deck">')[0]
@@ -21,7 +26,7 @@ for i, x in enumerate(secs):
 # 索引映射（当前成品顺序）
 idx = {t.split(' · ')[0] if ' · ' in t else t: i for i, t in [(m[0], m[1]) for m in meta]}
 def page(marker):
-    for i, t, c in meta:
+    for i, t, _c in meta:
         if t.startswith(marker) or marker in t:
             return secs[i]
     sys.exit(f'page not found: {marker}')

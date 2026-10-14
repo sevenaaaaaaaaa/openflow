@@ -1,9 +1,10 @@
 #!/bin/bash
-# 同步四课 PPT：Obsidian 源目录 → 服务器 /decks/
-# 修改流程：在 Obsidian 里改 v2 目录下的 PPT → 跑本脚本 → 线上更新
+# 同步四课 PPT：本地源目录 → 服务器 /decks/
+# 源目录默认 ops/decks/（gitignored），可用 OF_DECKS_SRC 覆盖。
+# 修改流程：改源目录下的 PPT → 跑本脚本 → 线上更新
 set -e
 
-V2="/Users/seveno/Knowledge/Obsidian/MindRe/1-Project/PSPI/1-2 Insight/Knowledge Base/基石内容/v2"
+V2="${OF_DECKS_SRC:-$(cd "$(dirname "$0")" && pwd)/ops/decks}"
 LOCAL="$(cd "$(dirname "$0")" && pwd)/decks"
 SERVER="root@172.96.253.73"
 PORT="28766"
@@ -11,7 +12,7 @@ REMOTE="/www/wwwroot/nownexts_com/decks"
 
 mkdir -p "$LOCAL"
 
-echo "==> 1/3 从 Obsidian 拷贝并改英文名..."
+echo "==> 1/3 从源目录拷贝并改英文名..."
 cp "$V2/第1课·AI红利出现！一人公司冷启动诀窍.html" "$LOCAL/lesson-1.html"
 cp "$V2/第2课·加速主义来袭！核心增长模型.html" "$LOCAL/lesson-2.html"
 cp "$V2/第3课·AI是灵药也是毒药！精算体系.html" "$LOCAL/lesson-3.html"
@@ -64,7 +65,7 @@ footer{{margin-top:auto;padding-top:4vh;font-family:"JetBrains Mono",monospace;f
 <h1>一人公司入门四课</h1>
 <p class="sub">你要的是系统，不是工具 · 直播版幻灯片（←→ 翻页 · ESC 索引）· 已对齐产品矩阵 v2</p>
 <div class="grid">{''.join(cards)}</div>
-<footer><span>同步时间 {now} · 改 Obsidian 源文件后跑 bash sync-decks.sh 更新</span><span>NOWNEXTS</span></footer>
+<footer><span>同步时间 {now} · 改源文件后跑 bash sync-decks.sh 更新</span><span>NOWNEXTS</span></footer>
 </body></html>'''
 (local / 'index.html').write_text(html)
 print('index.html generated')

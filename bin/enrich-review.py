@@ -3,11 +3,15 @@
 enrich-review.py — 补全 58 篇复核稿件
 从 GitHub README 生成完整文章（遵循 Daily/Cluster 生产规范）
 """
-import os, re, json, hashlib, time, urllib.request, urllib.error
+import os, re, sys, json, hashlib, time, urllib.request, urllib.error
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
-REVIEW_DIR = Path('/Users/seveno/Knowledge/Obsidian/MindRe/1-Project/MFlow/1-3 GenFlow/Content Distribution/Drafts/Website-Ready/04-Tags-需人工复核')
+# Review directory (one sub-directory per category): first CLI argument or $OF_REVIEW_DIR. No default.
+_review_arg = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('OF_REVIEW_DIR', '')
+if not _review_arg:
+    sys.exit('usage: python3 bin/enrich-review.py <review-dir>   (or set OF_REVIEW_DIR)')
+REVIEW_DIR = Path(_review_arg).expanduser()
 OUTPUT = BASE / 'data' / 'review-enriched.json'
 CATEGORIES_FILE = BASE / 'data' / 'article-categories.json'
 

@@ -1,7 +1,7 @@
 # 林下 Understory × OpenFlow · 框架体系总览
 
 > 生成日期：2026-08-14
-> 信息源：PSPI 1-1 Harness（RULES / WORKFLOWS / content-rbe）+ Product Marketing（RBE 课程模块）+ 公开发布
+> 信息源：内部方法论规范（规则 / 工作流 / RBE 内容体系）+ RBE 课程模块 + 公开发布
 > 用途：品牌方法论完整索引 · 指导网站内容结构 · 框架即界面
 
 ---
