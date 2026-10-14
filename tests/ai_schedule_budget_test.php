@@ -10,8 +10,17 @@
  *   ④ 日预算 = 基础上限 + 今日加额；加额按日期记，换一天自动失效（第二天自动回调）
  *   ⑤ 触顶：拦下后续调用；邮件每个上限每天只发一次；加额后再触顶会再发一次；没收件人不崩
  */
-$tmp = sys_get_temp_dir() . '/of-sched-' . getmypid();
-@mkdir($tmp, 0777, true);
+// 每次运行一个全新的数据目录，跑完删掉。原先只按 PID 命名且从不清理：PID 复用时会撞上
+// 同一天留下的旧目录（settings.json 里的加额/单价 + db 里当天已记的花费 + 已发提醒标记），
+// §4–§6 的预算断言随之误红——表现为「本地偶发、换个工作区就红」。
+$tmp = sys_get_temp_dir() . '/of-sched-' . getmypid() . '-' . bin2hex(random_bytes(4));
+mkdir($tmp, 0777, true);
+register_shutdown_function(static function () use ($tmp): void {
+    if (!is_dir($tmp)) return;
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tmp, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+    foreach ($it as $f) $f->isDir() ? @rmdir($f->getPathname()) : @unlink($f->getPathname());
+    @rmdir($tmp);
+});
 putenv('OF_DATA_DIR=' . $tmp);
 putenv('OF_UPLOAD_DIR=' . $tmp . '/uploads');
 $_SERVER['HTTP_HOST'] = 'localhost';
