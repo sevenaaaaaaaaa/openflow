@@ -25,9 +25,12 @@ json_write(DATA_DIR . '/users.json', [
     'outsider' => ['name' => '外部人', 'email' => 'out@example.com'],
 ]);
 $pid = (string) (ps_project_save(['name' => '官网改版'])['id'] ?? '');
+// 日期相对今天生成：逾期/日历断言不能随真实时间流逝而失效（原写死 2026-10-01，过了这天就红）
+$dueFuture = date('Y-m-d', strtotime('+30 days'));
+$duePast = date('Y-m-d', strtotime('-7 days'));
 ps_member_set($pid, 'outsider', 'viewer');
-$parent = (string) (ps_task_save($pid, ['title' => '首页改版', 'status' => 'doing', 'assignee' => '市场总监', 'due' => '2026-10-01', 'priority' => 'urgent', 'note' => '内部备注：预算 8 万', 'ref' => ['type' => 'lead', 'id' => 'lead_1', 'label' => '张三线索']])['task']['id'] ?? '');
-ps_task_save($pid, ['title' => '首屏文案', 'parent' => $parent, 'status' => 'done', 'due' => '2026-09-20']);
+$parent = (string) (ps_task_save($pid, ['title' => '首页改版', 'status' => 'doing', 'assignee' => '市场总监', 'due' => $dueFuture, 'priority' => 'urgent', 'note' => '内部备注：预算 8 万', 'ref' => ['type' => 'lead', 'id' => 'lead_1', 'label' => '张三线索']])['task']['id'] ?? '');
+ps_task_save($pid, ['title' => '首屏文案', 'parent' => $parent, 'status' => 'done', 'due' => $duePast]);
 ps_task_save($pid, ['title' => '视觉规范', 'parent' => $parent, 'status' => 'todo']);
 ps_task_comment_add($pid, $parent, '@outsider 这是内部讨论，不该外泄', 'Seven');
 
@@ -76,7 +79,9 @@ check('白名单字段齐全', in_array('title', $keys, true) && in_array('statu
 $parentRow = null;
 foreach ($data['rows'] as $r2) if (($r2['title'] ?? '') === '首页改版') $parentRow = $r2;
 check('子任务进度进入公开模型', (int) ($parentRow['sub_total'] ?? 0) === 2 && (int) ($parentRow['sub_done'] ?? 0) === 1 && (int) ($parentRow['sub_pct'] ?? 0) === 50, json_encode($parentRow));
-check('逾期标记正确（done 不算逾期）', ($parentRow['overdue'] ?? true) === false);
+$doneRow = null;
+foreach ($data['rows'] as $r2) if (($r2['title'] ?? '') === '首屏文案') $doneRow = $r2;
+check('逾期标记正确（done 不算逾期）', ($parentRow['overdue'] ?? true) === false && ($doneRow['overdue'] ?? true) === false, json_encode([$parentRow['overdue'] ?? null, $doneRow['overdue'] ?? null]));
 
 /* 各视图都能出结构 */
 $boardTok = (string) (ps_share_create($pid, 'board', '', 'Seven', true)['token'] ?? '');
@@ -86,7 +91,8 @@ foreach ($board as $c) $colMap[(string) $c['key']] = count((array) $c['tasks']);
 check('看板四列齐全', count($board) === 4 && ($colMap['doing'] ?? 0) === 1 && ($colMap['done'] ?? 0) === 1 && ($colMap['todo'] ?? 0) === 1, json_encode($colMap));
 $calTok = (string) (ps_share_create($pid, 'calendar', '', 'Seven', true)['token'] ?? '');
 $cal = ps_share_payload($calTok)['calendar'] ?? [];
-check('日历有 30 天格子与未排期计数', count((array) ($cal['cells'] ?? [])) === 30 && (int) ($cal['undated'] ?? -1) === 1, json_encode([count((array) ($cal['cells'] ?? [])), $cal['undated'] ?? null]));
+$daysInMonth = (int) date('t');
+check("日历有 {$daysInMonth} 天格子（当月天数）与未排期计数", count((array) ($cal['cells'] ?? [])) === $daysInMonth && (int) ($cal['undated'] ?? -1) === 1, json_encode([count((array) ($cal['cells'] ?? [])), $cal['undated'] ?? null]));
 $gTok = (string) (ps_share_create($pid, 'gantt', '', 'Seven', true)['token'] ?? '');
 $g = ps_share_payload($gTok)['gantt'] ?? [];
 check('甘特有区间与条', ($g['start'] ?? '') !== '' && count((array) ($g['bars'] ?? [])) >= 1, json_encode($g));
