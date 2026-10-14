@@ -394,6 +394,14 @@ def main() -> int:
     # 6) Cloudflare purge
     if not args.no_purge:
         token, zone = os.environ.get("CF_TOKEN"), os.environ.get("OF_CF_ZONE", "8135597542c2723a06a91a7e14a6e747")
+        if not token:
+            # Fall back to the local (gitignored) credentials file shared with UserLoop's sync.
+            try:
+                creds = json.loads((ROOT / "data" / "cloudflare.json").read_text(encoding="utf-8"))
+                token = creds.get("token") or None
+                zone = os.environ.get("OF_CF_ZONE") or creds.get("zone_id") or zone
+            except (OSError, ValueError):
+                pass
         urls = sorted({u for u in (url_for(e.rel) for e in plan.uploads) if u})
         if not token:
             print("⚠ 缺少 CF_TOKEN，已跳过 purge（列表：" + ", ".join(urls[:4]) + ("…" if len(urls) > 4 else "") + "）")
