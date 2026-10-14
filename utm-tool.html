@@ -816,7 +816,7 @@ const PLATFORMS = [
       {field:'campaign_id',template:'__CAMPAIGN_ID__',default:false,note:'仅旧版广告'},
       {field:'ad_id',template:'__AD_ID__',default:false,note:'仅旧版；实际是创意 id'},
       {field:'dynamic_creative_id',template:'__DYNAMIC_CREATIVE_ID__',default:false,note:'仅新版'},
-      {field:'creative_id',template:'__CREATIVE_ID__',default:false,note:'🔍 生产投放链接中观察到（liblib.tv sourceid=080015），官方 DataNexus 宏表未收录。投产前请确认是否被正确替换'},
+      {field:'creative_id',template:'__CREATIVE_ID__',default:false,note:'🔍 生产投放链接中观察到（sourceid=080015），官方 DataNexus 宏表未收录。投产前请确认是否被正确替换'},
       {field:'image_id',template:'__IMAGE_ID__',default:false,note:'🔍 素材层：图片 ID。生产投放链接中观察到，官方宏表未收录 —— 若有效则这是腾讯少数的素材级宏，值得重点验证'},
       {field:'video_id',template:'__VIDEO_ID__',default:false,note:'🔍 素材层：视频 ID。生产投放链接中观察到，官方宏表未收录 —— 同上，值得重点验证'},
       {field:'aid',template:'__AID__',default:false,note:'🔍 生产投放链接中作为 ad_id 使用，官方宏表未收录（官方对应字段是 __ADGROUP_ID__）。疑似无效，请核对实际替换结果'},

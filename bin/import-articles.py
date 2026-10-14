@@ -4,13 +4,17 @@ import-articles.py — Website-Ready 文章批量处理
 从 Daily/Cluster/Tags 目录提取 → 清洗 → 分类 → slug → HTML → 质量审核 → 去重
 输出 data/articles-to-import.json
 """
-import os, re, json, hashlib, html as html_mod
+import os, re, sys, json, hashlib, html as html_mod
 import unicodedata, shutil, glob
 from pathlib import Path
 
 # ─── 配置 ───
 BASE = Path(__file__).resolve().parent.parent
-DRAFTS = Path('/Users/seveno/Knowledge/Obsidian/MindRe/1-Project/MFlow/1-3 GenFlow/Content Distribution/Drafts/Website-Ready')
+# Source drafts directory (Website-Ready layout): first CLI argument or $OF_DRAFTS_DIR. No default.
+_drafts_arg = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('OF_DRAFTS_DIR', '')
+if not _drafts_arg:
+    sys.exit('usage: python3 bin/import-articles.py <drafts-dir>   (or set OF_DRAFTS_DIR)')
+DRAFTS = Path(_drafts_arg).expanduser()
 UPLOADS = BASE / 'uploads' / 'articles'
 OUTPUT = BASE / 'data' / 'articles-to-import.json'
 CATEGORIES_FILE = BASE / 'data' / 'article-categories.json'
@@ -192,7 +196,7 @@ def classify_article(title: str, content: str, cluster_category: str = '', tags_
     
     # 2. Daily 目录名信号（权重高，因为目录名通常包含明确领域关键词）
     dir_signals = {
-        ('ai-create', 'video'):    ['视频', 'video', '剪辑', '字幕', '配音', '动画', '漫剧', '数字人', 'seedance', 'libtv', 'runway', 'kling', 'sora', 'veo', 'cogvideo', 'pika', 'opencut', 'freecut', 'comecut', 'losslesscut', 'toonflow', 'deep-printfilm'],
+        ('ai-create', 'video'):    ['视频', 'video', '剪辑', '字幕', '配音', '动画', '漫剧', '数字人', 'seedance', 'runway', 'kling', 'sora', 'veo', 'cogvideo', 'pika', 'opencut', 'freecut', 'comecut', 'losslesscut', 'toonflow', 'deep-printfilm'],
         ('ai-create', 'design'):   ['设计', 'design', 'ui', 'figma', 'sketch', '配色', 'logo', '品牌', '排版', '原型', 'canva', 'excalidraw', 'penpot', 'presenton', 'brat', 'font', '字体', 'color', 'caesium', 'pixtrim'],
         ('ai-create', 'image'):    ['文生图', '图生图', '图片', 'image', '背景', '放大', '去水印', 'midjourney', 'stable', 'dall', 'rembg', 'real-esrgan', 'nano-banana', 'seedream', 'gpt-image'],
         ('ai-create', 'writing'):  ['写作', 'writing', '文案', '翻译', '摘要', 'pdf', 'ppt', '录屏', 'ocr', 'readpo', 'text2video', 'tldw'],

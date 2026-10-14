@@ -42,6 +42,15 @@ if ($cmd === 'extract') {
     }
     $nav = json_decode((string)file_get_contents($ROOT . '/data/nav.json'), true);
     foreach (i18n_deep_segments($nav) as $s) $seg[$s][] = 'nav.json';
+    // Optional local-only exclusions (one regex per line, without delimiters): ops/i18n/segment-exclude.txt.
+    // Used to keep content-specific article titles (e.g. third-party product names) out of the tracked dictionary.
+    $excludeFile = (getenv('OF_OPS_DIR') ?: $ROOT . '/ops') . '/i18n/segment-exclude.txt';
+    if (is_file($excludeFile)) {
+        foreach (array_filter(array_map('trim', file($excludeFile))) as $re) {
+            if ($re[0] === '#') continue;
+            foreach (array_keys($seg) as $k) if (@preg_match('~' . str_replace('~', '\~', $re) . '~iu', $k)) unset($seg[$k]);
+        }
+    }
     ksort($seg);
     foreach ($seg as $k => $v) $seg[$k] = array_values(array_unique($v));
     if (!is_dir($DIR)) mkdir($DIR, 0775, true);

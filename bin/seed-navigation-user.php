@@ -30,7 +30,6 @@ foreach ([
 foreach ([
 ['CogVideo','CogVideo','https://github.com/zai-org/CogVideo','智谱开源视频生成模型','content','AI视频',['AI','视频','开源']],
 ['Seedance','Seedance','https://dreamina.jianying.com','字节即梦 AI 视频模型','content','AI视频',['AI','视频','商业']],
-['LibLib AI','LibLib AI','https://liblib.tv','你收集的视频工具生态入口（LibTV）','content','AI视频',['AI','视频','创作'],1,60],
 ['Craft-Agent','Craft-Agent','https://github.com/ipvoov/Craft-Agent','AI 创意生成 Agent','content','AI视频',['AI','Agent','开源']],
 ['Text2Video','Text2Video','https://github.com/bravekingzhang/text2video','文本生成视频工具','content','AI视频',['AI','视频','开源']],
 ['AI Short Video Factory','Short Video Factory','https://github.com/YILS-LIN/short-video-factory','AI 短视频工厂','content','AI视频',['AI','视频','开源']],
@@ -141,6 +140,14 @@ foreach ([
 ['3DCellForge','3DCellForge','https://github.com/huangserva/3DCellForge','3D 生成工具','open','开源 AI 应用',['AI','3D','开源']],
 ['GBrain','GBrain','https://github.com/garrytan/gbrain','开源 AI 项目','open','开源 AI 应用',['AI','开源']],
 ] as $t) $U[] = $t;
+
+// Optional local-only entries (kept outside the repo): ops/seeds/navigation-extra.php
+// returns ['cluster' => [rows...], 'user' => [rows...]] in the same row format as above.
+$extraSeed = (getenv('OF_OPS_DIR') ?: __DIR__ . '/../ops') . '/seeds/navigation-extra.php';
+if (is_file($extraSeed)) {
+    $extra = require $extraSeed;
+    foreach (($extra['user'] ?? []) as $t) $U[] = $t;
+}
 
 // 组装 + 去重
 $added = 0;

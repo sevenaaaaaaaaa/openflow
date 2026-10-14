@@ -398,9 +398,6 @@
         "/product",
         "/capability/openflow"
     ],
-    "3.14159… 无限不循环，没有两个创业者走出过完全一样的路。": [
-        "/about"
-    ],
     "30 主题重构，可放映可导出可分享": [
         "/product/conflow"
     ],
@@ -1848,27 +1845,6 @@
     "LearnFlow 给讲师的交付闭环：课程结构、学员名单、学习进度、章节测验、结业证书。不给你增长系统——只把课讲完、教好、发证这件事做好。": [
         "/product/learnflow"
     ],
-    "LibTV vs ComfyUI：云端视频生产台 vs 本地通用节点": [
-        "/topic/ai-create-video"
-    ],
-    "LibTV vs Kling：角色库+编排 vs 单镜头长时生成": [
-        "/topic/ai-create-video"
-    ],
-    "LibTV vs Pika：专业影视编排 vs 社交创意特效": [
-        "/topic/ai-create-video"
-    ],
-    "LibTV vs Runway：节点工作流 vs 线性编辑器": [
-        "/topic/ai-create-video"
-    ],
-    "LibTV vs Sora：持续可用的生产台 vs 模型热度入口": [
-        "/topic/ai-create-video"
-    ],
-    "LibTV vs TapNow：全流程节点台 vs 另一生产向入口": [
-        "/topic/ai-create-video"
-    ],
-    "LibTV vs Veo 3：节点编排 vs Google 生态一体化": [
-        "/topic/ai-create-video"
-    ],
     "Liquid Glass 界面：环境光斑 · 玻璃拟态 · 指针跟随高光": [
         "/product/linkto"
     ],
@@ -2251,6 +2227,9 @@
     ],
     "OpenFlow 是一个 AI 原生的内容经营系统：内容创作、排期分发、营销自动化、直播带货、用户画像都在同一个后台完成。第一次使用时，只需要完成三件事就能跑起来。": [
         "/help/getting-started"
+    ],
+    "OpenFlow 是它的入口层增长操作系统，一人公司不需要大团队。": [
+        "/about"
     ],
     "OpenFlow 洞察看你自己的站点数据；inFlow 看外部世界的情报。两者 API 互通、互为增益，互不依赖。": [
         "/product/inflow"
@@ -3868,9 +3847,6 @@
     ],
     "一封邮件进来之后": [
         "/product/linkto"
-    ],
-    "一张信用卡大小的开发板，插上外设就是一个完整系统，一人公司不需要大团队。": [
-        "/about"
     ],
     "一张地图看懂后台的信息架构，找到每个功能。": [
         "/help",
@@ -12510,15 +12486,18 @@
         "/product/inflow",
         "/help/headless-cms"
     ],
-    "是 π": [
-        "/about"
-    ],
     "是。Tools 和 Strategy 双向迭代，核心能力永久开源，坚持让用户既用得上工具，也能用最前沿的增长策略。": [
         "/product",
         "/product/openflow"
     ],
+    "是一片生态": [
+        "/about"
+    ],
     "是全站唯一能「丢数据」的钩子，所以它的重心不是怎么丢，而是怎么丢得让人放心：默认全放行、所有规则显式开启、每丢一条都记日志可回溯。": [
         "/marketplace?view=plugin&id=event-firewall"
+    ],
+    "是品牌与产品矩阵之名": [
+        "/about"
     ],
     "是社区": [
         "/about"
@@ -13228,6 +13207,21 @@
     ],
     "林下 Understory 资料下载：增长方法论、OpenFlow 实战手册、模板与白皮书，免费获取。": [
         "/downloads"
+    ],
+    "林下 · 第一层": [
+        "/about"
+    ],
+    "林下 · 第三层": [
+        "/about"
+    ],
+    "林下 · 第二层": [
+        "/about"
+    ],
+    "林下，Understory": [
+        "/about"
+    ],
+    "林下，是森林里大树冠层之下的那一层：不起眼，却撑着整片林子的生长与循环。一人公司也是这样——看起来小，但内核密度极高。": [
+        "/about"
     ],
     "林之然": [
         "/product",
@@ -13990,15 +13984,6 @@
     ],
     "活的开发文档": [
         "/marketplace?view=plugin&id=example-plugin"
-    ],
-    "派 · 第一层": [
-        "/about"
-    ],
-    "派 · 第三层": [
-        "/about"
-    ],
-    "派 · 第二层": [
-        "/about"
     ],
     "流水线：视频→文章→幻灯片→短视频": [
         "/product/conflow"
@@ -16901,9 +16886,6 @@
     "自行维护": [
         "/pricing"
     ],
-    "致敬树莓派": [
-        "/about"
-    ],
     "舆情 / RSS / 搜索热点自动爬取": [
         "/"
     ],
@@ -16959,12 +16941,6 @@
     ],
     "节点拖排 · 景深 · 连线 · 多画布 · 时间线 · 看板——纯手动、无 AI 也完整。": [
         "/product/litmus"
-    ],
-    "芭乐，与派": [
-        "/about"
-    ],
-    "芭乐，番石榴。长得不起眼，不像草莓好看，不像芒果浓郁。但切开之后香气独特，维生素 C 是橙子的 4 倍。一人公司也是这样——看起来小，但内核密度极高。": [
-        "/about"
     ],
     "草稿 · 已匹配声线": [
         "/"
@@ -19735,6 +19711,9 @@
         "/product/liana",
         "/product/conflow",
         "/product/zerozen"
+    ],
+    "鹿蕊、松萝、林可兔、零真，各取自林下生态；每件产品独立可用，按需组合成一套系统。": [
+        "/about"
     ],
     "鹿蕊是共生地衣——人类最早的「真相指示剂」（石蕊试纸）提取自它。人与 AI 共生，显色见真。": [
         "/product/litmus"

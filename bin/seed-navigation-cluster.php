@@ -61,8 +61,6 @@ foreach ([
 ['html-anything','html-anything','https://github.com/nexu-io/html-anything','AI 生成 HTML','content','AI图像',['AI','前端','开源']],
 ['PosterCraft','PosterCraft','https://github.com/MeiGen-AI/PosterCraft','开源海报生成','content','AI图像',['AI','海报','开源']],
 ['DeepDiagram','DeepDiagram','https://github.com/LingyiChen-AI/DeepDiagram','开源图表生成','content','AI图像',['AI','图表','开源']],
-['哩布哩布','Liblib','https://www.liblib.art','国内 AI 绘图社区','content','AI图像',['AI','绘图','社区']],
-['星流','Xingliu','https://www.xingliu.art','AI 绘图工具','content','AI图像',['AI','绘图']],
 ['Recraft','Recraft','https://recraft.ai','AI 设计生成','content','AI图像',['AI','设计','商业']],
 ] as $t) $U[] = $t;
 
@@ -105,6 +103,14 @@ foreach ([
 ['Google AI Studio','AI Studio','https://aistudio.google.com','Google 免费 AI 平台','ai','对话模型',['AI','Google']],
 ['TikHub','TikHub','https://github.com/TikHub/TikHub-API-Python-SDK','社媒数据 API','data','竞品洞察',['数据','API','开源']],
 ] as $t) $U[] = $t;
+
+// Optional local-only entries (kept outside the repo): ops/seeds/navigation-extra.php
+// returns ['cluster' => [rows...], 'user' => [rows...]] in the same row format as above.
+$extraSeed = (getenv('OF_OPS_DIR') ?: __DIR__ . '/../ops') . '/seeds/navigation-extra.php';
+if (is_file($extraSeed)) {
+    $extra = require $extraSeed;
+    foreach (($extra['cluster'] ?? []) as $t) $U[] = $t;
+}
 
 // 组装 + 去重
 $added = 0;
