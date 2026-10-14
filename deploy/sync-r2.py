@@ -9,10 +9,20 @@ import sys
 
 import boto3
 
-R2_ENDPOINT = "https://00d02a54a3c0f7a3f6c3fc75068e29c5.r2.cloudflarestorage.com"
-R2_KEY = os.environ["R2_KEY"]        # 从环境变量读取；禁止硬编码（曾泄露，需轮换）
-R2_SECRET = os.environ["R2_SECRET"]  # 从环境变量读取；禁止硬编码（曾泄露，需轮换）
-BUCKET = "nownexts-static"
+def _env(*names: str) -> str:
+    """按顺序读取环境变量（兼容旧名/新名）；全部缺失时给出明确提示并退出。"""
+    for n in names:
+        v = os.environ.get(n)
+        if v:
+            return v
+    sys.exit(f"sync-r2: 缺少环境变量 {' / '.join(names)}（见 .env.example；禁止硬编码密钥）")
+
+
+# 凭据一律从环境变量读取（旧版曾硬编码泄露，需轮换）。兼容 R2_KEY/R2_SECRET 与 R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY 两套命名。
+R2_ENDPOINT = _env("R2_ENDPOINT")
+R2_KEY = _env("R2_KEY", "R2_ACCESS_KEY_ID")
+R2_SECRET = _env("R2_SECRET", "R2_SECRET_ACCESS_KEY")
+BUCKET = os.environ.get("R2_BUCKET", "nownexts-static")
 ASSETS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/assets"   # 脚本在 deploy/ 下,assets 在仓库根（v2.5.1 挪动脚本时曾漏改,导致同步空跑）
 EXCLUDE_EXTS = {'.map', '.ts', '.md', '.txt', '.sh'}
 

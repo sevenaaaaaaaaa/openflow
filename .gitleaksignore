@@ -1,0 +1,12 @@
+# gitleaks 误报白名单（按 fingerprint）
+# legacy/home-*.html: data-read-frog-react-shadow-css-key 是浏览器翻译插件注入的 DOM 属性，不是密钥
+# admin/api-keys.php: 接入说明里的 curl 示例，值为占位符 YOUR_API_KEY
+302ea80a2a944d71825e38f8e9df2a827ce1fc36:legacy/home-gen1-2026-09-01.html:generic-api-key:822
+ef268bff30d85ecbde4449c124c5503e27f72855:legacy/home-2026-09-19.html:generic-api-key:436
+302ea80a2a944d71825e38f8e9df2a827ce1fc36:legacy/home-2026-09-19.html:generic-api-key:436
+ef268bff30d85ecbde4449c124c5503e27f72855:legacy/home-gen1-2026-09-01.html:generic-api-key:822
+6d5f5d874f5fdea6f29cd6ecc42d7ec764215673:admin/api-keys.php:curl-auth-header:81
+ad3eb90b750b5343eca9a9c4ab055d58d96871a5:admin/api-keys.php:curl-auth-header:81
+admin/api-keys.php:curl-auth-header:81
+legacy/home-gen1-2026-09-01.html:generic-api-key:822
+legacy/home-2026-09-19.html:generic-api-key:436
