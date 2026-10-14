@@ -4,11 +4,20 @@
  *
  * 2026-09-19：页面改版转正，顺带把老首页（第一代）收进这里作纪念。
  * 只列「用户能感知的变化」，不写内部重构流水账。
+ * 版本记录（正式版本）从仓库根目录 CHANGELOG.md 读取，当前版本号读 VERSION——两者是唯一来源。
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
 $siteName = site_config_get('site_name', 'OpenFlow');
 header('Cache-Control: no-cache, max-age=0');
+
+// Formal releases from CHANGELOG.md: headings like "## 2.5.0 — 2026-09-13 · theme" (Unreleased is skipped).
+$releases = [];
+$changelogMd = @file_get_contents(__DIR__ . '/CHANGELOG.md') ?: '';
+if (preg_match_all('/^## (\d+\.\d+\.\d+) — (\d{4}-\d{2}-\d{2}) · (.+)$/mu', $changelogMd, $mm, PREG_SET_ORDER)) {
+    foreach ($mm as $m) $releases[] = ['version' => $m[1], 'date' => $m[2], 'title' => trim($m[3])];
+}
+$currentVersion = of_version();
 
 $entries = [
     [
@@ -70,7 +79,7 @@ $entries = [
       <h1>改了什么，摊开说</h1>
       <p class="lead">只记用户能感知的变化：页面改版、能力上线、老页面的去向。内部重构不占篇幅。</p>
       <div class="proof-strip">
-        <span>当前首页为第二代叙事</span><span>产品页 = 三层十二件产品矩阵</span><span>能力页 = 四力 × 42 模块</span>
+        <span>当前版本 v<?=htmlspecialchars($currentVersion)?></span><span>当前首页为第二代叙事</span><span>产品页 = 三层十二件产品矩阵</span><span>能力页 = 四力 × 42 模块</span>
       </div>
     </div>
   </section>
@@ -101,6 +110,27 @@ $entries = [
       <p class="note" style="margin-top:18px;font-size:12.5px;color:var(--muted)">老页面不删也不改，只是退到下一层；第一代首页以静态快照保留，仅作纪念。</p>
     </div>
   </section>
+
+  <!-- ══ 版本记录（来自 CHANGELOG.md） ══ -->
+  <?php if ($releases): ?>
+  <section id="releases" class="sec reveal" data-od-anchor data-od-id="changelog-releases">
+    <div class="sec-head center">
+      <span class="kicker">正式版本</span>
+      <h2>版本记录</h2>
+    </div>
+    <div class="cl-wrap">
+      <div class="cl-list">
+        <?php foreach ($releases as $r): ?>
+        <article class="cl-item">
+          <div class="cl-date"><?=htmlspecialchars($r['date'])?><span class="cl-k">v<?=htmlspecialchars($r['version'])?></span></div>
+          <div class="cl-body"><h3><?=htmlspecialchars($r['title'])?></h3></div>
+        </article>
+        <?php endforeach; ?>
+      </div>
+      <div class="cta-row" style="margin-top:18px"><a class="btn ghost" href="/docs?doc=CHANGELOG">看完整更新日志</a></div>
+    </div>
+  </section>
+  <?php endif; ?>
 
   <!-- ══ 收口 ══ -->
   <section id="next" class="reveal" data-od-anchor data-od-id="changelog-cta">

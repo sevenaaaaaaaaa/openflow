@@ -30,6 +30,19 @@ function site_config(): array {
     ], $d);
 }
 
+/**
+ * Product version. Single source of truth is the VERSION file at the repo root;
+ * build pipelines may append a suffix (e.g. "-nightly.YYYYMMDD") at build time only.
+ */
+function of_version(): string {
+    static $v = null;
+    if ($v === null) {
+        $raw = @file_get_contents(dirname(__DIR__) . '/VERSION');
+        $v = is_string($raw) && trim($raw) !== '' ? trim($raw) : '0.0.0';
+    }
+    return $v;
+}
+
 // 快捷读取
 function site_config_get(string $key, string $default = ''): string {
     $c = site_config();

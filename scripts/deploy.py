@@ -47,7 +47,8 @@ SSH_OPTS = ["-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=10", "-o", "
 # 允许部署的顶层路径（相对仓库根）
 ALLOW_PREFIXES = ("admin/", "api/", "lib/", "includes/", "assets/", "plugins/", "scripts/", "deploy/",
                    "legacy/")   # legacy/：老页面纪念快照（静态 HTML，noindex）
-ALLOW_ROOT_FILES = {".htaccess", "robots.txt", "sitemap.php"}
+ALLOW_ROOT_FILES = {".htaccess", "robots.txt", "sitemap.php",
+                    "VERSION", "CHANGELOG.md"}   # version single source + changelog (read by changelog.php / docs.php)
 # 永不部署
 DENY_SUBSTRINGS = ("node_modules/", "/src/", "src/", ".git/", ".deploy/", "tests/", "deploy/sync.sh",
                    ".bak", ".old-", ".tmp", "~", ".DS_Store", ".env")
@@ -81,7 +82,7 @@ def is_deployable(rel: str, with_data: list[str] | None = None) -> tuple[bool, s
         return False, "data/ 默认不部署（需 --with-data <file> 显式允许）"
     if "/" in rel:
         return (True, "目录白名单") if rel.startswith(ALLOW_PREFIXES) else (False, "不在允许的目录白名单内")
-    return (True, "根文件白名单") if rel in ALLOW_ROOT_FILES or rel.endswith(".php") else (False, "根目录仅允许 *.php/.htaccess/robots.txt/sitemap.php")
+    return (True, "根文件白名单") if rel in ALLOW_ROOT_FILES or rel.endswith(".php") else (False, "根目录仅允许 *.php/.htaccess/robots.txt/sitemap.php/VERSION/CHANGELOG.md")
 
 
 def remote_path(rel: str) -> str:

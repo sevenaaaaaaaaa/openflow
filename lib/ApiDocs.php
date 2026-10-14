@@ -16,7 +16,7 @@ class ApiDocs {
             'info' => [
                 'title' => site_config_get('site_name', 'OpenFlow XMP') . ' API',
                 'description' => 'OpenFlow XMP 开放接口文档',
-                'version' => site_config_get('version', '2.0.0'),
+                'version' => of_version(),
                 'contact' => [
                     'name' => 'OpenFlow',
                     'url' => site_config_get('site_url', '/'),

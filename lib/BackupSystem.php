@@ -45,7 +45,7 @@ class BackupSystem {
         $meta = [
             'name' => $name,
             'created_at' => date('Y-m-d H:i:s'),
-            'version' => site_config_get('version', '2.0.0'),
+            'version' => of_version(),
             'files' => self::countFiles($backupDir),
             'size' => self::dirSize($backupDir),
             'modules' => self::getModules(),

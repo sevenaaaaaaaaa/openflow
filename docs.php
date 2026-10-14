@@ -83,12 +83,16 @@ function md_anchor(string $title): string {
 }
 
 // 文档索引：自动扫描 docs/handbook/*.md（公开「文档中心」渲染源）
+// 版本变更日志的唯一来源是仓库根目录 CHANGELOG.md，这里以 CHANGELOG 文档名挂进来。
+function md_docs_files(): array {
+    $files = [];
+    foreach (glob(__DIR__ . '/docs/handbook/*.md') ?: [] as $f) $files[basename($f, '.md')] = $f;
+    if (is_file(__DIR__ . '/CHANGELOG.md')) $files['CHANGELOG'] = __DIR__ . '/CHANGELOG.md';
+    return $files;
+}
 function md_docs_index(): array {
-    $dir = __DIR__ . '/docs/handbook';
     $index = [];
-    if (!is_dir($dir)) return $index;
-    foreach (glob($dir . '/*.md') as $f) {
-        $name = basename($f, '.md');
+    foreach (md_docs_files() as $name => $f) {
         $title = $name;
         // 尝试从文件首个 # 标题提取更友好的标题
         $content = @file_get_contents($f) ?: '';
@@ -105,7 +109,7 @@ $requestedDoc = trim($_GET['doc'] ?? 'FEATURES');
 if (isset($_GET['doc'])) $requestedDoc = basename($requestedDoc, '.md');
 if (!isset($docIndex[$requestedDoc])) $requestedDoc = 'FEATURES';
 $docName = $requestedDoc;
-$docMd = @file_get_contents(__DIR__ . '/docs/handbook/' . $docName . '.md') ?: '';
+$docMd = @file_get_contents(md_docs_files()[$docName] ?? '') ?: '';
 $docTitle = $docIndex[$docName]['title'] ?? $docName;
 
 // API 端点列表

@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $settings['site_url'] = $siteUrl ?: '/';
             $settings['installed_at'] = date('Y-m-d H:i:s');
             $settings['installed'] = true;
-            $settings['version'] = '2.0.0';
+            $settings['version'] = of_version();
             json_write($settingsFile, $settings);
 
             // 创建管理员
