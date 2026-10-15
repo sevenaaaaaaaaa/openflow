@@ -108,7 +108,7 @@ grep -rn "Alias\|RewriteRule" /www/server/panel/vhost/apache/extension/nownexts.
    （已用 `scripts/unify-head-assets.py` 把 18 页硬编码清零，该脚本可复跑）
 2. **改了 `tokens.css` / `modules.css` / `fonts.css` / `site-shell.js` / `inject.js`，
    必须 bump `OF_SHELL_VER`**，否则浏览器 7 天不回源，出现「改了看不到」
-3. bump 之后照例：`python3 sync-r2.py` → purge CF 对应 URL → 清 `data/cache/*.cache`
+3. bump 之后照例：`python3 deploy/sync-r2.py` → purge CF 对应 URL → 清 `data/cache/*.cache`
 4. 后台资产同理，版本常量是 `OF_ADMIN_UI_VER`
 
 ### 自查

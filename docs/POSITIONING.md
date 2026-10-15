@@ -37,7 +37,7 @@
 
 **证据**
 - CI 14 道门禁：typecheck / TS 单测 / PHPStan（基线内 0）/ ruff / strict_types 棘轮 /
-  <!--m:php_tests-->162<!--/m--> 个 PHP 测试 / 故事线审计 / 设计护栏 / 内容契约 / 栅格契约 / design_contract / 设备审计
+  <!--m:php_tests-->166<!--/m--> 个 PHP 测试 / 故事线审计 / 设计护栏 / 内容契约 / 栅格契约 / design_contract / 设备审计
 - `scripts/deploy.py`：逐文件 md5 断言、备份与回滚、`--from-git`、部署后 data 归属体检
 - 契约测试能拦住"改了这里坏了那里"（内容契约 153 项、栅格契约 29 项、设计护栏 0 风险）
 

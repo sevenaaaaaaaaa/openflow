@@ -11,7 +11,7 @@
 1. **说他处境，不说我们功能。**
    ✅「市面上的增长工具都默认你有一支团队」　❌「一体化 All-in-one 平台」
 2. **可验证 > 最高级。**
-   可写：具体数字（<!--m:api_endpoints-->120<!--/m--> API / 48 区块 / <!--m:php_tests-->162<!--/m--> 个测试文件）、可翻代码的机制（`SelfEvolve` / `McpGuard`）。
+   可写：具体数字（<!--m:api_endpoints-->120<!--/m--> API / 48 区块 / <!--m:php_tests-->166<!--/m--> 个测试文件）、可翻代码的机制（`SelfEvolve` / `McpGuard`）。
    禁用：「唯一」「首个」「最强」「提升 X%」「自动帮你修」。
 3. **每句都要能补完"点了之后我会……"。**
    ❌「了解更多」是最差 CTA；每个按钮都要预告下一步。
@@ -98,7 +98,7 @@
 | <!--m:api_endpoints-->120<!--/m--> 个 API 端点 | `api/` 下全部 `*.php`（含 `api/v1/`） | `php scripts/metrics.php` |
 | 48 种展示区块 | `block_types()` | PHP 一行（2026-10-14 复核） |
 | <!--m:mcp_tools-->23<!--/m--> 个 MCP 工具 | `lib/McpTools.php` | `php scripts/metrics.php` |
-| <!--m:php_tests-->162<!--/m--> 个测试文件 | `tests/*_test.php` | `php scripts/metrics.php` |
+| <!--m:php_tests-->166<!--/m--> 个测试文件 | `tests/*_test.php` | `php scripts/metrics.php` |
 | 11 种界面语言 | `data/lang/*.json` | `ls` |
 | 42 个能力模块 | `capability.php` 能力索引 | 页面自身 |
 | 502 篇已发布内容 | 线上数据 | `articles/index.json` |

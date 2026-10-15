@@ -85,10 +85,10 @@
 | MIT 开源，可商用、可二次开发、可私有部署 | `LICENSE` |
 | 纯 PHP + JSON + SQLite，零外部服务依赖 | 不需要 MySQL/Redis/Node |
 | 数据 100% 在你自己的服务器 | 无云端回传；导出功能齐备 |
-| <!--m:admin_pages-->195<!--/m--> 个后台页面 · <!--m:api_endpoints-->120<!--/m--> 个 API 端点 · <!--m:lib_files-->238<!--/m--> 个核心类文件 · 48 种展示区块 | `php scripts/metrics.php`（区块数见 `BRAND-VOICE.md` 第七节） |
+| <!--m:admin_pages-->195<!--/m--> 个后台页面 · <!--m:api_endpoints-->120<!--/m--> 个 API 端点 · <!--m:lib_files-->239<!--/m--> 个核心类文件 · 48 种展示区块 | `php scripts/metrics.php`（区块数见 `BRAND-VOICE.md` 第七节） |
 | <!--m:mcp_tools-->23<!--/m--> 个 MCP 工具，AI Agent 可直接调用 | `lib/McpTools.php` |
 | 插件系统（钩子/路由/菜单/插槽/区块/定时六类扩展点），可扩展 | `PluginSystem` |
-| <!--m:php_tests-->162<!--/m--> 个测试文件 | `tests/` |
+| <!--m:php_tests-->166<!--/m--> 个测试文件 | `tests/` |
 | 支持 11 种语言界面 | `lib/I18n.php` 语言表 |
 | 增长引擎：爬热点 → 总结 → 撰写 → 巡检 → 优化，五步可视 | `GrowthFlywheel` |
 | **AI 没配置也能用**，只是不自动写稿——不会白屏 | 优雅降级已测试 |

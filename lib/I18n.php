@@ -8,7 +8,14 @@ declare(strict_types=1);
  */
 
 function i18n_settings(): array {
-    return json_read(DATA_DIR . '/settings.json')['multilang'] ?? [];
+    // 兼容两种存储：嵌套 settings.multilang{} 与扁平 multilang_* 键（历史上 settings.json 用扁平键）。
+    $s = json_read(DATA_DIR . '/settings.json');
+    $nested = $s['multilang'] ?? [];
+    if (!is_array($nested)) $nested = [];
+    foreach (['enabled' => 'multilang_enabled', 'default' => 'multilang_default', 'languages' => 'multilang_languages'] as $nk => $fk) {
+        if (!array_key_exists($nk, $nested) && array_key_exists($fk, $s)) $nested[$nk] = $s[$fk];
+    }
+    return $nested;
 }
 function i18n_default_locale(): string {
     return i18n_settings()['default'] ?? 'zh-CN';

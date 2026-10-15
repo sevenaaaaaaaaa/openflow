@@ -26,7 +26,7 @@
 1. 本机可 SSH 到服务器（密钥已配）
 2. 本机有 `rsync`
 3. 密钥/令牌见 `docs/DEPLOY-SECRETS.md`（**gitignored**，含 CF token / R2 key / DeepSeek key）
-4. 若改了前端资产：本机有 Python + boto3（跑 `sync-r2.py`）
+4. 若改了前端资产：本机有 Python + boto3（跑 `deploy/sync-r2.py`）
 
 ---
 
@@ -47,7 +47,7 @@ rsync -az --delete -e "ssh -p 28766" \
 # 2) 若改了 assets/tokens.css|modules.css|site-shell.js|inject.js 等前端资产：
 #    a. bump includes/site-nav.php 的 OF_SHELL_VER（否则用户 7 天看不到新样式）
 #    b. export R2_KEY=... R2_SECRET=...   # 值见 DEPLOY-SECRETS.md（脚本已不硬编码）
-#       python3 sync-r2.py                 # 上传到 R2
+#       python3 deploy/sync-r2.py                 # 上传到 R2
 #    c. purge CF（见第 4 步）
 
 # 3) 清页面缓存
@@ -109,7 +109,7 @@ ok=0; for t in tests/*_test.php; do php "$t" >/dev/null 2>&1 && ok=$((ok+1)); do
 | 现象 | 原因 | 处理 |
 |---|---|---|
 | `/xmp` 或 MCP 返回 401 | Apache 默认剥离 `Authorization` 头 | `.htaccess` 已有 `CGIPassAuth On`，确认它还在 |
-| 改了 CSS/JS 但浏览器还是旧的 | R2/CF 缓存 + `?v=` 未变 | bump `OF_SHELL_VER` → `sync-r2.py` → purge |
+| 改了 CSS/JS 但浏览器还是旧的 | R2/CF 缓存 + `?v=` 未变 | bump `OF_SHELL_VER` → `deploy/sync-r2.py` → purge |
 | curl 拿到 Cloudflare 挑战页 | CF 对高频/无头请求挑战 | 用真实浏览器验证；或 `--resolve` 直连源站 |
 | 页面出现「系统开小差了」 | 某处 PHP 异常（如调用了不存在的类方法） | 服务器上直接跑该文件看异常：`php -r '$_SERVER["REQUEST_URI"]="/x"; require "x.php";'` |
 | CLI 报 `Module "zip" is already loaded` | php.ini 重复加载（已知） | 无害，忽略 |

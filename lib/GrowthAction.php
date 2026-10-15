@@ -67,7 +67,8 @@ if (!function_exists('growth_action_link_for')) {
 if (!function_exists('growth_action_adopt')) {
     /**
      * 采纳一条提议 → 建 pending 待办（按人+动作去重，不重复建）。
-     * $item: ['profile_id','profile_name','profile_email','module','action','reason','cta','goal_metric'?]
+     * $item: ['profile_id','profile_name','profile_email','module','action','reason','cta','goal_metric'?,'insight_id'?]
+     * insight_id（可选，三方契约 v1.1）：动作源自哪条 Insight Flow 洞察；落在待办上，状态变化时回传 IF。
      * 返回 ['ok'=>true,'dup'=>bool,'action'=>row]。
      */
     function growth_action_adopt(array $item): array {
@@ -75,12 +76,19 @@ if (!function_exists('growth_action_adopt')) {
         if ($action === '') return ['ok' => false, 'error' => 'no_action'];
         $who = (string)($item['profile_id'] ?? '') ?: ((string)($item['profile_email'] ?? '') ?: (string)($item['profile_name'] ?? ''));
         $key = growth_action_key($who, $action);
+        $insightId = mb_substr(trim((string)($item['insight_id'] ?? '')), 0, 200);
 
         $list = growth_action_all();
-        foreach ($list as $a) {
+        foreach ($list as $i => $a) {
             if (($a['status'] ?? '') === 'pending') {
                 $aWho = (string)($a['profile_id'] ?? '') ?: ((string)($a['profile_email'] ?? '') ?: (string)($a['profile_name'] ?? ''));
                 if (growth_action_key($aWho, (string)($a['action'] ?? '')) === $key) {
+                    // 重复采纳但这次带了洞察来源、原待办没有 → 补上 insight_id（不建新待办）
+                    if ($insightId !== '' && empty($a['insight_id'])) {
+                        $list[$i]['insight_id'] = $insightId;
+                        growth_action_save_all($list);
+                        $a = $list[$i];
+                    }
                     return ['ok' => true, 'dup' => true, 'action' => $a];
                 }
             }
@@ -101,6 +109,7 @@ if (!function_exists('growth_action_adopt')) {
             'status'        => 'pending',
             'created_at'    => date('Y-m-d H:i:s'),
         ];
+        if ($insightId !== '') $row['insight_id'] = $insightId;
 
         // 可解释轨道：先记录、拿到 trace id 存到 row 上，完成/忽略时回写结果
         try {
@@ -110,7 +119,8 @@ if (!function_exists('growth_action_adopt')) {
                 'decision' => $row['action'],
                 'module'   => $row['module'],
                 'trigger'  => '大脑在驾驶舱排到这个人，且人点了采纳',
-                'evidence' => array_filter([$row['reason'], $row['goal_metric'] ? ('当前目标指标：' . $row['goal_metric']) : '']),
+                'evidence' => array_filter([$row['reason'], $row['goal_metric'] ? ('当前目标指标：' . $row['goal_metric']) : '',
+                                            $insightId !== '' ? ('Insight Flow 洞察：' . $insightId) : '']),
                 'guard'    => '人工采纳，未走自动执行',
             ]);
             if ($tid) $row['dtrace_id'] = $tid;
@@ -148,9 +158,10 @@ if (!function_exists('growth_action_set_status')) {
     /** 完成 / 忽略一条待办。返回是否命中。 */
     function growth_action_set_status(string $id, string $status): bool {
         if (!in_array($status, ['done', 'dismissed', 'pending'], true)) return false;
-        $list = growth_action_all(); $hit = false; $matched = null;
+        $list = growth_action_all(); $hit = false; $matched = null; $prev = '';
         foreach ($list as &$a) {
             if (($a['id'] ?? '') === $id) {
+                $prev = (string)($a['status'] ?? '');
                 $a['status'] = $status;
                 $a[$status === 'done' ? 'done_at' : 'updated_at'] = date('Y-m-d H:i:s');
                 $matched = $a; $hit = true; break;
@@ -169,6 +180,15 @@ if (!function_exists('growth_action_set_status')) {
                     require_once __DIR__ . '/GrowthLearning.php';
                     growth_learning_verdict((string)($matched['module'] ?? ''), (string)($matched['action'] ?? ''), $status);
                 } catch (\Throwable $e) {}
+            }
+            // 插件钩子：动作状态变化（insight-flow 插件据此回传 openflow.action_feedback）。
+            // 旁路：do_action 自身吞异常，这里再兜一层，任何失败都不影响状态变更结果。
+            if ($matched && $prev !== $status) {
+                try {
+                    if (class_exists('PluginSystem')) PluginSystem::do_action('growth_action_status_changed', $matched, $status, $prev);
+                } catch (\Throwable $e) {
+                    @error_log('[growth_action_status_changed] ' . $e->getMessage());
+                }
             }
         }
         return $hit;

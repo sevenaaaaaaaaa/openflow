@@ -87,6 +87,7 @@ admin_header('入站连接器');
           <option value="lead" <?=($edit['type'] ?? '')==='lead'?'selected':''?>>lead · CRM 线索</option>
           <option value="cdp_event" <?=($edit['type'] ?? '')==='cdp_event'?'selected':''?>>cdp_event · CDP 行为事件</option>
           <option value="contact" <?=($edit['type'] ?? '')==='contact'?'selected':''?>>contact · 画像属性</option>
+          <option value="insight" <?=($edit['type'] ?? '')==='insight'?'selected':''?>>insight · Insight Flow 洞察（兼容通道，新接入用插件 inbox）</option>
         </select></div>
       </div>
       <div class="field-row">

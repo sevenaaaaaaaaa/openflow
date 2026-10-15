@@ -463,10 +463,12 @@ class PluginSystem {
                 try { $member = member_current(); } catch (\Throwable $e) {}
             }
 
+            $raw = (string)file_get_contents('php://input');
             $req = [
                 'params' => $params,
                 'query'  => $_GET,
-                'body'   => $_POST ?: (json_decode(file_get_contents('php://input'), true) ?: []),
+                'body'   => $_POST ?: (json_decode($raw, true) ?: []),
+                'raw'    => $raw,   // 原始请求体：验签类端点（HMAC over raw body）需要
                 'member' => $member,
                 'method' => $method,
             ];
@@ -670,7 +672,12 @@ class PluginApiResponse {
         public mixed $data = null,
         public int $status = 200,
         public bool $isError = false,
+        public bool $isRaw = false,
     ) {}
+    /** 原样输出：$data 直接作为响应体（不套 {"ok":true,"data":…}），供需遵守外部契约的端点使用 */
+    public static function raw(array $data, int $status = 200): self {
+        return new self($data, $status, false, true);
+    }
     /** 成功响应：PluginApiResponse::json(['count' => 42]) */
     public static function json(mixed $data, int $status = 200): self {
         return new self($data, $status, false);
@@ -680,6 +687,7 @@ class PluginApiResponse {
     }
     public function send(): void {
         http_response_code($this->status);
+        if ($this->isRaw) { echo json_encode($this->data, JSON_UNESCAPED_UNICODE); return; }
         if ($this->isError) echo json_encode(['ok' => false, 'error' => $this->data['error'] ?? 'error'], JSON_UNESCAPED_UNICODE);
         else echo json_encode(['ok' => true, 'data' => $this->data], JSON_UNESCAPED_UNICODE);
     }

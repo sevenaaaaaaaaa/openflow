@@ -84,13 +84,13 @@ Worker 源码/部署脚本在仓库 `deploy/`（如 `r2-media-worker.js`、`depl
 |---|---|
 | 桶 | `nownexts-static` |
 | Endpoint | `https://00d02a54a3c0f7a3f6c3fc75068e29c5.r2.cloudflarestorage.com` |
-| 同步工具 | `python3 sync-r2.py`（本地 → R2，仅传变更）**需环境变量**（凭据已从代码移除） |
+| 同步工具 | `python3 deploy/sync-r2.py`（本地 → R2，仅传变更）**需环境变量**（凭据已从代码移除） |
 | 视频上传 | `python3 deploy/upload-r2-video.py 本地.mp4` → `nownexts.com/media/…`（同样读环境变量） |
 
 ```bash
 # 凭据从环境变量注入（值见 gitignored 的 docs/DEPLOY-SECRETS.md）
 export R2_KEY=... R2_SECRET=...
-python3 sync-r2.py
+python3 deploy/sync-r2.py
 ```
 
 ### 2.4 常用操作
@@ -115,7 +115,7 @@ curl -s -X POST -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: applicati
 
 ```
 本地代码 ──rsync(排除 data/)──▶ 服务器 /www/wwwroot/nownexts_com ──Apache/PHP──▶ 用户
-静态资产 ──sync-r2.py──▶ R2 桶 ──Workers(r2-assets/img-opt)──▶ 用户
+静态资产 ──deploy/sync-r2.py──▶ R2 桶 ──Workers(r2-assets/img-opt)──▶ 用户
 改资产后：bump OF_SHELL_VER ─▶ sync-r2 ─▶ purge CF ─▶ 清 data/cache
 ```
 

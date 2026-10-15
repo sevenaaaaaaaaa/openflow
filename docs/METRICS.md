@@ -29,8 +29,8 @@
 | 片段/工具文件 | <!--m:admin_fragments-->15<!--/m--> | `_` 开头、`config/login/logout`、以及被 include 的非页面文件 |
 | API 端点 | <!--m:api_endpoints-->120<!--/m--> | `api/` 下全部 `*.php`（含 `api/v1/`） |
 | MCP 工具 | <!--m:mcp_tools-->23<!--/m--> | `lib/McpTools.php` 注册表长度（`mcp-server.php` 与对外页面同源引用） |
-| 核心类库文件 | <!--m:lib_files-->238<!--/m--> | `lib/*.php` |
-| PHP 测试 | <!--m:php_tests-->162<!--/m--> | `tests/*_test.php` |
+| 核心类库文件 | <!--m:lib_files-->239<!--/m--> | `lib/*.php` |
+| PHP 测试 | <!--m:php_tests-->166<!--/m--> | `tests/*_test.php` |
 | 插件 | <!--m:plugins-->9<!--/m--> | `plugins/` 下的目录 |
 | 前台页面 | <!--m:frontend_pages-->78<!--/m--> | 仓库根目录的 `*.php` |
 

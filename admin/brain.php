@@ -45,6 +45,7 @@ if ($act === 'adopt') {
         'reason'        => $_POST['reason'] ?? '',
         'cta'           => $_POST['cta'] ?? '',
         'goal_metric'   => $_POST['goal_metric'] ?? '',
+        'insight_id'    => $_POST['insight_id'] ?? '',
     ]);
     header('Location: /xmp/brain?adopted=1#inbox'); exit;
 }

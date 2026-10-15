@@ -43,6 +43,7 @@
 | `MCP-SETUP.md` | **把 OpenFlow 接到 AI Agent**：HTTP SSE / stdio 两种接入、<!--m:mcp_tools-->23<!--/m--> 个工具速览、鉴权与安全、排障 |
 | `SERVICE-INTEGRATION.md` | **服务之间怎么对接**：矩阵服务地图、已打通通道、新增对接规范、数据归属 |
 | `INFRASTRUCTURE.md` | **服务器与 Cloudflare 配置**：站点/别名、systemd 服务、DNS、Workers、R2、常用运维命令 |
+| `DEPLOYMENT.md` | **部署总指南（自托管入口）**：本地/Docker/服务器原生/Vercel/Cloudflare 五种形态，配置要求、路径权限、升级回滚 |
 | `DEPLOY-CONVENTIONS.md` | 多会话协作约定 + 前端资产版本号纪律（多人/多 Agent 并行时必读） |
 
 ---
@@ -62,4 +63,5 @@
 | `../CHANGELOG.md` | **版本变更日志**——每个正式版本的亮点与改进（唯一来源） |
 | `PERFORMANCE.md` | 性能基线与优化记录（含 events 索引） |
 | `EVOLUTION.md` | 三档规模演进路线——已按实测修订：轴定为「细胞式」、第六章 DataStore 暂缓、第八章触发器重标 |
-| `DEPLOY.md` | 部署/发布流程参考 |
+| `DEPLOY.md` | 云端会话 → 本机落地的 git bundle 发布流程（维护者视角） |
+| `handbook/` | **公开「文档中心」渲染源**（docs.php 读取的产品文档；deployment.md 为部署精简版，全量版见 `DEPLOYMENT.md`） |

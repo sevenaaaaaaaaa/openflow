@@ -121,3 +121,7 @@ data/backups/
 # Tool-usage workspace (scripts/batches/data made while *using* OpenFlow).
 # Never on GitHub; deploy/sync.sh pushes it to the server at /www/ops/openflow/ (outside the web root).
 /ops/
+
+# 项目信息/数据（不进 GitHub，本地+服务器一致即可）
+assets/articles/
+docs/handbook/gana-tool-writing-skill.md

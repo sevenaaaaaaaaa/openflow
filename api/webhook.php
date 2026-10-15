@@ -51,6 +51,13 @@ if ($inboundId !== '') {    $conn = inbound_connector($inboundId);
     json_out(['ok' => true, 'message' => 'Inbound processed', 'detail' => $r]);
 }
 
+// ─── Insight Flow 洞察误投保护 ───
+// 没带 X-Inbound-Id 的 IF 洞察以前会走下面的传统分支并返回 ok:true（静默丢弃）。
+// 契约 v1.1：禁止假成功——明确 400 并指向插件 inbox。
+if (is_array($data) && function_exists('inbound_looks_like_insight') && inbound_looks_like_insight($data)) {
+    json_out(['ok' => false, 'message' => 'Insight Flow 洞察请推送到 POST /api/plugin/insight-flow/inbox（insight.upsert，X-IF-Signature 验签），或带 X-Inbound-Id 指向 type=insight 的入站连接器'], 400);
+}
+
 // ─── 传统 Webhook 转发（保持向后兼容） ───
 if (!empty($webhook['url'])) {
     $payload = json_encode([

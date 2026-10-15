@@ -215,6 +215,9 @@ function agent_run(string $goal, array $opts = []): array {
 
     $runId = 'agent_' . date('YmdHis') . '_' . substr(bin2hex(random_bytes(3)), 0, 4);
     $maxSteps = max(1, min(10, (int)($opts['max_steps'] ?? 6)));
+    // 三方契约 v1.1：运行可挂在一条 Insight Flow 洞察上（opts.insight_id），单步也可在 args 里带 insight_id；
+    // 工具参数白名单会剥掉它，所以单独提取、记在 step / run 元数据上，供反馈与审计回溯。
+    $runInsight = mb_substr(trim((string)($opts['insight_id'] ?? '')), 0, 200);
     $steps = [];
     $status = 'failed'; $summary = '';
 
@@ -226,17 +229,23 @@ function agent_run(string $goal, array $opts = []): array {
         $thought = mb_substr((string)($d['thought'] ?? ''), 0, 200);
         if (!isset($tools[$name])) { $steps[] = ['thought' => $thought, 'tool' => $name, 'args' => [], 'ok' => false, 'error' => '工具不在白名单', 'attempts' => 0]; continue; }
         $args = agent_validate_args($tools[$name]['params'], (array)($d['args'] ?? []));
+        $stepInsight = mb_substr(trim((string)(((array)($d['args'] ?? []))['insight_id'] ?? '')), 0, 200) ?: $runInsight;
         if (!agent_allowed($tools[$name], ['approve' => !empty($opts['approve']), 'auto' => !empty($opts['auto']), 'tool' => $name])) {
             $pending = ['thought' => $thought, 'tool' => $name, 'args' => $args];
+            if ($stepInsight !== '') $pending['insight_id'] = $stepInsight;
             $run = ['id' => $runId, 'goal' => $goal, 'status' => 'needs_approval', 'steps' => $steps, 'pending' => $pending, 'summary' => '该动作风险为「' . $tools[$name]['risk'] . '」，待人工批准', 'created_at' => date('Y-m-d H:i:s')];
+            if ($runInsight !== '') $run['insight_id'] = $runInsight;
             agent_store($run);
             return ['ok' => true, 'run' => $run];
         }
         $res = agent_invoke($tools[$name], $args);
-        $steps[] = ['thought' => $thought, 'tool' => $name, 'args' => $args, 'ok' => !empty($res['ok']), 'result' => (string)($res['result'] ?? ''), 'error' => (string)($res['error'] ?? '')];
+        $step = ['thought' => $thought, 'tool' => $name, 'args' => $args, 'ok' => !empty($res['ok']), 'result' => (string)($res['result'] ?? ''), 'error' => (string)($res['error'] ?? '')];
+        if ($stepInsight !== '') $step['insight_id'] = $stepInsight;
+        $steps[] = $step;
     }
     if ($status === 'failed' && count($steps) >= $maxSteps) { $status = 'max_steps'; $summary = '达到最大步数'; }
     $run = ['id' => $runId, 'goal' => $goal, 'status' => $status, 'steps' => $steps, 'pending' => null, 'summary' => $summary, 'created_at' => date('Y-m-d H:i:s')];
+    if ($runInsight !== '') $run['insight_id'] = $runInsight;
     agent_store($run);
     // 回流：成功完成的 agent 运行给学习层一个正向信号
     if ($status === 'completed') { try { require_once __DIR__ . '/GrowthLearning.php'; growth_learning_verdict('agent', $goal, 'done'); } catch (\Throwable $e) {} }
@@ -254,7 +263,9 @@ function agent_approve(string $runId, array $opts = []): array {
         $tool = $tools[$p['tool']] ?? null;
         if (!$tool) return ['ok' => false, 'error' => '工具已失效'];
         $res = agent_invoke($tool, (array)$p['args']);
-        $run['steps'][] = ['thought' => (string)($p['thought'] ?? ''), 'tool' => $p['tool'], 'args' => $p['args'], 'ok' => !empty($res['ok']), 'result' => (string)($res['result'] ?? ''), 'error' => (string)($res['error'] ?? ''), 'approved' => true];
+        $step = ['thought' => (string)($p['thought'] ?? ''), 'tool' => $p['tool'], 'args' => $p['args'], 'ok' => !empty($res['ok']), 'result' => (string)($res['result'] ?? ''), 'error' => (string)($res['error'] ?? ''), 'approved' => true];
+        if (!empty($p['insight_id'])) $step['insight_id'] = (string)$p['insight_id'];
+        $run['steps'][] = $step;
         $run['pending'] = null;
         $run['status'] = !empty($res['ok']) ? 'completed' : 'failed';
         $run['summary'] = !empty($res['ok']) ? '已按批准执行' : ('执行失败：' . ($res['error'] ?? ''));
