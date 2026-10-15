@@ -53,7 +53,7 @@ Alias /<product>  /www/wwwroot/<product>     # 挂在 nownexts.com 下
 
 ```bash
 # *.bak* / *.old-* 的保护：避免 --delete 误删其他会话的备份与中间产物
-rsync -az --delete -e "ssh -p 28766" \
+rsync -az --delete --chmod=D755,F644 -e "ssh -p 28766" \
   --exclude='.git/'      --exclude='data/'       --exclude='uploads/' \
   --exclude='drafts/'    --exclude='vendor/'     --exclude='.env' \
   --exclude='.user.ini'  --exclude='node_modules/' \
@@ -63,6 +63,7 @@ rsync -az --delete -e "ssh -p 28766" \
 ```
 
 要点：
+- **必须带 `--chmod=D755,F644`**：`-a` 会原样保留本机权限，本机 0600 的文件曾以 root 0600 落地 → Web 用户读不了 → 全站 500（2026-10-15）。`scripts/deploy.py` 上传后已自动 chmod 644/755
 - **不要**用不排除 `*.bak*` / `*.old-*` 的 `--delete`，否则会把别人正在用的备份/中间产物删掉
 - `.htaccess` 会随部署覆盖服务器版本——如果服务器上有别会话加的规则，先 `diff` 再部署
 - 部署前后各清一次缓存：`rm -f data/cache/*.cache`；改了前端资源再 purge CF（见 `docs/DEPLOY-CONFIG.md`）

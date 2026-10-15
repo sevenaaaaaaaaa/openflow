@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shlex
 import subprocess
 import sys
 import time
@@ -87,6 +88,31 @@ def is_deployable(rel: str, with_data: list[str] | None = None) -> tuple[bool, s
 
 def remote_path(rel: str) -> str:
     return f"{REMOTE_ROOT.rstrip('/')}/{norm(rel)}"
+
+
+# 上传后统一权限：scp/rsync 会沿用本机文件的 mode。本机有些文件是 0600（编辑器/工具原子写入
+# 留下的），曾以 root:root 0600 落到服务器——Apache/PHP（www 用户）读不了 → 全站 500。
+# 所以每次上传后显式 chmod：文件 644、所在目录 755（只动本次涉及的路径，不递归整站）。
+REMOTE_FILE_MODE = "644"
+REMOTE_DIR_MODE = "755"
+
+
+def perms_script(files: list[str]) -> str:
+    """生成把本次上传的文件设为 644、其所在目录（站点根以下）设为 755 的远端命令；无文件时返回空串。"""
+    rels = sorted({norm(f) for f in files if norm(f)})
+    if not rels:
+        return ""
+    root = REMOTE_ROOT.rstrip("/")
+    dirs: set[str] = set()
+    for rel in rels:
+        parent = os.path.dirname(rel)
+        while parent:
+            dirs.add(f"{root}/{parent}")
+            parent = os.path.dirname(parent)
+    parts = ["chmod " + REMOTE_FILE_MODE + " " + " ".join(shlex.quote(remote_path(r)) for r in rels)]
+    if dirs:
+        parts.append("chmod " + REMOTE_DIR_MODE + " " + " ".join(shlex.quote(d) for d in sorted(dirs)))
+    return " && ".join(parts)
 
 
 def url_for(rel: str, site: str = SITE) -> str | None:
@@ -193,6 +219,15 @@ def ensure_remote_dirs(files: list[str]) -> None:
         ssh("mkdir -p " + " ".join(f"'{d}'" for d in dirs))
 
 
+def normalize_remote_perms(files: list[str]) -> str | None:
+    """上传后把文件/目录权限归一（644/755）。成功返回 None，失败返回错误信息。"""
+    script = perms_script(files)
+    if not script:
+        return None
+    cp = ssh(script)
+    return None if cp.returncode == 0 else (cp.stderr or cp.stdout or "chmod 失败").strip()[:300]
+
+
 def scp_upload(rel: str, dest_rel: str | None = None) -> None:
     src = ROOT / rel
     dst = f"root@{HOST}:{remote_path(dest_rel or rel)}"
@@ -256,6 +291,10 @@ def do_rollback(stamp: str) -> int:
         if got != want:
             bad += 1
         print(f"  {flag} {rel} {want[:8]} → 远端 {(got or 'MISSING')[:8]}")
+    perm_err = normalize_remote_perms(files)
+    if perm_err:
+        bad += 1
+        print(f"  ✗ 权限归一失败（文件可能对 Web 用户不可读）：{perm_err}", file=sys.stderr)
     return 1 if bad else 0
 
 
@@ -337,6 +376,13 @@ def main() -> int:
                 print(f"  … {done}/{len(plan.uploads)}")
 
     rels = [e.rel for e in plan.uploads]
+    # 权限归一：不论本机 mode 如何，远端一律 644/755（防 0600 → 全站 500）
+    perm_err = normalize_remote_perms([r for r in rels if r not in failed])
+    if perm_err:
+        print(f"  ✗ 权限归一失败（文件可能对 Web 用户不可读）：{perm_err}", file=sys.stderr)
+        failed.extend([r for r in rels if r not in failed])
+    else:
+        print(f"  ✓ 权限归一：文件 {REMOTE_FILE_MODE} / 目录 {REMOTE_DIR_MODE}")
     got_all = md5_remote(rels)
     for e in plan.uploads:
         if e.rel in failed:

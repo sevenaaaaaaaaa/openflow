@@ -66,5 +66,33 @@ class TestPlan(unittest.TestCase):
         self.assertEqual(sorted(r[0] for r in plan.refused), ["data/x.json", "src/a.ts"])
 
 
+class TestPerms(unittest.TestCase):
+    """上传后必须显式 chmod：本机 0600 文件曾原样落到服务器 → 全站 500。"""
+
+    def test_files_644_and_parent_dirs_755(self):
+        script = deploy.perms_script(["lib/A.php", "plugins/x/view.php", "index.php"])
+        root = deploy.REMOTE_ROOT.rstrip("/")
+        file_part, dir_part = script.split(" && ")
+        self.assertTrue(file_part.startswith("chmod 644 "))
+        for rel in ["lib/A.php", "plugins/x/view.php", "index.php"]:
+            self.assertIn(f"{root}/{rel}", file_part)
+        self.assertTrue(dir_part.startswith("chmod 755 "))
+        for d in ["lib", "plugins", "plugins/x"]:
+            self.assertIn(f"{root}/{d}", dir_part)
+        self.assertNotIn(f"{root} ", dir_part + " ")   # 不碰站点根目录本身
+
+    def test_root_files_only_no_dir_chmod(self):
+        script = deploy.perms_script([".htaccess"])
+        self.assertTrue(script.startswith("chmod 644 "))
+        self.assertNotIn("chmod 755", script)
+
+    def test_empty(self):
+        self.assertEqual(deploy.perms_script([]), "")
+
+    def test_paths_are_shell_quoted(self):
+        script = deploy.perms_script(["assets/a b.css"])
+        self.assertIn("'", script)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
