@@ -1,141 +1,231 @@
-<div align="center">
+<p align="center">
+  <a href="https://nownexts.com"><img src="docs/readme/banner.png" alt="林下 Understory —— 你不缺怎么做，你缺该做什么" width="100%"></a>
+</p>
 
-<img src="favicon.svg" width="72" alt="OpenFlow">
+<p align="center">
+  <b>别人的增长工具，默认你有一支团队。林下 Understory 做的，是给没有团队的人的那一套。</b><br>
+  它自己爬信号、自己出草稿、自己盯该跟进谁——你只做判断，不做事。
+</p>
 
-# OpenFlow —— AI Agent 时代 OPC 与 DRI 人群的增长操作系统
+<p align="center">
+  <a href="https://nownexts.com">官网</a> ·
+  <a href="#产品矩阵">产品矩阵</a> ·
+  <a href="#快速开始">免费开始</a> ·
+  <a href="docs/USAGE-GUIDE.md">文档</a> ·
+  <a href="README.en.md">English</a>
+</p>
 
-**增长不是技能,而是系统。你缺的从来不是一支团队,而是一套忠实稳定、围绕你运转的工作流程。**
+<p align="center">
+  <a href="https://nownexts.com"><img src="https://img.shields.io/badge/官网-nownexts.com-3E6B4A" alt="官网"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/OpenFlow-MIT-2563eb" alt="License: MIT"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-2.5.0-7c5cff" alt="Version 2.5.0"></a>
+</p>
 
-[![CI](https://github.com/sevenaaaaaaaaa/openflow/actions/workflows/ci.yml/badge.svg)](../../actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-2563eb.svg)](LICENSE)
-[![PHP 8.1+](https://img.shields.io/badge/PHP-8.1%2B-7c5cff.svg)](../../actions)
-[![Tests](https://img.shields.io/badge/%E5%A5%91%E7%BA%A6%E6%B5%8B%E8%AF%95-156%20passed-16a34a.svg)](tests/)
-
-[官网](https://nownexts.com) · [在线体验](https://nownexts.com/register) · [产品能力](https://nownexts.com/capability) · [定价](https://nownexts.com/pricing) · [使用指南](docs/USAGE-GUIDE.md)
-
-</div>
+<p align="center"><sub>Seven · 十年增长操盘 · 核心能力永久开源 · 数据在你自己的服务器</sub></p>
 
 ---
 
-## 这是什么:为什么增长需要一台"操作系统"
+## 你可能正在经历
 
-AI Agent 时代,制约增长的根源已经不是能力不足,而是**协作与组织术的缺位**。
+- 「每天花 3 小时找选题、改文章，真正该做的判断反而没时间做。」
+- 「知道增长该做什么，但哪些交给 Agent、哪些必须自己来，一直没想清楚。」
+- 「试了几个工具，最后都变成：还得我自己来。」
 
-过去,一个人想做大增长,只有两条路:要么雇团队,把自己变成管理者;要么用一堆 SaaS,把自己变成操作员。前者成本高昂,后者把你切碎在工具之间。所谓"一人公司(OPC)"其实是个伪命题——个体能成为超级个体,从来只是概率事件,背后真正的决定因素是:**那个直接责任人(DRI)能否围绕自己重新组织资源。**
+营销自动化默认你有市场团队，CRM 默认你有销售，数据分析默认你有分析师。
+五个工具，五份等着人来喂的工作。**一人公司缺的从来不是工具，是人。**
 
-OpenFlow 就是围绕这个真命题造的系统。它把 **Touch(触达)· Insight(洞察)· Personalize(个性化)· Sell(销售)** 装进同一个 TIPS 框架:四力不是四个功能区,而是一条反馈回路——成交与丢单的真相回流洞察,洞察调整内容与渠道。**TIPS 是让个体的线性增长转变为增长飞轮、进而形成 Loop 的核心范式**:一个人拥有了系统,他的每一步努力才开始积累,而不是清零重来。
+## 林下是什么
 
-AI Agent 时代把这个系统交到了每个人手里。OpenFlow 是它的开源实现。
+林下，是树冠之下的那一层：不起眼，却撑着整片林子的生长。一人公司也是这样。
 
-## 系统长什么样:每个界面都是组织术,不是功能
+林下 Understory 只服务一种人：一个人扛着一家公司的人。
+AI 让「没有人」第一次不等于「做不了」。我们把十二件产品排成三层，哪段缺人，就用哪件补上。
 
-下面的截图不是功能展示,而是同一个命题的四块证据——**DRI 如何围绕自己重组资源,TIPS 回路如何把个人的努力变成飞轮**:
+## 产品矩阵
 
-**① 今日主线:围绕你组织的注意力** —— 全站信号不按功能模块分散,而是按"你"收口成一条行动脊柱:先处理钱与时效,再推进今日目标。这是组织术的第一步:你的注意力花在哪,增长就在哪。
+每件都能单独跑、单独见效；互通走公开 API——拔掉任何一个，其余照常运行。
 
-![今日主线](docs/screenshots/01-today.png)
+**入口层 · 一整套系统，门槛最低**
 
-**② AI 岗位:给你的经验配执行者** —— 不是又一个跑一次的任务,是有 KPI、有工具边界、每天交班的数字员工。它接住的是"你本来要雇人做"的那部分,而策略、审核、发布的决定权全程在你手里。
+| 产品 | 一句话 | 适合谁 | 入口 |
+|---|---|---|---|
+| **开务 OpenFlow** | 内容、访客数据、自动触达、在线成交，一个人跑得完的增长系统 | 想一次配齐整套系统的一人公司、小团队 | [产品页](https://nownexts.com/product/openflow) · [GitHub](https://github.com/sevenaaaaaaaaa/openflow) · [自托管](#快速开始) |
 
-![AI 岗位](docs/screenshots/05-agent-posts.png)
+**进阶层 · Flow 家族，单点更深**
 
-**③ 驾驶舱与 CDP:让真相回流** —— KPI、漏斗、AI 解读在驾驶舱;每个访客的来源、行为、成交在 CDP 一人一册。TIPS 回路里"洞察"的一半就是靠它:没有真相回流,增长只是碰运气。
+| 产品 | 一句话 | 适合谁 | 入口 |
+|---|---|---|---|
+| **风媒 MFlow** | AI 生成、多平台分发、轻触达；不换 CMS，不锁模型 | 内容创作者、电商卖家 | [产品页](https://nownexts.com/product/mflow) · [GitHub](https://github.com/sevenaaaaaaaaa/mflow) · [在线体验](https://nownexts.com/mflow/) |
+| **魔块 WebsFlow** | 面向投放的落地页工场：出页、上线、看数据、放量，当天闭环 | 投手、活动运营 | [产品页](https://nownexts.com/product/webs-flow) · [GitHub](https://github.com/sevenaaaaaaaaa/websflow) · [在线体验](https://nownexts.com/webflow/) |
+| **触级 UserLoop** | 埋点、身份合并、分群，对接任何 MA 的全域数据中枢 | 多平台团队、代理商 | [产品页](https://nownexts.com/product/userloop) · [GitHub](https://github.com/sevenaaaaaaaaa/userloop) |
+| **洞澜 inFlow** | 替你盯外部世界：趋势、舆情、竞品，每天给出情报 | 品牌方、内容策划 | [产品页](https://nownexts.com/product/inflow) · [GitHub](https://github.com/sevenaaaaaaaaa/inflow) |
+| **芭乐 Pay PayFlow** | 一行代码嵌进任何页面：收款、订阅、老带新返佣 | 创作者、独立开发者 | [产品页](https://nownexts.com/product/payflow) · [GitHub](https://github.com/sevenaaaaaaaaa/payflow) |
+| **林下学院 LearnFlow** | 上课、进度、测验、证书，课程交付一个后台管完 | 讲师、教练、训练营主理人 | [产品页](https://nownexts.com/product/learnflow) · [GitHub](https://github.com/sevenaaaaaaaaa/learnflow) |
 
-![驾驶舱](docs/screenshots/02-dashboard.png)
+**工作台层 · Studio，长在你的桌面上**
 
-![CDP](docs/screenshots/03-cdp.png)
+| 产品 | 一句话 | 适合谁 | 入口 |
+|---|---|---|---|
+| **鹿蕊 Litmus** | 知识 OS：人随手记、AI 帮你建，知识是磁盘上的普通 Markdown | 知识工作者、开发者 | [产品页](https://nownexts.com/product/litmus) · [GitHub](https://github.com/sevenaaaaaaaaa/litmus) · [下载](https://github.com/sevenaaaaaaaaa/litmus/releases/latest) |
+| **松萝 Liana** | 隐私输入法：按键不离开设备，零遥测，P2P 端到端同步 | 重隐私人群、效率用户 | [产品页](https://nownexts.com/product/liana) · [GitHub](https://github.com/sevenaaaaaaaaa/liana) · [下载](https://github.com/sevenaaaaaaaaa/liana/releases/latest) |
+| **成章 ConFlow** | 看完一条视频，得到可发布的文章和可放映的幻灯片 | 内容团队、知识博主 | [产品页](https://nownexts.com/product/conflow) · [GitHub](https://github.com/sevenaaaaaaaaa/V2HTML) |
+| **林可兔 LinkTo** | 邮件工作台：AI 分类降噪、摘要起草，数据全在本地 | 邮件重度用户、商务人士 | [产品页](https://nownexts.com/product/linkto) · [GitHub](https://github.com/sevenaaaaaaaaa/linkto) · [下载](https://github.com/sevenaaaaaaaaa/linkto/releases/latest) |
+| **零真 ZeroZen** | 浏览器扩展：本地规则拦广告和弹窗，规则管不到的交给 AI | 所有浏览器用户 | [产品页](https://nownexts.com/product/zerozen) · [GitHub](https://github.com/sevenaaaaaaaaa/zerozen) · [下载](https://github.com/sevenaaaaaaaaa/zerozen/releases/latest) |
 
-**④ 自动化画布:把你的方法固化为流程** —— 拖拽触发器、条件、动作与延时,你的 SOP 变成系统确定性执行的 Flow。这是"手动挡"本身:方法来自你,执行交给系统,留痕给你复盘。
+> 鹿蕊、松萝、林可兔、零真，名字都取自林下生态。三层的全貌见 [nownexts.com/product](https://nownexts.com/product)。
 
-![画布](docs/screenshots/04-canvas.png)
+## 我该从哪件开始
+
+| 你的情况 | 从这里开始 |
+|---|---|
+| 只缺收款 / 只缺落地页 / 只缺情报 | PayFlow / WebsFlow / inFlow，零依赖，今天就能用 |
+| 投放 → 收款 → 沉淀 | WebsFlow 承接页 + PayFlow 收款 + UserLoop 数据 |
+| 一个人当编辑部 | inFlow 情报 + MFlow 生产分发 + UserLoop 效果回流 |
+| 卖课、开训练营 | LearnFlow 交付 + PayFlow 收款 + MFlow 触达 |
+| 想要一整套，数据在一处 | **OpenFlow** |
+
+从 OpenFlow 开始，因为门槛最低；在 Flow 里变深，因为单点更强；用 Studio 工作，因为矩阵终将长在每个人的桌面上。
+
+## OpenFlow 一天替你干什么
+
+| | |
+|---|---|
+| <img src="docs/screenshots/01-today.png" alt="今日主线"> | <img src="docs/screenshots/05-agent-posts.png" alt="AI 岗位"> |
+| **你打开电脑，今天先做什么已经排好。** 全站信号收成一条主线：先处理钱与时效，再推进今日目标。 | **草稿等你改，不用从空白页开始。** AI 岗位每天盯热点、出选题、写稿，发布永远由你拍板。 |
+| <img src="docs/screenshots/02-dashboard.png" alt="经营驾驶舱"> | <img src="assets/images/product/automation.png" alt="营销自动化"> |
+| **哪个来源真的带来成交，一眼看清。** 访客、线索、订单、收入在一张驾驶舱里。 | **你的方法，变成每天自动跑的流程。** 新线索欢迎、购买后关怀，一键创建，确认后再启用。 |
 
 <details>
-<summary><b>更多界面</b>(内容中心 / Studio 编排)</summary>
+<summary>它的一天，按时间看</summary>
 
-![内容中心](docs/screenshots/06-content-hub.png)
+| 时间 | 它在做什么 |
+|---|---|
+| 你还没起床 | 爬完行业热点，选题按优先级排好 |
+| 你打开电脑 | 草稿等你改；昨天该跟进的人已经列好 |
+| 你在忙交付 | 认出老访客，给他看更相关的内容；表单留资自动进 CRM |
+| 你下班之后 | 巡检全站：哪页报错、哪页慢、哪块内容是空的 |
+| 每周 | 把「哪个来源真的带来成交」算给你 |
 
-![Studio](docs/screenshots/07-studio.png)
-
+运行周期由你设定。
 </details>
 
-## 特色能力
+## TIPS：四件事放进同一条链路
 
-### 原生 TIPS 框架
+林下的方法论叫 TIPS。四力不是四个功能区，而是一条回路：成交的真相回流洞察，洞察再调整内容与渠道。
 
-OpenFlow 不是"带了一些营销功能的 CMS"——TIPS 是它的骨架:触达建立有效接触,洞察形成证据与判断,个性化逐人匹配策略,销售推动成交并让真相回流。图形化的框架贯穿每个页面,**为什么这么设计,界面上写得明明白白**。
+| 力 | 它负责 | 承载产品 |
+|---|---|---|
+| **T** 触达 Touch | 在对的时间、渠道，把内容递到人面前 | OpenFlow · MFlow · 林可兔 LinkTo |
+| **I** 洞察 Insight | 从几百个指标里捞出该看的那几个 | UserLoop · inFlow |
+| **P** 个性化 Personality | 给对的人，在对的时刻，说对的话 | OpenFlow · UserLoop |
+| **S** 销售 Sales | 从触达到成交，让收入流向你 | PayFlow · LearnFlow |
 
-从个体走向超级个体,第一件事不是招人,不是买工具,而是**给自己一套 TIPS 系统**——让你的每一份努力进入回路,而不是散落在五个互不相通的后台里。
-
-### Flow 与 Loop:手动挡与自动挡
-
-无论个体、超级个体还是 DRI,最重要的永远是**人**:你的经验、你不可替代的价值、你独有的资源整合能力。所以 OpenFlow 的每项能力都把**追踪与决定权留给人**:
-
-- **Flow 模式是手动挡**:你设计节点、画布与规则,AI 只辅助搭建与检查,系统按你批准的流程确定性执行——适合已经知道怎么做的 SOP;
-- **Loop 模式是自动挡**:你定义目标、预算与边界,Agent 在白名单工具里观察、执行、评估,中高风险回到你手里批准——适合知道目标但缺人手的探索。
-
-就像开发者不相信高阶自动驾驶能替你决定"为什么出发",OpenFlow 不相信 AI 能替你决定增长的意义。**挡位可以换,方向盘永远在你手里。**
-
-### 自我进化
-
-自我进化的前提,是数据在系统里自由流动:内容表现、访客行为、成交真相、Agent 的每一步动作,全部回流到同一套 TIPS 数据模型,让 AI 能完整学习"当下正在发生什么"。
-
-于是 OpenFlow 有一个长期承诺:**只要一个人下载并部署了 OpenFlow,随着数据积累与 AI 学习,他最终能炼化出一个完全符合自己的、独一无二的版本。**同一份代码,每个 DRI 长出的系统各不相同——这才是"自我进化"的含义。
-
-### 矩阵能力:All-in-one 的边界与前提
-
-任何 All-in-one 都有边界,OpenFlow 一样。它做的事情是:**把一个人在 AI 时代之前"以后才需要"的系统能力,提前兑现给他看**——你现在就有了一个 beta 版的未来,然后按自己的节奏自由组合更高阶的产品。
-
-需要更重的内容产能,进阶 [MFlow](https://github.com/sevenaaaaaaaaa/mflow);要全域数据打通,进阶 [UserLoop](https://github.com/sevenaaaaaaaaa/userloop);外部情报进 [inFlow](https://github.com/sevenaaaaaaaaa/inflow),变现进 [PayFlow](https://github.com/sevenaaaaaaaaa/payflow),交付进 [LearnFlow](https://github.com/sevenaaaaaaaaa/learnflow),投放落地页进 [WebsFlow](https://github.com/sevenaaaaaaaaa/websflow);ThirdC、ConFlow、InputFlow 组成偏本地的 Studio 套件。**账号互通已上线**:OpenFlow 登录,全家免注册。完整图谱见[产品矩阵](docs/PRODUCT-MATRIX.md)。
+已知的方法交给 Flow 稳定执行；没把握的路径，由受控的 Loop 从建议开始。挡位可以换，方向盘永远在你手里。
+想读完整的思路，见 [docs/VISION.md](docs/VISION.md)。
 
 ## 快速开始
 
-技术栈刻意保持了低门槛:**PHP 8 + JSON/SQLite,无 MySQL / Redis / Node 依赖**,让学习能力强
-的 DRI 与 OPC 能把它部署在任何地方——云服务器、NAS,甚至家里的本地服务器。
+**先看一眼**：[nownexts.com](https://nownexts.com) 本身就跑在 OpenFlow 上。
 
-**本地预览**(PHP 8.1+,扩展 `pdo_sqlite / gd / mbstring / fileinfo / curl / openssl`):
+**不想碰服务器**：云托管个人版 ¥99/月起，[咨询开通](https://nownexts.com/consultation)。
+
+**自己装（Docker）**：
 
 ```bash
 git clone https://github.com/sevenaaaaaaaaa/openflow.git && cd openflow
-php -S 127.0.0.1:8080 router.php     # router.php 镜像 .htaccess 路由,美化 URL 与线上一致
+docker compose up -d        # 打开 http://127.0.0.1:8080，按安装向导完成初始化
 ```
 
-**Docker(生产推荐)**——仓库自带 `Dockerfile` + `docker-compose.yml`(Apache + PHP 8.3,数据卷持久化):
+**本地预览（PHP 8.1+）**：
 
 ```bash
-docker compose up -d                 # http://127.0.0.1:8080
+php -S 127.0.0.1:8080 router.php
 ```
 
-**服务器原生部署**:Web 根目录指向项目目录(Apache 用自带 `.htaccess`,Nginx 参考 `deploy/nginx.site.conf`),访问站点按安装向导完成初始化。三种形态的完整步骤、服务器配置要求、路径与权限、Cloudflare(R2/Workers/Tunnel)与 Vercel 配置,见 **[部署指南](docs/DEPLOYMENT.md)**。
+只需要 PHP 8 + SQLite，不用 MySQL、Redis、Node。服务器部署、cron 心跳、Cloudflare 配置见 [部署指南](docs/DEPLOYMENT.md)。
 
-最后给系统装上心跳,定时发布、自动化队列、AI 岗位、热点雷达才会转起来:
+## 开源与定价
 
-```cron
-* * * * * curl -fsS --max-time 55 "https://你的域名/api/cron.php?secret=你的密钥" >/dev/null 2>&1
-```
+付费买的是省下你的时间，不是解锁功能。
 
-**原生部署**之外,Docker 一条命令起(`docker compose up -d`);我们也会持续适配和探索主流开源项目的部署方式——这不是难事,是诚意。
+| 方案 | 价格 | 适合谁 |
+|---|---|---|
+| 开源自部署 | **¥0**，永久 | 动手能力强、在意数据。MIT 协议，全部核心能力 |
+| 云托管 · 个人版 | ¥99/月（年付 ¥990） | 一个人的公司，不想管运维 |
+| 云托管 · 增长版 | ¥299/月（年付 ¥2,990） | 2–5 人小团队，要席位与权限 |
+| 私有化 / 定制 | 按需报价 | 有合规与集成要求的组织 |
 
-AI 是可选能力:未配置模型时,内容、数据、自动化、商城照常运行,相关 AI 功能明确降级、不假成功。
+以上是 OpenFlow 的价格，[完整对比](https://nownexts.com/pricing)；其他产品见各自产品页。
 
-### 完全开源
+## 适合谁，不适合谁
 
-OpenFlow 的核心能力——包括最重要的 TIPS 范式——**过去、现在、将来都持续开源**,MIT 协议。
+| 适合 | 不适合 |
+|---|---|
+| 一个人（或两三个人）在做的公司、品牌、工作室 | 已有成熟市场团队 + 数据团队的中大型公司——对你们是重复建设 |
+| 内容驱动获客：写文章、做课程、接咨询、卖数字产品 | 需要复杂多人审批流的组织 |
+| 在意数据自主权，不想把客户名单交给别人的云 | 想要像素级自由设计的品牌官网 |
 
-开发者或许希望据此收获商业上的成功,但那是定制化开发与服务的事,与开源版无关。我们承诺与社区伙伴一起持续维护生态的完善,**完全欢迎任何善意的组织与个人 fork 出自己的版本、参与到市场竞争中**——在 AI 时代,消耗 token 产出的代码从来不是稀缺品,稀缺的是把经验沉淀为系统的范式。TIPS 已经开源,剩下的交给时间。
+## 常见问题
 
-## 文档
+<details>
+<summary><b>要写代码吗？</b></summary>
 
-[使用指南](docs/USAGE-GUIDE.md) · [部署指南](docs/DEPLOYMENT.md) · [功能总附录](docs/APPENDIX-FEATURES.md) · [产品北极星](docs/VISION.md) · [功能地图](docs/PRODUCT-MAP.md) · [矩阵定位](docs/PRODUCT-MATRIX.md) · [矩阵账号互通](docs/MATRIX-SSO-INTEGRATION.md) · [插件开发](docs/PLUGIN-DEV.md) · [架构规范](docs/handbook/ARCHITECTURE.md) · [变更日志](CHANGELOG.md)
+不用。四力都能可视化配置；想深入的开发者有 API、Webhook、MCP 和插件可以接。
+</details>
 
-## 当前边界(诚实声明)
+<details>
+<summary><b>能只用其中一件吗？</b></summary>
 
-- 增长大脑以可解释规则建议为主 + 受控 Agent 执行,不是无约束的自主策略 Agent;
-- AI 岗位与 Agent 的产出均为草稿/建议,发布、群发、价格、支付永远有人工闸门;
-- 「高意向线索→成交」的黄金 Loop 尚在真实数据验证中;自我进化是方向,不是现状;
-- AI 能力取决于你配置的模型与预算;直播媒体层需外部流媒体服务;Vercel 等 Serverless 形态仅适合演示(数据不持久),生产请用 Docker 或服务器原生部署。
+能。十二件都独立可用，不要求你先装任何东西。哪天想升级，数据可以平滑并入。
+</details>
 
-我们区分**已实现 / 已接入 / 已被使用 / 已验证有效**,不把远景写成现状。
+<details>
+<summary><b>数据放在哪？</b></summary>
 
-## License
+自部署时，数据 100% 在你自己的服务器，随时导出，无云端回传。云托管的数据也能随时完整导出。
+</details>
 
-[MIT](LICENSE) · 由 [林下 Understory](https://nownexts.com) 维护 —— 增长方法论与增长社区。
+<details>
+<summary><b>AI 要额外花钱吗？</b></summary>
+
+开源版接你自己的模型 Key，费用直接付给模型厂商；云托管含月度额度。没配模型也照样跑，只是不自动写稿。
+</details>
+
+<details>
+<summary><b>林下和 OpenFlow 是什么关系？</b></summary>
+
+林下 Understory 是品牌与产品矩阵之名，讲方法论、做社区；OpenFlow 是它的入口层，MIT 开源的增长操作系统。方法论告诉你怎么做，OpenFlow 让你真的能做。
+</details>
+
+## 用过的人怎么说
+
+> 「一个人做播客加卖课，数据原来散在三个地方。现在选题、发布、转化在一条线上，月底复盘不用再翻六个后台。」
+> —— 林之然，播客主理人
+
+> 「开源版装在自己服务器，数据不出域这点对我们行业是硬要求。评估了三个 SaaS，最后是这个谈得最痛快。」
+> —— 沈亦舟，财税咨询
+
+## 边界
+
+- AI 的产出都是草稿和建议；发布、群发、价格、支付永远要你确认。
+- 「高意向线索 → 成交」的自动闭环还在真实数据里验证；自我进化是方向，不是现状。
+- Vercel 等 Serverless 形态只适合演示，生产请用 Docker 或服务器部署。
+
+我们区分已实现、已接入、已被使用、已验证有效，不把远景写成现状。
+
+---
+
+<details>
+<summary><b>文档索引</b></summary>
+
+- [使用指南](docs/USAGE-GUIDE.md) · [部署指南](docs/DEPLOYMENT.md) · [功能总附录](docs/APPENDIX-FEATURES.md)
+- [产品北极星与设计思路](docs/VISION.md) · [功能地图](docs/PRODUCT-MAP.md)
+- [插件开发](docs/PLUGIN-DEV.md) · [MCP 接入](docs/MCP-SETUP.md) · [架构规范](docs/handbook/ARCHITECTURE.md)
+- [变更日志](CHANGELOG.md)
+</details>
+
+**社区**：[增长社区](https://nownexts.com/community) · [学院](https://nownexts.com/academy) · [GitHub Issues](https://github.com/sevenaaaaaaaaa/openflow/issues) · hello@nownexts.com
+
+**License**：OpenFlow 以 [MIT](LICENSE) 开源。其他产品的协议见各自仓库。
+
+<p align="center"><sub>林下 Understory 出品 · <a href="https://nownexts.com">nownexts.com</a></sub></p>

@@ -274,6 +274,7 @@ vercel --prod     # 交付生产域名 <project>.vercel.app
 | 上传失败 | `uploads/` 不可写或 PHP `upload_max_filesize` 偏小（Docker 镜像已设 32M） |
 | 页面 500 无详情 | 生产不显示错误，看 `data/php-error.log`；本地 `OF_ENV=dev` 复现 |
 | 服务器 PHP 较老（8.0/8.1） | composer 声明 ≥8.0，CI 测到 8.3；推荐 8.2+，低于 8.1 不在测试矩阵内 |
+| 没配 AI 模型 | 正常：内容、数据、自动化、商城照常运行，依赖 AI 的功能明确降级（不自动写稿），不假装成功 |
 
 ---
 

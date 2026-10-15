@@ -69,6 +69,10 @@
 - 站点、社区、课程、活动、方法论 → **林下 Understory**
 - 代码、部署、GitHub、技术文档、插件生态 → **OpenFlow**
 - 页头永远是「林下 Understory 」，页脚和技术页注明「基于 OpenFlow · MIT 开源」
+- **例外（2026-10-15）**：`openflow` 仓库的 README 是林下 Understory 的 GitHub 正门——
+  开头讲林下（定位、产品矩阵、方法论），OpenFlow 作为入口层产品出场；
+  快速开始、部署、License 等代码段落仍以 OpenFlow 署名。
+  其余产品仓库的 README 顶部统一挂「林下 Understory 出品 · ← 产品矩阵」，链回 `openflow` README 的 `#产品矩阵`。
 
 ---
 
