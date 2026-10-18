@@ -25,7 +25,7 @@ php tests/usability_ratchet_test.php     # 棘轮门禁：只许变好
 
 ## 2. 事实（2026-09-20 口径修正：**192 个真实页面**）
 
-> **当前口径（由 `php scripts/metrics.php` 自动同步，不手写）**：真实页面 <!--m:admin_pages-->195<!--/m--> ·
+> **当前口径（由 `php scripts/metrics.php` 自动同步，不手写）**：真实页面 <!--m:admin_pages-->196<!--/m--> ·
 > 301 旧地址别名 <!--m:admin_alias_301-->19<!--/m--> · 片段文件 <!--m:admin_fragments-->15<!--/m-->。
 > 下文表格里的数字是**当时的快照**，刻意保留用于对照；要看当前值看这一行或 [docs/METRICS.md](METRICS.md)。
 > （页面数从 192 变 193 是因为新增了「后台使用分析」页，见 §3。）

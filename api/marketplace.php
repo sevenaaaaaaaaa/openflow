@@ -90,7 +90,7 @@ switch ($action) {
         if (!$r['ok'] || empty($r['order'])) { echo json_encode(['ok'=>false,'error'=>$r['error'] ?? '下单失败']); exit; }
         $order = $r['order'];
         // MarketplaceSystem 购买记录接线：把这次购买记录到 mkt_purchases（此前死代码，顺带打通资产维度统计）
-        if (function_exists('mkt_deliver_asset')) { try { mkt_deliver_asset($member['id'], 'skill', $id); } catch (\Throwable $e) {} }
+        if (function_exists('mkt_deliver_asset')) { try { mkt_deliver_asset($member['id'], (string)($product['type'] ?? 'skill'), $id); } catch (\Throwable $e) {} }
         if (!empty($order['referrer_id'])) setcookie('of_ref', $order['referrer_id'], time() + 86400 * 30, '/');
         // 标记优惠券已使用
         if ($couponId !== '') coupon_mark_used($couponId, $member['id'], $order['id']);

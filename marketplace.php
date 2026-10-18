@@ -257,7 +257,7 @@ if ($__pr['count'] > 0) $__ld['aggregateRating'] = ['@type' => 'AggregateRating'
       <a class="scn-f" href="<?=htmlspecialchars($lead['url'])?>" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
         <?=mkt_asset_cover($lead, $typeNames)?>
         <div style="padding:22px 24px;display:flex;flex-direction:column;gap:8px;flex:1">
-          <span class="f-tag"><?=$typeNames[$lead['type']]['name'] ?? $lead['type']?> · <?=$lead['installs'] ?? 0?> 次安装</span>
+          <span class="f-tag"><?=$typeNames[$lead['type']]['name'] ?? $lead['type']?> · <?=$lead['installs'] ?? 0?> 次<?=($lead['type'] ?? '') === 'pet' ? '下载' : '安装'?></span>
           <h3 style="font-size:20px;font-weight:800;letter-spacing:-.01em"><?=htmlspecialchars($lead['title'])?></h3>
           <p style="font-size:14.5px;color:var(--muted);line-height:1.8"><?=htmlspecialchars($lead['description'] ?? '')?></p>
           <span class="note mono" style="margin-top:auto"><?=htmlspecialchars($lead['author'] ?? '')?></span>
@@ -334,7 +334,7 @@ if ($__pr['count'] > 0) $__ld['aggregateRating'] = ['@type' => 'AggregateRating'
           <?php if (($a['type'] ?? '') === 'bundle'): ?><span class="note" style="color:var(--accent);margin:0">包含 <?=$a['items_count'] ?? 0?> 个产品</span><?php endif; ?>
           <div class="meta">
             <?php if (($a['rating_count'] ?? 0) > 0): ?><span style="color:var(--warn)">★ <?=number_format((float)$a['rating'], 1)?></span><span>·</span><?php endif; ?>
-            <span><?=$a['installs'] ?? 0?> 次安装</span>
+            <span><?=$a['installs'] ?? 0?> 次<?=($a['type'] ?? '') === 'pet' ? '下载' : '安装'?></span>
             <?php if (in_array($a['type'] ?? '', ['bundle','membership']) && $price > 0): ?><button type="button" onclick="purchaseSkill('<?=htmlspecialchars($a['id'])?>')" class="btn primary" style="margin-left:auto;height:34px;padding:0 14px;font-size:12.5px"><?=$a['type']==='membership'?'开通会员':'购买'?> →</button>
             <?php else: ?><a href="<?=htmlspecialchars($a['url'])?>" class="go" style="margin-left:auto;color:var(--accent);font-weight:600;font-family:var(--font-body)">查看 →</a><?php endif; ?>
           </div>

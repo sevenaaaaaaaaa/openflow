@@ -329,6 +329,7 @@ function admin_nav_build(bool $includeSystem): array {
                 ['label' => '生态市场', 'hint' => '市场 · 开发者 · 文档', 'subs' => [
                     ['id' => 'marketplace', 'label' => '生态市场', 'perm' => 'marketplace'],
                     ['id' => 'developers', 'label' => '开发者审核', 'perm' => 'marketplace'],
+                    ['id' => 'pets', 'label' => '桌宠审核', 'perm' => 'marketplace'],
                     ['id' => 'dev-docs', 'label' => '开发者文档', 'perm' => 'marketplace'],
                 ]],
                 ['label' => '商业中心', 'hint' => '商业化 · 平台运营', 'subs' => [

@@ -24,13 +24,13 @@
 
 | 指标 | 值 | 口径 |
 |---|---|---|
-| 后台真实页面 | <!--m:admin_pages-->195<!--/m--> | `admin/*.php` 中调用了 `admin_header()`/`admin_footer()`，且不是 301 别名或片段 |
+| 后台真实页面 | <!--m:admin_pages-->196<!--/m--> | `admin/*.php` 中调用了 `admin_header()`/`admin_footer()`，且不是 301 别名或片段 |
 | 301 旧地址别名 | <!--m:admin_alias_301-->19<!--/m--> | `.htaccess` 里 `^xmp/<name>/?$ → [R=301]`，与父页是同一屏的两个地址 |
 | 片段/工具文件 | <!--m:admin_fragments-->15<!--/m--> | `_` 开头、`config/login/logout`、以及被 include 的非页面文件 |
-| API 端点 | <!--m:api_endpoints-->120<!--/m--> | `api/` 下全部 `*.php`（含 `api/v1/`） |
+| API 端点 | <!--m:api_endpoints-->121<!--/m--> | `api/` 下全部 `*.php`（含 `api/v1/`） |
 | MCP 工具 | <!--m:mcp_tools-->23<!--/m--> | `lib/McpTools.php` 注册表长度（`mcp-server.php` 与对外页面同源引用） |
-| 核心类库文件 | <!--m:lib_files-->239<!--/m--> | `lib/*.php` |
-| PHP 测试 | <!--m:php_tests-->166<!--/m--> | `tests/*_test.php` |
+| 核心类库文件 | <!--m:lib_files-->240<!--/m--> | `lib/*.php` |
+| PHP 测试 | <!--m:php_tests-->167<!--/m--> | `tests/*_test.php` |
 | 插件 | <!--m:plugins-->9<!--/m--> | `plugins/` 下的目录 |
 | 前台页面 | <!--m:frontend_pages-->78<!--/m--> | 仓库根目录的 `*.php` |
 

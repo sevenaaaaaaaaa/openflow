@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../admin/config.php';
 require_once __DIR__ . '/SkillSystem.php';
 require_once __DIR__ . '/../lib/PluginSystem.php';
+require_once __DIR__ . '/PetMarket.php';
 
 // 市场资产分类
 function mkt_categories(): array {
@@ -14,6 +15,7 @@ function mkt_categories(): array {
         'plugin' => ['name' => '插件', 'icon' => '🧩', 'desc' => '扩展后台功能的 PHP 模块'],
         'skill' => ['name' => '技能', 'icon' => '⚡', 'desc' => '可复用的 AI / Agent 能力包'],
         'theme' => ['name' => '主题', 'icon' => '🎨', 'desc' => '前端视觉与布局主题'],
+        'pet' => ['name' => '桌宠', 'icon' => '🐾', 'desc' => '松萝输入法的纸偶桌宠形象'],
         'bundle' => ['name' => '组合包', 'icon' => '📦', 'desc' => '多个产品打包的套装'],
         'membership' => ['name' => '会员', 'icon' => '👑', 'desc' => '商品会员计划'],
     ];
@@ -58,8 +60,9 @@ function mkt_assets(): array {
         }
     } catch (Exception $e) {}
 
-    // 技能（SkillSystem）
+    // 技能（SkillSystem）：只列已发布的——待审核 / 被拒的开发者投稿不能出现在前台市场
     foreach (skills_all() as $s) {
+        if (($s['status'] ?? 'published') !== 'published') continue;
         $items[] = [
             'type' => 'skill',
             'id' => $s['id'],
@@ -141,6 +144,11 @@ function mkt_assets(): array {
         }
     } catch (\Throwable $e) {}
 
+    // 桌宠（PetMarket：审核通过的松萝纸偶形象）
+    try {
+        foreach (pet_market_rows() as $row) $items[] = $row;
+    } catch (\Throwable $e) {}
+
     return $items;
 }
 
@@ -168,6 +176,7 @@ function mkt_stats(): array {
         'plugins' => count(array_filter($items, fn($a) => $a['type'] === 'plugin')),
         'skills' => count(array_filter($items, fn($a) => $a['type'] === 'skill')),
         'themes' => count(array_filter($items, fn($a) => $a['type'] === 'theme')),
+        'pets' => count(array_filter($items, fn($a) => $a['type'] === 'pet')),
     ];
 }
 
@@ -178,6 +187,7 @@ function mkt_type_meta(string $type): array {
         'skill'      => ['hue' => 'accent', 'code' => 'SKILL',  'icon' => '<path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/>'],
         'theme'      => ['hue' => 'warn',   'code' => 'THEME',  'icon' => '<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2 1.5-2H17a4 4 0 0 0 4-4c0-5-4-10-9-10Z"/><circle cx="8" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="7.5" r="1" fill="currentColor"/><circle cx="16" cy="10" r="1" fill="currentColor"/>'],
         'bundle'     => ['hue' => 'danger', 'code' => 'BUNDLE', 'icon' => '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>'],
+        'pet'        => ['hue' => 'accent', 'code' => 'PET',    'icon' => '<circle cx="5.5" cy="10" r="1.8"/><circle cx="9.5" cy="5.5" r="1.8"/><circle cx="14.5" cy="5.5" r="1.8"/><circle cx="18.5" cy="10" r="1.8"/><path d="M12 11c-3 0-6 3.5-6 6.5 0 1.7 1.3 2.5 3 2.5 1.2 0 2-.6 3-.6s1.8.6 3 .6c1.7 0 3-.8 3-2.5 0-3-3-6.5-6-6.5Z"/>'],
         'membership' => ['hue' => 'warn',   'code' => 'VIP',    'icon' => '<path d="M6 3h12l4 6-10 12L2 9l4-6Z"/><path d="M2 9h20M9 3 7 9l5 12M15 3l2 6-5 12"/>'],
     ];
     return $m[$type] ?? ['hue' => 'neutral', 'code' => strtoupper($type ?: 'ASSET'), 'icon' => '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>'];
@@ -190,7 +200,11 @@ function mkt_asset_cover(array $a, array $typeNames = []): string {
     $t = (string)($a['type'] ?? '');
     $m = mkt_type_meta($t);
     $label = htmlspecialchars($typeNames[$t]['name'] ?? $t);
-    return '<div class="gcov h-' . $m['hue'] . '"><span class="gc-code" aria-hidden="true">' . $m['code'] . '</span><span class="gc-k">' . mkt_type_icon($t) . $label . '</span></div>';
+    // 桌宠有真实形象：封面直接放预览图
+    $img = ($t === 'pet' && !empty($a['preview']))
+        ? '<img src="' . htmlspecialchars((string) $a['preview']) . '" alt="" loading="lazy" style="position:absolute;top:6%;right:4%;height:88%;width:55%;object-fit:contain;object-position:right center">'
+        : '';
+    return '<div class="gcov h-' . $m['hue'] . '"><span class="gc-code" aria-hidden="true">' . $m['code'] . '</span>' . $img . '<span class="gc-k">' . mkt_type_icon($t) . $label . '</span></div>';
 }
 
 /**

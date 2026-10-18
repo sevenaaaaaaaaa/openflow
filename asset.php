@@ -9,6 +9,7 @@ require_once __DIR__ . '/lib/SiteConfig.php';
 require_once __DIR__ . '/lib/MarketplaceSystem.php';
 require_once __DIR__ . '/lib/CommerceSystem.php';
 require_once __DIR__ . '/lib/Personalizer.php';
+require_once __DIR__ . '/lib/PetMarket.php';
 
 $siteName = site_config_get('site_name', 'OpenFlow');
 $type = $_GET['type'] ?? 'skill';
@@ -44,6 +45,13 @@ if ($type === 'skill') {
         $asset['version'] = $t['version'] ?? '1.0.0';
         $asset['installed'] = ThemeSystem::activeId() === $id;
     }
+} elseif ($type === 'pet') {
+    // 松萝纸偶桌宠：只认审核通过、当前上架的版本
+    $petItem = pet_find($id);
+    if ($petItem) {
+        foreach (pet_market_rows() as $row) if ($row['id'] === $id) $asset = $row;
+        $asset['updated_at'] = $petItem['reviewed_at'] ?? '';
+    }
 }
 
 if (!$asset) { header('HTTP/1.0 404 Not Found'); die('资产不存在'); }
@@ -55,6 +63,8 @@ foreach (CommerceSystem::products() as $p) {
 }
 $price = $product ? (float)($product['pricing']['price'] ?? 0) : 0;
 $owned = $member && $product ? CommerceSystem::owns($member['id'], $product['id']) : false;
+$petCanDownload = $type === 'pet' && !empty($petItem) && pet_can_download($petItem, $member ?: null);
+$installWord = $type === 'pet' ? '下载' : '安装';
 
 // SEO
 $title = ($asset['title'] ?? $asset['name'] ?? $id) . ' - ' . $siteName;
@@ -87,9 +97,9 @@ try {
     if (empty($relatedCourses)) $relatedCourses = array_slice($allCourses, 0, 3);
 } catch (Exception $e) {}
 
-$typeLabel = ['skill' => 'Skill', 'plugin' => '插件', 'theme' => '主题'][$type] ?? $type;
+$typeLabel = ['skill' => 'Skill', 'plugin' => '插件', 'theme' => '主题', 'pet' => '桌宠'][$type] ?? $type;
 $stepCount = count($asset['steps'] ?? []);
-$typeIcon = ['skill' => '<path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/>', 'plugin' => '<path d="M9 3v3M15 3v3M8 6h8a2 2 0 0 1 2 2v4a6 6 0 0 1-12 0V8a2 2 0 0 1 2-2ZM12 18v3"/>', 'theme' => '<circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.2" fill="currentColor"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="10" r="1.2" fill="currentColor"/><path d="M12 12.5a2.5 2.5 0 0 0 0 5h1.5a1.5 1.5 0 0 1 0 3"/>'][$type] ?? '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>';
+$typeIcon = ['skill' => '<path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/>', 'plugin' => '<path d="M9 3v3M15 3v3M8 6h8a2 2 0 0 1 2 2v4a6 6 0 0 1-12 0V8a2 2 0 0 1 2-2ZM12 18v3"/>', 'pet' => mkt_type_meta('pet')['icon'], 'theme' => '<circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.2" fill="currentColor"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="10" r="1.2" fill="currentColor"/><path d="M12 12.5a2.5 2.5 0 0 0 0 5h1.5a1.5 1.5 0 0 1 0 3"/>'][$type] ?? '<path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>';
 $svgOf = fn(string $p) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' . $p . '</svg>';
 $emojiOrSvg = fn(string $e, string $fallback) => (preg_match('/^[\x{1F000}-\x{1FAFF}\x{2600}-\x{27BF}\x{FE0F}]+$/u', $e) || $e === '') ? $svgOf($fallback) : htmlspecialchars($e);
 ?>
@@ -164,10 +174,18 @@ echo json_encode($__productLd, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON
           <?php if ($price > 0): ?><span class="pill hl">¥<?=$price?></span><?php else: ?><span class="pill neutral">免费</span><?php endif; ?>
           <?php if ($owned): ?><span class="badge ok"><span class="dot"></span>已拥有</span><?php endif; ?>
         </div>
-        <div class="by"><span><?=htmlspecialchars($author)?></span><span>v<?=htmlspecialchars($asset['version'] ?? '1.0.0')?></span><span><?=(int)($asset['installs'] ?? $asset['sales_count'] ?? 0)?> 安装</span><span>★ <?=$asset['rating'] ?? 0?></span></div>
+        <div class="by"><span><?=htmlspecialchars($author)?></span><span>v<?=htmlspecialchars($asset['version'] ?? '1.0.0')?></span><span><?=(int)($asset['installs'] ?? $asset['sales_count'] ?? 0)?> <?=$installWord?></span><span>★ <?=$asset['rating'] ?? 0?></span></div>
       </div>
       <div class="dt-side">
-        <?php if ($product && $price > 0): ?>
+        <?php if ($type === 'pet'): ?>
+          <?php if ($price > 0): ?><span class="price">¥<?=$price?></span><?php endif; ?>
+          <?php if ($petCanDownload): ?>
+            <a class="btn primary" href="/api/pets?action=download&amp;id=<?=urlencode($id)?>">下载 .lianapet</a>
+          <?php else: ?>
+            <button type="button" class="btn primary" onclick="purchase()">购买 ¥<?=$price?></button>
+          <?php endif; ?>
+          <span class="pill neutral" style="white-space:normal;text-align:center">下载后双击文件即可导入松萝</span>
+        <?php elseif ($product && $price > 0): ?>
           <span class="price">¥<?=$price?></span>
           <?php if ($owned): ?>
             <button type="button" class="btn ghost" onclick="installAsset()">已拥有 · 安装</button>
@@ -206,6 +224,22 @@ echo json_encode($__productLd, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON
         </div>
         <?php endif; ?>
 
+        <?php if ($type === 'pet'): ?>
+        <div class="card">
+          <div class="sec-head" style="gap:10px;margin-bottom:14px"><span class="kicker">PREVIEW</span><h2 style="font-size:20px">形象预览</h2></div>
+          <div class="theme-prev" style="height:300px;display:grid;place-items:center;background:var(--bg-soft)"><img src="<?=htmlspecialchars((string)($asset['preview'] ?? ''))?>" alt="<?=htmlspecialchars($asset['title'] ?? '')?>" style="max-height:280px;max-width:100%;object-fit:contain"></div>
+          <p class="note">在松萝里会动：呼吸、眨眼、说话、对打字和点击做出反应。</p>
+        </div>
+        <div class="card">
+          <div class="sec-head" style="gap:10px;margin-bottom:14px"><span class="kicker">HOW TO</span><h2 style="font-size:20px">怎么用</h2></div>
+          <div class="steps">
+            <div class="step-item"><b>1. 安装松萝输入法</b><p>macOS 上的隐私优先输入法，桌宠是它的一部分。</p></div>
+            <div class="step-item"><b>2. 下载并导入</b><p><?=$price > 0 ? '购买后下载 .lianapet，双击文件即可导入。' : '下载 .lianapet 后双击导入；也可以在松萝的「形象源」窗口里一键下载。'?></p></div>
+            <div class="step-item"><b>3. 自己再调</b><p>在松萝的「形象工坊」里可以继续改动作、台词和触发方式。</p></div>
+          </div>
+        </div>
+        <?php endif; ?>
+
         <?php if ($type === 'theme'): ?>
         <div class="card">
           <div class="sec-head" style="gap:10px;margin-bottom:14px"><span class="kicker">PREVIEW</span><h2 style="font-size:20px">主题预览</h2></div>
@@ -222,7 +256,8 @@ echo json_encode($__productLd, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON
             <span>类型</span><div><?=$typeLabel?></div>
             <span>作者</span><div><?=htmlspecialchars($author)?><?=($asset['author_type'] ?? '') === 'user' ? ' <span class="pill neutral" style="font-size:10px">用户发布</span>' : ''?></div>
             <span>版本</span><div class="mono">v<?=htmlspecialchars($asset['version'] ?? '1.0.0')?></div>
-            <span>安装量</span><div class="mono"><?=(int)($asset['installs'] ?? $asset['sales_count'] ?? 0)?></div>
+            <span><?=$installWord?>量</span><div class="mono"><?=(int)($asset['installs'] ?? $asset['sales_count'] ?? 0)?></div>
+            <?php if (!empty($asset['license'])): ?><span>许可证</span><div class="mono"><?=htmlspecialchars((string)$asset['license'])?></div><?php endif; ?>
             <?php if (($asset['rating_count'] ?? 0) > 0): ?><span>评分</span><div class="mono" style="color:var(--warn)">★ <?=number_format((float)$asset['rating'], 1)?>（<?=(int)$asset['rating_count']?>）</div><?php endif; ?>
             <?php if (!empty($asset['source'])): ?><span>来源</span><div><?=($asset['source'] ?? '') === 'remote' ? '远程仓库' : '本站发布'?></div><?php endif; ?>
             <?php if (!empty($asset['created_at'])): ?><span>上架</span><div class="mono"><?=htmlspecialchars(substr($asset['created_at'], 0, 10))?></div><?php endif; ?>
@@ -235,7 +270,7 @@ echo json_encode($__productLd, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON
         <div class="aside-box">
           <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg></span>相关推荐</h3>
           <div class="link-grid">
-            <?php foreach ($related as $ra): $rt = $ra['type'] === 'skill' ? 'Skill' : ($ra['type'] === 'plugin' ? '插件' : '主题'); ?>
+            <?php foreach ($related as $ra): $rt = ['skill' => 'Skill', 'plugin' => '插件', 'theme' => '主题', 'pet' => '桌宠'][$ra['type']] ?? $ra['type']; ?>
             <a class="link-it" href="/<?=urlencode($ra['type'])?>/<?=urlencode($ra['id'])?>"><span class="ic"><?=$emojiOrSvg((string)($ra['icon'] ?? ''), $ra['type'] === 'skill' ? '<path d="M13 3 5 14h6l-1 7 8-11h-6l1-7Z"/>' : '<path d="M9 3v3M15 3v3M8 6h8a2 2 0 0 1 2 2v4a6 6 0 0 1-12 0V8a2 2 0 0 1 2-2ZM12 18v3"/>')?></span><span class="lt"><b><?=htmlspecialchars($ra['title'] ?? $ra['name'] ?? '')?></b><span><?=$rt?></span></span><span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></a>
             <?php endforeach; ?>
           </div>

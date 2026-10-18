@@ -96,7 +96,7 @@ $rules = [
     '~^/course/([^/]+)$~'                => 'course-player.php?slug=$1',
     '~^/category/([a-z]+)/([a-z0-9_-]+)/?$~' => 'category.php?section=$1&subkey=$2',
     '~^/community-post/(.+)$~'           => 'community-post.php?id=$1',
-    '~^(skill|plugin|theme)/([^/]+)/?$~' => 'asset.php?type=$1&id=$2',
+    '~^/(skill|plugin|theme|pet)/([^/]+)/?$~' => 'asset.php?type=$1&id=$2',
     '~^/deck/([a-z0-9_]+)/?$~'           => 'deck.php?id=$1',
     '~^/order-success/?$~'               => 'order-success.php',
     '~^/receipt/?$~'                     => 'receipt.php',

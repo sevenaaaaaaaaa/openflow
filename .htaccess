@@ -175,7 +175,7 @@ RewriteRule ^downloads/(.+)$ download.php?slug=$1 [L,QSA]
 RewriteRule ^category/([a-z]+)/([a-z0-9_-]+)/?$ category.php?section=$1&subkey=$2 [L,QSA]
 RewriteRule ^community-post/(.+)$ community-post.php?id=$1 [L,QSA]
 # 生态资产详情伪静态（asset.php 头部注释里承诺了这条路径，但一直没有规则；个人中心「为你推荐」链到这里 → 404）
-RewriteRule ^(skill|plugin|theme)/([^/]+)/?$ asset.php?type=$1&id=$2 [L,QSA,B]
+RewriteRule ^(skill|plugin|theme|pet)/([^/]+)/?$ asset.php?type=$1&id=$2 [L,QSA,B]
 # 幻灯片放映（创作台产物）
 RewriteRule ^deck/([a-z0-9_]+)/?$ deck.php?id=$1 [L,QSA]
 RewriteRule ^order-success/?$ order-success.php [L,QSA]

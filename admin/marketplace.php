@@ -49,16 +49,17 @@ if (isset($_POST['save_skill'])) {
     $message = '技能已保存';
     $skills = skills_all();
 }
-// 删除 skill
-if (isset($_GET['del_skill'])) {
-    skill_delete($_GET['del_skill']);
+// 删除 / 复制 / 审核 skill：一律 POST（require_login 的自动 CSRF 只拦 POST 与 del/delete 等少数 GET 键名，
+// 这几个 GET 键名以前都漏在外面，跨站一个 <img> 就能删技能、审核上架）
+if (isset($_POST['del_skill'])) {
+    skill_delete((string) $_POST['del_skill']);
     flash('success', '技能已删除');
     header('Location: /xmp/marketplace');
     exit;
 }
 // 复制 skill（基于示例）
-if (isset($_GET['dup_skill'])) {
-    $src = skill_get($_GET['dup_skill']);
+if (isset($_POST['dup_skill'])) {
+    $src = skill_get((string) $_POST['dup_skill']);
     if ($src) {
         unset($src['id']);
         $src['title'] = $src['title'] . '（副本）';
@@ -68,11 +69,11 @@ if (isset($_GET['dup_skill'])) {
     }
 }
 // 审核开发者提交的产品
-if (isset($_GET['approve'])) {
-    if (skill_review($_GET['approve'], 'approve')) { $message = '已通过并上架'; $skills = skills_all(); }
+if (isset($_POST['approve'])) {
+    if (skill_review((string) $_POST['approve'], 'approve')) { $message = '已通过并上架'; $skills = skills_all(); }
 }
-if (isset($_GET['reject'])) {
-    if (skill_review($_GET['reject'], 'reject')) { $message = '已拒绝该产品'; $skills = skills_all(); }
+if (isset($_POST['reject'])) {
+    if (skill_review((string) $_POST['reject'], 'reject')) { $message = '已拒绝该产品'; $skills = skills_all(); }
 }
 // 远程市场设置/同步
 if (isset($_POST['save_remote'])) {
@@ -143,12 +144,12 @@ admin_header('生态市场');
             <td><?=($s['status'] ?? '') === 'published' ? '<span class="text-sm" style="color:var(--ok)">已发布</span>' : (($s['status'] ?? '') === 'pending' ? '<span class="text-sm" style="color:var(--warn)">待审核</span>' : (($s['status'] ?? '') === 'rejected' ? '<span class="text-sm" style="color:var(--danger)">已拒绝</span>' : '<span class="text-sm" style="color:var(--faint)">草稿</span>'))?></td>
             <td style="white-space:nowrap">
               <?php if (($s['status'] ?? '') === 'pending'): ?>
-              <a href="?approve=<?=urlencode($s['id'])?>" class="btn btn-primary btn-sm" data-confirm="通过并上架？">✓ 通过</a>
-              <a href="?reject=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm" data-confirm="拒绝该产品？">✕ 拒绝</a>
+              <form method="post" style="display:inline" data-confirm="通过并上架？"><?=csrf_field()?><button type="submit" name="approve" value="<?=htmlspecialchars($s['id'])?>" class="btn btn-primary btn-sm">✓ 通过</button></form>
+              <form method="post" style="display:inline" data-confirm="拒绝该产品？"><?=csrf_field()?><button type="submit" name="reject" value="<?=htmlspecialchars($s['id'])?>" class="btn btn-danger btn-sm">✕ 拒绝</button></form>
               <?php endif; ?>
               <a href="?tab=new&edit=<?=urlencode($s['id'])?>" class="btn btn-ghost btn-sm">编辑</a>
-              <a href="?dup_skill=<?=urlencode($s['id'])?>" class="btn btn-ghost btn-sm">复制</a>
-              <a href="?del_skill=<?=urlencode($s['id'])?>" class="btn btn-danger btn-sm" data-confirm="确认删除？">删除</a>
+              <form method="post" style="display:inline"><?=csrf_field()?><button type="submit" name="dup_skill" value="<?=htmlspecialchars($s['id'])?>" class="btn btn-ghost btn-sm">复制</button></form>
+              <form method="post" style="display:inline" data-confirm="确认删除？"><?=csrf_field()?><button type="submit" name="del_skill" value="<?=htmlspecialchars($s['id'])?>" class="btn btn-danger btn-sm">删除</button></form>
             </td>
           </tr>
           <?php endforeach; ?>

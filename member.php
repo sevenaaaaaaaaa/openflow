@@ -1019,6 +1019,37 @@ function include_member_developer($member): void {
         <?php endif; ?>
       </div>
 
+      <!-- 发布桌宠（松萝纸偶形象） -->
+      <?php require_once __DIR__ . '/lib/PetMarket.php'; $myPets = pet_by_author((string) $member['id']); ?>
+      <div class="box" id="pets">
+        <h3>发布桌宠 <small>松萝纸偶形象 · 审核后上架</small></h3>
+        <p class="d" style="font-size:12.5px">在松萝「形象工坊」里勾选「这些图片是我原创或已获授权」，点「发布到松萝社区…」导出 .lianapet，再在这里上传。只收原创或已获授权的形象；同一个形象再次上传会作为新版本重新审核。上架后出现在生态市场和松萝的官方形象源里。</p>
+        <form onsubmit="return submitPet(event)" class="form-grid">
+          <input type="hidden" name="_csrf_token" value="<?=htmlspecialchars(csrf_token())?>">
+          <div class="field"><label>形象包 *（.lianapet，40MB 以内）</label><input class="inp sm" type="file" name="file" accept=".lianapet" required></div>
+          <div class="grid g3" style="gap:12px">
+            <div class="field"><label>售价 ¥（0 = 免费）</label><input class="inp sm" type="number" name="price" min="0" step="1" value="0"></div>
+            <div class="field"><label>许可证</label><select class="inp sm" name="license">
+              <?php foreach (PET_LICENSES as $lic): ?><option value="<?=htmlspecialchars($lic)?>"><?=htmlspecialchars($lic === 'All-Rights-Reserved' ? '保留所有权利（付费形象常用）' : $lic)?></option><?php endforeach; ?>
+            </select></div>
+            <div class="field"><label>标签（逗号分隔）</label><input class="inp sm" type="text" name="tags" placeholder="动物, 原创, Q版"></div>
+          </div>
+          <div class="field"><label>介绍（选填，默认用形象包里的描述）</label><input class="inp sm" type="text" name="description" maxlength="500" placeholder="一只会打盹的狐狸"></div>
+          <div class="row"><button type="submit" class="btn primary">提交审核</button><span id="petMsg" class="note" style="margin:0"></span></div>
+        </form>
+        <?php if (!empty($myPets)): $petSt = ['pending'=>['待审核','orange'],'published'=>['已上架','green'],'rejected'=>['被驳回','red'],'unlisted'=>['已下架','gray'],'superseded'=>['旧版本','gray']]; ?>
+        <div class="panel" style="gap:8px;margin-top:6px">
+          <?php foreach ($myPets as $pt): $st = $petSt[$pt['status']] ?? [$pt['status'], 'gray']; ?>
+          <div class="item">
+            <div class="t"><b><?=htmlspecialchars((string) $pt['name'])?> <span class="note" style="margin:0">r<?=(int) ($pt['revision'] ?? 1)?></span></b><span><?=(float) ($pt['price'] ?? 0) > 0 ? '¥' . number_format((float) $pt['price'], 0) : '免费'?> · 下载 <?=(int) ($pt['downloads'] ?? 0)?><?php if (!empty($pt['review_note'])): ?> · <?=htmlspecialchars((string) $pt['review_note'])?><?php endif; ?></span></div>
+            <span class="<?=acct_tag($st[1])?>"><?=htmlspecialchars($st[0])?></span>
+            <?php if (($pt['status'] ?? '') === 'published'): ?><a class="btn subtle" style="height:32px;padding:0 10px;font-size:12.5px" href="/pet/<?=urlencode((string) $pt['pack_id'])?>">查看</a><?php endif; ?>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+      </div>
+
       <!-- 我的组合包 + 创建组合包 -->
       <div class="box">
         <h3>组合包 <small>Skills 包 / 主题包 / 大组合</small></h3>
@@ -1115,6 +1146,16 @@ function include_member_developer($member): void {
       fetch('/api/developer.php', { method:'POST', body: fd })
         .then(function(r){ return r.json(); })
         .then(function(d){ msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; msg.textContent = d.message || d.error; if (d.ok) setTimeout(function(){ location.reload(); }, 1200); });
+      return false;
+    }
+    function submitPet(e) {
+      e.preventDefault();
+      var f = e.target, msg = document.getElementById('petMsg'), btn = f.querySelector('button[type=submit]');
+      btn.disabled = true; msg.style.color = 'var(--muted)'; msg.textContent = '上传中…';
+      fetch('/api/pets?action=submit', { method: 'POST', body: new FormData(f), credentials: 'same-origin' })
+        .then(function(r){ return r.json().catch(function(){ return { ok: false, error: '上传失败（' + r.status + '）' }; }); })
+        .then(function(d){ btn.disabled = false; msg.style.color = d.ok ? 'var(--ok)' : 'var(--danger)'; msg.textContent = d.message || d.error; if (d.ok) setTimeout(function(){ location.reload(); }, 1500); })
+        .catch(function(){ btn.disabled = false; msg.style.color = 'var(--danger)'; msg.textContent = '网络错误，请稍后再试'; });
       return false;
     }
     function delProduct(id) {
