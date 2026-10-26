@@ -119,10 +119,17 @@ function of_seo_bootstrap(): void {
         if (stripos($html, 'name="twitter:card"') === false && stripos($html, "name='twitter:card'") === false) {
             $inject .= '<meta name="twitter:card" content="summary_large_image">' . "\n";
         }
-        // GA4 自动注入：后台配了 ga_id（或 SEO 站长工具里 Google 授权选 GA4 属性时自动写入）就全站注入 gtag，
+        // GTM 容器注入：配了 gtm_id 就整站挂容器（GA4/广告平台标签统一在容器里管），
+        // 此时不再单独注入 gtag —— 否则同一次浏览会被两条链路各报一次。
+        $gtmId = function_exists('site_config_get') ? trim(site_config_get('gtm_id', '')) : '';
+        if ($gtmId !== '' && stripos($html, 'googletagmanager.com/gtm.js') === false) {
+            $gtmEsc = htmlspecialchars($gtmId, ENT_QUOTES);
+            $inject .= '<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({"gtm.start":new Date().getTime(),event:"gtm.js"});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!=="dataLayer"?"&l="+l:"";j.async=true;j.src="https://www.googletagmanager.com/gtm.js?id="+i+dl;f.parentNode.insertBefore(j,f);})(window,document,"script","dataLayer","' . $gtmEsc . '");</script>' . "\n";
+        }
+        // GA4 自动注入：没配 GTM 时才走这条退路（后台配了 ga_id 就全站注入 gtag），
         // 页面已手动接入 gtag（含 GTM）则不重复。此前 ga_id 设置是死的——保存了前台根本不输出。
         $gaId = function_exists('site_config_get') ? trim(site_config_get('ga_id', '')) : '';
-        if ($gaId !== '' && stripos($html, 'googletagmanager.com/gtag') === false && stripos($html, 'googletagmanager.com/gtm.js') === false) {
+        if ($gtmId === '' && $gaId !== '' && stripos($html, 'googletagmanager.com/gtag') === false && stripos($html, 'googletagmanager.com/gtm.js') === false) {
             $gaIdEsc = htmlspecialchars($gaId, ENT_QUOTES);
             $inject .= '<script async src="https://www.googletagmanager.com/gtag/js?id=' . $gaIdEsc . '"></script>' . "\n"
                      . '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","' . $gaIdEsc . '");</script>' . "\n";
@@ -138,6 +145,11 @@ function of_seo_bootstrap(): void {
             $inject .= '<meta name="robots" content="noindex,follow">' . "\n";
         }
         if ($inject !== '') $html = str_ireplace('</head>', $inject . '</head>', $html);
+        // GTM 的 noscript 兜底必须紧跟 <body>，不能在 head 里
+        if ($gtmId !== '') {
+            $gtmNoScript = '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=' . $gtmEsc . '" height="0" width="0" style="display:none;visibility:hidden" title="gtm"></iframe></noscript>';
+            $html = preg_replace('/<body\b([^>]*)>/i', '<body$1>' . $gtmNoScript, $html, 1);
+        }
         // 多语言：营销与功能页整页过一遍分段字典（lib/I18nContent.php；front-builder 页自行处理会置 OF_I18N_HANDLED）
         if (function_exists('i18n_site_finalize')) $html = i18n_site_finalize($html);
         return $html;
