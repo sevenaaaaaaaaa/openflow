@@ -84,7 +84,7 @@ $siteBase = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']==='on'?'https':'http'
 .floor+.floor{margin-top:clamp(36px,5vw,56px)}
 .site-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('navigation'); ?>

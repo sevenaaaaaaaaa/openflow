@@ -64,7 +64,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 .c-foot .fx-wrap{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted)}
 .wf-step .tags{justify-content:center;margin-top:2px}
 </style>
-<script src="/assets/seo-inject.js?v=20260830b" defer></script>
+<script src="/assets/seo-inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('courses'); ?>

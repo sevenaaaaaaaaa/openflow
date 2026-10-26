@@ -145,7 +145,7 @@ $__ldCrumb = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', '
 .intro-body code{font-family:var(--font-mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--border-soft);border-radius:6px;padding:1px 6px}
 @media(max-width:720px){.gh-stats{grid-template-columns:repeat(2,1fr)}.sim-grid{grid-template-columns:1fr}}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('navigation'); ?>

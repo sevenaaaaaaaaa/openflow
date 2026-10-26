@@ -156,7 +156,7 @@ echo json_encode($__productLd, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON
 .aside-box .link-it .ic{font-size:18px}
 @media (max-width:860px){.dt-head{grid-template-columns:1fr}.dt-side{min-width:0}}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('marketplace'); ?>

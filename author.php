@@ -68,7 +68,7 @@ $pageTitle = $authorName . ' 的主页 | ' . site_config_get('site_name');
 .au-head p{color:var(--muted);font-size:15px;line-height:1.8;max-width:640px}
 .au-links{display:flex;gap:8px;flex-wrap:wrap}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('author'); ?>

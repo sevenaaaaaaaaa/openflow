@@ -98,7 +98,7 @@ $jsonLd = [
 /* 专题聚合页：全部来自 modules.css（hero-center / a-card / cta-band）。 */
 .lp-tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 </style>
-<script src="/assets/inject.js?v=20260830b" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20261026a" data-cfasync="false" data-site-inject></script>
 </head>
 <body data-of-main>
 <?php of_shell('articles'); ?>

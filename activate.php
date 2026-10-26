@@ -32,7 +32,7 @@ if ($member) $activated = act_member_activated($member['id']);
 .done b{font-size:14.5px}
 .done .sub{font-family:var(--font-mono);font-size:12px;color:var(--faint);margin-top:3px}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('home'); ?>

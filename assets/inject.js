@@ -469,9 +469,73 @@
     } catch (e) {}
   }
 
+  // 归因采集：referrer + UTM + 广告点击 ID，并持久化首触落地页。
+  // 之前只报 url/title，导致 96% 流量在库里退化成 direct，channel 字段全空。
+  function attrParams() {
+    var out = {};
+    try {
+      var q = new URLSearchParams(location.search);
+      ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid','msclkid','ttclid'].forEach(function (k) {
+        var v = q.get(k);
+        if (v) out[k] = String(v).substring(0, 120);
+      });
+    } catch (e) {}
+    return out;
+  }
+  function firstTouch() {
+    try { var raw = localStorage.getItem('of_attr_first'); if (raw) return JSON.parse(raw); } catch (e) {}
+    var hit = { referrer: '', landing: location.pathname, ts: Date.now() };
+    var ref = document.referrer || '';
+    if (ref && ref.indexOf(location.host) >= 0) ref = '';   // 站内跳转不算来源
+    hit.referrer = ref.substring(0, 200);
+    var p = attrParams();
+    Object.keys(p).forEach(function (k) { hit[k] = p[k]; });
+    try { localStorage.setItem('of_attr_first', JSON.stringify(hit)); } catch (e) {}
+    return hit;
+  }
+  function attrProps() {
+    var props = { referrer: (document.referrer || '').substring(0, 200) };
+    var p = attrParams();
+    Object.keys(p).forEach(function (k) { props[k] = p[k]; });
+    var first = firstTouch() || {};
+    props.first_landing = first.landing || '';
+    props.first_referrer = first.referrer || '';
+    props.first_utm_source = first.utm_source || '';
+    props.first_utm_medium = first.utm_medium || '';
+    props.channel = channelOf(props);
+    return props;
+  }
+  // 与 cdp-track.js 保持同一套渠道口径，后端才能按 props.channel 归档到 cdp_customers.channel
+  function channelOf(p) {
+    var s = (p.utm_source || '').toLowerCase();
+    if (s) {
+      if (s.indexOf('google') !== -1 || s.indexOf('bing') !== -1 || s.indexOf('baidu') !== -1) return '搜索引擎';
+      if (s.indexOf('wechat') !== -1 || s.indexOf('weibo') !== -1 || s.indexOf('zhihu') !== -1 || s.indexOf('xiaohongshu') !== -1 || s.indexOf('douyin') !== -1 || s.indexOf('bilibili') !== -1) return '社媒';
+      if (s.indexOf('linkedin') !== -1 || s.indexOf('facebook') !== -1 || s.indexOf('twitter') !== -1) return '海外社媒';
+      if (s.indexOf('email') !== -1 || s.indexOf('newsletter') !== -1) return '邮件';
+      return '广告渠道';
+    }
+    if (p.gclid || p.fbclid || p.msclkid) return '广告渠道';
+    var ref = p.referrer || '';
+    if (ref) {
+      try {
+        var host = new URL(ref).hostname;
+        if (host && host !== location.hostname) {
+          if (host.indexOf('google.') !== -1 || host.indexOf('baidu.com') !== -1 || host.indexOf('bing.com') !== -1) return '搜索引擎';
+          if (host.indexOf('weixin.qq.com') !== -1 || host.indexOf('zhihu.com') !== -1 || host.indexOf('xiaohongshu') !== -1) return '社媒';
+          return '外链';
+        }
+      } catch (e) {}
+    }
+    return '直接访问';
+  }
+
   // 自动采集：页面浏览 + 全量点击捕获（按钮/链接/导航/页脚/转化组件，含动态元素）───
   try {
-    fcTrack('page_view', { url: location.pathname, title: document.title });
+    var pvProps = attrProps();
+    pvProps.url = location.pathname;
+    pvProps.title = document.title;
+    fcTrack('page_view', pvProps);
   } catch (e) {}
 
   // 从元素提取标签

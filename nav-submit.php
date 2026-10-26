@@ -28,7 +28,7 @@ $siteName = site_config_get('site_name', 'OpenFlow');
 .submit-card textarea{min-height:96px;resize:vertical}
 #submitMsg{font-size:13.5px;min-height:20px}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('navigation'); ?>

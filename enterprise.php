@@ -37,7 +37,7 @@ $siteName = site_config_get('site_name');
 select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--faint) 50%),linear-gradient(135deg,var(--faint) 50%,transparent 50%);background-position:calc(100% - 20px) 55%,calc(100% - 15px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:36px}
 @media (max-width:860px){.form-grid .g2{grid-template-columns:1fr}}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('product'); ?>

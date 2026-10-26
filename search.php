@@ -29,7 +29,7 @@ if ($q) {
 /* 搜索页零私有 CSS */
 
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('search'); ?>

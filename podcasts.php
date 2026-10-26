@@ -82,7 +82,7 @@ $featured = array_values(array_filter($items, fn($p) => !empty($p['featured'])))
 .rank a.playing .t b{color:var(--accent-strong)}
 .rank .n svg{width:16px;height:16px;margin:0 auto}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('podcasts'); ?>

@@ -30,7 +30,7 @@ foreach (get_categories('article') as $c) $catNames[$c['key']] = $c['name'];
 .a-card .price small{font-size:12px;color:var(--faint);margin-left:6px;font-weight:400}
 .a-card .cov.emj{color:var(--accent)}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('marketplace'); ?>

@@ -113,7 +113,7 @@ if ($__pr['count'] > 0) $__ld['aggregateRating'] = ['@type' => 'AggregateRating'
 .back{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--accent)}
 @media (max-width:860px){.dt-head{grid-template-columns:1fr}.dt-side{align-items:flex-start;text-align:left}.filters .sort{margin-left:0}}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('marketplace'); ?>

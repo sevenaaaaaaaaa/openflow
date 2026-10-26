@@ -59,7 +59,7 @@ $plus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width
 .demo-log::before{content:'执行日志 · 演示环境';position:absolute;top:12px;right:16px;font-size:9.5px;letter-spacing:.14em;color:oklch(55% .01 140)}
 @media (max-width:1080px){.demo-wrap{grid-template-columns:1fr}}
 </style>
-<script src="/assets/seo-inject.js?v=20260830b" defer></script>
+<script src="/assets/seo-inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('product'); ?>

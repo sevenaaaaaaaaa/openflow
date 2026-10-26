@@ -101,7 +101,7 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
 .auth{width:min(440px,100%);margin:0 auto}
 @media (max-width:1080px){.acct.g-main-aside{grid-template-columns:1fr}.acct>aside .card{position:static;display:flex;flex-wrap:wrap;gap:4px;align-items:center}.acct .who{width:100%;border-bottom:0;margin:0 0 4px}.acct .an{padding:8px 12px;font-size:13px;border:1px solid var(--border-soft)}.acct .an .cnt{margin-left:4px}.acct .an-sep{display:none}}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php if (!$member && in_array($view, ['login','register','reset-password'])): ?>
@@ -219,7 +219,7 @@ function acct_tile(string $n, string $label, string $tone = ''): string {
     </div>
   </main>
 </div>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </body>
 </html>
 <?php

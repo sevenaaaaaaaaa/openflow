@@ -51,7 +51,7 @@ $shopSettings = shop_settings();
 @media (max-width:860px){.chat-box{height:280px}}
 </style>
 <link rel="stylesheet" href="/assets/live.css?v=20260910c">
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main<?=$room && ($room['stream_mode'] ?? '') === 'immersive' ? ' class="live-immersive"' : ''?>>
 <?php of_shell('events'); ?>

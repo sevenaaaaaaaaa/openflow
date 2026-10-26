@@ -43,7 +43,7 @@ usort($downloads, fn($a, $b) => strcmp($b['created_at'] ?? '', $a['created_at'] 
 .dl p{font-size:13.5px;color:var(--muted);line-height:1.7}
 .dl .btn{margin-top:auto;align-self:flex-start}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('downloads'); ?>

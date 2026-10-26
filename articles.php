@@ -124,7 +124,7 @@ function render_card(array $a, callable $catOf): string {
 .res{font-size:13px;color:var(--faint);font-family:var(--font-mono)}
 @media (max-width:900px){.lead-card{grid-template-columns:1fr}.lead-card .cov{aspect-ratio:16/9}}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('articles'); ?>

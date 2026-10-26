@@ -69,7 +69,7 @@ $typeIcons = ['site' => '🌐', 'product' => '🎓', 'book' => '📚', 'event' =
 .rv .cnt{margin-left:auto;font-family:var(--font-mono);font-size:12px;color:var(--faint);white-space:nowrap}
 .rv p{font-size:13.5px;color:var(--muted);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('navigation'); ?>

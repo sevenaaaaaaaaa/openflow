@@ -72,7 +72,7 @@ $statusBadge = ['pending_review'=>'badge warn','approved'=>'pill hl','paid'=>'pi
 .bk .side{text-align:right;min-width:120px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 @media (max-width:860px){.m-prof .buy{border-left:0;padding-left:0;width:100%;align-items:flex-start;text-align:left}}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('enterprise'); ?>

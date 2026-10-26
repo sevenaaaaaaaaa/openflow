@@ -133,7 +133,7 @@ $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 .floor-topics .sec-head .desc-l{font-size:13px;color:var(--muted);max-width:560px}
 @media (max-width:760px){.masonry{columns:2 160px}.car-slide .ov h3{font-size:18px}}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('articles'); ?>

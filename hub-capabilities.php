@@ -127,7 +127,7 @@ if (function_exists('seo_head')): seo_head(['title' => '能力全景· 林下 Un
 /* 适合谁 · 步骤卡内链 */
 .tl-go{align-self:flex-start;margin-left:-14px}
 </style>
-<script src="/assets/seo-inject.js?v=20260830b" defer></script>
+<script src="/assets/seo-inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('capability'); ?>

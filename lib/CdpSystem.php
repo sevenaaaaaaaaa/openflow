@@ -72,8 +72,14 @@ class CdpSystem {
             'visitor_id' => $visitorId,
             'member_id' => $memberId,
             'properties' => $data,
-            'url' => $_SERVER['REQUEST_URI'] ?? '',
-            'referrer' => $_SERVER['HTTP_REFERER'] ?? '',
+            // 客户端上报的落地页优先：这些事件走 POST /api/cdp.php，用 REQUEST_URI 会把每一页
+            // 都记成 /api/cdp.php（此前 page 维度就是这么被污染的），XHR 的 Referer 也只是本页地址。
+            'url' => (is_string($data['url_path'] ?? null) && $data['url_path'] !== '')
+                ? $data['url_path']
+                : (is_string($data['path'] ?? null) && $data['path'] !== '' ? $data['path'] : (string)($_SERVER['REQUEST_URI'] ?? '')),
+            'referrer' => (is_string($data['referrer'] ?? null) && $data['referrer'] !== '')
+                ? $data['referrer']
+                : (string)($_SERVER['HTTP_REFERER'] ?? ''),
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
             'ip' => self::getClientIp(),
             'timestamp' => date('Y-m-d H:i:s'),

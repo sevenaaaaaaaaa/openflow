@@ -112,7 +112,7 @@ $ck = '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 .fit .fi{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--border-soft);border-radius:14px;padding:14px 18px;font-size:14px}
 .fit .fi b{flex:none}
 </style>
-<script src="/assets/inject.js?v=20260830b" data-cfasync="false" data-site-inject></script>
+<script src="/assets/inject.js?v=20261026a" data-cfasync="false" data-site-inject></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('pricing'); ?>

@@ -138,7 +138,7 @@ foreach ($course['chapters'] ?? [] as $ch) {
 .rv .hd{display:flex;justify-content:space-between;gap:10px}.rv .hd span{color:var(--warn);font-size:12px}
 .rv p{color:var(--muted);margin-top:4px;line-height:1.7}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 <script src="/assets/vendor/hls.light.min.js?v=20260907a"></script>
 </head>
 <body data-of-main>

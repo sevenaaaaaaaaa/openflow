@@ -61,7 +61,7 @@ $full = $capacity > 0 && $joinedCount >= $capacity;
 .cap-note{font-family:var(--font-mono);font-size:11.5px;color:var(--faint);margin-top:6px}
 </style>
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('events'); ?>

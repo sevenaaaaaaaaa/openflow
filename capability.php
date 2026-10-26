@@ -147,7 +147,7 @@ if (function_exists('seo_head')): seo_head(['title' => $__capTitle, 'description
 .dep-table tbody th{width:120px;color:var(--faint);font-weight:500;font-size:12.5px;background:var(--surface-2)}
 .dep-table td b{color:var(--accent-strong)}
 </style>
-<script src="/assets/seo-inject.js?v=20260830b" defer></script>
+<script src="/assets/seo-inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('capability'); ?>

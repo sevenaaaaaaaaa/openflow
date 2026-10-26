@@ -39,7 +39,7 @@ if (is_array($subs)) $subsCount = count($subs);
 .news-benefits .card{display:flex;gap:12px;align-items:flex-start;margin:0}
 .news-benefits .ic{flex:0 0 auto;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--surface-2);color:var(--accent)}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('newsletter'); ?>

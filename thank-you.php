@@ -86,7 +86,7 @@ $tyIcon = fn(string $k) => '<svg viewBox="0 0 24 24" fill="none" stroke="current
 .ty{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 .ty .link-it .ic svg{width:20px;height:20px}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('home'); ?>

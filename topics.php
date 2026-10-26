@@ -122,7 +122,7 @@ if ($currentTopic) {
 .tp-card p{font-size:14px;color:var(--muted);line-height:1.75;margin-top:6px}
 .tp-card .more{font-size:12.5px;color:var(--accent);font-weight:600}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('topics'); ?>

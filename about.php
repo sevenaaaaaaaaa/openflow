@@ -37,7 +37,7 @@ $courseCount = count(json_read(DATA_DIR . '/courses/index.json') ?: []);
 .win-lead{padding:18px 22px 4px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--faint);text-transform:uppercase;font-family:var(--font-mono)}
 .flow-row .badge{margin-left:auto;flex:0 0 auto}
 </style>
-<script src="/assets/seo-inject.js?v=20260830b" defer></script>
+<script src="/assets/seo-inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('about'); ?>

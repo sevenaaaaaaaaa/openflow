@@ -180,7 +180,7 @@ if ($inlineCta['enabled'] ?? false) {
 .tpl .use{font-family:var(--font-mono);font-size:12px;background:var(--hover);border-radius:var(--r-sm);padding:8px 10px;color:var(--muted);margin-top:auto}
 @media (max-width:1080px){.g-main-aside.aside-left{grid-template-columns:1fr}.g-main-aside.aside-left>aside{position:static;max-height:none}.cat-nav{flex-direction:row;flex-wrap:wrap}}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('docs'); ?>

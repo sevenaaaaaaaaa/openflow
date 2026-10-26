@@ -286,7 +286,7 @@ $newsletterFormId = $newsletterForm['id'] ?? 'form_lead_default';
 .disc-box ol li:nth-child(-n+3) .rn{color:var(--accent-strong)}
 .disc-box ol a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('articles'); ?>

@@ -30,7 +30,7 @@ $siteName = site_config_get('site_name', 'OpenFlow');
 .cart-sum .row{display:flex;justify-content:space-between}
 .cart-sum .total{font-size:18px;font-weight:800;color:var(--accent)}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('cart'); ?>

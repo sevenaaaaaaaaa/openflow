@@ -87,7 +87,7 @@ foreach ($topics as $t) $topicNames[$t['id']] = ['name'=>$t['name'],'icon'=>$t['
 .newpost .row .btn{margin-left:auto}
 @media (max-width:640px){.post{grid-template-columns:1fr}.vote{flex-direction:row;gap:8px}}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php require_once __DIR__ . '/includes/site-nav.php'; of_shell('community'); ?>

@@ -42,7 +42,7 @@ $topic = $topicNames[$post['topic'] ?? ''] ?? ['name'=>'综合','icon'=>'💬'];
 .vote-inline{display:inline-flex;align-items:center;gap:6px}
 .vote-inline .act{height:34px;padding:0 12px}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('community'); ?>

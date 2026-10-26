@@ -38,7 +38,7 @@ $typeBadge = ['system' => 'neutral', 'order' => 'ok', 'consultation' => 'hl', 'l
 .msg .del{font-size:12.5px;color:var(--faint);margin-left:auto}
 .msg .del:hover{color:var(--danger)}
 </style>
-<script src="/assets/inject.js?v=20260830b" defer></script>
+<script src="/assets/inject.js?v=20261026a" defer></script>
 </head>
 <body data-of-main>
 <?php of_shell('home'); ?>
