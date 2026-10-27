@@ -259,11 +259,42 @@ function seo_gsc_token(string $jwt): ?string {
 function seo_fetch_bing(): array {
     $s = seo_console_settings();
     if (empty($s['bing_api_key']) || empty($s['bing_site'])) return [];
-    $url = 'https://ssl.bing.com/webmaster/api.svc/json/GetPageTrafficStats?siteUrl=' . urlencode($s['bing_site']) . '&apikey=' . $s['bing_api_key'];
+    // Bing Webmaster API 返回 {"d":[{"__type":"..","Query":"..","Clicks":0,...}]}，
+    // 旧实现直接 return 整个响应体，前端 array_column 拿不到 clicks —— 等于配了也看不到数。
+    $url = 'https://ssl.bing.com/webmaster/api.svc/json/GetQueryStats?siteUrl=' . urlencode($s['bing_site']) . '&apikey=' . urlencode($s['bing_api_key']);
     $ch = curl_init($url);
-    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>15, CURLOPT_SSL_VERIFYPEER=>false]);
-    $resp = json_decode(curl_exec($ch), true);
-    return is_array($resp) ? $resp : [];
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>20, CURLOPT_SSL_VERIFYPEER=>false]);
+    $raw = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($code !== 200 || !is_string($raw)) return [];
+    $resp = json_decode($raw, true);
+    $rows = is_array($resp['d'] ?? null) ? $resp['d'] : (is_array($resp) ? $resp : []);
+    // 按关键词聚合（Bing 按日期返回多行）
+    $agg = [];
+    foreach ($rows as $r) {
+        if (!is_array($r)) continue;
+        $q = (string)($r['Query'] ?? '');
+        if ($q === '') continue;
+        if (!isset($agg[$q])) $agg[$q] = ['query'=>$q, 'page'=>'', 'clicks'=>0, 'impressions'=>0, 'posSum'=>0, 'posN'=>0];
+        $agg[$q]['clicks'] += (int)($r['Clicks'] ?? 0);
+        $agg[$q]['impressions'] += (int)($r['Impressions'] ?? 0);
+        $p = (float)($r['AvgImpressionPosition'] ?? 0);
+        if ($p > 0) { $agg[$q]['posSum'] += $p; $agg[$q]['posN']++; }
+    }
+    $out = [];
+    foreach ($agg as $a) {
+        $out[] = [
+            'query' => $a['query'],
+            'page' => '',
+            'clicks' => $a['clicks'],
+            'impressions' => $a['impressions'],
+            'ctr' => $a['impressions'] > 0 ? round($a['clicks'] / $a['impressions'] * 100, 2) : 0,
+            'position' => $a['posN'] > 0 ? round($a['posSum'] / $a['posN'], 1) : '—',
+        ];
+    }
+    usort($out, fn($x, $y) => [$y['impressions'], $y['clicks']] <=> [$x['impressions'], $x['clicks']]);
+    return $out;
 }
 
 // ─── 拉取百度数据 ───

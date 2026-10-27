@@ -339,6 +339,32 @@ if (!defined('OF_EMBED')) admin_header('SEO 站长工具');
         </table>
       </div>
       <?php endif; ?>
+
+      <?php if (!empty($cache['bing'])): ?>
+      <h2 style="margin:20px 0 10px">🔍 Bing 搜索（按关键词聚合）</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
+        <?php $bdClick = array_sum(array_column($cache['bing'],'clicks')); $bdImp = array_sum(array_column($cache['bing'],'impressions')); ?>
+        <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">点击</div><div style="font-size:24px;font-weight:700"><?=$bdClick?></div></div>
+        <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">曝光</div><div style="font-size:24px;font-weight:700"><?=$bdImp?></div></div>
+        <div class="card" style="text-align:center"><div style="font-size:12px;color:var(--text-3)">CTR</div><div style="font-size:24px;font-weight:700"><?=$bdImp>0?round($bdClick/$bdImp*100,2):0?>%</div></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>关键词</th><th>点击</th><th>曝光</th><th>CTR</th><th>平均排名</th></tr></thead>
+          <tbody>
+            <?php foreach (array_slice($cache['bing'],0,20) as $r): ?>
+            <tr>
+              <td><strong><?=htmlspecialchars($r['query'] ?? '')?></strong></td>
+              <td><?=(int)($r['clicks'] ?? 0)?></td>
+              <td><?=(int)($r['impressions'] ?? 0)?></td>
+              <td><?=htmlspecialchars((string)($r['ctr'] ?? 0))?>%</td>
+              <td><?=htmlspecialchars((string)($r['position'] ?? '—'))?></td>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <?php endif; ?>
     </div>
   </div>
 </div>
