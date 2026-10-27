@@ -268,6 +268,114 @@ function seo_fetch_ga4_groups(int $days = 28): array {
 }
 
 
+// ─── 分档数据包（驾驶舱 7 / 28 / 90 天切换）───
+// 每档一次打包：GSC 合计+明细、GA4 合计+渠道组+事件+落地页。
+// 不复用 seo_fetch_*，因为那些把窗口写死在 28 天。
+function seo_range_gsc(int $days, int $rowLimit = 25): array {
+    $s = seo_console_settings();
+    if (empty($s['gsc_property'])) return ['rows' => [], 'total' => []];
+    $token = seo_google_access_token();
+    if (!$token) return ['rows' => [], 'total' => []];
+    $end = date('Y-m-d');
+    $start = date('Y-m-d', strtotime('-' . $days . ' days'));
+    $endpoint = 'https://searchconsole.googleapis.com/webmasters/v3/sites/' . urlencode($s['gsc_property']) . '/searchAnalytics/query';
+    $post = function (array $payload) use ($endpoint, $token): array {
+        $ch = curl_init($endpoint);
+        curl_setopt_array($ch, [
+            CURLOPT_POST=>true, CURLOPT_POSTFIELDS=>json_encode($payload),
+            CURLOPT_HTTPHEADER=>['Authorization: Bearer ' . $token, 'Content-Type: application/json'],
+            CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>25, CURLOPT_SSL_VERIFYPEER=>false,
+        ]);
+        $r = json_decode(curl_exec($ch), true);
+        return is_array($r) ? $r : [];
+    };
+    $tot = $post(['startDate'=>$start, 'endDate'=>$end, 'dimensions'=>[], 'rowLimit'=>1, 'dataState'=>'all']);
+    $r1 = $tot['rows'][0] ?? [];
+    $list = $post(['startDate'=>$start, 'endDate'=>$end, 'dimensions'=>['query','page'], 'rowLimit'=>$rowLimit, 'dataState'=>'all']);
+    $rows = [];
+    foreach (($list['rows'] ?? []) as $r) {
+        $rows[] = [
+            'query' => $r['keys'][0] ?? '', 'page' => $r['keys'][1] ?? '',
+            'clicks' => (int)($r['clicks'] ?? 0), 'impressions' => (int)($r['impressions'] ?? 0),
+            'ctr' => round(((float)($r['ctr'] ?? 0)) * 100, 2), 'position' => round((float)($r['position'] ?? 0), 1),
+        ];
+    }
+    return [
+        'days' => $days, 'start' => $start, 'end' => $end,
+        'total' => [
+            'clicks' => (int)($r1['clicks'] ?? 0), 'impressions' => (int)($r1['impressions'] ?? 0),
+            'ctr' => round(((float)($r1['ctr'] ?? 0)) * 100, 2), 'position' => round((float)($r1['position'] ?? 0), 1),
+        ],
+        'rows' => $rows,
+    ];
+}
+
+function seo_range_ga4(int $days): array {
+    $s = seo_console_settings();
+    if (empty($s['ga4_property'])) return ['total' => [], 'groups' => [], 'events' => [], 'pages' => []];
+    $token = seo_google_access_token();
+    if (!$token) return ['total' => [], 'groups' => [], 'events' => [], 'pages' => []];
+    $base = 'https://analyticsdata.googleapis.com/v1beta/properties/' . $s['ga4_property'] . ':runReport';
+    $dr = [['startDate' => $days . 'daysAgo', 'endDate' => 'today']];
+
+    $tot = seo_http_post_json($base, [
+        'dateRanges' => $dr,
+        'metrics' => [['name'=>'sessions'],['name'=>'totalUsers'],['name'=>'screenPageViews'],['name'=>'engagedSessions'],['name'=>'averageSessionDuration']],
+    ], $token);
+    $m = $tot['rows'][0]['metricValues'] ?? [];
+    $sessions = (int)($m[0]['value'] ?? 0);
+    $engaged = (int)($m[3]['value'] ?? 0);
+
+    $grp = seo_http_post_json($base, [
+        'dateRanges' => $dr,
+        'dimensions' => [['name'=>'sessionDefaultChannelGroup']],
+        'metrics' => [['name'=>'sessions'],['name'=>'totalUsers']],
+        'orderBys' => [['metric'=>['metricName'=>'sessions'],'desc'=>true]], 'limit'=>10,
+    ], $token);
+    $groups = [];
+    foreach (($grp['rows'] ?? []) as $r) {
+        $groups[] = ['group'=>$r['dimensionValues'][0]['value'] ?? '', 'sessions'=>(int)($r['metricValues'][0]['value'] ?? 0), 'users'=>(int)($r['metricValues'][1]['value'] ?? 0)];
+    }
+
+    $ev = seo_http_post_json($base, [
+        'dateRanges' => $dr,
+        'dimensions' => [['name'=>'eventName']],
+        'metrics' => [['name'=>'eventCount'],['name'=>'totalUsers']],
+        'orderBys' => [['metric'=>['metricName'=>'eventCount'],'desc'=>true]], 'limit'=>20,
+    ], $token);
+    $events = [];
+    foreach (($ev['rows'] ?? []) as $r) {
+        $events[] = ['event'=>$r['dimensionValues'][0]['value'] ?? '', 'count'=>(int)($r['metricValues'][0]['value'] ?? 0), 'users'=>(int)($r['metricValues'][1]['value'] ?? 0)];
+    }
+
+    $pg = seo_http_post_json($base, [
+        'dateRanges' => $dr,
+        'dimensions' => [['name'=>'pagePath']],
+        'metrics' => [['name'=>'sessions'],['name'=>'screenPageViews'],['name'=>'totalUsers']],
+        'orderBys' => [['metric'=>['metricName'=>'sessions'],'desc'=>true]], 'limit'=>25,
+    ], $token);
+    $pages = [];
+    foreach (($pg['rows'] ?? []) as $r) {
+        $pages[] = ['page'=>$r['dimensionValues'][0]['value'] ?? '', 'sessions'=>(int)($r['metricValues'][0]['value'] ?? 0), 'views'=>(int)($r['metricValues'][1]['value'] ?? 0), 'users'=>(int)($r['metricValues'][2]['value'] ?? 0)];
+    }
+
+    return [
+        'days' => $days,
+        'total' => [
+            'sessions' => $sessions, 'users' => (int)($m[1]['value'] ?? 0), 'views' => (int)($m[2]['value'] ?? 0),
+            'engaged_sessions' => $engaged, 'engagement_rate' => $sessions > 0 ? round($engaged / $sessions * 100, 1) : 0,
+            'avg_duration' => (int)round((float)($m[4]['value'] ?? 0)),
+        ],
+        'groups' => $groups, 'events' => $events, 'pages' => $pages,
+    ];
+}
+
+function seo_fetch_ranges(array $ranges = [7, 28, 90]): array {
+    $out = [];
+    foreach ($ranges as $d) $out[(string)$d] = ['gsc' => seo_range_gsc($d), 'ga4' => seo_range_ga4($d)];
+    return $out;
+}
+
 // GA4 事件计数（近 N 天）—— 漏斗断点用
 function seo_fetch_ga4_events(int $days = 28): array {
     $s = seo_console_settings();
@@ -591,6 +699,7 @@ function seo_console_pull(): array {
     $data['ga4_daily'] = seo_fetch_ga4_daily(28);
     $data['ga4_groups_28d'] = seo_fetch_ga4_groups(28);
     $data['ga4_events'] = seo_fetch_ga4_events(28);
+    $data['ranges'] = seo_fetch_ranges([7, 28, 90]);
     $data['bing'] = seo_fetch_bing();
     $data['baidu'] = seo_fetch_baidu();
     $data['yandex'] = seo_fetch_yandex();
