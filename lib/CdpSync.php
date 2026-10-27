@@ -67,6 +67,34 @@ if (!function_exists('cdp_get_by_id')) {
     }
 }
 
+if (!function_exists('cdp_set_channel_once')) {
+    /**
+     * 把事件里的渠道落到 cdp_customers.channel —— 首触锁死（已有值不覆盖）。
+     *
+     * 此前这一列没有任何写入方：cdp_profiles_export() 全仓无人调用，而它本身是
+     * 全量导出（8k+ 画像要跑分钟级），放进 cron 会被 curl --max-time 55 掐断。
+     * 所以改成事件级单行写入：一条 page_view 只动一行，代价可忽略。
+     */
+    function cdp_set_channel_once(string $uid, string $channel): bool {
+        $uid = trim($uid);
+        $channel = trim($channel);
+        if ($uid === '' || $channel === '') return false;
+        cdp_ensure_table();
+        $rows = Database::query("SELECT id, channel FROM cdp_customers WHERE id = ? OR visitor_id = ? LIMIT 1", [$uid, $uid]);
+        if (!$rows) {
+            cdp_get_or_create($uid);
+            $rows = Database::query("SELECT id, channel FROM cdp_customers WHERE id = ? OR visitor_id = ? LIMIT 1", [$uid, $uid]);
+            if (!$rows) return false;
+        }
+        if (trim((string)($rows[0]['channel'] ?? '')) !== '') return false;   // 首触锁死
+        Database::execute(
+            "UPDATE cdp_customers SET channel = ? WHERE id = ? AND (channel IS NULL OR channel = '')",
+            [$channel, $rows[0]['id']]
+        );
+        return true;
+    }
+}
+
 if (!function_exists('cdp_get_or_create')) {
     /**
      * 获取或创建客户记录
@@ -219,13 +247,22 @@ if (!function_exists('cdp_profiles_export')) {
                 'first_seen' => $p['first_seen'] ?? $now,
                 'last_seen' => $p['last_seen'] ?? $now,
                 'props' => json_encode($p['properties'] ?? [], JSON_UNESCAPED_UNICODE),
+                // 渠道列此前从未被写入（只存在于 schema），画像里的 channel 属性一直是死的。
+                // 走 COALESCE(NULLIF(...)) 更新 → 空值不会覆盖，天然是「首触锁死」。
+                'channel' => (string)($p['properties']['channel'] ?? ''),
                 'created_at' => $p['created_at'] ?? $now,
             ];
             if ($existing) {
                 $sets = [];
                 foreach ($data as $k => $v) {
                     if ($k === 'id') continue;
-                    $sets[] = "{$k} = COALESCE(NULLIF('" . str_replace("'", "''", (string)$v) . "',''), {$k})";
+                    $sv = str_replace("'", "''", (string)$v);
+                    if ($k === 'channel') {
+                        // 渠道必须首触锁死：已有值就保留，不能被后续的「直接访问」覆盖掉真实来源
+                        $sets[] = "channel = COALESCE(NULLIF(channel,''), '{$sv}')";
+                        continue;
+                    }
+                    $sets[] = "{$k} = COALESCE(NULLIF('{$sv}',''), {$k})";
                 }
                 if ($sets) Database::execute("UPDATE cdp_customers SET " . implode(', ', $sets) . " WHERE id = ?", [$vid]);
             } else {

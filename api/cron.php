@@ -29,6 +29,9 @@ if (!hash_equals($cronSecret, $requestSecret)) {
     exit;
 }
 
+// 注：CDP 画像 → cdp_customers 的渠道写入不放这里。全量 cdp_profiles_export() 要跑分钟级，
+// 会被 cron 的 curl --max-time 55 掐断；改为在 CdpSystem::track() 里按事件单行写入（见 cdp_set_channel_once）。
+
 // ── AI 后台任务的执行时段（lib/AiSchedule.php）──
 // 只在工作日凌晨窗口（默认 00:00–06:00）放行；周末/法定节假日不跑。
 // 标记之后，本次 cron 里任何 AiCenter 调用都会被时段闸二次把关，且超时压到窗口结束前。

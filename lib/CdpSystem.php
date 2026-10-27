@@ -100,6 +100,16 @@ class CdpSystem {
         // 更新用户画像
         self::updateProfile($visitorId, $memberId, $event, $data);
 
+        // 渠道列单行落库（首触锁死）：cdp_customers.channel 此前没有任何写入方
+        try {
+            if (!empty($data['channel']) && $visitorId !== '') {
+                require_once __DIR__ . '/CdpSync.php';
+                if (function_exists('cdp_set_channel_once')) {
+                    cdp_set_channel_once($visitorId, (string)$data['channel']);
+                }
+            }
+        } catch (\Throwable $e) {}
+
         if (class_exists('PluginSystem')) {
             PluginSystem::do_action('cdp_profile_updated', $visitorId, $memberId, $event, $data);
         }
