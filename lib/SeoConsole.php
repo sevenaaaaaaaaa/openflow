@@ -191,6 +191,43 @@ function seo_fetch_ga4(): array {
 }
 
 // ─── 拉取 GSC 数据（Search Analytics）───
+
+// ─── GSC 汇总口径（不传 dimensions 时 API 返回一行合计）───
+// 之前只有 Top25 明细，报告里把它们加起来当"28 天总量"是错的（25 行只占全量一部分）。
+function seo_gsc_totals(string $start, string $end): array {
+    $s = seo_console_settings();
+    if (empty($s['gsc_property'])) return [];
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $endpoint = 'https://searchconsole.googleapis.com/webmasters/v3/sites/' . urlencode($s['gsc_property']) . '/searchAnalytics/query';
+    $ch = curl_init($endpoint);
+    curl_setopt_array($ch, [
+        CURLOPT_POST=>true,
+        CURLOPT_POSTFIELDS=>json_encode(['startDate'=>$start, 'endDate'=>$end, 'dimensions'=>[], 'rowLimit'=>1, 'dataState'=>'all']),
+        CURLOPT_HTTPHEADER=>['Authorization: Bearer ' . $token, 'Content-Type: application/json'],
+        CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>20, CURLOPT_SSL_VERIFYPEER=>false,
+    ]);
+    $resp = json_decode(curl_exec($ch), true);
+    $r = $resp['rows'][0] ?? null;
+    return [
+        'start' => $start, 'end' => $end,
+        'clicks' => (int)($r['clicks'] ?? 0),
+        'impressions' => (int)($r['impressions'] ?? 0),
+        'ctr' => round(((float)($r['ctr'] ?? 0)) * 100, 2),
+        'position' => round((float)($r['position'] ?? 0), 1),
+    ];
+}
+
+// 三档口径：近 28 天 / 本周（周一至今）/ 上周（完整自然周）
+function seo_fetch_gsc_totals(): array {
+    $mon = strtotime('monday this week');
+    return [
+        'd28' => seo_gsc_totals(date('Y-m-d', strtotime('-28 days')), date('Y-m-d')),
+        'week' => seo_gsc_totals(date('Y-m-d', $mon), date('Y-m-d')),
+        'prev_week' => seo_gsc_totals(date('Y-m-d', strtotime('-7 days', $mon)), date('Y-m-d', strtotime('-1 day', $mon))),
+    ];
+}
+
 function seo_fetch_gsc(): array {
     $s = seo_console_settings();
     if (empty($s['gsc_property'])) return [];
@@ -366,6 +403,7 @@ function seo_console_handle_google_actions(): ?array {
 function seo_console_pull(): array {
     $data = ['fetched_at'=>date('Y-m-d H:i:s')];
     $data['gsc'] = seo_fetch_gsc();
+    $data['gsc_totals'] = seo_fetch_gsc_totals();
     $data['ga4'] = seo_fetch_ga4();
     $data['bing'] = seo_fetch_bing();
     $data['baidu'] = seo_fetch_baidu();
