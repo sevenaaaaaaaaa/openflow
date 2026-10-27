@@ -46,6 +46,9 @@ if (preg_match('~^/growth/(.*)$~', $path, $m)) $path = '/' . $m[1];
 $rules = [
     '~^/([a-f0-9]{32})\.txt$~'          => 'api/indexnow-key.php?key=$1',
 
+    // 报告中心：/r/{slug}[/{path}] → r.php（鉴权/版本/MIME 都在 r.php 里）
+    '~^/r/(.+)$~'                        => 'r.php',
+
     '~^/login/?$~'                       => 'admin/login.php',
     '~^/xmp/?$~'                         => 'admin/index.php',
     '~^/xmp/plugin/([a-z0-9-]+)/?$~'     => 'admin/plugin-page.php?plugin=$1',

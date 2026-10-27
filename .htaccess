@@ -28,6 +28,9 @@ RedirectMatch 410 ^/wp-includes/.*$
 RedirectMatch 410 ^/wp-json/.*$
 RewriteRule ^$ index.php [L,QSA]
 
+# 报告中心：/r/{slug}[/{path}] 出流（lib/ReportHub.php + r.php）
+RewriteRule ^r/(.*)$ r.php [L,QSA]
+
 # /index.php → / 301：首页 .php 孪生地址永久归并（配合 canonical 消除重复内容，
 # 取代旧 robots.txt 里 Disallow: /index.php 的堵爬虫做法——堵了爬虫反而看不到归并信号）
 RewriteCond %{THE_REQUEST} \s/index\.php[\s?]
