@@ -102,10 +102,14 @@ class CdpSystem {
 
         // 渠道列单行落库（首触锁死）：cdp_customers.channel 此前没有任何写入方
         try {
-            if (!empty($data['channel']) && $visitorId !== '') {
-                require_once __DIR__ . '/CdpSync.php';
-                if (function_exists('cdp_set_channel_once')) {
-                    cdp_set_channel_once($visitorId, (string)$data['channel']);
+            if ($visitorId !== '') {
+                $channel = trim((string)($data['channel'] ?? ''));
+                if ($channel === '') $channel = self::deriveChannel($event, $data);
+                if ($channel !== '') {
+                    require_once __DIR__ . '/CdpSync.php';
+                    if (function_exists('cdp_set_channel_once')) {
+                        cdp_set_channel_once($visitorId, $channel);
+                    }
                 }
             }
         } catch (\Throwable $e) {}
@@ -115,6 +119,41 @@ class CdpSystem {
         }
 
         return true;
+    }
+
+    /**
+     * 服务端兜底推导渠道（客户端没带 channel 时用）。
+     *
+     * 口径与 assets/cdp-track.js 的 getChannel() 保持一致，避免同一访客在前端/后端
+     * 算出两个不同渠道。注意两个「不要」：
+     *   - 没有 utm、也没有 referrer 的事件（heartbeat/time_on_page/scroll 等）**不推导**，
+     *     否则首个事件是心跳的访客会被永久钉成「直接访问」（首触锁死会放大这个错误）。
+     *   - 只有 page_view 且无任何来源证据时，才算真正的「直接访问」。
+     */
+    private static function deriveChannel(string $event, array $data): string {
+        $src = strtolower(trim((string)($data['utm_source'] ?? '')));
+        if ($src !== '') {
+            if (strpos($src, 'google') !== false || strpos($src, 'bing') !== false || strpos($src, 'baidu') !== false) return '搜索引擎';
+            if (strpos($src, 'wechat') !== false || strpos($src, 'weibo') !== false || strpos($src, 'zhihu') !== false
+                || strpos($src, 'xiaohongshu') !== false || strpos($src, 'douyin') !== false || strpos($src, 'bilibili') !== false) return '社媒';
+            if (strpos($src, 'linkedin') !== false || strpos($src, 'facebook') !== false || strpos($src, 'twitter') !== false) return '海外社媒';
+            if (strpos($src, 'email') !== false || strpos($src, 'newsletter') !== false) return '邮件';
+            return '广告渠道';
+        }
+        if (!empty($data['gclid']) || !empty($data['fbclid']) || !empty($data['msclkid'])) return '广告渠道';
+
+        $ref = trim((string)($data['referrer'] ?? ''));
+        if ($ref !== '') {
+            $host = parse_url($ref, PHP_URL_HOST) ?: '';
+            $selfHost = parse_url((string)(defined('SITE_URL') ? SITE_URL : ''), PHP_URL_HOST) ?: '';
+            if ($host !== '' && $host !== $selfHost) {
+                if (strpos($host, 'google.') !== false || strpos($host, 'baidu.com') !== false || strpos($host, 'bing.com') !== false) return '搜索引擎';
+                if (strpos($host, 'weixin.qq.com') !== false || strpos($host, 'zhihu.com') !== false || strpos($host, 'xiaohongshu') !== false) return '社媒';
+                return '外链';
+            }
+            return '';
+        }
+        return $event === 'page_view' ? '直接访问' : '';
     }
 
     /**

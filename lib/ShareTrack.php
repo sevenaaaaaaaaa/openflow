@@ -20,7 +20,10 @@ if (!function_exists('share_track_db')) {
 function share_track_db(): PDO {
     static $db = null;
     if ($db === null) {
-        $db = new PDO('sqlite:' . DATA_DIR . '/db/openflow.db');
+        require_once __DIR__ . '/Database.php';
+        // 复用统一连接：单例 PDO 自带 WAL + busy_timeout。此前这里裸 new PDO，
+        // busy_timeout 默认 0 —— 并发写入时一旦抢不到写锁就立刻抛 "database is locked"。
+        $db = Database::conn();
         $db->exec("CREATE TABLE IF NOT EXISTS share_events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             share_key TEXT UNIQUE,

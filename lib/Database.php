@@ -17,7 +17,8 @@ class Database {
             self::$pdo = new PDO('sqlite:' . $file);
             self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             self::$pdo->exec('PRAGMA journal_mode=WAL;');
-            self::$pdo->exec('PRAGMA busy_timeout=5000;');
+            // 写竞争主要来自 batch 事务与后台导出；5s 在高峰时不够，15s 让写操作排队而不是直接失败
+            self::$pdo->exec('PRAGMA busy_timeout=15000;');
         }
         return self::$pdo;
     }
