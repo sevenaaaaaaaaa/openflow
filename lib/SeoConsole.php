@@ -268,6 +268,40 @@ function seo_fetch_ga4_groups(int $days = 28): array {
 }
 
 
+// ─── 页面两期对比（页面点击涨跌用）───
+function seo_gsc_pages_between(string $start, string $end, int $limit = 50): array {
+    $s = seo_console_settings();
+    if (empty($s['gsc_property'])) return [];
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $ch = curl_init('https://searchconsole.googleapis.com/webmasters/v3/sites/' . urlencode($s['gsc_property']) . '/searchAnalytics/query');
+    curl_setopt_array($ch, [
+        CURLOPT_POST=>true,
+        CURLOPT_POSTFIELDS=>json_encode([
+            'startDate'=>$start, 'endDate'=>$end, 'dimensions'=>['page'], 'rowLimit'=>$limit, 'dataState'=>'all',
+        ]),
+        CURLOPT_HTTPHEADER=>['Authorization: Bearer ' . $token, 'Content-Type: application/json'],
+        CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>25, CURLOPT_SSL_VERIFYPEER=>false,
+    ]);
+    $r = json_decode(curl_exec($ch), true);
+    $out = [];
+    foreach (($r['rows'] ?? []) as $row) {
+        $out[] = ['page'=>$row['keys'][0] ?? '', 'clicks'=>(int)($row['clicks'] ?? 0),
+                  'impressions'=>(int)($row['impressions'] ?? 0), 'ctr'=>round(((float)($row['ctr'] ?? 0)) * 100, 2),
+                  'position'=>round((float)($row['position'] ?? 0), 1)];
+    }
+    return $out;
+}
+
+function seo_fetch_page_compare(): array {
+    $curS = date('Y-m-d', strtotime('-28 days'));
+    $curE = date('Y-m-d');
+    $prevS = date('Y-m-d', strtotime('-56 days'));
+    $prevE = date('Y-m-d', strtotime('-29 days'));
+    return ['cur' => seo_gsc_pages_between($curS, $curE, 60), 'prev' => seo_gsc_pages_between($prevS, $prevE, 60),
+            'cur_range' => [$curS, $curE], 'prev_range' => [$prevS, $prevE]];
+}
+
 // ─── 维度拆解（国家 / 设备）───
 function seo_gsc_dim(string $dim, int $days = 28, int $limit = 12): array {
     $s = seo_console_settings();
@@ -754,6 +788,7 @@ function seo_console_pull(): array {
     $data['ga4_events'] = seo_fetch_ga4_events(28);
     $data['ranges'] = seo_fetch_ranges([7, 28, 90]);
     $data['breakdowns'] = seo_fetch_breakdowns();
+    $data['page_compare'] = seo_fetch_page_compare();
     $data['bing'] = seo_fetch_bing();
     $data['baidu'] = seo_fetch_baidu();
     $data['yandex'] = seo_fetch_yandex();
