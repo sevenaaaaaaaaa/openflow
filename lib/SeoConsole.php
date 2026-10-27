@@ -190,6 +190,82 @@ function seo_fetch_ga4(): array {
     return $rows;
 }
 
+
+// ─── GA4 汇总口径（不传 dimensions，一次返回一行合计）───
+// 与 GSC 同理：Top20 明细行相加 ≠ 全量会话。这里补三档汇总。
+function seo_ga4_totals(string $start, string $end): array {
+    $s = seo_console_settings();
+    if (empty($s['ga4_property'])) return [];
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $resp = seo_http_post_json(
+        'https://analyticsdata.googleapis.com/v1beta/properties/' . $s['ga4_property'] . ':runReport',
+        [
+            'dateRanges' => [['startDate' => $start, 'endDate' => $end]],
+            'metrics' => [
+                ['name' => 'sessions'], ['name' => 'totalUsers'],
+                ['name' => 'screenPageViews'], ['name' => 'engagedSessions'],
+                ['name' => 'averageSessionDuration'],
+            ],
+        ],
+        $token
+    );
+    $m = $resp['rows'][0]['metricValues'] ?? [];
+    $sessions = (int)($m[0]['value'] ?? 0);
+    $engaged = (int)($m[3]['value'] ?? 0);
+    return [
+        'start' => $start, 'end' => $end,
+        'sessions' => $sessions,
+        'users' => (int)($m[1]['value'] ?? 0),
+        'views' => (int)($m[2]['value'] ?? 0),
+        'engaged_sessions' => $engaged,
+        'engagement_rate' => $sessions > 0 ? round($engaged / $sessions * 100, 1) : 0,
+        'avg_duration' => (int)round((float)($m[4]['value'] ?? 0)),
+    ];
+}
+
+// GA4 渠道组（sessionDefaultChannelGroup）：本周 / 上周
+function seo_ga4_channel_weekly(string $start, string $end): array {
+    $s = seo_console_settings();
+    if (empty($s['ga4_property'])) return [];
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $resp = seo_http_post_json(
+        'https://analyticsdata.googleapis.com/v1beta/properties/' . $s['ga4_property'] . ':runReport',
+        [
+            'dateRanges' => [['startDate' => $start, 'endDate' => $end]],
+            'dimensions' => [['name' => 'sessionDefaultChannelGroup']],
+            'metrics' => [['name' => 'sessions'], ['name' => 'totalUsers']],
+            'orderBys' => [['metric' => ['metricName' => 'sessions'], 'desc' => true]],
+            'limit' => 12,
+        ],
+        $token
+    );
+    $rows = [];
+    foreach (($resp['rows'] ?? []) as $r) {
+        $rows[] = [
+            'group' => $r['dimensionValues'][0]['value'] ?? '',
+            'sessions' => (int)($r['metricValues'][0]['value'] ?? 0),
+            'users' => (int)($r['metricValues'][1]['value'] ?? 0),
+        ];
+    }
+    return $rows;
+}
+
+// 三档：近 28 天 / 本周（周一至今）/ 上周（完整自然周）
+function seo_fetch_ga4_totals(): array {
+    $mon = strtotime('monday this week');
+    $wS = date('Y-m-d', $mon); $wE = date('Y-m-d');
+    $pS = date('Y-m-d', strtotime('-7 days', $mon)); $pE = date('Y-m-d', strtotime('-1 day', $mon));
+    return [
+        'd28' => seo_ga4_totals(date('Y-m-d', strtotime('-28 days')), date('Y-m-d')),
+        'week' => seo_ga4_totals($wS, $wE),
+        'prev_week' => seo_ga4_totals($pS, $pE),
+        'channel_week' => seo_ga4_channel_weekly($wS, $wE),
+        'channel_prev_week' => seo_ga4_channel_weekly($pS, $pE),
+    ];
+}
+
 // ─── 拉取 GSC 数据（Search Analytics）───
 
 // ─── GSC 汇总口径（不传 dimensions 时 API 返回一行合计）───
@@ -405,6 +481,7 @@ function seo_console_pull(): array {
     $data['gsc'] = seo_fetch_gsc();
     $data['gsc_totals'] = seo_fetch_gsc_totals();
     $data['ga4'] = seo_fetch_ga4();
+    $data['ga4_totals'] = seo_fetch_ga4_totals();
     $data['bing'] = seo_fetch_bing();
     $data['baidu'] = seo_fetch_baidu();
     $data['yandex'] = seo_fetch_yandex();
