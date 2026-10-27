@@ -191,6 +191,111 @@ function seo_fetch_ga4(): array {
 }
 
 
+
+// ─── 趋势序列（驾驶舱用）───
+// GSC 近 N 个自然周（周一–周日），只取已完整的周
+function seo_fetch_gsc_weeks(int $weeks = 8): array {
+    $out = [];
+    $mon = strtotime('monday this week');
+    for ($i = $weeks; $i >= 1; $i--) {
+        $s = strtotime('-' . ($i * 7) . ' days', $mon);
+        $e = strtotime('-' . (($i - 1) * 7) . ' days', $mon);
+        $e = strtotime('-1 day', $e);
+        $t = seo_gsc_totals(date('Y-m-d', $s), date('Y-m-d', $e));
+        if (!$t) continue;
+        $t['label'] = date('m/d', $s);
+        $out[] = $t;
+    }
+    return $out;
+}
+
+// GA4 按日（会话/用户/浏览）
+function seo_fetch_ga4_daily(int $days = 28): array {
+    $s = seo_console_settings();
+    if (empty($s['ga4_property'])) return [];
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $resp = seo_http_post_json(
+        'https://analyticsdata.googleapis.com/v1beta/properties/' . $s['ga4_property'] . ':runReport',
+        [
+            'dateRanges' => [['startDate' => $days . 'daysAgo', 'endDate' => 'today']],
+            'dimensions' => [['name' => 'date']],
+            'metrics' => [['name' => 'sessions'], ['name' => 'totalUsers'], ['name' => 'screenPageViews']],
+            'orderBys' => [['dimension' => ['dimensionName' => 'date']]],
+            'limit' => 90,
+        ],
+        $token
+    );
+    $out = [];
+    foreach (($resp['rows'] ?? []) as $r) {
+        $d = $r['dimensionValues'][0]['value'] ?? '';
+        $out[] = [
+            'date' => strlen($d) === 8 ? substr($d, 0, 4) . '-' . substr($d, 4, 2) . '-' . substr($d, 6, 2) : $d,
+            'sessions' => (int)($r['metricValues'][0]['value'] ?? 0),
+            'users' => (int)($r['metricValues'][1]['value'] ?? 0),
+            'views' => (int)($r['metricValues'][2]['value'] ?? 0),
+        ];
+    }
+    return $out;
+}
+
+// GA4 渠道组（近 28 天）
+function seo_fetch_ga4_groups(int $days = 28): array {
+    $s = seo_console_settings();
+    if (empty($s['ga4_property'])) return [];
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $resp = seo_http_post_json(
+        'https://analyticsdata.googleapis.com/v1beta/properties/' . $s['ga4_property'] . ':runReport',
+        [
+            'dateRanges' => [['startDate' => $days . 'daysAgo', 'endDate' => 'today']],
+            'dimensions' => [['name' => 'sessionDefaultChannelGroup']],
+            'metrics' => [['name' => 'sessions'], ['name' => 'totalUsers']],
+            'orderBys' => [['metric' => ['metricName' => 'sessions'], 'desc' => true]],
+            'limit' => 12,
+        ],
+        $token
+    );
+    $out = [];
+    foreach (($resp['rows'] ?? []) as $r) {
+        $out[] = [
+            'group' => $r['dimensionValues'][0]['value'] ?? '',
+            'sessions' => (int)($r['metricValues'][0]['value'] ?? 0),
+            'users' => (int)($r['metricValues'][1]['value'] ?? 0),
+        ];
+    }
+    return $out;
+}
+
+
+// GA4 事件计数（近 N 天）—— 漏斗断点用
+function seo_fetch_ga4_events(int $days = 28): array {
+    $s = seo_console_settings();
+    if (empty($s['ga4_property'])) return [];
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $resp = seo_http_post_json(
+        'https://analyticsdata.googleapis.com/v1beta/properties/' . $s['ga4_property'] . ':runReport',
+        [
+            'dateRanges' => [['startDate' => $days . 'daysAgo', 'endDate' => 'today']],
+            'dimensions' => [['name' => 'eventName']],
+            'metrics' => [['name' => 'eventCount'], ['name' => 'totalUsers']],
+            'orderBys' => [['metric' => ['metricName' => 'eventCount'], 'desc' => true]],
+            'limit' => 20,
+        ],
+        $token
+    );
+    $out = [];
+    foreach (($resp['rows'] ?? []) as $r) {
+        $out[] = [
+            'event' => $r['dimensionValues'][0]['value'] ?? '',
+            'count' => (int)($r['metricValues'][0]['value'] ?? 0),
+            'users' => (int)($r['metricValues'][1]['value'] ?? 0),
+        ];
+    }
+    return $out;
+}
+
 // ─── GA4 汇总口径（不传 dimensions，一次返回一行合计）───
 // 与 GSC 同理：Top20 明细行相加 ≠ 全量会话。这里补三档汇总。
 function seo_ga4_totals(string $start, string $end): array {
@@ -482,6 +587,10 @@ function seo_console_pull(): array {
     $data['gsc_totals'] = seo_fetch_gsc_totals();
     $data['ga4'] = seo_fetch_ga4();
     $data['ga4_totals'] = seo_fetch_ga4_totals();
+    $data['gsc_weeks'] = seo_fetch_gsc_weeks(8);
+    $data['ga4_daily'] = seo_fetch_ga4_daily(28);
+    $data['ga4_groups_28d'] = seo_fetch_ga4_groups(28);
+    $data['ga4_events'] = seo_fetch_ga4_events(28);
     $data['bing'] = seo_fetch_bing();
     $data['baidu'] = seo_fetch_baidu();
     $data['yandex'] = seo_fetch_yandex();
