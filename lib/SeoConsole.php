@@ -268,6 +268,59 @@ function seo_fetch_ga4_groups(int $days = 28): array {
 }
 
 
+// ─── 维度拆解（国家 / 设备）───
+function seo_gsc_dim(string $dim, int $days = 28, int $limit = 12): array {
+    $s = seo_console_settings();
+    if (empty($s['gsc_property'])) return [];
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $ch = curl_init('https://searchconsole.googleapis.com/webmasters/v3/sites/' . urlencode($s['gsc_property']) . '/searchAnalytics/query');
+    curl_setopt_array($ch, [
+        CURLOPT_POST=>true,
+        CURLOPT_POSTFIELDS=>json_encode([
+            'startDate'=>date('Y-m-d', strtotime('-' . $days . ' days')), 'endDate'=>date('Y-m-d'),
+            'dimensions'=>[$dim], 'rowLimit'=>$limit, 'dataState'=>'all',
+        ]),
+        CURLOPT_HTTPHEADER=>['Authorization: Bearer ' . $token, 'Content-Type: application/json'],
+        CURLOPT_RETURNTRANSFER=>true, CURLOPT_TIMEOUT=>25, CURLOPT_SSL_VERIFYPEER=>false,
+    ]);
+    $r = json_decode(curl_exec($ch), true);
+    $out = [];
+    foreach (($r['rows'] ?? []) as $row) {
+        $out[] = ['key'=>$row['keys'][0] ?? '', 'clicks'=>(int)($row['clicks'] ?? 0),
+                  'impressions'=>(int)($row['impressions'] ?? 0), 'position'=>round((float)($row['position'] ?? 0), 1)];
+    }
+    return $out;
+}
+
+function seo_ga4_dim(string $dim, int $days = 28, int $limit = 12): array {
+    $s = seo_console_settings();
+    if (empty($s['ga4_property'])) return [];
+    $token = seo_google_access_token();
+    if (!$token) return [];
+    $resp = seo_http_post_json(
+        'https://analyticsdata.googleapis.com/v1beta/properties/' . $s['ga4_property'] . ':runReport',
+        ['dateRanges'=>[['startDate'=>$days . 'daysAgo','endDate'=>'today']],
+         'dimensions'=>[['name'=>$dim]], 'metrics'=>[['name'=>'sessions'],['name'=>'totalUsers']],
+         'orderBys'=>[['metric'=>['metricName'=>'sessions'],'desc'=>true]], 'limit'=>$limit],
+        $token);
+    $out = [];
+    foreach (($resp['rows'] ?? []) as $r) {
+        $out[] = ['key'=>$r['dimensionValues'][0]['value'] ?? '', 'sessions'=>(int)($r['metricValues'][0]['value'] ?? 0),
+                  'users'=>(int)($r['metricValues'][1]['value'] ?? 0)];
+    }
+    return $out;
+}
+
+function seo_fetch_breakdowns(): array {
+    return [
+        'gsc_country' => seo_gsc_dim('country'),
+        'gsc_device'  => seo_gsc_dim('device'),
+        'ga4_country' => seo_ga4_dim('country'),
+        'ga4_device'  => seo_ga4_dim('deviceCategory'),
+    ];
+}
+
 // ─── 分档数据包（驾驶舱 7 / 28 / 90 天切换）───
 // 每档一次打包：GSC 合计+明细、GA4 合计+渠道组+事件+落地页。
 // 不复用 seo_fetch_*，因为那些把窗口写死在 28 天。
@@ -700,6 +753,7 @@ function seo_console_pull(): array {
     $data['ga4_groups_28d'] = seo_fetch_ga4_groups(28);
     $data['ga4_events'] = seo_fetch_ga4_events(28);
     $data['ranges'] = seo_fetch_ranges([7, 28, 90]);
+    $data['breakdowns'] = seo_fetch_breakdowns();
     $data['bing'] = seo_fetch_bing();
     $data['baidu'] = seo_fetch_baidu();
     $data['yandex'] = seo_fetch_yandex();
