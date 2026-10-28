@@ -85,13 +85,10 @@ file_put_contents($f.".tmp",$json); rename($f.".tmp",$f);
 
 **P0-2：审计抽出的「母版残渣」文章（优先重写，共 20 篇）——2026-10-26 起逐批处理，进度与最新分级见 `docs/handbook/PRODUCT-DEBT.md`**
 ```
-✅ 已重写上线（2026-10-26/28/29，共 33 篇）：P0-1 两篇 + P0-2 十八篇 + P1 长而母版化七篇 + P1 薄五篇 + stub 重写三篇（cyberverse / otterhub / violin）
+✅ 已重写上线（2026-10-26/28/29，共 37 篇）：P0-1 两篇 + P0-2 十八篇 + P1 长而母版化七篇 + P1 薄五篇 + stub 重写三篇 + P2 清理五篇（humanizer / geoflow / recorder-online / listsec / branding-4 轻修）
 ⬇️ 下架（status=draft，2026-10-29，共 3 篇）：nano-banana-is-here…（营销邮件骨架）/ video-candy（标题与内容不符）/ deep-printfilm（仓库已删除）
-✅ 转轻修清单：ai-tools-design-branding-4（仅 emoji，0 图 0 表）
 ✅ 剔除（满分样例误报）：seedance-video
-⬜ P2 纯格式（4 篇）：claude-code-humanizer / geoflow-ai-content / recorder-online-windows-mac / listsec-owasp-top-2025
-⬜ 轻修（1 篇）：ai-tools-design-branding-4
-（清完以上 5 项，42 篇清单全清）
+🎉 **42 篇清单全清（2026-10-29）**。内容欠账归零；产品轨道欠账见 docs/handbook/PRODUCT-DEBT.md 第二至七节。
 ```
 
 **P1：偏薄/无现场（补深度）**

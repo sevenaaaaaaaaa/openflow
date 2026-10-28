@@ -1,7 +1,6 @@
 # OpenFlow 欠账台账（Product Debt Ledger）
 
-> 建立时间：2026-10-26。用途：把散落在 PRODUCT-PLAN / ROADMAP / HANDOFF 各处的未完成项收敛到一页，完成一项划一项（划线并注明日期）。
-> 规则：**没有证据的条目不写成"进行中"**（同 `docs/POSITIONING.md` 口径）。本台账只记"没做 / 没验证 / 没配置"，已完成的看各源文档的划线条目。
+> 建立时间：2026-10-26。**内容轨道 42 篇清单已于 2026-10-29 全清**（33 重写上线 + 3 下架 + 1 剔除 + 5 轻量清理）。本台账保留作为持续维护记录：产品轨道欠账继续在此追踪，内容轨道新增问题随时追加。
 
 ---
 
@@ -51,15 +50,16 @@
     - [x] ~~`real-esrgan-stars-ai-image-open-source`~~（约 1947 中文字、3 图 2 表，原理深读定位，与 real-esrgan-deep-review 姊妹分工，双端验证 0 母版词）
     - [x] ~~`yana-obsidian-deep-review-alternative`~~（约 1804 中文字、3 图 1 表，"笔记三流派"主线，新图 assets/articles/yana/ 已部署，双端验证 0 母版词）
     - [x] ~~`libtv-vs-tapnow-2`~~（约 2332 中文字、3 图 1 表，保留决策表与三个真实案例、清除表格符号与"先给结论"，双端验证 0 母版词）
-- **P2 重分级（2026-10-26 体检）**：
-  - [ ] **纯格式清理（4 篇）**：`claude-code-humanizer-ai-writing`(1327, emoji) / `geoflow-ai-content-open-source`(1847, emoji+ol) / `recorder-online-windows-mac-mp4-tools-download-free`(1290, ol) / `listsec-owasp-top-2025`(1536, 相关阅读+emoji+ol)
+- **P2 重分级（2026-10-26 体检）→ 全清（2026-10-29）**：
+  - [x] ~~**纯格式清理（4 篇）：全清**~~（2026-10-29 上线：humanizer 约 1624 中文字 / geoflow 约 1688 / recorder-online 约 1546 / listsec 约 1647，各 3 图，清除 emoji/ol/wiki 链接/延伸阅读残渣，双端验证 0 母版词）
   - [x] ~~**实为 stub（3 篇）：处理完毕（2026-10-29）**——一重写两下架：
     - [x] ~~`cyberverse-agent-digital-human`~~（2026-10-29 重写上线：约 1810 中文字、3 图 1 表，"一张照片让角色开口"主线，新图 assets/articles/cyberverse/ 已部署，双端验证 0 母版词）
     - [x] ~~`nano-banana-is-here-supercharge-your-design-workflow`~~ **下架**（营销邮件骨架，零内容）
     - [x] ~~`video-candy`~~ **下架**（标题与内容不符：正文抓的是 YouTube 下载器 README）
+  - [x] ~~轻修~~ **`ai-tools-design-branding-4`**（2026-10-29 轻修上线：保留全文优质内容，补 3 图（lovart/midjourney/coolors），清"配图待补"槽位与 Moodio 硬塞尾段，织入 penpot/branding 内链，双端验证 0 母版词）
 - 全量 83 条问题清单：`data/audit-sample-report.md`
-- **工作量结论（2026-10-29，第十一批后更新 · stub 全清）**：42 篇清单 = 已完成 33 + 下架 3 + 剔除 1 + 剩余 5（P2 纯格式 4 + 轻修 1）；另 P0-1 两篇已完成。总完成 35 篇重写上线，剩余工作 5 项（全部为轻量清理）。
-- **下一批建议**：P2 纯格式 4 篇收尾（claude-code-humanizer、geoflow、recorder-online、listsec）+ branding-4 轻修，一批做完 42 篇清单即全清。清完后把全部成果通过 `deploy/sync.sh` 提交入库。
+- **工作量结论（2026-10-29 终版 · 42 篇清单全清）**：42 篇 = **33 重写上线** + 3 下架 + 1 剔除 + 5 轻量清理（4 格式清理 + 1 轻修）；另 P0-1 两篇已完成。**总计 37 篇重写上线，双端验证全部 0 母版词。**执行周期：2026-10-26 至 10-29，共 12 批。
+- **遗留提醒**：部分新增图片目录未入 git（assets/articles/ 下历批新增），下次 `deploy/sync.sh` 时会随 git 轨入库；data/ 按规范不入库（服务器为源）。
 - 提醒：数据真源在服务器（`data/articles/index.json`），改完必须 `python3 scripts/deploy.py --with-data data/articles/index.json data/articles/index.json` 推送并线上验证（deploy 后属主需为 `www:www`）。
 
 ## 二、产品 P0 未完成（源：docs/handbook/PRODUCT-PLAN.md 未勾选项）
