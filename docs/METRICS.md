@@ -32,7 +32,7 @@
 | 核心类库文件 | <!--m:lib_files-->240<!--/m--> | `lib/*.php` |
 | PHP 测试 | <!--m:php_tests-->167<!--/m--> | `tests/*_test.php` |
 | 插件 | <!--m:plugins-->9<!--/m--> | `plugins/` 下的目录 |
-| 前台页面 | <!--m:frontend_pages-->78<!--/m--> | 仓库根目录的 `*.php` |
+| 前台页面 | <!--m:frontend_pages-->80<!--/m--> | 仓库根目录的 `*.php` |
 
 ---
 

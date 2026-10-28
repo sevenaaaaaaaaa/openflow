@@ -1,0 +1,146 @@
+# ═══ OpenFlow XMP · Git 忽略规则 ═══
+# 目标：仓库只保留「源码 + 文档」，运行时数据/密钥/环境依赖全部排除
+
+# ─── 运行时数据（绝对不应提交） ───
+/data/
+/uploads/
+/shop/
+
+# ─── 密钥与敏感配置 ───
+data/*
+/docs/DEPLOY-SECRETS.md
+!data/.gitkeep
+*.secret.json
+cron_secret.json
+import_secret.json
+
+# ─── 依赖与构建产物 ───
+/vendor/
+composer.phar
+composer
+composer-setup.php
+
+# ─── 日志与缓存 ───
+*.log
+*.cache
+.phpunit.result.cache
+/storage-maintain.json
+/mod-scan.json
+
+# ─── 打包产物 ───
+*.zip
+*.tar.gz
+openflow-deploy.zip
+/artifacts/
+
+# ─── 系统文件 ───
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# ─── 编辑器 ───
+.idea/
+.vscode/
+*.sublime-*
+
+# ─── 部署脚本（含服务器 IP/密钥，不入库） ───
+deploy.sh
+qa-check.sh
+baota-pseudostatic.txt
+
+# ─── Web Server 配置（保留 .htaccess 与 nginx.site.conf 作为开源部署参考，均不含密钥） ───
+
+# ─── 数据库 ───
+*.db
+*.sqlite
+*.sqlite3
+/data/db/
+
+# ─── 环境变量 ───
+.env
+.env.local
+.env.production
+
+# ─── 工具生成的备份文件 ───
+*.bak
+*.bak-*
+
+# ─── 安全：禁止提交私钥/凭据 ───
+.ssh/
+*.pem
+*.key
+id_ed25519*
+*.id_ed25519
+
+# ─── 备份/临时/试错残留 ───
+*.bak*
+*.bak_*
+*.bak_prehero
+*_backup*/
+.bak[0-9]*_*
+includes/
+
+# ─── 诊断/部署脚本(可能含服务器路径) ───
+check-articles.sh
+r2-diagnose.sh
+deploy-shell-unify.sh
+*.diagnose*
+
+# ─── 本地运行时数据(新迁移目录) ───
+/data/
+/uploads/
+
+# ─── 内部整改/临时方案文档(仅本地) ───
+*内部整改方案.md
+
+# ─── 批量截取的导航站官网截图（400+ 张，由 tests/visual/nav_site_shots.py 生成，deploy.sh 直接 rsync） ───
+/assets/images/nav-sites/
+
+# 服务器部署配置含基础设施信息，不入库（本地保留）
+docs/DEPLOY-CONFIG.md
+node_modules/
+package-lock.json.bak
+.deploy/
+
+plugins/_drafts/
+.deploy/phpstan-draft-*
+
+# 运行时数据（摆渡/演示卡片等），不入库
+decks/
+data/backups/
+
+# ── 本地 AI 工具会话缓存（不入库）──
+.v2c/
+.video_agent/
+
+# ===== ↑ 以上同步自 .gitignore（「从 .gitignore 同步」只重写以上部分）=====
+.git/
+.hg/
+.svn/
+bower_components/
+jspm_packages/
+__pycache__/
+site-packages/
+venv/
+coverage/
+htmlcov/
+lcov-report/
+cmakefiles/
+cmake-build-*/
+bazel-*/
+pods/
+deriveddata/
+storybook-static/
+playwright-report/
+test-results/
+allure-results/
+allure-report/
+cdk.out/
+*.egg-info/
+*.dist-info/
+eggs/
+pip-wheel-metadata/
+wheels/
+# ----- ↑ 以上为 ZCode 默认排除规则（自定义规则请写在本行下方，不会被同步/恢复改动）-----
+# 自定义规则写在下方（本行提示可删除）
