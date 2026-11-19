@@ -9,6 +9,7 @@ require_once __DIR__ . '/lib/comment-widget.php';
 require_once __DIR__ . '/lib/Database.php';
 require_once __DIR__ . '/lib/MembershipSystem.php';
 require_once __DIR__ . '/lib/ShortcodeSystem.php';
+require_once __DIR__ . '/lib/Markdown.php';
 require_once __DIR__ . '/lib/ArticleStats.php';
 require_once __DIR__ . '/lib/AdSystem.php';
 require_once __DIR__ . '/lib/ShareTrack.php';
@@ -76,11 +77,12 @@ if ($baseUrl === '') {
 }
 $articleUrl = $baseUrl . '/article/' . $slug;
 
-// ─── 内容处理：短代码 → 标题锚点 → 阅读时间 ───
+// ─── 内容处理：Markdown 还原 → 短代码 → 标题锚点 → 阅读时间 ───
+// markdown 模式存的是原文，输出侧必须先还原成 HTML，否则会原样显示 ## / **（富文本原样返回）。
 // 短代码此前只是被 require 进来，shortcode_render() 从来没有被调用过：
 // 正文里写 [card type="course" id="x"] 会原样显示成方括号文本。先展开再做锚点，
 // 这样短代码产出的标题也能进目录。
-$rawContent = $article['content'] ?? '';
+$rawContent = article_body_html($article);
 $content = shortcode_render($rawContent);
 $usedShortcode = $content !== $rawContent;   // 用到了才注入短代码样式，没用到不给每篇文章加 CSS
 $toc = [];

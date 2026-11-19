@@ -4,9 +4,24 @@
  * Usage: content-preview.php?type=article&id=xxx
  */
 require_once __DIR__ . '/admin/config.php';
+require_once __DIR__ . '/lib/Markdown.php';
+
+// 预览页会展示草稿与付费全文，必须登录后才能访问（P0：此前是公开页）
+require_login();
 
 $type = req_str('type');
 $id = req_str('id');
+
+// 按内容类型校验对应后台权限，避免用低权限账号借预览读取其它模块草稿
+$previewPerms = [
+    'article'  => 'articles',
+    'event'    => 'articles',
+    'course'   => 'courses',
+    'topic'    => 'topics',
+    'download' => 'downloads',
+    'landing'  => 'landing',
+];
+if (isset($previewPerms[$type])) require_perm($previewPerms[$type]);
 
 $title = '';
 $content = '';
@@ -14,7 +29,7 @@ $meta = [];
 
 if ($type === 'article') {
     $a = get_article($id);
-    if ($a) { $title = $a['title']; $content = $a['content']; $meta = ['作者' => $a['author'] ?? '', '分类' => $a['category'] ?? '', '标签' => implode(', ', $a['tags'] ?? [])]; }
+    if ($a) { $title = $a['title']; $content = article_body_html($a); $meta = ['作者' => $a['author'] ?? '', '分类' => $a['category'] ?? '', '标签' => implode(', ', $a['tags'] ?? [])]; }
 } elseif ($type === 'event') {
     $events = json_read(DATA_DIR . '/events/index.json');
     foreach ($events as $e) { if ($e['id'] === $id) { $title = $e['title']; $content = $e['content']; $meta = ['日期' => $e['start_date']??'', '地点' => $e['location']??'', '嘉宾' => count($e['speakers']??[]).'位']; break; } }
@@ -36,7 +51,7 @@ if (empty($title)) { echo '<p style="padding:40px;text-align:center;color:#999">
 
 ?><!DOCTYPE html>
 <html lang="zh-CN"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="robots" content="noindex,nofollow">
 <title>预览 - <?=htmlspecialchars($title)?></title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}

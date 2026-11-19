@@ -10,12 +10,8 @@ $page = max(1, (int)($_GET['page'] ?? 1));
 
 if ($showTrash) {
     $articles = json_read(DATA_DIR . '/trash.json');
-    $pag = paginate($articles, $page, 50);
-    $articles = $pag['items'];
 } else {
     $articles = get_articles();
-    $pag = paginate($articles, $page, 50);
-    $articles = $pag['items'];
 }
 
 // Quick copy
@@ -42,9 +38,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['quick_update'])) {
     $field = $_POST['field'] ?? '';
     $value = $_POST['value'] ?? '';
     $article = get_article($id);
-    if ($article && in_array($field, ['title','slug','category','status','cover','seo_title','seo_desc','seo_keywords','is_pinned'])) {
+    if ($article && in_array($field, ['title','slug','category','status','cover','seo_title','seo_desc','seo_keywords','tags','is_pinned'], true)) {
         if ($field === 'tags') {
-            $article['tags'] = array_filter(explode(',', $value));
+            $article['tags'] = array_values(array_filter(array_map('trim', explode(',', $value)), fn($t) => $t !== ''));
         } elseif ($field === 'is_pinned') {
             $article['is_pinned'] = in_array((string)$value, ['1', 'true', 'on'], true);
         } else {
@@ -138,7 +134,18 @@ $catFilter = $_GET['category'] ?? '';
 $statusFilter = $_GET['status'] ?? '';
 if ($search) $articles = array_values(array_filter($articles, fn($a) => mb_strpos(mb_strtolower($a['title']??''), mb_strtolower($search)) !== false));
 if ($catFilter) $articles = array_values(array_filter($articles, fn($a) => ($a['category']??'') === $catFilter));
-if ($statusFilter) $articles = array_values(array_filter($articles, fn($a) => ($a['status']??'') === $statusFilter));
+if ($statusFilter) $articles = array_values(array_filter($articles, fn($a) => ($a['status'] ?? '') === $statusFilter));
+
+// 先筛选、后分页：否则搜索/筛选只作用于当前一页，翻页还会丢筛选参数
+$pag = paginate($articles, $page, 50);
+$articles = $pag['items'];
+$pagQuery = array_filter([
+    'trash' => $showTrash ? '1' : '',
+    'search' => $search,
+    'category' => $catFilter,
+    'status' => $statusFilter,
+], fn($v) => $v !== '' && $v !== null);
+$pagBase = 'articles.php?' . http_build_query($pagQuery);
 
 if (!defined('OF_EMBED')) admin_header('文章管理');
 ?>
@@ -163,6 +170,8 @@ if (!defined('OF_EMBED')) admin_header('文章管理');
 .lst-pin{display:inline-flex;color:var(--accent);flex:0 0 auto}
 .lst-pin svg{width:13px;height:13px}
 .lst-sync{font-size:11px;color:var(--ok)}
+.tag-edit-btn{border:1px solid var(--border);background:var(--surface);border-radius:6px;padding:0 5px;margin-left:4px;font-size:11px;line-height:16px;color:var(--text-3);cursor:pointer;vertical-align:middle}
+.tag-edit-btn:hover{color:var(--text);border-color:var(--border-strong)}
 </style>
 <?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
@@ -201,7 +210,7 @@ if (!defined('OF_EMBED')) admin_header('文章管理');
         <option value="draft" <?=$statusFilter==='draft'?'selected':''?>>草稿</option>
       </select>
       <?php if ($search||$catFilter||$statusFilter): ?><a href="<?=of_hub_url($showTrash?['trash'=>1]:[])?>" class="btn btn-ghost btn-sm">清除筛选</a><?php endif; ?>
-      <span class="lst-count"><?=count($articles)?> 篇</span>
+      <span class="lst-count"><?=$pag['total']?> 篇</span>
     </div>
 
     <?php if (!$showTrash): ?>
@@ -267,6 +276,7 @@ if (!defined('OF_EMBED')) admin_header('文章管理');
                     <span class="tags-cell" data-id="<?=htmlspecialchars($a['id'])?>">
                       <?php foreach (array_slice($a['tags']??[], 0, 3) as $t): ?><span class="inline-tag"><?=htmlspecialchars($t)?></span><?php endforeach; ?>
                       <?php if (count($a['tags']??[]) > 3): ?><span class="inline-tag more">+<?=count($a['tags'])-3?></span><?php endif; ?>
+                      <?php if (!$showTrash): ?><button type="button" class="tag-edit-btn" title="编辑标签" data-tags="<?=htmlspecialchars(implode(', ', $a['tags'] ?? []), ENT_QUOTES)?>" onclick="openTagEditor('<?=htmlspecialchars($a['id'], ENT_QUOTES)?>', this.dataset.tags)">✎</button><?php endif; ?>
                     </span>
                     <?php if (!empty($a['synced_to'])): $syncs = array_map(fn($p) => strtoupper($p), array_keys($a['synced_to'])); ?><span class="lst-sync">已同步 <?=htmlspecialchars(implode('/', $syncs))?></span><?php endif; ?>
                   </div>
@@ -320,7 +330,7 @@ if (!defined('OF_EMBED')) admin_header('文章管理');
       </table>
       <?php if (!$showTrash): ?></form><?php endif; ?>
       <?php endif; ?>
-      <?=pagination_html($pag, 'articles.php' . ($showTrash ? '?trash=1' : '?'))?>
+      <?=pagination_html($pag, $pagBase)?>
     </div>
 
     <!-- Quick Tag Editor Modal -->
@@ -382,10 +392,14 @@ document.querySelectorAll('.inline-edit').forEach(function(el) {
 });
 
 // ─── Quick Update (AJAX) ───
-function quickUpdate(el) {
+function quickUpdate(el, explicitValue) {
   var id = el.dataset.id;
   var field = el.dataset.field;
-  var value = el.tagName === 'SELECT' ? el.value : (el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.textContent.trim());
+  var value;
+  if (explicitValue !== undefined) value = String(explicitValue);
+  else if (el.tagName === 'SELECT') value = el.value;
+  else if (el.type === 'checkbox') value = el.checked ? '1' : '0';
+  else value = el.textContent.trim();
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'articles.php', true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -394,7 +408,7 @@ function quickUpdate(el) {
     el.disabled = false;
     var ok = false; try { ok = xhr.status === 200 && JSON.parse(xhr.responseText).ok === true; } catch (e) {}
     if (!ok) { ofAlert('保存失败', 'error'); return; }
-    var label = el.tagName === 'SELECT' ? (el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : el.value) : (el.checked ? '已置顶' : '已取消置顶');
+    var label = field === 'tags' ? '标签' : (el.tagName === 'SELECT' ? (el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : el.value) : (el.checked ? '已置顶' : '已取消置顶'));
     ofAlert('已更新：' + label, 'success');
   };
   xhr.onerror = function() { el.disabled = false; ofAlert('网络错误，未保存', 'error'); };
@@ -425,11 +439,33 @@ function saveTags() {
   var id = document.getElementById('tagEditor').dataset.articleId;
   var checked = document.querySelectorAll('#tagCheckboxes input:checked');
   var tags = Array.from(checked).map(function(cb) { return cb.value; }).join(', ');
-  var el = document.querySelector('.tags-cell[data-id="' + id + '"]');
-  if (el) {
-    el.innerHTML = tags ? tags.split(',').map(function(t) { return '<span class="inline-tag">' + t.trim() + '</span>'; }).join('') : '<span class="text-sm text-muted">—</span>';
+  var cell = document.querySelector('.tags-cell[data-id="' + id + '"]');
+  if (cell) {
+    var btn = cell.querySelector('.tag-edit-btn');
+    var list = tags ? tags.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+    cell.innerHTML = '';
+    list.slice(0, 3).forEach(function(t) {
+      var span = document.createElement('span');
+      span.className = 'inline-tag';
+      span.textContent = t;
+      cell.appendChild(span);
+    });
+    if (list.length > 3) {
+      var more = document.createElement('span');
+      more.className = 'inline-tag more';
+      more.textContent = '+' + (list.length - 3);
+      cell.appendChild(document.createTextNode(' '));
+      cell.appendChild(more);
+    }
+    if (!list.length) {
+      var dash = document.createElement('span');
+      dash.className = 'text-sm text-muted';
+      dash.textContent = '—';
+      cell.appendChild(dash);
+    }
+    if (btn) { btn.dataset.tags = tags; cell.appendChild(btn); }
   }
-  quickUpdate({ dataset: { id: id, field: 'tags' }, value: tags });
+  quickUpdate({ dataset: { id: id, field: 'tags' } }, tags);
   document.getElementById('tagEditor').style.display = 'none';
 }
 

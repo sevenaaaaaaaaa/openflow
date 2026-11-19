@@ -4,8 +4,6 @@ declare(strict_types=1);
  * Markdown → HTML 轻量转换器（无外部依赖）
  * 支持：标题 / 加粗 / 斜体 / 行内代码 / 代码块 / 链接 / 图片 / 列表 / 引用 / 水平线 / 表格
  */
-require_once __DIR__ . '/../admin/config.php';
-
 class Markdown {
     /**
      * 转换 Markdown 为 HTML
@@ -156,5 +154,25 @@ class Markdown {
             $md = substr($md, strlen($m[0]));
         }
         return [$meta, $md];
+    }
+}
+
+if (!function_exists('article_body_html')) {
+    /**
+     * 文章正文 → 可渲染 HTML。
+     *
+     * 编辑器支持 richtext / markdown 双模；markdown 模式存的是原文，输出侧必须
+     * 还原成 HTML，否则前台会把 `##`、`**` 原样显示（P0）。
+     * 已经是 HTML 的内容（译文、历史数据）原样返回，避免二次转换。
+     */
+    function article_body_html(array $article): string {
+        $content = (string)($article['content'] ?? '');
+        if ($content === '' || ($article['editor_mode'] ?? 'richtext') !== 'markdown') {
+            return $content;
+        }
+        if (preg_match('/<(p|div|h[1-6]|ul|ol|li|blockquote|table|figure|section)\b/i', $content)) {
+            return $content;
+        }
+        return Markdown::toHtml($content, 1);
     }
 }

@@ -5,6 +5,7 @@
  */
 require_once __DIR__ . '/admin/config.php';
 require_once __DIR__ . '/lib/SiteConfig.php';
+require_once __DIR__ . '/lib/Markdown.php';
 
 $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http');
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
@@ -41,7 +42,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
       <?php $__prefix = ($__loc !== $__base) ? '/' . $__loc : ''; ?>
       <link><?=$base?><?=htmlspecialchars($__prefix)?>/article/<?=htmlspecialchars($slug)?></link>
       <guid isPermaLink="true"><?=$base?><?=htmlspecialchars($__prefix)?>/article/<?=htmlspecialchars($slug)?></guid>
-      <description><![CDATA[<?=mb_substr(strip_tags($a['content'] ?? ''), 0, 500)?>]]></description>
+      <description><![CDATA[<?=mb_substr(strip_tags(article_body_html($a)), 0, 500)?>]]></description>
       <pubDate><?=date('r', strtotime($a['created_at'] ?? 'now'))?></pubDate>
       <author><?=htmlspecialchars($a['author'] ?: site_config_get('site_name'))?></author>
       <?php foreach (($a['tags'] ?? []) as $tag): ?>

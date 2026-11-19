@@ -90,6 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
+    // 保存前快照：知识同步 / 收录提交要区分「首发」与「更新」
+    $prevArticle = $isNew ? null : get_article((string)$article['id']);
+    $wasPublished = (($prevArticle['status'] ?? '') === 'published');
     $article['title'] = trim($_POST['title'] ?? '');
     $slug = trim($_POST['slug'] ?? '');
     if (empty($slug)) {
@@ -147,10 +150,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 内容流联动（IndexNow 收录 / content_published 钩子）已下沉到
         // save_article()，所有写入路径统一生效，此处不再单独触发。
-        //
-        // 注：原先这里的判断是 $wasPublished = ($article['status'] === 'published')
-        // 取在 $article 被赋新状态之后，恒等于 $isPublished，
-        // 于是 `&& !$wasPublished` 永远为假 —— flow_content_published() 实际从未执行。
+        // 「保存前是否已发布」在 POST 入口处取快照（$wasPublished），供下面的
+        // 知识同步与 GEO 提交区分「首发」和「更新」。
 
         // 知识平台双向同步：发布 → Notion / 外部 webhook
         if (($article['status'] ?? '') === 'published') {
@@ -189,12 +190,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             notify('review', '文章需审核：' . mb_substr($article['title'], 0, 20), $issueSummary, 'admin/reviews.php?type=article', ['admin', 'marketing']);
             flash('warning', '内容命中审核规则，已进入待审核状态：' . $issueSummary);
         } else {
-            // Trigger IndexNow on publish
-            if ($wasPublished && !empty($article['slug'])) {
+            // 收录提交：IndexNow 已由 save_article() → flow_content_published() 统一处理，
+            // 这里只补 GEO（必应/百度）提交，且仅在「首次转发布」时触发一次。
+            if (!$wasPublished && ($article['status'] ?? '') === 'published' && !empty($article['slug'])) {
                 $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http');
                 $url = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? '') . '/article/' . $article['slug'];
-                indexnow_ping($url);
-                geo_submit_url($url); // GEO：自动提交必应/百度
+                geo_submit_url($url);
             }
             flash('success', $isNew ? '文章已创建' : '文章已保存');
         }
@@ -1139,10 +1140,10 @@ window.addEventListener('beforeunload', function(e) {
   }
 });
 
-// 启动自动保存
-startAutoSave();
+// 启动自动保存（全页唯一一条：30 秒、仅在有改动时保存，走 action=auto_save）
 var lastSavedTitle = '<?=$article['title'] ?? ''?>';
 lastSavedContent = '<?=addslashes($article['content'] ?? '')?>';
+startAutoSave();
 
 // ─── Media Library Picker ───
 function openMediaPicker() {
@@ -1546,36 +1547,9 @@ function loadTemplate() {
   ofAlert('已加载模板: ' + tpl.name);
 }
 
-// ─── Auto-save ───
-var autoSaveTimer = null;
-function initAutoSave() {
-  var form = document.getElementById('article-form');
-  if (!form) return;
-  autoSaveTimer = setInterval(function() {
-    var title = document.querySelector('input[name="title"]').value;
-    if (!title.trim()) return; // Don't auto-save empty articles
-    syncContent();
-    var formData = new FormData(form);
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', window.location.href, true);
-    xhr.onload = function() {
-      if (xhr.status === 200) {
-        var indicator = document.getElementById('autoSaveIndicator');
-        if (!indicator) {
-          indicator = document.createElement('div');
-          indicator.id = 'autoSaveIndicator';
-          indicator.style.cssText = 'position:fixed;bottom:80px;right:24px;background:#2e7d32;color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s';
-          document.body.appendChild(indicator);
-        }
-        indicator.textContent = '⏺ 已自动保存 ' + new Date().toLocaleTimeString();
-        indicator.style.opacity = '1';
-        setTimeout(function() { indicator.style.opacity = '0'; }, 2000);
-      }
-    };
-    xhr.send(formData);
-  }, 30000); // Every 30 seconds
-}
-<?php if ($article['id'] ?? false): ?>setTimeout(initAutoSave, 5000);<?php endif; ?>
+// 注：此前这里还有第二条自动保存（整表单 POST 到当前页，每 30 秒一次）。
+// 它会触发一次完整保存 + 全量搜索索引重建 + 外部知识同步，且与上面那条互相覆盖，
+// 已移除；元数据（分类/状态/SEO）仍由「保存」按钮或 Ctrl+S 落库。
 
 // ─── Ctrl+S 手动 AJAX 保存（不刷新页面）───
 function saveArticleAJAX() {

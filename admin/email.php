@@ -2,6 +2,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/review-lib.php';
 require_once __DIR__ . '/../lib/MailCampaign.php';
+require_once __DIR__ . '/../lib/Markdown.php';
 require_login();
 require_perm('email');
 
@@ -100,7 +101,7 @@ if (isset($_POST['send_newsletter'])) {
             }
         }
         if ($article) {
-            $content = strip_tags($article['content'] ?? '');
+            $content = strip_tags(article_body_html($article));
             $content = mb_substr($content, 0, 500);
 
             // 订阅者列表（本地采集）+ 发送模式
