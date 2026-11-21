@@ -75,7 +75,19 @@ if ($baseUrl === '') {
     $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
     $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? '');
 }
-$articleUrl = $baseUrl . '/article/' . $slug;
+// ─── canonical 语种自指（i18n-SEO）───
+// 只认 URL 前缀，不认 i18n_current() 的 cookie / 浏览器协商：否则 /article/x 被英文浏览器
+// 访问时 canonical 会漂到 /en/article/x，与地址栏不一致，等于自己制造重复内容。
+// 有译文 → canonical 指向当前语种页；无译文 → 仍指回 base，把 200 兜底页归一到中文。
+$__baseLoc = function_exists('ci18n_base_locale') ? ci18n_base_locale() : 'zh-CN';
+$__urlLoc  = $__baseLoc;
+if (preg_match('#^/([a-z]{2}(?:-[A-Z]{2})?)(?:/|$)#', (string) ($_SERVER['REQUEST_URI'] ?? ''), $__lm)
+    && function_exists('i18n_supported') && in_array($__lm[1], i18n_supported(), true)) {
+    $__urlLoc = $__lm[1];
+}
+$__locales   = function_exists('ci18n_locales') ? ci18n_locales($article) : [$__baseLoc];
+$__locPrefix = ($__urlLoc !== $__baseLoc && in_array($__urlLoc, $__locales, true)) ? '/' . $__urlLoc : '';
+$articleUrl = $baseUrl . $__locPrefix . '/article/' . $slug;
 
 // ─── 内容处理：Markdown 还原 → 短代码 → 标题锚点 → 阅读时间 ───
 // markdown 模式存的是原文，输出侧必须先还原成 HTML，否则会原样显示 ## / **（富文本原样返回）。

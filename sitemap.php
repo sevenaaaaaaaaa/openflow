@@ -72,6 +72,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <!-- Articles -->
   <?php
   $articles = jread($dataDir . '/articles/index.json');
+  $__baseLoc = $settings['multilang']['default'] ?? ($settings['multilang_default'] ?? 'zh-CN');
   $__seenArticleSlug = [];
   foreach ($articles as $a):
     if (($a['status'] ?? 'draft') !== 'published') continue;
@@ -79,25 +80,38 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     if (empty($slug)) continue;
     if (isset($__seenArticleSlug[$slug])) continue;   // 防御：内容侧 slug 碰撞时不重复输出
     $__seenArticleSlug[$slug] = true;
-  ?>
-  <?php
-  $__trLocs = [];
-  foreach (($a['i18n'] ?? []) as $__loc => $__tr) {
-    if (is_array($__tr) && ($__tr['status'] ?? '') === 'published' && trim((string)($__tr['title'] ?? '')) !== '') $__trLocs[] = $__loc;
-  }
+
+    // 语言版本：已发布的译文（与 lib/ContentI18n.php 的 ci18n_locales 同一口径）
+    $__trLocs = [];
+    foreach (($a['i18n'] ?? []) as $__loc => $__tr) {
+      if (is_array($__tr) && ($__tr['status'] ?? '') === 'published' && trim((string)($__tr['title'] ?? '')) !== '') $__trLocs[] = $__loc;
+    }
+    // hreflang 组：base 自指 + 各译文 + x-default；每个语言的 <url> 都要带完整一组（Google 要求含自身）
+    $__alt = '';
+    if ($__trLocs) {
+      $__alt .= '    <xhtml:link rel="alternate" hreflang="' . htmlspecialchars(strtolower($__baseLoc)) . '" href="' . $base . '/article/' . htmlspecialchars($slug) . '"/>' . "\n";
+      foreach ($__trLocs as $__loc) {
+        $__alt .= '    <xhtml:link rel="alternate" hreflang="' . htmlspecialchars(strtolower($__loc)) . '" href="' . $base . '/' . htmlspecialchars($__loc) . '/article/' . htmlspecialchars($slug) . '"/>' . "\n";
+      }
+      $__alt .= '    <xhtml:link rel="alternate" hreflang="x-default" href="' . $base . '/article/' . htmlspecialchars($slug) . '"/>' . "\n";
+    }
   ?>
   <url>
     <loc><?=$base?>/article/<?=htmlspecialchars($slug)?></loc>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
     <?=$lastmod($a['updated_at'] ?? $a['created_at'] ?? '')?>
-<?php if ($__trLocs): ?>
-<?php foreach ($__trLocs as $__loc): ?>
-    <xhtml:link rel="alternate" hreflang="<?=htmlspecialchars($__loc)?>" href="<?=$base?>/<?=htmlspecialchars($__loc)?>/article/<?=htmlspecialchars($slug)?>"/>
-<?php endforeach; ?>
-    <xhtml:link rel="alternate" hreflang="x-default" href="<?=$base?>/article/<?=htmlspecialchars($slug)?>"/>
-<?php endif; ?>
+<?=$__alt?>
   </url>
+<?php foreach ($__trLocs as $__loc): ?>
+  <url>
+    <loc><?=$base?>/<?=htmlspecialchars($__loc)?>/article/<?=htmlspecialchars($slug)?></loc>
+    <priority>0.5</priority>
+    <changefreq>monthly</changefreq>
+    <?=$lastmod($a['updated_at'] ?? $a['created_at'] ?? '')?>
+<?=$__alt?>
+  </url>
+<?php endforeach; ?>
   <?php endforeach; ?>
 
   <!-- Courses -->
