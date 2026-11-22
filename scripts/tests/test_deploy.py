@@ -35,7 +35,7 @@ class TestAllowlist(unittest.TestCase):
 class TestPathsAndUrls(unittest.TestCase):
     def test_remote_path(self):
         self.assertEqual(deploy.remote_path("assets/modules.css"),
-                         "/www/wwwroot/nownexts_com/assets/modules.css")
+                         f"{deploy.REMOTE_ROOT.rstrip('/')}/assets/modules.css")
 
     def test_url_mapping(self):
         self.assertEqual(deploy.url_for("index.php"), "https://nownexts.com/")

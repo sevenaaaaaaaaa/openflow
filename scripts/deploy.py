@@ -14,7 +14,8 @@ deploy.py —— 幂等、可核验的部署器（替代 shell + rsync）
   python3 scripts/deploy.py --with-data data/nav.json                  # 显式允许部署 data/（默认拒绝）
 
 环境变量（可选）：
-  OF_DEPLOY_HOST / OF_DEPLOY_PORT / OF_DEPLOY_ROOT   覆盖默认目标
+  OF_DEPLOY_HOST / OF_DEPLOY_PORT / OF_DEPLOY_ROOT / OF_DEPLOY_USER   覆盖默认目标（默认 fnOS NAS）
+  OF_DEPLOY_SUDO=1      远端写操作走 sudo -n（NAS 上 agent 无站点根写权限）
   CF_TOKEN + OF_CF_ZONE                               启用 Cloudflare purge
   R2_KEY / R2_SECRET / R2_ENDPOINT / R2_BUCKET        启用 sync-r2.py
 退出码：0 成功；1 失败（含 md5 不一致）；2 参数/前置检查失败
@@ -38,10 +39,18 @@ DEPLOY_DIR = ROOT / ".deploy"
 BACKUP_DIR = DEPLOY_DIR / "backups"
 MANIFEST_DIR = DEPLOY_DIR / "manifests"
 
-HOST = os.environ.get("OF_DEPLOY_HOST", "172.96.253.73")
-PORT = os.environ.get("OF_DEPLOY_PORT", "28766")
-REMOTE_ROOT = os.environ.get("OF_DEPLOY_ROOT", "/www/wwwroot/nownexts_com")
+HOST = os.environ.get("OF_DEPLOY_HOST", "192.168.1.81")
+PORT = os.environ.get("OF_DEPLOY_PORT", "22")
+USER = os.environ.get("OF_DEPLOY_USER", "agent")
+REMOTE_ROOT = os.environ.get("OF_DEPLOY_ROOT", "/vol1/docker/openflow/www/nownexts_com")
 SITE = os.environ.get("OF_SITE_URL", "https://nownexts.com")
+
+# NAS 上站点根属主 501:games，agent 只读；写操作统一 sudo -n，并用 install 指定属主。
+# data/ 必须保持 www-data(712:712)，否则 PHP 写不进去（后台保存会静默失败）。
+USE_SUDO = os.environ.get("OF_DEPLOY_SUDO", "1") == "1"
+STAGING = os.environ.get("OF_DEPLOY_STAGING", "/tmp/openflow-deploy")
+SITE_OWNER = os.environ.get("OF_DEPLOY_OWNER", "501:games")
+DATA_OWNER = os.environ.get("OF_DEPLOY_DATA_OWNER", "712:712")
 
 SSH_OPTS = ["-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=10", "-o", "BatchMode=yes"]
 
@@ -185,7 +194,12 @@ def run(cmd: list[str], *, capture: bool = True) -> subprocess.CompletedProcess:
 
 
 def ssh(script: str) -> subprocess.CompletedProcess:
-    return run(["ssh", "-p", PORT, *SSH_OPTS, f"root@{HOST}", script])
+    return run(["ssh", "-p", PORT, *SSH_OPTS, f"{USER}@{HOST}", script])
+
+
+def ssh_root(script: str) -> subprocess.CompletedProcess:
+    """远端写操作：以 agent 登录，按需 sudo -n 提权（NAS 默认开）。"""
+    return ssh(script if not USE_SUDO else "sudo -n " + script)
 
 
 def md5_local(path: Path) -> str:
@@ -200,7 +214,7 @@ def md5_remote(files: list[str]) -> dict[str, str | None]:
     if not files:
         return {}
     quoted = " ".join(f"'{remote_path(f)}'" for f in files)
-    cp = ssh(f"md5sum {quoted} 2>/dev/null || true")
+    cp = ssh_root(f"md5sum {quoted} 2>/dev/null || true")
     result: dict[str, str | None] = {f: None for f in files}
     for line in (cp.stdout or "").splitlines():
         parts = line.split()
@@ -216,7 +230,7 @@ def md5_remote(files: list[str]) -> dict[str, str | None]:
 def ensure_remote_dirs(files: list[str]) -> None:
     dirs = sorted({os.path.dirname(remote_path(f)) for f in files})
     if dirs:
-        ssh("mkdir -p " + " ".join(f"'{d}'" for d in dirs))
+        ssh_root("install -d -m 755 " + " ".join(f"'{d}'" for d in dirs))
 
 
 def normalize_remote_perms(files: list[str]) -> str | None:
@@ -224,23 +238,50 @@ def normalize_remote_perms(files: list[str]) -> str | None:
     script = perms_script(files)
     if not script:
         return None
-    cp = ssh(script)
+    cp = ssh_root(script)
     return None if cp.returncode == 0 else (cp.stderr or cp.stdout or "chmod 失败").strip()[:300]
 
 
-def scp_upload(rel: str, dest_rel: str | None = None) -> None:
-    src = ROOT / rel
-    dst = f"root@{HOST}:{remote_path(dest_rel or rel)}"
-    cp = run(["scp", "-P", PORT, *SSH_OPTS, str(src), dst])
+def _owner_for(rel: str) -> str:
+    return DATA_OWNER if norm(rel).startswith("data/") else SITE_OWNER
+
+
+def _staging_root() -> str:
+    return f"{STAGING}/{os.getpid()}"
+
+
+def prepare_staging() -> str:
+    root = _staging_root()
+    cp = ssh(f"mkdir -p '{root}'")
     if cp.returncode != 0:
-        raise RuntimeError(f"scp 失败：{rel} → {dst}\n{cp.stderr.strip()[:300]}")
+        raise RuntimeError(f"无法创建远端暂存目录 {root}：{(cp.stderr or '').strip()[:200]}")
+    return root
+
+
+def scp_upload_path(src: Path, target_rel: str) -> None:
+    """先 scp 到 /tmp 暂存，再 sudo install 到站点根（644 + 预期属主）。"""
+    target_rel = norm(target_rel)
+    staging = f"{_staging_root()}/{target_rel}"
+    parent = os.path.dirname(staging)
+    run(["ssh", "-p", PORT, *SSH_OPTS, f"{USER}@{HOST}", f"mkdir -p '{parent}'"])
+    cp = run(["scp", "-P", PORT, *SSH_OPTS, str(src), f"{USER}@{HOST}:{staging}"])
+    if cp.returncode != 0:
+        raise RuntimeError(f"scp 失败：{src} → {staging}\n{cp.stderr.strip()[:300]}")
+    owner, group = _owner_for(target_rel).split(":")
+    cp = ssh_root(f"install -D -m 644 -o {owner} -g {group} '{staging}' '{remote_path(target_rel)}'")
+    if cp.returncode != 0:
+        raise RuntimeError(f"install 失败：{target_rel}\n{(cp.stderr or cp.stdout or '').strip()[:300]}")
+
+
+def scp_upload(rel: str, dest_rel: str | None = None) -> None:
+    scp_upload_path(ROOT / rel, dest_rel or rel)
 
 
 def backup_remote(rel: str, stamp: str) -> Path | None:
     """替换前把远端当前版本抓回本地，供回滚。返回本地备份路径（远端不存在则不备份）。"""
     dest = BACKUP_DIR / stamp / rel
     dest.parent.mkdir(parents=True, exist_ok=True)
-    cp = run(["scp", "-P", PORT, *SSH_OPTS, f"root@{HOST}:{remote_path(rel)}", str(dest)])
+    cp = run(["scp", "-P", PORT, *SSH_OPTS, f"{USER}@{HOST}:{remote_path(rel)}", str(dest)])
     return dest if cp.returncode == 0 and dest.exists() else None
 
 
@@ -284,7 +325,7 @@ def do_rollback(stamp: str) -> int:
     bad = 0
     for rel in files:
         src = backup / rel
-        run(["scp", "-P", PORT, *SSH_OPTS, str(src), f"root@{HOST}:{remote_path(rel)}"])
+        scp_upload_path(src, rel)
         got = md5_remote([rel])[rel]
         want = md5_local(src)
         flag = "✓" if got == want else "✗"
@@ -325,7 +366,7 @@ def main() -> int:
 
     # 前置检查
     if ssh("true").returncode != 0:
-        print(f"✗ 无法 ssh 到 root@{HOST}:{PORT}", file=sys.stderr)
+        print(f"✗ 无法 ssh 到 {USER}@{HOST}:{PORT}", file=sys.stderr)
         return 2
     missing = [f for f in files if not (ROOT / f).is_file()]
     if missing:
@@ -336,7 +377,7 @@ def main() -> int:
     pairs = [(f, md5_local(ROOT / f), remote_md5.get(f)) for f in files]
     plan = build_plan(pairs, args.with_data)
 
-    print(f"目标 root@{HOST}:{REMOTE_ROOT}")
+    print(f"目标 {USER}@{HOST}:{REMOTE_ROOT}")
     for rel, why in plan.refused:
         print(f"  ⊘ 拒绝 {rel} —— {why}")
     for e in plan.entries:
@@ -344,8 +385,8 @@ def main() -> int:
         print(f"  {tag} {e.rel:34s} 本地 {e.local_md5[:8]}  远端 {(e.remote_md5 or 'MISSING')[:8]}")
     if not plan.uploads:
         print("✓ 远端已是最新，无需上传")
-    else:
-        print(f"计划上传 {len(plan.uploads)} 个文件" + ("（dry-run）" if args.dry_run else ""))
+        return 0
+    print(f"计划上传 {len(plan.uploads)} 个文件" + ("（dry-run）" if args.dry_run else ""))
     if args.dry_run:
         return 0
 
@@ -405,7 +446,7 @@ def main() -> int:
     # data/ 归属体检：ssh 以 root 跑脚本/种子会把 data 里的文件写成 root 所有，
     # 而 Web 用户（www）写不进去 → 后台保存悄悄失败（分享统计、任务写入都踩过）。
     try:
-        chk = ssh(f"cd {REMOTE_ROOT} && find data -user root -maxdepth 3 2>/dev/null | head -3")
+        chk = ssh_root(f"cd {REMOTE_ROOT} && find data -user root -maxdepth 3 2>/dev/null | head -3")
         owners = (chk.stdout or "").strip()
         if owners:
             print("⚠ data/ 里有 root 所有的文件（Web 用户写不进去，后台保存会静默失败）：")
@@ -422,7 +463,7 @@ def main() -> int:
 
     # 4) 服务端缓存
     if not args.no_cache:
-        cp = ssh(f"rm -f {REMOTE_ROOT}/data/cache/*.cache 2>/dev/null; echo ok")
+        cp = ssh_root(f"rm -f {REMOTE_ROOT}/data/cache/*.cache 2>/dev/null; echo ok")
         print("✓ 已清 data/cache" if cp.returncode == 0 else "⚠ 清缓存失败（可忽略）")
 
     # 5) R2 同步（assets 有变更时）

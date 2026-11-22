@@ -11,6 +11,7 @@ OpenFlow（开务）的版本变更记录，新版本在前。正式版本为 `X
 - **开源工具适配**：开源工具可自助提交入驻，经自动校验与人工审核后上架生态市场
 - **部署更省心**：仓库自带 `Dockerfile` 与 `docker-compose.yml`；本地一条命令 `php -S 127.0.0.1:8080 router.php` 即可运行且 URL 与线上一致；新增部署总指南 `docs/DEPLOYMENT.md`（本地 / Docker / 服务器 / Vercel 演示 / Cloudflare）
 - **数据更安全**：备份可存到异地（不再与站点同盘），上传文件可镜像到 CDN
+- **部署链路迁移（2026-11-22）**：线上主机由旧 VPS 迁至 fnOS NAS（Cloudflare Tunnel 入口），`deploy/sync.sh` 与 `scripts/deploy.py` 的目标同步切到 `agent@192.168.1.81:/vol1/docker/openflow/www`
 
 ## 2.5.0 — 2026-09-13 · 一条行动脊柱，把功能串成能跑的业务链路
 
