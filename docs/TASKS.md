@@ -19,6 +19,7 @@
 - [x] G3 分发规划：`docs/DISTRIBUTION.md`（四种交付、版本标签、发布流程、校验与回滚）。
 - [x] G4 新手引导文案：`docs/guides/first-run.md`（8 项体检、前三个动作、第一周）。
 - [x] 已提交并推送：`71b392e`（公开面脱敏 + 配置真源 + 指南 + 看板）。
+- [x] G4 命令行体检：`scripts/health-check.php`（PHP/扩展/目录/安装/HTTPS/日志/版本，退出码可判定）。
 
 ## 进行中
 

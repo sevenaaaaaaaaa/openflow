@@ -38,7 +38,7 @@ docker compose up -d
 
 注意：未安装时直接访问首页不会自动跳向导，请手动访问上面的地址。
 
-完成信号：能用刚创建的管理员登录 `/xmp/login`。
+完成信号：能用刚创建的管理员登录 `/xmp/login`，且 `php scripts/health-check.php` 退出码为 0。
 
 ## S5 域名与 HTTPS
 
