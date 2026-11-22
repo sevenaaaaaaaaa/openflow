@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<script>document.documentElement.className += " js";</script>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="林下 Understory 客户方案：九件产品、三层结构、一份可以搬进自己服务器的底座。">
+<title>林下 Understory 客户方案 · 把增长装进一套系统</title>
+<link rel="canonical" href="https://nownexts.com/pitch/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="林下 Understory 客户方案 · 把增长装进一套系统">
+<meta property="og:description" content="九件产品、三层结构、一份可以搬进自己服务器的底座。每页页脚注明数字出处。">
+<meta property="og:url" content="https://nownexts.com/pitch/">
+<style>
+@font-face{font-family:Newsreader;src:url(../assets/fonts/newsreader-400.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:Newsreader;src:url(../assets/fonts/newsreader-500.woff2) format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:Newsreader;src:url(../assets/fonts/newsreader-600.woff2) format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"JetBrains Mono";src:url(../assets/fonts/jetbrains-mono-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"JetBrains Mono";src:url(../assets/fonts/jetbrains-mono-500.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Space Grotesk";src:url(../assets/fonts/space-grotesk-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Space Grotesk";src:url(../assets/fonts/space-grotesk-600.woff2) format("woff2");font-weight:600;font-display:swap}
+
+:root{
+  --paper:#FAF6F3; --paper-2:#F2EBE4; --card:#FFFFFF;
+  --ink:#1E1917; --ink-2:#5A514C; --ink-3:#8C817A;
+  --rule:#E5DBD4; --rule-2:#D3C6BD;
+  --flesh:#BE4B33; --flesh-2:#F7E7E1;
+  --skin:#3C6A49; --skin-2:#E3EBE4;
+  --serif:Newsreader,"Songti SC","Noto Serif SC","Source Han Serif SC",STSong,Georgia,serif;
+  --mono:"JetBrains Mono","SF Mono",Menlo,monospace;
+  --sans:"Space Grotesk","PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,system-ui,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+#stage{position:fixed;inset:0;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;
+  padding:clamp(22px,3.6vh,40px) clamp(26px,5.2vw,88px) clamp(50px,6.6vh,68px);
+  opacity:0;visibility:hidden;transform:translateY(10px);
+  transition:opacity .5s var(--ease),transform .5s var(--ease);overflow:hidden}
+.slide.on{opacity:1;visibility:visible;transform:none}
+@media (prefers-reduced-motion:reduce){.slide{transition:none;transform:none}}
+.top,.main,.foot{position:relative;z-index:1}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:18px;padding-bottom:10px;border-bottom:1px solid var(--rule);flex:none}
+.brandmark{font-family:var(--mono);font-size:.64rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.sect{font-family:var(--mono);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--flesh);white-space:nowrap}
+.main{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;padding:clamp(10px,2vh,26px) 0}
+.foot{display:flex;justify-content:space-between;align-items:baseline;gap:26px;padding-top:9px;border-top:1px solid var(--rule);flex:none;font-family:var(--mono);font-size:.6rem;line-height:1.5;color:var(--ink-3)}
+.foot .src{display:flex;gap:7px;align-items:baseline;min-width:0}
+.foot .src::before{content:"";flex:none;width:5px;height:5px;border-radius:50%;background:var(--skin);transform:translateY(-1px)}
+.foot .src span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pn{font-family:var(--mono);font-size:.62rem;color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.kicker{display:block;font-family:var(--mono);font-size:.64rem;letter-spacing:.22em;text-transform:uppercase;color:var(--flesh);margin-bottom:clamp(10px,1.6vh,18px)}
+h1{font-family:var(--serif);font-weight:500;font-size:clamp(2rem,4.5vw,3.75rem);line-height:1.13;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h2{font-family:var(--serif);font-weight:500;font-size:clamp(1.5rem,2.85vw,2.45rem);line-height:1.25;letter-spacing:-.012em;margin:0;text-wrap:balance}
+h3{font-size:clamp(.92rem,1.1vw,1.02rem);font-weight:600;margin:0 0 6px;letter-spacing:.005em}
+p{margin:0;font-size:clamp(.9rem,1.05vw,1.02rem);line-height:1.78;color:var(--ink-2)}
+.lead{font-size:clamp(.98rem,1.3vw,1.16rem);line-height:1.78;color:var(--ink-2);max-width:40em;margin-top:clamp(10px,1.8vh,20px)}
+.lead strong,p strong{color:var(--ink);font-weight:600}
+.small{font-size:.8rem;color:var(--ink-3);line-height:1.65}
+.mono{font-family:var(--mono);letter-spacing:.04em;font-size:.72rem;color:var(--ink-3)}
+.flesh{color:var(--flesh)}
+a{color:inherit;text-decoration:none;border-bottom:1px solid var(--rule-2);transition:color .2s,border-color .2s}
+a:hover{color:var(--flesh);border-color:var(--flesh)}
+a:focus-visible{outline:2px solid var(--flesh);outline-offset:2px}
+.cols{display:grid;gap:clamp(14px,2vw,30px)}
+.c2{grid-template-columns:1fr 1fr}
+.c3{grid-template-columns:repeat(3,1fr)}
+.c4{grid-template-columns:repeat(4,1fr)}
+.split{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(20px,3.4vw,56px);align-items:center}
+.card{background:var(--card);border:1px solid var(--rule);padding:clamp(13px,1.5vw,21px);display:flex;flex-direction:column;gap:7px}
+.card .k{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.card p{font-size:.86rem;line-height:1.7}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px,2.2vw,34px);margin:clamp(12px,2.4vh,26px) 0}
+.stat{border-top:2px solid var(--ink);padding-top:10px}
+.stat .n{font-family:var(--serif);font-weight:500;font-size:clamp(2rem,4vw,3.4rem);line-height:1;letter-spacing:-.03em;display:block}
+.stat .l{display:block;margin-top:8px;font-size:.78rem;color:var(--ink-2);line-height:1.5}
+.stat .e{display:block;font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-top:3px}
+.rows{border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:minmax(6.5rem,.8fr) 1.7fr;gap:clamp(12px,2.4vw,40px);padding:clamp(8px,1.35vh,14px) 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.row .a{font-weight:600;font-size:.94rem}
+.row .b{font-size:.88rem;color:var(--ink-2);line-height:1.65}
+.row .b em{font-style:normal;color:var(--ink-3)}
+.pull{border-left:3px solid var(--flesh);padding:clamp(8px,1.6vh,16px) 0 clamp(8px,1.6vh,16px) clamp(16px,2vw,28px);font-family:var(--serif);font-size:clamp(1.15rem,2.2vw,1.9rem);line-height:1.45;letter-spacing:-.01em;color:var(--ink);max-width:34em}
+.stack{border-top:1px solid var(--rule-2)}
+.layer{display:grid;grid-template-columns:clamp(84px,8vw,132px) 1fr;gap:clamp(12px,2vw,28px);padding:clamp(13px,2.1vh,24px) 0;border-bottom:1px solid var(--rule);align-items:start}
+.layer .lt{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);line-height:1.6;padding-top:4px}
+.layer .lt b{display:block;color:var(--ink);font-size:.66rem;letter-spacing:.1em;margin-bottom:2px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{display:flex;align-items:baseline;gap:8px;background:var(--card);border:1px solid var(--rule);padding:8px 14px;font-size:.87rem;line-height:1.3}
+.chip b{font-weight:600}
+.chip span{font-family:var(--mono);font-size:.64rem;color:var(--ink-3);letter-spacing:.06em}
+.chip.dim{background:transparent;border-style:dashed;color:var(--ink-3)}
+.chip.dim b{color:var(--ink-3)}
+.tl{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2.4vw,38px);border-top:2px solid var(--ink);padding-top:14px}
+.tl .t{font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--flesh)}
+.tl .h{font-family:var(--serif);font-size:clamp(1.05rem,1.5vw,1.32rem);margin:7px 0 8px;line-height:1.3}
+.tl p{font-size:.84rem}
+.tl .own{margin-top:9px;font-family:var(--mono);font-size:.62rem;color:var(--ink-3);line-height:1.7}
+table.t{width:100%;border-collapse:collapse;font-size:.85rem}
+table.t th{text-align:left;font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:500;padding:0 10px 8px 0;border-bottom:1px solid var(--rule-2)}
+table.t td{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule);color:var(--ink-2);vertical-align:top;line-height:1.6}
+table.t td:first-child{color:var(--ink);font-weight:600}
+table.t .ok{color:var(--skin);font-weight:600}
+.callout{border-left:2px solid var(--skin);background:var(--skin-2);padding:clamp(10px,1.5vh,15px) clamp(13px,1.6vw,18px);font-size:.86rem;line-height:1.72;color:#2C4B37;max-width:72em}
+.callout b{color:#22402C}
+.callout.warn{border-left-color:var(--flesh);background:var(--flesh-2);color:#6E3524}
+.callout.warn b{color:#5E2C1D}
+.proof{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:clamp(10px,1.8vh,18px);padding-top:10px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;color:var(--ink-3)}
+.proof b{color:var(--ink);font-weight:500}
+.cover .mark{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:.64rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3)}
+.cover .mark i{display:block;width:26px;height:1px;background:var(--flesh)}
+.cover h1{max-width:14em;font-size:clamp(2.5rem,5.1vw,4.35rem);line-height:1.16}
+.cover .meta{display:block;border:0;padding:0;font-family:var(--mono);font-size:.62rem;color:var(--ink-3);line-height:1.8;text-align:right;white-space:nowrap}
+.cover .meta b{color:var(--ink);font-family:var(--sans);font-size:.76rem;letter-spacing:.02em;font-weight:600;margin-right:5px}
+.ghost{position:absolute;right:clamp(20px,4vw,64px);top:50%;transform:translateY(-50%);font-family:var(--serif);font-size:clamp(7rem,17vw,15rem);line-height:.8;color:var(--paper-2);z-index:0;letter-spacing:-.04em;user-select:none;pointer-events:none}
+.ui{position:fixed;z-index:30}
+#bar{left:0;right:0;bottom:0;height:2px;background:var(--rule)}
+#fill{display:block;height:100%;width:0;background:var(--flesh);transition:width .45s var(--ease)}
+#nav{bottom:14px;right:16px;display:flex;align-items:center;gap:6px}
+#nav button{width:30px;height:30px;border:1px solid var(--rule-2);background:var(--card);color:var(--ink-2);font-size:15px;line-height:1;cursor:pointer;border-radius:2px;transition:color .2s,border-color .2s}
+#nav button:hover{border-color:var(--flesh);color:var(--flesh)}
+#nav button:focus-visible{outline:2px solid var(--flesh);outline-offset:2px}
+#count{font-family:var(--mono);font-size:.66rem;color:var(--ink-3);margin-right:6px;font-variant-numeric:tabular-nums}
+#hint{left:clamp(26px,5.2vw,88px);bottom:15px;font-family:var(--mono);font-size:.6rem;color:var(--ink-3);letter-spacing:.04em}
+#hint kbd{font-family:var(--mono);border:1px solid var(--rule-2);border-radius:2px;padding:1px 4px;font-size:.58rem;background:var(--card)}
+.js .slide:not(.on) .anim{opacity:0;transform:translateY(9px)}
+.js .slide.on .anim{opacity:1;transform:none;transition:opacity .55s var(--ease),transform .55s var(--ease);transition-delay:var(--d,0s)}
+@keyframes rise{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.anim{opacity:1;transform:none;animation:none!important}}
+@media (max-width:900px){
+  body{overflow:auto}
+  #stage{position:static;overflow:visible}
+  .slide{position:static;inset:auto;opacity:1;visibility:visible;transform:none;min-height:auto;padding:34px 22px 28px;border-bottom:1px solid var(--rule);overflow:visible}
+  .main{justify-content:flex-start;padding:22px 0}
+  .ghost,.ui,#hint{display:none}
+  .c2,.c3,.c4,.split,.tl,.row{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .layer{grid-template-columns:1fr;gap:8px}
+  .cover .meta{grid-template-columns:1fr 1fr;gap:14px}
+  h1{font-size:clamp(1.9rem,7.4vw,2.6rem)}
+}
+@page{size:1600px 900px;margin:0}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static}
+  .ui,#bar,#hint{display:none!important}
+  .ghost{display:none}
+  .slide{position:relative;width:1600px;height:900px;opacity:1!important;visibility:visible!important;transform:none!important;
+    page-break-after:always;break-after:page;padding:52px 88px 48px;overflow:hidden}
+  .slide:last-child{page-break-after:auto;break-after:auto}
+  .anim{opacity:1!important;transform:none!important;animation:none!important;transition:none!important}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+<noscript><style>.slide{position:static;opacity:1;visibility:visible;transform:none;min-height:auto;border-bottom:1px solid var(--rule)}#stage{position:static;overflow:visible}.ui{display:none}.ghost{display:none}</style></noscript>
+</head>
+<body>
+<div id="stage">
+
+<section class="slide on" id="s1" aria-hidden="false">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">2026-11 · 客户版 v1</div></div>
+  <div class="main">
+    <div class="mark anim" style="--d:.05s"><i></i>Growth Operating System</div>
+    <h1 class="anim" style="--d:.12s;margin-top:clamp(16px,3vh,34px)">把增长装进一套系统，<br>不是五个等着人来喂的工具。</h1>
+    <p class="lead anim" style="--d:.22s">九件产品、三层结构、一份<strong>可以搬进你自己服务器</strong>的底座。给没有增长团队的人；也给有团队、但被工具切碎的组织。</p>
+    <p class="mono anim" style="--d:.3s;margin-top:clamp(14px,2.6vh,26px);font-size:.7rem">本册每一个数字都能在代码仓库里逐条核验 · 每页页脚写明出处</p>
+  </div>
+  <div class="foot">
+    <div class="src"><span>林下 Understory 出品 · OpenFlow 开源底座 · MIT</span></div>
+    <div class="meta">2026-11-23 采集 · 23 页 / 约 45 分钟 · 九件产品 / 十二件矩阵</div>
+  </div>
+  <div class="ghost">01</div>
+</section>
+
+<section class="slide" id="s2" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">议程</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">今天只谈三件事</span>
+    <h2 class="anim" style="--d:.08s">判断 · 矩阵 · 落地</h2>
+    <div class="stack anim" style="--d:.16s;margin-top:clamp(14px,2.6vh,26px)">
+      <div class="layer"><div class="lt"><b>01</b>判断</div><div><h3>为什么现在该换系统，而不是再买一个工具</h3><p>五个系统五份工作；AI 让「没有人」第一次不等于「做不了」；两条挡位 Flow 与 Loop。</p></div></div>
+      <div class="layer"><div class="lt"><b>02</b>矩阵</div><div><h3>九件产品，谁替你做哪一段</h3><p>入口层、进阶层、工作台层；账号怎么通、数据在哪、拔掉一个会发生什么。</p></div></div>
+      <div class="layer"><div class="lt"><b>03</b>落地</div><div><h3>30 天试点怎么跑，90 天怎么扩</h3><p>谁出人、验收只看三样、以及我们明确不承诺什么。</p></div></div>
+    </div>
+    <p class="small anim" style="--d:.3s;margin-top:clamp(12px,2vh,18px)">如果你只想听一段：直接翻到 <span class="mono">P16 组合</span> 或 <span class="mono">P20 落地</span>。</p>
+  </div>
+  <div class="foot"><div class="src"><span>docs/GTM.md · docs/VISION.md · docs/PRODUCT-MATRIX.md</span></div><div class="pn">02 / 23</div></div>
+</section>
+
+<section class="slide" id="s3" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">01 · 处境</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">一个人的公司，把工具买齐会怎样</span>
+    <h2 class="anim" style="--d:.08s">你得到的不是一支团队，<br>而是五份等着你来喂的工作。</h2>
+    <div class="rows anim" style="--d:.18s;margin-top:clamp(12px,2.4vh,24px)">
+      <div class="row"><div class="a">营销自动化</div><div class="b">它默认你有市场团队 <em>→ 流程图画完了，没人去连</em></div></div>
+      <div class="row"><div class="a">CRM</div><div class="b">它默认你有销售团队 <em>→ 变成一个更贵的通讯录</em></div></div>
+      <div class="row"><div class="a">数据分析</div><div class="b">它默认你有分析师 <em>→ 报表很漂亮，没人看得出该干什么</em></div></div>
+      <div class="row"><div class="a">建站工具</div><div class="b">它默认你有开发与设计 <em>→ 页面做好了，然后就没有然后了</em></div></div>
+      <div class="row"><div class="a">数据打通</div><div class="b">它默认你有人把上面四个接起来 <em>→ 接不起来</em></div></div>
+    </div>
+    <p class="lead anim" style="--d:.3s"><strong>你只有一个人。</strong>而且你本来该把时间花在判断上，不是花在喂系统上。</p>
+  </div>
+  <div class="foot"><div class="src"><span>docs/GTM.md §1.2「这个定位是怎么来的」</span></div><div class="pn">03 / 23</div></div>
+</section>
+
+<section class="slide" id="s4" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">01 · 判断</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">一个不太好听但成立的判断</span>
+    <div class="pull anim" style="--d:.1s">现有的增长工具，本质是<span class="flesh">协作工具</span>——<br>它们解决的是「多个人怎么配合」。</div>
+    <h2 class="anim" style="--d:.2s;margin-top:clamp(14px,2.6vh,26px)">而你缺的，从来不是工具。</h2>
+    <p class="lead anim" style="--d:.28s">是人。<br>2026 年第一次有了另一条路：<strong>不是让工具更好用，是让工具自己干活。</strong></p>
+  </div>
+  <div class="foot"><div class="src"><span>docs/GTM.md §1.2 · docs/VISION.md「为什么增长需要一台操作系统」</span></div><div class="pn">04 / 23</div></div>
+  <div class="ghost">01</div>
+</section>
+
+<section class="slide" id="s5" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">01 · 范式</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">同一套系统，两种挡位</span>
+    <h2 class="anim" style="--d:.08s">手动挡 Flow · 自动挡 Loop</h2>
+    <div class="cols c2 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div class="card"><span class="k">Flow · 手动挡</span><h3>你设计流程，系统确定性执行</h3>
+        <p>节点、画布、规则、分支都由你定；AI 只当 Copilot，帮你搭、帮你查、帮你优化。适合已经跑通的 SOP，以及交易、交付、通知这类要求可预测与合规的业务。</p>
+        <div class="proof" style="border:0;padding:0;margin-top:6px"><span>可检查</span><span>可预测</span><span>可回滚</span></div></div>
+      <div class="card"><span class="k">Loop · 自动挡</span><h3>你定目标与边界，Agent 自己找路径</h3>
+        <p>读真实业务状态 → 按 TIPS 订策略 → 调用 Skills 与成熟 Flow → 在策略约束下执行或请求审批 → 用业务结果进下一轮。适合「知道想要什么，但不知道最佳路径」。</p>
+        <div class="proof" style="border:0;padding:0;margin-top:6px"><span>有目标</span><span>有预算</span><span>有停止条件</span></div></div>
+    </div>
+    <p class="lead anim" style="--d:.3s"><strong>挡位可以换，方向盘永远在你手里。</strong>成熟 Flow 会变成 Agent 的 Skill；验证过的 Loop 固化成新的 Flow——经验因此可以复利。</p>
+  </div>
+  <div class="foot"><div class="src"><span>docs/VISION.md「两种长期并存的运行范式」「两者没有高低之分」</span></div><div class="pn">05 / 23</div></div>
+</section>
+
+<section class="slide" id="s6" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 矩阵</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">不是模块，是三层独立产品</span>
+    <h2 class="anim" style="--d:.08s">从门槛最低的入口进去，<br>在单点上变深，最后长到桌面上。</h2>
+    <div class="stack anim" style="--d:.18s;margin-top:clamp(12px,2.4vh,24px)">
+      <div class="layer"><div class="lt"><b>入口层</b>Hub</div><div class="chips"><div class="chip"><b>OpenFlow</b><span>开务</span></div><div class="chip dim"><b>账号真源</b><span>签发短票</span></div></div></div>
+      <div class="layer"><div class="lt"><b>进阶层</b>Flow</div><div class="chips">
+        <div class="chip"><b>MFlow</b><span>风媒</span></div><div class="chip"><b>WebsFlow</b><span>魔块</span></div><div class="chip"><b>UserLoop</b><span>触级</span></div>
+        <div class="chip"><b>inFlow</b><span>洞澜</span></div><div class="chip"><b>PayFlow</b><span>芭乐 Pay</span></div><div class="chip"><b>LearnFlow</b><span>林下学院</span></div></div></div>
+      <div class="layer"><div class="lt"><b>工作台层</b>Studio</div><div class="chips">
+        <div class="chip"><b>Litmus</b><span>鹿蕊</span></div><div class="chip"><b>ConFlow</b><span>成章</span></div>
+        <div class="chip dim"><b>Liana</b><span>松萝</span></div><div class="chip dim"><b>LinkTo</b><span>林可兔</span></div><div class="chip dim"><b>ZeroZen</b><span>零真</span></div></div></div>
+    </div>
+    <p class="lead anim" style="--d:.26s;margin-top:clamp(8px,1.4vh,14px)">入口层解决「先跑起来」，进阶层解决「单点更强」，工作台层解决「数据留在自己手里」。</p>
+    <p class="small anim" style="--d:.3s;margin-top:clamp(8px,1.4vh,12px)">虚线为全矩阵中的另外三件，本册不展开。九件之间只走公开 API 与事件：<strong>拔掉任何一个，其余照常运行。</strong></p>
+  </div>
+  <div class="foot"><div class="src"><span>docs/NAMING.md §2（12 件命名总表）· docs/PRODUCT-MATRIX.md §0</span></div><div class="pn">06 / 23</div></div>
+</section>
+
+<section class="slide" id="s7" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 矩阵</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">「拔掉任何一个」不是口号</span>
+    <h2 class="anim" style="--d:.08s">它靠四个结构性决定，而不是靠承诺。</h2>
+    <div class="cols c2 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div><table class="t">
+        <tr><th>机制</th><th>怎么做的</th></tr>
+        <tr><td>账号真源</td><td>OpenFlow 签发 60 秒一次性短票，产品后端兑换建会话；票用后即焚</td></tr>
+        <tr><td>数据各归各家</td><td>每件产品自己的库与文件，不存在一个中央大库</td></tr>
+        <tr><td>互通只走公开面</td><td>REST / MCP / Webhook，secret 不出网</td></tr>
+        <tr><td>收款与交付解耦</td><td>PayFlow 收钱、LearnFlow 上课；退款事件回传即撤权</td></tr>
+      </table></div>
+      <div style="display:flex;flex-direction:column;gap:12px;justify-content:center">
+        <div class="callout"><b>对客户意味着什么</b><br>你可以只买一段。今天接 OpenFlow，明天不满意，把它摘掉——其他产品的会话、数据、账单都不受影响。</div>
+        <div class="callout warn"><b>代价也说清楚</b><br>松耦合换来的是一致性成本：统一登录、统一计费、统一导航目前是「支持，但未统一」。这件事需要你拍板要做多深。</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div class="src"><span>docs/PRODUCT-MATRIX.md §1.2（MatrixTicket / api/matrix.php）· docs/BRAND-VOICE.md 矩阵话术</span></div><div class="pn">07 / 23</div></div>
+</section>
+
+<section class="slide" id="s8" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 底座</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">OpenFlow 开务 · v2.5.0</span>
+    <h2 class="anim" style="--d:.08s">一套能自己跑的增长操作系统，<br>一个文件都不用上云。</h2>
+    <div class="stats anim" style="--d:.16s">
+      <div class="stat"><span class="n">197</span><span class="l">个后台真实页面</span><span class="e">admin pages</span></div>
+      <div class="stat"><span class="n">121</span><span class="l">个 API 端点</span><span class="e">endpoints</span></div>
+      <div class="stat"><span class="n">23</span><span class="l">个 MCP 工具</span><span class="e">agent-ready</span></div>
+      <div class="stat"><span class="n">170</span><span class="l">个测试文件</span><span class="e">php tests</span></div>
+    </div>
+    <div class="cols c3 anim" style="--d:.26s;margin-top:clamp(10px,1.8vh,18px)">
+      <div><h3>MIT 开源</h3><p>可商用、可二次开发、可私有部署。核心能力永久开源，不是试用版。</p></div>
+      <div><h3>纯 PHP + JSON/SQLite</h3><p>不用装 MySQL、不用装 Redis、不用装 Node。一台普通主机就能跑。</p></div>
+      <div><h3>数据在你自己的服务器</h3><p>没有云端回传；导出功能齐备。停掉 AI，内容、数据、交易照常运行。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div class="src"><span>php scripts/metrics.php（2026-11-22）· VERSION 2.5.0 · LICENSE</span></div><div class="pn">08 / 23</div></div>
+</section>
+
+<section class="slide" id="s9" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 内容与分发</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">MFlow 风媒 · v1.2.0 · 进阶层</span>
+    <h2 class="anim" style="--d:.08s">让品牌出现在 AI 的回答里，<br>而不是只出现在搜索结果的第十条。</h2>
+    <div class="cols c3 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div><h3>信号先到位</h3><p>搜索控制台真实查询 + 22 源舆情监控；关键词缺口与竞品覆盖都进选题队列。</p></div>
+      <div><h3>10 语言重写，不是翻译</h3><p>每种语言按本地写作规范重写；简繁、字形、标点、残留语言都有门禁脚本。</p></div>
+      <div><h3>生成 → 质检 → 带反馈重写</h3><p>最多 3 轮，通过即止、失败熔断；上线前停在「待授权」，人工闸门不省。</p></div>
+    </div>
+    <div class="split anim" style="--d:.24s;margin-top:clamp(12px,2.2vh,22px)">
+      <div class="proof" style="border-top-width:2px;border-top-color:var(--ink)"><span><b>1.2.0</b> 当前版本</span><span><b>22</b> 舆情源</span><span><b>10</b> 语言</span><span><b>4</b> 轨道分发</span><span><b>3</b> 轮上限</span></div>
+      <p class="small">适合：出海品牌、内容团队、多语言站点运营。想先解决「AI 里搜不到我」，从它开始；想连全站一起做，再叠加 OpenFlow。</p>
+    </div>
+  </div>
+  <div class="foot"><div class="src"><span>mflow/README.md · mflow/docs/USAGE-GUIDE.md · VERSION 1.2.0</span></div><div class="pn">09 / 23</div></div>
+</section>
+
+<section class="slide" id="s10" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 情报</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">inFlow 洞澜 · v1.0.0 · 进阶层</span>
+    <h2 class="anim" style="--d:.08s">每条洞察都必须带一个动作，<br>否则它只是又一份报表。</h2>
+    <div class="cols c3 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div><h3>源可换，不绑定</h3><p>12 个数据源插件走统一接口；上游关停换插件即可——这是 Bing 退役与 Google CSE 停服换来的教训。</p></div>
+      <div><h3>洞察带证据与置信度</h3><p>8 个内置模型 + 一段 JSON 规则就是新模型；静态校验兜底，先判断数据成熟度再决定补什么。</p></div>
+      <div><h3>14 天验证闭环</h3><p>动作经 6 个适配器落地（OpenFlow / MFlow / 飞书 / Slack / Webhook），窗口到期出验证报告，回流调模型。</p></div>
+    </div>
+    <div class="split anim" style="--d:.24s;margin-top:clamp(12px,2.2vh,22px)">
+      <div class="proof" style="border-top-width:2px;border-top-color:var(--ink)"><span><b>12</b> 数据源</span><span><b>8</b> 模型</span><span><b>6</b> 动作适配器</span><span><b>33</b> REST</span><span><b>10</b> MCP</span><span><b>800+</b> 测试</span></div>
+      <p class="small">v1.0.0 已完成商业交付：<strong>已签下第一个付费客户</strong>（客户信息与合同细节不公开）。</p>
+    </div>
+  </div>
+  <div class="foot"><div class="src"><span>inflow/README.md · RELEASE_NOTES_1.0.md</span></div><div class="pn">10 / 23</div></div>
+</section>
+
+<section class="slide" id="s11" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 数据与动作</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">UserLoop 触级 · v0.6.2 · 进阶层</span>
+    <h2 class="anim" style="--d:.08s">不租 CDP：自己收数、自己建档、<br>自己验证动作有没有用。</h2>
+    <div class="cols c3 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div><h3>一行接入，多源直入</h3><p>track.js 一段代码；GA4 / Segment / Shopify / HubSpot 报文直接 ingest，原始报文落盘可回放。</p></div>
+      <div><h3>8 阶段旅程 + 三类断点</h3><p>匿名与实名自动合并、多租户隔离；进入新阶段、滞留超时、目标事件未达成，都在断点里。</p></div>
+      <div><h3>动作必须自带验收</h3><p>每个动作带目标事件与验证窗口，到期自动判 effective / neutral，结果回流改档案。</p></div>
+    </div>
+    <div class="split anim" style="--d:.24s;margin-top:clamp(12px,2.2vh,22px)">
+      <div class="proof" style="border-top-width:2px;border-top-color:var(--ink)"><span><b>0.6.2</b> 当前版本</span><span><b>209</b> 测试</span><span><b>8</b> 阶段</span><span><b>5</b> 内置 Loop</span><span><b>5</b> 类画布节点</span></div>
+      <p class="small">0.x 阶段的实话：能力齐，稳定性还在打磨；适合愿意一起跑试点的团队，不适合要求「今天签 SLA」的场景。</p>
+    </div>
+  </div>
+  <div class="foot"><div class="src"><span>userloop/README.md · VERSION 0.6.2</span></div><div class="pn">11 / 23</div></div>
+</section>
+
+<section class="slide" id="s12" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 投放</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">WebsFlow 魔块 · v4.42.0 · 进阶层</span>
+    <h2 class="anim" style="--d:.08s">投放要的不是官网，<br>是今天出页、今天看数。</h2>
+    <div class="cols c3 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div><h3>出页快</h3><p>44 个成品模块、13 套场景模板，默认文案即可上线；三栏画布改文案，自动保存 + 版本快照可回滚。</p></div>
+      <div><h3>上线直</h3><p>导出单文件 HTML 直接挂广告（Meta/OG/JSON-LD 全内嵌），或一键托管成 /webflow/p/&lt;token&gt;。</p></div>
+      <div><h3>能看出谁在赚钱</h3><p>每页自带埋点与转化看板；块级人群定向，同一页面新老访客、UTM、设备、时段各看各的。</p></div>
+    </div>
+    <div class="split anim" style="--d:.24s;margin-top:clamp(12px,2.2vh,22px)">
+      <div class="proof" style="border-top-width:2px;border-top-color:var(--ink)"><span><b>44</b> 模块</span><span><b>13</b> 模板</span><span><b>0</b> 前端依赖</span><span><b>A/B</b> 变体</span><span><b>质检</b> 交付包</span></div>
+      <p class="small">边界很清楚：它只做投放前线；全站资产、SEO、CRM 交给 OpenFlow。两者账号互通、线索可流转。</p>
+    </div>
+  </div>
+  <div class="foot"><div class="src"><span>websflow/VERSION 4.42.0 · websflow/README.md（README 徽章仍写 4.40.0，以版本文件为准）</span></div><div class="pn">12 / 23</div></div>
+</section>
+
+<section class="slide" id="s13" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 收钱</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">PayFlow 芭乐 Pay · v1.0.7 · 进阶层</span>
+    <h2 class="anim" style="--d:.08s">一行 script，<br>把「能收钱」这一步补上。</h2>
+    <div class="cols c3 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div><h3>一次性 + 订阅</h3><p>到期自动生成续费单并提醒；扣款失败按 1/3/5 天重试，宽限期后才降级——订阅不是静默流失。</p></div>
+      <div><h3>老带新算得清</h3><p>推荐链接 → 归因 → 佣金先冻结再解冻 → 提现走审批；推荐人自己在 /partner 看业绩，不用你对账。</p></div>
+      <div><h3>虚拟货自动发货</h3><p>文件签名限时下载、License 自动发放、发票自动生成；不再为卖一份电子书拼三个工具。</p></div>
+    </div>
+    <div class="split anim" style="--d:.24s;margin-top:clamp(12px,2.2vh,22px)">
+      <div class="proof" style="border-top-width:2px;border-top-color:var(--ink)"><span><b>1.0.7</b> 当前版本</span><span><b>2026-09-17</b> 起生产</span><span><b>4</b> 收款通道</span><span><b>137</b> 项自检</span></div>
+      <p class="small">已与 LearnFlow 联调：买课即入学、退款即撤权。四种通道为人工确认 / 支付宝 / 微信 / 加密货币，通道即插件。</p>
+    </div>
+  </div>
+  <div class="foot"><div class="src"><span>payflow/README.md（生产状态与 1.0.7 版本为仓库自述）</span></div><div class="pn">13 / 23</div></div>
+</section>
+
+<section class="slide" id="s14" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 交付</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">LearnFlow 林下学院 · v1.0.0 · 进阶层</span>
+    <h2 class="anim" style="--d:.08s">「卖出去之后」的那一截，<br>才是讲师真正的时间黑洞。</h2>
+    <div class="cols c3 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div><h3>一条路走到底</h3><p>报名 → 看课 → 章节测验 → 打卡与作业 → 结业证书；证书带独立校验链接，可分享、可验真。</p></div>
+      <div><h3>训练营跑得动</h3><p>开营节奏、每日任务、作业讲师 + AI 双点评、连续打卡激励、学员圈子，还有风险学员名单。</p></div>
+      <div><h3>Agent 能接班</h3><p>REST 与 MCP 共 42 个工具：出题、批作业、写周报都能交出去；每天自检 → 提案 → 护栏内执行。</p></div>
+    </div>
+    <div class="split anim" style="--d:.24s;margin-top:clamp(12px,2.2vh,22px)">
+      <div class="proof" style="border-top-width:2px;border-top-color:var(--ink)"><span><b>1.0.0</b> 当前版本</span><span><b>154</b> 项回归</span><span><b>42</b> 工具</span><span><b>0</b> composer 依赖</span></div>
+      <p class="small">自家案例：<strong>R.B.E 训练营</strong>就是用 LearnFlow 真实开营在跑——不是 demo 数据。</p>
+    </div>
+  </div>
+  <div class="foot"><div class="src"><span>learnflow/README.md · 领域回归 154 项 · REST + MCP 42 工具</span></div><div class="pn">14 / 23</div></div>
+</section>
+
+<section class="slide" id="s15" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 工作台</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">Studio 层 · 本地优先，不是 SaaS</span>
+    <h2 class="anim" style="--d:.08s">知识放在自己盘上，内容从这里流出去。</h2>
+    <div class="cols c2 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div class="card"><span class="k">Litmus 鹿蕊 · v0.34.1 · AGPL-3.0</span><h3>AI Native 知识 OS</h3>
+        <p>数据就是磁盘上一堆普通 Markdown：任何编辑器能打开，任何 agent 能读写，人和 agent 共享同一个真相。五个模式（画布 / 学习展示 / 随手记 / 对话知识库 / 发布分发）是同一套内核的不同界面配置。</p>
+        <div class="proof" style="border:0;padding:0;margin-top:4px"><span>Rust 单二进制</span><span>MCP 双向</span><span>50 款风格</span><span>macOS·Web·CLI·iOS·Android</span></div></div>
+      <div class="card"><span class="k">ConFlow 成章 · 引擎已并入 Litmus「加工」</span><h3>视频 ⇄ HTML 双向内容引擎</h3>
+        <p>贴一条视频链接，20 分钟拿回一篇按论证结构重写的文章 + 一套可放映的幻灯片；反方向把文章变成分镜提示词包。文章可自动推进 OpenFlow 内容库草稿，审完一键发布。</p>
+        <div class="proof" style="border:0;padding:0;margin-top:4px"><span>4 种文体写作法</span><span>30 种主题</span><span>按 P 导出 PDF</span><span>真实产物可查</span></div></div>
+    </div>
+    <p class="small anim" style="--d:.28s;margin-top:clamp(10px,1.8vh,16px)">许可要分开说：OpenFlow 系是 MIT，<strong>Litmus 是 AGPL-3.0</strong>——同一句话里别说「全矩阵开源」。</p>
+  </div>
+  <div class="foot"><div class="src"><span>litmus README + release v0.34.1（2026-11-20）· V2HTML/README.md · docs/NAMING.md §2</span></div><div class="pn">15 / 23</div></div>
+</section>
+
+<section class="slide" id="s16" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">02 · 组合</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">先选一个入口，不要一次买九件</span>
+    <h2 class="anim" style="--d:.08s">三种起步方式，各自的第一段</h2>
+    <div class="cols c3 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div class="card"><span class="k">A · 内容品牌</span><h3>从「被引用」开始</h3>
+        <p>MFlow 做多语言内容与 GEO；inFlow 盯趋势、竞品与舆情；OpenFlow 承接全站内容与数据。</p>
+        <p class="small" style="color:var(--ink)"><b>30 天第一段：</b>选 1 个主题簇，跑通「信号 → 成稿 → 上线 → 引用探测」。</p></div>
+      <div class="card"><span class="k">B · 投放增长</span><h3>从「今天出页」开始</h3>
+        <p>WebsFlow 出页与千人千面；UserLoop 接住线索与旅程；PayFlow 收钱并归因渠道。</p>
+        <p class="small" style="color:var(--ink)"><b>30 天第一段：</b>1 个投放计划，3 个页面变体，跑到首笔可归因成交。</p></div>
+      <div class="card"><span class="k">C · 课程交付</span><h3>从「少丢一个学员」开始</h3>
+        <p>PayFlow 收款；LearnFlow 上课、测验、发证；OpenFlow 做社区与复购内容。</p>
+        <p class="small" style="color:var(--ink)"><b>30 天第一段：</b>一期训练营全流程搬上来，看掉队名单与完课率。</p></div>
+    </div>
+    <p class="small anim" style="--d:.28s;margin-top:clamp(10px,1.8vh,16px)">三组都能单独成立；也都留了下一步的接口——组合会变，数据不用搬家。</p>
+  </div>
+  <div class="foot"><div class="src"><span>docs/PRODUCT-MATRIX.md §1.1 产品边界 · 各产品 README 的边界说明</span></div><div class="pn">16 / 23</div></div>
+</section>
+
+<section class="slide" id="s17" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">03 · 证据</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">案例 · 诚实版</span>
+    <h2 class="anim" style="--d:.08s">我们没有 logo 墙。<br>先给你四个能被核验的东西。</h2>
+    <div class="cols c4 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div class="card"><span class="k">主站 · 持续运行</span><h3><a href="https://nownexts.com" target="_blank" rel="noopener">nownexts.com</a></h3><p>OpenFlow 2.5.0 线上；197 后台页 / 121 API / 23 MCP。站点本身就是交付物。</p></div>
+      <div class="card"><span class="k">生产 · 2026-09-17 起</span><h3>PayFlow 1.0.7</h3><p>真实收款在生产环境跑；订阅重试、发货、佣金结算都是线上逻辑。</p></div>
+      <div class="card"><span class="k">商业交付 · v1.0.0</span><h3>inFlow 第一个付费客户</h3><p>已完成签约与交付；客户名与合同细节未获授权公开。</p></div>
+      <div class="card"><span class="k">自家在用</span><h3>R.B.E 训练营</h3><p>LearnFlow 真实开营：报名、作业、点评、证书全链路，不是演示数据。</p></div>
+    </div>
+    <div class="callout warn anim" style="--d:.3s;margin-top:clamp(12px,2.2vh,22px)"><b>同样明确地告诉你我们没有什么：</b>没有客户 logo 墙（未取得授权，也不 PS 一个）；没有「提升百分之多少」（没有对照组与授权数据）。<br>也没有独立安全审计与 SLA 承诺文件——这页可以直接拿去问任何一家 SaaS，看他们敢不敢照着答。</div>
+  </div>
+  <div class="foot"><div class="src"><span>VERSION 2.5.0 · payflow README（生产 2026-09-17）· inflow README（第一个付费客户）· learnflow README（R.B.E 训练营）</span></div><div class="pn">17 / 23</div></div>
+</section>
+
+<section class="slide" id="s18" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">03 · 产品规划</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">路线图 · 只写有依据的</span>
+    <h2 class="anim" style="--d:.08s">现在能交付什么、90 天内做什么，<br>哪些必须你来拍板。</h2>
+    <div class="cols c3 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div><div class="proof" style="border-top:2px solid var(--ink);border-bottom:0;margin:0;padding:8px 0 0"><b>现在</b><span>已上线</span></div>
+        <ul style="margin:8px 0 0;padding-left:1em;font-size:.82rem;line-height:1.75;color:var(--ink-2)">
+          <li>OpenFlow 2.5.0（含未发版能力）</li><li>MFlow 1.2.0 · inFlow 1.0.0</li><li>WebsFlow 4.42.0 · UserLoop 0.6.2</li><li>PayFlow 1.0.7 · LearnFlow 1.0.0</li><li>Litmus 0.34.1 · ConFlow 引擎可用</li></ul></div>
+      <div><div class="proof" style="border-top:2px solid var(--ink);border-bottom:0;margin:0;padding:8px 0 0"><b>90 天内</b><span>有文档依据</span></div>
+        <ul style="margin:8px 0 0;padding-left:1em;font-size:.82rem;line-height:1.75;color:var(--ink-2)">
+          <li>OpenFlow 收口发版：Unreleased → 2.6</li><li>Litmus 继续 0.x 周更节奏</li><li>试点期交付：场景跑通 + 交接文档</li></ul></div>
+      <div><div class="proof" style="border-top:2px solid var(--flesh);border-bottom:0;margin:0;padding:8px 0 0"><b>要你拍板</b><span>尚无定论</span></div>
+        <ul style="margin:8px 0 0;padding-left:1em;font-size:.82rem;line-height:1.75;color:var(--ink-2)">
+          <li>九件产品是否统一登录 / 计费 / 导航</li><li>统一对外价目表与 SLA 条款</li><li>UserLoop 1.0 的稳定性承诺</li><li>客户案例授权的对外边界</li></ul></div>
+    </div>
+    <p class="small anim" style="--d:.3s;margin-top:clamp(10px,1.8vh,16px)">把「没有定论」的放右列，是我们对路线图的基本纪律：不拿未定的事当承诺卖。</p>
+  </div>
+  <div class="foot"><div class="src"><span>CHANGELOG.md（Unreleased）· 各仓库 VERSION 与 release · docs/handbook/PRODUCT-STRATEGY.md（规划项）</span></div><div class="pn">18 / 23</div></div>
+</section>
+
+<section class="slide" id="s19" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">03 · 关系</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">不需要你把现有栈推倒</span>
+    <h2 class="anim" style="--d:.08s">我们不替换你的工具，<br>我们接管工具之间的接缝。</h2>
+    <table class="t anim" style="--d:.16s;margin-top:clamp(12px,2.2vh,20px)">
+      <tr><th style="width:22%">你已有的</th><th style="width:16%">怎么办</th><th>我们接管的那一段</th></tr>
+      <tr><td>HubSpot / Marketo</td><td class="ok">保留</td><td>内容 → 线索 → 跟进之间那段人肉搬运；要深做再考虑整体替换</td></tr>
+      <tr><td>GA4 / 神策</td><td class="ok">保留</td><td>一人一册的档案与跨产品回流，报表仍在你熟悉的工具里看</td></tr>
+      <tr><td>Webflow / 建站</td><td class="ok">保留</td><td>投放前线的出页、千人千面与转化回流；官网继续用你现在的</td></tr>
+      <tr><td>Segment</td><td class="ok">保留</td><td>自建 CDP 与「动作有没有用」的验证闭环；报文可直入</td></tr>
+      <tr><td>Notion / Obsidian</td><td class="ok">保留</td><td>本地知识与 agent 读写同一份文件；不锁定格式</td></tr>
+    </table>
+    <p class="lead anim" style="--d:.3s"><strong>三种合作深度：</strong>叠加（一样不动，只补接缝）→ 替换（接管其中一段）→ 私有化（整套进你的机房）。</p>
+  </div>
+  <div class="foot"><div class="src"><span>docs/GTM.md §5 转化路径（自部署 / 托管 / 企业）· 各产品 README 的边界声明</span></div><div class="pn">19 / 23</div></div>
+</section>
+
+<section class="slide" id="s20" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">03 · 落地</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">30 / 90 天</span>
+    <h2 class="anim" style="--d:.08s">试点只跑一个场景，验收只认三样。</h2>
+    <div class="tl anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div><div class="t">Day 0 – 7</div><div class="h">诊断与基线</div>
+        <p>看真实数据与现有流程，找出「最该交给 Agent 的那一段」，并定 3 个可量化基线。</p>
+        <div class="own">我方：1 名交付 + 产品直连<br>你方：1 名能拍板的 DRI</div></div>
+      <div><div class="t">Day 8 – 30</div><div class="h">试点：一个场景、一条链路</div>
+        <p>在沙盘先跑，再上生产；只做一个场景，做到能回滚、能审计、有人能接手。</p>
+        <div class="own">交付物：可运行链路 + 交接文档<br>验收：跑通 / 可回滚 / 能接手</div></div>
+      <div><div class="t">Day 31 – 90</div><div class="h">扩展与固化</div>
+        <p>第 2–3 个场景接入；把验证有效的 Loop 固化成 Flow，写进你们的 SOP。</p>
+        <div class="own">你方：每周 2 小时对齐<br>退出条件：你不需要我们也能跑</div></div>
+    </div>
+    <div class="callout anim" style="--d:.3s;margin-top:clamp(12px,2.2vh,22px)"><b>验收口径写死在这里：</b>不看「功能演示得多漂亮」，只看三样——链路跑通、随时可回滚、你们团队有人能接手。三样缺一样，试点不算成功。</div>
+  </div>
+  <div class="foot"><div class="src"><span>docs/GTM.md §6 落地节奏 · docs/VISION.md「判断新建的四把尺」</span></div><div class="pn">20 / 23</div></div>
+</section>
+
+<section class="slide" id="s21" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">03 · 商务</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">三种合作方式</span>
+    <h2 class="anim" style="--d:.08s">先给范围，再给价。<br>不签「先买年框、再看能不能用」。</h2>
+    <div class="cols c3 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div class="card"><span class="k">01 · 开源自助</span><h3>自己部署</h3>
+        <p>MIT 授权，代码与数据都在你手里；社区支持。适合有工程能力、想先验证的团队。</p>
+        <div class="proof" style="border:0;padding:0"><span>成本自选</span><span>掌控在手</span></div></div>
+      <div class="card"><span class="k">02 · 托管订阅</span><h3>我们运维，你只用</h3>
+        <p>按实例 / 席位计费，含升级、备份与告警。适合不想碰服务器、要快上线的团队。</p>
+        <div class="proof" style="border:0;padding:0"><span>上线快</span><span>含升级</span></div></div>
+      <div class="card"><span class="k">03 · 私有化</span><h3>进你的机房</h3>
+        <p>一次性交付 + 年度支持；含部署、迁移、培训与交接文档。适合有合规与数据边界要求的组织。</p>
+        <div class="proof" style="border:0;padding:0"><span>数据不出域</span><span>可审计</span></div></div>
+    </div>
+    <p class="lead anim" style="--d:.3s"><strong>计价口径：</strong>部署方式 × 实例规模 × 需要的交付量。具体价格按方案出——官网目前没有产品价目表，我们也不打算用一个假数字先把人骗进来。</p>
+  </div>
+  <div class="foot"><div class="src"><span>docs/GTM.md §5 转化路径与 CTA · docs/handbook/PRODUCT-STRATEGY.md（商业模式四支柱，部分属规划）</span></div><div class="pn">21 / 23</div></div>
+</section>
+
+<section class="slide" id="s22" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">03 · 边界</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">把丑话说在前面</span>
+    <h2 class="anim" style="--d:.08s">我们不做的事、需要你配合的事、<br>以及现在还没有的东西。</h2>
+    <div class="cols c3 anim" style="--d:.16s;margin-top:clamp(12px,2.4vh,24px)">
+      <div><h3>我们不做</h3><ul style="margin:0;padding-left:1em;font-size:.84rem;line-height:1.8;color:var(--ink-2)">
+        <li>不替代中大型企业的全套 BI / 重型 CRM / 通用电商</li><li>不承诺还没做出来的功能（见 P18 右列）</li><li>不接管你的数据所有权，也不做数据倒卖</li></ul></div>
+      <div><h3>需要你配合</h3><ul style="margin:0;padding-left:1em;font-size:.84rem;line-height:1.8;color:var(--ink-2)">
+        <li>一个能拍板、且愿意每周花 2 小时的 DRI</li><li>一个真实场景 + 现有数据（哪怕是 Excel）</li><li>允许先沙盘后生产，别拿线上当试验田</li></ul></div>
+      <div><h3>已知缺口</h3><ul style="margin:0;padding-left:1em;font-size:.84rem;line-height:1.8;color:var(--ink-2)">
+        <li>无独立安全审计 / 等保</li><li>无 SLA 承诺文件</li><li>客户案例尚未获授权公开</li><li>统一登录 / 统一计费未定</li></ul></div>
+    </div>
+    <p class="small anim" style="--d:.3s;margin-top:clamp(10px,1.8vh,16px)">这几条我们会写进合同附件；能提前说清的，不在交付时吵。</p>
+  </div>
+  <div class="foot"><div class="src"><span>docs/GTM.md §1.3「不是我们的战场」· docs/FACTBASE-2026-11.md §3.3 / §5</span></div><div class="pn">22 / 23</div></div>
+</section>
+
+<section class="slide" id="s23" aria-hidden="true">
+  <div class="top"><div class="brandmark">林下 Understory · 客户方案</div><div class="sect">下一步</div></div>
+  <div class="main">
+    <span class="kicker anim" style="--d:.03s">不用现在就决定买什么</span>
+    <h1 class="anim" style="--d:.1s;font-size:clamp(1.8rem,3.6vw,3rem)">下一步只有一件事：<br>30 分钟诊断。</h1>
+    <p class="lead anim" style="--d:.2s">你带着一个真实场景来。我们给一页纸：<strong>哪一段最该交给 Agent、为什么是这一段、30 天怎么验证。</strong>不给方案书，不给报价单——诊断完你觉得没用，就到此为止。</p>
+    <div class="proof anim" style="--d:.3s;margin-top:clamp(14px,2.6vh,26px);border-top-width:2px;border-top-color:var(--ink)">
+      <span><b><a href="https://nownexts.com" target="_blank" rel="noopener">nownexts.com</a></b> 站点与产品</span><span><b><a href="https://nownexts.com/consultation" target="_blank" rel="noopener">/consultation</a></b> 提交预约</span><span><b><a href="https://github.com/sevenaaaaaaaaa" target="_blank" rel="noopener">github.com/sevenaaaaaaaaa</a></b> 九件产品的代码</span>
+    </div>
+  </div>
+  <div class="foot"><div class="src"><span>林下 Understory · 2026-11 · 本册数字出处见 docs/FACTBASE-2026-11.md</span></div><div class="pn">23 / 23</div></div>
+  <div class="ghost">23</div>
+</section>
+
+</div>
+
+<div class="ui" id="bar" aria-hidden="true"><i id="fill"></i></div>
+<div class="ui" id="hint"><kbd>←</kbd><kbd>→</kbd> 翻页 · <kbd>F</kbd> 全屏 · <kbd>P</kbd> 导出 PDF</div>
+<div class="ui" id="nav"><button type="button" id="prev" aria-label="上一页">‹</button><button type="button" id="next" aria-label="下一页">›</button></div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var total = slides.length;
+  var idx = 0;
+  var count = document.getElementById("count");
+  var fill = document.getElementById("fill");
+  function pad(n){ return n < 10 ? "0" + n : "" + n; }
+  function render(){
+    slides.forEach(function(s, j){
+      var on = j === idx;
+      s.classList.toggle("on", on);
+      s.setAttribute("aria-hidden", on ? "false" : "true");
+    });
+    if (count) count.textContent = pad(idx + 1) + " / " + pad(total);
+    if (fill) fill.style.width = ((idx + 1) / total * 100).toFixed(2) + "%";
+  }
+  function go(k, push){
+    idx = Math.max(0, Math.min(total - 1, k));
+    render();
+    if (push !== false && window.history && history.replaceState) history.replaceState(null, "", "#" + (idx + 1));
+  }
+  function fromHash(){
+    var m = /^#(\d+)$/.exec(location.hash || "");
+    if (m) { var n = parseInt(m[1], 10); if (n >= 1 && n <= total) idx = n - 1; }
+  }
+  document.addEventListener("keydown", function(e){
+    var k = e.key;
+    if (k === "ArrowRight" || k === "ArrowDown" || k === " " || k === "PageDown") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowLeft" || k === "ArrowUp" || k === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "f" || k === "F") {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+      else if (document.exitFullscreen) document.exitFullscreen();
+    }
+    else if (k === "p" || k === "P") { e.preventDefault(); window.print(); }
+  });
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+  if (prev) prev.addEventListener("click", function(){ go(idx - 1); });
+  if (next) next.addEventListener("click", function(){ go(idx + 1); });
+  window.addEventListener("hashchange", function(){ fromHash(); render(); });
+  fromHash();
+  render();
+})();
+</script>
+</body>
+</html>
