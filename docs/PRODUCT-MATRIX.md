@@ -70,7 +70,7 @@
 第 3 层 · Studio 套件（本地工具 · 引流 · 未来打通所有 Flow 产品的工作台）
   ├─ 鹿蕊 Litmus ────── AI Native 知识 OS(Rust 单二进制,代号 thirdc) — 文件即真相/画布/agent
   ├─ 松萝 Liana ─────── 隐私优先输入法(Rust,代号 InputFlow) — 属 Studio,不属 Flow
-  ├─ ConFlow ────────── 视频⇄HTML 双向内容引擎(Python) — YouTube→文章/PPT,文章→视频
+  ├─ ConFlow ────────── 视频⇄HTML 双向内容引擎(Python) — YouTube→文章/PPT,文章→视频（引擎已并入 Litmus，入口在「加工」）
   ├─ 林可兔 LinkTo ──── AI 原生邮件工作台 — 分类降噪/摘要起草/Agent 记忆,数据全本地
   └─ 零真 ZeroZen ──── 跨浏览器广告净化扩展(JS) — 规则引擎+AI 识别+下载工具箱,独立引流品
 ```

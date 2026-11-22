@@ -70,7 +70,7 @@ AI 让「没有人」第一次不等于「做不了」。我们把十二件产�
 |---|---|---|---|
 | **鹿蕊 Litmus** | 知识 OS：人随手记、AI 帮你建，知识是磁盘上的普通 Markdown | 知识工作者、开发者 | [产品页](https://nownexts.com/product/litmus) · [GitHub](https://github.com/sevenaaaaaaaaa/litmus) · [下载](https://github.com/sevenaaaaaaaaa/litmus/releases/latest) |
 | **松萝 Liana** | 隐私输入法：按键不离开设备，零遥测，P2P 端到端同步 | 重隐私人群、效率用户 | [产品页](https://nownexts.com/product/liana) · [GitHub](https://github.com/sevenaaaaaaaaa/liana) · [下载](https://github.com/sevenaaaaaaaaa/liana/releases/latest) |
-| **成章 ConFlow** | 看完一条视频，得到可发布的文章和可放映的幻灯片 | 内容团队、知识博主 | [产品页](https://nownexts.com/product/conflow) · [GitHub](https://github.com/sevenaaaaaaaaa/V2HTML) |
+| **成章 ConFlow** | 看完一条视频，得到可发布的文章和可放映的幻灯片（引擎已并入 Litmus） | 内容团队、知识博主 | [产品页](https://nownexts.com/product/conflow) · [在 Litmus 里打开加工](https://nownexts.com/litmus/) · [引擎仓库](https://github.com/sevenaaaaaaaaa/V2HTML) |
 | **林可兔 LinkTo** | 邮件工作台：AI 分类降噪、摘要起草，数据全在本地 | 邮件重度用户、商务人士 | [产品页](https://nownexts.com/product/linkto) · [GitHub](https://github.com/sevenaaaaaaaaa/linkto) · [下载](https://github.com/sevenaaaaaaaaa/linkto/releases/latest) |
 | **零真 ZeroZen** | 浏览器扩展：本地规则拦广告和弹窗，规则管不到的交给 AI | 所有浏览器用户 | [产品页](https://nownexts.com/product/zerozen) · [GitHub](https://github.com/sevenaaaaaaaaa/zerozen) · [下载](https://github.com/sevenaaaaaaaaa/zerozen/releases/latest) |
 
