@@ -11,7 +11,7 @@ done
 sha=$(git rev-parse HEAD)
 git fetch -q origin || true
 if git merge-base --is-ancestor "$sha" "origin/$branch"; then
-  echo "已推送并校验：$sha 已在 origin/$branch（允许他人并发提交）"
+  echo "已推送并校验：${sha} 已在 origin/${branch}（允许他人并发提交）"
 else
   echo "推送未生效：$sha 不在 origin/$branch" >&2
   exit 1
