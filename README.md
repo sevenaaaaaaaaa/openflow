@@ -45,6 +45,8 @@ AI 让「没有人」第一次不等于「做不了」。我们把十二件产�
 
 每件都能单独跑、单独见效；互通走公开 API——拔掉任何一个，其余照常运行。
 
+> 命名口径见 [docs/NAMING.md](docs/NAMING.md)：中文名是品牌名，代码/仓库/技术文档用拉丁名；旧名「芭乐派」已作废。
+
 **入口层 · 一整套系统，门槛最低**
 
 | 产品 | 一句话 | 适合谁 | 入口 |
@@ -129,11 +131,12 @@ AI 让「没有人」第一次不等于「做不了」。我们把十二件产�
 
 **不想碰服务器**：云托管个人版 ¥99/月起，[咨询开通](https://nownexts.com/consultation)。
 
-**自己装（Docker）**：
+**自己装（Docker，推荐）**：
 
 ```bash
 git clone https://github.com/sevenaaaaaaaaa/openflow.git && cd openflow
-docker compose up -d        # 打开 http://127.0.0.1:8080，按安装向导完成初始化
+docker compose up -d
+# 打开 http://127.0.0.1:8080/setup-wizard.php 完成安装（未安装时首页不会自动跳向导）
 ```
 
 **本地预览（PHP 8.1+）**：
@@ -142,7 +145,12 @@ docker compose up -d        # 打开 http://127.0.0.1:8080，按安装向导完�
 php -S 127.0.0.1:8080 router.php
 ```
 
-只需要 PHP 8 + SQLite，不用 MySQL、Redis、Node。服务器部署、cron 心跳、Cloudflare 配置见 [部署指南](docs/DEPLOYMENT.md)。
+只需要 PHP 8 + SQLite，不用 MySQL、Redis、Node。
+
+- 部署形态怎么选：[部署指南索引](docs/guides/README.md)（Docker / Apache / Nginx / NAS / 宝塔与 1Panel）
+- 从零到能访问：[快速开始](docs/guides/quickstart.md)
+- 上线前逐项确认：[上线验收清单](docs/guides/go-live-checklist.md)（五项全绿才算上线）
+- 内部运维口径：[Agent 部署指南](docs/AGENT-DEPLOY.md)
 
 ## 开源与定价
 
