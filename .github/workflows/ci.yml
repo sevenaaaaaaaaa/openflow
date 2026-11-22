@@ -68,6 +68,9 @@ jobs:
           extensions: gd, pdo_sqlite, mbstring, fileinfo, curl, openssl, json
           coverage: none
 
+      - name: Composer 依赖（契约测试里的静态分析闸门需要 phpstan）
+        run: composer install --no-interaction --prefer-dist
+
       - name: 运行全部独立契约测试
         run: php tests/contract_suite.php
 
@@ -94,6 +97,14 @@ jobs:
           name: flow-baseline-${{ github.sha }}
           path: ${{ runner.temp }}/flow-baseline.json
           retention-days: 30
+
+  public-surface:
+    name: 公开面脱敏守卫
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 扫描内网地址 / 本机路径 / 账号 ID
+        run: bash scripts/check-public-surface.sh
 
   shellcheck:
     name: Shell 脚本检查（bin/ 与 deploy 脚本）

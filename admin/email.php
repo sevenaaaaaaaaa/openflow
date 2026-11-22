@@ -192,6 +192,10 @@ if (!defined('OF_EMBED')) admin_header('邮件营销');
 .status-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
 .status-dot.on{background:#22c55e}
 .status-dot.off{background:#ef4444}
+@media (max-width: 900px){
+  .stats{grid-template-columns:1fr !important}
+  .flex{flex-wrap:wrap}
+}
 </style>
 <?php if (!defined('OF_EMBED')): ?>
 <div class="admin-layout">
