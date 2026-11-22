@@ -20,6 +20,19 @@ cd "$(dirname "$0")/.."
 # 本地凭据（gitignored）：R2_KEY / R2_SECRET / R2_ENDPOINT / R2_BUCKET、CF_TOKEN 等
 if [ -f .env ]; then set -a; . ./.env; set +a; fi
 
+# macOS 钥匙串兜底：仓库根没有 .env 时从 Keychain 取部署凭据（真实环境变量优先）。
+# 写入：security add-generic-password -U -a CF_TOKEN -s openflow-deploy -w <值>（R2_* 同理）
+if [ "$(uname -s)" = "Darwin" ] && command -v security >/dev/null 2>&1; then
+  kc() { security find-generic-password -a "$1" -s openflow-deploy -w 2>/dev/null || true; }
+  [ -n "${CF_TOKEN:-}" ]    || CF_TOKEN="$(kc CF_TOKEN)"
+  [ -n "${OF_CF_ZONE:-}" ]  || OF_CF_ZONE="$(kc OF_CF_ZONE)"
+  [ -n "${R2_ENDPOINT:-}" ] || R2_ENDPOINT="$(kc R2_ENDPOINT)"
+  [ -n "${R2_KEY:-}" ]      || R2_KEY="$(kc R2_KEY)"
+  [ -n "${R2_SECRET:-}" ]   || R2_SECRET="$(kc R2_SECRET)"
+  [ -n "${R2_BUCKET:-}" ]   || R2_BUCKET="$(kc R2_BUCKET)"
+  export CF_TOKEN OF_CF_ZONE R2_ENDPOINT R2_KEY R2_SECRET R2_BUCKET
+fi
+
 GITLEAKS="${GITLEAKS:-$HOME/.local/bin/gitleaks}"
 BRANCH=main
 MSG=""

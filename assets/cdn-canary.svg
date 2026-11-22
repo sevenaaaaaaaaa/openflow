@@ -1,6 +1,8 @@
 <!-- OpenFlow CDN/R2 deploy canary.
      Not referenced by any page; it exists so a deploy can prove the full chain:
-     assets/ -> NAS -> R2 -> Cloudflare purge. Fetch /assets/cdn-canary.svg to check. -->
+     assets/ -> NAS -> R2 -> Cloudflare purge. Fetch /assets/cdn-canary.svg to check.
+     Deploy credentials live in the macOS Keychain (service: openflow-deploy), so a bare
+     `bash deploy/sync.sh` works on this machine without a .env file. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" role="img" aria-label="ok">
   <circle cx="8" cy="8" r="7" fill="#22c55e"/>
   <path d="M4.6 8.3l2.2 2.2 4.6-4.9" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>

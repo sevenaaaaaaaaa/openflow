@@ -31,7 +31,7 @@
 
 1. 本机可 SSH 到服务器（密钥已配）
 2. 本机有 `rsync`
-3. R2 / Cloudflare 令牌放仓库根 `.env`（gitignored；模板见 `.env.example` 的「部署/CDN」段）：`R2_ENDPOINT` `R2_KEY` `R2_SECRET` `R2_BUCKET` `CF_TOKEN`（需 Zone → Cache Purge 权限）
+3. R2 / Cloudflare 令牌放仓库根 `.env`（gitignored；模板见 `.env.example` 的「部署/CDN」段）：`R2_ENDPOINT` `R2_KEY` `R2_SECRET` `R2_BUCKET` `CF_TOKEN`（需 Zone → Cache Purge 权限）。macOS 也可存系统钥匙串（`security add-generic-password -U -a CF_TOKEN -s openflow-deploy -w '<值>'`，其余变量同理）：`deploy/sync.sh` 与 `scripts/deploy.py` 在缺少 `.env`/环境变量时会自动回落到钥匙串（服务名 `openflow-deploy`）
 4. 若改了前端资产：本机有 Python + boto3（跑 `deploy/sync-r2.py`）
 
 ---

@@ -61,7 +61,31 @@ def _load_dotenv(path: Path) -> None:
             os.environ[key] = val
 
 
+def _load_keychain(service: str = "openflow-deploy") -> None:
+    """macOS 兜底：没有 .env 时从钥匙串读部署凭据（真实环境变量优先）。
+
+    条目约定：security find-generic-password -a <变量名> -s <service> -w
+    """
+    if sys.platform != "darwin":
+        return
+    keys = ("CF_TOKEN", "OF_CF_ZONE", "R2_ENDPOINT", "R2_KEY", "R2_SECRET", "R2_BUCKET")
+    if all(os.environ.get(k) for k in keys):
+        return
+    for key in keys:
+        if os.environ.get(key):
+            continue
+        try:
+            found = subprocess.run(
+                ["security", "find-generic-password", "-a", key, "-s", service, "-w"],
+                capture_output=True, text=True, timeout=5)
+        except (OSError, subprocess.SubprocessError):
+            return
+        if found.returncode == 0 and found.stdout.strip():
+            os.environ[key] = found.stdout.strip()
+
+
 _load_dotenv(ROOT / ".env")
+_load_keychain()
 
 HOST = os.environ.get("OF_DEPLOY_HOST", "192.168.1.81")
 PORT = os.environ.get("OF_DEPLOY_PORT", "22")
