@@ -33,6 +33,27 @@ usage() { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; }
 step()  { printf '\n\033[1;36m═══ %s ═══\033[0m\n' "$*"; }
 die()   { printf '\033[1;31m✗ %s\033[0m\n' "$*" >&2; exit 1; }
 
+# push 容错：GitHub 直连偶发超时（2026-11-22 实测一次 75s 后失败，重试即成功）。
+# OF_GIT_PROXY=http://127.0.0.1:7890 可走代理；OF_GIT_PUSH_RETRIES / OF_GIT_PUSH_DELAY 可调。
+git_push() {
+  local attempt=1 max="${OF_GIT_PUSH_RETRIES:-3}" wait="${OF_GIT_PUSH_DELAY:-3}"
+  local -a proxy=()
+  [ -n "${OF_GIT_PROXY:-}" ] && proxy=(-c "http.proxy=${OF_GIT_PROXY}")
+  while [ "$attempt" -le "$max" ]; do
+    if GIT_TERMINAL_PROMPT=0 git ${proxy[@]+"${proxy[@]}"} \
+         -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=45 \
+         push origin "$BRANCH"; then
+      return 0
+    fi
+    [ "$attempt" -eq "$max" ] && break
+    printf '\033[1;33m⚠ push 第 %d/%d 次失败（网络抖动？），%ds 后重试…\033[0m\n' "$attempt" "$max" "$wait"
+    sleep "$wait"
+    wait=$((wait * 2))
+    attempt=$((attempt + 1))
+  done
+  return 1
+}
+
 while [ $# -gt 0 ]; do
   case "$1" in
     -m|--message) MSG="${2:?-m 需要提交信息}"; shift 2 ;;
@@ -137,7 +158,7 @@ if [ "$SERVER_ONLY" = 0 ]; then
       echo "无未提交改动（跳过 commit）"
     fi
     if [ -n "$(git rev-list "origin/$BRANCH..HEAD" 2>/dev/null)" ]; then
-      git push origin "$BRANCH" || die "push 失败，未部署服务器（修复后可用 --server-only 补同步）"
+      git_push || die "push 失败（已重试 ${OF_GIT_PUSH_RETRIES:-3} 次），未部署服务器；修好后可 --server-only 补同步，或设 OF_GIT_PROXY 走代理"
     else
       echo "与 origin/$BRANCH 一致（无需 push）"
     fi

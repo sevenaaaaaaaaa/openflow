@@ -39,6 +39,30 @@ DEPLOY_DIR = ROOT / ".deploy"
 BACKUP_DIR = DEPLOY_DIR / "backups"
 MANIFEST_DIR = DEPLOY_DIR / "manifests"
 
+
+def _load_dotenv(path: Path) -> None:
+    """把仓库根 .env（gitignored，sync.sh 也会加载）载入环境变量；真实环境变量优先。"""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key = key.strip()
+        if key.startswith("export "):
+            key = key[len("export "):].strip()
+        val = val.strip()
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in "\"'":
+            val = val[1:-1]
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+
+_load_dotenv(ROOT / ".env")
+
 HOST = os.environ.get("OF_DEPLOY_HOST", "192.168.1.81")
 PORT = os.environ.get("OF_DEPLOY_PORT", "22")
 USER = os.environ.get("OF_DEPLOY_USER", "agent")
@@ -349,6 +373,8 @@ def main() -> int:
     ap.add_argument("--no-r2", action="store_true", help="跳过 R2 同步")
     ap.add_argument("--no-purge", action="store_true", help="跳过 Cloudflare purge")
     ap.add_argument("--no-cache", action="store_true", help="跳过服务端缓存清理")
+    ap.add_argument("--allow-incomplete", action="store_true",
+                    help="R2/purge 未闭环时仍以 0 退出（默认视为部署失败，退出码 3）")
     args = ap.parse_args()
 
     if args.rollback:
@@ -466,18 +492,22 @@ def main() -> int:
         cp = ssh_root(f"rm -f {REMOTE_ROOT}/data/cache/*.cache 2>/dev/null; echo ok")
         print("✓ 已清 data/cache" if cp.returncode == 0 else "⚠ 清缓存失败（可忽略）")
 
-    # 5) R2 同步（assets 有变更时）
-    if needs_r2([e.rel for e in plan.uploads]) and not args.no_r2:
-        r2_ok = all(os.environ.get(k) for k in ("R2_KEY", "R2_SECRET", "R2_ENDPOINT", "R2_BUCKET"))
-        if not r2_ok:
-            print("⚠ assets 有变更但缺少 R2_* 环境变量，已跳过 sync-r2.py（务必补跑）")
+    # 5) R2 同步（assets 有变更时）——漏同步会让 CDN 长期停在旧内容，因此不再静默跳过
+    incomplete: list[str] = []
+    if needs_r2([e.rel for e in plan.uploads]):
+        if args.no_r2:
+            print("（--no-r2：跳过 R2 同步）")
+        elif not all(os.environ.get(k) for k in ("R2_KEY", "R2_SECRET", "R2_ENDPOINT", "R2_BUCKET")):
+            print("✗ assets 有变更但缺少 R2_* 环境变量：R2 未同步，CDN 不会更新", file=sys.stderr)
+            incomplete.append("R2 同步未执行：缺少 R2_KEY/R2_SECRET/R2_ENDPOINT/R2_BUCKET（写仓库根 .env）")
         else:
             print("→ 同步 R2（assets 变更）…")
             cp = run([sys.executable, str(ROOT / "deploy" / "sync-r2.py")])
             if cp.returncode == 0:
                 print("✓ R2 同步完成")
             else:
-                print("⚠ R2 同步失败，请手动重跑 sync-r2.py", file=sys.stderr)
+                print("✗ R2 同步失败（assets 已上线但 R2 未更新）", file=sys.stderr)
+                incomplete.append("R2 同步失败：手动重跑 python3 deploy/sync-r2.py")
 
     # 6) Cloudflare purge
     if not args.no_purge:
@@ -492,7 +522,9 @@ def main() -> int:
                 pass
         urls = sorted({u for u in (url_for(e.rel) for e in plan.uploads) if u})
         if not token:
-            print("⚠ 缺少 CF_TOKEN，已跳过 purge（列表：" + ", ".join(urls[:4]) + ("…" if len(urls) > 4 else "") + "）")
+            print("✗ 缺少 CF_TOKEN，未执行 purge（CDN 可能仍是旧内容）", file=sys.stderr)
+            if urls:
+                incomplete.append("CF purge 未执行：缺少 CF_TOKEN（写仓库根 .env；token 需 Zone.Cache Purge 权限）")
         elif urls:
             payload = json.dumps({"files": urls})
             cp = run(["curl", "-s", "-X", "POST",
@@ -505,7 +537,21 @@ def main() -> int:
                 ok = bool(json.loads(cp.stdout or "{}").get("success"))
             except Exception:
                 ok = False
-            print(("✓ purge 成功 " if ok else "⚠ purge 失败 ") + f"（{len(urls)} 个 URL）")
+            if ok:
+                print(f"✓ purge 成功（{len(urls)} 个 URL）")
+            else:
+                print(f"✗ purge 失败（{len(urls)} 个 URL）：检查 CF_TOKEN 是否有效/有 Cache Purge 权限", file=sys.stderr)
+                incomplete.append("CF purge 失败：CF_TOKEN 无效或无 Cache Purge 权限")
+
+    if incomplete:
+        print("\n✗ 部署未完整完成：代码已上服务器，但 CDN 侧未闭环：", file=sys.stderr)
+        for msg in incomplete:
+            print("  • " + msg, file=sys.stderr)
+        if args.allow_incomplete:
+            print("  （--allow-incomplete：按警告处理，退出码 0）", file=sys.stderr)
+            return 0
+        print("  补好凭据后重跑：python3 scripts/deploy.py <本次文件>", file=sys.stderr)
+        return 3
 
     return 0
 

@@ -6,7 +6,9 @@
 > ⚠️ **2026-11-22 起线上主机已从旧 VPS（`172.96.253.73`，宝塔）迁到 fnOS NAS。**
 > 旧机 2026-11-23 23:00 到期退役；本文中所有 `172.96.253.73` / 宝塔 / `-p 28766` 的命令**仅作历史备查，不要再执行**。
 > 新机：`agent@192.168.1.81`（免密 + `sudo` NOPASSWD），站根 `/vol1/docker/openflow/www/nownexts_com`（容器 `openflow-web` 内挂载为 `/www/wwwroot`），入口 `127.0.0.1:18080` + Cloudflare Tunnel。
-> 新部署链路尚未固化进 `deploy/sync.sh` / `scripts/deploy.py`；在那之前**不要用本文旧命令部署**。
+> 新部署链路已固化进 `deploy/sync.sh` + `scripts/deploy.py`（默认目标 fnOS NAS）；下文旧命令（`-p 28766` / 宝塔 / rsync）仅作历史备查。
+>
+> **凭据**：R2 / CF 令牌放仓库根 `.env`（gitignored，`sync.sh` 与 `deploy.py` 都会加载）。assets 变更时若 R2/purge 未闭环，`deploy.py` 现在以**退出码 3 失败**而不是静默跳过。
 
 ---
 
@@ -29,7 +31,7 @@
 
 1. 本机可 SSH 到服务器（密钥已配）
 2. 本机有 `rsync`
-3. 密钥/令牌见 `docs/DEPLOY-SECRETS.md`（**gitignored**，含 CF token / R2 key / DeepSeek key）
+3. R2 / Cloudflare 令牌放仓库根 `.env`（gitignored；模板见 `.env.example` 的「部署/CDN」段）：`R2_ENDPOINT` `R2_KEY` `R2_SECRET` `R2_BUCKET` `CF_TOKEN`（需 Zone → Cache Purge 权限）
 4. 若改了前端资产：本机有 Python + boto3（跑 `deploy/sync-r2.py`）
 
 ---
