@@ -7,7 +7,7 @@
 """
 import re, os, sys
 
-ROOT = "/Users/seveno/OpenFlow Dev"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 功能 emoji → SVG（单色描边 24 视图，与首页图标库同风格）
 EMOJI_SVG = {

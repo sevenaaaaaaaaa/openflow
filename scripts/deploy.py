@@ -14,7 +14,7 @@ deploy.py —— 幂等、可核验的部署器（替代 shell + rsync）
   python3 scripts/deploy.py --with-data data/nav.json                  # 显式允许部署 data/（默认拒绝）
 
 环境变量（可选）：
-  OF_DEPLOY_HOST / OF_DEPLOY_PORT / OF_DEPLOY_ROOT / OF_DEPLOY_USER   覆盖默认目标（默认 fnOS NAS）
+  OF_DEPLOY_HOST / OF_DEPLOY_PORT / OF_DEPLOY_ROOT / OF_DEPLOY_USER   部署目标（必填：无默认值，缺失即报错）
   OF_DEPLOY_SUDO=1      远端写操作走 sudo -n（NAS 上 agent 无站点根写权限）
   CF_TOKEN + OF_CF_ZONE                               启用 Cloudflare purge
   R2_KEY / R2_SECRET / R2_ENDPOINT / R2_BUCKET        启用 sync-r2.py
@@ -87,10 +87,10 @@ def _load_keychain(service: str = "openflow-deploy") -> None:
 _load_dotenv(ROOT / ".env")
 _load_keychain()
 
-HOST = os.environ.get("OF_DEPLOY_HOST", "192.168.1.81")
+HOST = os.environ.get("OF_DEPLOY_HOST", "")
 PORT = os.environ.get("OF_DEPLOY_PORT", "22")
-USER = os.environ.get("OF_DEPLOY_USER", "agent")
-REMOTE_ROOT = os.environ.get("OF_DEPLOY_ROOT", "/vol1/docker/openflow/www/nownexts_com")
+USER = os.environ.get("OF_DEPLOY_USER", "")
+REMOTE_ROOT = os.environ.get("OF_DEPLOY_ROOT", "")
 SITE = os.environ.get("OF_SITE_URL", "https://nownexts.com")
 
 # NAS 上站点根属主 501:games，agent 只读；写操作统一 sudo -n，并用 install 指定属主。
@@ -387,6 +387,70 @@ def do_rollback(stamp: str) -> int:
     return 1 if bad else 0
 
 
+def init_env(target: Path) -> int:
+    """把缺失的部署目标一次性写进 .env（gitignored）：只补不覆盖。
+
+    取值来源：.deploy/env-bootstrap.json（一次性迁移文件）或终端交互输入。
+    """
+    keys = ["OF_DEPLOY_HOST", "OF_DEPLOY_USER", "OF_DEPLOY_ROOT", "OF_DEPLOY_PORT", "OF_DEPLOY_OPS_ROOT"]
+    seed: dict[str, str] = {}
+    bootstrap = ROOT / ".deploy" / "env-bootstrap.json"
+    if bootstrap.is_file():
+        try:
+            seed = {str(k): str(v) for k, v in json.loads(bootstrap.read_text(encoding="utf-8")).items()}
+        except (OSError, ValueError):
+            print("⚠ 无法解析 .deploy/env-bootstrap.json，改为交互输入", file=sys.stderr)
+
+    lines = target.read_text(encoding="utf-8").splitlines() if target.is_file() else []
+    index: dict[str, int] = {}
+    drop: set[int] = set()
+    for i, raw in enumerate(lines):
+        s = raw.strip()
+        if not s or s.startswith("#") or "=" not in s:
+            continue
+        k, _, v = s.partition("=")
+        k = k.strip()
+        if k in keys:
+            if k not in index:
+                index[k] = i
+            else:
+                drop.add(i)   # 同一个键出现多次时只保留第一条，避免 dotenv/shell 读取顺序打架
+
+    missing = [k for k in keys if k not in index or not lines[index[k]].partition("=")[2].strip().strip('"').strip("'")]
+    if not missing:
+        print(f"✓ {target.name} 已包含全部部署目标，未改动")
+        return 0
+
+    appends: list[str] = []
+    changed: list[str] = []
+    for k in missing:
+        val = seed.get(k, "")
+        if not val and sys.stdin.isatty():
+            val = input(f"{k} = ").strip()
+        if not val:
+            print(f"✗ {k} 没有取值：先写 .deploy/env-bootstrap.json，或在终端里交互输入", file=sys.stderr)
+            return 2
+        if k in index:
+            lines[index[k]] = f"{k}={val}"
+        else:
+            appends.append(f"{k}={val}")
+        changed.append(k)
+
+    if appends:
+        if lines and lines[-1].strip():
+            lines.append("")
+        if not any(l.strip() == "# 部署目标（本机私有）" for l in lines):
+            lines.append("# 部署目标（本机私有；由 deploy.py --init-env 写入）")
+        lines.extend(appends)
+
+    if drop:
+        lines = [l for i, l in enumerate(lines) if i not in drop]
+    target.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    target.chmod(0o600)
+    print(f"✓ 已写入 {target.name}：{' / '.join(changed)}（权限 600，gitignored）")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="幂等 + md5 核验的部署器")
     ap.add_argument("files", nargs="*", help="要部署的仓库相对路径")
@@ -399,7 +463,25 @@ def main() -> int:
     ap.add_argument("--no-cache", action="store_true", help="跳过服务端缓存清理")
     ap.add_argument("--allow-incomplete", action="store_true",
                     help="R2/purge 未闭环时仍以 0 退出（默认视为部署失败，退出码 3）")
+    ap.add_argument("--init-env", action="store_true",
+                    help="把缺失的部署目标一次性写进 .env（只补不覆盖，权限 600）")
+    ap.add_argument("--env-file", metavar="PATH", default="",
+                    help="配合 --init-env 指定目标文件（默认仓库根 .env）")
     args = ap.parse_args()
+
+    if args.init_env:
+        return init_env(Path(args.env_file) if args.env_file else ROOT / ".env")
+
+    # 部署目标是本机私有配置：仓库与示例文件不得出现真实值，缺失即失败（不回落任何默认主机）。
+    missing_target = [k for k, v in (("OF_DEPLOY_HOST", HOST), ("OF_DEPLOY_USER", USER), ("OF_DEPLOY_ROOT", REMOTE_ROOT)) if not v]
+    if missing_target:
+        print("✗ 缺少部署目标：" + " / ".join(missing_target)
+              + "（先跑 python3 scripts/deploy.py --init-env 一次，或手动写进仓库根 .env；模板见 .env.example）", file=sys.stderr)
+        return 2
+
+    # 属主随目标机而定：未显式配置时用部署器内的默认值，但要提示一次，避免"以为配了其实没配"。
+    if not os.environ.get("OF_DEPLOY_OWNER") or not os.environ.get("OF_DEPLOY_DATA_OWNER"):
+        print("⚠ 未设置 OF_DEPLOY_OWNER / OF_DEPLOY_DATA_OWNER，将使用部署器默认属主（建议写进本机配置）", file=sys.stderr)
 
     if args.rollback:
         return do_rollback(args.rollback)
@@ -535,9 +617,10 @@ def main() -> int:
 
     # 6) Cloudflare purge
     if not args.no_purge:
-        token, zone = os.environ.get("CF_TOKEN"), os.environ.get("OF_CF_ZONE", "8135597542c2723a06a91a7e14a6e747")
+        token, zone = os.environ.get("CF_TOKEN"), os.environ.get("OF_CF_ZONE", "")
         if not token:
-            # Fall back to the local (gitignored) credentials file shared with UserLoop's sync.
+            # 兼容旧路径：本地凭据文件（gitignored）。新配置请写 .env；这里命中时提示一次。
+            print("⚠ 使用 data/cloudflare.json 回退凭据（建议迁移到本机配置）", file=sys.stderr)
             try:
                 creds = json.loads((ROOT / "data" / "cloudflare.json").read_text(encoding="utf-8"))
                 token = creds.get("token") or None
@@ -549,6 +632,10 @@ def main() -> int:
             print("✗ 缺少 CF_TOKEN，未执行 purge（CDN 可能仍是旧内容）", file=sys.stderr)
             if urls:
                 incomplete.append("CF purge 未执行：缺少 CF_TOKEN（写仓库根 .env；token 需 Zone.Cache Purge 权限）")
+        elif not zone:
+            print("✗ 缺少 OF_CF_ZONE，未执行 purge（CDN 可能仍是旧内容）", file=sys.stderr)
+            if urls:
+                incomplete.append("CF purge 未执行：缺少 OF_CF_ZONE（写仓库根 .env）")
         elif urls:
             payload = json.dumps({"files": urls})
             cp = run(["curl", "-s", "-X", "POST",

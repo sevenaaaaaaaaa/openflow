@@ -9,12 +9,12 @@
 
 | 项 | 值 |
 |---|---|
-| 本地仓库 | `/Users/sevenaaaaaaa/OpenFlowDev` |
+| 本地仓库 | 本机克隆目录（因人而异，不入仓库） |
 | 本地预览 | `php -S 127.0.0.1:8080 router-dev.php` |
 | 线上 | `https://nownexts.com` |
-| 服务器 | `root@172.96.253.73 -p 28766` |
-| 私钥 | `.ssh/172.96.253.73_id_ed25519` |
-| 站点根 | `/www/wwwroot/nownexts_com` |
+| 服务器 | 旧 VPS 已退役（2026-11-23）；现行目标见本机 `.env` 的 `OF_DEPLOY_*` |
+| 私钥 | 由本机 ssh config / agent 管理，不进仓库 |
+| 站点根 | 见本机 `.env` 的 `OF_DEPLOY_ROOT` |
 | 部署 | `bash bin/deploy.sh --live`（同步代码/静态资源，**不同步 data/**） |
 
 **重要**：本地预览必须用 `router-dev.php` 当 router。用 `index.php` 当 router 会导致 `/article/*` 全部渲染成首页（这是之前「看不到链接 / 排版乱」的原因）。
@@ -160,12 +160,12 @@ video-candy
 ## 6. 服务器配置变更记录（2026-10-20）
 
 修复线上图片 404（防盗链不允许空 Referer）：
-- Apache `/www/server/panel/vhost/apache/nownexts.com.conf` 两处，各在 `RewriteCond %{HTTP_REFERER} !nownexts.com [NC]` 前加了一行：
+- Apache `<PANEL_VHOST_DIR>/apache/nownexts.com.conf` 两处，各在 `RewriteCond %{HTTP_REFERER} !nownexts.com [NC]` 前加了一行：
   ```apache
   RewriteCond %{HTTP_REFERER} !^$
   ```
   （备份：`nownexts.com.conf.bak-hotlink-*`；`/www/server/apache/bin/httpd -t` → Syntax OK；`/etc/init.d/httpd reload`）
-- nginx `/www/server/panel/vhost/nginx/nownexts.com.conf`：
+- nginx `<PANEL_VHOST_DIR>/nginx/nownexts.com.conf`：
   ```nginx
   valid_referers none blocked server_names nownexts.com www.nownexts.com *.nownexts.com;
   ```

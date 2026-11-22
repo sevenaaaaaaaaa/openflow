@@ -73,10 +73,19 @@ register_shutdown_function(function () use ($OF_ENV, $OF_ERRLOG) {
 if (!defined('OF_DATA_DIR')) {
     $envFile = __DIR__ . '/../.env';
     if (file_exists($envFile)) {
+        // 与 scripts/deploy.py 的解析规则保持一致：支持 export 前缀与成对引号；真实环境变量优先（含空值）；
+        // 同一个键出现多次时第一条生效（避免 shell 与 Python 读取顺序不一致）。
         foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-            if (str_starts_with(trim($line), '#') || !str_contains($line, '=')) continue;
+            $line = trim($line);
+            if ($line === '' || $line[0] === '#' || !str_contains($line, '=')) continue;
+            if (str_starts_with($line, 'export ')) $line = ltrim(substr($line, 7));
             [$k, $v] = array_map('trim', explode('=', $line, 2));
-            if (!getenv($k)) putenv("$k=$v");
+            if ($k === '' || getenv($k) !== false) continue;
+            $len = strlen($v);
+            if ($len >= 2 && ($v[0] === '"' || $v[0] === "'") && $v[$len - 1] === $v[0]) {
+                $v = substr($v, 1, -1);
+            }
+            putenv("$k=$v");
         }
     }
     $dataDir = getenv('OF_DATA_DIR') ?: __DIR__ . '/../data';

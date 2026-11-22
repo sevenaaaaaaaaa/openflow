@@ -23,7 +23,7 @@ def _env(*names: str) -> str:
 R2_ENDPOINT = _env("R2_ENDPOINT")
 R2_KEY = _env("R2_KEY", "R2_ACCESS_KEY_ID")
 R2_SECRET = _env("R2_SECRET", "R2_SECRET_ACCESS_KEY")
-BUCKET = os.environ.get("R2_BUCKET", "nownexts-static")
+BUCKET = _env("R2_BUCKET")
 ASSETS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/assets"   # 脚本在 deploy/ 下,assets 在仓库根（v2.5.1 挪动脚本时曾漏改,导致同步空跑）
 EXCLUDE_EXTS = {'.map', '.ts', '.md', '.txt', '.sh'}
 

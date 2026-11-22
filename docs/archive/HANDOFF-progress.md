@@ -1,10 +1,10 @@
 # 交接说明（2026-10-20）
 
 ## 环境
-- 本地仓库：`/Users/sevenaaaaaaa/OpenFlowDev`
+- 本地仓库：本机克隆目录（因人而异，不入仓库）
 - 本地预览：`php -S 127.0.0.1:8080 router-dev.php`（**新增 router-dev.php 复刻 .htaccess 重写；用 index.php 当 router 会让 /article/* 全落到首页**）
 - 线上：`https://nownexts.com`
-- 服务器：`root@172.96.253.73 -p 28766`，key `.ssh/172.96.253.73_id_ed25519`，站点根 `/www/wwwroot/nownexts_com`
+- 服务器：旧 VPS 已退役（2026-11-23）；现行目标见本机 `.env`（`OF_DEPLOY_*`），密钥由 ssh agent/config 管理，不进仓库
 - 部署：`bash bin/deploy.sh --live`（rsync；不同步 data/）
 - 数据源：`data/articles/index.json`（4727 篇，已发布 502）。服务器上的这份是当前线上真源。
 

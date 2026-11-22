@@ -69,6 +69,14 @@ class TestPlan(unittest.TestCase):
 class TestPerms(unittest.TestCase):
     """上传后必须显式 chmod：本机 0600 文件曾原样落到服务器 → 全站 500。"""
 
+    def setUp(self):
+        # REMOTE_ROOT 现在由本机 .env 提供（仓库内无默认值），测试用固定值隔离环境
+        self._root = deploy.REMOTE_ROOT
+        deploy.REMOTE_ROOT = "/srv/www"
+
+    def tearDown(self):
+        deploy.REMOTE_ROOT = self._root
+
     def test_files_644_and_parent_dirs_755(self):
         script = deploy.perms_script(["lib/A.php", "plugins/x/view.php", "index.php"])
         root = deploy.REMOTE_ROOT.rstrip("/")

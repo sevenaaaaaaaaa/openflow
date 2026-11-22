@@ -38,8 +38,8 @@ curl -s https://nownexts.com/mcp \
 {
   "mcpServers": {
     "openflow": {
-      "command": "/www/server/php/83/bin/php",
-      "args": ["/www/wwwroot/nownexts_com/mcp-server.php"],
+      "command": "<PHP 可执行文件路径>",
+      "args": ["<站点根>/mcp-server.php"],
       "env": { "OF_MCP_TRANSPORT": "stdio" }
     }
   }

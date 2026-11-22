@@ -8,10 +8,14 @@ import sys
 
 import boto3
 
-R2_ENDPOINT = "https://00d02a54a3c0f7a3f6c3fc75068e29c5.r2.cloudflarestorage.com"
-R2_KEY = os.environ.get("R2_KEY", "")       # 从环境变量读取，勿硬编码提交到 git
-R2_SECRET = os.environ.get("R2_SECRET", "")  # 从环境变量读取，勿硬编码提交到 git
-BUCKET = "nownexts-static"
+R2_ENDPOINT = os.environ.get("R2_ENDPOINT", "")   # 只从本机环境或 .env 读，勿硬编码
+R2_KEY = os.environ.get("R2_KEY", "")
+R2_SECRET = os.environ.get("R2_SECRET", "")
+BUCKET = os.environ.get("R2_BUCKET", "")
+
+for _k, _v in (("R2_ENDPOINT", R2_ENDPOINT), ("R2_BUCKET", BUCKET), ("R2_KEY", R2_KEY), ("R2_SECRET", R2_SECRET)):
+    if not _v:
+        sys.exit(f"缺少 {_k}：写在仓库根 .env 或本机环境变量，勿提交")
 MIME = {".mp4": "video/mp4", ".m3u8": "application/vnd.apple.mpegurl", ".ts": "video/mp2t",
         ".webm": "video/webm", ".mov": "video/quicktime", ".mkv": "video/x-matroska",
         ".mp3": "audio/mpeg", ".wav": "audio/wav", ".pdf": "application/pdf"}

@@ -6,9 +6,11 @@ set -e
 
 V2="${OF_DECKS_SRC:-$(cd "$(dirname "$0")" && pwd)/ops/decks}"
 LOCAL="$(cd "$(dirname "$0")" && pwd)/decks"
-SERVER="root@172.96.253.73"
-PORT="28766"
-REMOTE="/www/wwwroot/nownexts_com/decks"
+: "${OF_LEGACY_HOST:?已退役主机的同步脚本：请设置 OF_LEGACY_HOST（勿提交到仓库）}"
+: "${OF_LEGACY_ROOT:?请设置 OF_LEGACY_ROOT（站点根）}"
+SERVER="root@${OF_LEGACY_HOST}"
+PORT="${OF_LEGACY_PORT:-22}"
+REMOTE="${OF_LEGACY_ROOT}/decks"
 
 mkdir -p "$LOCAL"
 

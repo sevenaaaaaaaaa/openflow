@@ -8,10 +8,14 @@ import urllib.error
 import urllib.request
 
 CF_TOKEN = os.environ.get("CF_TOKEN", "")   # 从环境变量读取，勿硬编码提交到 git
-ACCOUNT_ID = "00d02a54a3c0f7a3f6c3fc75068e29c5"
-ZONE_ID = "8135597542c2723a06a91a7e14a6e747"
+ACCOUNT_ID = os.environ.get("OF_CF_ACCOUNT_ID", "")   # 与 ZONE/BUCKET 一样只从本机环境或 .env 读
+ZONE_ID = os.environ.get("OF_CF_ZONE", "")
 SCRIPT_NAME = "r2-media"
-BUCKET = "nownexts-static"
+BUCKET = os.environ.get("R2_BUCKET", "")
+
+for _k, _v in (("CF_TOKEN", CF_TOKEN), ("OF_CF_ACCOUNT_ID", ACCOUNT_ID), ("OF_CF_ZONE", ZONE_ID), ("R2_BUCKET", BUCKET)):
+    if not _v:
+        sys.exit(f"缺少 {_k}：写在仓库根 .env 或本机环境变量，勿提交")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 worker_src = open(os.path.join(HERE, "r2-media-worker.js"), encoding="utf-8").read()
@@ -82,4 +86,4 @@ except urllib.error.HTTPError as e:
     print(f"   404 检查: HTTP {e.code}（走 Worker 且正确返回 404）")
 
 print("==> 4/4 完成。上传视频到 R2 的 media/ 前缀即可分段播放。")
-print("   上传: python3 -c \"import boto3; s3=boto3.client('s3', endpoint_url='https://00d02a54a3c0f7a3f6c3fc75068e29c5.r2.cloudflarestorage.com', aws_access_key_id='..', aws_secret_access_key='..', region_name='auto'); s3.put_object(Bucket='nownexts-static', Key='media/xxx.mp4', Body=open('xxx.mp4','rb'), ContentType='video/mp4')\"")
+print(f"   上传: python3 deploy/upload-r2-video.py 本地.mp4 [course-id/slug.mp4]  # endpoint={ACCOUNT_ID}.r2.cloudflarestorage.com bucket={BUCKET}")

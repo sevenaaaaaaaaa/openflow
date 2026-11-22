@@ -49,23 +49,24 @@ if (!defined('OF_EMBED')) admin_header('邮件设置');
     $hasA = !empty($dnsA);
     $hasSpf = false;
     foreach ($dnsTxt as $r) if (str_starts_with($r['txt'] ?? '', 'v=spf1')) $hasSpf = true;
-    $serverIp = '172.96.253.73';
     ?>
     <?php if ($fromDomain): ?>
-    <div class="card" style="padding:16px 20px;margin-bottom:16px;border-color:<?=($hasA && $hasSpf)?'oklch(from var(--ok) l c h / 0.4)':'oklch(0.72 0.15 85 / 0.5)'?>">
+    <div class="card" style="padding:16px 20px;margin-bottom:16px;border-color:<?=$hasSpf?'oklch(from var(--ok) l c h / 0.4)':'oklch(0.72 0.15 85 / 0.5)'?>">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">📡 发信域名 DNS 健康（<?=htmlspecialchars($fromDomain)?>）</h3>
       <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;margin-bottom:10px">
-        <span><?=$hasA?'✅':'❌'?> A 记录（<?=$hasA ? htmlspecialchars($dnsA[0]['ip'] ?? '') : '未解析'?>）</span>
+        <span><?=$hasA?'ℹ️':'·'?> A 记录（<?=$hasA ? htmlspecialchars($dnsA[0]['ip'] ?? '') : '未解析，发信不依赖此项'?>）</span>
         <span><?=$hasSpf?'✅':'❌'?> SPF 记录<?=$hasSpf?'':'（未配置）'?></span>
       </div>
-      <?php if (!$hasA || !$hasSpf): ?>
+      <?php if (!$hasSpf): ?>
       <div style="font-size:12px;color:var(--muted);line-height:1.8;background:var(--hover);border-radius:10px;padding:10px 14px">
-        <b style="color:var(--fg)">到 DNS 服务商（Cloudflare）添加这两条记录，邮件才不会进垃圾箱：</b><br>
-        ① <code>A &nbsp;<?=htmlspecialchars($fromDomain)?> → <?=$serverIp?></code>（如开 Cloudflare 代理须关闭，用「仅 DNS」）<br>
-        ② <code>TXT <?=htmlspecialchars($fromDomain)?> → v=spf1 ip4:<?=$serverIp?> ~all</code>
+        <b style="color:var(--fg)">请在 DNS 服务商处按邮件服务商文档补齐（与本站服务器地址无关）：</b><br>
+        ① SPF：按服务商给出的 include 写一条 TXT<br>
+        ② DKIM：在邮件服务商后台生成并添加对应 TXT<br>
+        ③ 检查 DMARC 策略是否与 SPF/DKIM 对齐<br>
+        <span style="color:var(--fg)">A 记录只影响网站访问，不参与发信；不要为发信给域名加 A 记录。</span>
       </div>
       <?php else: ?>
-      <div style="font-size:12px;color:var(--ok)">DNS 配置完整，发信链路健康。</div>
+      <div style="font-size:12px;color:var(--ok)">SPF 已配置；DKIM / DMARC 请在邮件服务商后台确认。</div>
       <?php endif; ?>
     </div>
     <?php endif; ?>

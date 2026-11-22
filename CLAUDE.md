@@ -1,9 +1,9 @@
-# CLAUDE.md — OpenFlow Dev
+# CLAUDE.md — OpenFlow
 
 ## 项目简介
 
 OpenFlow（开务，林下 Understory 出品）：面向 OPC / DRI 的「增长操作系统」，以 TIPS（触达 · 洞察 · 个性化 · 销售）为骨架，含内容中心、CDP、自动化画布、AI 岗位/Agent、商城、学院、导航站等。线上站点 https://nownexts.com 。
-这是主开发仓库（远端 `github.com/sevenaaaaaaaaa/openflow`，分支 `main`）。同一远端还有一个较旧的检出在 `/Users/seveno/openflow`（停在 2026-09-02，勿在那边开发/部署）。
+本目录即主开发仓库（远端 `github.com/sevenaaaaaaaaa/openflow`，分支 `main`）。需要并行改动请用 `git worktree` 或另建克隆，不要在同一目录切分支。
 
 ## 技术栈
 
@@ -52,7 +52,7 @@ vendor/bin/phpstan analyse   # phpstan.neon + baseline
 
 ## 部署方式
 
-- 生产：宝塔面板（Apache）服务器，`root@172.96.253.73`，SSH 端口 `28766`，目录 `/www/wwwroot/nownexts_com`，域名 nownexts.com（前置 Cloudflare，Cache Everything 规则）。
+- 生产：NAS（Apache + PHP，Cloudflare Tunnel 前置），域名 nownexts.com（Cloudflare 缓存）。**主机、用户、端口、站点根一律由本机 `.env` 提供（`OF_DEPLOY_*`），不写进仓库**；本机没有 `.env` 时部署会直接报错停下，这是有意的。
 - **唯一入口（双轨同步，2026-10 起）**：`bash deploy/sync.sh`
   - GitHub 轨（公开仓库，只放干净代码）：gitleaks 扫描未提交改动（有泄露即中止）→ `git add -A`（`.gitignore` 已排除 `drafts/`、`leads.csv`、`data/`、`uploads/`、密钥等）→ commit（Conventional Commits，`-m` 指定）→ `git push origin main`；无改动则跳过 commit。
   - 服务器轨（完整内容）：调用 `scripts/deploy.py` 从**工作区**上传（逐文件 scp + md5 核验 + 远端备份 + 清缓存 / R2 / CF purge），自动清单 = 相对 `origin/main` 的改动文件 + 显式传入的文件/目录（gitignored 但服务器需要的文件，如 `assets/images/nav-sites/`，需显式传入）。不删远端文件，`data/` 默认不推。
@@ -65,6 +65,7 @@ bash deploy/sync.sh --ci ...                         # 先跑 scripts/ci.sh --fa
 # 透传给 deploy.py：--with-data <file> --no-r2 --no-purge --no-cache --from-git <REF>
 ```
 
+- **首次部署先跑一次 `python3 scripts/deploy.py --init-env`**：把缺失的部署目标写进仓库根 `.env`（权限 600、gitignored、只补不覆盖、自动去重）；之后 `sync.sh` 才有目标可用。
 - 本地 `.git/hooks/pre-commit` 会用 gitleaks 扫描暂存区（误报 fingerprint 记在 `.gitleaksignore`）。
 - 底层部署器（仍可直接用；2026-09-18 起的标准做法，逐文件 scp + md5 校验 + 可回滚）：
 
@@ -86,7 +87,7 @@ OpenFlow 既是在开发的产品，也是每天在用的工具。两类产物�
 
 | 类别 | 例子 | 放哪 | GitHub | 服务器 |
 |---|---|---|---|---|
-| 开发工具（产品代码） | `admin/`、`api/`、`lib/`、`includes/`、`scripts/` 等 | 原目录 | ✅ | ✅（Web 根 `/www/wwwroot/nownexts_com`） |
+| 开发工具（产品代码） | `admin/`、`api/`、`lib/`、`includes/`、`scripts/` 等 | 原目录 | ✅ | ✅（Web 根，路径见本机 `.env`） |
 | 使用工具的产物 | 运营/SEO 批处理脚本、批次文件、一次性修复脚本、导出数据 | **`ops/`** | ❌ | ✅ 仅 `/www/ops/openflow/`（Web 根之外，只增不删） |
 
 - `/ops/` 已 gitignore；`deploy/sync.sh` 单独用 `rsync --update` 把它送到 `/www/ops/openflow/`（不走 deploy.py 白名单，绝不进 Web 根，`--dry-run` 只预览）。

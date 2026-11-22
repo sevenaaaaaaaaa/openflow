@@ -98,7 +98,7 @@
 
 ## 九、后台页面组件规范（对齐设计稿 openflow-admin.html）
 
-后台视觉契约源：`/Users/seveno/Downloads/openflow-admin.html`（Open Design 运营台原型）。
+后台视觉契约源：`<HOME>/Downloads/openflow-admin.html`（Open Design 运营台原型）。
 后台公共样式全部集中在 `admin/config.php` 的 `<style>`，页面内不写零散样式。
 
 | 组件 | class | 说明 |

@@ -5,9 +5,13 @@ require_perm('settings');
 
 // Extract the UTM tool's body content and inline styles
 $utmHtml = file_get_contents(__DIR__ . '/../utm-tool.html');
+// 可选：本机自定义模板，路径由环境变量提供，绝不写进代码
+if (!$utmHtml && ($alt = getenv('OF_UTM_TOOL_HTML')) && is_file($alt)) {
+    $utmHtml = file_get_contents($alt);
+}
 if (!$utmHtml) {
-    // Fallback: try the user's file
-    $utmHtml = file_get_contents('/Users/sevenaaaaaaa/Downloads/utm-custom-tool.html');
+    http_response_code(500);
+    exit('utm-tool.html 缺失：仓库自带文件不可读');
 }
 
 // Extract styles and body content

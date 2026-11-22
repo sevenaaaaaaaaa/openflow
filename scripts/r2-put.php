@@ -21,10 +21,10 @@ if ($local === '' || $key === '' || !is_file($local)) {
 }
 $access = (string) (getenv('R2_KEY') ?: '');
 $secret = (string) (getenv('R2_SECRET') ?: '');
-$bucket = (string) (getenv('R2_BUCKET') ?: 'nownexts-static');
-$endpoint = rtrim((string) (getenv('R2_ENDPOINT') ?: 'https://00d02a54a3c0f7a3f6c3fc75068e29c5.r2.cloudflarestorage.com'), '/');
-if ($access === '' || $secret === '') {
-    fwrite(STDERR, "缺少 R2_KEY / R2_SECRET\n");
+$bucket = (string) (getenv('R2_BUCKET') ?: '');
+$endpoint = rtrim((string) (getenv('R2_ENDPOINT') ?: ''), '/');
+if ($access === '' || $secret === '' || $bucket === '' || $endpoint === '') {
+    fwrite(STDERR, "缺少 R2_KEY / R2_SECRET / R2_BUCKET / R2_ENDPOINT（写在仓库根 .env，勿提交）\n");
     exit(2);
 }
 

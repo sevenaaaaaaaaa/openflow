@@ -7,18 +7,18 @@
 
 ---
 
-> ⚠️ **2026-11-22 起线上主机已迁到 fnOS NAS（`agent@192.168.1.81`，站根 `/vol1/docker/openflow/www/...`）。**
-> 本文出现的 `172.96.253.73` / 宝塔路径均为旧机（2026-11-23 到期）历史记录，不要再照抄执行。
+> ⚠️ **2026-11-22 起线上主机已迁到 fnOS NAS（`<DEPLOY_USER>@<NAS_HOST>`，站根 `<NAS_ROOT>/www/...`）。**
+> 本文出现的 `<RETIRED_HOST>` / 宝塔路径均为旧机（2026-11-23 到期）历史记录，不要再照抄执行。
 
 ## 一、共享资源清单（**动手前必须对齐，由 seveno 手动确认**）
 
 | 共享资源 | 本地位置 | 服务器位置 | 谁会碰 |
 |---|---|---|---|
-| OpenFlow 路由规则 | `OpenFlow Dev/.htaccess` | `/www/wwwroot/nownexts_com/.htaccess` | OpenFlow 会话；产品接入会话（加 301/Alias 例外） |
-| Apache 站点/别名 | — | `/www/server/panel/vhost/apache/*.conf`、`extension/nownexts.com/*.conf` | 产品接入（`Alias /<product>`） |
-| OpenFlow 插件 | `OpenFlow Dev/plugins/` | `/www/wwwroot/nownexts_com/plugins/` | OpenFlow；产品集成（如 `userloop-tracker`） |
-| 共享凭证 | `OpenFlow Dev/data/cloudflare.json` | — | 各产品 `deploy/sync.sh` **读取**（只读，勿改） |
-| Cloudflare zone / DNS | — | Zone `8135597542c2723a06a91a7e14a6e747` | 各产品 purge / 新增 DNS 记录 |
+| OpenFlow 路由规则 | `openflow/.htaccess` | `/www/wwwroot/nownexts_com/.htaccess` | OpenFlow 会话；产品接入会话（加 301/Alias 例外） |
+| Apache 站点/别名 | — | `<PANEL_VHOST_DIR>/apache/*.conf`、`extension/nownexts.com/*.conf` | 产品接入（`Alias /<product>`） |
+| OpenFlow 插件 | `openflow/plugins/` | `/www/wwwroot/nownexts_com/plugins/` | OpenFlow；产品集成（如 `userloop-tracker`） |
+| 共享凭证 | `openflow/data/cloudflare.json` | — | 各产品 `deploy/sync.sh` **读取**（只读，勿改） |
+| Cloudflare zone / DNS | — | Zone `<CF_ZONE_ID>` | 各产品 purge / 新增 DNS 记录 |
 | 主域路径命名空间 | — | `nownexts.com/<product>` | 各产品 app（Alias 挂载） |
 
 **规则**：同一时间只允许一个会话改上表资源；改之前找 seveno 确认没有别的会话在动。
@@ -52,24 +52,21 @@ Alias /<product>  /www/wwwroot/<product>     # 挂在 nownexts.com 下
 
 ---
 
-## 三、安全部署命令（推荐所有会话统一用这条）
+## 三、标准部署命令（所有会话统一用这条）
 
 ```bash
-# *.bak* / *.old-* 的保护：避免 --delete 误删其他会话的备份与中间产物
-rsync -az --delete --chmod=D755,F644 -e "ssh -p 28766" \
-  --exclude='.git/'      --exclude='data/'       --exclude='uploads/' \
-  --exclude='drafts/'    --exclude='vendor/'     --exclude='.env' \
-  --exclude='.user.ini'  --exclude='node_modules/' \
-  --exclude='.DS_Store'  --exclude='.phpunit.result.cache' \
-  --exclude='*.bak*'     --exclude='*.old-*' \
-  ./ "root@172.96.253.73:/www/wwwroot/nownexts_com/"
+bash deploy/sync.sh -m "feat: ..." [文件或目录...]   # 提交推送 + 部署
+python3 scripts/deploy.py --dry-run <文件...>        # 只看计划，不上传
+python3 scripts/deploy.py --rollback <时间戳>        # 回滚到某次部署前
 ```
 
 要点：
-- **必须带 `--chmod=D755,F644`**：`-a` 会原样保留本机权限，本机 0600 的文件曾以 root 0600 落地 → Web 用户读不了 → 全站 500（2026-10-15）。`scripts/deploy.py` 上传后已自动 chmod 644/755
-- **不要**用不排除 `*.bak*` / `*.old-*` 的 `--delete`，否则会把别人正在用的备份/中间产物删掉
-- `.htaccess` 会随部署覆盖服务器版本——如果服务器上有别会话加的规则，先 `diff` 再部署
-- 部署前后各清一次缓存：`rm -f data/cache/*.cache`；改了前端资源再 purge CF（见 `docs/DEPLOY-CONFIG.md`）
+- 逐文件 scp + 双向 md5 断言，替换前留远端备份；`--rollback` 可回滚。
+- 不用 rsync 全量：本机 rsync 是 Apple openrsync，曾出现「报告成功、远端未变」的静默失败（见文末历史）。
+- 部署器上传后自动归一权限 644/755，避免本机 0600 落到服务器导致全站 500。
+- `data/` 默认不部署；改单个文件用 `--with-data <file>`，不要目录级同步。
+- `.htaccess` 会覆盖服务器版本：服务器上有他人规则时先 diff 再部署。
+- 缓存与 R2/purge 由部署器串联；缺凭据会以退出码 3 失败（不静默跳过）。
 
 ---
 
@@ -81,10 +78,10 @@ git status --short
 git diff <可疑文件>
 
 # 服务器：出现带时间戳的备份/改名残留，说明有会话刚动过
-ls -l /www/wwwroot/nownexts_com/.htaccess.bak-* /www/wwwroot/nownexts_com/*.old-*
+ssh <目标> 'ls -l <站点根>/.htaccess.bak-* <站点根>/*.old-*'
 
-# 服务器 Apache：别名/例外由谁加的
-grep -rn "Alias\|RewriteRule" /www/server/panel/vhost/apache/extension/nownexts.com/
+# 服务器 Apache：别名/例外由谁加的（vhost 位置见 docs/INFRASTRUCTURE.md）
+ssh <目标> 'grep -rn "Alias\|RewriteRule" <vhost 目录>'
 ```
 
 发现交叉时：**不要硬覆盖**，先看 `git diff` / 服务器备份，确认内容后再决定合并还是回退，并告知 seveno。
@@ -94,7 +91,7 @@ grep -rn "Alias\|RewriteRule" /www/server/panel/vhost/apache/extension/nownexts.
 ## 五、给各产品会话的最小建议
 
 1. 你的产品 app 部署到 `/www/wwwroot/<product>`，由**主站的 Alias** 挂载（当前方式）——不要自己往主站 `.htaccess` 里加规则，需要规则时找 seveno 确认后加，并在此文档登记
-2. 只**读**`OpenFlow Dev/data/cloudflare.json` 取凭证，不要写
+2. 只**读**`openflow/data/cloudflare.json` 取凭证，不要写
 3. 需要独占路径时，优先申请**子域名**（隔离最好）
 4. 每次同步后自检：`nownexts.com/<your-product>/` 200、`nownexts.com/` 200、其他产品路径未被误伤
 
@@ -159,31 +156,28 @@ rsync -az assets/modules.css root@host:/www/wwwroot/nownexts_com/
 
 # 核对（必做）——md5 不一致就是没传
 md5 -q assets/modules.css
-ssh -p 28766 root@172.96.253.73 "md5sum /www/wwwroot/nownexts_com/assets/modules.css"
+ssh -p <RETIRED_SSH_PORT> <RETIRED_USER>@<RETIRED_HOST> "md5sum /www/wwwroot/nownexts_com/assets/modules.css"
 ```
 
-**结论**：改 `assets/` 或 `includes/` 下的文件时，**用 `scp`**，并在部署后核对 md5：
+**结论**：改前端资产时不要用 rsync，改用部署器（逐文件 scp + md5 断言）：
 
 ```bash
-scp -P 28766 assets/modules.css root@172.96.253.73:/www/wwwroot/nownexts_com/assets/modules.css
-scp -P 28766 includes/site-nav.php root@172.96.253.73:/www/wwwroot/nownexts_com/includes/site-nav.php
+python3 scripts/deploy.py assets/modules.css includes/site-nav.php
 ```
 
-根目录的页面文件（`*.php`）用 rsync 目前正常，但同样建议核对关键文件 md5。
+根目录页面文件同理；部署器逐文件核对 md5，失败即非零退出。
 
-## data/ 目录归属：ssh 以 root 跑脚本后必须交还 www（2026-09-19 踩坑）
+## data/ 目录归属：手工以高权限跑脚本后必须交还属主
 
-**症状**：后台保存「看起来成功」但数据没变（分享访问统计一直 0、任务写入丢失）。
+**症状**：后台保存「看起来成功」但数据没变（统计一直 0、任务写入丢失）。
 
-**原因**：ssh 以 root 执行种子/校验脚本（`scripts/seed-projects.php`、临时 php -r）时，
-`data/` 下新建的文件是 `root:root 644`；Web 用户 `www` 无法写入 →
-`json_write` 失败、`ps_*` 的写入静默丢弃。线上曾累积 1589 个 root 所有的文件。
+**原因**：用 root（或非 Web 用户）在服务器上跑种子/校验脚本时，`data/` 下新建文件属主会变成该用户，
+PHP 无法写入 → `json_write` 失败、写入被静默丢弃。旧机曾累积上千个错属主文件。
 
-**修正**：
+**修正**：把 `data/` 交还 Web 用户（属主随机器而定，见本机 .env 的 `OF_DEPLOY_DATA_OWNER` 与部署器约定）：
 
 ```bash
-ssh -p <port> root@<host> 'cd <站点目录> && find data -user root -exec chown www:www {} +'
+ssh <目标> 'chown -R <data 属主> <站点根>/data'
 ```
 
-**预防**：`scripts/deploy.py` 现在会在部署后体检 `find data -user root`，发现即警告并给出上面这条命令。
-跑完任何 ssh 侧写数据的脚本，也应顺手 chown 一次。
+**预防**：部署器上传后用 `install` 指定属主，并在部署后体检错属主文件；跑完任何服务器侧写数据的脚本，也应顺手交还一次。

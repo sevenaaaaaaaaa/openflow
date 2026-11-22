@@ -9,11 +9,11 @@
 
 | 服务 | 形态 | 技术栈 | 部署位置 | 对外入口 |
 |---|---|---|---|---|
-| **OpenFlow** | 主站（表现层 + CMS + 后台） | PHP 8.3 | `/www/wwwroot/nownexts_com` | `nownexts.com` |
-| **PayFlow** | 独立应用 | PHP | `/www/wwwroot/payflow`（Alias `/payflow`） | `nownexts.com/payflow`、`payflow.nownexts.com` |
-| **LearnFlow** | 独立应用 | （开发中） | `/www/wwwroot/learnflow`（Alias `/learnflow`） | `nownexts.com/learnflow` |
-| **WebsFlow** | 产品站 | JS/TS | `/www/wwwroot/websflow`（Alias `/webflow`） | `nownexts.com/webflow` |
-| **UserLoop** | 独立服务 | Python | `/www/wwwroot/userloop`（systemd `userloop`） | `nownexts.com/userloop` |
+| **OpenFlow** | 主站（表现层 + CMS + 后台） | PHP 8.3 | 容器内站点根 | `nownexts.com` |
+| **PayFlow** | 独立应用 | PHP | 同域 Alias `/payflow` | `nownexts.com/payflow`、`payflow.nownexts.com` |
+| **LearnFlow** | 独立应用 | （开发中） | 同域 Alias `/learnflow` | `nownexts.com/learnflow` |
+| **WebsFlow** | 产品站 | JS/TS | 同域 Alias `/webflow` | `nownexts.com/webflow` |
+| **UserLoop** | 独立服务 | Python | systemd `userloop` | `nownexts.com/userloop` |
 | **MFlow** | 独立服务 | Python | systemd `mflow-console` | `nownexts.com/mflow` |
 | **inFlow** | 独立服务 | Python | （对外/自部署） | 情报 API |
 
