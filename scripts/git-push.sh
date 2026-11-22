@@ -8,10 +8,11 @@ for i in 1 2 3 4 5; do
   echo "push 失败（第 $i 次），$((i*3))s 后重试…" >&2
   sleep $((i*3))
 done
-local_sha=$(git rev-parse HEAD)
-remote_sha=$(git ls-remote origin "refs/heads/$branch" | awk '{print $1}')
-if [ "$local_sha" != "$remote_sha" ]; then
-  echo "推送未生效：local=$local_sha remote=$remote_sha" >&2
+sha=$(git rev-parse HEAD)
+git fetch -q origin || true
+if git merge-base --is-ancestor "$sha" "origin/$branch"; then
+  echo "已推送并校验：$sha 已在 origin/$branch（允许他人并发提交）"
+else
+  echo "推送未生效：$sha 不在 origin/$branch" >&2
   exit 1
 fi
-echo "已推送并校验：origin/$branch = $local_sha"
