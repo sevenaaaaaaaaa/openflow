@@ -74,6 +74,14 @@
 5. 改到期日 → 状态与提醒随之变化。
 6. 到期冻结 → 再删除：空间消失、归档存在、审计有记录。
 
+## 9. 实现（第一批，2026-11-23）
+
+- 核心库 `lib/DemoSpace.php`：开通（同邮箱域名去重）、续期、冻结、到期判定、归档删除（tar.gz 到 `demo-archive/`）。
+- 运维 CLI `scripts/demo-space.php`：list / create / renew / freeze / delete；邀请码只在 create 时输出一次（存 sha256）。
+- 契约测试 `tests/demo_space_test.php`：12 项通过。
+- **尚未实现**：只读门禁（请求层拦截）、邀请码兑换页、后台管理界面、到期自动冻结/删除的 cron。
+
+
 ## 附录：申请表单字段映射（复用 /enterprise.php）
 
 现有字段：company、industry、size、plan_type、budget、contact_name、email、phone、note，另有蜜罐 website。
