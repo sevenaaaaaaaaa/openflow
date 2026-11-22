@@ -8,11 +8,12 @@
 
 | 项 | 值 |
 |---|---|
-| 主机 | `root@172.96.253.73`，SSH 端口 **28766** |
-| 面板 | 宝塔面板（Apache） |
-| 系统盘 | 39G（已用 ~44%） |
-| PHP | **8.3.33**（CLI：`/www/server/php/83/bin/php`） |
-| 数据库 | SQLite **3.7.17**（旧：无 FTS5 / UPSERT / 部分索引 → 代码需降级兼容） |
+| 主机 | fnOS NAS（hostname `Nas`），Debian 12；SSH `agent@192.168.1.81:22`（免密 + sudo NOPASSWD） |
+| Web 栈 | Apache 2.4 + PHP 8.2（apt 原生），监听 `127.0.0.1:18080` |
+| 公网入口 | Cloudflare Tunnel（cloudflared systemd 常驻；`nownexts.com`/`www`/`payflow`/`kb` 已切 CNAME） |
+| 数据库 | SQLite **3.40.1**（FTS5 / UPSERT / 部分索引全开）+ MySQL 5.7 ×3（3306 insflow / 3307 userloop / 3308 learnflow） |
+| 常驻服务 | Docker：userloop / inflow / V2HTML / websflow / 3×MySQL；systemd：mflow-console / litmus / cloudflared / apache2 |
+| cron | `/etc/cron.d/openflow`（`/api/cron.php` 每分钟 + payflow/learnflow 全套） |
 
 ### 1.1 站点与别名（Apache）
 
@@ -58,9 +59,9 @@ journalctl -u userloop -n 50        # 日志
 
 | 类型 | 名称 | 指向 | 代理 |
 |---|---|---|---|
-| A | `nownexts.com` | `172.96.253.73` | ✅ |
+| 记录 | `nownexts.com` | Cloudflare Tunnel → fnOS `127.0.0.1:18080`（旧 A `172.96.253.73` 已停用） | ✅ |
 | CNAME | `www` | `nownexts.com` | ✅ |
-| A | `payflow.nownexts.com` | `172.96.253.73` | ✅ |
+| 记录 | `payflow.nownexts.com` | 同上（vhost `payflow`） | ✅ |
 | CNAME | `notion.nownexts.com` | vercel | ❌ |
 | CNAME | `oneletters.nownexts.com` | 外部 | ❌ |
 | CNAME | `743d83a5….nownexts.com` | verify.bing.com | ❌ |

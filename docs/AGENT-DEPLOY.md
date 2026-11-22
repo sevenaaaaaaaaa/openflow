@@ -3,16 +3,20 @@
 > 面向：接手开发的 AI 会话 / 新同事。
 > 目标：**照着做就能安全部署**，不碰别人的东西，不丢数据，能验证，能回滚。
 
+> ⚠️ **2026-11-22 起线上主机已从旧 VPS（`172.96.253.73`，宝塔）迁到 fnOS NAS。**
+> 旧机 2026-11-23 23:00 到期退役；本文中所有 `172.96.253.73` / 宝塔 / `-p 28766` 的命令**仅作历史备查，不要再执行**。
+> 新机：`agent@192.168.1.81`（免密 + `sudo` NOPASSWD），站根 `/vol1/docker/openflow/www/nownexts_com`（容器 `openflow-web` 内挂载为 `/www/wwwroot`），入口 `127.0.0.1:18080` + Cloudflare Tunnel。
+> 新部署链路尚未固化进 `deploy/sync.sh` / `scripts/deploy.py`；在那之前**不要用本文旧命令部署**。
+
 ---
 
 ## 一、部署拓扑（先搞清"线上是什么"）
 
 | 项 | 值 |
 |---|---|
-| 服务器 | `root@172.96.253.73`，SSH 端口 **28766** |
-| 面板 | 宝塔（Apache + PHP 8.3.33） |
-| 站点根 | `/www/wwwroot/nownexts_com` |
-| PHP CLI | `/www/server/php/83/bin/php` |
+| 主机 | fnOS NAS，`agent@192.168.1.81:22`（免密 + `sudo` NOPASSWD） |
+| Web 栈 | Apache 2.4 + PHP 8.2，容器 `openflow-web` 监听 `127.0.0.1:18080` |
+| 站点根 | 宿主机 `/vol1/docker/openflow/www/nownexts_com`（容器内 `/www/wwwroot/nownexts_com`） |
 | 数据库 | SQLite（`data/db/openflow.db`）+ JSON（`data/*.json`），**服务器为源** |
 | 静态资产 | Cloudflare R2（桶 `nownexts-static`）经 Workers 分发 |
 | 兄弟产品 | 同域 Alias 挂载：`/payflow` `/learnflow` `/webflow`；`userloop`/`mflow-console` 为 systemd 服务 |
