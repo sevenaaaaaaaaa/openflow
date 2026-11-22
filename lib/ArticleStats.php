@@ -38,14 +38,19 @@ function art_stats_add(string $slug, string $type): void {
     // 列名映射（单数 → 复数）
     $colMap = ['view' => 'views', 'like' => 'likes', 'favorite' => 'favorites', 'share' => 'shares'];
     $col = $colMap[$type];
-    $db = art_stats_db();
-    // 先确保行存在（不覆盖计数）
-    $db->prepare("INSERT OR IGNORE INTO article_stats (slug, views, likes, favorites, shares, updated_at)
-        VALUES (:slug, 0, 0, 0, 0, :now)")
-        ->execute([':slug' => $slug, ':now' => date('Y-m-d H:i:s')]);
-    // 再自增目标列
-    $db->prepare("UPDATE article_stats SET $col = $col + 1, updated_at = :now WHERE slug = :slug")
-        ->execute([':slug' => $slug, ':now' => date('Y-m-d H:i:s')]);
+    // 统计是旁路数据：任何写入失败都不能让文章页 500（2026-11-23 事故：WAL sidecar 权限）。
+    try {
+        $db = art_stats_db();
+        // 先确保行存在（不覆盖计数）
+        $db->prepare("INSERT OR IGNORE INTO article_stats (slug, views, likes, favorites, shares, updated_at)
+            VALUES (:slug, 0, 0, 0, 0, :now)")
+            ->execute([':slug' => $slug, ':now' => date('Y-m-d H:i:s')]);
+        // 再自增目标列
+        $db->prepare("UPDATE article_stats SET $col = $col + 1, updated_at = :now WHERE slug = :slug")
+            ->execute([':slug' => $slug, ':now' => date('Y-m-d H:i:s')]);
+    } catch (Throwable $e) {
+        error_log('art_stats_add failed: ' . $e->getMessage());
+    }
 }
 
 // 获取统计

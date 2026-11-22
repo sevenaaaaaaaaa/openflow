@@ -20,8 +20,11 @@ function jget(string $f, string $k, $default = '') {
 $settings = jread($dataDir . '/settings.json');
 $siteUrl = rtrim($settings['site_url'] ?? '', '/');
 if (empty($siteUrl) || str_contains($siteUrl, 'localhost')) {
-    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http');
+    // 生产在 Cloudflare Tunnel 后面：Apache 看到的是 http，靠 $_SERVER['HTTPS'] 会误判成 http。
+    // 因此非本地主机一律输出 https（站点 canonical 也是 https）；本地开发保留 http。
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $isLocal = str_starts_with($host, 'localhost') || str_starts_with($host, '127.0.0.1');
+    $protocol = $isLocal ? 'http' : 'https';
     $siteUrl = $protocol . '://' . $host;
 }
 $base = $siteUrl;
